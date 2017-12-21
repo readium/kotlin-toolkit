@@ -5,3 +5,13 @@ A Kotlin implementation of the Readium-2 streamer
 
 ## Adding the library to your iOS project
 
+
+### Git Submodule
+
+
+### Gradle implementation
+
+
+##### Android Module Import
+
+
