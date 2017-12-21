@@ -1,0 +1,125 @@
+<resources>
+    <string name="app_name">R2Navigator</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_r2_epub">R2EpubActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to User Settings -->
+
+    <string name="default_font">Publisher\'s default</string>
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_social_recommendations">Publisher\'s Defaults</string>
+    <string name="pref_description_social_recommendations">Use the publisher default settings
+    </string>
+
+    <string name="pref_title_fontsize">Font Size</string>
+    <string name="pref_default_fontsize">10</string>
+
+    <string-array name="mode_list">
+        <item>Default</item>
+        <item>Sepia</item>
+        <item>Night</item>
+    </string-array>
+
+    <string-array name="mode_list_values">
+        <item>readium-default-on</item>
+        <item>readium-sepia-on</item>
+        <item>readium-night-on</item>
+    </string-array>
+
+    <string-array name="scroll_list">
+        <item>Horizontal Scroll</item>
+        <item>Vertical Scroll</item>
+    </string-array>
+
+    <string-array name="scroll_list_values">
+        <item>readium-scroll-off</item>
+        <item>readium-scroll-on</item>
+    </string-array>
+
+    <string-array name="font_list">
+        <item>Publisher\'s default</item>
+        <item>Helvetica Neue</item>
+        <item>Iowan</item>
+        <item>Athelas</item>
+        <item>Seravek</item>
+    </string-array>
+
+    <string-array name="font_list_values">
+        <item>Publisher\'s default</item>
+        <item>sans-serif</item>
+        <item>Roboto</item>
+        <item>serif</item>
+        <item>Seravek</item>
+    </string-array>
+
+    <string-array name="list_preference_entries">
+        <item>0.5</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="list_preference_entry_values">
+        <item>0.5</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <!-- Advanced Settings -->
+
+    <string-array name="text_alignment">
+        <item>Justify</item>
+        <item>Left</item>
+    </string-array>
+    <string-array name="text_alignment_values">
+        <item>justify</item>
+        <item>start</item>
+    </string-array>
+    <string-array name="column_count">
+        <item>Auto</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="column_count_values">
+        <item>auto</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="word_spacing">
+        <item>0.5</item>
+        <item>1</item>
+        <item>1.5</item>
+    </string-array>
+    <string-array name="word_spacing_values">
+        <item>0.5f</item>
+        <item>1f</item>
+        <item>1.5f</item>
+    </string-array>
+    <string-array name="letter_spacing">
+        <item>0.5</item>
+        <item>1</item>
+        <item>1.5</item>
+    </string-array>
+    <string-array name="letter_spacing_values">
+        <item>0.5f</item>
+        <item>1f</item>
+        <item>1.5f</item>
+    </string-array>
+    <string-array name="page_margins">
+        <item>0.5</item>
+        <item>1</item>
+        <item>1.5</item>
+    </string-array>
+    <string-array name="page_margins_values">
+        <item>0.5f</item>
+        <item>1f</item>
+        <item>1.5f</item>
+    </string-array>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_advanced">Advanced Settings</string>
+</resources>
