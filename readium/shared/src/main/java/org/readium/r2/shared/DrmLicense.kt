@@ -7,8 +7,8 @@ interface DrmLicense {
     fun decipher(data: ByteArray) : ByteArray?
     fun areRightsValid()
     fun register()
-    fun renew(endDate: Date?, completion: (Error) -> Void)
-    fun ret(completion: (Error) -> Void)
+    fun renew(endDate: Date?, completion: (String) -> Void)
+    fun ret(completion: (String) -> Void)
     fun currentStatus() : String
     fun lastUpdate() : Date
     fun issued() : Date
