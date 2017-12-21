@@ -35,7 +35,7 @@ class StatusDocument(data: ByteArray) {
 
     fun dateOfLatestLicenseDocumentUpdate() = updated?.license
 
-    fun link(rel: String) : Link {
-        return links.first { it.rel.contains(rel) }
+    fun link(rel: String) : Link? {
+        return links.firstOrNull { it.rel.contains(rel) }
     }
 }

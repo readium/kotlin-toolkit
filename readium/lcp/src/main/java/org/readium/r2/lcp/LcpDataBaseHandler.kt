@@ -8,17 +8,26 @@ class LcpDataBaseHandler(context: Context, name: String?, factory: SQLiteDatabas
 
     companion object {
         val DATABASE_VERSION = 1
+        val TABLE_NAME = "lcpdatabase"
+        val id = "_id"
+        val printsLeft = "printsLeft"
+        val copiesLeft = "copiesLeft"
+        val provider = "provider"
+        val issued = "issued"
+        val updated = "updated"
+        val end = "end"
+        val state = "state"
 
         private val SQL_CREATE_ENTRIES =
-                "CREATE TABLE lcpdatabase.sqlite (" +
-                        "id TEXT PRIMARY KEY," +
-                        "printsLeft INT," +
-                        "copiesLeft INT," +
-                        "provider TEXT," +
-                        "issued DATE," +
-                        "updated DATE," +
-                        "end DATE," +
-                        "state TEXT)"
+                "CREATE TABLE " + TABLE_NAME +
+                        " (_id INTEGER PRIMARY KEY," +
+                        "$printsLeft INTEGER," +
+                        "$copiesLeft INTEGER," +
+                        "$provider TEXT," +
+                        "$issued DATE," +
+                        "$updated DATE," +
+                        "$end DATE," +
+                        "$state TEXT);"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -26,5 +35,9 @@ class LcpDataBaseHandler(context: Context, name: String?, factory: SQLiteDatabas
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+        db ?: return
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_NAME;")
+        onCreate(db)
     }
+
 }

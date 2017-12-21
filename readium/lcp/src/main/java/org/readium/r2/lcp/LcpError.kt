@@ -33,7 +33,7 @@ enum class LcpErrorCase {
     crlFetching,
     missingLicenseStatus,
     licenseStatusCancelled,
-    licenseStatused,
+    licenseStatusReturned,
     licenseStatusRevoked,
     licenseStatusExpired,
     invalidRights,
@@ -58,7 +58,7 @@ class LcpError {
         LcpErrorCase.licenseDocumentData -> "Updating license failed, the fetche data is invalid."
         LcpErrorCase.publicationData -> "The publication data is invalid."
         LcpErrorCase.missingLicenseStatus -> "The license status couldn't be defined."
-        LcpErrorCase.licenseStatused -> "This license has been ed."
+        LcpErrorCase.licenseStatusReturned -> "This license has been ed."
         LcpErrorCase.licenseStatusRevoked -> "This license has been revoked by its provider."
         LcpErrorCase.licenseStatusCancelled -> "You have cancelled this license."
         LcpErrorCase.licenseStatusExpired -> "The license status is expired, if your provider allow it, you may be able to renew it."

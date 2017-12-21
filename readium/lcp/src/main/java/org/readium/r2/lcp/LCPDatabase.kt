@@ -6,6 +6,6 @@ import org.readium.r2.lcp.Tables.Transactions
 class LCPDatabase {
 
     val shared = LCPDatabase()
-    val licenses = Licenses()
+    lateinit var licenses: Licenses
     val transactions = Transactions()
 }
