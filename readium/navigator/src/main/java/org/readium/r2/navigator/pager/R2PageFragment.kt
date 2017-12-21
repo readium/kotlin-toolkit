@@ -48,7 +48,7 @@ class R2PageFragment : Fragment() {
                 try {
                     (activity as R2EpubActivity).cssOperator.applyAllCSS(view as R2WebView)
                 } catch (e: Exception) {
-                    //TODO double check this error, a scrash happens when scrolling to fast bewteen resources.....
+                    //TODO double check this error, a crash happens when scrolling to fast bewteen resources.....
                     // kotlin.TypeCastException: null cannot be cast to non-null type org.readium.r2.navigator.R2EpubActivity
                 }
             }
