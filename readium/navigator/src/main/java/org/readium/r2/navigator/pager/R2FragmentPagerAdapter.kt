@@ -80,7 +80,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
         mCurTransaction!!.remove(fragment)
     }
 
-    override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any?) {
+    override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any) {
         val fragment = `object` as Fragment?
         if (fragment !== mCurrentPrimaryItem) {
             if (mCurrentPrimaryItem != null) {

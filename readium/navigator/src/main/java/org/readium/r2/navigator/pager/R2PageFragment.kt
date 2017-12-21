@@ -18,13 +18,11 @@ import org.readium.r2.navigator.R2EpubActivity
 class R2PageFragment : Fragment() {
 
     val someIdentifier: String?
-        get() = arguments.getString("url")
+        get() = arguments!!.getString("url")
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-
-        val v = inflater!!.inflate(R.layout.fragment_page, container, false)
+        val v = inflater.inflate(R.layout.fragment_page, container, false)
         val webView: R2WebView = v!!.findViewById<R2WebView>(R.id.webView) as R2WebView
 
 
