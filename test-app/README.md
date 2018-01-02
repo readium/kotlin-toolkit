@@ -2,3 +2,5 @@
 # r2-testapp-kotlin
 
 ### Test app using Jitpack.io
+
+### Test app used as GitHub Submodule
