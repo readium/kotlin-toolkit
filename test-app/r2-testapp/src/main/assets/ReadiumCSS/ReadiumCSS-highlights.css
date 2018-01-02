@@ -1,0 +1,32 @@
+/* Readium CSS 
+   Default highlights
+
+   A stylesheet for user highlights
+
+   Repo: https://github.com/readium/readium-css */
+
+
+/* User Highlights */
+
+.readiumCSS-yellow-highlight {
+  background-color: rgba(255, 255, 0, 0.5);
+}
+
+.readiumCSS-green-highlight {
+  background-color: rgba(0, 255, 0, 0.5);
+}
+
+.readiumCSS-orange-highlight {
+  background-color: rgba(255, 165, 0, 0.5);
+}
+
+.readiumCSS-pink-highlight {
+  background-color: rgba(255, 105, 180, 0.5);
+}
+
+/* Media overlays */
+
+.readiumCSS-mo-active-default {
+  background-color: yellow !important;
+  color: black !important;
+}

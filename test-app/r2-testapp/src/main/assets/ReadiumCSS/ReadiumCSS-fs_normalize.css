@@ -1,0 +1,57 @@
+/* Readium CSS 
+   Font size normalize
+
+   A stylesheet to normalize font-size
+
+   Repo: https://github.com/readium/readium-css */
+
+/* CONFIG */
+
+:root {
+  /* Can be overridden by setting as an inline style on `html`, we need a default value */
+  --USER__typeScale: 1.2;
+}
+
+/* STYLES */
+/* :root is used so that you can quickly add a class or attribute if you prefer e.g. `:root[data-rs-normalize]` */
+
+:root p,
+:root li,
+:root div,
+:root pre,
+:root dd {
+  font-size: 1rem !important;
+}
+
+:root h1 {
+  /* Fallback if browser doesn’t support vars */
+  font-size: 1.75rem !important;
+  font-size: calc(((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
+
+:root h2 {
+  /* Fallback if browser doesn’t support vars */
+  font-size: 1.5rem !important;
+  font-size: calc((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
+
+:root h3 {
+  /* Fallback if browser doesn’t support vars */
+  font-size: 1.25rem !important;
+  font-size: calc(1rem * var(--USER__typeScale)) !important;
+}
+
+:root h4,
+:root h5,
+:root h6 {
+  font-size: 1rem !important;
+}
+
+:root small {
+  font-size: smaller !important;
+}
+
+:root sub,
+:root sup {
+  font-size: 67.5% !important;
+}

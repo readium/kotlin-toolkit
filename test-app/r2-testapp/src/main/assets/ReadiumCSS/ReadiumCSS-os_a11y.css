@@ -1,0 +1,51 @@
+/* Readium CSS 
+   OS Accessibility Modes
+
+   A stylesheet to deal with OS accessibility settings
+
+   Repo: https://github.com/readium/readium-css */
+
+
+/* Windows high contrast colors are mapped to CSS system color keywords
+   See http://www.gwhitworth.com/blog/2017/04/how-to-use-ms-high-contrast */
+
+@media screen and (-ms-high-contrast: active) {
+  :root {
+    background-color: window !important;
+    color: windowText !important;
+  }
+
+  /* The following selectors are super funky but it makes sure everything is inherited, this is indeed critical for this mode */
+  :root :not(#\#):not(#\#):not(#\#),
+  :root :not(#\#):not(#\#):not(#\#) :not(#\#):not(#\#):not(#\#)
+  :root :not(#\#):not(#\#):not(#\#) :not(#\#):not(#\#):not(#\#) :not(#\#):not(#\#):not(#\#) {
+    background-color: inherit !important;
+    color: inherit !important;
+  }
+
+  .readiumCSS-mo-active-default {
+    background-color: highlight !important;
+    color: highlightText !important;
+  }
+
+  /* For links, hyperlink keyword is automatically set */
+
+  /* Should we also set user highlights? */
+}
+
+/* We probably don’t need this
+
+@media screen and (-ms-high-contrast: black-on-white) { }
+
+@media screen and (-ms-high-contrast: white-on-black) { }
+
+*/
+
+@media screen and (monochrome) {
+  /* Grayscale (Implemented in Safari, what about eInk?) */
+  /* Must deal with anything color (contrast) so must be managed at the night/sepia/theme level :( */
+}
+
+@media screen and (prefers-reduced-motion) {
+  /* If reduced motion is set on MacOS, in case we have animation/transition */
+}

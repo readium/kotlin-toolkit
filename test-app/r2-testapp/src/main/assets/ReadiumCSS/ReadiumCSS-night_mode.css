@@ -1,0 +1,71 @@
+/* Readium CSS 
+   Night mode
+
+   A preset theme for night mode
+
+   Repo: https://github.com/readium/readium-css */
+
+
+/* CONFIG */
+
+:root {
+  --THEME__backgroundColor: #000000;
+  --THEME__textColor: #FEFEFE;
+
+  --THEME__linkColor: #63caff;
+  --THEME__visitedColor: #0099E5;
+}
+
+/* STYLES */
+/* :root is used so that you can quickly add a class or attribute if you prefer e.g. `:root[data-rs-night]` */
+
+:root {
+  background-color: var(--THEME__backgroundColor) !important;
+  color: var(--THEME__textColor) !important;
+}
+
+:root *:not(a) {
+  background-color: transparent !important;
+  color: inherit !important;
+  border-color: currentColor !important;
+}
+
+:root svg text {
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+:root a:link,
+:root a:link * {
+  color: var(--THEME__linkColor) !important;
+}
+
+:root a:visited,
+:root a:visited * {
+  color: var(--THEME__visitedColor) !important;
+}
+
+:root img[class*="gaiji"],
+:root *[epub\:type~="titlepage"] img,
+:root img.readiumCSS-invert {
+  -webkit-filter: invert(100%);
+  filter: invert(100%);
+}
+
+/* Darken all images on user’s demand */
+:root[style*="--USER__darkenImages"] img {
+  -webkit-filter: brightness(80%);
+  filter: brightness(80%);
+}
+
+/* Invert all images on user’s demand */
+:root[style*="--USER__invertImages"] img {
+  -webkit-filter: invert(100%);
+  filter: invert(100%);
+}
+
+/* Darken and invert on user’s demand */
+:root[style*="--USER__darkenImages"][style*="--USER__invertImages"] img {
+  -webkit-filter: brightness(80%) invert(100%);
+  filter: brightness(80%) invert(100%);
+}
