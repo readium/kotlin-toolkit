@@ -28,9 +28,9 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 
-//    implementation project(':r2-shared')
-// implement from jitpack
-
+//  implementation project(':r2-shared')
+//  implement from jitpack
+    implementation 'com.github.edrlab:r2-shared-kotlin:0.1.0'
 
     implementation 'com.android.support:appcompat-v7:27.0.2'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
