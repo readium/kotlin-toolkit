@@ -28,18 +28,25 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 
-//  implementation project(':r2-shared')
-//  implement from jitpack
+//    uncomment this line to use with jitpack
     implementation 'com.github.edrlab:r2-shared-kotlin:0.1.0'
+
+//    uncomment this line to use with GitHu submodules and Android Studio Modules
+//    implementation project(':r2-shared')
 
     implementation 'com.android.support:appcompat-v7:27.0.2'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.1'
     implementation 'com.google.code.gson:gson:2.8.1'
 
-    implementation 'com.mcxiaoke.koi:core:0.5.5'
+    //TODO conflicting support libraries, excluding these
+    implementation ('com.mcxiaoke.koi:core:0.5.5') {
+        exclude module: 'support-v4'
+    }
     // useful extensions (only ~100k)
-    implementation 'com.mcxiaoke.koi:async:0.5.5'
+    implementation ('com.mcxiaoke.koi:async:0.5.5') {
+        exclude module: 'support-v4'
+    }
     // async functions (only ~70k)
 
     final JACKSON_VERSION = '2.8.6'
