@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](/LICENSE)
-[![Release](https://jitpack.io/v/edrlab/r2-opds-kotlin.svg)](https://jitpack.io/#edrlab/r2-opds-kotlin)
+[![Release](https://jitpack.io/v/readium/r2-opds-kotlin.svg)](https://jitpack.io/#readium/r2-opds-kotlin)
 # r2-opds-kotlin
 
 A parser for OPDS 1.x and 2.0 written in Kotlin using the [Readium-2 shared model](https://github.com/readium/r2-shared-kotlin) 
