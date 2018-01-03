@@ -39,13 +39,13 @@ dependencies {
 //    implementation project(':r2-lcp-wrapper')
 
 //    uncomment these 3 lines to use with jitpack
-    implementation 'com.github.edrlab:r2-shared-kotlin:0.1.0'
-    implementation 'com.github.edrlab:r2-streamer-kotlin:0.1.0'
-    implementation 'com.github.edrlab:r2-navigator-kotlin:0.1.0'
+    implementation 'com.github.readium:r2-shared-kotlin:0.1.0'
+    implementation 'com.github.readium:r2-streamer-kotlin:0.1.0'
+    implementation 'com.github.readium:r2-navigator-kotlin:0.1.0'
 
 //    not supported yet, keep these 2 lines commented until further notice
-//    implementation 'com.github.edrlab:r2-lcp-kotlin:0.1.0'
-//    implementation 'com.github.edrlab:r2-lcp-wrapper-kotlin:0.1.0'
+//    implementation 'com.github.readium:r2-lcp-kotlin:0.1.0'
+//    implementation 'com.github.readium:r2-lcp-wrapper-kotlin:0.1.0'
 
     implementation 'com.android.support:appcompat-v7:27.0.2'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
