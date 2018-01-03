@@ -1,3 +1,11 @@
-/build
-r2-shared/build
+*.iml
 .gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+gradle-wrapper.jar
+r2-shared/build
