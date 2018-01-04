@@ -1,19 +1,15 @@
 package org.readium.r2.testapp
 
-import android.Manifest
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.ContentResolver
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
@@ -24,6 +20,8 @@ import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.Parser.EpubParser
 import org.readium.r2.streamer.Server.Server
+import org.readium.r2.testapp.permissions.PermissionHelper
+import org.readium.r2.testapp.permissions.Permissions
 import java.io.File
 import java.io.InputStream
 
@@ -37,43 +35,54 @@ class CatalogActivity : AppCompatActivity() {
     val server = Server(PORT_NUMBER)
     var publi: Publication? = null
 
-    val WRITE_EXTERNAL_STORAGE = 100
+    private lateinit var booksAdapter: BooksAdapter
+    private lateinit var permissionHelper: PermissionHelper
+    private lateinit var permissions: Permissions
 
-    lateinit var booksAdapter: BooksAdapter
+    override fun onStart() {
+        super.onStart()
+
+        permissionHelper.storagePermission {
+
+            val prefs = getPreferences(Context.MODE_PRIVATE)
+            if (!prefs.contains("dummy")) {
+                copyEpubFromAssetsToSdCard(epub_name)
+                prefs.edit().putBoolean("dummy",true).apply()
+            }
+
+        }
+
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_catalog)
-
-        askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE)
 
         val dir = File(r2test_directory_path)
         if (!dir.exists()) {
             dir.mkdirs()
         }
 
+        permissions = Permissions(this)
+        permissionHelper = PermissionHelper(this, permissions)
+
         startServer()
 
-
         val r2test_path = Environment.getExternalStorageDirectory().path + "/r2test/"
-        val listOfFiles = File(r2test_path).listFiles()
-        if (listOfFiles != null) {
-            for (i in listOfFiles.indices) {
-
-                val file = listOfFiles.get(i)
-                val local_epub_path: String = r2test_directory_path + file.name
-
-                val pub = EpubParser().parse(local_epub_path)
-                if (pub != null) {
-                    val publication = pub.publication
-                    var author = ""
-                    if (!publication.metadata.authors.isEmpty()) {
-                        author = publication.metadata.authors.get(0).name!!
-                    }
-                    val book = Book(file.name, publication.metadata.title, author, file.absolutePath, i.toLong())
-                    books.add(book)
+        val listOfFiles = File(r2test_path).listFilesSafely()
+        for (i in listOfFiles.indices) {
+            val file = listOfFiles.get(i)
+            val local_epub_path: String = r2test_directory_path + file.name
+            val pub = EpubParser().parse(local_epub_path)
+            if (pub != null) {
+                val publication = pub.publication
+                var author = ""
+                if (!publication.metadata.authors.isEmpty()) {
+                    author = publication.metadata.authors.get(0).name!!
                 }
-
+                val book = Book(file.name, publication.metadata.title, author, file.absolutePath, i.toLong())
+                books.add(book)
             }
         }
 
@@ -175,7 +184,7 @@ class CatalogActivity : AppCompatActivity() {
                             parseAndShowEpub()
                             progress.dismiss()
                         })
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         e.printStackTrace()
                     }
                 })
@@ -265,39 +274,12 @@ class CatalogActivity : AppCompatActivity() {
 
     }
 
-    private fun askForPermission(permission: String, requestCode: Int?) {
-        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-                ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode!!)
-            } else {
-                ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode!!)
-            }
-        }
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        this.permissions.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>, grantResults: IntArray) {
-        when (requestCode) {
-            WRITE_EXTERNAL_STORAGE -> {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
-                    copyEpubFromAssetsToSdCard(epub_name)
-
-
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return
-            }
-        }// other 'case' lines to check for other
-        // permissions this app might request
-    }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int,
                                          data: Intent?) {
@@ -331,7 +313,6 @@ class CatalogActivity : AppCompatActivity() {
                     booksAdapter.notifyDataSetChanged()
 
                 }
-
 
                 parseAndShowEpub()
 

@@ -4,4 +4,9 @@
     <color name="colorPrimaryDark">#17188c</color>
     <color name="colorAccent">#eceaeb</color>
     <color name="colorAccentPrefs">#17188c</color>
+
+
+    <color name="snackbar_background_color">@color/colorPrimaryDark</color>
+    <color name="snackbar_text_color">@color/colorAccent</color>
+
 </resources>
