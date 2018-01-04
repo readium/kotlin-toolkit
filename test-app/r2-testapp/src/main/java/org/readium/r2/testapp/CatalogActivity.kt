@@ -247,12 +247,6 @@ class CatalogActivity : AppCompatActivity() {
         }
     }
 
-    private fun InputStream.toFile(path: String) {
-        use { input ->
-            File(path).outputStream().use { input.copyTo(it) }
-        }
-    }
-
     private fun showProgress(context: Context, title: String?, message: String?): ProgressDialog {
 
         val b = ProgressDialog(context)

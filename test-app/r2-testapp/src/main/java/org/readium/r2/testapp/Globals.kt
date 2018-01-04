@@ -6,6 +6,7 @@ import android.support.annotation.ColorRes
 import android.support.v4.content.ContextCompat
 import java.io.File
 import java.io.FileFilter
+import java.io.InputStream
 
 /**
  * Created by aferditamuriqi on 10/3/17.
@@ -33,4 +34,10 @@ fun Context.color(@ColorRes id: Int): Int {
 fun File.listFilesSafely(filter: FileFilter? = null): List<File> {
     val array: Array<File>? = if (filter == null) listFiles() else listFiles(filter)
     return array?.toList() ?: emptyList()
+}
+
+fun InputStream.toFile(path: String) {
+    use { input ->
+        File(path).outputStream().use { input.copyTo(it) }
+    }
 }
