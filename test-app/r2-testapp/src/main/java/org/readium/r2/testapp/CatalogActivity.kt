@@ -20,10 +20,11 @@ import org.readium.r2.streamer.Server.Server
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
 import java.io.File
+import java.util.ArrayList
 
 class CatalogActivity : AppCompatActivity() {
 
-    private var books = arrayListOf<Book>()
+    private lateinit var books:ArrayList<Book>
 
     val server = Server()
 
@@ -49,23 +50,25 @@ class CatalogActivity : AppCompatActivity() {
                 prefs.edit().putBoolean("dummy",true).apply()
             }
 
-
-            val listOfFiles = File(R2TEST_DIRECTORY_PATH).listFilesSafely()
-            for (i in listOfFiles.indices) {
-                val file = listOfFiles.get(i)
-                val local_epub_path: String = R2TEST_DIRECTORY_PATH + file.name
-                val pub = EpubParser().parse(local_epub_path)
-                if (pub != null) {
-                    val publication = pub.publication
-                    var author = ""
-                    if (!publication.metadata.authors.isEmpty()) {
-                        author = publication.metadata.authors.get(0).name!!
+            // TODO change to a SQLite DB
+            if (books.size == 0) {
+                val listOfFiles = File(R2TEST_DIRECTORY_PATH).listFilesSafely()
+                for (i in listOfFiles.indices) {
+                    val file = listOfFiles.get(i)
+                    val local_epub_path: String = R2TEST_DIRECTORY_PATH + file.name
+                    val pub = EpubParser().parse(local_epub_path)
+                    if (pub != null) {
+                        val publication = pub.publication
+                        var author = ""
+                        if (!publication.metadata.authors.isEmpty()) {
+                            author = publication.metadata.authors.get(0).name!!
+                        }
+                        val book = Book(file.name, publication.metadata.title, author, file.absolutePath, i.toLong())
+                        books.add(book)
                     }
-                    val book = Book(file.name, publication.metadata.title, author, file.absolutePath, i.toLong())
-                    books.add(book)
                 }
+                booksAdapter.notifyDataSetChanged()
             }
-            booksAdapter.notifyDataSetChanged()
         }
 
         startServer()
@@ -84,6 +87,7 @@ class CatalogActivity : AppCompatActivity() {
         permissions = Permissions(this)
         permissionHelper = PermissionHelper(this, permissions)
 
+        books = arrayListOf<Book>()
         booksAdapter = BooksAdapter(this, books)
         gridview.adapter = booksAdapter
 
