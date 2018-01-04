@@ -1,18 +1,9 @@
 package org.readium.r2.testapp
 
 import android.content.Context
-import android.graphics.drawable.Drawable
-import android.os.Looper
 import android.support.annotation.ColorInt
 import android.support.annotation.ColorRes
-import android.support.annotation.DrawableRes
 import android.support.v4.content.ContextCompat
-import android.support.v4.graphics.drawable.DrawableCompat
-import android.support.v4.view.ViewCompat
-import android.util.TypedValue
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewTreeObserver
 import java.io.File
 import java.io.FileFilter
 
