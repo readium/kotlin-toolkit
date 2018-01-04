@@ -4,6 +4,9 @@ import android.provider.ContactsContract
 
 
 class Drm {
+
+    private val TAG = this::class.java.simpleName
+
     val brand = Brand.lcp
     val scheme = "http://readium.org/2014/01/lcp"
 

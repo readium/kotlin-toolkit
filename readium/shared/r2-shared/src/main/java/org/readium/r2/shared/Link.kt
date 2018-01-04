@@ -6,6 +6,9 @@ import java.sql.Timestamp
 
 //  A link to a resource
 class Link : JSONable, Serializable{
+
+    private val TAG = this::class.java.simpleName
+
     //  The link destination
     var href: String? = null
     /// MIME type of resource.

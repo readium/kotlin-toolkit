@@ -30,6 +30,9 @@ enum class RenditionSpread(val ini: String) : Serializable{
 }
 
 class Rendition : Serializable {
+
+    private val TAG = this::class.java.simpleName
+
     var flow: RenditionFlow? = null
     var spread: RenditionSpread? = null
     var layout: RenditionLayout? = null
