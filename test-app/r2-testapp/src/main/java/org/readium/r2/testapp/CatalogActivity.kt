@@ -10,7 +10,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.widget.AdapterView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_catalog.*
@@ -19,15 +18,17 @@ import org.readium.r2.streamer.Parser.EpubParser
 import org.readium.r2.streamer.Server.Server
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
+import timber.log.Timber
 import java.io.File
 import java.util.ArrayList
 
 class CatalogActivity : AppCompatActivity() {
 
+    private val TAG = this::class.java.simpleName
+
+    private val server = Server()
+
     private lateinit var books:ArrayList<Book>
-
-    val server = Server()
-
     private lateinit var booksAdapter: BooksAdapter
     private lateinit var permissionHelper: PermissionHelper
     private lateinit var permissions: Permissions
@@ -115,7 +116,7 @@ class CatalogActivity : AppCompatActivity() {
         gridview.setOnItemLongClickListener { parent, view, position, id ->
 
 
-            Log.v("tag", "long click detected, deleting book")
+            Timber.v(TAG, "long click detected, deleting book")
             val book = books[position]
             EPUB_FILE_NAME = book.fileName
             books.remove(book)
@@ -134,7 +135,7 @@ class CatalogActivity : AppCompatActivity() {
             if (intent.scheme.compareTo(ContentResolver.SCHEME_CONTENT) == 0) {
                 val uri = intent.data
                 EPUB_FILE_NAME = getContentName(contentResolver, uri)!!
-                Log.v("tag", "Content intent detected: ${intent.action} : ${intent.dataString} : ${intent.type} : $EPUB_FILE_NAME")
+                Timber.v(TAG, "Content intent detected: ${intent.action} : ${intent.dataString} : ${intent.type} : $EPUB_FILE_NAME")
                 val input = contentResolver.openInputStream(uri)
                 input.toFile(PUBLICATION_PATH)
 
@@ -143,7 +144,7 @@ class CatalogActivity : AppCompatActivity() {
             } else if (intent.scheme.compareTo(ContentResolver.SCHEME_FILE) == 0) {
                 val uri = intent.data
                 EPUB_FILE_NAME = uri.lastPathSegment
-                Log.v("tag", "File intent detected: ${intent.action} : ${intent.dataString} : ${intent.type} : $EPUB_FILE_NAME")
+                Timber.v(TAG, "File intent detected: ${intent.action} : ${intent.dataString} : ${intent.type} : $EPUB_FILE_NAME")
                 val input = contentResolver.openInputStream(uri)
                 input.toFile(PUBLICATION_PATH)
                 val file = File(PUBLICATION_PATH)
@@ -162,7 +163,7 @@ class CatalogActivity : AppCompatActivity() {
             } else if (intent.scheme.compareTo("http") == 0) {
                 val uri = intent.data
                 EPUB_FILE_NAME = uri.lastPathSegment
-                Log.v("tag", "HTTP intent detected: ${intent.action} : ${intent.dataString} : ${intent.type} : $EPUB_FILE_NAME")
+                Timber.v(TAG, "HTTP intent detected: ${intent.action} : ${intent.dataString} : ${intent.type} : $EPUB_FILE_NAME")
 
                 val progress = showProgress(this, null, getString(R.string.progress_wait_while_downloading_book))
                 progress.show()

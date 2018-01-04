@@ -7,13 +7,15 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import java.util.*
 
-import com.squareup.picasso.Picasso
+open class BooksAdapter(context: Context, list: ArrayList<Book>) : BaseAdapter() {
 
-import java.util.ArrayList
+    private val TAG = this::class.java.simpleName
 
-open class BooksAdapter(context: Context, list: ArrayList<Book>) :
-        BaseAdapter() {
+    var books: ArrayList<Book>
+    var layoutInflater: LayoutInflater
+
     override fun getItem(position: Int): Any {
         return books.get(position)
     }
@@ -26,20 +28,18 @@ open class BooksAdapter(context: Context, list: ArrayList<Book>) :
         return books.size
     }
 
-    var books: ArrayList<Book>
-    var vi: LayoutInflater
 
     init {
         this.books = list
-        this.vi = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        this.layoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     }
 
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View? {
         val holder: ViewHolder
         val retView: View
-        if(convertView == null){
-            retView = vi.inflate(R.layout.linearlayout_book, null)
+        if (convertView == null) {
+            retView = layoutInflater.inflate(R.layout.linearlayout_book, null)
             holder = ViewHolder()
 
             holder.imageViewCoverArt = retView.findViewById<View>(R.id.imageview_cover_art) as ImageView?
@@ -55,7 +55,8 @@ open class BooksAdapter(context: Context, list: ArrayList<Book>) :
 
         val book = books[position]
         holder.imageViewCoverArt!!.setImageResource(R.drawable.cover)
-       //        Picasso.with(mContext).load(book.getImageUrl()).into(viewHolder.imageViewCoverArt);
+
+        //        Picasso.with(mContext).load(book.getImageUrl()).into(viewHolder.imageViewCoverArt);
 
         holder.nameTextView!!.text = book.title
         holder.authorTextView!!.text = book.author
@@ -72,4 +73,4 @@ open class BooksAdapter(context: Context, list: ArrayList<Book>) :
 
 }
 
-class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id:Long)
+class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id: Long)

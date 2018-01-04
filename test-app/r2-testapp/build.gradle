@@ -13,6 +13,7 @@ android {
         targetSdkVersion 27
         versionCode 9
         versionName "1.0"
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -57,6 +58,7 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.5.2'
 
     implementation 'io.reactivex.rxjava2:rxjava:2.1.6'
+    implementation 'com.jakewharton.timber:timber:4.6.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
