@@ -11,6 +11,8 @@ import kotlin.experimental.xor
 
 class FontDecoder {
 
+    private val TAG = this::class.java.simpleName
+
     val Adobe = 1024
     val Idpf = 1040
 

@@ -1,6 +1,7 @@
 package org.readium.r2.streamer.Server
 
 import android.content.res.AssetManager
+import android.os.Environment
 import fi.iki.elonen.router.RouterNanoHTTPD
 import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.Containers.Container
@@ -11,6 +12,11 @@ import java.util.*
 
 
 class Server(port: Int) : AbstractServer(port) {
+
+    //TODO make port number dynamic
+    constructor() : this(3333)
+
+    val rootDir: String = Environment.getExternalStorageDirectory().path + "/r2test/"
 
 }
 

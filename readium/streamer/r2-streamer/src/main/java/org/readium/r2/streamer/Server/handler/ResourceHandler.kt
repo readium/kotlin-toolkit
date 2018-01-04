@@ -21,6 +21,8 @@ import fi.iki.elonen.NanoHTTPD.MIME_PLAINTEXT
 
 class ResourceHandler : DefaultHandler() {
 
+    private val TAG = this::class.java.simpleName
+
     private val fonts = arrayOf(".woff", ".ttf", ".obf", ".woff2", ".eot", ".otf")
 
     override fun getMimeType(): String? {

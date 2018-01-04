@@ -27,6 +27,8 @@ const val mediaOverlayURL = "media-overlay?resource="
 
 class EpubParser : PublicationParser {
 
+    private val TAG = this::class.java.simpleName
+
     private val opfParser = OPFParser()
     private val ndp = NavigationDocumentParser()
     private val ncxp = NCXParser()
