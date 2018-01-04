@@ -46,7 +46,11 @@ class CatalogActivity : AppCompatActivity() {
 
             val prefs = getPreferences(Context.MODE_PRIVATE)
             if (!prefs.contains("dummy")) {
-                copyEpubFromAssetsToSdCard(epub_name)
+                val dir = File(R2TEST_DIRECTORY_PATH)
+                if (!dir.exists()) {
+                    dir.mkdirs()
+                }
+                copyEpubFromAssetsToSdCard(EPUB_FILE_NAME)
                 prefs.edit().putBoolean("dummy",true).apply()
             }
 
@@ -59,10 +63,6 @@ class CatalogActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_catalog)
 
-        val dir = File(r2test_directory_path)
-        if (!dir.exists()) {
-            dir.mkdirs()
-        }
 
         permissions = Permissions(this)
         permissionHelper = PermissionHelper(this, permissions)
