@@ -26,8 +26,7 @@ class R2OutlineActivity : AppCompatActivity() {
         setContentView(R.layout.activity_outline)
 
         val epub_name = intent.getStringExtra("epub_name")
-        val publication_path = intent.getStringExtra("publication_path")
-        val server_url = intent.getStringExtra("server_url")
+//        val publication_path = intent.getStringExtra("publication_path")
         val publication = intent.getSerializableExtra("publication") as Publication
 
 //        listAdapter = TOCAdapter(this, publication.spine)
@@ -39,7 +38,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
         list.setOnItemClickListener { _, _, position, _ ->
 
-            val spine_item_uri = server_url + "/" + epub_name + publication.spine.get(position).href
+            val spine_item_uri = SERVER_URL + "/" + epub_name + publication.spine.get(position).href
 
             Timber.d(TAG, spine_item_uri)
 
