@@ -52,7 +52,7 @@ class CatalogActivity : AppCompatActivity() {
             }
 
             // TODO change to a SQLite DB
-            if (books.size == 0) {
+            if (books.isEmpty()) {
                 val listOfFiles = File(R2TEST_DIRECTORY_PATH).listFilesSafely()
                 for (i in listOfFiles.indices) {
                     val file = listOfFiles.get(i)
@@ -92,7 +92,7 @@ class CatalogActivity : AppCompatActivity() {
         booksAdapter = BooksAdapter(this, books)
         gridview.adapter = booksAdapter
 
-        gridview.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+        gridview.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
             val book = books[position]
 
             EPUB_FILE_NAME = book.fileName
@@ -113,7 +113,7 @@ class CatalogActivity : AppCompatActivity() {
             }
         }
 
-        gridview.setOnItemLongClickListener { parent, view, position, id ->
+        gridview.setOnItemLongClickListener { _, _, position, _ ->
 
 
             Timber.v(TAG, "long click detected, deleting book")
@@ -254,7 +254,7 @@ class CatalogActivity : AppCompatActivity() {
     private fun showProgress(context: Context, title: String?, message: String?): ProgressDialog {
 
         val b = ProgressDialog(context)
-        b.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_dismiss), DialogInterface.OnClickListener { dialogInterface, i ->
+        b.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_dismiss), DialogInterface.OnClickListener { dialogInterface, _ ->
             dialogInterface.dismiss()
         })
         b.setMessage(message)
@@ -281,9 +281,8 @@ class CatalogActivity : AppCompatActivity() {
             // Instead, a URI to that document will be contained in the return intent
             // provided to this method as a parameter.
             // Pull that URI using resultData.getData().
-            var uri: Uri? = null
             if (data != null) {
-                uri = data.data
+                val uri = data.data
                 EPUB_FILE_NAME = getContentName(contentResolver, uri)!!
                 val input = contentResolver.openInputStream(uri)
                 input.toFile(PUBLICATION_PATH)
