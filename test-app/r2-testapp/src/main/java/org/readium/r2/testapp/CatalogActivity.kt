@@ -32,7 +32,7 @@ class CatalogActivity : AppCompatActivity() {
     var epub_name = "dummy.epub"
     var publication_path: String = r2test_directory_path + epub_name
 
-    val server = Server(PORT_NUMBER)
+    val server = Server()
     var publi: Publication? = null
 
     private lateinit var booksAdapter: BooksAdapter
@@ -105,10 +105,7 @@ class CatalogActivity : AppCompatActivity() {
                 val publication = pub.publication
                 publi = publication
                 if (publication.spine.size > 0) {
-                    val urlString = URL + "/" + epub_name + publication.spine.get(0).href
                     val intent = Intent(this, R2EpubActivity::class.java)
-                    intent.putExtra("url", urlString)
-                    intent.putExtra("server_url", URL)
                     intent.putExtra("publication_path", publication_path)
                     intent.putExtra("epub_name", epub_name)
                     intent.putExtra("publication", publication)
