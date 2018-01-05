@@ -8,12 +8,15 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentTransaction
 import android.support.v4.util.LongSparseArray
 import android.support.v4.view.PagerAdapter
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import timber.log.Timber
 
 
 abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : PagerAdapter() {
+
+    private val TAG = this::class.java.simpleName
+
     private val mFragments = LongSparseArray<Fragment>()
     private val mSavedStates = LongSparseArray<Fragment.SavedState>()
     private var mCurTransaction: FragmentTransaction? = null
@@ -152,7 +155,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
                         f.setMenuVisibility(false)
                         mFragments.put(java.lang.Long.parseLong(key.substring(1)), f)
                     } else {
-                        Log.w(TAG, "Bad fragment at key " + key)
+                        Timber.w(TAG, "Bad fragment at key $key")
                     }
                 }
             }
@@ -164,7 +167,4 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
         return position.toLong()
     }
 
-    companion object {
-        private val TAG = "FragmentPagerAdapter"
-    }
 }

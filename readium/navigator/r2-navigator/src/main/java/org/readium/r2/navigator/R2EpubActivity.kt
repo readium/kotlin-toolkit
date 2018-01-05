@@ -17,7 +17,7 @@ import org.readium.r2.shared.Publication
 
 class R2EpubActivity : AppCompatActivity() {
 
-    val TAG = this::class.java.simpleName
+    private val TAG = this::class.java.simpleName
 
     lateinit var publication: Publication
     lateinit var publication_path: String

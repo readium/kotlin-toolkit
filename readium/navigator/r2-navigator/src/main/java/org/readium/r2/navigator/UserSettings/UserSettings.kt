@@ -18,6 +18,8 @@ private const val pageMarginsKey = "--USER__pageMargins"
 
 class UserSettings(preferences: SharedPreferences) {
 
+    private val TAG = this::class.java.simpleName
+
     data class CssProperty(val key: String, val value: String)
 
     var fontSize = "100"
@@ -48,7 +50,6 @@ class UserSettings(preferences: SharedPreferences) {
         wordSpacing = preferences.getString("wordSpacing", "0.0f").toFloat()
         letterSpacing = preferences.getString("letterSpacing", "0.0f").toFloat()
         pageMargins = preferences.getString("pageMargins", "1.0f").toFloat()
-        Log.d("", "")
     }
 
 //    var isVerticalScrollEnabled:Boolean = false

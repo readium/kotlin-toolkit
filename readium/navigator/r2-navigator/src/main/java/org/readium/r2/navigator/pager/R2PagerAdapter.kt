@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentManager
 
 class R2PagerAdapter internal constructor(fm: FragmentManager, private val mItems: List<String>) : R2FragmentPagerAdapter(fm) {
 
+    private val TAG = this::class.java.simpleName
 
     override fun getItem(position: Int): Fragment {
         return R2PageFragment.newInstance(mItems[position])
