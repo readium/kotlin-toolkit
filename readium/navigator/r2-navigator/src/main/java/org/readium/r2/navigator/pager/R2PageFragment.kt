@@ -108,6 +108,10 @@ class R2PageFragment : Fragment() {
                     Timber.d(TAG, "slope", slope.toString())
 
                 }
+                else if (event.action == MotionEvent.ACTION_MOVE) {
+
+                    return true
+                }
 
                 return false
             }
