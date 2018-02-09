@@ -2,6 +2,7 @@ package org.readium.r2.shared
 
 class MediaOverlays(var nodes: MutableList<MediaOverlayNode> = mutableListOf()){
 
+    private val TAG = this::class.java.simpleName
 
     fun clip(id: String) : Clip {
         val clip: Clip

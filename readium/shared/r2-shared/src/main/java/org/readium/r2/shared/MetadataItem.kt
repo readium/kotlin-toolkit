@@ -4,6 +4,8 @@ import java.io.Serializable
 
 class MetadataItem : Serializable{
 
+    private val TAG = this::class.java.simpleName
+
     var property: String? = null
     var value: String? = null
     var children: MutableList<MetadataItem> = mutableListOf()

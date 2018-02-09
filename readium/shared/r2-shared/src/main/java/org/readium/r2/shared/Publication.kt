@@ -1,7 +1,5 @@
 package org.readium.r2.shared
 
-import android.os.Parcel
-import android.os.Parcelable
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.Serializable
@@ -47,6 +45,8 @@ class TocElement(val link: Link, val children: List<TocElement>) : JSONable {
 }
 
 class Publication : Serializable {
+
+    private val TAG = this::class.java.simpleName
 
     /// The version of the publication, if the type needs any.
     var version: Double = 0.0

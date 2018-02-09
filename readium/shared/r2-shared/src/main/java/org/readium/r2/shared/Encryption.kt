@@ -4,6 +4,9 @@ import java.io.Serializable
 
 //  Contains metadata parsed from Encryption.xml
 class Encryption : Serializable{
+
+    private val TAG = this::class.java.simpleName
+
     //  Identifies the algorithm used to encrypt the resource
     var algorithm: String? = null
     //  Compression method used on the resource

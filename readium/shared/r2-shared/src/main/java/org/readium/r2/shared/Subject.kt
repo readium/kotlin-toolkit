@@ -5,6 +5,8 @@ import java.io.Serializable
 
 class Subject : JSONable, Serializable{
 
+    private val TAG = this::class.java.simpleName
+
     var name: String? = null
     //  The WebPubManifest elements
     var sortAs: String? = null

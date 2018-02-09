@@ -4,6 +4,9 @@ import org.json.JSONObject
 import java.io.Serializable
 
 class Properties : JSONable, Serializable {
+
+    private val TAG = this::class.java.simpleName
+
     /// Suggested orientation for the device when displaying the linked resource.
     var orientation: String? = null
     /// Indicates how the linked resource should be displayed in a reading
