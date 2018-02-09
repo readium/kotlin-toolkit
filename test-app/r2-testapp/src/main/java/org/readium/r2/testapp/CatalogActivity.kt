@@ -1,140 +1,155 @@
 package org.readium.r2.testapp
 
-import android.Manifest
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.ContentResolver
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
-import android.view.View
 import android.widget.AdapterView
-import android.widget.GridView
 import android.widget.Toast
+import kotlinx.android.synthetic.main.activity_catalog.*
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.Parser.EpubParser
 import org.readium.r2.streamer.Server.Server
+import org.readium.r2.testapp.permissions.PermissionHelper
+import org.readium.r2.testapp.permissions.Permissions
+import timber.log.Timber
 import java.io.File
-import java.io.InputStream
+import java.util.ArrayList
 
 class CatalogActivity : AppCompatActivity() {
 
-    private var books = arrayListOf<Book>()
-    val r2test_directory_path = Environment.getExternalStorageDirectory().path + "/r2test/"
-    var epub_name = "dummy.epub"
-    var publication_path: String = r2test_directory_path + epub_name
+    private val TAG = this::class.java.simpleName
 
-    val server = Server(PORT_NUMBER)
-    var publi: Publication? = null
+    private val server = Server()
 
-    val WRITE_EXTERNAL_STORAGE = 100
+    private lateinit var books:ArrayList<Book>
+    private lateinit var booksAdapter: BooksAdapter
+    private lateinit var permissionHelper: PermissionHelper
+    private lateinit var permissions: Permissions
 
-    lateinit var booksAdapter: BooksAdapter
+    private val R2TEST_DIRECTORY_PATH = server.rootDir
+    private var EPUB_FILE_NAME = "dummy.epub"
+    private var PUBLICATION_PATH: String = R2TEST_DIRECTORY_PATH + EPUB_FILE_NAME
+
+    override fun onStart() {
+        super.onStart()
+        
+        permissionHelper.storagePermission {
+            val prefs = getPreferences(Context.MODE_PRIVATE)
+            if (!prefs.contains("dummy")) {
+                val dir = File(R2TEST_DIRECTORY_PATH)
+                if (!dir.exists()) {
+                    dir.mkdirs()
+                }
+                copyEpubFromAssetsToStorage(EPUB_FILE_NAME)
+                prefs.edit().putBoolean("dummy",true).apply()
+            }
+
+            // TODO change to a SQLite DB
+            if (books.isEmpty()) {
+                val listOfFiles = File(R2TEST_DIRECTORY_PATH).listFilesSafely()
+                for (i in listOfFiles.indices) {
+                    val file = listOfFiles.get(i)
+                    val local_epub_path: String = R2TEST_DIRECTORY_PATH + file.name
+                    val pub = EpubParser().parse(local_epub_path)
+                    if (pub != null) {
+                        val publication = pub.publication
+                        var author = ""
+                        if (!publication.metadata.authors.isEmpty()) {
+                            author = publication.metadata.authors.get(0).name!!
+                        }
+                        val book = Book(file.name, publication.metadata.title, author, file.absolutePath, i.toLong())
+                        books.add(book)
+                    }
+                }
+                booksAdapter.notifyDataSetChanged()
+            }
+        }
+
+        startServer()
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopServer()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_catalog)
 
-        askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE)
+        permissions = Permissions(this)
+        permissionHelper = PermissionHelper(this, permissions)
 
-        val dir = File(r2test_directory_path)
-        if (!dir.exists()) {
-            dir.mkdirs()
-        }
-
-        startServer()
-
-
-        val r2test_path = Environment.getExternalStorageDirectory().path + "/r2test/"
-        val listOfFiles = File(r2test_path).listFiles()
-        if (listOfFiles != null) {
-            for (i in listOfFiles.indices) {
-
-                val file = listOfFiles.get(i)
-                val local_epub_path: String = r2test_directory_path + file.name
-
-                val pub = EpubParser().parse(local_epub_path)
-                if (pub != null) {
-                    val publication = pub.publication
-                    var author = ""
-                    if (!publication.metadata.authors.isEmpty()) {
-                        author = publication.metadata.authors.get(0).name!!
-                    }
-                    val book = Book(file.name, publication.metadata.title, author, file.absolutePath, i.toLong())
-                    books.add(book)
-                }
-
-            }
-        }
-
-        val gridView = findViewById<View>(R.id.gridview) as GridView
+        books = arrayListOf<Book>()
         booksAdapter = BooksAdapter(this, books)
-        gridView.adapter = booksAdapter
+        gridview.adapter = booksAdapter
 
-
-        gridView.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+        gridview.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
             val book = books[position]
 
-            epub_name = book.fileName
-            val local_epub_path: String = r2test_directory_path + epub_name
-            publication_path = local_epub_path
+            EPUB_FILE_NAME = book.fileName
 
             parseAndShowEpub()
 
-            val pub = EpubParser().parse(publication_path)
+            val pub = EpubParser().parse(PUBLICATION_PATH)
             if (pub != null) {
                 val publication = pub.publication
-                publi = publication
                 if (publication.spine.size > 0) {
-                    val urlString = URL + "/" + epub_name + publication.spine.get(0).href
                     val intent = Intent(this, R2EpubActivity::class.java)
-                    intent.putExtra("url", urlString)
-                    intent.putExtra("server_url", URL)
-                    intent.putExtra("publication_path", publication_path)
-                    intent.putExtra("epub_name", epub_name)
+
+                    intent.putExtra("publication_path", PUBLICATION_PATH)
+                    intent.putExtra("epub_name", EPUB_FILE_NAME)
                     intent.putExtra("publication", publication)
                     startActivity(intent)
                 }
             }
         }
 
+        gridview.setOnItemLongClickListener { _, _, position, _ ->
+
+
+            Timber.v(TAG, "long click detected, deleting book")
+            val book = books[position]
+            EPUB_FILE_NAME = book.fileName
+            books.remove(book)
+            booksAdapter.notifyDataSetChanged()
+            val file = File(PUBLICATION_PATH)
+            file.delete()
+
+            true
+        }
+
+
+
 
         if (intent.action.compareTo(Intent.ACTION_VIEW) == 0) {
 
             if (intent.scheme.compareTo(ContentResolver.SCHEME_CONTENT) == 0) {
                 val uri = intent.data
-                epub_name = getContentName(contentResolver, uri)!!
-                Log.v("tag", "Content intent detected: " + intent.action + " : " + intent.dataString + " : " + intent.type + " : " + epub_name)
+                EPUB_FILE_NAME = getContentName(contentResolver, uri)!!
+                Timber.v(TAG, "Content intent detected: ${intent.action} : ${intent.dataString} : ${intent.type} : $EPUB_FILE_NAME")
                 val input = contentResolver.openInputStream(uri)
-                val local_epub_path: String = r2test_directory_path + epub_name
-
-                publication_path = local_epub_path
-                input.toFile(local_epub_path)
+                input.toFile(PUBLICATION_PATH)
 
                 parseAndShowEpub()
 
             } else if (intent.scheme.compareTo(ContentResolver.SCHEME_FILE) == 0) {
                 val uri = intent.data
-                epub_name = uri.lastPathSegment
-                Log.v("tag", "File intent detected: " + intent.action + " : " + intent.dataString + " : " + intent.type + " : " + epub_name)
+                EPUB_FILE_NAME = uri.lastPathSegment
+                Timber.v(TAG, "File intent detected: ${intent.action} : ${intent.dataString} : ${intent.type} : $EPUB_FILE_NAME")
                 val input = contentResolver.openInputStream(uri)
-                val local_path: String = r2test_directory_path + epub_name
+                input.toFile(PUBLICATION_PATH)
+                val file = File(PUBLICATION_PATH)
 
-                publication_path = local_path
-                input.toFile(local_path)
-                val file = File(local_path)
-
-                val pub = EpubParser().parse(local_path)
+                val pub = EpubParser().parse(PUBLICATION_PATH)
                 if (pub != null) {
                     val publication = pub.publication
                     val book = Book(file.name, publication.metadata.title, publication.metadata.authors.get(0).name!!, file.absolutePath, books.size.toLong())
@@ -147,22 +162,19 @@ class CatalogActivity : AppCompatActivity() {
 
             } else if (intent.scheme.compareTo("http") == 0) {
                 val uri = intent.data
-                epub_name = uri.lastPathSegment
-                Log.v("tag", "HTTP intent detected: " + intent.action + " : " + intent.dataString + " : " + intent.type + " : " + epub_name)
-                val local_epub_path: String = r2test_directory_path + epub_name
-
-                publication_path = local_epub_path
+                EPUB_FILE_NAME = uri.lastPathSegment
+                Timber.v(TAG, "HTTP intent detected: ${intent.action} : ${intent.dataString} : ${intent.type} : $EPUB_FILE_NAME")
 
                 val progress = showProgress(this, null, getString(R.string.progress_wait_while_downloading_book))
                 progress.show()
                 val thread = Thread(Runnable {
                     try {
                         val input = java.net.URL(uri.toString()).openStream()
-                        input.toFile(local_epub_path)
+                        input.toFile(PUBLICATION_PATH)
                         runOnUiThread(Runnable {
 
-                            val file = File(local_epub_path)
-                            val pub = EpubParser().parse(local_epub_path)
+                            val file = File(PUBLICATION_PATH)
+                            val pub = EpubParser().parse(PUBLICATION_PATH)
                             if (pub != null) {
                                 val publication = pub.publication
                                 val book = Book(file.name, publication.metadata.title, publication.metadata.authors.get(0).name!!, file.absolutePath, books.size.toLong())
@@ -175,22 +187,21 @@ class CatalogActivity : AppCompatActivity() {
                             parseAndShowEpub()
                             progress.dismiss()
                         })
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         e.printStackTrace()
                     }
                 })
                 thread.start()
             } else if (intent.scheme.compareTo("ftp") == 0) {
-                // TODO Import from FTP!
             }
         }
     }
 
-    private fun copyEpubFromAssetsToSdCard(epubFileName: String) {
+    private fun copyEpubFromAssetsToStorage(epubFileName: String) {
         val input = assets.open(epubFileName)
-        input.toFile(publication_path)
-        val file = File(publication_path)
-        val pub = EpubParser().parse(publication_path)
+        input.toFile(PUBLICATION_PATH)
+        val file = File(PUBLICATION_PATH)
+        val pub = EpubParser().parse(PUBLICATION_PATH)
         if (pub != null) {
             val publication = pub.publication
             val book = Book(file.name, publication.metadata.title, publication.metadata.authors.get(0).name!!, file.absolutePath, books.size.toLong())
@@ -215,16 +226,15 @@ class CatalogActivity : AppCompatActivity() {
 
     private fun parseAndShowEpub() {
 
-        val pub = EpubParser().parse(publication_path)
+        val pub = EpubParser().parse(PUBLICATION_PATH)
         if (pub == null) {
-            Toast.makeText(applicationContext, "Invalid Epub", Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, "Invalid ePub", Toast.LENGTH_SHORT).show()
             return
         }
         val publication = pub.publication
         val container = pub.container
-        publi = publication
 
-        server.addEpub(publication, container, "/" + epub_name)
+        server.addEpub(publication, container, "/" + EPUB_FILE_NAME)
 
     }
 
@@ -241,16 +251,10 @@ class CatalogActivity : AppCompatActivity() {
         }
     }
 
-    private fun InputStream.toFile(path: String) {
-        use { input ->
-            File(path).outputStream().use { input.copyTo(it) }
-        }
-    }
-
     private fun showProgress(context: Context, title: String?, message: String?): ProgressDialog {
 
         val b = ProgressDialog(context)
-        b.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_dismiss), DialogInterface.OnClickListener { dialogInterface, i ->
+        b.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_dismiss), DialogInterface.OnClickListener { dialogInterface, _ ->
             dialogInterface.dismiss()
         })
         b.setMessage(message)
@@ -259,48 +263,14 @@ class CatalogActivity : AppCompatActivity() {
         return b
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        server.stop()
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        this.permissions.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    private fun askForPermission(permission: String, requestCode: Int?) {
-        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-                ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode!!)
-            } else {
-                ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode!!)
-            }
-        }
-    }
 
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>, grantResults: IntArray) {
-        when (requestCode) {
-            WRITE_EXTERNAL_STORAGE -> {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
-                    copyEpubFromAssetsToSdCard(epub_name)
-
-
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return
-            }
-        }// other 'case' lines to check for other
-        // permissions this app might request
-    }
-
-    public override fun onActivityResult(requestCode: Int, resultCode: Int,
-                                         data: Intent?) {
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
         // The ACTION_OPEN_DOCUMENT intent was sent with the request code
         // READ_REQUEST_CODE. If the request code seen here doesn't match, it's the
@@ -311,19 +281,15 @@ class CatalogActivity : AppCompatActivity() {
             // Instead, a URI to that document will be contained in the return intent
             // provided to this method as a parameter.
             // Pull that URI using resultData.getData().
-            var uri: Uri? = null
             if (data != null) {
-                uri = data.data
-                epub_name = getContentName(contentResolver, uri)!!
+                val uri = data.data
+                EPUB_FILE_NAME = getContentName(contentResolver, uri)!!
                 val input = contentResolver.openInputStream(uri)
-                val local_epub_path: String = r2test_directory_path + epub_name
+                input.toFile(PUBLICATION_PATH)
 
-                publication_path = local_epub_path
-                input.toFile(local_epub_path)
+                val file = File(PUBLICATION_PATH)
 
-                val file = File(local_epub_path)
-
-                val pub = EpubParser().parse(local_epub_path)
+                val pub = EpubParser().parse(PUBLICATION_PATH)
                 if (pub != null) {
                     val publication = pub.publication
                     val book = Book(file.name, publication.metadata.title, publication.metadata.authors.get(0).name!!, file.absolutePath, books.size.toLong())
@@ -331,7 +297,6 @@ class CatalogActivity : AppCompatActivity() {
                     booksAdapter.notifyDataSetChanged()
 
                 }
-
 
                 parseAndShowEpub()
 
@@ -341,9 +306,7 @@ class CatalogActivity : AppCompatActivity() {
             // existing epub selected through the list activity
             if (data != null) {
 
-                epub_name = data.getStringExtra("name")
-                val local_epub_path: String = r2test_directory_path + epub_name
-                publication_path = local_epub_path
+                EPUB_FILE_NAME = data.getStringExtra("name")
 
                 parseAndShowEpub()
 
