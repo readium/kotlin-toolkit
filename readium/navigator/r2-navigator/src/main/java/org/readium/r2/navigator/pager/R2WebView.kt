@@ -13,20 +13,35 @@ import org.readium.r2.navigator.R2EpubActivity
 
 class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
+    private val TAG = this::class.java.simpleName
+
     lateinit var activity: R2EpubActivity
 
     private var scrollerTask: Runnable? = null
     private var initialPosition: Int = 0
-
     private val newCheck: Long = 100
-    private val TAG = "R2WebView"
-    
+
+    private var onScrollStoppedListener: OnScrollStoppedListener? = null
 
     interface OnScrollStoppedListener {
         fun onScrollStopped()
     }
 
-    private var onScrollStoppedListener: OnScrollStoppedListener? = null
+    init {
+        scrollerTask = Runnable {
+            val newPosition = scrollX
+            if (initialPosition - newPosition == 0) {//has stopped
+
+                if (onScrollStoppedListener != null) {
+
+                    onScrollStoppedListener!!.onScrollStopped()
+                }
+            } else {
+                initialPosition = scrollX
+                this@R2WebView.postDelayed(scrollerTask, newCheck)
+            }
+        }
+    }
 
     fun setOnScrollStoppedListener(listener: R2WebView.OnScrollStoppedListener) {
         onScrollStoppedListener = listener
@@ -151,22 +166,5 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
             this.evaluateJavascript("removeProperty(\"$key\");", null)
         }
     }
-
-    init {
-        scrollerTask = Runnable {
-            val newPosition = scrollX
-            if (initialPosition - newPosition == 0) {//has stopped
-
-                if (onScrollStoppedListener != null) {
-
-                    onScrollStoppedListener!!.onScrollStopped()
-                }
-            } else {
-                initialPosition = scrollX
-                this@R2WebView.postDelayed(scrollerTask, newCheck)
-            }
-        }
-    }
-
 
 }

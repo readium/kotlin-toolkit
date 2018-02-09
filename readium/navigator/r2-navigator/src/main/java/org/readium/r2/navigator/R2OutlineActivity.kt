@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,19 +14,19 @@ import kotlinx.android.synthetic.main.activity_outline.*
 import kotlinx.android.synthetic.main.toc_item.view.*
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
+import timber.log.Timber
 
 
 class R2OutlineActivity : AppCompatActivity() {
 
-    val TAG = this::class.java.simpleName
+    private val TAG = this::class.java.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_outline)
 
         val epub_name = intent.getStringExtra("epub_name")
-        val publication_path = intent.getStringExtra("publication_path")
-        val server_url = intent.getStringExtra("server_url")
+//        val publication_path = intent.getStringExtra("publication_path")
         val publication = intent.getSerializableExtra("publication") as Publication
 
 //        listAdapter = TOCAdapter(this, publication.spine)
@@ -39,9 +38,9 @@ class R2OutlineActivity : AppCompatActivity() {
 
         list.setOnItemClickListener { _, _, position, _ ->
 
-            val spine_item_uri = server_url + "/" + epub_name + publication.spine.get(position).href
+            val spine_item_uri = SERVER_URL + "/" + epub_name + publication.spine.get(position).href
 
-            Log.d(TAG, spine_item_uri)
+            Timber.d(TAG, spine_item_uri)
 
             val intent = Intent()
             intent.putExtra("spine_item_uri", spine_item_uri)

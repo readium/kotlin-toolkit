@@ -17,12 +17,11 @@ import org.readium.r2.shared.Publication
 
 class R2EpubActivity : AppCompatActivity() {
 
-    val TAG = this::class.java.simpleName
+    private val TAG = this::class.java.simpleName
 
     lateinit var publication: Publication
     lateinit var publication_path: String
     lateinit var epub_name: String
-    lateinit var server_url: String
     lateinit var resourcePager: R2ViewPager
     lateinit var settingFrameLayout: FrameLayout
     lateinit var userSettings: UserSettings
@@ -37,14 +36,15 @@ class R2EpubActivity : AppCompatActivity() {
         publication_path = intent.getStringExtra("publication_path")
         epub_name = intent.getStringExtra("epub_name")
         publication = intent.getSerializableExtra("publication") as Publication
-        server_url = intent.getStringExtra("server_url")
 
         resourcePager = findViewById(R.id.resourcePager)
         resources = java.util.ArrayList()
+
         for (spine in publication.spine) {
-            val uri = server_url + "/" + epub_name + spine.href
+            val uri = SERVER_URL + "/" + epub_name + spine.href
             resources.add(uri)
         }
+
         val adapter = R2PagerAdapter(supportFragmentManager, resources)
         resourcePager.adapter = adapter
 
@@ -74,7 +74,6 @@ class R2EpubActivity : AppCompatActivity() {
                 intent.putExtra("publication_path", publication_path)
                 intent.putExtra("epub_name", epub_name)
                 intent.putExtra("publication", publication)
-                intent.putExtra("server_url", server_url)
                 startActivityForResult(intent, 2)
 
                 return true

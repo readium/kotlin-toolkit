@@ -5,16 +5,17 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.preference.PreferenceFragment
 import android.preference.SwitchPreference
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import timber.log.Timber
 
 class R2ReaderSettingsFragment : PreferenceFragment(), SharedPreferences.OnSharedPreferenceChangeListener {
 
-    lateinit var change: Change
+    private val TAG = this::class.java.simpleName
+
     val properties = mutableListOf<String>()
+    lateinit var change: Change
     lateinit var switch: SwitchPreference
 
     interface Change {
@@ -75,7 +76,7 @@ class R2ReaderSettingsFragment : PreferenceFragment(), SharedPreferences.OnShare
                 switch.isChecked = true
             }
         }
-        Log.d("Settings", properties.toString())
+        Timber.d(TAG, "settings - ${properties.toString()}")
         change.updateViewCSS(properties)
     }
 
@@ -88,7 +89,7 @@ class R2ReaderSettingsFragment : PreferenceFragment(), SharedPreferences.OnShare
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
-        view.setBackgroundColor(resources.getColor(android.R.color.white))
+        view.setBackgroundColor(activity.applicationContext.color(android.R.color.white))
         return view
     }
 

@@ -1,8 +1,8 @@
 package org.readium.r2.navigator.pager
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -13,19 +13,21 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
+import timber.log.Timber
 
 
 class R2PageFragment : Fragment() {
 
+    private val TAG = this::class.java.simpleName
+
     val someIdentifier: String?
         get() = arguments!!.getString("url")
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val v = inflater.inflate(R.layout.fragment_page, container, false)
         val webView: R2WebView = v!!.findViewById<R2WebView>(R.id.webView) as R2WebView
-
-
 
         webView.activity = activity as R2EpubActivity
 
@@ -61,30 +63,23 @@ class R2PageFragment : Fragment() {
             }
         }
 
-
         webView.setOnScrollStoppedListener(object : R2WebView.OnScrollStoppedListener {
 
             override fun onScrollStopped() {
 
-                Log.d("TAG", "stopped")
+                Timber.d(TAG, "scroll has stopped")
                 webView.snap()
 
             }
         })
 
-
         webView.setOnTouchListener(object : View.OnTouchListener {
 
             internal var startX = 0
             internal var startY = 0
-            internal var SCROLL_THRESHOLD = 10f
-
-
+//            internal var SCROLL_THRESHOLD = 10f
 
             override fun onTouch(v: View, event: MotionEvent): Boolean {
-
-
-
 
                 if (event.action == MotionEvent.ACTION_DOWN) {
 
@@ -98,33 +93,31 @@ class R2PageFragment : Fragment() {
 
                     val viewWidth = webView.getWidth()
                     val viewHeight = webView.getHeight()
-                    val x = event.x.toInt()
-                    val y = event.y.toInt()
-                    val absX = Math.abs(startX - event.x)
-                    val absY = Math.abs(startY - event.y)
+//                    val x = event.x.toInt()
+//                    val y = event.y.toInt()
+//                    val absX = Math.abs(startX - event.x)
+//                    val absY = Math.abs(startY - event.y)
 
                     val relativeDistanceX = (event.x - startX) / viewWidth
                     val relativeDistanceY = (event.y - startY) / viewHeight
                     val slope = (event.y - startY) / (event.x - startX)
 
 
-                    Log.d("relativeDistanceX", relativeDistanceX.toString())
-                    Log.d("relativeDistanceY", relativeDistanceY.toString())
-                    Log.d("slope", slope.toString())
+                    Timber.d(TAG, "relativeDistanceX", relativeDistanceX.toString())
+                    Timber.d(TAG, "relativeDistanceY", relativeDistanceY.toString())
+                    Timber.d(TAG, "slope", slope.toString())
 
+                }
+                else if (event.action == MotionEvent.ACTION_MOVE) {
 
-
+                    return true
                 }
 
                 return false
             }
         })
 
-        
-
-
         webView.loadUrl(someIdentifier)
-
 
         return v
     }
