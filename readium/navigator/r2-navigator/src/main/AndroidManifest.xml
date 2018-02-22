@@ -2,12 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.readium.r2.navigator">
 
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
     <application>
-        <activity android:name=".R2EpubActivity" android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".R2EpubActivity"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".R2OutlineActivity"
             android:label="Table of Contents"
-            android:theme="@style/AppTheme" android:screenOrientation="portrait"/>
+            android:theme="@style/AppTheme" />
 
     </application>
 
