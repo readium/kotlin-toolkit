@@ -83,7 +83,6 @@ var snapOffset = function(offset) {
 
 // For setting user setting.
 var setProperty = function(key, value) {
-    console.log(key + ": " + value + ";");
     var root = document.documentElement;
 
     root.style.setProperty(key, value);
