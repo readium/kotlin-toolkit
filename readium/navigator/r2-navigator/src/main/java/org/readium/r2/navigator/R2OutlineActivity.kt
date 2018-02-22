@@ -26,19 +26,28 @@ class R2OutlineActivity : AppCompatActivity() {
         setContentView(R.layout.activity_outline)
 
         val epub_name = intent.getStringExtra("epub_name")
-//        val publication_path = intent.getStringExtra("publication_path")
-        val publication = intent.getSerializableExtra("publication") as Publication
+            val publication = intent.getSerializableExtra("publication") as Publication
 
-//        listAdapter = TOCAdapter(this, publication.spine)
         title = publication.metadata.title
 
-        val listAdapter = TOCAdapter(this, publication.spine)
+        val tableOfContents: MutableList<Link> = publication.tableOfContents
+        val allElements = mutableListOf<Link>()
+
+        for (link in tableOfContents) {
+            val children = childrenOf(link)
+            // Append parent.
+            allElements.add(link)
+            // Append children, and their children... recursive.
+            allElements.addAll( children)
+        }
+
+        val listAdapter = TOCAdapter(this, allElements)
 
         list.adapter = listAdapter
 
         list.setOnItemClickListener { _, _, position, _ ->
 
-            val spine_item_uri = SERVER_URL + "/" + epub_name + publication.spine.get(position).href
+            val spine_item_uri = SERVER_URL + "/" + epub_name + allElements.get(position).href
 
             Timber.d(TAG, spine_item_uri)
 
@@ -51,6 +60,15 @@ class R2OutlineActivity : AppCompatActivity() {
         }
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
+    }
+
+    fun childrenOf(parent: Link) : MutableList<Link> {
+        val children = mutableListOf<Link>()
+        for (link in parent.children) {
+            children.add(link)
+            children.addAll(childrenOf(link))
+        }
+        return children
     }
 
     inner class TOCAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.toc_item, users) {
@@ -79,7 +97,7 @@ class R2OutlineActivity : AppCompatActivity() {
             }
 
 //            viewHolder.toc_textView!!.setText(spine_item!!.href)
-            viewHolder.toc_textView!!.setText(spine_item!!.href)
+            viewHolder.toc_textView!!.setText(spine_item!!.title)
 
             return myView
         }
