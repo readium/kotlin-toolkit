@@ -9,88 +9,48 @@
     <application
         android:name=".R2App"
         android:allowBackup="false"
-        android:icon="@android:mipmap/sym_def_app_icon"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".CatalogActivity" android:theme="@style/AppTheme.NoActionBar">
+        <activity
+            android:name=".CatalogActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-
-            <data android:scheme="epub" />
-            <data android:scheme="stanza" />
-            <data android:host="*" />
-        </intent-filter>
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-
-            <data
-                android:host="*"
-                android:pathPattern=".*\.epub"
-                android:scheme="http" />
-            <data android:mimeType="application/epub+zip" />
-        </intent-filter>
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-
-            <data
-                android:host="*"
-                android:pathPattern=".*\.epub"
-                android:scheme="http" />
-        </intent-filter>
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-
-            <data
-                android:host="*"
-                android:pathPattern=".*\.pdf"
-                android:scheme="http" />
-        </intent-filter>
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-
-            <category android:name="android.intent.category.DEFAULT" />
-
-            <data android:mimeType="application/pdf" />
-            <data android:mimeType="application/epub" />
-            <data android:mimeType="application/epub+zip" />
-        </intent-filter>
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-
-            <category android:name="android.intent.category.DEFAULT" />
-
-            <data android:scheme="file" />
-            <data android:pathPattern=".*\.epub" />
-            <data android:pathPattern=".*\.pdf" />
-            <data
-                android:host="*"
-                android:pathPattern=".*\.epub"
-                android:scheme="file" />
-            <data
-                android:host="*"
-                android:pathPattern=".*\.pdf"
-                android:scheme="file" />
-        </intent-filter>
         </activity>
+
+        <activity
+            android:name=".R2DispatcherActivity"
+            android:launchMode="singleInstance"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\.epub" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\.epub" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>
