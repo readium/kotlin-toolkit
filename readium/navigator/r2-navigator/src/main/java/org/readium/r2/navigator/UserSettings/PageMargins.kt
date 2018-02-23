@@ -1,20 +1,20 @@
 package org.readium.r2.navigator.UserSettings
 
-class PageMargins(size: Double?){
+class PageMargins(size: Float?){
 
-    val max = 0.5
-    val min = 0.1
-    val step = 0.125
-    var size = size ?: 1.0
+    val max = 2.0f
+    val min = 0.5f
+    val step = 0.25f
+    var size = size ?: 0.5f
 
     fun increment(){
-        if (size + step < max){
+        if (size + step <= max){
             size += step
         }
     }
 
     fun decrement(){
-        if (size - step > min){
+        if (size - step >= min){
             size -= step
         }
     }

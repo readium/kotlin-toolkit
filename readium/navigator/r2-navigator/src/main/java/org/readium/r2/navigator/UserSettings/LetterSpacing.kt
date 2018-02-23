@@ -1,20 +1,20 @@
 package org.readium.r2.navigator.UserSettings
 
-class LetterSpacing(size: Double?){
+class LetterSpacing(size: Float?){
 
-    val max = 0.5
-    val min = 0.1
-    val step = 0.125
-    var size = size ?: 0.0
+    val max = 0.5f
+    val min = 0.0f
+    val step = 0.0625f
+    var size = size ?: 0.0f
 
     fun increment(){
-        if (size + step < max){
+        if (size + step <= max){
             size += step
         }
     }
 
     fun decrement(){
-        if (size - step > min){
+        if (size - step >= min){
             size -= step
         }
     }

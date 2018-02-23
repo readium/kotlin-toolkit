@@ -1,21 +1,22 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light" />
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
+        <item name="android:popupAnimationStyle">@null</item>
+
+    </style>
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:popupAnimationStyle">@null</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-s
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:popupAnimationStyle">@null</item>
+    </style>
 
-    <declare-styleable name="UpDownPreference">
-        <attr name="step" format="float"/>
-        <attr name="min" format="float"/>
-        <attr name="max" format="float"/>
-        <attr name="prefKey" format="string"/>
-    </declare-styleable>
-
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:popupAnimationStyle">@null</item>
+    </style>
+    
 </resources>
