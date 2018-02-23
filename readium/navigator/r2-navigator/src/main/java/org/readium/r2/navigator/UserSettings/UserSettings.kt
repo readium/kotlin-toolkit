@@ -13,29 +13,29 @@ import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.pager.R2WebView
 import timber.log.Timber
 
-const val FONT_SIZE_NAME = "--USER__fontSize"
-const val FONT_FAMILY_NAME = "--USER__fontFamily"
-const val FONT_OVERRIDE_NAME = "--USER__fontOverride"
-const val APPEARANCE_NAME = "--USER__appearance"
-const val SCROLL_NAME = "--USER__scroll"
-const val PUBLISHER_DEFAULT_NAME = "--USER__advancedSettings"
-const val TEXT_ALIGNMENT_NAME = "--USER__textAlign"
-const val COLUMN_COUNT_NAME = "--USER__colCount"
-const val WORD_SPACING_NAME = "--USER__wordSpacing"
-const val LETTER_SPACING_NAME = "--USER__letterSpacing"
-const val PAGE_MARGINS_NAME = "--USER__pageMargins"
-
 const val FONT_SIZE_REF = "fontSize"
 const val FONT_FAMILY_REF = "fontFamily"
 const val FONT_OVERRIDE_REF = "fontOverride"
 const val APPEARANCE_REF = "appearance"
 const val SCROLL_REF = "scroll"
-const val PUBLISHER_DEFAULT_REF = "_advancedSettings"
+const val PUBLISHER_DEFAULT_REF = "advancedSettings"
 const val TEXT_ALIGNMENT_REF = "textAlign"
 const val COLUMN_COUNT_REF = "colCount"
 const val WORD_SPACING_REF = "wordSpacing"
 const val LETTER_SPACING_REF = "letterSpacing"
 const val PAGE_MARGINS_REF = "pageMargins"
+
+const val FONT_SIZE_NAME = "--USER__$FONT_SIZE_REF"
+const val FONT_FAMILY_NAME = "--USER__$FONT_FAMILY_REF"
+const val FONT_OVERRIDE_NAME = "--USER__$FONT_OVERRIDE_REF"
+const val APPEARANCE_NAME = "--USER__$APPEARANCE_REF"
+const val SCROLL_NAME = "--USER__$SCROLL_REF"
+const val PUBLISHER_DEFAULT_NAME = "--USER__$PUBLISHER_DEFAULT_REF"
+const val TEXT_ALIGNMENT_NAME = "--USER__$TEXT_ALIGNMENT_REF"
+const val COLUMN_COUNT_NAME = "--USER__$COLUMN_COUNT_REF"
+const val WORD_SPACING_NAME = "--USER__$WORD_SPACING_REF"
+const val LETTER_SPACING_NAME = "--USER__$LETTER_SPACING_REF"
+const val PAGE_MARGINS_NAME = "--USER__$PAGE_MARGINS_REF"
 
 
 class UserSettings(var preferences: SharedPreferences, val context: Context) {
@@ -47,10 +47,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
     lateinit var resourcePager: R2ViewPager
     val properties = mutableListOf<String>()
 
-
-    var fontSize = FontSize(100)
+    var fontSize = FontSize(FontSize.min)
     var fontOverride = FontOverride.Off.toString()
-    var fontFamily = "Publisher's default"
+    var fontFamily = FontFamily.Publisher.toString()
     var appearance = Appearance.Default.toString()
     var verticalScroll = Scroll.Off.toString()
 
@@ -58,10 +57,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
     var publisherSettings = PublisherDefault.On.toString()
     var textAlignment = TextAlignment.Justify.toString()
     var columnCount = ColumnCount.Auto.toString()
-    var wordSpacing = WordSpacing(0.0f)
-    var letterSpacing = LetterSpacing(0.0f)
-    var pageMargins = PageMargins(0.5f)
-
+    var wordSpacing = WordSpacing(WordSpacing.min)
+    var letterSpacing = LetterSpacing(LetterSpacing.min)
+    var pageMargins = PageMargins(PageMargins.min)
 
     var isVerticalScrollEnabled: Boolean = false
         get() {
@@ -88,6 +86,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
     fun getUserSettings(): List<UserSetting> {
         val properties = mutableListOf<UserSetting>()
+
         properties.add(UserSetting(FONT_SIZE_REF, FONT_SIZE_NAME, fontSize.toString()))
         properties.add(UserSetting(FONT_OVERRIDE_REF, FONT_OVERRIDE_NAME, fontOverride))
         if (fontOverride == FontOverride.On.toString()) {
@@ -265,12 +264,12 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
         val layoutInflater = LayoutInflater.from(context)
         val layout = layoutInflater.inflate(R.layout.popup_window, null)
-        val popup = PopupWindow(context)
-        popup.setContentView(layout)
-        popup.setWidth(ListPopupWindow.WRAP_CONTENT)
-        popup.setHeight(ListPopupWindow.WRAP_CONTENT)
-        popup.isOutsideTouchable = true
-        popup.isFocusable = true
+        val userSettingsPopup = PopupWindow(context)
+        userSettingsPopup.setContentView(layout)
+        userSettingsPopup.setWidth(ListPopupWindow.WRAP_CONTENT)
+        userSettingsPopup.setHeight(ListPopupWindow.WRAP_CONTENT)
+        userSettingsPopup.isOutsideTouchable = true
+        userSettingsPopup.isFocusable = true
 
         val host = layout.findViewById(R.id.tabhost) as TabHost
         host.setup()
@@ -380,312 +379,304 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         }
 
 
-        val appearance = layout.findViewById(R.id.appearance) as RadioGroup
-        val appearance_default = layout.findViewById(R.id.appearance_default) as RadioButton
-        val appearance_sepia = layout.findViewById(R.id.appearance_sepia) as RadioButton
-        val appearance_night = layout.findViewById(R.id.appearance_night) as RadioButton
+        val appearanceGroup = layout.findViewById(R.id.appearance) as RadioGroup
+        val appearanceDefaultButton = layout.findViewById(R.id.appearance_default) as RadioButton
+        val appearanceSepiaButton = layout.findViewById(R.id.appearance_sepia) as RadioButton
+        val appearanceNightButton = layout.findViewById(R.id.appearance_night) as RadioButton
 
-        val appearance_pref = currentAppearance()
-        when (appearance_pref.value) {
+        val appearance = currentAppearance()
+        when (appearance.value) {
             Appearance.Default.toString() -> {
-                appearance_default.isChecked = true
+                appearanceDefaultButton.isChecked = true
             }
             Appearance.Sepia.toString() -> {
-                appearance_sepia.isChecked = true
+                appearanceSepiaButton.isChecked = true
             }
             Appearance.Night.toString() -> {
-                appearance_night.isChecked = true
+                appearanceNightButton.isChecked = true
             }
         }
 
-        appearance.setOnCheckedChangeListener { radioGroup, i ->
+        appearanceGroup.setOnCheckedChangeListener { radioGroup, i ->
             when (i) {
                 R.id.appearance_default -> {
-                    appearance_pref.value = Appearance.Default.toString()
+                    appearance.value = Appearance.Default.toString()
                     resourcePager.setBackgroundColor(Color.parseColor("#ffffff"))
                     (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#000000"))
                 }
                 R.id.appearance_sepia -> {
-                    appearance_pref.value = Appearance.Sepia.toString()
+                    appearance.value = Appearance.Sepia.toString()
                     resourcePager.setBackgroundColor(Color.parseColor("#faf4e8"))
                     (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#000000"))
                 }
                 R.id.appearance_night -> {
-                    appearance_pref.value = Appearance.Night.toString()
+                    appearance.value = Appearance.Night.toString()
                     resourcePager.setBackgroundColor(Color.parseColor("#000000"))
                     (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#ffffff"))
                 }
             }
-            updateAppearance(appearance_pref)
+            updateAppearance(appearance)
         }
 
         val fontSize = currentFontSize()
         val fs = FontSize(fontSize.value.toInt())
 
-        val font_decrease = layout.findViewById(R.id.font_decrease) as ImageButton
-        val font_increase = layout.findViewById(R.id.font_increase) as ImageButton
+        val fontDecreaseButton = layout.findViewById(R.id.font_decrease) as ImageButton
+        val fontIncreaseButton = layout.findViewById(R.id.font_increase) as ImageButton
 
-        font_decrease.setOnClickListener {
+        fontDecreaseButton.setOnClickListener {
             fs.decrement()
             fontSize.value = fs.value.toString()
             updateFontSize(fontSize)
         }
 
-        font_increase.setOnClickListener {
+        fontIncreaseButton.setOnClickListener {
             fs.increment()
             fontSize.value = fs.value.toString()
             updateFontSize(fontSize)
         }
 
 
-        val publisher_default = layout.findViewById(R.id.publisher_default) as Switch
-        val publisher_default_pref = currentPublisherDefault()
-        when (publisher_default_pref.value) {
+        val publisherDefaultSwitch = layout.findViewById(R.id.publisher_default) as Switch
+        val publisherDefault = currentPublisherDefault()
+        when (publisherDefault.value) {
             PublisherDefault.On.toString() -> {
-                publisher_default.isChecked = true
+                publisherDefaultSwitch.isChecked = true
             }
             PublisherDefault.Off.toString() -> {
-                publisher_default.isChecked = false
+                publisherDefaultSwitch.isChecked = false
             }
         }
 
-        publisher_default.setOnCheckedChangeListener { compoundButton, b ->
+        publisherDefaultSwitch.setOnCheckedChangeListener { compoundButton, b ->
             when (b) {
                 true -> {
-                    publisher_default_pref.value = PublisherDefault.On.toString()
+                    publisherDefault.value = PublisherDefault.On.toString()
                 }
                 false -> {
-                    publisher_default_pref.value = PublisherDefault.Off.toString()
+                    publisherDefault.value = PublisherDefault.Off.toString()
                 }
             }
-            updatePublisherDefault(publisher_default_pref)
+            updatePublisherDefault(publisherDefault)
         }
 
 
-        val scroll_mode = layout.findViewById(R.id.scroll_mode) as Switch
-        val scroll_mode_pref = currentScrollMode()
+        val scrollModeSwitch = layout.findViewById(R.id.scroll_mode) as Switch
+        val scrollMode = currentScrollMode()
 
-        when (scroll_mode_pref.value) {
+        when (scrollMode.value) {
             Scroll.On.toString() -> {
-                scroll_mode.isChecked = true
+                scrollModeSwitch.isChecked = true
             }
             Scroll.Off.toString() -> {
-                scroll_mode.isChecked = false
+                scrollModeSwitch.isChecked = false
             }
         }
 
-        scroll_mode.setOnCheckedChangeListener { compoundButton, b ->
+        scrollModeSwitch.setOnCheckedChangeListener { compoundButton, b ->
             when (b) {
                 true -> {
-                    scroll_mode_pref.value = Scroll.On.toString()
+                    scrollMode.value = Scroll.On.toString()
                     (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).visibility = View.GONE
                     resourcePager.focusedChild.setPadding(0, 5, 0, 5)
                 }
                 false -> {
-                    scroll_mode_pref.value = Scroll.Off.toString()
+                    scrollMode.value = Scroll.Off.toString()
                     (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).visibility = View.VISIBLE
                     resourcePager.focusedChild.setPadding(0, 30, 0, 30)
                 }
             }
-            updateScrollMode(scroll_mode_pref)
+            updateScrollMode(scrollMode)
         }
 
-        val alignment = layout.findViewById(R.id.TextAlignment) as RadioGroup
-        val alignment_left = layout.findViewById(R.id.alignment_left) as RadioButton
-        val alignment_justify = layout.findViewById(R.id.alignment_justify) as RadioButton
+        val alignmentGroup = layout.findViewById(R.id.TextAlignment) as RadioGroup
+        val alignmentLeftButton = layout.findViewById(R.id.alignment_left) as RadioButton
+        val alignmentJustifyButto = layout.findViewById(R.id.alignment_justify) as RadioButton
 
-        val alignment_pref = currentTextAlignment()
-        when (alignment_pref.value) {
+        val alignment = currentTextAlignment()
+        when (alignment.value) {
             TextAlignment.Justify.toString() -> {
-                alignment_justify.isChecked = true
-                alignment_justify.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_justify_white), null, null)
-                alignment_left.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_left), null, null)
+                alignmentJustifyButto.isChecked = true
+                alignmentJustifyButto.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_justify_white), null, null)
+                alignmentLeftButton.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_left), null, null)
             }
             TextAlignment.Left.toString() -> {
-                alignment_left.isChecked = true
-                alignment_justify.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_justify), null, null)
-                alignment_left.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_left_white), null, null)
+                alignmentLeftButton.isChecked = true
+                alignmentJustifyButto.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_justify), null, null)
+                alignmentLeftButton.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_left_white), null, null)
             }
         }
 
-        alignment.setOnCheckedChangeListener { radioGroup, i ->
+        alignmentGroup.setOnCheckedChangeListener { radioGroup, i ->
             when (i) {
                 R.id.alignment_justify -> {
-                    alignment_justify.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_justify_white), null, null)
-                    alignment_left.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_left), null, null)
+                    alignmentJustifyButto.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_justify_white), null, null)
+                    alignmentLeftButton.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_left), null, null)
 
-                    alignment_pref.value = TextAlignment.Justify.toString()
+                    alignment.value = TextAlignment.Justify.toString()
                 }
                 R.id.alignment_left -> {
-                    alignment_justify.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_justify), null, null)
-                    alignment_left.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_left_white), null, null)
+                    alignmentJustifyButto.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_justify), null, null)
+                    alignmentLeftButton.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_left_white), null, null)
 
-                    alignment_pref.value = TextAlignment.Left.toString()
+                    alignment.value = TextAlignment.Left.toString()
                 }
             }
-            updateTextAlignment(alignment_pref)
-            publisher_default.isChecked = false
+            updateTextAlignment(alignment)
+            publisherDefaultSwitch.isChecked = false
         }
 
-        val columns = layout.findViewById(R.id.columns) as RadioGroup
-        val column_auto = layout.findViewById(R.id.column_auto) as RadioButton
-        val column_one = layout.findViewById(R.id.column_one) as RadioButton
-        val column_two = layout.findViewById(R.id.column_two) as RadioButton
+        val columnsCountGroup = layout.findViewById(R.id.columns) as RadioGroup
+        val columnsCountAutoButton = layout.findViewById(R.id.column_auto) as RadioButton
+        val columnsCountOneButton = layout.findViewById(R.id.column_one) as RadioButton
+        val columnsCountTwoButton = layout.findViewById(R.id.column_two) as RadioButton
 
-        val columns_pref = currentColumnCount()
-        when (columns_pref.value) {
+        val columnsCount = currentColumnCount()
+        when (columnsCount.value) {
             ColumnCount.Auto.toString() -> {
-                column_auto.isChecked = true
+                columnsCountAutoButton.isChecked = true
             }
             ColumnCount.One.toString() -> {
-                column_one.isChecked = true
+                columnsCountOneButton.isChecked = true
             }
             ColumnCount.Two.toString() -> {
-                column_two.isChecked = true
+                columnsCountTwoButton.isChecked = true
             }
         }
-        columns.setOnCheckedChangeListener { radioGroup, i ->
+        columnsCountGroup.setOnCheckedChangeListener { radioGroup, i ->
             when (i) {
                 R.id.column_auto -> {
-                    columns_pref.value = ColumnCount.Auto.toString()
+                    columnsCount.value = ColumnCount.Auto.toString()
                 }
                 R.id.column_one -> {
-                    columns_pref.value = ColumnCount.One.toString()
+                    columnsCount.value = ColumnCount.One.toString()
                 }
                 R.id.column_two -> {
-                    columns_pref.value = ColumnCount.Two.toString()
+                    columnsCount.value = ColumnCount.Two.toString()
                 }
             }
-            updateColumnCount(columns_pref)
-            publisher_default.isChecked = false
+            updateColumnCount(columnsCount)
+            publisherDefaultSwitch.isChecked = false
         }
 
         val pageMargins = currentPageMargins()
         val pm = PageMargins(pageMargins.value.toFloat())
-        val pm_decrease = layout.findViewById(R.id.pm_decrease) as ImageButton
-        val pm_increase = layout.findViewById(R.id.pm_increase) as ImageButton
-        val pm_display = layout.findViewById(R.id.pm_display) as TextView
-        pm_display.text = pageMargins.value
+        val pageMarginsDecreaseButton = layout.findViewById(R.id.pm_decrease) as ImageButton
+        val pageMarginsIncreaseButton = layout.findViewById(R.id.pm_increase) as ImageButton
+        val pageMarginsDisplay = layout.findViewById(R.id.pm_display) as TextView
+        pageMarginsDisplay.text = pageMargins.value
 
-        pm_decrease.setOnClickListener {
+        pageMarginsDecreaseButton.setOnClickListener {
             pm.decrement()
             pageMargins.value = pm.value.toString()
-            pm_display.text = pageMargins.value
+            pageMarginsDisplay.text = pageMargins.value
             updatePageMargins(pageMargins)
-            publisher_default.isChecked = false
+            publisherDefaultSwitch.isChecked = false
         }
 
-        pm_increase.setOnClickListener {
+        pageMarginsIncreaseButton.setOnClickListener {
             pm.increment()
             pageMargins.value = pm.value.toString()
-            pm_display.text = pageMargins.value
+            pageMarginsDisplay.text = pageMargins.value
             updatePageMargins(pageMargins)
-            publisher_default.isChecked = false
+            publisherDefaultSwitch.isChecked = false
         }
 
         val wordSpacing = currentWordSpacing()
         val ws = WordSpacing(wordSpacing.value.toFloat())
-        val ws_decrease = layout.findViewById(R.id.ws_decrease) as ImageButton
-        val ws_increase = layout.findViewById(R.id.ws_increase) as ImageButton
-        val ws_display = layout.findViewById(R.id.ws_display) as TextView
+        val wordSpacingDecreaseButton = layout.findViewById(R.id.ws_decrease) as ImageButton
+        val wordSpacingIncreaseButton = layout.findViewById(R.id.ws_increase) as ImageButton
+        val wordSpacingDisplay = layout.findViewById(R.id.ws_display) as TextView
 
-        if (ws.value == ws.min) {
-            ws_display.text = "auto"
+        if (ws.value == WordSpacing.min) {
+            wordSpacingDisplay.text = "auto"
         } else {
-            ws_display.text = wordSpacing.value
+            wordSpacingDisplay.text = wordSpacing.value
         }
 
-        ws_decrease.setOnClickListener {
+        wordSpacingDecreaseButton.setOnClickListener {
             ws.decrement()
             wordSpacing.value = ws.value.toString()
-            if (ws.value == ws.min) {
-                ws_display.text = "auto"
+            if (ws.value == WordSpacing.min) {
+                wordSpacingDisplay.text = "auto"
             } else {
-                ws_display.text = wordSpacing.value
+                wordSpacingDisplay.text = wordSpacing.value
             }
             updateWordSpacing(wordSpacing)
-            publisher_default.isChecked = false
+            publisherDefaultSwitch.isChecked = false
         }
 
-        ws_increase.setOnClickListener {
+        wordSpacingIncreaseButton.setOnClickListener {
             ws.increment()
             wordSpacing.value = ws.value.toString()
-            ws_display.text = wordSpacing.value
+            wordSpacingDisplay.text = wordSpacing.value
             updateWordSpacing(wordSpacing)
-            publisher_default.isChecked = false
+            publisherDefaultSwitch.isChecked = false
         }
 
         val letterSpacing = currentLetterSpacing()
         val ls = LetterSpacing(letterSpacing.value.toFloat())
-        val ls_decrease = layout.findViewById(R.id.ls_decrease) as ImageButton
-        val ls_increase = layout.findViewById(R.id.ls_increase) as ImageButton
-        val ls_display = layout.findViewById(R.id.ls_display) as TextView
+        val letterSpacingDecreaseButton = layout.findViewById(R.id.ls_decrease) as ImageButton
+        val letterSpacingIncreaseButton = layout.findViewById(R.id.ls_increase) as ImageButton
+        val letterSpacingDisplay = layout.findViewById(R.id.ls_display) as TextView
 
 
-        if (ls.value == ls.min) {
-            ls_display.text = "auto"
+        if (ls.value == LetterSpacing.min) {
+            letterSpacingDisplay.text = "auto"
         } else {
-            ls_display.text = letterSpacing.value
+            letterSpacingDisplay.text = letterSpacing.value
         }
 
-        ls_decrease.setOnClickListener {
+        letterSpacingDecreaseButton.setOnClickListener {
             ls.decrement()
             letterSpacing.value = ls.value.toString()
-            if (ls.value == ls.min) {
-                ls_display.text = "auto"
+            if (ls.value == LetterSpacing.min) {
+                letterSpacingDisplay.text = "auto"
             } else {
-                ls_display.text = letterSpacing.value
+                letterSpacingDisplay.text = letterSpacing.value
             }
             updateLetterSpacing(letterSpacing)
-            publisher_default.isChecked = false
+            publisherDefaultSwitch.isChecked = false
         }
 
-        ls_increase.setOnClickListener {
+        letterSpacingIncreaseButton.setOnClickListener {
             ls.increment()
             letterSpacing.value = ls.value.toString()
-            ls_display.text = letterSpacing.value
+            letterSpacingDisplay.text = letterSpacing.value
             updateLetterSpacing(letterSpacing)
-            publisher_default.isChecked = false
+            publisherDefaultSwitch.isChecked = false
         }
 
 
-        val in_view_brightness = layout.findViewById(R.id.brightness) as SeekBar
+        val brightnessSeekbar = layout.findViewById(R.id.brightness) as SeekBar
         val brightness = preferences.getInt("reader_brightness", 50)
         run {
-            val back_light_value = brightness.toFloat() / 100
-            val layout_params = (context as R2EpubActivity).window.attributes
-            layout_params.screenBrightness = back_light_value
-            context.window.attributes = layout_params
+            val backLightValue = brightness.toFloat() / 100
+            val layoutParams = (context as R2EpubActivity).window.attributes
+            layoutParams.screenBrightness = backLightValue
+            context.window.attributes = layoutParams
         }
 
-        in_view_brightness.setProgress(brightness)
-        in_view_brightness.setOnSeekBarChangeListener(
+        brightnessSeekbar.setProgress(brightness)
+        brightnessSeekbar.setOnSeekBarChangeListener(
                 object : SeekBar.OnSeekBarChangeListener {
-                    override fun onProgressChanged(
-                            bar: SeekBar,
-                            progress: Int,
-                            from_user: Boolean) {
-                        val back_light_value = progress.toFloat() / 100
-
-                        val layout_params = (context as R2EpubActivity).window.getAttributes()
-                        layout_params.screenBrightness = back_light_value
-                        context.window.setAttributes(layout_params)
-
+                    override fun onProgressChanged(bar: SeekBar, progress: Int, from_user: Boolean) {
+                        val backLightValue = progress.toFloat() / 100
+                        val layoutParams = (context as R2EpubActivity).window.getAttributes()
+                        layoutParams.screenBrightness = backLightValue
+                        context.window.setAttributes(layoutParams)
                         preferences.edit().putInt("reader_brightness", progress).apply()
-
                     }
 
-                    override fun onStartTrackingTouch(
-                            bar: SeekBar) {
+                    override fun onStartTrackingTouch(bar: SeekBar) {
                         // Nothing
                     }
 
-                    override fun onStopTrackingTouch(
-                            bar: SeekBar) {
+                    override fun onStopTrackingTouch(bar: SeekBar) {
                         // Nothing
                     }
                 })
 
-        return popup
+        return userSettingsPopup
     }
 }
