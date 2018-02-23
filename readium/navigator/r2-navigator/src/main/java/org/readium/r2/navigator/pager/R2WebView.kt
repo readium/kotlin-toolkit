@@ -17,55 +17,9 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
 
     lateinit var activity: R2EpubActivity
 
-    private var scrollerTask: Runnable? = null
-    private var initialPosition: Int = 0
-    private val newCheck: Long = 100
-
-    private var onScrollStoppedListener: OnScrollStoppedListener? = null
-
-    interface OnScrollStoppedListener {
-        fun onScrollStopped()
-    }
-
-    init {
-        scrollerTask = Runnable {
-            val newPosition = scrollX
-            if (initialPosition - newPosition == 0) {//has stopped
-
-                if (onScrollStoppedListener != null) {
-
-                    onScrollStoppedListener!!.onScrollStopped()
-                }
-            } else {
-                initialPosition = scrollX
-                this@R2WebView.postDelayed(scrollerTask, newCheck)
-            }
-        }
-    }
-
-    fun setOnScrollStoppedListener(listener: R2WebView.OnScrollStoppedListener) {
-        onScrollStoppedListener = listener
-    }
-
-    fun startScrollerTask() {
-        initialPosition = scrollX
-        this@R2WebView.postDelayed(scrollerTask, newCheck)
-    }
-
-    @android.webkit.JavascriptInterface
-    fun snap() {
-        activity.runOnUiThread {
-            this.evaluateJavascript("snap();", null)
-        }
-    }
-
     @android.webkit.JavascriptInterface
     fun scrollRight() {
         activity.runOnUiThread {
-            if (activity.fragmentManager.findFragmentByTag("pref") != null) {
-                activity.settingFrameLayout.visibility = View.GONE
-                activity.fragmentManager.popBackStack()
-            }
             if (activity.supportActionBar!!.isShowing) {
                 activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -73,7 +27,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
-
             }
 
             if (activity.userSettings.verticalScroll.equals("readium-scroll-on")) {
@@ -86,7 +39,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                     activity.nextResource()
                 } else {
                     this.evaluateJavascript("scrollRight();", null)
-                    this.evaluateJavascript("snap();", null)
                 }
             }
         }
@@ -95,10 +47,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     @android.webkit.JavascriptInterface
     fun scrollLeft() {
         activity.runOnUiThread {
-            if (activity.fragmentManager.findFragmentByTag("pref") != null) {
-                activity.settingFrameLayout.visibility = View.GONE
-                activity.fragmentManager.popBackStack()
-            }
             if (activity.supportActionBar!!.isShowing) {
                 activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -119,7 +67,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                     activity.previousResource()
                 } else {
                     this.evaluateJavascript("scrollLeft();", null)
-                    this.evaluateJavascript("snap();", null)
                 }
             }
         }
@@ -131,7 +78,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     }
 
     fun hide() {
-
         activity.runOnUiThread {
             activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -139,10 +85,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                     or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                     or View.SYSTEM_UI_FLAG_IMMERSIVE)
-            if (activity.fragmentManager.findFragmentByTag("pref") != null) {
-                activity.settingFrameLayout.visibility = View.GONE
-                activity.fragmentManager.popBackStack()
-            }
         }
     }
 
