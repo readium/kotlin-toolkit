@@ -76,9 +76,15 @@ class Publication : Serializable {
 
     fun baseUrl() : URL? {
         val selfLink = linkWithRel("self")
-        val url = selfLink?.let{ URL(selfLink.href)}
-        val index = url.toString().lastIndexOf('/')
-        return URL(url.toString().substring(0, index))
+        if (selfLink != null) {
+            val url = selfLink.let { URL(selfLink.href) }
+            val index = url.toString().lastIndexOf('/')
+            return URL(url.toString().substring(0, index))
+        }
+
+        // temporary
+
+        return null
     }
 
     //  To see later : build the manifest
@@ -112,14 +118,19 @@ class Publication : Serializable {
         return findLinkInPublicationLinks(findLinkWithHref)
     }
 
-    fun uriTo(link: Link?) : URL? {
-        val linkHref = link?.href
-        val publicationBaseUrl = baseUrl()
-        if (link != null && linkHref != null && publicationBaseUrl != null)
-            return null
-        //  Issue : ???
-        val trimmedBaseUrlString = publicationBaseUrl.toString().trim('/')
-        return URL(trimmedBaseUrlString + "/" + linkHref)
+    fun uriTo(link: Link?, baseURL: URL) : URL? {
+
+        if (link != null) {
+            val linkHref = link.href
+
+            val publicationBaseUrl = baseURL //baseUrl()
+            if (linkHref != null && publicationBaseUrl != null) {
+                val trimmedBaseUrlString = publicationBaseUrl.toString().trim('/')
+                return URL(trimmedBaseUrlString + linkHref)
+            }
+        }
+
+        return null
     }
 
     fun addSelfLink(endPoint: String, baseURL: URL){
