@@ -25,8 +25,8 @@ class R2OutlineActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_outline)
 
-        val epub_name = intent.getStringExtra("epub_name")
-            val publication = intent.getSerializableExtra("publication") as Publication
+        val epubName = intent.getStringExtra("epubName")
+        val publication = intent.getSerializableExtra("publication") as Publication
 
         title = publication.metadata.title
 
@@ -38,7 +38,7 @@ class R2OutlineActivity : AppCompatActivity() {
             // Append parent.
             allElements.add(link)
             // Append children, and their children... recursive.
-            allElements.addAll( children)
+            allElements.addAll(children)
         }
 
         val listAdapter = TOCAdapter(this, allElements)
@@ -47,7 +47,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
         list.setOnItemClickListener { _, _, position, _ ->
 
-            val spine_item_uri = SERVER_URL + "/" + epub_name + allElements.get(position).href
+            val spine_item_uri = SERVER_URL + "/" + epubName + allElements.get(position).href
 
             Timber.d(TAG, spine_item_uri)
 
@@ -62,7 +62,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
     }
 
-    fun childrenOf(parent: Link) : MutableList<Link> {
+    fun childrenOf(parent: Link): MutableList<Link> {
         val children = mutableListOf<Link>()
         for (link in parent.children) {
             children.add(link)
@@ -96,7 +96,6 @@ class R2OutlineActivity : AppCompatActivity() {
                 viewHolder = myView.tag as ViewHolder
             }
 
-//            viewHolder.toc_textView!!.setText(spine_item!!.href)
             viewHolder.toc_textView!!.setText(spine_item!!.title)
 
             return myView
