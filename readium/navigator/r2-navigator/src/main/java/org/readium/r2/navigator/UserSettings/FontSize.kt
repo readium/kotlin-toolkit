@@ -2,9 +2,11 @@ package org.readium.r2.navigator.UserSettings
 
 class FontSize(value: Int?){
 
-    val max = 300
-    val min = 100
-    val step = 25
+    companion object {
+        val max = 300
+        val min = 100
+        val step = 25
+    }
     var value = value ?: min
 
     fun increment(){

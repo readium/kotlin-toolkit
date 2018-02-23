@@ -2,9 +2,12 @@ package org.readium.r2.navigator.UserSettings
 
 class LetterSpacing(value: Float?){
 
-    val max = 0.5f
-    val min = 0.0f
-    val step = 0.0625f
+    companion object {
+        val max = 0.5f
+        val min = 0.0f
+        val step = 0.0625f
+    }
+
     var value = value ?: min
 
     fun increment(){
