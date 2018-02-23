@@ -168,8 +168,8 @@ class CatalogActivity : AppCompatActivity() {
                     val intent = Intent(this, R2EpubActivity::class.java)
 
                     // TODO might need to change as well, and move into navigator or streamer...
-                    intent.putExtra("publication_path", PUBLICATION_PATH)
-                    intent.putExtra("epub_name", EPUB_FILE_NAME)
+                    intent.putExtra("publicationPath", PUBLICATION_PATH)
+                    intent.putExtra("epubName", EPUB_FILE_NAME)
                     intent.putExtra("publication", publication)
                     startActivity(intent)
                 }
@@ -179,7 +179,7 @@ class CatalogActivity : AppCompatActivity() {
         gridview.setOnItemLongClickListener { parent, view, position, _ ->
 
             val layoutInflater = LayoutInflater.from(this)
-            val layout = layoutInflater.inflate(org.readium.r2.navigator.R.layout.popup_delete,  parent, false)
+            val layout = layoutInflater.inflate(R.layout.popup_delete,  parent, false)
 
             val popup = PopupWindow(this)
             popup.setContentView(layout)
