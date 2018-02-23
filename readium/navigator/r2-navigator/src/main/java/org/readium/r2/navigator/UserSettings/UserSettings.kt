@@ -490,12 +490,12 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             updateScrollMode(scroll_mode_pref)
         }
 
-        val alinment = layout.findViewById(R.id.TextAlignment) as RadioGroup
+        val alignment = layout.findViewById(R.id.TextAlignment) as RadioGroup
         val alignment_left = layout.findViewById(R.id.alignment_left) as RadioButton
         val alignment_justify = layout.findViewById(R.id.alignment_justify) as RadioButton
 
-        val alinment_pref = currentTextAlignment()
-        when (alinment_pref.value) {
+        val alignment_pref = currentTextAlignment()
+        when (alignment_pref.value) {
             TextAlignment.Justify.toString() -> {
                 alignment_justify.isChecked = true
                 alignment_justify.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_justify_white), null, null)
@@ -508,22 +508,22 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             }
         }
 
-        alinment.setOnCheckedChangeListener { radioGroup, i ->
+        alignment.setOnCheckedChangeListener { radioGroup, i ->
             when (i) {
                 R.id.alignment_justify -> {
                     alignment_justify.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_justify_white), null, null)
                     alignment_left.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_left), null, null)
 
-                    alinment_pref.value = TextAlignment.Justify.toString()
+                    alignment_pref.value = TextAlignment.Justify.toString()
                 }
                 R.id.alignment_left -> {
                     alignment_justify.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_justify), null, null)
                     alignment_left.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable.icon_left_white), null, null)
 
-                    alinment_pref.value = TextAlignment.Left.toString()
+                    alignment_pref.value = TextAlignment.Left.toString()
                 }
             }
-            updateTextAlignment(alinment_pref)
+            updateTextAlignment(alignment_pref)
             publisher_default.isChecked = false
         }
 
