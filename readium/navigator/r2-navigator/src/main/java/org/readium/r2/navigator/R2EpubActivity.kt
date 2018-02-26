@@ -7,14 +7,15 @@ import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.*
-import android.widget.*
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_page.view.*
-import org.readium.r2.navigator.UserSettings.*
-import org.readium.r2.navigator.pager.R2PageFragment
+import org.readium.r2.navigator.UserSettings.Appearance
+import org.readium.r2.navigator.UserSettings.UserSettings
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.navigator.pager.R2WebView
 import org.readium.r2.shared.Publication
 
 
@@ -48,7 +49,7 @@ class R2EpubActivity : AppCompatActivity() {
 
         title = publication.metadata.title
 
-        val port = preferences.getString("$publicationIdentifier-documentPort", 0.toString()).toInt()
+        val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
 
         for (spine in publication.spine) {
             val uri = "$BASE_URL:$port" + "/" + epubName + spine.href

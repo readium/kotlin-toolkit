@@ -51,7 +51,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
         list.setOnItemClickListener { _, _, position, _ ->
 
-            val port = preferences.getString("$publicationIdentifier-documentPort", 0.toString()).toInt()
+            val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
             val spine_item_uri = "$BASE_URL:$port" + "/" + epubName + allElements.get(position).href
 
             Timber.d(TAG, spine_item_uri)
