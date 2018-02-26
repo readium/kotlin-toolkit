@@ -11,6 +11,8 @@ var ticking = false;
 var update = function(position) {
     let positionString = position.toString()
     //webkit.messageHandlers.updateProgression.postMessage(positionString);
+    Android.progressionDidChange(positionString);
+    console.log("update progression position : " + positionString);
 };
 
 window.addEventListener('scroll', function(e) {
@@ -36,19 +38,22 @@ var scrollToId = function(id) {
 
 // Position must be in the range [0 - 1], 0-100%.
 var scrollToPosition = function(position) {
-    console.log("ScrollToPosition");
+    console.log("ScrollToPosition " + position);
     if ((position < 0) || (position > 1)) {
         console.log("InvalidPosition");
         return;
     }
     var offset = document.getElementsByTagName("body")[0].scrollWidth * position;
 
-    console.log("ScrollToOffset", offset);
+    console.log("ScrollToOffset " + offset);
     document.body.scrollLeft = snapOffset(offset);
 };
 
 var scrollLeft = function() {
     var offset = window.scrollX - maxScreenX;
+
+    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
+    update(last_known_scroll_position);
 
     if (offset >= 0) {
         document.body.scrollLeft = offset;
@@ -62,6 +67,9 @@ var scrollLeft = function() {
 var scrollRight = function() {
     var offset = window.scrollX + maxScreenX;
     var scrollWidth = document.getElementsByTagName("body")[0].scrollWidth;
+
+    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
+    update(last_known_scroll_position);
 
     if (offset < scrollWidth) {
         document.body.scrollLeft = offset;
