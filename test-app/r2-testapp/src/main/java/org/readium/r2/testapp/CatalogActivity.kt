@@ -23,7 +23,7 @@ import org.readium.r2.testapp.permissions.Permissions
 import java.io.File
 import java.io.IOException
 import java.net.URL
-import java.util.ArrayList
+import java.util.*
 
 
 class CatalogActivity : AppCompatActivity() {
@@ -48,13 +48,13 @@ class CatalogActivity : AppCompatActivity() {
 
         permissionHelper.storagePermission {
             val prefs = getPreferences(Context.MODE_PRIVATE)
-            if (!prefs.contains("dummy")) {
+            if (!prefs.contains("samples")) {
                 val dir = File(R2TEST_DIRECTORY_PATH)
                 if (!dir.exists()) {
                     dir.mkdirs()
                 }
                 copyEpubFromAssetsToStorage()
-                prefs.edit().putBoolean("dummy",true).apply()
+                prefs.edit().putBoolean("samples",true).apply()
             }
 
             // TODO change to a SQLite DB
@@ -105,7 +105,8 @@ class CatalogActivity : AppCompatActivity() {
                 val progress = showProgress(this, null, getString(R.string.progress_wait_while_downloading_book))
                 progress.show()
                 val thread = Thread(Runnable {
-                    val FILE_NAME = uri.lastPathSegment
+                    val uuid = UUID.randomUUID().toString()
+                    val FILE_NAME = uuid
                     val R2TEST_DIRECTORY_PATH = Server().rootDir
                     val PATH = R2TEST_DIRECTORY_PATH + FILE_NAME
 
@@ -218,7 +219,8 @@ class CatalogActivity : AppCompatActivity() {
 
         for (file_name in list) {
             val input = assets.open("Samples/" + file_name)
-            EPUB_FILE_NAME = file_name
+            val uuid = UUID.randomUUID().toString()
+            EPUB_FILE_NAME = uuid
             PUBLICATION_PATH = R2TEST_DIRECTORY_PATH + "/" + EPUB_FILE_NAME
             input.toFile(PUBLICATION_PATH)
 
@@ -318,7 +320,8 @@ class CatalogActivity : AppCompatActivity() {
             // Pull that URI using resultData.getData().
             if (data != null) {
                 val uri = data.data
-                EPUB_FILE_NAME = getContentName(contentResolver, uri)!!
+                val uuid = UUID.randomUUID().toString()
+                EPUB_FILE_NAME = uuid
                 PUBLICATION_PATH = R2TEST_DIRECTORY_PATH + EPUB_FILE_NAME
                 val input = contentResolver.openInputStream(uri)
                 input.toFile(PUBLICATION_PATH)
