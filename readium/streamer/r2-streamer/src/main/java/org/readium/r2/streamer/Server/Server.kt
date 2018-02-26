@@ -12,10 +12,7 @@ import java.util.*
 
 
 class Server(port: Int) : AbstractServer(port) {
-
-    //TODO make port number dynamic
-    constructor() : this(3333)
-
+    
     val rootDir: String = Environment.getExternalStorageDirectory().path + "/r2test/"
 
 }
@@ -31,6 +28,7 @@ abstract class AbstractServer(port: Int) : RouterNanoHTTPD(port) {
     private var containsMediaOverlay = false
 
     private val ressources = Ressources()
+    val port = port
 
     fun addResource(name: String, body: String) {
         ressources.add(name, body)
@@ -78,7 +76,7 @@ abstract class AbstractServer(port: Int) : RouterNanoHTTPD(port) {
 
         addLinks(publication, fileName)
 
-        publication.addSelfLink(fileName, URL(URL))
+        publication.addSelfLink(fileName, URL("${BASE_URL}:${port}"))
 
         if (containsMediaOverlay) {
             addRoute(fileName + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)
