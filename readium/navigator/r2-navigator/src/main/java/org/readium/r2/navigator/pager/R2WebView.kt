@@ -5,6 +5,8 @@ import android.util.AttributeSet
 import android.view.View
 import android.webkit.WebView
 import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.navigator.UserSettings.Scroll
+import timber.log.Timber
 
 
 /**
@@ -16,6 +18,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     private val TAG = this::class.java.simpleName
 
     lateinit var activity: R2EpubActivity
+    var progression: Double = 0.0
 
     @android.webkit.JavascriptInterface
     fun scrollRight() {
@@ -70,6 +73,22 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                 }
             }
         }
+    }
+
+    fun scrollToPosition(progression: Double) {
+        this.evaluateJavascript("scrollToPosition(\"$progression\");", null)
+    }
+    fun scrollToBeginning() {
+        this.evaluateJavascript("scrollToPosition(\"0\");", null)
+    }
+    fun scrollToEnd() {
+        this.evaluateJavascript("scrollToPosition(\"1\");", null)
+    }
+
+    @android.webkit.JavascriptInterface
+    fun progressionDidChange(body:String) {
+        progression = body.toDouble()
+        Timber.d("progression: $progression")
     }
 
     @android.webkit.JavascriptInterface

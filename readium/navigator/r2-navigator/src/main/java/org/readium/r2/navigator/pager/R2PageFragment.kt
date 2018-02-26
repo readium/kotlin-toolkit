@@ -84,6 +84,19 @@ class R2PageFragment : Fragment() {
                 super.onPageFinished(view, url)
                 try {
                     (activity as R2EpubActivity).userSettings.applyAllCSS(view as R2WebView)
+
+                    val progression = (activity as R2EpubActivity).preferences.getString("${(activity as R2EpubActivity).publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
+
+                    if (progression == 0.0) {
+                        webView.scrollToBeginning()
+                    }
+                    else if (progression == 1.0) {
+                        webView.scrollToEnd()
+                    }
+                    else {
+                        webView.scrollToPosition(progression)
+                    }
+
                 } catch (e: Exception) {
                     //TODO double check this error, a crash happens when scrolling to fast bewteen resources.....
                     // kotlin.TypeCastException: null cannot be cast to non-null type org.readium.r2.navigator.R2EpubActivity

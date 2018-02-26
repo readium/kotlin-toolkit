@@ -9,9 +9,12 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.*
 import android.widget.*
+import kotlinx.android.synthetic.main.fragment_page.view.*
 import org.readium.r2.navigator.UserSettings.*
+import org.readium.r2.navigator.pager.R2PageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.navigator.pager.R2WebView
 import org.readium.r2.shared.Publication
 
 
@@ -26,6 +29,7 @@ class R2EpubActivity : AppCompatActivity() {
     lateinit var publicationPath: String
     lateinit var publication: Publication
     lateinit var epubName: String
+    lateinit var publicationIdentifier:String
 
     lateinit var userSettings: UserSettings
 
@@ -40,6 +44,7 @@ class R2EpubActivity : AppCompatActivity() {
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
         epubName = intent.getStringExtra("epubName")
+        publicationIdentifier = publication.metadata.identifier
 
         title = publication.metadata.title
 
@@ -48,12 +53,17 @@ class R2EpubActivity : AppCompatActivity() {
             resources.add(uri)
         }
 
+        val index = preferences.getInt( "$publicationIdentifier-document", 0)
+        val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.0.toString()).toDouble()
+
         val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title)
+
         resourcePager.adapter = adapter
 
         userSettings = UserSettings(preferences, this)
         userSettings.resourcePager = resourcePager
 
+        resourcePager.setCurrentItem(index)
 
         val appearance_pref = preferences.getString("appearance", Appearance.Default.toString()) ?: Appearance.Default.toString()
         when (appearance_pref) {
@@ -73,7 +83,6 @@ class R2EpubActivity : AppCompatActivity() {
 
         toggleActionBar()
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_toc, menu)
@@ -101,11 +110,21 @@ class R2EpubActivity : AppCompatActivity() {
 
     }
 
+    override fun onPause() {
+        super.onPause()
+        val publicationIdentifier = publication.metadata.identifier
+        val documentIndex = resourcePager.getCurrentItem()
+        val progression = resourcePager.webView.progression
+        preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
+        preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
                 val spine_item_index: Int = data.getIntExtra("spine_item_index", 0)
                 resourcePager.setCurrentItem(spine_item_index)
+                preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
                 if (supportActionBar!!.isShowing) {
                     resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -122,12 +141,14 @@ class R2EpubActivity : AppCompatActivity() {
 
     fun nextResource() {
         runOnUiThread {
+            preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
             resourcePager.setCurrentItem(resourcePager.getCurrentItem() + 1)
         }
     }
 
     fun previousResource() {
         runOnUiThread {
+            preferences.edit().putString("$publicationIdentifier-documentProgression", 1.0.toString()).apply()
             resourcePager.setCurrentItem(resourcePager.getCurrentItem() - 1)
         }
     }
