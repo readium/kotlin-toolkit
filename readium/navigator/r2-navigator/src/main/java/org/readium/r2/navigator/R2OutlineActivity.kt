@@ -3,6 +3,7 @@ package org.readium.r2.navigator
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
@@ -20,13 +21,16 @@ import timber.log.Timber
 class R2OutlineActivity : AppCompatActivity() {
 
     private val TAG = this::class.java.simpleName
+    lateinit var preferences:SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_outline)
+        preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         val epubName = intent.getStringExtra("epubName")
         val publication = intent.getSerializableExtra("publication") as Publication
+        val publicationIdentifier = publication.metadata.identifier
 
         title = publication.metadata.title
 
@@ -47,7 +51,8 @@ class R2OutlineActivity : AppCompatActivity() {
 
         list.setOnItemClickListener { _, _, position, _ ->
 
-            val spine_item_uri = SERVER_URL + "/" + epubName + allElements.get(position).href
+            val port = preferences.getString("$publicationIdentifier-documentPort", 0.toString()).toInt()
+            val spine_item_uri = "$BASE_URL:$port" + "/" + epubName + allElements.get(position).href
 
             Timber.d(TAG, spine_item_uri)
 

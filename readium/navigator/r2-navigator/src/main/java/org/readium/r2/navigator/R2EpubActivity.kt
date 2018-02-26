@@ -48,8 +48,10 @@ class R2EpubActivity : AppCompatActivity() {
 
         title = publication.metadata.title
 
+        val port = preferences.getString("$publicationIdentifier-documentPort", 0.toString()).toInt()
+
         for (spine in publication.spine) {
-            val uri = SERVER_URL + "/" + epubName + spine.href
+            val uri = "$BASE_URL:$port" + "/" + epubName + spine.href
             resources.add(uri)
         }
 
