@@ -2,10 +2,7 @@ package org.readium.r2.testapp
 
 import android.app.Activity
 import android.app.ProgressDialog
-import android.content.ContentResolver
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -14,14 +11,16 @@ import android.view.LayoutInflater
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_catalog.*
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.SERVER_URL
 import org.readium.r2.streamer.Parser.EpubParser
 import org.readium.r2.streamer.Parser.PubBox
+import org.readium.r2.streamer.Server.BASE_URL
 import org.readium.r2.streamer.Server.Server
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
+import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.net.ServerSocket
 import java.net.URL
 import java.util.*
 
@@ -30,16 +29,19 @@ class CatalogActivity : AppCompatActivity() {
 
     private val TAG = this::class.java.simpleName
 
-    private val server = Server()
+    private lateinit var server:Server
+    private var localPort:Int = 0
 
     private lateinit var books:ArrayList<Book>
     private lateinit var booksAdapter: BooksAdapter
     private lateinit var permissionHelper: PermissionHelper
     private lateinit var permissions: Permissions
 
-    private val R2TEST_DIRECTORY_PATH = server.rootDir
+    private lateinit var R2TEST_DIRECTORY_PATH:String
+    private lateinit var PUBLICATION_PATH: String
     private var EPUB_FILE_NAME:String? = null
-    private var PUBLICATION_PATH: String = R2TEST_DIRECTORY_PATH + EPUB_FILE_NAME
+
+    lateinit var preferences: SharedPreferences
 
     override fun onStart() {
         super.onStart()
@@ -47,14 +49,13 @@ class CatalogActivity : AppCompatActivity() {
         startServer()
 
         permissionHelper.storagePermission {
-            val prefs = getPreferences(Context.MODE_PRIVATE)
-            if (!prefs.contains("samples")) {
+            if (!preferences.contains("samples")) {
                 val dir = File(R2TEST_DIRECTORY_PATH)
                 if (!dir.exists()) {
                     dir.mkdirs()
                 }
                 copyEpubFromAssetsToStorage()
-                prefs.edit().putBoolean("samples",true).apply()
+                preferences.edit().putBoolean("samples",true).apply()
             }
 
             // TODO change to a SQLite DB
@@ -77,8 +78,11 @@ class CatalogActivity : AppCompatActivity() {
 
                         EPUB_FILE_NAME = file.name
                         PUBLICATION_PATH = R2TEST_DIRECTORY_PATH + EPUB_FILE_NAME
+                        val publicationIdentifier = publication.metadata.identifier
 
-                        val baseUrl = URL(SERVER_URL + "/" + file.name)
+                        preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
+
+                        val baseUrl = URL("$BASE_URL:$localPort" + "/" + file.name)
                         val link = publication.uriTo(publication.coverLink,  baseUrl)
                         val book = Book(file.name, publication.metadata.title, author, file.absolutePath, i.toLong(), link)
                         books.add(book)
@@ -107,7 +111,7 @@ class CatalogActivity : AppCompatActivity() {
                 val thread = Thread(Runnable {
                     val uuid = UUID.randomUUID().toString()
                     val FILE_NAME = uuid
-                    val R2TEST_DIRECTORY_PATH = Server().rootDir
+                    val R2TEST_DIRECTORY_PATH = server.rootDir
                     val PATH = R2TEST_DIRECTORY_PATH + FILE_NAME
 
                     val input = java.net.URL(uri.toString()).openStream()
@@ -126,8 +130,10 @@ class CatalogActivity : AppCompatActivity() {
                                 val container = pub.container
 
                                 server.addEpub(publication, container, "/" + FILE_NAME)
+                                val publicationIdentifier = publication.metadata.identifier
+                                preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
 
-                                val link = publication.uriTo(publication.coverLink, URL(SERVER_URL + "/" + FILE_NAME))
+                                val link = publication.uriTo(publication.coverLink, URL("$BASE_URL:$localPort" + "/" + FILE_NAME))
                                 val book = Book(file.name, publication.metadata.title, publication.metadata.authors.get(0).name!!, file.absolutePath, books.size.toLong(), link)
                                 books.add(book)
                                 booksAdapter.notifyDataSetChanged()
@@ -146,6 +152,17 @@ class CatalogActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_catalog)
+
+        preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+
+        val s = ServerSocket(0)
+        s.localPort
+        s.close()
+
+        localPort = s.localPort
+        server = Server(localPort)
+        R2TEST_DIRECTORY_PATH = server.rootDir
+        PUBLICATION_PATH = R2TEST_DIRECTORY_PATH + EPUB_FILE_NAME
 
         permissions = Permissions(this)
         permissionHelper = PermissionHelper(this, permissions)
@@ -232,7 +249,11 @@ class CatalogActivity : AppCompatActivity() {
                 parseAndShowEpub(pub)
 
                 val publication = pub.publication
-                val link = publication.uriTo(publication.coverLink,  URL(SERVER_URL + "/" + EPUB_FILE_NAME))
+                val publicationIdentifier = publication.metadata.identifier
+
+                preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
+
+                val link = publication.uriTo(publication.coverLink,  URL("$BASE_URL:$localPort" + "/" + EPUB_FILE_NAME))
 
                 val book = Book(file.name, publication.metadata.title, publication.metadata.authors.get(0).name!!, file.absolutePath, books.size.toLong(), link)
                 books.add(book)
@@ -243,12 +264,14 @@ class CatalogActivity : AppCompatActivity() {
     }
 
     fun startServer() {
+
         if (!server.isAlive()) {
             try {
                 server.start()
             }
             catch (e: IOException)            {
                 // do nothing
+                Timber.e(e)
             }
             server.loadResources(assets)
         }
@@ -319,6 +342,7 @@ class CatalogActivity : AppCompatActivity() {
             // provided to this method as a parameter.
             // Pull that URI using resultData.getData().
             if (data != null) {
+
                 val uri = data.data
                 val uuid = UUID.randomUUID().toString()
                 EPUB_FILE_NAME = uuid
@@ -333,7 +357,11 @@ class CatalogActivity : AppCompatActivity() {
                     parseAndShowEpub(pub)
 
                     val publication = pub.publication
-                    val link = publication.uriTo(publication.coverLink,  URL(SERVER_URL + "/" +EPUB_FILE_NAME))
+                    val publicationIdentifier = publication.metadata.identifier
+
+                    preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
+
+                    val link = publication.uriTo(publication.coverLink,  URL("$BASE_URL:$localPort" + "/" +EPUB_FILE_NAME))
                     val book = Book(file.name, publication.metadata.title, publication.metadata.authors.get(0).name!!, file.absolutePath, books.size.toLong(), link)
                     books.add(book)
                     booksAdapter.notifyDataSetChanged()
