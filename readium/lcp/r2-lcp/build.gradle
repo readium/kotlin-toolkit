@@ -29,13 +29,13 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 
 //    uncomment this line to use with jitpack
-//    implementation 'com.github.readium:r2-shared-kotlin:0.1.0'
+    implementation 'com.github.readium:r2-shared-kotlin:0.1.0'
 //    currently not working
 //    implementation 'com.github.readium:r2-lcp-wrapper-kotlin:0.1.0'
 
 //    uncomment this line to use with GitHu submodules and Android Studio Modules
-    implementation project(':r2-shared')
-    implementation project(':r2-lcp-wrapper')
+//    implementation project(':r2-shared')
+//    implementation project(':r2-lcp-wrapper')
     implementation 'joda-time:joda-time:2.9.9'
     implementation 'com.android.volley:volley:1.1.0'
 
