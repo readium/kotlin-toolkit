@@ -20,6 +20,19 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     lateinit var activity: R2EpubActivity
     var progression: Double = 0.0
 
+//    override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int) {
+//        val height = Math.floor((this.contentHeight * this.scale).toDouble()).toInt()
+//        val webViewHeight = this.measuredHeight
+//        val end = this.scrollY + webViewHeight + 5
+//        if (end >= height) {
+//            activity.nextResource()
+//        }
+//        else if (this.scrollY == 0) {
+//            activity.previousResource()
+//        }
+//        super.onScrollChanged(l, t, oldl, oldt)
+//    }
+
     @android.webkit.JavascriptInterface
     fun scrollRight() {
         activity.runOnUiThread {
@@ -31,7 +44,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-
             if (activity.userSettings.verticalScroll.equals(Scroll.On.toString())) {
                 if (!this.canScrollVertically(1)) {
                     activity.nextResource()
@@ -57,9 +69,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
-
             }
-
             if (activity.userSettings.verticalScroll.equals(Scroll.On.toString())) {
                 if (!this.canScrollVertically(-1)) {
                     activity.previousResource()
@@ -75,12 +85,15 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
         }
     }
 
+    @android.webkit.JavascriptInterface
     fun scrollToPosition(progression: Double) {
         this.evaluateJavascript("scrollToPosition(\"$progression\");", null)
     }
+    @android.webkit.JavascriptInterface
     fun scrollToBeginning() {
         this.evaluateJavascript("scrollToPosition(\"0\");", null)
     }
+    @android.webkit.JavascriptInterface
     fun scrollToEnd() {
         this.evaluateJavascript("scrollToPosition(\"1\");", null)
     }

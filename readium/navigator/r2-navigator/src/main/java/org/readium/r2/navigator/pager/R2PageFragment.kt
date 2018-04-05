@@ -13,6 +13,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
+import kotlinx.android.synthetic.main.fragment_page.*
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.UserSettings.Appearance
@@ -108,16 +109,66 @@ class R2PageFragment : Fragment() {
 
         webView.setOnTouchListener(object : View.OnTouchListener {
 
-            override fun onTouch(v: View, event: MotionEvent): Boolean {
+            internal var startX = 0
+            internal var startY = 0
+            internal var SCROLL_THRESHOLD = 300f
 
-                    if (event.action == MotionEvent.ACTION_MOVE) {
+            override fun onTouch(v: View, event: MotionEvent): Boolean {
+                if (event.action == MotionEvent.ACTION_DOWN) {
+                    startX = event.x.toInt()
+                    startY = event.y.toInt()
+                } else if (event.action == MotionEvent.ACTION_UP) {
+                    val absX = Math.abs(startX - event.x)
+                    val absY = Math.abs(startY - event.y)
+                    val angle = Math.toDegrees(Math.atan2((event.y - startY).toDouble(), (event.x - startX).toDouble())).toFloat()
+                    if (angle > -45 && angle <= 45) {
+//                        LOG.debug("Right to Left swipe performed")
+                        if (absX > SCROLL_THRESHOLD) {
+                            webView.scrollLeft()
+                            return true
+                        }
+                    }
+                    if (angle >= 135 && angle < 180 || angle < -135 && angle > -180) {
+//                        LOG.debug("Left to Right swipe performed")
+                        if (absX > SCROLL_THRESHOLD) {
+                            webView.scrollRight()
+                            return true
+                        }
+                    }
+                    if (angle < -45 && angle >= -135) {
+//                        LOG.debug("Up to Down swipe performed")
+                        if (absY > SCROLL_THRESHOLD) {
+                            webView.CenterTapped()
+                            return true
+                        }
+                    }
+                    if (angle > 45 && angle <= 135) {
+//                        LOG.debug("Down to Up swipe performed")
+                        if (absY > SCROLL_THRESHOLD) {
+                            webView.CenterTapped()
+                            return true
+                        }
+                    }
+                    return true
+                }
+                if (event.action == MotionEvent.ACTION_MOVE) {
                     if ((activity as R2EpubActivity).userSettings.isVerticalScrollEnabled) {
                         return false
                     }
                     return true
                 }
-                return false
+                return true
             }
+//            override fun onTouch(v: View, event: MotionEvent): Boolean {
+//
+//                    if (event.action == MotionEvent.ACTION_MOVE) {
+//                    if ((activity as R2EpubActivity).userSettings.isVerticalScrollEnabled) {
+//                        return false
+//                    }
+//                    return true
+//                }
+//                return false
+//            }
         })
 
         webView.loadUrl(resourceUrl)
@@ -137,6 +188,7 @@ class R2PageFragment : Fragment() {
             return fragment
         }
     }
+
 }
 
 
