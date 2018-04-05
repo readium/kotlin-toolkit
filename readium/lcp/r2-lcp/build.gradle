@@ -1,0 +1,53 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.readium'
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 27
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+
+//    uncomment this line to use with jitpack
+//    implementation 'com.github.readium:r2-shared-kotlin:0.1.0'
+//    currently not working
+//    implementation 'com.github.readium:r2-lcp-wrapper-kotlin:0.1.0'
+
+//    uncomment this line to use with GitHu submodules and Android Studio Modules
+    implementation project(':r2-shared')
+    implementation project(':r2-lcp-wrapper')
+    implementation 'joda-time:joda-time:2.9.9'
+    implementation 'com.android.volley:volley:1.1.0'
+
+    implementation "org.jetbrains.anko:anko-sqlite:0.10.4"
+    implementation 'nl.komponents.kovenant:kovenant:3.3.0'
+
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+
+}
+repositories {
+    mavenCentral()
+}
