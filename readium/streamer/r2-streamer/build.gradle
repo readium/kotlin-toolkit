@@ -6,7 +6,7 @@ group='com.github.readium'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion "26.0.2"
+    buildToolsVersion "27.0.3"
 
 
     defaultConfig {
@@ -34,7 +34,7 @@ dependencies {
 //    uncomment this line to use with GitHu submodules and Android Studio Modules
 //    implementation project(':r2-shared')
 
-    implementation 'com.android.support:appcompat-v7:27.0.2'
+    implementation 'com.android.support:appcompat-v7:27.1.0'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.1'
     implementation 'com.google.code.gson:gson:2.8.1'
