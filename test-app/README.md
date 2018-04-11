@@ -2,7 +2,7 @@
 
 # Readium-2 Test App (Kotlin/Android)
 
-A test app for the Swift implementation of Readium-2 that integrates various modules together.
+A test app for the Kotlin implementation of Readium-2 that integrates various modules together.
 
 [![BSD-3](https://img.shields.io/badge/License-BSD--3-brightgreen.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
