@@ -43,7 +43,7 @@ class Licenses(var database: LCPDatabaseOpenHelper) {
 
     fun updateState(id: String, state: String) {
         database.use {
-            update(LicensesTable.NAME, LicensesTable.STATE to state).whereArgs("${TransactionsTable.ID} = {id}",
+            update(LicensesTable.NAME, LicensesTable.STATE to state).whereArgs("${LicensesTable.ID} = {id}",
                     "id" to id)
         }
     }
@@ -54,7 +54,7 @@ class Licenses(var database: LCPDatabaseOpenHelper) {
     /// - Returns: A boolean indicating the result of the search, true if found.
     fun existingLicense(id: String): Boolean {
         return database.use {
-            select(LicensesTable.NAME, "count(${TransactionsTable.ID})").whereArgs("(${TransactionsTable.ID} = {id})",
+            select(LicensesTable.NAME, "count(${LicensesTable.ID})").whereArgs("(${LicensesTable.ID} = {id})",
                     "id" to id).exec {
                 val parser = rowParser { count: Int ->
                     Log.i("count", count.toString())
