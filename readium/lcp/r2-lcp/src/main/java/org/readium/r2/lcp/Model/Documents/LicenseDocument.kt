@@ -15,28 +15,41 @@ import org.joda.time.DateTime
 import org.json.JSONArray
 import org.readium.r2.lcp.Model.SubParts.parseLinks
 
-
-class LicenseDocument(data: ByteArray) {
+/// Document that contains references to the various keys, links to related
+/// external resources, rights and restrictions that are applied to the
+/// Protected Publication, and user information.
+class LicenseDocument {
 
     var id: String
+    /// Date when the license was first issued.
     var issued: String
+    /// Date when the license was last updated.
     var updated: String? = null
+    /// Unique identifier for the Provider (URI).
     var provider: URL
+    // Encryption object.
     var encryption: Encryption
+    /// Used to associate the License Document with resources that are not
+    /// locally available.
     var links = listOf<Link>()
     var rights: Rights
+    /// The user owning the License.
     var user: User
+    /// Used to validate the license integrity.
     var signature: Signature
     var json: JSONObject
 
-    val status = "status"
+    // The possible rel of Links.
+    enum class Rel(val v:String) {
+        hint("hint"),
+        publication("publication"),
+        status("status")
+    }
 
-    init {
+    constructor(data: ByteArray) {
         val text = data.toString(Charset.defaultCharset())
         try {
-
-        json = JSONObject(text)
-
+            json = JSONObject(text)
         } catch (e: Exception) {
             throw Exception("Lcp parsing error")
         }
@@ -67,9 +80,14 @@ class LicenseDocument(data: ByteArray) {
         }
     }
 
+    /// Returns the date of last update if any, or issued date.
     fun dateOfLastUpdate() = if (updated != null) updated!! else issued
 
-    fun link(rel: String) = links.first{
+    /// Returns the first link containing the given rel.
+    ///
+    /// - Parameter rel: The rel to look for.
+    /// - Returns: The first link containing the rel.
+    fun link(rel: String) = links.firstOrNull{
         it.rel.contains(rel)
     }
 
