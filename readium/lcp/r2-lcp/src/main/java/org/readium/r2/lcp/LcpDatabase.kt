@@ -17,7 +17,7 @@ val Context.appContext: Context
     get() = getApplicationContext()
 
 
-class LCPDatabase(context: Context) {
+class LcpDatabase(context: Context) {
 
     val shared = LCPDatabaseOpenHelper(context)
     var licenses: Licenses
