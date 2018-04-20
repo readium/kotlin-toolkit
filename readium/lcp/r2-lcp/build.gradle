@@ -37,7 +37,6 @@ dependencies {
 //    implementation project(':r2-shared')
 //    implementation project(':r2-lcp-wrapper')
     implementation 'joda-time:joda-time:2.9.9'
-    implementation 'com.android.volley:volley:1.1.0'
 
     implementation "org.jetbrains.anko:anko-sqlite:0.10.4"
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
