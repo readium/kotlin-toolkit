@@ -2,9 +2,9 @@ package org.readium.r2.lcp.Tables
 
 import android.util.Log
 import org.jetbrains.anko.db.*
-import org.readium.r2.lcp.LCPDatabaseOpenHelper
+import org.joda.time.DateTime
+import org.readium.r2.lcp.LcpDatabaseOpenHelper
 import org.readium.r2.lcp.Model.Documents.LicenseDocument
-import java.sql.Date
 
 object LicensesTable {
     val NAME = "Licenses"
@@ -18,25 +18,27 @@ object LicensesTable {
     val STATE = "state"
 }
 
-class Licenses(var database: LCPDatabaseOpenHelper) {
+class Licenses(var database: LcpDatabaseOpenHelper) {
 
-    fun dateOfLastUpdate(id: String): String? {
+    fun dateOfLastUpdate(id: String): DateTime? {
         val lastUpdated = database.use {
             return@use select(LicensesTable.NAME)
                     .whereSimple("${LicensesTable.ID} = ?", id)
+                    .limit(1)
+                    .orderBy(LicensesTable.UPDATED,SqlOrderDirection.DESC)
                     .parseOpt(object : MapRowParser<String> {
                         override fun parseRow(columns: Map<String, Any?>): String {
                             val updated = columns.getValue(LicensesTable.UPDATED) as String?
                             if (updated != null) {
                                 return updated
-                            } else {
-                                return String()
                             }
+                            return String()
                         }
                     })
         }
+
         if (!lastUpdated.isNullOrEmpty()) {
-            return lastUpdated
+            return DateTime(lastUpdated)
         }
         return null
     }
@@ -77,8 +79,8 @@ class Licenses(var database: LCPDatabaseOpenHelper) {
                     LicensesTable.PRINTSLEFT to license.rights.print,
                     LicensesTable.COPIESLEFT to license.rights.copy,
                     LicensesTable.PROVIDER to license.provider.toString(),
-                    LicensesTable.ISSUED to license.issued,
-                    LicensesTable.UPDATED to license.updated,
+                    LicensesTable.ISSUED to license.issued.toDate().toString(),
+                    LicensesTable.UPDATED to license.updated?.toDate()?.toString(),
                     LicensesTable.END to license.rights.end,
                     LicensesTable.STATE to status)
 

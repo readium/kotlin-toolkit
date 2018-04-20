@@ -1,18 +1,18 @@
 package org.readium.r2.lcp.Tables
 
 import org.jetbrains.anko.db.*
-import org.readium.r2.lcp.LCPDatabaseOpenHelper
+import org.readium.r2.lcp.LcpDatabaseOpenHelper
 import org.readium.r2.lcp.LcpLicense
 
 object TransactionsTable {
-    val NAME = "transactions"
+    val NAME = "Transactions"
     val ID = "licenseId"
     val ORIGIN = "origin"
     val USERID = "userId"
     val PASSPHRASE = "passphrase"
 }
 
-class Transactions(var database: LCPDatabaseOpenHelper) {
+class Transactions(var database: LcpDatabaseOpenHelper) {
 
     fun add(license: LcpLicense, passphraseHash: String) {
         database.use {

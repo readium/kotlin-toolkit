@@ -10,34 +10,36 @@ import org.readium.r2.lcp.Tables.TransactionsTable
 
 
 // Access property for Context
-val Context.database: LCPDatabaseOpenHelper
-    get() = LCPDatabaseOpenHelper.getInstance(getApplicationContext())
+val Context.database: LcpDatabaseOpenHelper
+    get() = LcpDatabaseOpenHelper.getInstance(getApplicationContext())
 
 val Context.appContext: Context
     get() = getApplicationContext()
 
 
-class LcpDatabase(context: Context) {
+class LcpDatabase {
 
-    val shared = LCPDatabaseOpenHelper(context)
+    val shared:LcpDatabaseOpenHelper
     var licenses: Licenses
     var transactions: Transactions
 
-    init {
+    constructor(context: Context) {
+        shared = LcpDatabaseOpenHelper(context)
         licenses = Licenses(shared)
         transactions = Transactions(shared)
     }
+
 }
 
 
-class LCPDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "lcpdatabase", null, 1) {
+class LcpDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "lcpdatabase", null, 1) {
     companion object {
-        private var instance: LCPDatabaseOpenHelper? = null
+        private var instance: LcpDatabaseOpenHelper? = null
 
         @Synchronized
-        fun getInstance(ctx: Context): LCPDatabaseOpenHelper {
+        fun getInstance(ctx: Context): LcpDatabaseOpenHelper {
             if (instance == null) {
-                instance = LCPDatabaseOpenHelper(ctx.getApplicationContext())
+                instance = LcpDatabaseOpenHelper(ctx.getApplicationContext())
             }
             return instance!!
         }
@@ -45,8 +47,8 @@ class LCPDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "lcpdat
 
     override fun onCreate(db: SQLiteDatabase) {
 
-        db.createTable("Licenses", true,
-                LicensesTable.ID to TEXT + PRIMARY_KEY + UNIQUE,
+        db.createTable(LicensesTable.NAME, true,
+                LicensesTable.ID to TEXT,
                 LicensesTable.PRINTSLEFT to INTEGER,
                 LicensesTable.COPIESLEFT to INTEGER,
                 LicensesTable.PROVIDER to TEXT,
@@ -55,7 +57,7 @@ class LCPDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "lcpdat
                 LicensesTable.END to TEXT,
                 LicensesTable.STATE to TEXT)
 
-        db.createTable("Transactions", true,
+        db.createTable(TransactionsTable.NAME, true,
                 TransactionsTable.ID to TEXT,
                 TransactionsTable.ORIGIN to TEXT,
                 TransactionsTable.USERID to TEXT,

@@ -22,9 +22,9 @@ class LicenseDocument {
 
     var id: String
     /// Date when the license was first issued.
-    var issued: String
+    var issued: DateTime
     /// Date when the license was last updated.
-    var updated: String? = null
+    var updated: DateTime? = null
     /// Unique identifier for the Provider (URI).
     var provider: URL
     // Encryption object.
@@ -56,7 +56,7 @@ class LicenseDocument {
 
         try {
             id = json.getString("id")
-            issued = DateTime(json.getString("issued")).toDate().toString()
+            issued = DateTime(json.getString("issued"))
             provider = URL(json.getString("provider"))
         } catch (e: Exception) {
             throw Exception("Lcp parsing error")
@@ -70,7 +70,7 @@ class LicenseDocument {
         user = User(json.getJSONObject("user"))
         signature = Signature(json.getJSONObject("signature"))
         if (json.has("updated")) {
-            updated = DateTime(json.getString("updated")).toDate().toString()
+            updated = DateTime(json.getString("updated"))
         }
         if (link("hint") == null){
             throw Exception(LcpError().errorDescription(LcpErrorCase.hintLinkNotFound))
