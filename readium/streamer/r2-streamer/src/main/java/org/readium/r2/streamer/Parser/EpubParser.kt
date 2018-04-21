@@ -54,8 +54,6 @@ class EpubParser : PublicationParser {
 
         fillEncryptionProfile(publication, drm)
 //            parseMediaOverlay(fetcher, publication)
-        parseNavigationDocument(container as EpubContainer, publication)
-        parseNcxDocument(container as EpubContainer, publication)
 
         return Pair(container, publication)
     }
@@ -96,6 +94,8 @@ class EpubParser : PublicationParser {
         parseEncryption(container, publication, drm)
 
 //        val fetcher = Fetcher(publication, container)
+        parseNavigationDocument(container as EpubContainer, publication)
+        parseNcxDocument(container as EpubContainer, publication)
 
         container.drm = drm
         return PubBox(publication, container)
