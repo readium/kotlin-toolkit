@@ -65,7 +65,7 @@ class LicenseDocument {
         links = parseLinks(json["links"] as JSONArray)
         rights = Rights(json.getJSONObject("rights"))
         if (json.has("potential_rights")) {
-            rights.potentialEnd = DateTime(json.getJSONObject("potential_rights").getString("end")).toDate().toString()
+            rights.potentialEnd = DateTime(json.getJSONObject("potential_rights").getString("end")).toDate()
         }
         user = User(json.getJSONObject("user"))
         signature = Signature(json.getJSONObject("signature"))

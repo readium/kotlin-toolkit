@@ -2,6 +2,8 @@ package org.readium.r2.lcp.Model.SubParts
 
 import org.json.JSONArray
 import org.json.JSONObject
+import org.readium.r2.lcp.LcpParsingError
+import org.readium.r2.lcp.LcpParsingErrors
 import java.net.URL
 
 class Link(val json: JSONObject) {
@@ -24,15 +26,29 @@ class Link(val json: JSONObject) {
     var hash: String? = null
 
     init{
-        href = URL(json.getString("href"))
+        if(json.has("href")) {
+            href = URL(json.getString("href"))
+        }
+        else {
+            throw Exception(LcpParsingError().errorDescription(LcpParsingErrors.link))
+        }
 
-        val rel = json.getString("rel")
-        this.rel.add(rel)
+        if(json.has("rel")) {
+            val rel = json["rel"]
+            if (rel is String) {
+                this.rel.add(rel)
+            }
+//            else if (rel is JSONArray) {
+//                for (i in 0 until rel.length()) {
+//                    this.rel.add(rel[i].toString())
+//                }
+//            }
+        }
+        if (this.rel.isEmpty()) {
+            throw Exception(LcpParsingError().errorDescription(LcpParsingErrors.link))
+        }
 
-//        val rel = json.getJSONArray("rel")
-//        for (i in 0..rel.length() - 1) {
-//            this.rel.add(rel[i].toString())
-//        }
+
         if(json.has("title")) {
             title = json.getString("title")
         }
@@ -40,13 +56,13 @@ class Link(val json: JSONObject) {
             type = json.getString("type")
         }
         if(json.has("templated")) {
-            templated = json.getString("templated").toBoolean()
+            templated = json.getBoolean("templated")
         }
         if(json.has("profile")) {
             profile = URL(json.getString("profile"))
         }
         if(json.has("length")) {
-            length = json.getString("length").toInt()
+            length = json.getInt("length")
         }
         if(json.has("hash")) {
             hash = json.getString("hash")
