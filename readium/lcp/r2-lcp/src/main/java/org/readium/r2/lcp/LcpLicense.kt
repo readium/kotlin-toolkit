@@ -3,95 +3,74 @@ package org.readium.r2.lcp
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.util.Log
-import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.Volley
 import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.deferred
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
 import org.joda.time.DateTime
-import org.json.JSONObject
+import org.readium.lcp.sdk.DRMContext
+import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.Model.Documents.LicenseDocument
 import org.readium.r2.lcp.Model.Documents.StatusDocument
 import org.readium.r2.shared.DrmLicense
-import org.readium.r2.shared.removeLastComponent
-import java.io.*
+import org.zeroturnaround.zip.ZipUtil
+import java.io.File
 import java.net.URL
 import java.util.*
-import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
-import java.util.zip.ZipOutputStream
 
+const val lcplFilePath = "META-INF/license.lcpl"
 
 class LcpLicense : DrmLicense {
 
+    private val TAG = this::class.java.simpleName
 
     var archivePath: URL
     var license: LicenseDocument
     var status: StatusDocument? = null
     var context: DRMContext? = null
     var androidContext:Context
-
-//    constructor(path: URL, context: Context) {
-//        androidContext = context
-//        archivePath = path
-//        val data = path.openStream().readBytes()
-//        license = LicenseDocument(data)
-//    }
+    val lcpHttpService: LcpHttpService = LcpHttpService()
+    val database:LcpDatabase
 
     constructor(path: URL, inArchive: Boolean, context: Context) {
 
         androidContext = context
         archivePath = path
 
+        database = LcpDatabase(androidContext)
+
         val data: ByteArray
         if (!inArchive) {
             data = path.openStream().readBytes()
             license = LicenseDocument(data)
         } else {
-            val url  = URL("META-INF/license.lcpl")
+            val url  = lcplFilePath
             data = getData(url, path)
             license = LicenseDocument(data)
         }
 
     }
 
-//    init {
-//        val data: ByteArray
-//        if (!inArchive) {
-//            archivePath = path
-//
-//                val input = path.openStream()
-//
-//                data = input.readBytes()
-//                license = LicenseDocument(data)
-//
-//
-//        } else {
-//            archivePath = URL("META-INF/license.lcpl")
-//            data = getData(archivePath, path)
-//            license = LicenseDocument(data)
-//        }
-//    }
-
-    // TODO : incomplete
     override fun decipher(data: ByteArray) : ByteArray? {
         if (context == null)
             throw Exception(LcpError().errorDescription(LcpErrorCase.invalidContext))
         return Lcp().decrypt(context!!, data)
     }
 
-    // TODO : incomplete
-    fun fetchStatusDocument()  {
-        val statusLink = license.link("status") ?: return
-        //TODO : finish this method
-        val input = java.net.URL(statusLink.href.toString()).openStream()
-        status = StatusDocument(input.readBytes())
+    fun fetchStatusDocument() : Promise<Unit?, Exception> {
+        return task{
+            Log.i(TAG,"LCP fetchStatusDocument")
+            val statusLink = license.link("status")
+            statusLink?.let {
+                val document = lcpHttpService.statusDocument(it.href.toString()).get()
+                status = document
+            }
+        }
     }
 
     // If start is null or before now, or if END is null or before now, throw invalidRights Exception
     override fun areRightsValid() {
+        Log.i(TAG,"LCP areRightsValid")
         val now = Date()
         license.rights.start.let {
             if (it != null && DateTime(it).toDate().before(now)) {
@@ -103,10 +82,10 @@ class LcpLicense : DrmLicense {
                 throw Exception(LcpError().errorDescription(LcpErrorCase.invalidRights))
             }
         }
-
     }
 
     fun checkStatus() {
+        Log.i(TAG,"LCP checkStatus")
         val status = if (status?.status != null) status?.status else throw Exception(LcpError().errorDescription(LcpErrorCase.missingLicenseStatus))
         when (status){
             StatusDocument.Status.returned -> throw Exception(LcpError().errorDescription(LcpErrorCase.licenseStatusReturned))
@@ -118,11 +97,10 @@ class LcpLicense : DrmLicense {
     }
 
     override fun register() {
-        val database = LCPDatabase(androidContext)
+        Log.i(TAG,"LCP register")
 
-        database.licenses.updateState(license.id, license.status)
         val date = database.licenses.dateOfLastUpdate(license.id)
-        Log.i("VOLLEY date", date.toString())
+        Log.i(TAG, "LCP dateOfLastUpdate ${date}")
 
         if (database.licenses.existingLicense(license.id)) return
         if (status == null) return
@@ -130,35 +108,23 @@ class LcpLicense : DrmLicense {
         val url = status?.link("register")?.href ?: return
         val registerUrl = URL(url.toString().replace("{?id,name}", ""))
 
-        val requestQueue = Volley.newRequestQueue(androidContext)
-        val params : MutableMap<String, String> =  mutableMapOf()
-        params.put("id", getDeviceId())
-        params.put("name", getDeviceName())
-
-        val r2RegisterRequest =  R2StringRequest(androidContext, Request.Method.POST, registerUrl.toString(), params, Response.Listener { response ->
-            Log.i("Volley status: ", R2StringRequest.status())
-            if (R2StringRequest.statusCode().equals(400)) {
-                Log.i("VOLLEY", LcpError().errorDescription(LcpErrorCase.registrationFailure))
+        val params = listOf(
+                "id" to getDeviceId(),
+                "name" to getDeviceName())
+        try {
+            lcpHttpService.register(registerUrl.toString(), params).get()?.let {
+                database.licenses.insert(license, it)
             }
-            else if (R2StringRequest.statusCode().equals(200)) {
-                val jsonObject = JSONObject(response.toString())
-                Log.i("VOLLEY", jsonObject.toString())
-                database.licenses.insert(license, jsonObject["status"] as String)
-            }
-        }, Response.ErrorListener { error ->
-            if (error.networkResponse != null && error.networkResponse.data != null) {
-                val jsonError = String(error.networkResponse.data)
-                val jsonObject = JSONObject(jsonError)
-                Log.e("VOLLEY", jsonObject.toString())
-            }
-        })
-        requestQueue.add(r2RegisterRequest)
+        }catch (e:Exception) {
+            Log.e(TAG, "LCP register ${e.message}")
+        }
 
     }
 
     // TODO : incomplete
-    //The return function in swift
     override fun ret(completion: (String) -> Void) {
+        Log.i(TAG,"LCP return")
+
         if (status == null) {
             completion(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
             return
@@ -172,10 +138,14 @@ class LcpLicense : DrmLicense {
         }
         val returnUrl = URL(url.toString().replace("%7B?id,name%7D", "") + "?id=$deviceId&name=$deviceName")
         //TODO : Http request
+        lcpHttpService.returnLicense(returnUrl.toString()).get()?.let {
+            //TODO
+        }
     }
 
     // TODO : incomplete
     override fun renew (endDate: Date?, completion: (String) -> Void) {
+        Log.i(TAG,"LCP renew")
         if (status == null) {
             completion(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
             return
@@ -189,9 +159,14 @@ class LcpLicense : DrmLicense {
         }
         val returnUrl = URL(url.toString().replace("%7B?id,name%7D", "") + "?id=$deviceId&name=$deviceName")
         //TODO : Http request
+
+        lcpHttpService.renewLicense(returnUrl.toString()).get()?.let {
+            //TODO
+        }
     }
 
     fun getDeviceId() : String {
+        Log.i(TAG,"LCP getDeviceId")
         var deviceId = UUID.randomUUID().toString()
         val prefs = androidContext.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         deviceId = prefs.getString("lcp_device_id", deviceId)
@@ -200,225 +175,125 @@ class LcpLicense : DrmLicense {
     }
 
     fun getDeviceName() : String {
+        Log.i(TAG,"LCP getDeviceName")
         val deviceName = BluetoothAdapter.getDefaultAdapter()
         return deviceName.name
     }
 
     fun getStatus() : StatusDocument.Status? {
+        Log.i(TAG,"LCP getStatus")
         return status?.status
     }
 
-    // TODO : incomplete
-//    fun fetchPublicationA() {
-//        val deferred = deferred<String,Exception>()
-//        handlePromise(deferred.promise)
-//
-//        deferred.resolve("Hello World")
-//        deferred.reject(Exception("Hello exceptional World"))
-//    }
-//
-//    fun handlePromise(promise: Promise<String, Exception>) {
-//        promise success {
-//            msg -> println(msg)
-//        }
-//        promise fail {
-//            e -> println(e)
-//        }
-//    }
-    fun fetchPublication(): URL {
+    fun fetchPublication(): String? {
+        Log.i(TAG,"LCP fetchPublication")
+        val publicationLink = license.link("publication")
+        publicationLink?.let {
+            return lcpHttpService.publicationUrl(publicationLink.href.toString()).get()
+        }
+        return null
+    }
 
 
+    // TODO : double check his.
+    fun updateLicenseDocument() : Promise<Unit, Exception> {
         return task {
+            Log.i(TAG,"LCP updateLicenseDocument")
+            if (status != null) {
+                val licenseLink = status!!.link("license")
+                val latestUpdate = license.dateOfLastUpdate()
 
-            val publicationLink = license.link("publication")
-            val requestQueue = Volley.newRequestQueue(androidContext)
-            val params : MutableMap<String, String> =  mutableMapOf()
-
-            val title = publicationLink.title
-
-            val r2RegisterRequest = R2StringRequest(androidContext, Request.Method.GET, publicationLink.href.toString(), params, Response.Listener { response ->
-                Log.i("Volley status: ", R2StringRequest.status())
-                if (R2StringRequest.statusCode().equals(200)) {
-                    val jsonObject = JSONObject(response.toString())
-                    Log.i("VOLLEY", jsonObject.toString())
+                val lastUpdate = database.licenses.dateOfLastUpdate(license.id)
+                lastUpdate?.let {
+                    if (lastUpdate > latestUpdate)
+                    {
+                        return@let
+                    }
                 }
-            }, Response.ErrorListener { error ->
-                if (error.networkResponse != null && error.networkResponse.data != null) {
-                    val jsonError = String(error.networkResponse.data)
-                    val jsonObject = JSONObject(jsonError)
-                    Log.e("VOLLEY", jsonObject.toString())
-                }
-            })
 
-            requestQueue.add(r2RegisterRequest)
+                license = lcpHttpService.fetchUpdatedLicense(licenseLink!!.href.toString()).get()
+                Log.i(TAG, "LCP  ${license.json}")
 
-            //TODO doesn belong here
-            URL("http://www.test.com")
-        }.get()
+                moveLicense(archivePath, licenseLink.href.toString())
 
-
-//
-//        return Promise<URL> { fulfill, reject in
-//            guard let publicationLink = license.link(withRel: LicenseDocument.Rel.publication) else {
-//                reject(LcpError.publicationLinkNotFound)
-//                return
-//            }
-//            let request = URLRequest(url: publicationLink.href)
-//            let title = publicationLink.title ?? "publication" //Todo
-//            let fileManager = FileManager.default
-//            // Document Directory always exists (hence try!).
-//            var destinationUrl = try! fileManager.url(for: .documentDirectory,
-//                    in: .userDomainMask,
-//                appropriateFor: nil,
-//                create: true)
-//
-//                destinationUrl.appendPathComponent("\(title).epub")
-//                guard !FileManager.default.fileExists(atPath: destinationUrl.path) else {
-//                    fulfill(destinationUrl)
-//                    return
-//                }
-//
-//                let task = URLSession.shared.downloadTask(with: request, completionHandler: { tmpLocalUrl, response, error in
-//                    if let localUrl = tmpLocalUrl, error == nil {
-//                        do {
-//                            try FileManager.default.moveItem(at: localUrl, to: destinationUrl)
-//                            } catch {
-//                                print(error.localizedDescription)
-//                                reject(error)
-//                            }
-//                            fulfill(destinationUrl)
-//                        } else if let error = error {
-//                        reject(error)
-//                    } else {
-//                        reject(LcpError.unknown)
-//                    }
-//                })
-//                task.resume()
-//            }
+                database.licenses.insert(license, status!!.status.toString())
+            }
+        }
     }
 
-
-    // TODO : incomplete
-    fun updateLicenseDocument() {
-        if (status == null)
-            return
-        val licenseLink = status!!.link("license") ?: return
-        val latestUpdate = license.dateOfLastUpdate()
-//        if (latestUpdate == LCPDatabase().shared.licenses.dateOfLastUpdate(license.id))
-//            return
-        //TODO : Http request
-    }
-
-    // TODO : incomplete
-    private fun getData(file: URL, url: URL) : ByteArray {
+    private fun getData(file: String, url: URL) : ByteArray {
+        Log.i(TAG,"LCP getData")
         val archive = try {
-            ZipFile(url.toString())
+            ZipFile(url.path)
         } catch (e: Exception){
             throw Exception(LcpError().errorDescription(LcpErrorCase.archive))
         }
         val entry = try {
-            archive.getEntry(file.toString())
+            archive.getEntry(file)
         } catch (e: Exception){
             throw Exception(LcpError().errorDescription(LcpErrorCase.fileNotInArchive))
         }
-
-//        var destPath = URL(url.removeLastComponent().toString() + "extracted_file.tmp")
-
-//        var destPath = url.deletingLastPathComponent()
-//
-//        destPath.appendPathComponent("extracted_file.tmp")
-//
-//        let destUrl = URL.init(fileURLWithPath: destPath.absoluteString)
-//        let data: Data
-//
-//        // Extract file.
-//        _ = try archive.extract(entry, to: destUrl)
-//        data = try Data.init(contentsOf: destUrl)
-//
-//        // Remove temporary file.
-//        try FileManager.default.removeItem(at: destUrl)
-
-          return archive.getInputStream(entry).readBytes()
+        return archive.getInputStream(entry).readBytes()
     }
 
-    // TODO : incomplete
-    fun moveLicense(licenseURL: URL, publicationURL: URL) {
-        var urlMetaInf = publicationURL.removeLastComponent().toString()
-        urlMetaInf = "${urlMetaInf}/META-INF"
+    fun moveLicense(licenseURL: URL, publicationURL: String) {
+        Log.i(TAG,"LCP moveLicense")
+        task {
+            val source = File(publicationURL)
+            val tmpZip = File(publicationURL+".tmp")
+            tmpZip.delete()
+            source.copyTo(tmpZip)
+            source.delete()
+            ZipUtil.addEntry(tmpZip, lcplFilePath,  licenseURL.openStream().readBytes(),  source);
 
-        //Writes into the zipfile
-        val fi = FileInputStream(urlMetaInf)
-        val data = ByteArray(2048)
-        val origin = BufferedInputStream(fi, 2048)
-        val entry = ZipEntry("$publicationURL/META-INF/license.lcpl")
-        val out = ZipOutputStream(BufferedOutputStream(FileOutputStream(licenseURL.toString())))
-        out.putNextEntry(entry)
-        var count = origin.read(data, 0, 2048)
-        while (count != -1){
-            out.write(data, 0, count)
-            count = origin.read(data, 0, 2048)
+            tmpZip
+        } then {
+            it.delete()
         }
-        //Closes the zipfile
-        origin.close()
     }
 
-
-//    static public func moveLicense(from licenseUrl: URL, to publicationUrl: URL) throws {
-//        guard let archive = Archive(url: publicationUrl, accessMode: .update) else  {
-//            throw LcpError.archive
-//        }
-//        // Create local META-INF folder to respect the zip file hierachy.
-//        let fileManager = FileManager.default
-//        var urlMetaInf = publicationUrl.deletingLastPathComponent()
-//
-//        urlMetaInf.appendPathComponent("META-INF", isDirectory: true)
-//        if !fileManager.fileExists(atPath: urlMetaInf.path) {
-//            try fileManager.createDirectory(atPath: urlMetaInf.path, withIntermediateDirectories: false, attributes: nil)
-//            }
-//        // Move license in the META-INF local folder.
-//        try fileManager.moveItem(atPath: licenseUrl.path, toPath: urlMetaInf.path + "/license.lcpl")
-//            // Copy META-INF/license.lcpl to archive.
-//            try archive.addEntry(with: urlMetaInf.lastPathComponent.appending("/license.lcpl"),
-//                relativeTo: urlMetaInf.deletingLastPathComponent())
-//                // Delete META-INF/license.lcpl from inbox.
-//                try fileManager.removeItem(atPath: urlMetaInf.path)
-//                }
-
-
-    // TODO : incomplete
     override fun currentStatus(): String {
+        Log.i(TAG,"LCP currentStatus")
         return status?.status.toString()
     }
 
     override fun lastUpdate(): Date {
+        Log.i(TAG,"LCP lastUpdate")
         return DateTime(license.dateOfLastUpdate()).toDate()
     }
 
     override fun issued(): Date {
+        Log.i(TAG,"LCP issued")
         return DateTime(license.issued).toDate()
     }
 
     override fun provider(): URL {
+        Log.i(TAG,"LCP provider")
         return license.provider
     }
 
     override fun rightsEnd(): Date? {
+        Log.i(TAG,"LCP rightsEnd")
         return DateTime(license.rights.end).toDate()
     }
 
     override fun potentialRightsEnd(): Date? {
+        Log.i(TAG,"LCP potentialRightsEnd")
         return DateTime(license.rights.potentialEnd).toDate()
     }
 
     override fun rightsStart(): Date? {
+        Log.i(TAG,"LCP rightsStart")
         return DateTime(license.rights.start).toDate()
     }
 
     override fun rightsPrints(): Int? {
+        Log.i(TAG,"LCP rightsPrints")
         return license.rights.print
     }
 
     override fun rightsCopies(): Int? {
+        Log.i(TAG,"LCP rightsCopies")
         return license.rights.copy
     }
 
