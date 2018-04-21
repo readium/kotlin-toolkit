@@ -28,9 +28,9 @@ class FontDecoder {
     fun decoding(input: InputStream, publication: Publication, path: String) : InputStream {
         val publicationIdentifier = publication.metadata.identifier
         val link = publication.linkWithHref(path) ?: return input
-        val encryption = link.properties?.encryption ?: return input
+        val encryption = link.properties.encryption ?: return input
         val algorithm = encryption.algorithm ?: return input
-        val type = decoders[link.properties?.encryption?.algorithm] ?: return input
+        val type = decoders[link.properties.encryption?.algorithm] ?: return input
         if (!decodableAlgorithms.values.contains(algorithm)){
             Log.e("Error", "$path is encrypted, but can't handle it")
             return input

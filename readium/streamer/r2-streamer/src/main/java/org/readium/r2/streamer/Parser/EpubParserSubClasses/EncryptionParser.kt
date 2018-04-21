@@ -28,9 +28,7 @@ class EncryptionParser{
                 let{it.properties["URI"]} ?: return
         resourceURI = normalize("/", resourceURI)
         val link = publication.linkWithHref(resourceURI) ?: return
-        if (link.properties == null)
-            link.properties = Properties()
-        link.properties!!.encryption = encryption
+        link.properties.encryption = encryption
     }
 
 }

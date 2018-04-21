@@ -1,5 +1,6 @@
 package org.readium.r2.streamer.Containers
 
+import org.readium.r2.shared.Drm
 import java.io.File
 import java.util.zip.ZipFile
 import org.readium.r2.shared.Link
@@ -7,7 +8,7 @@ import org.readium.r2.shared.RootFile
 import org.readium.r2.streamer.XmlParser.XmlParser
 import org.readium.r2.streamer.Parser.mimetype
 
-class ContainerEpub(path: String) : EpubContainer, ZipArchiveContainer {
+class ContainerEpub : EpubContainer, ZipArchiveContainer {
 
     override fun xmlDocumentforFile(relativePath: String): XmlParser {
         val containerData = data(relativePath)
@@ -23,15 +24,18 @@ class ContainerEpub(path: String) : EpubContainer, ZipArchiveContainer {
         return xmlDocumentforFile(pathFile)
     }
 
-    lateinit override var rootFile: RootFile
-    lateinit override var zipFile: ZipFile
+    override var rootFile: RootFile
+    override var zipFile: ZipFile
+    override var drm: Drm? = null
     override var successCreated: Boolean = false
 
-    init {
-        if (File(path).exists())
+    constructor(path: String) {
+
+        if (File(path).exists()) {
             successCreated = true
+        }
         zipFile = ZipFile(path)
-        rootFile = RootFile(path, mimetype = mimetype)
+        rootFile = RootFile(path, mimetype)
     }
 
     override fun data(relativePath: String): ByteArray {

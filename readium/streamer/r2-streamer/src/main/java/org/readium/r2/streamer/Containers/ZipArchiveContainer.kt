@@ -26,11 +26,13 @@ interface ZipArchiveContainer: Container {
         return buffer.toByteArray()
     }
 
-    override fun dataLength(relativePath: String) =
-            zipFile.size().toLong()
+    override fun dataLength(relativePath: String) : Long {
+        return zipFile.size().toLong()
+    }
 
-    override fun dataInputStream(relativePath: String) =
-            zipFile.getInputStream(zipFile.getEntry(relativePath))
+    override fun dataInputStream(relativePath: String) : InputStream {
+        return zipFile.getInputStream(zipFile.getEntry(relativePath))
+    }
 
 }
 

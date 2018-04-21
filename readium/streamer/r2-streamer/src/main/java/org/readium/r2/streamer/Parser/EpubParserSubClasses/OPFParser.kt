@@ -13,10 +13,10 @@ class OPFParser {
     val smilp = SMILParser()
     private var rootFilePath: String? = null
 
-    fun parseOpf(document: XmlParser, container: Container, epubVersion: Double) : Publication? {
+    fun parseOpf(document: XmlParser, filePath: String, epubVersion: Double) : Publication? {
         val publication = Publication()
 
-        rootFilePath = container.rootFile.rootFilePath
+        rootFilePath = filePath
         publication.version = epubVersion
         publication.internalData["type"] = "epub"
         publication.internalData["rootfile"] = rootFilePath!!
@@ -109,7 +109,7 @@ class OPFParser {
     ///
     /// - Parameter propertiesArray: The array of properties strings.
     /// - Returns: The Properties instance created from the strings array info
-    private fun parse(propertiesArray: List<String>) : Properties? {
+    private fun parse(propertiesArray: List<String>) : Properties {
         val properties = Properties()
 
         for (property in propertiesArray){
