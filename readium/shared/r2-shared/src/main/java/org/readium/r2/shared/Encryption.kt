@@ -16,5 +16,5 @@ class Encryption : Serializable{
     //  Identifies the encryption profile used to encrypt the resource
     var profile: String? = null
     //  Identifies the encrytpion scheme used to encrypt the resource
-    var scheme: String? = null
+    var scheme: Drm.Scheme? = null
 }

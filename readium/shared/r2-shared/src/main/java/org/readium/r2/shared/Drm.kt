@@ -1,23 +1,30 @@
 package org.readium.r2.shared
 
 import android.provider.ContactsContract
+import java.io.Serializable
 
 
-class Drm {
+class Drm: Serializable {
 
     private val TAG = this::class.java.simpleName
 
-    val brand = Brand.lcp
-    val scheme = "http://readium.org/2014/01/lcp"
+    var brand:Brand
+    var scheme:Scheme
 
-    var profile: String? = ""
+    var profile: String? = null
     var license: DrmLicense? = null
 
-    enum class Brand {
-        lcp
+    enum class Brand(v:String) {
+        lcp("lcp")
+    }
+    enum class Scheme(v:String) {
+        lcp("http://readium.org/2014/01/lcp")
     }
 
-    fun initDrmLicense(){
-
+    constructor(brand: Brand){
+        this.brand = brand
+        when (brand) {
+            Brand.lcp -> scheme = Scheme.lcp
+        }
     }
 }
