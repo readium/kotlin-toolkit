@@ -32,6 +32,16 @@ dependencies {
 
     implementation 'com.android.support:appcompat-v7:27.1.0'
 
+//    uncomment this line to use with jitpack
+    implementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+//    implementation 'com.github.readium:r2-shared-kotlin:0.1.0'
+
+//    uncomment this line to use with GitHu submodules and Android Studio Modules
+//    implementation project(':r2-shared')
+
+    implementation 'nl.komponents.kovenant:kovenant:3.3.0'
+    implementation 'joda-time:joda-time:2.9.9'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
