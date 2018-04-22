@@ -13,6 +13,7 @@ import org.readium.r2.streamer.Parser.EpubParserSubClasses.EncryptionParser
 import org.readium.r2.streamer.Parser.EpubParserSubClasses.NCXParser
 import org.readium.r2.streamer.Parser.EpubParserSubClasses.NavigationDocumentParser
 import org.readium.r2.streamer.Parser.EpubParserSubClasses.OPFParser
+import org.zeroturnaround.zip.ZipUtil
 import java.io.File
 
 // Some constants useful to parse an Epub document
@@ -130,12 +131,10 @@ class EpubParser : PublicationParser {
     }
 
     fun scanForDrm(container: EpubContainer) : Drm? {
-        try {
-            container.data(lcplFilePath)
+        if (ZipUtil.containsEntry(File(container.rootFile.rootPath), lcplFilePath)) {
             return Drm(Drm.Brand.lcp)
-        } catch (e: Exception){
-            return null
         }
+        return null
     }
 
     private fun parseEncryption(container: EpubContainer, publication: Publication, drm: Drm?) {
