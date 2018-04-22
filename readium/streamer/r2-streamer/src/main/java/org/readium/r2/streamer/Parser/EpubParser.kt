@@ -4,8 +4,8 @@ import android.util.Log
 import org.readium.r2.shared.Drm
 import org.readium.r2.shared.Encryption
 import org.readium.r2.shared.Publication
+import org.readium.r2.shared.XmlParser.XmlParser
 import org.readium.r2.streamer.Containers.Container
-import org.readium.r2.streamer.XmlParser.XmlParser
 import org.readium.r2.streamer.Containers.ContainerEpub
 import org.readium.r2.streamer.Containers.ContainerEpubDirectory
 import org.readium.r2.streamer.Containers.EpubContainer
@@ -88,7 +88,7 @@ class EpubParser : PublicationParser {
 
         xmlParser.parseXml(documentData.inputStream())
         
-        val epubVersion = xmlParser.root().properties["version"]!!.toDouble()
+        val epubVersion = xmlParser.root().attributes["version"]!!.toDouble()
         val publication = opfParser.parseOpf(xmlParser, container.rootFile.rootFilePath, epubVersion) ?: return null
 
         val drm = scanForDrm(container)
@@ -109,7 +109,7 @@ class EpubParser : PublicationParser {
         return xmlParser.getFirst("container")
                 ?.getFirst("rootfiles")
                 ?.getFirst("rootfile")
-                ?.properties?.get("full-path")
+                ?.attributes?.get("full-path")
                 ?: "content.opf"
     }
 
@@ -149,10 +149,10 @@ class EpubParser : PublicationParser {
         val encryptedDataElements = document.getFirst("encryption")?.get("EncryptedData") ?: return
         for(encryptedDataElement in encryptedDataElements){
             val encryption = Encryption()
-            val keyInfoUri = encryptedDataElement.getFirst("KeyInfo")?.getFirst("RetrievalMethod")?.let{ it.properties["URI"] }
+            val keyInfoUri = encryptedDataElement.getFirst("KeyInfo")?.getFirst("RetrievalMethod")?.let{ it.attributes["URI"] }
             if (keyInfoUri == "license.lcpl#/encryption/content_key" && drm?.brand == Drm.Brand.lcp)
                 encryption.scheme = Drm.Scheme.lcp
-            encryption.algorithm = encryptedDataElement.getFirst("EncryptionMethod")?.let{ it.properties["Algorithm"] }
+            encryption.algorithm = encryptedDataElement.getFirst("EncryptionMethod")?.let{ it.attributes["Algorithm"] }
             encp.parseEncryptionProperties(encryptedDataElement, encryption)
             encp.add(encryption, publication, encryptedDataElement)
         }

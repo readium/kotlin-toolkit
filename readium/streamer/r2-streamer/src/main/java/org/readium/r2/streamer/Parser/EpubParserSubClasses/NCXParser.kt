@@ -1,9 +1,8 @@
 package org.readium.r2.streamer.Parser.EpubParserSubClasses
 
 import org.readium.r2.shared.Link
-import org.readium.r2.shared.TocElement
-import org.readium.r2.streamer.XmlParser.XmlParser
-import org.readium.r2.streamer.XmlParser.Node
+import org.readium.r2.shared.XmlParser.XmlParser
+import org.readium.r2.shared.XmlParser.Node
 import org.readium.r2.streamer.Parser.normalize
 
 class NCXParser{
@@ -34,7 +33,7 @@ class NCXParser{
 
     private fun node(element: Node, type: String) : Link{
         val newNode = Link()
-        newNode.href = normalize(ncxDocumentPath, element.getFirst("content")?.properties?.get("src"))
+        newNode.href = normalize(ncxDocumentPath, element.getFirst("content")?.attributes?.get("src"))
         newNode.title = element.getFirst("navLabel")!!.getFirst("text")!!.text
         element.get("navPoint")?.let {
             for (childNode in it){

@@ -5,7 +5,7 @@ import java.io.File
 import java.util.zip.ZipFile
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
-import org.readium.r2.streamer.XmlParser.XmlParser
+import org.readium.r2.shared.XmlParser.XmlParser
 import org.readium.r2.streamer.Parser.mimetype
 
 class ContainerEpub : EpubContainer, ZipArchiveContainer {
