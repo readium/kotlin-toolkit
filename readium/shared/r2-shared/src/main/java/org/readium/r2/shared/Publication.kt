@@ -53,7 +53,7 @@ class Publication : Serializable {
     /// The metadata (title, identifier, contributors, etc.).
     var metadata: Metadata = Metadata()
     /// org.readium.r2shared.Publication.org.readium.r2shared.Link to special ressources which are added to the publication.
-    private var links: MutableList<Link> = mutableListOf()
+    var links: MutableList<Link> = mutableListOf()
     /// Links of the spine items of the publication.
     var spine: MutableList<Link> = mutableListOf()
     /// Link to the ressources of the publication.
@@ -66,6 +66,8 @@ class Publication : Serializable {
     var listOfTables: MutableList<Link> = mutableListOf()
     var listOfVideos: MutableList<Link> = mutableListOf()
     var pageList: MutableList<Link> = mutableListOf()
+
+    var images: MutableList<Link> = mutableListOf()
 
     /// Extension point for links that shouldn't show up in the manifest.
     var otherLinks: MutableList<Link> = mutableListOf()
