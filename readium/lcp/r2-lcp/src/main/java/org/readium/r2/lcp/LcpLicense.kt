@@ -5,7 +5,6 @@ import android.content.Context
 import android.util.Log
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
-import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.readium.lcp.sdk.DRMContext
 import org.readium.lcp.sdk.Lcp
@@ -214,7 +213,7 @@ class LcpLicense : DrmLicense {
                 license = lcpHttpService.fetchUpdatedLicense(licenseLink!!.href.toString()).get()
                 Log.i(TAG, "LCP  ${license.json}")
 
-                moveLicense(archivePath, licenseLink.href.toString())
+//                moveLicense(archivePath.path, licenseLink.href)
 
                 database.licenses.insert(license, status!!.status.toString())
             }
@@ -233,23 +232,22 @@ class LcpLicense : DrmLicense {
         } catch (e: Exception){
             throw Exception(LcpError().errorDescription(LcpErrorCase.fileNotInArchive))
         }
+
         return archive.getInputStream(entry).readBytes()
     }
 
-    fun moveLicense(licenseURL: URL, publicationURL: String) {
+    fun moveLicense(archivePath: String, licenseURL: URL) {
         Log.i(TAG,"LCP moveLicense")
-        task {
-            val source = File(publicationURL)
-            val tmpZip = File(publicationURL+".tmp")
-            tmpZip.delete()
-            source.copyTo(tmpZip)
-            source.delete()
-            ZipUtil.addEntry(tmpZip, lcplFilePath,  licenseURL.openStream().readBytes(),  source);
-
-            tmpZip
-        } then {
-            it.delete()
+        val source = File(archivePath)
+        val tmpZip = File(archivePath+".tmp")
+        tmpZip.delete()
+        source.copyTo(tmpZip)
+        source.delete()
+        if (ZipUtil.containsEntry(tmpZip, lcplFilePath)) {
+            ZipUtil.removeEntry(tmpZip, lcplFilePath)
         }
+        ZipUtil.addEntry(tmpZip, lcplFilePath,  licenseURL.openStream().readBytes(),  source);
+        tmpZip.delete()
     }
 
     override fun currentStatus(): String {

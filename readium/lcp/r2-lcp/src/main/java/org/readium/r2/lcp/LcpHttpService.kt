@@ -1,8 +1,8 @@
 package org.readium.r2.lcp
 
+import android.os.Environment
 import android.util.Log
 import com.github.kittinunf.fuel.Fuel
-import com.github.kittinunf.fuel.core.Environment
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.Response
 import com.github.kittinunf.result.Result
@@ -19,6 +19,7 @@ import java.util.*
 
 class LcpHttpService {
 
+    val rootDir: String = Environment.getExternalStorageDirectory().path + "/r2reader/"
     fun statusDocument(url: String): Promise<StatusDocument, Exception> {
         return Fuel.get(url,null).promise() then {
             val (request, response, result) = it
@@ -33,17 +34,15 @@ class LcpHttpService {
     }
 
     fun publicationUrl(url: String, parameters: List<Pair<String, Any?>>? = null): Promise<String, Exception> {
-        val uuid = UUID.randomUUID().toString()
-        val EPUB_FILE_NAME = uuid
-        val rootDir: String = android.os.Environment.getExternalStorageDirectory().path + "/r2test/"
+        val fileName = UUID.randomUUID().toString()
         return Fuel.download(url).destination { response, destination ->
-            Log.i("FUEL destination ", rootDir +  EPUB_FILE_NAME)
-            File(rootDir, EPUB_FILE_NAME)
+            Log.i("LCP  destination ", rootDir + fileName)
+            File(rootDir, fileName)
         }.promise() then {
             val (request, response, result) = it
-            Log.i("FUEL destination ", rootDir +  EPUB_FILE_NAME)
-            Log.i("FUEL then ", response.url.toString())
-            rootDir +  EPUB_FILE_NAME
+            Log.i("LCP destination ", rootDir + fileName)
+            Log.i("LCP then ", response.url.toString())
+            rootDir + fileName
         }
     }
 
