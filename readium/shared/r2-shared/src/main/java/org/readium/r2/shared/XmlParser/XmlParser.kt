@@ -1,4 +1,4 @@
-package org.readium.r2.streamer.XmlParser
+package org.readium.r2.shared.XmlParser
 
 import android.util.Xml
 import org.xmlpull.v1.XmlPullParser

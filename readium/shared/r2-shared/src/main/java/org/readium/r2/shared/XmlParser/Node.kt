@@ -1,4 +1,4 @@
-package org.readium.r2.streamer.XmlParser
+package org.readium.r2.shared.XmlParser
 
 class Node (val name: String) {
 
