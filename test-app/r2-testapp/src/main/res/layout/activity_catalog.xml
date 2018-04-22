@@ -8,7 +8,7 @@
     tools:context=".CatalogActivity">
 
     <GridView
-        android:id="@+id/gridview"
+        android:id="@+id/catalogView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:columnWidth="120dp"

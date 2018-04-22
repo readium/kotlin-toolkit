@@ -11,12 +11,17 @@ import android.net.Uri;
 public class R2IntentHelper {
 
     public static String URI = "URI";
+    public static String LCP = "LCP";
 
-    public Intent newAActivityIntent(Context context, Uri uri) {
+    public Intent catalogActivityIntent(Context context, Uri uri) {
+        return catalogActivityIntent(context,uri, false);
+    }
+
+    public Intent catalogActivityIntent(Context context, Uri uri, boolean lcp) {
         Intent i = new Intent(context, CatalogActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        i.putExtra(LCP, lcp);
         i.putExtra(URI, uri.toString());
         return i;
     }
-
 }

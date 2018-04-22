@@ -1,16 +1,31 @@
 package org.readium.r2.testapp
 
+
 import android.app.Activity
-import android.app.ProgressDialog
-import android.content.*
+import android.content.ContentResolver
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.*
+import com.mcxiaoke.koi.HASH
 import kotlinx.android.synthetic.main.activity_catalog.*
+import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.deferred
+import nl.komponents.kovenant.task
+import nl.komponents.kovenant.then
+import nl.komponents.kovenant.ui.successUi
+import org.jetbrains.anko.*
+import org.jetbrains.anko.appcompat.v7.Appcompat
+import org.jetbrains.anko.design.textInputLayout
 import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.shared.Drm
+import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.Parser.EpubParser
 import org.readium.r2.streamer.Parser.PubBox
 import org.readium.r2.streamer.Server.BASE_URL
@@ -24,6 +39,7 @@ import java.net.ServerSocket
 import java.net.URL
 import java.util.*
 
+val supportedProfiles = arrayListOf("http://readium.org/lcp/basic-profile", "http://readium.org/lcp/profile-1.0")
 
 class CatalogActivity : AppCompatActivity() {
 
@@ -65,16 +81,14 @@ class CatalogActivity : AppCompatActivity() {
                     val file = listOfFiles.get(i)
                     EPUB_FILE_NAME = file.name
                     PUBLICATION_PATH = R2TEST_DIRECTORY_PATH + EPUB_FILE_NAME
+                    val parser = EpubParser()
 
-                    val pub = EpubParser().parse(PUBLICATION_PATH)
+                    val pub = parser.parse(PUBLICATION_PATH)
+
                     if (pub != null) {
-                        parseAndShowEpub(pub)
+                        parseAndShowEpub(parser, pub, EPUB_FILE_NAME!!)
 
                         val publication = pub.publication
-                        var author = ""
-                        if (!publication.metadata.authors.isEmpty()) {
-                            author = publication.metadata.authors.get(0).name!!
-                        }
 
                         EPUB_FILE_NAME = file.name
                         PUBLICATION_PATH = R2TEST_DIRECTORY_PATH + EPUB_FILE_NAME
@@ -84,6 +98,7 @@ class CatalogActivity : AppCompatActivity() {
 
                         val baseUrl = URL("$BASE_URL:$localPort" + "/" + file.name)
                         val link = publication.uriTo(publication.coverLink,  baseUrl)
+                        val author = authorName(publication)
                         val book = Book(file.name, publication.metadata.title, author, file.absolutePath, i.toLong(), link)
                         books.add(book)
                     }
@@ -102,11 +117,12 @@ class CatalogActivity : AppCompatActivity() {
     private fun parseIntent() {
         val intent = intent
         val uriString:String? = intent.getStringExtra(R2IntentHelper.URI)
-        if (uriString != null) {
+        val lcp:Boolean = intent.getBooleanExtra(R2IntentHelper.LCP, false)
+        if (uriString != null && lcp == false) {
             val uri: Uri? = Uri.parse(uriString)
             if (uri != null) {
 
-                val progress = showProgress(this, null, getString(R.string.progress_wait_while_downloading_book))
+                val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
                 progress.show()
                 val thread = Thread(Runnable {
                     val uuid = UUID.randomUUID().toString()
@@ -121,20 +137,19 @@ class CatalogActivity : AppCompatActivity() {
 
                     try {
                         runOnUiThread(Runnable {
+                            val parser = EpubParser()
 
-                            val pub = EpubParser().parse(PATH)
+                            val pub = parser.parse(PUBLICATION_PATH)
                             if (pub != null) {
-                                parseAndShowEpub(pub)
+                                parseAndShowEpub(parser, pub, FILE_NAME)
 
                                 val publication = pub.publication
-                                val container = pub.container
-
-                                server.addEpub(publication, container, "/" + FILE_NAME)
                                 val publicationIdentifier = publication.metadata.identifier
                                 preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
 
                                 val link = publication.uriTo(publication.coverLink, URL("$BASE_URL:$localPort" + "/" + FILE_NAME))
-                                val book = Book(file.name, publication.metadata.title, publication.metadata.authors.get(0).name!!, file.absolutePath, books.size.toLong(), link)
+                                val author = authorName(publication)
+                                val book = Book(file.name, publication.metadata.title, author, file.absolutePath, books.size.toLong(), link)
                                 books.add(book)
                                 booksAdapter.notifyDataSetChanged()
                                 progress.dismiss()
@@ -148,7 +163,18 @@ class CatalogActivity : AppCompatActivity() {
                 thread.start()
             }
         }
+
     }
+
+    private fun authorName(publication: Publication): String {
+        val author = publication.metadata.authors.firstOrNull()?.name?.let {
+            return@let it
+        } ?: run {
+            return@run String()
+        }
+        return author
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_catalog)
@@ -169,32 +195,33 @@ class CatalogActivity : AppCompatActivity() {
 
         books = arrayListOf<Book>()
         booksAdapter = BooksAdapter(this, books)
-        gridview.adapter = booksAdapter
+        catalogView.adapter = booksAdapter
 
-        gridview.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
+        catalogView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
             val book = books[position]
 
             EPUB_FILE_NAME = book.fileName
             PUBLICATION_PATH = R2TEST_DIRECTORY_PATH + EPUB_FILE_NAME
-
-            val pub = EpubParser().parse(PUBLICATION_PATH)
+            val parser = EpubParser()
+            val pub = parser.parse(PUBLICATION_PATH)
             if (pub != null) {
-                parseAndShowEpub(pub)
+                parseAndShowEpub(parser, pub, EPUB_FILE_NAME!!)
 
                 val publication = pub.publication
                 if (publication.spine.size > 0) {
-                    val intent = Intent(this, R2EpubActivity::class.java)
 
-                    // TODO might need to change as well, and move into navigator or streamer...
-                    intent.putExtra("publicationPath", PUBLICATION_PATH)
-                    intent.putExtra("epubName", EPUB_FILE_NAME)
-                    intent.putExtra("publication", publication)
-                    startActivity(intent)
+
+                        val intent = Intent(this, R2EpubActivity::class.java)
+                        intent.putExtra("publicationPath", PUBLICATION_PATH)
+                        intent.putExtra("epubName", EPUB_FILE_NAME)
+                        intent.putExtra("publication", publication)
+                        startActivity(intent)
+
                 }
             }
         }
 
-        gridview.setOnItemLongClickListener { parent, view, position, _ ->
+        catalogView.setOnItemLongClickListener { parent, view, position, _ ->
 
             val layoutInflater = LayoutInflater.from(this)
             val layout = layoutInflater.inflate(R.layout.popup_delete,  parent, false)
@@ -227,7 +254,6 @@ class CatalogActivity : AppCompatActivity() {
 
 
 
- 
     }
 
     private fun copyEpubFromAssetsToStorage() {
@@ -241,12 +267,13 @@ class CatalogActivity : AppCompatActivity() {
             PUBLICATION_PATH = R2TEST_DIRECTORY_PATH + "/" + EPUB_FILE_NAME
             input.toFile(PUBLICATION_PATH)
 
-            val file = File(PUBLICATION_PATH)
-            val pub = EpubParser().parse(PUBLICATION_PATH)
+            val parser = EpubParser()
 
+            val file = File(PUBLICATION_PATH)
+            val pub = parser.parse(PUBLICATION_PATH)
             if (pub != null) {
 
-                parseAndShowEpub(pub)
+                parseAndShowEpub(parser, pub, EPUB_FILE_NAME!!)
 
                 val publication = pub.publication
                 val publicationIdentifier = publication.metadata.identifier
@@ -254,8 +281,8 @@ class CatalogActivity : AppCompatActivity() {
                 preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
 
                 val link = publication.uriTo(publication.coverLink,  URL("$BASE_URL:$localPort" + "/" + EPUB_FILE_NAME))
-
-                val book = Book(file.name, publication.metadata.title, publication.metadata.authors.get(0).name!!, file.absolutePath, books.size.toLong(), link)
+                val author = authorName(publication)
+                val book = Book(file.name, publication.metadata.title, author, file.absolutePath, books.size.toLong(), link)
                 books.add(book)
                 booksAdapter.notifyDataSetChanged()
 
@@ -264,7 +291,6 @@ class CatalogActivity : AppCompatActivity() {
     }
 
     fun startServer() {
-
         if (!server.isAlive()) {
             try {
                 server.start()
@@ -283,7 +309,7 @@ class CatalogActivity : AppCompatActivity() {
         }
     }
 
-    private fun parseAndShowEpub(pub: PubBox?) {
+    private fun parseAndShowEpub(parser:EpubParser, pub: PubBox?, fileName: String) {
 
         if (pub == null) {
             Toast.makeText(applicationContext, "Invalid ePub", Toast.LENGTH_SHORT).show()
@@ -292,7 +318,21 @@ class CatalogActivity : AppCompatActivity() {
         val publication = pub.publication
         val container = pub.container
 
-        server.addEpub(publication, container, "/" + EPUB_FILE_NAME)
+//        pub.container.drm?.let {drm ->
+//            if (drm.brand == Drm.Brand.lcp) {
+//                handleLcpPublication(PUBLICATION_PATH, drm, {
+//                    val pair = parser.parseRemainingResource(pub.container, publication, it)
+//                    pub.container = pair.first
+//                    pub.publication = pair.second
+//                }, {
+//                    server.addEpub(publication, container, "/" + fileName)
+//                }).get()
+//            } else {
+//                server.addEpub(publication, container, "/" + fileName)
+//            }
+//        } ?: run {
+        server.addEpub(publication, container, "/" + fileName)
+//        }
 
     }
 
@@ -309,27 +349,12 @@ class CatalogActivity : AppCompatActivity() {
         }
     }
 
-// TODO needs some rework for deprecated progress indicator...
-    private fun showProgress(context: Context, title: String?, message: String?): ProgressDialog {
-
-        val b = ProgressDialog(context)
-        b.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_dismiss), DialogInterface.OnClickListener { dialogInterface, _ ->
-            dialogInterface.dismiss()
-        })
-        b.setMessage(message)
-        b.setTitle(title)
-
-        return b
-    }
-
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         this.permissions.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-
-// TODO needs some rework.
+    // TODO needs some rework.
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
         // The ACTION_OPEN_DOCUMENT intent was sent with the request code
@@ -342,44 +367,34 @@ class CatalogActivity : AppCompatActivity() {
             // provided to this method as a parameter.
             // Pull that URI using resultData.getData().
             if (data != null) {
-
                 val uri = data.data
                 val uuid = UUID.randomUUID().toString()
                 EPUB_FILE_NAME = uuid
                 PUBLICATION_PATH = R2TEST_DIRECTORY_PATH + EPUB_FILE_NAME
                 val input = contentResolver.openInputStream(uri)
                 input.toFile(PUBLICATION_PATH)
-
                 val file = File(PUBLICATION_PATH)
-
-                val pub = EpubParser().parse(PUBLICATION_PATH)
+                val parser = EpubParser()
+                val pub = parser.parse(PUBLICATION_PATH)
                 if (pub != null) {
-                    parseAndShowEpub(pub)
-
+                    parseAndShowEpub(parser, pub, EPUB_FILE_NAME!!)
                     val publication = pub.publication
                     val publicationIdentifier = publication.metadata.identifier
-
                     preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
-
                     val link = publication.uriTo(publication.coverLink,  URL("$BASE_URL:$localPort" + "/" +EPUB_FILE_NAME))
-                    val book = Book(file.name, publication.metadata.title, publication.metadata.authors.get(0).name!!, file.absolutePath, books.size.toLong(), link)
+                    val author = authorName(publication)
+                    val book = Book(file.name, publication.metadata.title, author, file.absolutePath, books.size.toLong(), link)
                     books.add(book)
                     booksAdapter.notifyDataSetChanged()
-
                 }
-
-
             }
         } else if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
-
             // existing epub selected through the list activity
             if (data != null) {
-
                 EPUB_FILE_NAME = data.getStringExtra("name")
                 PUBLICATION_PATH = R2TEST_DIRECTORY_PATH + EPUB_FILE_NAME
             }
-
         }
     }
-}
 
+}
