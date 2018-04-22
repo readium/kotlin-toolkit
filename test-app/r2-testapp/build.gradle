@@ -51,6 +51,7 @@ dependencies {
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+//    implementation project(':liblcp')
     implementation 'com.android.support:appcompat-v7:27.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     implementation 'com.android.support:design:27.1.0'
@@ -61,6 +62,34 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxjava:2.1.6'
     implementation 'com.jakewharton.timber:timber:4.6.0'
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
+
+    implementation "org.jetbrains.anko:anko-design:0.10.4" // For SnackBars
+    
+    implementation "org.jetbrains.anko:anko-commons:0.10.4"
+
+    // Anko Layouts
+    implementation "org.jetbrains.anko:anko-sdk25:0.10.4" // sdk15, sdk19, sdk21, sdk23 are also available
+    implementation "org.jetbrains.anko:anko-appcompat-v7:0.10.4"
+
+    // Coroutine listeners for Anko Layouts
+    implementation "org.jetbrains.anko:anko-sdk25-coroutines:0.10.4"
+    implementation "org.jetbrains.anko:anko-appcompat-v7-coroutines:0.10.4"
+
+    // Anko SQLite
+    implementation "org.jetbrains.anko:anko-sqlite:0.10.4"
+
+    implementation 'com.github.kittinunf.fuel:fuel:1.12.1' //for JVM
+    implementation 'com.github.kittinunf.fuel:fuel-android:1.12.1' //for Android
+    implementation 'com.mcxiaoke.koi:core:0.5.5' // useful extensions (only ~100k)
+    implementation 'com.mcxiaoke.koi:async:0.5.5' // async functions (only ~70k)
+
+    implementation 'nl.komponents.kovenant:kovenant:3.3.0'
+    implementation 'nl.komponents.kovenant:kovenant-core:3.3.0'
+    implementation 'nl.komponents.kovenant:kovenant-android:3.3.0'
+    implementation 'nl.komponents.kovenant:kovenant-combine:3.3.0'
+    implementation 'nl.komponents.kovenant:kovenant-jvm:3.3.0'
+    implementation 'nl.komponents.kovenant:kovenant-functional:3.3.0'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
