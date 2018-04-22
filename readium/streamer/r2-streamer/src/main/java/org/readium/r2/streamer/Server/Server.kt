@@ -13,11 +13,11 @@ import java.util.*
 
 class Server(port: Int) : AbstractServer(port) {
     
-    val rootDir: String = Environment.getExternalStorageDirectory().path + "/r2test/"
+    val rootDir: String = Environment.getExternalStorageDirectory().path + "/r2reader/"
 
 }
 
-abstract class AbstractServer(port: Int) : RouterNanoHTTPD(port) {
+abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
 
 //    private val SEARCH_QUERY_HANDLE = "/search"
     private val MANIFEST_HANDLE = "/manifest"
@@ -28,7 +28,7 @@ abstract class AbstractServer(port: Int) : RouterNanoHTTPD(port) {
     private var containsMediaOverlay = false
 
     private val ressources = Ressources()
-    val port = port
+//    val port = port
 
     fun addResource(name: String, body: String) {
         ressources.add(name, body)
