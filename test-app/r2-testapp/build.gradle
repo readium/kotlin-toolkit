@@ -4,6 +4,26 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+
+int major = 1
+int minor = 0
+int patch = 0
+int build = 21
+String type = ""
+
+def version = "$major.$minor.$patch"
+boolean appendBuild = build != 0
+if (appendBuild || !type.empty) {
+    version += "-$type"
+    if (appendBuild) {
+        version += build
+    }
+}
+
+project.ext.versionName = version
+project.ext.versionCode = 1_000_000 * major + 10_000 * minor + 100 * patch + build
+
+
 android {
     compileSdkVersion 27
     buildToolsVersion "27.0.3"
@@ -15,8 +35,8 @@ android {
         applicationId "org.readium.r2reader"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 20
-        versionName "1.0.0"
+        versionCode project.ext.versionCode
+        versionName project.ext.versionName
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
