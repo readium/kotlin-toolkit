@@ -5,8 +5,8 @@ import nl.komponents.kovenant.task
 import org.joda.time.DateTime
 import org.readium.r2.shared.*
 import org.readium.r2.shared.opds.*
-import org.readium.r2.streamer.XmlParser.Node
-import org.readium.r2.streamer.XmlParser.XmlParser
+import org.readium.r2.shared.XmlParser.Node
+import org.readium.r2.shared.XmlParser.XmlParser
 import java.net.URL
 
 enum class OPDSParserError(v:String) {
