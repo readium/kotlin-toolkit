@@ -17,17 +17,17 @@ class DrmDecoder {
 
     private val TAG = this::class.java.simpleName
 
-    fun decoding(input: InputStream, resourceLink: Link, drm: Drm?) : InputStream {
+    fun decoding(input: InputStream, resourceLink: Link, drm: Drm?): InputStream {
 
         val encryption = resourceLink.properties.encryption?.let {
             return@let it
-        }?: run {
+        } ?: run {
             return input
         }
 
         val scheme = resourceLink.properties.encryption?.scheme?.let {
             return@let it
-        }?: run {
+        } ?: run {
             return input
         }
 
@@ -39,26 +39,26 @@ class DrmDecoder {
 
                 if (resourceLink.properties.encryption?.compression == "deflate") {
 
-//                    val padding = data[data.size - 1].toInt()
-//                    data = data.copyOfRange(0, data.size - padding)
-//                    val inflater = Inflater()
-//                    inflater.setInput(data)
-//                    val output = ByteArrayOutputStream(data.size)
-//                    val buf = ByteArray(1024)
-//                    while (!inflater.finished()) {
-//                        try {
-//                            val count = inflater.inflate(buf)
-//                            output.write(buf, 0, count)
-//                        } catch (e: Exception) {
-//                            Log.i("output.write", e.message)
-//                        }
-//                    }
-//                    try {
-//                        output.close()
-//                    } catch (e: Exception) {
-//                        Log.i("output.close", e.message)
-//                    }
-//                    data = output.toByteArray()
+                    val padding = data[data.size - 1].toInt()
+                    data = data.copyOfRange(0, data.size - padding)
+                    val inflater = Inflater(true)
+                    inflater.setInput(data)
+                    val output = ByteArrayOutputStream(data.size)
+                    val buf = ByteArray(1024)
+                    while (!inflater.finished()) {
+                        try {
+                            val count = inflater.inflate(buf)
+                            output.write(buf, 0, count)
+                        } catch (e: Exception) {
+                            Log.e("output.write", e.message)
+                        }
+                    }
+                    try {
+                        output.close()
+                    } catch (e: Exception) {
+                        Log.e("output.close", e.message)
+                    }
+                    data = output.toByteArray()
                     return ByteArrayInputStream(data)
 
                 }
@@ -66,7 +66,7 @@ class DrmDecoder {
             }
             return input
 
-        }?: run {
+        } ?: run {
             return input
         }
 
@@ -79,4 +79,6 @@ class DrmDecoder {
         return drmLicense.decipher(buffer)
     }
 
+
 }
+

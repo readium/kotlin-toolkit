@@ -54,6 +54,8 @@ class EpubParser : PublicationParser {
 
         fillEncryptionProfile(publication, drm)
 //            parseMediaOverlay(fetcher, publication)
+        parseNavigationDocument(container as EpubContainer, publication)
+        parseNcxDocument(container as EpubContainer, publication)
 
         return Pair(container, publication)
     }
@@ -111,7 +113,7 @@ class EpubParser : PublicationParser {
                 ?: "content.opf"
     }
 
-    private fun fillEncryptionProfile(publication: Publication, drm: Drm?) {
+    private fun fillEncryptionProfile(publication: Publication, drm: Drm?): Publication {
         drm?.let {
             for (link in publication.resources) {
                 if (link.properties.encryption?.scheme == it.scheme) {
@@ -124,6 +126,7 @@ class EpubParser : PublicationParser {
                 }
             }
         }
+        return publication
     }
 
     fun scanForDrm(container: EpubContainer) : Drm? {
