@@ -4,16 +4,16 @@ import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
 
 
-public class Feed {
-    public var metadata: OpdsMetadata
-    public var links = mutableListOf<Link>()
-    public var facets = mutableListOf<Facet>()
-    public var groups = mutableListOf<Group>()
-    public var publications = mutableListOf<Publication>()
-    public var navigation = mutableListOf<Link>()
-    public var context = mutableListOf<String>()
+data class Feed(val title: String) {
+    var metadata: OpdsMetadata
+    var links:MutableList<Link> = mutableListOf()
+    var facets:MutableList<Facet> = mutableListOf()
+    var groups:MutableList<Group> = mutableListOf()
+    var publications:MutableList<Publication> = mutableListOf()
+    var navigation:MutableList<Link> = mutableListOf()
+    var context:MutableList<String> = mutableListOf()
 
-    public constructor(title: String) {
+    init {
         this.metadata = OpdsMetadata(title = title)
     }
 

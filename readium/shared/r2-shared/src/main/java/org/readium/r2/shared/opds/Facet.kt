@@ -3,11 +3,12 @@ package org.readium.r2.shared.opds
 import org.readium.r2.shared.Link
 
 
-public class Facet {
-    public var metadata: OpdsMetadata
-    public var links = mutableListOf<Link>()
+data class Facet(val title: String) {
+    var metadata: OpdsMetadata
+    var links = mutableListOf<Link>()
 
-    public constructor(title: String) {
+    init {
         this.metadata = OpdsMetadata(title = title)
     }
+
 }

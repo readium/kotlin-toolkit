@@ -4,13 +4,14 @@ import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
 
 
-public class Group {
-    public var metadata: OpdsMetadata
-    public var links = mutableListOf<Link>()
-    public var publications = mutableListOf<Publication>()
-    public var navigation = mutableListOf<Link>()
+data class Group(val title: String) {
+     var metadata: OpdsMetadata
+     var links = mutableListOf<Link>()
+     var publications = mutableListOf<Publication>()
+     var navigation = mutableListOf<Link>()
 
-    public constructor(title: String) {
+    init {
         this.metadata = OpdsMetadata(title = title)
     }
+
 }

@@ -11,6 +11,7 @@ class Contributor : JSONable, Serializable {
     var sortAs: String? = null
     var roles: MutableList<String> = mutableListOf()
     var links: MutableList<Link> = mutableListOf()
+    var identifier: String? = null
 
     var name: String? = null
         get() = multilangName.singleString

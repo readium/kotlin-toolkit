@@ -1,7 +1,9 @@
 package org.readium.r2.shared
 
 import org.json.JSONObject
+import org.readium.r2.shared.metadata.BelongsTo
 import java.io.Serializable
+import java.util.*
 
 class Metadata : Serializable {
 
@@ -31,14 +33,19 @@ class Metadata : Serializable {
     var subjects: MutableList<Subject> = mutableListOf()
     var publishers: MutableList<Contributor> = mutableListOf()
     var contributors: MutableList<Contributor> = mutableListOf()
-    var modified: String? = null
+    var modified: Date? = null
     var publicationDate: String? = null
     var description: String? = null
     var rendition: Rendition = Rendition()
     var source: String? = null
     var epubType: MutableList<String> = mutableListOf()
     var rights: String? = null
+    var rdfType: String? = null
     var otherMetadata: MutableList<MetadataItem> = mutableListOf()
+
+    var belongsTo: BelongsTo? = null
+
+    var duration: Int? = null
 
     fun titleForLang(key: String) : String?  = multilangTitle?.multiString?.get(key)
 
