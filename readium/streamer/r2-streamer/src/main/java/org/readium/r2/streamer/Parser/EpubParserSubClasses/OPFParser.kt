@@ -1,6 +1,7 @@
 package org.readium.r2.streamer.Parser.EpubParserSubClasses
 
 import android.util.Log
+import org.joda.time.DateTime
 import org.readium.r2.shared.*
 import org.readium.r2.shared.XmlParser.Node
 import org.readium.r2.shared.XmlParser.XmlParser
@@ -41,7 +42,7 @@ class OPFParser {
                     document.getFirst("package")!!.attributes) ?: return false
         metadata.description = metadataElement.getFirst("dc:description")?.text
         metadata.publicationDate = metadataElement.getFirst("dc:date")?.text
-        metadata.modified = mp.modifiedDate(metadataElement)
+        metadata.modified = DateTime(mp.modifiedDate(metadataElement)).toDate()
         metadata.source = metadataElement.getFirst("dc:sources")?.text
         mp.subject(metadataElement)?.let { metadata.subjects.add(it) }
         metadata.languages = metadataElement.get("dc:language")?.map { it.text!! }?.toMutableList()

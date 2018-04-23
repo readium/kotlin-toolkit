@@ -72,7 +72,7 @@ class MetadataParser {
             throw Exception(noTitleError)
         }
         val mainTitle = getMainTitleElement(titles, metadata) ?: return multilangTitle
-        multilangTitle.multiString = multiString(mainTitle, metadata)
+        multilangTitle.multiString = multiString(mainTitle, metadata).toMutableMap()
         return multilangTitle
     }
 
@@ -160,7 +160,7 @@ class MetadataParser {
     private fun createContributor(element: Node, metadata: Node) : Contributor {
         val contributor = Contributor()
         contributor.multilangName.singleString = element.text
-        contributor.multilangName.multiString = multiString(element, metadata)
+        contributor.multilangName.multiString = multiString(element, metadata).toMutableMap()
         element.attributes["opf:role"]?.let { contributor.roles.add(it) }
         element.attributes["opf:file-as"]?.let { contributor.sortAs = it }
         return contributor
