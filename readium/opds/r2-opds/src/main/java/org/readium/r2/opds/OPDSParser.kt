@@ -1,12 +1,18 @@
 package org.readium.r2.opds
 
+import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.core.Request
+import com.github.kittinunf.fuel.core.Response
+import com.github.kittinunf.result.Result
 import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.deferred
 import nl.komponents.kovenant.task
+import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.readium.r2.shared.*
-import org.readium.r2.shared.opds.*
 import org.readium.r2.shared.XmlParser.Node
 import org.readium.r2.shared.XmlParser.XmlParser
+import org.readium.r2.shared.opds.*
 import java.net.URL
 
 enum class OPDSParserError(v:String) {
@@ -23,34 +29,34 @@ data class MimeTypeParameters(
         var parameters:MutableMap<String, String> = mutableMapOf()
 )
 
-public class OPDSParser {
+class OPDSParser {
     companion object {
 
-        public fun parseURL(url: URL) : Promise<Feed, Exception> {
-            return task {
-
-                //TODO incomplete
-                Feed("")
+        fun parseURL(url: URL) : Promise<Feed, Exception> {
+            return Fuel.get(url.toString(),null).promise() then {
+                val (request, response, result) = it
+                this.parse(xmlData = result)
             }
         }
 
-        public fun parse(xmlData: ByteArray) : Feed {
+        fun parse(xmlData: ByteArray) : Feed {
             val document = XmlParser()
             document.parseXml(xmlData.inputStream())
             val root = document.root()
-            val title = root.get("title") ?: throw Exception(OPDSParserError.missingTitle.name)
+            val title = root.getFirst("title")?.text ?: throw Exception(OPDSParserError.missingTitle.name)
             val feed = Feed(title.toString())
-            val tmpDate = root.get("updated")
-            val date = DateTime(tmpDate).toDate()
-            if (tmpDate != null && date != null) {
+            val tmpDate = root.getFirst("updated")?.text
+            tmpDate?.let {
+                val date = DateTime(it).toDate()
                 feed.metadata.modified = date
             }
-            val totalResults = root.get("TotalResults")
-            if (totalResults != null) {
+
+            val totalResults = root.getFirst("TotalResults")?.text
+            totalResults?.let {
                 feed.metadata.numberOfItems = totalResults.toString().toInt()
             }
-            val itemsPerPage = root.get("ItemsPerPage")
-            if (itemsPerPage != null) {
+            val itemsPerPage = root.getFirst("ItemsPerPage")?.text
+            itemsPerPage?.let {
                 feed.metadata.itemsPerPage = itemsPerPage.toString().toInt()
             }
             val entries = root.get("entry") ?: return feed
@@ -58,10 +64,10 @@ public class OPDSParser {
                 var isNavigation = true
                 val collectionLink = Link()
                 val links = entry.get("link")
-                if (links != null) {
+                links?.let {
                     for (link in links) {
                         val rel = link.attributes["rel"]
-                        if (rel != null) {
+                        rel?.let {
                             if (rel.contains("http://opds-spec.org/acquisition")) {
                                 isNavigation = false
                             }
@@ -90,12 +96,11 @@ public class OPDSParser {
                     link?.let {
                         val rel = link.attributes["rel"]
                         if (rel != null) {
-
                             newLink.rel.add(rel)
                         }
                         val facetElementCountStr = link.attributes["thr:count"]
-                        val facetElementCount = facetElementCountStr.toString().toInt()
-                        if (facetElementCountStr != null && facetElementCount != null) {
+                        facetElementCountStr?.let {
+                            val facetElementCount = it.toInt()
                             newLink.properties.numberOfItems = facetElementCount
                         }
                         newLink.typeLink = link.attributes["type"]
@@ -156,59 +161,113 @@ public class OPDSParser {
             return MimeTypeParameters(type = type, parameters = params)
         }
 
-        public fun fetchOpenSearchTemplate(feed: Feed) : Promise<String, Exception> {
+        public fun fetchOpenSearchTemplate(feed: Feed) : Promise<String?, Exception> {
 
-            //TODO incomplete
-            return task { "" }
+            var openSearchURL: URL? = null
+            var selfMimeType: String? = null
+
+            for (link in feed.links) {
+                if (link.rel[0] == "self") {
+                    link.typeLink?.let {
+                        selfMimeType = it
+                    }
+                } else if (link.rel[0] == "search") {
+                    link.href?.let {
+                        openSearchURL = URL(it)
+                    }
+                }
+            }
+            val unwrappedURL = openSearchURL?.let {
+                return@let it
+            }
+
+            return Fuel.get(unwrappedURL.toString(),null).promise() then {
+                val (request, response, result) = it
+
+                val document = XmlParser()
+                document.parseXml(result.inputStream())
+
+                val urls = document.root().get("Url")
+
+                var typeAndProfileMatch: Node? = null
+                var typeMatch: Node? = null
+
+                selfMimeType?.let {
+
+                    val selfMimeParams = parseMimeType(mimeTypeString = it)
+                    urls?.let {
+                        for (url in urls) {
+                            val urlMimeType = url.attributes["type"]
+                            if (urlMimeType == null) {
+                                continue
+                            }
+                            val otherMimeParams = parseMimeType(mimeTypeString = urlMimeType)
+                            if (selfMimeParams.type == otherMimeParams.type) {
+                                if (typeMatch == null) {
+                                    typeMatch = url
+                                }
+                                if (selfMimeParams.parameters["profile"] == otherMimeParams.parameters["profile"]) {
+                                    typeAndProfileMatch = url
+                                    break
+                                }
+                            }
+                        }
+                        val match = typeAndProfileMatch ?: (typeMatch ?: urls[0])
+                        val template = match.attributes["template"]
+
+                        template
+                    }
+                }
+                null
+            }
+
         }
 
         internal fun parseEntry(entry: Node) : Publication {
             val publication = Publication()
             val metadata = Metadata()
             publication.metadata = metadata
-            val entryTitle = entry.get("title")
-            if (entryTitle != null) {
+            val entryTitle = entry.getFirst("title")
+            entryTitle?.let {
                 if (metadata.multilangTitle == null) {
                     metadata.multilangTitle = MultilangString()
                 }
-                metadata.multilangTitle?.singleString = entryTitle.toString()
+                metadata.multilangTitle?.singleString = entryTitle.text
             }
-            val identifier = entry.get("identifier")
-            if (identifier != null) {
-                metadata.identifier = identifier.toString()
-            } else {
-                val id = entry.get("id")
-                if (id != null) {
-                    metadata.identifier = id.toString()
+            var identifier = entry.getFirst("identifier")
+            identifier?.let {
+                metadata.identifier = it.text.toString()
+            }?: run {
+                identifier = entry.getFirst("id")
+                identifier?.let {
+                    metadata.identifier = it.text.toString()
                 }
             }
             val languages = entry.get("dcterms:language")
-            if (languages != null) {
-                metadata.languages = languages.map({ it.toString() }).toMutableList()
+            languages?.let {
+                metadata.languages = languages.map({ it.text.toString() }).toMutableList()
             }
-            val tmpDate = entry.get("updated")
-            if (tmpDate != null) {
-                val date = DateTime(tmpDate.toString()).toDate()
-                if (date != null) {
-                    metadata.modified = date
-                }
+            val tmpDate = entry.getFirst("updated")
+            tmpDate?.let {
+                val date = DateTime(tmpDate.text).toDate()
+                metadata.modified = date
             }
-            val published = entry.get("published")
-            if (published != null) {
-                metadata.publicationDate = published.toString()
+            val published = entry.getFirst("published")
+            published?.let {
+                metadata.publicationDate = published.text
             }
             val rights = entry.get("rights")
-            if (rights != null) {
-                metadata.rights = rights.map({ it }).joinToString(" ")
+            rights?.let {
+                metadata.rights = rights.map({ it.text }).joinToString(" ")
             }
             val publisher = entry.get("dcterms:publisher")
-            if (publisher != null) {
+            publisher?.let {
                 val contributor = Contributor()
                 contributor.multilangName.singleString = publisher.toString()
                 metadata.publishers.add(contributor)
             }
             val categories = entry.get("category")
-            if (categories != null) {
+            categories?.let {
                 for (category in categories) {
                     val subject = Subject()
                     subject.code = category.attributes["term"]
@@ -218,7 +277,7 @@ public class OPDSParser {
                 }
             }
             val authors = entry.get("author")
-            if (authors != null) {
+            authors?.let {
                 for (author in authors) {
                     val contributor = Contributor()
                     val uri = author.get("uri")
@@ -231,39 +290,42 @@ public class OPDSParser {
                     metadata.authors.add(contributor)
                 }
             }
-            val content = entry.get("content")
-            if (content != null) {
-                metadata.description = content.toString()
-            } else {
-                val summary = entry.get("summary")
-                if (summary != null) {
-                    metadata.description = summary.toString()
+            val content = entry.getFirst("content")
+            content?.let {
+                metadata.description = content.text
+            } ?: run {
+                val summary = entry.getFirst("summary")
+                summary?.let {
+                    metadata.description = summary.text
                 }
             }
             val links = entry.get("link")
-            if (links != null) {
+            links?.let {
                 for (link in links) {
                     val newLink = Link()
                     newLink.href = link.attributes["href"]
                     newLink.title = link.attributes["title"]
                     newLink.typeLink = link.attributes["type"]
                     val rel = link.attributes["rel"]
-                    if (rel != null) {
+                    rel?.let {
                         newLink.rel.add(rel)
                     }
                     val indirectAcquisitions = link.get("opds:indirectAcquisition")
-                    if (indirectAcquisitions != null && !indirectAcquisitions.isEmpty()) {
-                        newLink.properties.indirectAcquisition = parseIndirectAcquisition(indirectAcquisitions.toMutableList())
+                    indirectAcquisitions?.let {
+                        if (!indirectAcquisitions.isEmpty()) {
+                            newLink.properties.indirectAcquisition = parseIndirectAcquisition(indirectAcquisitions.toMutableList())
+                        }
                     }
-                    val price:Node = link.getFirst("opds:price")!!
-                    val priceDouble = price.toString().toDouble()
-                    val currency = price.attributes["currencyCode"]
-                    if (price != null && priceDouble != null && currency != null) {
-                        val newPrice = Price(currency = currency, value = priceDouble)
+                    val price = link.getFirst("opds:price")
+                    var priceDouble:Double? = null
+                    var currency:String? = null
+                    price?.let {
+                        priceDouble = price.toString().toDouble()
+                        currency = price.attributes["currencyCode"]
+                        val newPrice = Price(currency = currency!!, value = priceDouble!!)
                         newLink.properties.price = newPrice
                     }
-//                    val rel = link.attributes["rel"]
-                    if (rel != null) {
+                    rel?.let {
                         if (rel == "collection" || rel == "http://opds-spec.org/group") {} else if (rel == "http://opds-spec.org/image" || rel == "http://opds-spec.org/image-thumbnail") {
                             publication.images.add(newLink)
                         } else {
@@ -348,3 +410,27 @@ public class OPDSParser {
         }
     }
 }
+
+
+fun Request.promise(): Promise<Triple<Request, Response, ByteArray>, Exception> {
+    val deferred = deferred<Triple<Request, Response, ByteArray>, Exception>()
+    task { response() } success {
+        val (request, response, result) = it
+        when(result) {
+            is Result.Success -> deferred.resolve(Triple(request, response, result.value))
+            is Result.Failure -> deferred.reject(result.error)
+        }
+    } fail {
+        deferred.reject(it)
+    }
+    return deferred.promise
+}
+
+val Response.contentTypeEncoding: String
+    get() = contentTypeEncoding()
+
+fun Response.contentTypeEncoding(default: String = "utf-8"): String {
+    val contentType: String = httpResponseHeaders["Content-Type"]?.first() ?: return default
+    return contentType.substringAfterLast("charset=", default).substringAfter(' ', default)
+}
+
