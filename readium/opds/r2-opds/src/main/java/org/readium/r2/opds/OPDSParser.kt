@@ -47,7 +47,7 @@ public class OPDSParser {
             }
             val totalResults = root.get("TotalResults")
             if (totalResults != null) {
-                feed.metadata.numberOfItem = totalResults.toString().toInt()
+                feed.metadata.numberOfItems = totalResults.toString().toInt()
             }
             val itemsPerPage = root.get("ItemsPerPage")
             if (itemsPerPage != null) {
@@ -190,7 +190,7 @@ public class OPDSParser {
             if (tmpDate != null) {
                 val date = DateTime(tmpDate.toString()).toDate()
                 if (date != null) {
-                    metadata.modified = date.toString()
+                    metadata.modified = date
                 }
             }
             val published = entry.get("published")
