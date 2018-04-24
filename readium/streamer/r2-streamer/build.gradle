@@ -40,6 +40,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'commons-io:commons-io:2.4'
     implementation 'org.zeroturnaround:zt-zip:1.12'
+    implementation 'joda-time:joda-time:2.9.9'
 
     //TODO conflicting support libraries, excluding these
     implementation ('com.mcxiaoke.koi:core:0.5.5') {
