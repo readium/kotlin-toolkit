@@ -1,5 +1,8 @@
 package org.readium.r2.opds
 
+import com.github.kittinunf.fuel.Fuel
+import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.json.JSONArray
 import org.json.JSONObject
@@ -7,6 +10,7 @@ import org.readium.r2.shared.*
 import org.readium.r2.shared.Collection
 import org.readium.r2.shared.metadata.BelongsTo
 import org.readium.r2.shared.opds.*
+import java.net.URL
 
 enum class OPDS2ParserError(v:String) {
     invalidJSON("OPDS 2 manifest is not valid JSON"),
@@ -26,6 +30,13 @@ enum class OPDS2ParserError(v:String) {
 class OPDS2Parser {
 
     companion object {
+
+        fun parseURL(url: URL) : Promise<Feed, Exception> {
+            return Fuel.get(url.toString(),null).promise() then {
+                val (request, response, result) = it
+                this.parse(result)
+            }
+        }
 
         fun parse(jsonData: ByteArray) : Feed {
             val topLevelDict = JSONObject(String(jsonData))
