@@ -2,9 +2,10 @@ package org.readium.r2.shared.opds
 
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
+import java.io.Serializable
 
 
-data class Feed(val title: String) {
+data class Feed(val title: String): Serializable {
     var metadata: OpdsMetadata
     var links:MutableList<Link> = mutableListOf()
     var facets:MutableList<Facet> = mutableListOf()

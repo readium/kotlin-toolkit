@@ -5,7 +5,7 @@ import java.io.Serializable
 import java.sql.Timestamp
 
 //  A link to a resource
-class Link : JSONable, Serializable{
+class Link : JSONable, Serializable {
 
     private val TAG = this::class.java.simpleName
 
