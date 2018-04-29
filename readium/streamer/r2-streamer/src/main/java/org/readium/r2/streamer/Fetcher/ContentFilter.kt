@@ -1,6 +1,5 @@
 package org.readium.r2.streamer.Fetcher
 
-import org.readium.r2.shared.Drm
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.RenditionLayout
 import org.readium.r2.shared.removeLastComponent

@@ -1,7 +1,7 @@
 package org.readium.r2.streamer.Parser
 
 import android.util.Log
-import org.readium.r2.shared.Drm
+import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Encryption
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.XmlParser.XmlParser

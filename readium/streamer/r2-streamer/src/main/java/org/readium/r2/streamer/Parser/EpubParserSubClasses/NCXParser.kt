@@ -10,7 +10,7 @@ class NCXParser{
     lateinit var ncxDocumentPath: String
 
     fun tableOfContents(document: XmlParser) : List<Link> {
-        val navMapElement = document.root().getFirst("navMap")!!
+        val navMapElement = document.root().getFirst("navMap")
         return nodeArray(navMapElement, "navPoint")
     }
 

@@ -1,6 +1,6 @@
 package org.readium.r2.streamer.Containers
 
-import org.readium.r2.shared.Drm
+import org.readium.r2.shared.drm.Drm
 import java.io.File
 import java.util.zip.ZipFile
 import org.readium.r2.shared.Link

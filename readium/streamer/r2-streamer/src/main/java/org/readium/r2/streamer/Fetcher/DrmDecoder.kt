@@ -1,16 +1,12 @@
 package org.readium.r2.streamer.Fetcher
 
 import android.util.Log
-import org.readium.r2.shared.Drm
+import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Link
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.util.*
-import java.util.zip.DataFormatException
-import java.util.zip.Deflater
 import java.util.zip.Inflater
-import java.util.zip.InflaterInputStream
 
 
 class DrmDecoder {

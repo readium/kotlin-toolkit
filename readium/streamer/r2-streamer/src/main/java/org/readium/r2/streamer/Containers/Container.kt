@@ -1,6 +1,6 @@
 package org.readium.r2.streamer.Containers
 
-import org.readium.r2.shared.Drm
+import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.XmlParser.XmlParser
