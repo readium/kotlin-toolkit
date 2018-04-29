@@ -10,7 +10,7 @@ import org.readium.lcp.sdk.DRMContext
 import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.Model.Documents.LicenseDocument
 import org.readium.r2.lcp.Model.Documents.StatusDocument
-import org.readium.r2.shared.DrmLicense
+import org.readium.r2.shared.drm.DrmLicense
 import org.zeroturnaround.zip.ZipUtil
 import java.io.File
 import java.net.URL
