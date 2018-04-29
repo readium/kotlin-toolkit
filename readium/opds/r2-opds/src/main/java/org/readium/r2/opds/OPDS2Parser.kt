@@ -128,17 +128,17 @@ class OPDS2Parser {
             if(linkDict.has("type")) {
                 link.typeLink = linkDict.getString("type")
             }
-
-            if (linkDict.get("rel") is JSONObject){
-                link.rel.add(linkDict.getString("rel"))
-            } else if (linkDict.get("rel") is JSONArray) {
-                val array = linkDict.getJSONArray("rel")
-                for (i in 0..(array.length() - 1)) {
-                    val string = array.getString(i)
-                    link.rel.add(string)
+            if(linkDict.has("rel")) {
+                if (linkDict.get("rel") is String) {
+                    link.rel.add(linkDict.getString("rel"))
+                } else if (linkDict.get("rel") is JSONArray) {
+                    val array = linkDict.getJSONArray("rel")
+                    for (i in 0..(array.length() - 1)) {
+                        val string = array.getString(i)
+                        link.rel.add(string)
+                    }
                 }
             }
-
             if(linkDict.has("height")) {
                 link.height = linkDict.getInt("height")
             }
