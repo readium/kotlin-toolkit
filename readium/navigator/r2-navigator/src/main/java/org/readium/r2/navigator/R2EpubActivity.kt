@@ -6,17 +6,20 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_page.view.*
+import org.jetbrains.anko.intentFor
 import org.readium.r2.navigator.UserSettings.Appearance
 import org.readium.r2.navigator.UserSettings.UserSettings
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
+import org.readium.r2.shared.drm.DRMMModel
 
 
 class R2EpubActivity : AppCompatActivity() {
@@ -33,6 +36,9 @@ class R2EpubActivity : AppCompatActivity() {
     lateinit var publicationIdentifier:String
 
     lateinit var userSettings: UserSettings
+    var drmModel: DRMMModel? = null
+    private var menuDrm: MenuItem? = null
+    private var menuToc: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +47,21 @@ class R2EpubActivity : AppCompatActivity() {
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         resourcePager = findViewById(R.id.resourcePager)
         resources = ArrayList()
+
+        Handler().postDelayed({
+            if ( intent.getSerializableExtra("drmModel") != null) {
+                drmModel = intent.getSerializableExtra("drmModel") as DRMMModel
+                drmModel?.let {
+                    runOnUiThread {
+                        menuDrm?.setVisible(true)
+                    }
+                } ?: run {
+                    runOnUiThread {
+                        menuDrm?.setVisible(false)
+                    }
+                }
+            }
+        }, 100)
 
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
@@ -89,7 +110,10 @@ class R2EpubActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_toc, menu)
-        return super.onCreateOptionsMenu(menu)
+        menuDrm = menu?.findItem(R.id.drm)
+        menuToc = menu?.findItem(R.id.toc)
+        menuDrm?.setVisible(false)
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -106,6 +130,10 @@ class R2EpubActivity : AppCompatActivity() {
             R.id.settings -> {
                 userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.settings), 0, 0)
                 return false;
+            }
+            R.id.drm -> {
+                startActivity(intentFor<DRMManagementActivity>("drmModel" to drmModel))
+                return false
             }
 
             else -> return super.onOptionsItemSelected(item)
