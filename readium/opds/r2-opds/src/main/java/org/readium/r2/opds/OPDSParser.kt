@@ -83,10 +83,11 @@ class OPDSParser {
                     }
                 } else {
                     val newLink = Link()
-                    val entryTitle = entry.get("title")
-                    if (entryTitle != null) {
-                        newLink.title = entryTitle.toString()
+                    val entryTitle = entry.getFirst("title")
+                    entryTitle?.let {
+                        newLink.title = entryTitle.text
                     }
+
                     val link = entry.getFirst("link")
                     link?.let {
                         val rel = link.attributes["rel"]
@@ -315,13 +316,18 @@ class OPDSParser {
                     var priceDouble:Double? = null
                     var currency:String? = null
                     price?.let {
-                        priceDouble = price.toString().toDouble()
+                        priceDouble = price.text.toString().toDouble()
                         currency = price.attributes["currencyCode"]
+                        if (currency == null) {
+                            currency = price.attributes["currencycode"]
+                        }
                         val newPrice = Price(currency = currency!!, value = priceDouble!!)
                         newLink.properties.price = newPrice
                     }
                     rel?.let {
-                        if (rel == "collection" || rel == "http://opds-spec.org/group") {} else if (rel == "http://opds-spec.org/image" || rel == "http://opds-spec.org/image-thumbnail") {
+                        if (rel == "collection" || rel == "http://opds-spec.org/group") {
+
+                        } else if (rel == "http://opds-spec.org/image" || rel == "http://opds-spec.org/image-thumbnail") {
                             publication.images.add(newLink)
                         } else {
                             publication.links.add(newLink)
@@ -395,8 +401,10 @@ class OPDSParser {
                 if (typeAcquisition != null) {
                     val newIndAcq = IndirectAcquisition(typeAcquisition = typeAcquisition)
                     val grandChildren = child.get("opds:indirectAcquisition")?.toMutableList()
-                    if (grandChildren != null) {
-                        newIndAcq.child = parseIndirectAcquisition(grandChildren)
+                    grandChildren?.let {
+                       if (it.isNotEmpty()) {
+                           newIndAcq.child = parseIndirectAcquisition(grandChildren)
+                       }
                     }
                     ret.add(newIndAcq)
                 }
