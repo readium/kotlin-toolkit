@@ -25,22 +25,14 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
 //    uncomment this line to use with jitpack
     implementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+//    implementation 'com.github.readium:r2-shared-kotlin:0.1.0'
 
 //    uncomment this line to use with GitHu submodules and Android Studio Modules
 //    implementation project(':r2-shared')
-
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'org.nanohttpd:nanohttpd:2.3.1'
-    implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.1'
-    implementation 'com.google.code.gson:gson:2.8.2'
-    implementation 'commons-io:commons-io:2.4'
-    implementation 'org.zeroturnaround:zt-zip:1.12'
-    implementation 'joda-time:joda-time:2.9.9'
 
     //TODO conflicting support libraries, excluding these
     implementation ('com.mcxiaoke.koi:core:0.5.5') {
@@ -50,7 +42,14 @@ dependencies {
     implementation ('com.mcxiaoke.koi:async:0.5.5') {
         exclude module: 'support-v4'
     }
-    // async functions (only ~70k)
+
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.1'
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'commons-io:commons-io:2.4'
+    implementation 'org.zeroturnaround:zt-zip:1.12'
+    implementation 'joda-time:joda-time:2.9.9'
 
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
     final JACKSON_VERSION = '2.8.6'
@@ -61,8 +60,8 @@ dependencies {
 
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 
 }
