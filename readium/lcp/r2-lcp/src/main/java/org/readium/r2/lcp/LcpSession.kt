@@ -4,47 +4,39 @@ import android.content.Context
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
-import java.lang.Exception
-import java.net.URL
+import org.readium.lcp.sdk.Lcp
+import java.io.File
 
 class LcpSession {
 
     val lcpLicense: LcpLicense
     val androidContext:Context
+    val database:LcpDatabase
 
-    constructor(url: URL, context:Context) {
-
+    constructor(file: String, context:Context) {
         androidContext = context
-        lcpLicense = LcpLicense(url, true, androidContext )
-
+        database = LcpDatabase(androidContext)
+        lcpLicense = LcpLicense(File(file).toURI().toURL(), true, androidContext )
     }
 
-//    init {
-//        lcpLicense = LcpLicense(url, true, androidContext )
-//    }
-
-    // TODO : incomplete
-    fun resolve(passphrase: String, pemCrl: String) : LcpLicense {
-
-        val promise = task {
-            lcpLicense.fetchStatusDocument()
+    fun resolve(passphrase: String, pemCrl: String) : Promise<LcpLicense, Exception> {
+        return task {
+            lcpLicense.fetchStatusDocument().get()
         } then {
             lcpLicense.checkStatus()
-            lcpLicense.updateLicenseDocument()
+            lcpLicense.updateLicenseDocument().get()
         } then {
             lcpLicense.areRightsValid()
             lcpLicense.register()
-            getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl)
+            getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
         }
-        return promise.get()
-
-
     }
 
-    // TODO : incomplete
-    fun getLcpContext(jsonLicense: String, passphrase: String, pemCrl: String) : LcpLicense {
-        lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
-        return lcpLicense
+    fun getLcpContext(jsonLicense: String, passphrase: String, pemCrl: String) : Promise<LcpLicense, Exception> {
+        return task {
+            lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
+            lcpLicense
+        }
     }
 
     fun getHint() : String {
@@ -55,35 +47,24 @@ class LcpSession {
         return lcpLicense.license.encryption.profile.toString()
     }
 
-    // TODO : incomplete
     fun checkPassphrases(passphrases: List<String>) : String {
         return Lcp().findOneValidPassphrase(lcpLicense.license.json.toString(), passphrases.toTypedArray())
     }
 
-    // TODO : incomplete
     fun passphraseFromDb() : String? {
         val passphrases: List<String>
-//        val db = LCPDatabase().shared
-        passphrases = mutableListOf<String>()//db.transactions.possiblePasshprases(lcpLicense.license.id, lcpLicense.license.user.id)
+        passphrases = database.transactions.possiblePasshprases(lcpLicense.license.id, lcpLicense.license.user.id)
         if (passphrases.isEmpty())
             return null
         return checkPassphrases(passphrases)
     }
 
-    // TODO : incomplete
     fun storePassphrase(passphraseHash: String) {
-/*        LCPDatabase().shared.transactions.add(
-                lcpLicense.license.id,
-                lcpLicense.license.PROVIDER.toString(),
-                lcpLicense.license.user.id,
-                passphraseHash)
-                */
+        database.transactions.add(lcpLicense, passphraseHash)
     }
 
-    // TODO : incomplete
-    fun validateLicense() {
+    fun validateLicense() :Promise<Unit, Exception> {
         //TODO JSON Schema or something
-        return
+        return task {}
     }
-
 }

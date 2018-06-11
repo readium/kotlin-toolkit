@@ -5,22 +5,27 @@ import org.json.JSONObject
 import java.util.*
 
 class Rights (json: JSONObject){
-    var print: Int
-    var copy: Int
-    var start: String? = null
-    var end: String? = null
-    var potentialEnd: String?
+    var print: Int? = null
+    var copy: Int? = null
+    var start: Date? = null
+    var end: Date? = null
+    var potentialEnd: Date? = null
 
     init {
-        print = json.getInt("print")
-        copy = json.getInt("copy")
+        if (json.has("print")) {
+            print = json.getInt("print")
+        }
+        if (json.has("copy")) {
+            copy = json.getInt("copy")
+        }
         if (json.has("start")) {
-            start = DateTime(json.getString("start")).toDate().toString()
+            start = DateTime(json.getString("start")).toDate()
         }
         if (json.has("end")) {
-            end = DateTime(json.getString("end")).toDate().toString()
+            val enddate = DateTime(json.getString("end"))
+            end = enddate.toDate()
+            potentialEnd = enddate.plusMonths(1).toDate()
         }
 
-        potentialEnd = DateTime.now().plusMonths(1).toDate().toString()
     }
 }
