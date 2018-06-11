@@ -3,6 +3,7 @@
     <string name="menu_item_show_epub_list">Show List</string>
     <string name="menu_item_add_epub">Add ePub</string>
     <string name="progress_wait_while_downloading_book">Please wait while your book is being downloaded.</string>
+    <string name="progress_wait_while_preparing_book">Please wait while your book is being prepared.</string>
     <string name="error_invalid_epub">Invalid Epub</string>
     <string name="fallback_no_description">No description</string>
     <string name="button_dismiss">DISMISS</string>
@@ -16,6 +17,13 @@
     <string name="permission_goto_settings">Settings</string>
 
 
+    <string name="title_activity_opdscatalog">OPDS Catalog</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_r2_about">About R2 Reader</string>
+    <string name="title_activity_opdslist">OPDS Feeds</string>
+    <string name="title_activity_opddetail">Detail</string>
+    <string name="about_r2_reader">About R2 Reader</string>
+    <string name="opds_feeds">OPDS Feeds</string>
 
 
 </resources>
