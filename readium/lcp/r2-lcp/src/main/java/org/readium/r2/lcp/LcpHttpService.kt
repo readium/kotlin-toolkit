@@ -15,6 +15,7 @@ import org.readium.r2.shared.promise
 import java.io.File
 import java.nio.charset.Charset
 import java.util.*
+import android.util.Base64
 
 class LcpHttpService {
 
@@ -48,7 +49,8 @@ class LcpHttpService {
     fun certificateRevocationList(url: String): Promise<String, Exception> {
         return Fuel.get(url,null).promise() then {
             val (request, response, result) = it
-            "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(result)}-----END X509 CRL-----";
+            "-----BEGIN X509 CRL-----${ Base64.encodeToString(result, Base64.DEFAULT)}-----END X509 CRL-----";
+//            "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(result)}-----END X509 CRL-----";
         }
     }
     
