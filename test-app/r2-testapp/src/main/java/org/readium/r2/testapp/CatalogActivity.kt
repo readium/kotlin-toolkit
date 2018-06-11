@@ -329,11 +329,9 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 }
                 booksAdapter.notifyDataSetChanged()
             }
-
-
-            server.addEpub(publication, container, "/" + fileName)
-            addBookToView()
         }
+        server.addEpub(publication, container, "/" + fileName)
+        addBookToView()
     }
 
     override fun recyclerViewListLongClicked(v: View, position: Int) {
