@@ -1,74 +1,83 @@
 package org.readium.r2.testapp
 
-import android.content.Context
-import android.view.LayoutInflater
+import android.app.Activity
+import android.graphics.BitmapFactory
+import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.ImageView
+import android.widget.TextView
 import com.squareup.picasso.Picasso
-import java.net.URL
-import java.util.*
+import java.io.ByteArrayInputStream
 
-open class BooksAdapter(context: Context, list: ArrayList<Book>) : BaseAdapter() {
+
+open class BooksAdapter(private val activity: Activity, var books: MutableList<Book>, val server: String, var itemListener: RecyclerViewClickListener) : RecyclerView.Adapter<BooksAdapter.ViewHolder>() {
 
     private val TAG = this::class.java.simpleName
 
-    var books: ArrayList<Book>
-    var layoutInflater: LayoutInflater
-    var context:Context = context
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BooksAdapter.ViewHolder {
+        val inflater = activity.layoutInflater
+        val view = inflater.inflate(R.layout.item_recycle_opds, parent, false)
 
-    override fun getItem(position: Int): Any {
-        return books.get(position)
+        return ViewHolder(view)
     }
 
-    override fun getItemId(position: Int): Long {
-        return books.get(position).id
+    override fun onBindViewHolder(viewHolder: BooksAdapter.ViewHolder, position: Int) {
+
+        val book = books[position]
+
+        viewHolder.textView.text = book.title
+
+
+        viewHolder.imageView.setImageResource(R.drawable.cover)
+
+        book.cover?.let {
+            val arrayInputStream = ByteArrayInputStream(it)
+            val bitmap = BitmapFactory.decodeStream(arrayInputStream)
+            viewHolder.imageView.setImageBitmap(bitmap)
+        } ?: run {
+            book.coverLink?.let {
+                val baseUrl = server + "/" + book.fileName + it
+                Picasso.with(activity).load(baseUrl).into(viewHolder.imageView);
+            }
+        }
+
+        viewHolder.itemView.setOnClickListener(View.OnClickListener { v ->
+            //get the position of the image which is clicked
+            itemListener.recyclerViewListClicked(v, position)
+        })
+
+        viewHolder.itemView.setOnLongClickListener(View.OnLongClickListener { v ->
+            //get the position of the image which is clicked
+            itemListener.recyclerViewListLongClicked(v, position)
+            true
+        })
+        
+
     }
 
-    override fun getCount(): Int {
+    override fun getItemCount(): Int {
         return books.size
     }
 
 
-    init {
-        this.books = list
-        this.layoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val textView: TextView
+        val imageView: ImageView
+
+        init {
+            textView = view.findViewById<View>(R.id.titleTextView) as TextView
+            imageView = view.findViewById(R.id.coverImageView) as ImageView
+        }
     }
 
+    interface RecyclerViewClickListener {
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View? {
-        val holder: ViewHolder
-        val retView: View
-        if (convertView == null) {
-            retView = layoutInflater.inflate(R.layout.linearlayout_book,  parent, false)
-            holder = ViewHolder()
+        //this is method to handle the event when clicked on the image in Recyclerview
+        fun recyclerViewListClicked(v: View, position: Int)
 
-            holder.imageViewCoverArt = retView.findViewById<View>(R.id.imageview_cover_art) as ImageView?
-
-            retView.tag = holder
-
-        } else {
-            holder = convertView.tag as ViewHolder
-            retView = convertView
-        }
-
-        val book = books[position]
-        holder.imageViewCoverArt!!.setImageResource(R.drawable.cover)
-
-        book.coverLink.let {
-            if (it != null) {
-                Picasso.with(context).load(it.toString()).into(holder.imageViewCoverArt);
-            }
-        }
-
-        return retView
-    }
-
-    internal class ViewHolder {
-        var imageViewCoverArt: ImageView? = null
+        fun recyclerViewListLongClicked(v: View, position: Int)
     }
 
 }
 
-class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id: Long, val coverLink: URL?)
