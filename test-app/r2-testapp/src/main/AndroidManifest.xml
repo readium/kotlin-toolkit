@@ -55,6 +55,15 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".opds.OPDSCatalogActivity"
+            android:label="@string/title_activity_opdscatalog" />
+        <activity
+            android:name=".opds.OPDSListActivity"
+            android:label="@string/title_activity_opdslist" />
+        <activity
+            android:name=".opds.OPDSDetailActivity"
+            android:label="@string/title_activity_opddetail" />
     </application>
 
 </manifest>

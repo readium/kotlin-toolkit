@@ -7,7 +7,7 @@
     android:layout_marginBottom="8dp"
     tools:context=".CatalogActivity">
 
-    <GridView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/catalogView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
