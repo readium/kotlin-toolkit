@@ -13,7 +13,6 @@ import java.util.*
 
 class Server(port: Int) : AbstractServer(port) {
     
-    val rootDir: String = Environment.getExternalStorageDirectory().path + "/r2reader/"
 
 }
 
