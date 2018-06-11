@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="org.readium.r2.navigator">
 
-    <application>
-        <activity android:name=".R2EpubActivity" android:screenOrientation="portrait"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
+    <application
+        android:allowBackup="false"
+        tools:replace="android:allowBackup">
+
+        <activity
+            android:name=".R2EpubActivity"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".R2OutlineActivity"
             android:label="Table of Contents"
-            android:theme="@style/AppTheme" android:screenOrientation="portrait"/>
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".DRMManagementActivity"
+            android:label="DRM Management"
+            android:theme="@style/AppTheme"/>
 
     </application>
 

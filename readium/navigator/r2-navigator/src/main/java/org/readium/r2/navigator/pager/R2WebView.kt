@@ -5,6 +5,8 @@ import android.util.AttributeSet
 import android.view.View
 import android.webkit.WebView
 import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.navigator.UserSettings.Scroll
+import timber.log.Timber
 
 
 /**
@@ -16,56 +18,24 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     private val TAG = this::class.java.simpleName
 
     lateinit var activity: R2EpubActivity
+    var progression: Double = 0.0
 
-    private var scrollerTask: Runnable? = null
-    private var initialPosition: Int = 0
-    private val newCheck: Long = 100
-
-    private var onScrollStoppedListener: OnScrollStoppedListener? = null
-
-    interface OnScrollStoppedListener {
-        fun onScrollStopped()
-    }
-
-    init {
-        scrollerTask = Runnable {
-            val newPosition = scrollX
-            if (initialPosition - newPosition == 0) {//has stopped
-
-                if (onScrollStoppedListener != null) {
-
-                    onScrollStoppedListener!!.onScrollStopped()
-                }
-            } else {
-                initialPosition = scrollX
-                this@R2WebView.postDelayed(scrollerTask, newCheck)
-            }
-        }
-    }
-
-    fun setOnScrollStoppedListener(listener: R2WebView.OnScrollStoppedListener) {
-        onScrollStoppedListener = listener
-    }
-
-    fun startScrollerTask() {
-        initialPosition = scrollX
-        this@R2WebView.postDelayed(scrollerTask, newCheck)
-    }
-
-    @android.webkit.JavascriptInterface
-    fun snap() {
-        activity.runOnUiThread {
-            this.evaluateJavascript("snap();", null)
-        }
-    }
+//    override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int) {
+//        val height = Math.floor((this.contentHeight * this.scale).toDouble()).toInt()
+//        val webViewHeight = this.measuredHeight
+//        val end = this.scrollY + webViewHeight + 5
+//        if (end >= height) {
+//            activity.nextResource()
+//        }
+//        else if (this.scrollY == 0) {
+//            activity.previousResource()
+//        }
+//        super.onScrollChanged(l, t, oldl, oldt)
+//    }
 
     @android.webkit.JavascriptInterface
     fun scrollRight() {
         activity.runOnUiThread {
-            if (activity.fragmentManager.findFragmentByTag("pref") != null) {
-                activity.settingFrameLayout.visibility = View.GONE
-                activity.fragmentManager.popBackStack()
-            }
             if (activity.supportActionBar!!.isShowing) {
                 activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -73,10 +43,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
-
             }
-
-            if (activity.userSettings.verticalScroll.equals("readium-scroll-on")) {
+            if (activity.userSettings.verticalScroll.equals(Scroll.On.toString())) {
                 if (!this.canScrollVertically(1)) {
                     activity.nextResource()
                 }
@@ -86,7 +54,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                     activity.nextResource()
                 } else {
                     this.evaluateJavascript("scrollRight();", null)
-                    this.evaluateJavascript("snap();", null)
                 }
             }
         }
@@ -95,10 +62,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     @android.webkit.JavascriptInterface
     fun scrollLeft() {
         activity.runOnUiThread {
-            if (activity.fragmentManager.findFragmentByTag("pref") != null) {
-                activity.settingFrameLayout.visibility = View.GONE
-                activity.fragmentManager.popBackStack()
-            }
             if (activity.supportActionBar!!.isShowing) {
                 activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -106,10 +69,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
-
             }
-
-            if (activity.userSettings.verticalScroll.equals("readium-scroll-on")) {
+            if (activity.userSettings.verticalScroll.equals(Scroll.On.toString())) {
                 if (!this.canScrollVertically(-1)) {
                     activity.previousResource()
                 }
@@ -119,10 +80,28 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                     activity.previousResource()
                 } else {
                     this.evaluateJavascript("scrollLeft();", null)
-                    this.evaluateJavascript("snap();", null)
                 }
             }
         }
+    }
+
+    @android.webkit.JavascriptInterface
+    fun scrollToPosition(progression: Double) {
+        this.evaluateJavascript("scrollToPosition(\"$progression\");", null)
+    }
+    @android.webkit.JavascriptInterface
+    fun scrollToBeginning() {
+        this.evaluateJavascript("scrollToPosition(\"0\");", null)
+    }
+    @android.webkit.JavascriptInterface
+    fun scrollToEnd() {
+        this.evaluateJavascript("scrollToPosition(\"1\");", null)
+    }
+
+    @android.webkit.JavascriptInterface
+    fun progressionDidChange(body:String) {
+        progression = body.toDouble()
+        Timber.d("progression: $progression")
     }
 
     @android.webkit.JavascriptInterface
@@ -131,7 +110,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     }
 
     fun hide() {
-
         activity.runOnUiThread {
             activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -139,10 +117,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                     or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                     or View.SYSTEM_UI_FLAG_IMMERSIVE)
-            if (activity.fragmentManager.findFragmentByTag("pref") != null) {
-                activity.settingFrameLayout.visibility = View.GONE
-                activity.fragmentManager.popBackStack()
-            }
         }
     }
 

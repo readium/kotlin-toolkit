@@ -1,26 +1,29 @@
 package org.readium.r2.navigator.UserSettings
 
-class PageMargins(size: Double?){
+class PageMargins(value: Float?){
 
-    val max = 0.5
-    val min = 0.1
-    val step = 0.125
-    var size = size ?: 1.0
+    companion object {
+        val max = 2.0f
+        val min = 0.5f
+        val step = 0.25f
+    }
+
+    var value = value ?: min
 
     fun increment(){
-        if (size + step < max){
-            size += step
+        if (value + step <= max){
+            value += step
         }
     }
 
     fun decrement(){
-        if (size - step > min){
-            size -= step
+        if (value - step >= min){
+            value -= step
         }
     }
 
     override fun toString() : String {
-        return size.toString() + "rem"
+        return value.toString() //+ "rem"
     }
 
 }

@@ -3,97 +3,151 @@ package org.readium.r2.navigator
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.FrameLayout
+import android.widget.TextView
+import kotlinx.android.synthetic.main.fragment_page.view.*
+import org.jetbrains.anko.intentFor
+import org.readium.r2.navigator.UserSettings.Appearance
 import org.readium.r2.navigator.UserSettings.UserSettings
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
+import org.readium.r2.shared.drm.DRMMModel
 
 
 class R2EpubActivity : AppCompatActivity() {
 
     private val TAG = this::class.java.simpleName
 
-    lateinit var publication: Publication
-    lateinit var publication_path: String
-    lateinit var epub_name: String
+    lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
-    lateinit var settingFrameLayout: FrameLayout
-    lateinit var userSettings: UserSettings
-    lateinit var cssOperator: CSSOperator
+    lateinit var resources: ArrayList<String>
 
-    private var resources: ArrayList<String> = ArrayList()
+    lateinit var publicationPath: String
+    lateinit var publication: Publication
+    lateinit var epubName: String
+    lateinit var publicationIdentifier:String
+
+    lateinit var userSettings: UserSettings
+    var drmModel: DRMMModel? = null
+    private var menuDrm: MenuItem? = null
+    private var menuToc: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_r2_epub)
 
-        publication_path = intent.getStringExtra("publication_path")
-        epub_name = intent.getStringExtra("epub_name")
-        publication = intent.getSerializableExtra("publication") as Publication
-
+        preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         resourcePager = findViewById(R.id.resourcePager)
-        resources = java.util.ArrayList()
+        resources = ArrayList()
+
+        Handler().postDelayed({
+            if ( intent.getSerializableExtra("drmModel") != null) {
+                drmModel = intent.getSerializableExtra("drmModel") as DRMMModel
+                drmModel?.let {
+                    runOnUiThread {
+                        menuDrm?.setVisible(true)
+                    }
+                } ?: run {
+                    runOnUiThread {
+                        menuDrm?.setVisible(false)
+                    }
+                }
+            }
+        }, 100)
+
+        publicationPath = intent.getStringExtra("publicationPath")
+        publication = intent.getSerializableExtra("publication") as Publication
+        epubName = intent.getStringExtra("epubName")
+        publicationIdentifier = publication.metadata.identifier
+
+        title = publication.metadata.title
+
+        val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
 
         for (spine in publication.spine) {
-            val uri = SERVER_URL + "/" + epub_name + spine.href
+            val uri = "$BASE_URL:$port" + "/" + epubName + spine.href
             resources.add(uri)
         }
 
-        val adapter = R2PagerAdapter(supportFragmentManager, resources)
+        val index = preferences.getInt( "$publicationIdentifier-document", 0)
+        val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.0.toString()).toDouble()
+
+        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title)
+
         resourcePager.adapter = adapter
 
-        settingFrameLayout = findViewById(R.id.frameLayout)
-        userSettings = UserSettings(getSharedPreferences("org.readium.r2.testapp_preferences", Context.MODE_PRIVATE))
-        cssOperator = CSSOperator(userSettings)
-        cssOperator.resourcePager = resourcePager
+        userSettings = UserSettings(preferences, this)
+        userSettings.resourcePager = resourcePager
+
+        resourcePager.setCurrentItem(index)
+
+        val appearance_pref = preferences.getString("appearance", Appearance.Default.toString()) ?: Appearance.Default.toString()
+        when (appearance_pref) {
+            Appearance.Default.toString() -> {
+                resourcePager.setBackgroundColor(Color.parseColor("#ffffff"))
+                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
+            }
+            Appearance.Sepia.toString() -> {
+                resourcePager.setBackgroundColor(Color.parseColor("#faf4e8"))
+                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
+            }
+            Appearance.Night.toString() -> {
+                resourcePager.setBackgroundColor(Color.parseColor("#000000"))
+                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#ffffff"))
+            }
+        }
 
         toggleActionBar()
     }
 
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_toc, menu)
-        return super.onCreateOptionsMenu(menu)
+        menuDrm = menu?.findItem(R.id.drm)
+        menuToc = menu?.findItem(R.id.toc)
+        menuDrm?.setVisible(false)
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.getItemId()) {
+        when (item.itemId) {
 
             R.id.toc -> {
-                if (fragmentManager.findFragmentByTag("pref") != null) {
-                    settingFrameLayout.visibility = View.GONE
-                    fragmentManager.popBackStack()
-                }
                 val intent = Intent(this, R2OutlineActivity::class.java)
-                intent.putExtra("publication_path", publication_path)
-                intent.putExtra("epub_name", epub_name)
+                intent.putExtra("publicationPath", publicationPath)
                 intent.putExtra("publication", publication)
+                intent.putExtra("epubName", epubName)
                 startActivityForResult(intent, 2)
-
-                return true
+                return false
             }
             R.id.settings -> {
-
-                if (fragmentManager.findFragmentByTag("pref") != null) {
-                    settingFrameLayout.visibility = View.GONE
-                    fragmentManager.popBackStack()
-                } else {
-                    settingFrameLayout.visibility = View.VISIBLE
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.frameLayout, R2ReaderSettingsFragment(), "pref")
-                            .addToBackStack(null)
-                            .commit()
-                }
-                return true
+                userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.settings), 0, 0)
+                return false;
             }
+            R.id.drm -> {
+                startActivity(intentFor<DRMManagementActivity>("drmModel" to drmModel))
+                return false
+            }
+
             else -> return super.onOptionsItemSelected(item)
         }
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val publicationIdentifier = publication.metadata.identifier
+        val documentIndex = resourcePager.getCurrentItem()
+        val progression = resourcePager.webView.progression
+        preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
+        preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -101,6 +155,7 @@ class R2EpubActivity : AppCompatActivity() {
             if (data != null) {
                 val spine_item_index: Int = data.getIntExtra("spine_item_index", 0)
                 resourcePager.setCurrentItem(spine_item_index)
+                preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
                 if (supportActionBar!!.isShowing) {
                     resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -117,22 +172,18 @@ class R2EpubActivity : AppCompatActivity() {
 
     fun nextResource() {
         runOnUiThread {
+            preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
             resourcePager.setCurrentItem(resourcePager.getCurrentItem() + 1)
         }
     }
 
     fun previousResource() {
         runOnUiThread {
+            preferences.edit().putString("$publicationIdentifier-documentProgression", 1.0.toString()).apply()
             resourcePager.setCurrentItem(resourcePager.getCurrentItem() - 1)
         }
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        if (settingFrameLayout.visibility == View.VISIBLE) {
-            settingFrameLayout.visibility = View.GONE
-        }
-    }
 
     fun toggleActionBar() {
         runOnUiThread {
@@ -143,10 +194,6 @@ class R2EpubActivity : AppCompatActivity() {
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
-                if (fragmentManager.findFragmentByTag("pref") != null) {
-                    settingFrameLayout.visibility = View.GONE
-                    fragmentManager.popBackStack()
-                }
             } else {
                 resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION

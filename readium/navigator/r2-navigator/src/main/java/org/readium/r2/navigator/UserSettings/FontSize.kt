@@ -1,13 +1,12 @@
 package org.readium.r2.navigator.UserSettings
 
-class WordSpacing(value: Float?){
+class FontSize(value: Int?){
 
-    companion object  {
-        val max = 0.5f
-        val min = 0.0f
-        val step = 0.25f
+    companion object {
+        val max = 300
+        val min = 100
+        val step = 25
     }
-
     var value = value ?: min
 
     fun increment(){
@@ -23,7 +22,7 @@ class WordSpacing(value: Float?){
     }
 
     override fun toString() : String {
-        return value.toString() + "rem"
+        return value.toString() + "%"
     }
 
 }
