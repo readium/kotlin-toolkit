@@ -188,7 +188,7 @@ class LcpLicense : DrmLicense {
         Log.i(TAG,"LCP fetchPublication")
         val publicationLink = license.link("publication")
         publicationLink?.let {
-            return lcpHttpService.publicationUrl(publicationLink.href.toString()).get()
+            return lcpHttpService.publicationUrl(androidContext, publicationLink.href.toString()).get()
         }
         return null
     }

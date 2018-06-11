@@ -1,5 +1,6 @@
 package org.readium.r2.lcp
 
+import android.content.Context
 import android.os.Environment
 import android.util.Log
 import com.github.kittinunf.fuel.Fuel
@@ -17,7 +18,6 @@ import java.util.*
 
 class LcpHttpService {
 
-    val rootDir: String = Environment.getExternalStorageDirectory().path + "/r2reader/"
     fun statusDocument(url: String): Promise<StatusDocument, Exception> {
         return Fuel.get(url,null).promise() then {
             val (request, response, result) = it
@@ -31,7 +31,8 @@ class LcpHttpService {
         }
     }
 
-    fun publicationUrl(url: String, parameters: List<Pair<String, Any?>>? = null): Promise<String, Exception> {
+    fun publicationUrl(context:Context, url: String, parameters: List<Pair<String, Any?>>? = null): Promise<String, Exception> {
+        val rootDir:String = context.getExternalFilesDir(null).path + "/"
         val fileName = UUID.randomUUID().toString()
         return Fuel.download(url).destination { response, destination ->
             Log.i("LCP  destination ", rootDir + fileName)
