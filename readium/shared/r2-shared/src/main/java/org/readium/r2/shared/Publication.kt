@@ -53,7 +53,7 @@ class Publication : Serializable {
     /// The metadata (title, identifier, contributors, etc.).
     var metadata: Metadata = Metadata()
     /// org.readium.r2shared.Publication.org.readium.r2shared.Link to special ressources which are added to the publication.
-    private var links: MutableList<Link> = mutableListOf()
+    var links: MutableList<Link> = mutableListOf()
     /// Links of the spine items of the publication.
     var spine: MutableList<Link> = mutableListOf()
     /// Link to the ressources of the publication.
@@ -67,6 +67,8 @@ class Publication : Serializable {
     var listOfVideos: MutableList<Link> = mutableListOf()
     var pageList: MutableList<Link> = mutableListOf()
 
+    var images: MutableList<Link> = mutableListOf()
+
     /// Extension point for links that shouldn't show up in the manifest.
     var otherLinks: MutableList<Link> = mutableListOf()
     var internalData: MutableMap<String, String> = mutableMapOf()
@@ -76,9 +78,15 @@ class Publication : Serializable {
 
     fun baseUrl() : URL? {
         val selfLink = linkWithRel("self")
-        val url = selfLink?.let{ URL(selfLink.href)}
-        val index = url.toString().lastIndexOf('/')
-        return URL(url.toString().substring(0, index))
+        if (selfLink != null) {
+            val url = selfLink.let { URL(selfLink.href) }
+            val index = url.toString().lastIndexOf('/')
+            return URL(url.toString().substring(0, index))
+        }
+
+        // temporary
+
+        return null
     }
 
     //  To see later : build the manifest
@@ -112,14 +120,19 @@ class Publication : Serializable {
         return findLinkInPublicationLinks(findLinkWithHref)
     }
 
-    fun uriTo(link: Link?) : URL? {
-        val linkHref = link?.href
-        val publicationBaseUrl = baseUrl()
-        if (link != null && linkHref != null && publicationBaseUrl != null)
-            return null
-        //  Issue : ???
-        val trimmedBaseUrlString = publicationBaseUrl.toString().trim('/')
-        return URL(trimmedBaseUrlString + "/" + linkHref)
+    fun uriTo(link: Link?, baseURL: URL) : URL? {
+
+        if (link != null) {
+            val linkHref = link.href
+
+            val publicationBaseUrl = baseURL //baseUrl()
+            if (linkHref != null && publicationBaseUrl != null) {
+                val trimmedBaseUrlString = publicationBaseUrl.toString().trim('/')
+                return URL(trimmedBaseUrlString + linkHref)
+            }
+        }
+
+        return null
     }
 
     fun addSelfLink(endPoint: String, baseURL: URL){

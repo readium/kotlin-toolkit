@@ -1,9 +1,10 @@
-package org.readium.r2.shared
+package org.readium.r2.shared.drm
 
+import java.io.Serializable
 import java.net.URL
 import java.util.*
 
-interface DrmLicense {
+interface DrmLicense:Serializable {
     fun decipher(data: ByteArray) : ByteArray?
     fun areRightsValid()
     fun register()

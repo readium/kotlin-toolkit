@@ -5,7 +5,7 @@ import java.io.Serializable
 import java.sql.Timestamp
 
 //  A link to a resource
-class Link : JSONable, Serializable{
+class Link : JSONable, Serializable {
 
     private val TAG = this::class.java.simpleName
 
@@ -22,18 +22,21 @@ class Link : JSONable, Serializable{
 
     var title: String? = null
     /// Properties associated to the linked resource.
-    var properties: Properties? = null
+    var properties: Properties = Properties()
     /// Indicates the length of the linked resource in seconds.
-    var duration: Timestamp? = null
+    var duration: Double? = null
     /// Indicates that the linked resource is a URI template.
     var templated: Boolean? = false
+    /// Indicate the bitrate for the link resource.
+    var bitrate: Int? = null
+
     //  The underlaying nodes in a tree structure of Links
     var children: MutableList<Link> = mutableListOf()
     //  The MediaOverlays associated to the resource of the Link
     var mediaOverlays: MediaOverlays? = null
 
     fun isEncrypted() : Boolean {
-        return properties?.encryption != null
+        return properties.encryption != null
     }
 
     override fun getJSON(): JSONObject {

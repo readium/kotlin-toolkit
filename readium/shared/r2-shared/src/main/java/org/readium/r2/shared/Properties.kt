@@ -1,6 +1,8 @@
 package org.readium.r2.shared
 
 import org.json.JSONObject
+import org.readium.r2.shared.opds.IndirectAcquisition
+import org.readium.r2.shared.opds.Price
 import java.io.Serializable
 
 class Properties : JSONable, Serializable {
@@ -27,6 +29,13 @@ class Properties : JSONable, Serializable {
     /// Indicates the condition to be met for the linked resource to be rendered
     /// within a synthetic spread.
     var spread: String? = null
+
+    var numberOfItems: Int? = null
+    ///
+    var price: Price? = null
+    ///
+    var indirectAcquisition: MutableList<IndirectAcquisition> = mutableListOf()
+
 
     override fun getJSON(): JSONObject {
         val json = JSONObject()
