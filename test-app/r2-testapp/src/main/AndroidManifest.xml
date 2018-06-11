@@ -16,9 +16,7 @@
         tools:replace="android:allowBackup"
         android:theme="@style/AppTheme">
 
-        <activity
-            android:name=".CatalogActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+        <activity android:name=".CatalogActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
