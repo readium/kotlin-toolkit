@@ -11,6 +11,8 @@ import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.snackbar
+import org.jetbrains.anko.recyclerview.v7.recyclerView
+import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDSParser
 import org.readium.r2.shared.opds.Feed
