@@ -124,8 +124,8 @@ class OPDSParser {
                     val facetGroupName = link.attributes["opds:facetGroup"]
                     if (facetGroupName != null && newLink.rel.contains("http://opds-spec.org/facet")) {
                         val facetElementCountStr = link.attributes["thr:count"]
-                        val facetElementCount = facetElementCountStr.toString().toInt()
-                        if (facetElementCountStr != null && facetElementCount != null) {
+                        facetElementCountStr?.let {
+                            val facetElementCount = it.toInt()
                             newLink.properties.numberOfItems = facetElementCount
                         }
                         addFacet(feed, newLink, facetGroupName)
