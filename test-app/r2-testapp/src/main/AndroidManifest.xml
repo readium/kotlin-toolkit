@@ -59,6 +59,9 @@
             android:name=".opds.OPDSCatalogActivity"
             android:label="@string/title_activity_opdscatalog" />
         <activity
+            android:name=".R2AboutActivity"
+            android:label="@string/title_activity_r2_about" />
+        <activity
             android:name=".opds.OPDSListActivity"
             android:label="@string/title_activity_opdslist" />
         <activity
