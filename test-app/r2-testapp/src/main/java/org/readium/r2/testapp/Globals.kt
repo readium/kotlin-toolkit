@@ -1,6 +1,7 @@
 package org.readium.r2.testapp
 
 import android.content.Context
+import android.os.Environment
 import android.support.annotation.ColorInt
 import android.support.annotation.ColorRes
 import android.support.v4.content.ContextCompat
@@ -16,11 +17,13 @@ import java.io.InputStream
  * Global Parameters
  */
 
+lateinit var books:MutableList<Book>
+val supportedProfiles = arrayListOf("http://readium.org/lcp/basic-profile", "http://readium.org/lcp/profile-1.0")
+
 
 /**
  * Extensions
  */
-
 
 @ColorInt
 fun Context.color(@ColorRes id: Int): Int {

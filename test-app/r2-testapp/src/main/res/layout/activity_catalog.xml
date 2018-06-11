@@ -5,10 +5,10 @@
     android:padding="0dp"
     android:layout_marginTop="8dp"
     android:layout_marginBottom="8dp"
-    tools:context=".MainActivity">
+    tools:context=".CatalogActivity">
 
-    <GridView
-        android:id="@+id/gridview"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/catalogView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:columnWidth="120dp"
