@@ -1,7 +1,7 @@
 package org.readium.r2.streamer.Parser.EpubParserSubClasses
 
 import org.readium.r2.shared.*
-import org.readium.r2.streamer.XmlParser.Node
+import org.readium.r2.shared.XmlParser.Node
 
 const val noTitleError = "Error : Publication has no title"
 
@@ -14,35 +14,35 @@ class MetadataParser {
             return
         }
         try {
-            metas.first { it.properties["property"] == "rendition:layout" }.text?.let {
+            metas.first { it.attributes["property"] == "rendition:layout" }.text?.let {
                 metadata.rendition.layout = RenditionLayout.valueOf(it)
             }
         } catch(e: Exception) {
             metadata.rendition.layout = RenditionLayout.reflowable
         }
         try {
-            metas.first { it.properties["property"] == "rendition:flow" }.text?.let {
+            metas.first { it.attributes["property"] == "rendition:flow" }.text?.let {
                 metadata.rendition.flow = RenditionFlow.valueOf(it)
             }
         } catch(e: Exception) {
             metadata.rendition.layout = RenditionLayout.reflowable
         }
         try {
-            metas.first { it.properties["property"] == "rendition:orientation" }.text?.let {
+            metas.first { it.attributes["property"] == "rendition:orientation" }.text?.let {
                 metadata.rendition.orientation = RenditionOrientation.valueOf(it)
             }
         } catch(e: Exception) {
             metadata.rendition.layout = RenditionLayout.reflowable
         }
         try {
-            metas.first { it.properties["property"] == "rendition:spread" }.text?.let {
+            metas.first { it.attributes["property"] == "rendition:spread" }.text?.let {
                 metadata.rendition.spread = RenditionSpread.valueOf(it)
             }
         } catch(e: Exception) {
             metadata.rendition.layout = RenditionLayout.reflowable
         }
         try {
-            metas.first { it.properties["property"] == "rendition:viewport" }.text?.let {
+            metas.first { it.attributes["property"] == "rendition:viewport" }.text?.let {
                 metadata.rendition.viewport= it
             }
         } catch(e: Exception) {
@@ -72,7 +72,7 @@ class MetadataParser {
             throw Exception(noTitleError)
         }
         val mainTitle = getMainTitleElement(titles, metadata) ?: return multilangTitle
-        multilangTitle.multiString = multiString(mainTitle, metadata)
+        multilangTitle.multiString = multiString(mainTitle, metadata).toMutableMap()
         return multilangTitle
     }
 
@@ -89,7 +89,7 @@ class MetadataParser {
             return null
         val uniqueId = documentProperties["unique-identifier"]
         if (identifiers.size > 1 && uniqueId != null) {
-            val uniqueIdentifiers = identifiers.filter { it.properties["id"] == uniqueId }
+            val uniqueIdentifiers = identifiers.filter { it.attributes["id"] == uniqueId }
             if (!uniqueIdentifiers.isEmpty())
                 return uniqueIdentifiers.firstOrNull()?.text ?: throw Exception("No identifier")
         }
@@ -97,7 +97,7 @@ class MetadataParser {
     }
 
     fun modifiedDate(metadataElement: Node) = metadataElement.get("meta")!!.firstOrNull {
-                it.properties["property"] == "dcterms:modified"
+                it.attributes["property"] == "dcterms:modified"
             }?.text
 
     fun subject(metadataElement: Node) : Subject? {
@@ -105,8 +105,8 @@ class MetadataParser {
         val name = subjectElement.text ?: return null
         with(Subject()) {
             this.name = name
-            scheme = subjectElement.properties["opf:authority"]
-            code = subjectElement.properties["opf:term"]
+            scheme = subjectElement.attributes["opf:authority"]
+            code = subjectElement.attributes["opf:term"]
             return this
         }
     }
@@ -124,10 +124,10 @@ class MetadataParser {
     private fun parseContributor(element: Node, metadataElement: Node, metadata: Metadata) {
         val contributor = createContributor(element, metadataElement)
 
-        val eid = element.properties["id"]
+        val eid = element.attributes["id"]
         if (eid != null) {
             for (meta in metadataElement.get("meta")!!
-                    .filter { it.properties["refines"] == eid && it.properties["property"] == "role" }) {
+                    .filter { it.attributes["refines"] == eid && it.attributes["property"] == "role" }) {
                 meta.text?.let { contributor.roles.add(it) }
             }
         }
@@ -147,9 +147,9 @@ class MetadataParser {
                 }
             }
         } else {
-            if (element.name == "dc:creator" || element.properties["property"] == "dcterms:contributor") {
+            if (element.name == "dc:creator" || element.attributes["property"] == "dcterms:contributor") {
                 metadata.authors.add(contributor)
-            } else if (element.name == "dc:publisher" || element.properties["property"] == "dcterms:publisher") {
+            } else if (element.name == "dc:publisher" || element.attributes["property"] == "dcterms:publisher") {
                 metadata.publishers.add(contributor)
             } else {
                 metadata.contributors.add(contributor)
@@ -160,9 +160,9 @@ class MetadataParser {
     private fun createContributor(element: Node, metadata: Node) : Contributor {
         val contributor = Contributor()
         contributor.multilangName.singleString = element.text
-        contributor.multilangName.multiString = multiString(element, metadata)
-        element.properties["opf:role"]?.let { contributor.roles.add(it) }
-        element.properties["opf:file-as"]?.let { contributor.sortAs = it }
+        contributor.multilangName.multiString = multiString(element, metadata).toMutableMap()
+        element.attributes["opf:role"]?.let { contributor.roles.add(it) }
+        element.attributes["opf:file-as"]?.let { contributor.sortAs = it }
         return contributor
     }
 
@@ -171,12 +171,12 @@ class MetadataParser {
         val metas = metadataElement.get("meta")!!
         if (metas.isEmpty())
             return metadata
-        val mediaDurationItems = metas.filter { it.properties["property"] == "media:duration" }
+        val mediaDurationItems = metas.filter { it.attributes["property"] == "media:duration" }
         if (mediaDurationItems.isEmpty())
             return metadata
         for (mediaDurationItem in mediaDurationItems) {
             val item = MetadataItem()
-            item.property = mediaDurationItem.properties["refines"]
+            item.property = mediaDurationItem.attributes["refines"]
             item.value = mediaDurationItem.text
             metadata = otherMetadata.plus(item).toMutableList()
         }
@@ -190,13 +190,13 @@ class MetadataParser {
     //   - metadata: The Publication Metadata XML object.
     // - Returns: The main title XML element.
     private fun getMainTitleElement(titles: List<Node>, metadata: Node): Node? {
-        val possibleTitles = titles.filter { it.properties["id"] != null }
+        val possibleTitles = titles.filter { it.attributes["id"] != null }
         if (possibleTitles.isEmpty())
             return null
         for (title in possibleTitles) {
             for (meta in metadata.get("meta")!!.filter {
-                it.properties["refines"] == "#${title.properties["id"]}"
-                        && it.properties["property"] == "title-type"
+                it.attributes["refines"] == "#${title.attributes["id"]}"
+                        && it.attributes["property"] == "title-type"
                         && it.text == "main"}){
                 return meta
             }
@@ -214,9 +214,9 @@ class MetadataParser {
     }
 
     private fun findContributorsMetaXmlElements(metadata: Node) =
-            metadata.get("meta")!!.filter { it.properties["property"] == "dcterms:publisher" }.toMutableList()
-                    .plus(metadata.get("meta")!!.filter { it.properties["property"] == "dcterms:creator" }).toMutableList()
-                .plus(metadata.get("meta")!!.filter { it.properties["property"] == "dcterms:contributor" }).toMutableList()
+            metadata.get("meta")!!.filter { it.attributes["property"] == "dcterms:publisher" }.toMutableList()
+                    .plus(metadata.get("meta")!!.filter { it.attributes["property"] == "dcterms:creator" }).toMutableList()
+                .plus(metadata.get("meta")!!.filter { it.attributes["property"] == "dcterms:contributor" }).toMutableList()
 
     // Return an array of lang:string, defining the multiple representations of
     // a string in different languages.
@@ -226,23 +226,23 @@ class MetadataParser {
     private fun multiString(element: Node, metadata: Node): Map<String, String> {
         val multiString: MutableMap<String, String> = mutableMapOf()
 
-        val elementId = element.properties["id"] ?: return multiString
+        val elementId = element.attributes["id"] ?: return multiString
         val altScriptMetas = metadata.get("meta")!!.filter {
-            it.properties["refines"] == "#$elementId"
-                    && it.properties["property"] == "alternate-script"
+            it.attributes["refines"] == "#$elementId"
+                    && it.attributes["property"] == "alternate-script"
         }
         if (altScriptMetas.isEmpty())
             return multiString
         for (altScriptMeta in altScriptMetas) {
             val title = altScriptMeta.text
-            val lang = altScriptMeta.properties["xml:lang"]
+            val lang = altScriptMeta.attributes["xml:lang"]
             if (title != null && lang != null)
                 multiString[lang] = title
         }
         if (!multiString.isEmpty()) {
             val publicationDefaultLanguage = metadata.get("dc:language")?.first()?.text
                     ?: throw Exception("No language")
-            val lang = element.properties["xml:lang"] ?: publicationDefaultLanguage
+            val lang = element.attributes["xml:lang"] ?: publicationDefaultLanguage
             val value = element.text ?: ""
             multiString[lang] = value
         }

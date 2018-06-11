@@ -1,14 +1,16 @@
 package org.readium.r2.streamer.Containers
 
+import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
-import org.readium.r2.streamer.XmlParser.XmlParser
+import org.readium.r2.shared.XmlParser.XmlParser
 import java.io.File
 
-class ContainerEpubDirectory(path: String) : EpubContainer, DirectoryContainer {
+class ContainerEpubDirectory : EpubContainer, DirectoryContainer {
 
     override var successCreated: Boolean = false
-    lateinit override var rootFile: RootFile
+    override var rootFile: RootFile
+    override var drm: Drm? = null
 
     override fun xmlDocumentforFile(relativePath: String): XmlParser {
         val containerData = data(relativePath)
@@ -24,7 +26,7 @@ class ContainerEpubDirectory(path: String) : EpubContainer, DirectoryContainer {
         return xmlDocumentforFile(pathFile)
     }
 
-    init {
+    constructor(path: String) {
         if (File(path).exists())
             successCreated = true
         rootFile = RootFile(rootPath = path, version = null)

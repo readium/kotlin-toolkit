@@ -1,8 +1,8 @@
 package org.readium.r2.streamer.Parser.EpubParserSubClasses
 
 import org.readium.r2.shared.Link
-import org.readium.r2.streamer.XmlParser.XmlParser
-import org.readium.r2.streamer.XmlParser.Node
+import org.readium.r2.shared.XmlParser.XmlParser
+import org.readium.r2.shared.XmlParser.Node
 import org.readium.r2.streamer.Parser.normalize
 
 class NavigationDocumentParser {
@@ -20,7 +20,7 @@ class NavigationDocumentParser {
     private fun nodeArray(document: XmlParser, navType: String) : List<Link> {
         var body = document.root().getFirst("body")
         body?.getFirst("section")?.let { body = it }
-        val navPoint = body?.get("nav")?.firstOrNull{ it.properties["epub:type"] == navType }
+        val navPoint = body?.get("nav")?.firstOrNull{ it.attributes["epub:type"] == navType }
         val olElement = navPoint?.getFirst("ol") ?: return emptyList()
         return nodeOl(olElement).children
     }
@@ -46,7 +46,7 @@ class NavigationDocumentParser {
         val newLiNode = Link()
         val aNode = element.getFirst("a")!!
         val title = (aNode.getFirst("span"))?.name ?: aNode.name
-        newLiNode.href = normalize(navigationDocumentPath, aNode.properties["href"])
+        newLiNode.href = normalize(navigationDocumentPath, aNode.attributes["href"])
         newLiNode.title = title
         element.getFirst("ol")?.let { newLiNode.children.add(nodeOl(it)) }
         return newLiNode

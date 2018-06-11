@@ -3,7 +3,7 @@ package org.readium.r2.streamer.Parser
 import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.Containers.Container
 
-data class PubBox(val publication: Publication, val container: Container)
+data class PubBox(var publication: Publication, var container: Container)
 
 interface PublicationParser {
 

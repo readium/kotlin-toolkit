@@ -12,15 +12,11 @@ import java.util.*
 
 
 class Server(port: Int) : AbstractServer(port) {
-
-    //TODO make port number dynamic
-    constructor() : this(3333)
-
-    val rootDir: String = Environment.getExternalStorageDirectory().path + "/r2test/"
+    
 
 }
 
-abstract class AbstractServer(port: Int) : RouterNanoHTTPD(port) {
+abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
 
 //    private val SEARCH_QUERY_HANDLE = "/search"
     private val MANIFEST_HANDLE = "/manifest"
@@ -31,34 +27,13 @@ abstract class AbstractServer(port: Int) : RouterNanoHTTPD(port) {
     private var containsMediaOverlay = false
 
     private val ressources = Ressources()
+//    val port = port
 
     fun addResource(name: String, body: String) {
         ressources.add(name, body)
     }
 
     fun loadResources(assets: AssetManager){
-        addResource("base.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-base.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("html5patch.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-html5patch.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("safeguards.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-safeguards.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("highlights.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-highlights.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("pagination.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-pagination.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("scroll.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-scroll.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("night_mode.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-night_mode.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("sepia_mode.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-sepia_mode.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("os_a11y.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-os_a11y.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("user_settings.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-user_settings.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("fs_normalize.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-fs_normalize.css"), "utf-8")
-                .useDelimiter("\\A").next())
         addResource("after.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-after.css"), "utf-8")
                 .useDelimiter("\\A").next())
         addResource("before.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-before.css"), "utf-8")
@@ -78,7 +53,7 @@ abstract class AbstractServer(port: Int) : RouterNanoHTTPD(port) {
 
         addLinks(publication, fileName)
 
-        publication.addSelfLink(fileName, URL(URL))
+        publication.addSelfLink(fileName, URL("${BASE_URL}:${port}"))
 
         if (containsMediaOverlay) {
             addRoute(fileName + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)

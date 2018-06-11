@@ -1,11 +1,11 @@
 package org.readium.r2.streamer.Parser
 
-import android.content.SharedPreferences
 import android.util.Log
-import org.readium.r2.shared.Drm
+import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Encryption
 import org.readium.r2.shared.Publication
-import org.readium.r2.streamer.XmlParser.XmlParser
+import org.readium.r2.shared.XmlParser.XmlParser
+import org.readium.r2.streamer.Containers.Container
 import org.readium.r2.streamer.Containers.ContainerEpub
 import org.readium.r2.streamer.Containers.ContainerEpubDirectory
 import org.readium.r2.streamer.Containers.EpubContainer
@@ -13,7 +13,7 @@ import org.readium.r2.streamer.Parser.EpubParserSubClasses.EncryptionParser
 import org.readium.r2.streamer.Parser.EpubParserSubClasses.NCXParser
 import org.readium.r2.streamer.Parser.EpubParserSubClasses.NavigationDocumentParser
 import org.readium.r2.streamer.Parser.EpubParserSubClasses.OPFParser
-import java.io.ByteArrayInputStream
+import org.zeroturnaround.zip.ZipUtil
 import java.io.File
 
 // Some constants useful to parse an Epub document
@@ -49,51 +49,92 @@ class EpubParser : PublicationParser {
         return container
     }
 
+    fun parseRemainingResource(container: Container, publication: Publication, drm: Drm?): Pair<Container, Publication> {
+
+        container.drm = drm
+
+        fillEncryptionProfile(publication, drm)
+//            parseMediaOverlay(fetcher, publication)
+        parseNavigationDocument(container as EpubContainer, publication)
+        parseNcxDocument(container as EpubContainer, publication)
+
+        return Pair(container, publication)
+    }
+
     override fun parse(fileAtPath: String) : PubBox? {
-        val aexml = XmlParser()
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
             Log.e("Error", "Could not generate container", e)
             return null
         }
-        var data = try {
+        val data = try {
             container.data(containerDotXmlPath)
         } catch (e: Exception) {
             Log.e("Error", "Missing File : META-INF/container.xml", e)
             return null
         }
 
-        aexml.parseXml(ByteArrayInputStream(data))
         container.rootFile.mimetype = mimetype
-        container.rootFile.rootFilePath = aexml.getFirst("container")
-                ?.getFirst("rootfiles")
-                ?.getFirst("rootfile")
-                ?.properties?.get("full-path")
-                ?: "content.opf"
+        container.rootFile.rootFilePath = getRootFilePath(data)
 
-        data = try {
+        val xmlParser = XmlParser()
+
+        val documentData = try {
             container.data(container.rootFile.rootFilePath)
         } catch (e: Exception) {
             Log.e("Error", "Missing File : ${container.rootFile.rootFilePath}", e)
             return null
         }
-        aexml.parseXml(ByteArrayInputStream(data))
-        val epubVersion = aexml.root().properties["version"]!!.toDouble()
-        val publication = opfParser.parseOpf(aexml, container, epubVersion) ?: return null
-        parseEncryption(container, publication, scanForDrm(container))
-        parseNavigationDocument(container, publication)
-        parseNcxDocument(container, publication)
+
+        xmlParser.parseXml(documentData.inputStream())
+        
+        val epubVersion = xmlParser.root().attributes["version"]!!.toDouble()
+        val publication = opfParser.parseOpf(xmlParser, container.rootFile.rootFilePath, epubVersion) ?: return null
+
+        val drm = scanForDrm(container)
+
+        parseEncryption(container, publication, drm)
+
+//        val fetcher = Fetcher(publication, container)
+        parseNavigationDocument(container as EpubContainer, publication)
+        parseNcxDocument(container as EpubContainer, publication)
+
+        container.drm = drm
         return PubBox(publication, container)
     }
 
-    fun scanForDrm(container: EpubContainer) : Drm? {
-        try {
-            container.data(lcplFilePath)
-            return Drm()
-        } catch (e: Exception){
-            return null
+    private fun getRootFilePath(data: ByteArray): String {
+        val xmlParser = XmlParser()
+        xmlParser.parseXml(data.inputStream())
+        return xmlParser.getFirst("container")
+                ?.getFirst("rootfiles")
+                ?.getFirst("rootfile")
+                ?.attributes?.get("full-path")
+                ?: "content.opf"
+    }
+
+    private fun fillEncryptionProfile(publication: Publication, drm: Drm?): Publication {
+        drm?.let {
+            for (link in publication.resources) {
+                if (link.properties.encryption?.scheme == it.scheme) {
+                    link.properties.encryption?.profile = it.profile
+                }
+            }
+            for (link in publication.spine) {
+                if (link.properties.encryption?.scheme == it.scheme) {
+                    link.properties.encryption?.profile = it.profile
+                }
+            }
         }
+        return publication
+    }
+
+    fun scanForDrm(container: EpubContainer) : Drm? {
+        if (ZipUtil.containsEntry(File(container.rootFile.rootPath), lcplFilePath)) {
+            return Drm(Drm.Brand.lcp)
+        }
+        return null
     }
 
     private fun parseEncryption(container: EpubContainer, publication: Publication, drm: Drm?) {
@@ -107,10 +148,10 @@ class EpubParser : PublicationParser {
         val encryptedDataElements = document.getFirst("encryption")?.get("EncryptedData") ?: return
         for(encryptedDataElement in encryptedDataElements){
             val encryption = Encryption()
-            val keyInfoUri = encryptedDataElement.getFirst("KeyInfo")?.getFirst("RetrievalMethods")?.let{ it.properties["URI"] }
+            val keyInfoUri = encryptedDataElement.getFirst("KeyInfo")?.getFirst("RetrievalMethod")?.let{ it.attributes["URI"] }
             if (keyInfoUri == "license.lcpl#/encryption/content_key" && drm?.brand == Drm.Brand.lcp)
-                encryption.scheme = "lcp"
-            encryption.algorithm = encryptedDataElement.getFirst("EncryptionMethod")?.let{ it.properties["Algorithm"] }
+                encryption.scheme = Drm.Scheme.lcp
+            encryption.algorithm = encryptedDataElement.getFirst("EncryptionMethod")?.let{ it.attributes["Algorithm"] }
             encp.parseEncryptionProperties(encryptedDataElement, encryption)
             encp.add(encryption, publication, encryptedDataElement)
         }

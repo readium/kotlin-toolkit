@@ -7,7 +7,7 @@ import java.io.InputStream
 class Fetcher(publication: Publication, container: Container) {
     var publication: Publication
     var container: Container
-    var rootFileDirectory: String = ""
+    var rootFileDirectory: String
     var contentFilters: ContentFilters?
 
     init {
@@ -28,14 +28,14 @@ class Fetcher(publication: Publication, container: Container) {
         publication.resource(path) ?: throw Exception("Missing file")
         var data: ByteArray? = container.data(path)
         if (data != null)
-            data = contentFilters?.apply(data, publication, path)
+            data = contentFilters?.apply(data, publication, container, path)
         return data
     }
 
     fun dataStream(path: String): InputStream {
         publication.resource("/" + path) ?: throw Exception("Missing file")
         var inputStream = container.dataInputStream(path)
-        inputStream = contentFilters?.apply(inputStream, publication, path) ?: inputStream
+        inputStream = contentFilters?.apply(inputStream, publication, container, path) ?: inputStream
         return inputStream
     }
 

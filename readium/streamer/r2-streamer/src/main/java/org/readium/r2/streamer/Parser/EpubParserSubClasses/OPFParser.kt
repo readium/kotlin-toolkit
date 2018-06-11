@@ -1,8 +1,10 @@
 package org.readium.r2.streamer.Parser.EpubParserSubClasses
 
 import android.util.Log
+import org.joda.time.DateTime
 import org.readium.r2.shared.*
-import org.readium.r2.streamer.XmlParser.*
+import org.readium.r2.shared.XmlParser.Node
+import org.readium.r2.shared.XmlParser.XmlParser
 import org.readium.r2.streamer.Containers.Container
 import org.readium.r2.streamer.Parser.normalize
 
@@ -13,10 +15,10 @@ class OPFParser {
     val smilp = SMILParser()
     private var rootFilePath: String? = null
 
-    fun parseOpf(document: XmlParser, container: Container, epubVersion: Double) : Publication? {
+    fun parseOpf(document: XmlParser, filePath: String, epubVersion: Double) : Publication? {
         val publication = Publication()
 
-        rootFilePath = container.rootFile.rootFilePath
+        rootFilePath = filePath
         publication.version = epubVersion
         publication.internalData["type"] = "epub"
         publication.internalData["rootfile"] = rootFilePath!!
@@ -37,10 +39,10 @@ class OPFParser {
                 .root().getFirst("metadata") ?: document.root().getFirst("opf:metadata")
         metadata.multilangTitle = mp.mainTitle(metadataElement!!)
         metadata.identifier = mp.uniqueIdentifier(metadataElement,
-                    document.getFirst("package")!!.properties) ?: return false
+                    document.getFirst("package")!!.attributes) ?: return false
         metadata.description = metadataElement.getFirst("dc:description")?.text
         metadata.publicationDate = metadataElement.getFirst("dc:date")?.text
-        metadata.modified = mp.modifiedDate(metadataElement)
+        metadata.modified = DateTime(mp.modifiedDate(metadataElement)).toDate()
         metadata.source = metadataElement.getFirst("dc:sources")?.text
         mp.subject(metadataElement)?.let { metadata.subjects.add(it) }
         metadata.languages = metadataElement.get("dc:language")?.map { it.text!! }?.toMutableList()
@@ -49,7 +51,7 @@ class OPFParser {
         if (rightsMap != null && rightsMap.isNotEmpty())
             metadata.rights = rightsMap.joinToString { " " }
         mp.parseContributors(metadataElement, metadata, publication.version)
-        document.root().getFirst("spine")?.properties?.get("page-progression-direction")?.let {
+        document.root().getFirst("spine")?.attributes?.get("page-progression-direction")?.let {
             metadata.direction = it
         }
         mp.parseRenditionProperties(metadataElement, metadata)
@@ -63,7 +65,7 @@ class OPFParser {
         if (manifestItems.isEmpty())
             return
         for (item in manifestItems){
-            val id = item.properties["id"] ?: continue
+            val id = item.attributes["id"] ?: continue
             val link = linkFromManifest(item)
 
             // TODO: SMIL for MediaOverlays
@@ -76,8 +78,8 @@ class OPFParser {
     }
 
     private fun coverLinkFromMeta(metadata: Node, publication: Publication){
-        val coverMeta = metadata.get("meta")!!.firstOrNull { it.properties["name"] == "cover" }
-        val coverId = coverMeta?.properties?.get("content")
+        val coverMeta = metadata.get("meta")!!.firstOrNull { it.attributes["name"] == "cover" }
+        val coverId = coverMeta?.attributes?.get("content")
         val coverLink = publication.resources.firstOrNull {it.title == coverId}
         coverLink?.rel?.add("cover")
     }
@@ -89,15 +91,15 @@ class OPFParser {
             return
         }
         for (item in spineItems){
-            val idref = item.properties["idref"]
+            val idref = item.attributes["idref"]
             val index = publication.resources.indexOfFirst { it.title == idref }
             if (index == -1)
                 continue
-            item.properties["properties"]?.let {
+            item.attributes["properties"]?.let {
                 val properties = it.split(" ")
                 publication.resources[index].properties = parse(properties)
             }
-            if (item.properties["linear"]?.toLowerCase() == "no")
+            if (item.attributes["linear"]?.toLowerCase() == "no")
                 continue
             publication.resources[index].title = null
             publication.spine.add(publication.resources[index])
@@ -109,7 +111,7 @@ class OPFParser {
     ///
     /// - Parameter propertiesArray: The array of properties strings.
     /// - Returns: The Properties instance created from the strings array info
-    private fun parse(propertiesArray: List<String>) : Properties? {
+    private fun parse(propertiesArray: List<String>) : Properties {
         val properties = Properties()
 
         for (property in propertiesArray){
@@ -167,10 +169,10 @@ class OPFParser {
     private fun linkFromManifest(item: Node) : Link {
         val link = Link()
 
-        link.title = item.properties["id"]
-        link.href = normalize(rootFilePath!!, item.properties["href"])
-        link.typeLink = item.properties["media-type"]
-        item.properties["properties"]?.let {
+        link.title = item.attributes["id"]
+        link.href = normalize(rootFilePath!!, item.attributes["href"])
+        link.typeLink = item.attributes["media-type"]
+        item.attributes["properties"]?.let {
             val properties = it.split("\\s+")
             with(properties){
                 if (contains("nav"))

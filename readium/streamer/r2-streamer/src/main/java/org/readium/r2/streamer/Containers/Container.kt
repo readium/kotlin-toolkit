@@ -1,13 +1,16 @@
 package org.readium.r2.streamer.Containers
 
+import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
-import org.readium.r2.streamer.XmlParser.XmlParser
+import org.readium.r2.shared.XmlParser.XmlParser
 import java.io.InputStream
 
 interface Container{
 
     var rootFile: RootFile
+
+    var drm: Drm?
 
     var successCreated: Boolean
 
