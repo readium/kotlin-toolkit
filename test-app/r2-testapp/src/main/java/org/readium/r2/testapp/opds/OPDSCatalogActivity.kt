@@ -16,6 +16,7 @@ import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDSParser
 import org.readium.r2.shared.opds.Feed
+import org.readium.r2.testapp.R
 import java.net.MalformedURLException
 import java.net.URL
 
@@ -39,6 +40,9 @@ class OPDSCatalogActivity : AppCompatActivity() {
         } ?: run {
             feed = OPDSParser.parseURL(URL("http://www.feedbooks.com/catalog.atom"))
         }
+
+        val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_loading_feed))
+        progress.show()
 
         feed?.successUi { result ->
             runOnUiThread {
@@ -146,6 +150,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
                     }
                 }
             }
+            progress.hide()
         }
 
         feed?.fail {
