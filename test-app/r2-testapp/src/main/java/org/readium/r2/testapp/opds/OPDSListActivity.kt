@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -15,12 +16,25 @@ import com.mcxiaoke.koi.ext.onClick
 import com.mcxiaoke.koi.ext.onLongClick
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
+import org.jetbrains.anko.custom.customView
 import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.design.textInputLayout
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.testapp.R
+import android.content.DialogInterface.BUTTON_POSITIVE
+import android.content.DialogInterface
+import android.support.v7.app.AlertDialog
+import android.webkit.URLUtil
+import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.ui.failUi
+import nl.komponents.kovenant.ui.successUi
+import org.readium.r2.opds.OPDS2Parser
+import org.readium.r2.opds.OPDSParser
+import org.readium.r2.shared.opds.Feed
+import java.net.URL
+
 
 class OPDSListActivity : AppCompatActivity() {
 
@@ -56,10 +70,11 @@ class OPDSListActivity : AppCompatActivity() {
             floatingActionButton {
                 imageResource = R.drawable.icon_plus_white
                 onClick {
-                    alert(Appcompat, "Add OPDS Feed") {
-                        var editTextTitle: EditText? = null
-                        var editTextHref: EditText? = null
-                        var editTextType: EditText? = null
+                    var editTextTitle: EditText? = null
+                    var editTextHref: EditText? = null
+                    var editTextType: EditText? = null
+                    alert (Appcompat, "Add OPDS Feed") {
+
                         customView {
                             verticalLayout {
                                 textInputLayout {
@@ -82,19 +97,62 @@ class OPDSListActivity : AppCompatActivity() {
                                 }
                             }
                         }
-                        positiveButton("Save") {
-
-                            val opds = OPDSModel(
-                                    editTextTitle!!.text.toString(),
-                                    editTextHref!!.text.toString(),
-                                    editTextType!!.text.toString().toInt())
-
-                            database.opds.insert(opds)
-                            list.add(opds)
-                            opdsAdapter.notifyDataSetChanged()
-
-                        }
+                        positiveButton("Save") { }
                         negativeButton("Cancel") { }
+
+                    }.build().apply {
+                        setCancelable(false)
+                        setCanceledOnTouchOutside(false)
+                        setOnShowListener(DialogInterface.OnShowListener {
+                            val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                            b.setOnClickListener(View.OnClickListener {
+
+                                if (TextUtils.isEmpty(editTextTitle!!.text)) {
+                                    editTextTitle!!.setError("Please Enter A Title.");
+                                    editTextTitle!!.requestFocus();
+                                }
+                                else if (TextUtils.isEmpty(editTextHref!!.text)) {
+                                    editTextHref!!.setError("Please Enter A URL.");
+                                    editTextHref!!.requestFocus();
+                                }
+                                else if (TextUtils.isEmpty(editTextType!!.text)) {
+                                    editTextType!!.setError("Please Enter A Type.");
+                                    editTextType!!.requestFocus();
+                                }
+                                else if (!URLUtil.isValidUrl(editTextHref!!.text.toString())) {
+                                    editTextHref!!.setError("Please Enter A Valid URL.");
+                                    editTextHref!!.requestFocus();
+                                }
+                                else if(editTextType!!.text.toString().toIntOrNull() == null) {
+                                    editTextType!!.setError("Please Enter A Valid Type.");
+                                    editTextType!!.requestFocus();
+                                }
+                                else {
+                                    var feed: Promise<Feed, Exception>? = null
+                                    if (editTextType!!.text.toString().toInt() == 1) {
+                                        feed = OPDSParser.parseURL(URL(editTextHref!!.text.toString()))
+                                    } else {
+                                        feed = OPDS2Parser.parseURL(URL(editTextHref!!.text.toString()))
+                                    }
+                                    feed.successUi {
+                                       val opds = OPDSModel(
+                                               editTextTitle!!.text.toString(),
+                                               editTextHref!!.text.toString(),
+                                               editTextType!!.text.toString().toInt())
+
+                                       database.opds.insert(opds)
+                                       list.add(opds)
+                                       opdsAdapter.notifyDataSetChanged()
+                                       dismiss()
+                                    }
+                                    feed.failUi {
+                                        editTextHref!!.setError("Please Enter A Valid OPDS Feed URL.");
+                                        editTextHref!!.requestFocus();
+                                    }
+                                }
+                            })
+                        })
+
                     }.show()
                 }
             }.lparams {
