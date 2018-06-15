@@ -25,9 +25,15 @@ import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.textInputLayout
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
+
+
+// uncomment for lcp
+/*
 import org.readium.r2.lcp.LcpHttpService
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpSession
+ */
+
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRMMModel
@@ -173,7 +179,12 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 })
                 thread.start()
             }
-        } else if (uriString != null && lcp == true) {
+
+        }
+
+        // uncomment for lcp
+        /*
+        else if (uriString != null && lcp == true) {
             val uri: Uri? = Uri.parse(uriString)
             if (uri != null) {
                 val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
@@ -220,6 +231,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 thread.start()
             }
         }
+        */
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -376,6 +388,8 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 if (publication.spine.size > 0) {
                     pub.container.drm?.let { drm ->
                         if (drm.brand == Drm.Brand.lcp) {
+                            // uncomment for lcp
+                            /*
                             handleLcpPublication(publicationPath, drm, {
                                 val pair = parser.parseRemainingResource(pub.container, publication, it)
                                 pub.container = pair.first
@@ -406,6 +420,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                 // Do nothing
                             }).get()
 
+                            */
                         }
                     } ?: run {
                         startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication))
@@ -417,6 +432,8 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         }
     }
 
+    // uncomment for lcp
+/*
     private fun handleLcpPublication(publicationPath: String, drm: Drm, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception> {
 
         val lcpHttpService = LcpHttpService()
@@ -478,5 +495,5 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             }
         }
     }
-
+*/
 }
