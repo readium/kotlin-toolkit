@@ -72,6 +72,9 @@ class R2PageFragment : Fragment() {
         webView.isHorizontalScrollBarEnabled = false
         webView.settings.useWideViewPort = true
         webView.settings.loadWithOverviewMode = true
+        webView.settings.setSupportZoom(true)
+        webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setDisplayZoomControls(true);
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 
