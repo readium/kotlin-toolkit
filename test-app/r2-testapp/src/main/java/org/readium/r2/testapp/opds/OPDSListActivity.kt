@@ -45,8 +45,6 @@ class OPDSListActivity : AppCompatActivity() {
 
         database.opds.insert(OPDSModel("Feedbooks", "http://www.feedbooks.com/catalog.atom", 1))
         database.opds.insert(OPDSModel("Open Textbooks", "http://open.minitex.org/", 1))
-//        database.opds.insert(OPDSModel("OPDS Test", "http://feedbooks.github.io/opds-test-catalog/opds-2/home.json", 2))
-//        database.opds.insert(OPDSModel("NYPL", "https://circulation.librarysimplified.org", 1))
 
         val list = database.opds.list().toMutableList()
         val opdsAdapter = OPDSViewAdapter(act, list)

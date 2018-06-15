@@ -139,6 +139,8 @@ dependencies {
     implementation 'org.slf4j:slf4j-nop:1.7.25'
     implementation 'net.theluckycoder.materialchooser:materialchooser:1.1.5'
 
+    implementation 'com.github.abacritt:sectionedmergeadapter:0.2'
+    
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
