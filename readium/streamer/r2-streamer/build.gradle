@@ -28,7 +28,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
 //    uncomment this line to use with jitpack
-    implementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+    implementation 'com.github.readium:r2-shared-kotlin:master-SNAPSHOT'
 //    implementation 'com.github.readium:r2-shared-kotlin:0.1.0'
 
 //    uncomment this line to use with GitHu submodules and Android Studio Modules
