@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
+import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.view.Menu
@@ -14,6 +15,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_page.view.*
+import org.jetbrains.anko.contentView
 import org.jetbrains.anko.intentFor
 import org.readium.r2.navigator.UserSettings.Appearance
 import org.readium.r2.navigator.UserSettings.UserSettings
@@ -88,7 +90,16 @@ class R2EpubActivity : AppCompatActivity() {
         userSettings = UserSettings(preferences, this)
         userSettings.resourcePager = resourcePager
 
-        resourcePager.setCurrentItem(index)
+        if (index == 0) {
+            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+                // The view has RTL layout
+                resourcePager.setCurrentItem(resources.size - 1)
+            } else {
+                // The view has LTR layout
+            }
+        } else {
+            resourcePager.setCurrentItem(index)
+        }
 
         val appearance_pref = preferences.getString("appearance", Appearance.Default.toString()) ?: Appearance.Default.toString()
         when (appearance_pref) {
@@ -174,14 +185,27 @@ class R2EpubActivity : AppCompatActivity() {
     fun nextResource() {
         runOnUiThread {
             preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
-            resourcePager.setCurrentItem(resourcePager.getCurrentItem() + 1)
+            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+                // The view has RTL layout
+                resourcePager.setCurrentItem(resourcePager.getCurrentItem() - 1)
+            } else {
+                // The view has LTR layout
+                resourcePager.setCurrentItem(resourcePager.getCurrentItem() + 1)
+            }
         }
     }
 
     fun previousResource() {
         runOnUiThread {
             preferences.edit().putString("$publicationIdentifier-documentProgression", 1.0.toString()).apply()
-            resourcePager.setCurrentItem(resourcePager.getCurrentItem() - 1)
+            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+                // The view has RTL layout
+                resourcePager.setCurrentItem(resourcePager.getCurrentItem() + 1)
+            } else {
+                // The view has LTR layout
+                resourcePager.setCurrentItem(resourcePager.getCurrentItem() - 1)
+            }
+
         }
     }
 
