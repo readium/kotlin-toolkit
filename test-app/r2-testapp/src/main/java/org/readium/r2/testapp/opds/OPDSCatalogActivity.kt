@@ -194,7 +194,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
 
             R.id.filter -> {
                 facetPopup = facetPopUp()
-                facetPopup?.showAsDropDown(this.findViewById(R.id.filter), 0, 0)
+                facetPopup?.showAsDropDown(this.findViewById(R.id.filter), 0, 0, Gravity.END)
                 return false;
             }
             else -> return super.onOptionsItemSelected(item)
