@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -128,7 +129,7 @@ class R2EpubActivity : AppCompatActivity() {
                 return false
             }
             R.id.settings -> {
-                userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.settings), 0, 0)
+                userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.toc), 0, 0, Gravity.END)
                 return false;
             }
             R.id.drm -> {
