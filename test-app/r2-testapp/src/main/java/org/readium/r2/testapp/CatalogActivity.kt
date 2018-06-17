@@ -414,7 +414,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         popup.setHeight(ListPopupWindow.WRAP_CONTENT)
         popup.isOutsideTouchable = true
         popup.isFocusable = true
-        popup.showAsDropDown(v, 24, -350)
+        popup.showAsDropDown(v, 24, -350, Gravity.CENTER)
         val delete: Button = layout.findViewById(R.id.delete) as Button
         delete.setOnClickListener {
             val book = books[position]
