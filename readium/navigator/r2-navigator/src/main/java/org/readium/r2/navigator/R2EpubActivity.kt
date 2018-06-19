@@ -17,12 +17,13 @@ import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_page.view.*
 import org.jetbrains.anko.contentView
 import org.jetbrains.anko.intentFor
-import org.readium.r2.navigator.UserSettings.Appearance
-import org.readium.r2.navigator.UserSettings.UserSettings
+import org.jetbrains.anko.webView
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRMMModel
+import org.readium.r2.navigator.UserSettings
+import timber.log.Timber
 
 
 class R2EpubActivity : AppCompatActivity() {
@@ -101,22 +102,11 @@ class R2EpubActivity : AppCompatActivity() {
             resourcePager.setCurrentItem(index)
         }
 
-        val appearance_pref = preferences.getString("appearance", Appearance.Default.toString()) ?: Appearance.Default.toString()
-        when (appearance_pref) {
-            Appearance.Default.toString() -> {
-                resourcePager.setBackgroundColor(Color.parseColor("#ffffff"))
-                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
-            }
-            Appearance.Sepia.toString() -> {
-                resourcePager.setBackgroundColor(Color.parseColor("#faf4e8"))
-                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
-            }
-            Appearance.Night.toString() -> {
-                resourcePager.setBackgroundColor(Color.parseColor("#000000"))
-                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#ffffff"))
-            }
-        }
-
+        val appearancePref = preferences.getInt("appearance", 0)
+        val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
+        val textColors = mutableListOf("#000000", "#000000", "#ffffff")
+        resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
+        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor(textColors[appearancePref]))
         toggleActionBar()
     }
 
@@ -175,7 +165,6 @@ class R2EpubActivity : AppCompatActivity() {
                             or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                             or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                             or View.SYSTEM_UI_FLAG_IMMERSIVE)
-
                 }
             }
         }

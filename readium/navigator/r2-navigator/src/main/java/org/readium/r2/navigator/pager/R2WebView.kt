@@ -5,7 +5,6 @@ import android.util.AttributeSet
 import android.view.View
 import android.webkit.WebView
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.UserSettings.Scroll
 import timber.log.Timber
 
 
@@ -44,7 +43,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            if (activity.userSettings.verticalScroll.equals(Scroll.On.toString())) {
+            if (activity.userSettings.verticalScroll) {
                 if (!this.canScrollVertically(1)) {
                     activity.nextResource()
                 }
@@ -70,7 +69,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            if (activity.userSettings.verticalScroll.equals(Scroll.On.toString())) {
+            if (activity.userSettings.verticalScroll) {
                 if (!this.canScrollVertically(-1)) {
                     activity.previousResource()
                 }

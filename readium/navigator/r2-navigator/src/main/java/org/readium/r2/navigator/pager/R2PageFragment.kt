@@ -14,10 +14,10 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_page.*
+import org.readium.r2.navigator.APPEARANCE_REF
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.UserSettings.Appearance
-import org.readium.r2.navigator.UserSettings.Scroll
+import org.readium.r2.navigator.SCROLL_REF
 
 
 class R2PageFragment : Fragment() {
@@ -36,26 +36,18 @@ class R2PageFragment : Fragment() {
         val v = inflater.inflate(R.layout.fragment_page, container, false)
         val prefs = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
-        val appearance_pref = prefs?.getString("appearance", Appearance.Default.toString()) ?: Appearance.Default.toString()
-        when (appearance_pref) {
-            Appearance.Default.toString() -> {
-                (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#000000"))
-            }
-            Appearance.Sepia.toString() -> {
-                (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#000000"))
-            }
-            Appearance.Night.toString() -> {
-                (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#ffffff"))
-            }
-        }
+        // Set text color depending of appearance preference
+        (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor(
+                if (prefs?.getInt(APPEARANCE_REF, 0) ?: 0 > 1) "#ffffff" else "#000000"
+        ))
 
-        val scroll_mode = prefs?.getString("scroll", Scroll.Off.toString())
-        when (scroll_mode) {
-            Scroll.On.toString() -> {
+        val scrollMode = prefs?.getBoolean(SCROLL_REF, false)
+        when (scrollMode) {
+            true -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.GONE
                 v.setPadding(0,4,0,4)
             }
-            Scroll.Off.toString() -> {
+            false -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.VISIBLE
                 v.setPadding(0,30,0,30)
             }
@@ -63,7 +55,7 @@ class R2PageFragment : Fragment() {
 
         (v.findViewById(R.id.book_title) as TextView).setText(bookTitle)
 
-        val webView: R2WebView = v!!.findViewById<R2WebView>(R.id.webView) as R2WebView
+        val webView: R2WebView = v!!.findViewById(R.id.webView) as R2WebView
 
         webView.activity = activity as R2EpubActivity
 
@@ -110,6 +102,7 @@ class R2PageFragment : Fragment() {
 
         }
 
+/*
         webView.setOnTouchListener(object : View.OnTouchListener {
 
             internal var startX = 0
@@ -155,7 +148,7 @@ class R2PageFragment : Fragment() {
                     return true
                 }
                 if (event.action == MotionEvent.ACTION_MOVE) {
-                    if ((activity as R2EpubActivity).userSettings.isVerticalScrollEnabled) {
+                    if ((activity as R2EpubActivity).userProperties.verticalScroll) {
                         return false
                     }
                     return true
@@ -165,7 +158,7 @@ class R2PageFragment : Fragment() {
 //            override fun onTouch(v: View, event: MotionEvent): Boolean {
 //
 //                    if (event.action == MotionEvent.ACTION_MOVE) {
-//                    if ((activity as R2EpubActivity).userSettings.isVerticalScrollEnabled) {
+//                    if ((activity as R2EpubActivity).userProperties.isVerticalScrollEnabled) {
 //                        return false
 //                    }
 //                    return true
@@ -173,6 +166,7 @@ class R2PageFragment : Fragment() {
 //                return false
 //            }
         })
+*/
 
         webView.loadUrl(resourceUrl)
 
