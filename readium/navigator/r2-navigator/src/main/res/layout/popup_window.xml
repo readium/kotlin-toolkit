@@ -438,6 +438,53 @@
                             android:src="@drawable/icon_plus" />
 
                     </LinearLayout>
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginBottom="10dp"
+                        android:orientation="horizontal">
+
+                        <ImageButton
+                            android:id="@+id/lh_decrease"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="@android:color/white"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/icon_minus" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_weight="100"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Line Height" />
+
+                            <TextView
+                                android:id="@+id/lh_display"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="auto" />
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/lh_increase"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="@android:color/white"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/icon_plus" />
+
+                    </LinearLayout>
+
                 </LinearLayout>
 
                 </LinearLayout>
