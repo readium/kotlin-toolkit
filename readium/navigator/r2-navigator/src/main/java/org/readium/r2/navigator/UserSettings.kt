@@ -10,6 +10,10 @@ import android.widget.*
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.pager.R2WebView
 import org.readium.r2.shared.*
+import timber.log.Timber
+import java.io.File
+import org.json.JSONArray
+import org.json.JSONObject
 
 const val FONT_SIZE_REF = "fontSize"
 const val FONT_FAMILY_REF = "fontFamily"
@@ -117,15 +121,39 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         return userProperties
     }
 
+    private fun makeJson() : JSONArray {
+        val array = JSONArray()
+        for(userProperty in userProperties.properties){
+            array.put(userProperty.getJson())
+        }
+        return array
+    }
 
-    private fun updateEnumeratable(enumeratable: Enumeratable) =
+    private fun saveChanges() {
+        val json = makeJson()
+        val dir = File(context.getExternalFilesDir(null).path + "/styles/")
+        dir.mkdirs()
+        val file = File(dir, "UserProperties.json")
+        file.printWriter().use { out ->
+            out.println(json)
+        }
+    }
+
+    private fun updateEnumeratable(enumeratable: Enumeratable) {
         preferences.edit().putInt(enumeratable.ref, enumeratable.index).apply()
+        saveChanges()
+    }
 
-    private fun updateSwitchable(switchable: Switchable) =
+
+    private fun updateSwitchable(switchable: Switchable) {
         preferences.edit().putBoolean(switchable.ref, switchable.on).apply()
+        saveChanges()
+    }
 
-    private fun updateIncrementable(incrementable: Incrementable) =
+    private fun updateIncrementable(incrementable: Incrementable) {
         preferences.edit().putFloat(incrementable.ref, incrementable.value).apply()
+        saveChanges()
+    }
 
     private fun updateViewCSS(ref: String) {
         val webView = resourcePager.getFocusedChild().findViewById(R.id.webView) as R2WebView
