@@ -14,10 +14,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_page.*
-import org.readium.r2.navigator.APPEARANCE_REF
-import org.readium.r2.navigator.R
-import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.SCROLL_REF
+import org.readium.r2.navigator.*
 
 
 class R2PageFragment : Fragment() {
@@ -80,7 +77,7 @@ class R2PageFragment : Fragment() {
                 super.onPageFinished(view, url)
                 try {
                     //(activity as R2EpubActivity).userSettings.applyAllCSS(view as R2WebView)
-
+                    //(activity as R2EpubActivity).userSettings.updateViewCSS(PUBLISHER_DEFAULT_REF)
                     val progression = (activity as R2EpubActivity).preferences.getString("${(activity as R2EpubActivity).publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
 
                     if (progression == 0.0) {

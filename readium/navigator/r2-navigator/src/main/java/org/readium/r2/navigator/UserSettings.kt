@@ -92,32 +92,31 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
     fun getUserSettings() : UserProperties {
 
         val userProperties = UserProperties()
-        // Appearance
-        userProperties.addEnumeratable(appearance, appearanceValues, APPEARANCE_REF, APPEARANCE_NAME)
-        // Font family
-        userProperties.addEnumeratable(fontFamily, fontFamilyValues, FONT_FAMILY_REF, FONT_FAMILY_NAME)
-        // Text alignment
-        userProperties.addEnumeratable(textAlignment, textAlignmentValues, TEXT_ALIGNMENT_REF, TEXT_ALIGNMENT_NAME)
-        // Column count
-        userProperties.addEnumeratable(columnCount, columnCountValues, COLUMN_COUNT_REF, COLUMN_COUNT_NAME)
-
-        // Scroll
-        userProperties.addSwitchable("readium-scroll-on", "readium-scroll-off", verticalScroll, SCROLL_REF, SCROLL_NAME)
-        // Font override
-        userProperties.addSwitchable("readium-font-on", "readium-font-off", fontOverride, FONT_OVERRIDE_REF, FONT_OVERRIDE_NAME)
         // Publisher default system
         userProperties.addSwitchable("readium-advanced-off", "readium-advanced-on", publisherDefaults, PUBLISHER_DEFAULT_REF, PUBLISHER_DEFAULT_NAME)
-
-        // Font size
-        userProperties.addIncrementable(fontSize, 100f, 300f, 25f, "%", FONT_SIZE_REF, FONT_SIZE_NAME)
-        // Letter spacing
-        userProperties.addIncrementable(letterSpacing, 0f, 0.5f, 0.0625f, "em", LETTER_SPACING_REF, LETTER_SPACING_NAME)
+        // Font override
+        userProperties.addSwitchable("readium-font-on", "readium-font-off", fontOverride, FONT_OVERRIDE_REF, FONT_OVERRIDE_NAME)
+        // Column count
+        userProperties.addEnumeratable(columnCount, columnCountValues, COLUMN_COUNT_REF, COLUMN_COUNT_NAME)
+        // Appearance
+        userProperties.addEnumeratable(appearance, appearanceValues, APPEARANCE_REF, APPEARANCE_NAME)
         // Page margins
         userProperties.addIncrementable(pageMargins, 0.5f, 2f, 0.25f, "", PAGE_MARGINS_REF, PAGE_MARGINS_NAME)
-        // Word spacing
-        userProperties.addIncrementable(wordSpacing, 0f, 0.5f, 0.25f, "rem", WORD_SPACING_REF, WORD_SPACING_NAME)
+        // Text alignment
+        userProperties.addEnumeratable(textAlignment, textAlignmentValues, TEXT_ALIGNMENT_REF, TEXT_ALIGNMENT_NAME)
+        // Font family
+        userProperties.addEnumeratable(fontFamily, fontFamilyValues, FONT_FAMILY_REF, FONT_FAMILY_NAME)
+        // Font size
+        userProperties.addIncrementable(fontSize, 100f, 300f, 25f, "%", FONT_SIZE_REF, FONT_SIZE_NAME)
         // Line height
         userProperties.addIncrementable(lineHeight, 1f, 2f, 0.25f, "", LINE_HEIGHT_REF, LINE_HEIGHT_NAME)
+        // Word spacing
+        userProperties.addIncrementable(wordSpacing, 0f, 0.5f, 0.25f, "rem", WORD_SPACING_REF, WORD_SPACING_NAME)
+        // Letter spacing
+        userProperties.addIncrementable(letterSpacing, 0f, 0.5f, 0.0625f, "em", LETTER_SPACING_REF, LETTER_SPACING_NAME)
+        // Scroll
+        userProperties.addSwitchable("readium-scroll-on", "readium-scroll-off", verticalScroll, SCROLL_REF, SCROLL_NAME)
+
         return userProperties
     }
 
@@ -155,7 +154,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         saveChanges()
     }
 
-    private fun updateViewCSS(ref: String) {
+    fun updateViewCSS(ref: String) {
         val webView = resourcePager.getFocusedChild().findViewById(R.id.webView) as R2WebView
         applyCSS(webView, ref)
     }
@@ -163,11 +162,13 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
     private fun applyCSS(view: R2WebView, ref: String) {
         val userSetting = userProperties.getByRef<UserProperty>(ref)
         view.setProperty(userSetting.name, userSetting.toString())
+        println("applyCss : " + userSetting.name + ": " + userSetting.toString())
     }
 
     fun applyAllCSS(view: R2WebView) {
         for (userSetting in userProperties.properties) {
-            view.setProperty(userSetting.name, userSetting.toString())
+            println(userSetting.name + ": " + userSetting.toString())
+            view.setProperty("applyAllCss : " + userSetting.name, userSetting.toString())
         }
     }
 
@@ -201,9 +202,8 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         (tw.getChildTabViewAt(0).findViewById(android.R.id.title) as TextView).textSize = 10f
         (tw.getChildTabViewAt(1).findViewById(android.R.id.title) as TextView).textSize = 10f
 
-        val fontSpinner: Spinner = layout.findViewById(R.id.spinner_action_settings_intervall_values) as Spinner
-
         val fontFamily = (userProperties.getByRef<Enumeratable>(FONT_FAMILY_REF))
+        val fontOverride = (userProperties.getByRef<Switchable>(FONT_OVERRIDE_REF))
         val appearance = userProperties.getByRef<Enumeratable>(APPEARANCE_REF)
         val fontSize = userProperties.getByRef<Incrementable>(FONT_SIZE_REF)
         val publisherDefault = userProperties.getByRef<Switchable>(PUBLISHER_DEFAULT_REF)
@@ -215,7 +215,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         val letterSpacing = userProperties.getByRef<Incrementable>(LETTER_SPACING_REF)
         val lineHeight = userProperties.getByRef<Incrementable>(LINE_HEIGHT_REF)
 
-        // TODO analyse this
+        val fontSpinner: Spinner = layout.findViewById(R.id.spinner_action_settings_intervall_values) as Spinner
+        fontSpinner.setSelection(fontFamily.index)
+
         val fonts = context.getResources().getStringArray(R.array.font_list)
 
         val dataAdapter = object : ArrayAdapter<String>(context, R.layout.spinner_item, fonts) {
@@ -223,6 +225,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                 var v: View? = null
                 v = super.getDropDownView(position, null, parent)
+                // Makes the selected font appear in dark
                 // If this is the selected item position
                 if (position == fontFamily.index) {
                     v!!.setBackgroundColor(context.getResources().getColor(R.color.colorPrimaryDark))
@@ -254,7 +257,11 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         fontSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, pos: Int, id: Long) {
                 fontFamily.index = pos
+                fontOverride.on = (pos != 0)
+                updateSwitchable(fontOverride)
                 updateEnumeratable(fontFamily)
+                println("selected a font")
+                updateViewCSS(FONT_OVERRIDE_REF)
                 updateViewCSS(FONT_FAMILY_REF)
             }
 
