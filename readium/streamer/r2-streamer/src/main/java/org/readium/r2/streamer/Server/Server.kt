@@ -1,5 +1,6 @@
 package org.readium.r2.streamer.Server
 
+import android.content.Context
 import android.content.res.AssetManager
 import android.os.Environment
 import fi.iki.elonen.router.RouterNanoHTTPD
@@ -9,7 +10,9 @@ import org.readium.r2.streamer.Fetcher.Fetcher
 import org.readium.r2.streamer.Server.handler.*
 import java.net.URL
 import java.util.*
-
+import org.json.JSONObject
+import org.json.JSONArray
+import java.io.File
 
 class Server(port: Int) : AbstractServer(port) {
     
@@ -33,7 +36,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         ressources.add(name, body)
     }
 
-    fun loadResources(assets: AssetManager){
+        fun loadResources(assets: AssetManager, context: Context){
         addResource("after.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-after.css"), "utf-8")
                 .useDelimiter("\\A").next())
         addResource("before.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-before.css"), "utf-8")
@@ -44,12 +47,15 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
                 .useDelimiter("\\A").next())
         addResource("utils.js", Scanner(assets.open("ReadiumCSS/utils.js"), "utf-8")
                 .useDelimiter("\\A").next())
+        // TODO addResource css
+        // save new userSettings in a new css file, and inject it here
+        // context.getExternalFilesDir(null).path + "/styles/userProperties.css"
 
     }
 
-    fun addEpub(publication: Publication, container: Container, fileName: String) {
+    fun addEpub(publication: Publication, container: Container, fileName: String, context: Context) {
 
-        val fetcher = Fetcher(publication, container)
+        val fetcher = Fetcher(publication, container, context)
 
         addLinks(publication, fileName)
 

@@ -1,9 +1,13 @@
 package org.readium.r2.streamer.Fetcher
 
+import android.content.Context
+import org.json.JSONArray
+import org.json.JSONObject
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.RenditionLayout
 import org.readium.r2.shared.removeLastComponent
 import org.readium.r2.streamer.Containers.Container
+import java.io.File
 import java.io.InputStream
 import java.net.URL
 
@@ -20,7 +24,7 @@ interface ContentFilters{
     }
 }
 
-class ContentFiltersEpub: ContentFilters {
+class ContentFiltersEpub(val context: Context) : ContentFilters {
 
     override var fontDecoder = FontDecoder()
     override var drmDecoder = DrmDecoder()
@@ -37,7 +41,7 @@ class ContentFiltersEpub: ContentFilters {
                         || resourceLink.properties.layout == "reflowable") {
                     decodedInputStream = injectReflowableHtml(decodedInputStream, baseUrl)
                 } else {
-                    decodedInputStream = injectFixedLayohtHtml(decodedInputStream, baseUrl)
+                    decodedInputStream = injectFixedLayoutHtml(decodedInputStream, baseUrl)
                 }
             }
 
@@ -61,7 +65,7 @@ class ContentFiltersEpub: ContentFilters {
                                         || resourceLink.properties.layout == "reflowable")) {
                             injectReflowableHtml(decodedInputStream, baseUrl)
                         } else {
-                            injectFixedLayohtHtml(decodedInputStream, baseUrl)
+                            injectFixedLayoutHtml(decodedInputStream, baseUrl)
                         }
             }
             return decodedInputStream.readBytes()
@@ -73,6 +77,7 @@ class ContentFiltersEpub: ContentFilters {
     private fun injectReflowableHtml(stream: InputStream, baseUrl: URL) : InputStream {
         val data = stream.readBytes()
         var resourceHtml = String(data)
+        // Inject links to css and js files
         var beginHeadIndex = resourceHtml.indexOf("<head>", 0, false) + 6
         var endHeadIndex = resourceHtml.indexOf("</head>", 0, false)
         if (endHeadIndex == -1)
@@ -96,10 +101,15 @@ class ContentFiltersEpub: ContentFilters {
             endHeadIndex += element.length
         }
         resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style> ").toString()
+        // Inject userProperties
+        val beginHtmlIndex = resourceHtml.indexOf("<html", 0, false) + 5
+        getProperties()?.let {
+            resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, buildStringProperties(it)).toString()
+        }
         return resourceHtml.toByteArray().inputStream()
     }
 
-    private fun injectFixedLayohtHtml(stream: InputStream, baseUrl: URL) : InputStream {
+    private fun injectFixedLayoutHtml(stream: InputStream, baseUrl: URL) : InputStream {
         val data = stream.readBytes()
         var resourceHtml = String(data) //UTF-8
         val endHeadIndex = resourceHtml.indexOf("</head>", 0, false)
@@ -128,6 +138,42 @@ class ContentFiltersEpub: ContentFilters {
 
         return prefix + ressourceName + suffix
     }
+
+    private fun getProperties(): MutableList<Pair<String, String>>? {
+        // Storing the content of the file in a String
+        val propertiesContent: String
+        val dir = File(context.getExternalFilesDir(null).path + "/styles/")
+        val file = File(dir, "UserProperties.json")
+        if (file.isFile() && file.canRead()) {
+            propertiesContent = file.readText(Charsets.UTF_8)
+        } else {
+            return null
+        }
+
+        // Parsing of the String into a JSONArray of JSONObject with each "name" and "value" of the css properties
+        val propertiesArray = JSONArray(propertiesContent)
+
+        // Making that JSONArray a MutableMap<String, String> to make easier the access of data
+        val properties: MutableList<Pair<String, String>> = arrayListOf()
+        for (i in 0..(propertiesArray.length() - 1) ) {
+            val value = propertiesArray.getJSONObject(i)
+            properties.add(Pair(value.getString("name"), value.getString("value")))
+            println("##~~~~~~~~")
+            println("##~~~~~~~~    properties[${i}]      :     ${properties[i]}")
+            println("##~~~~~~~~    properties[${i}].name :     ${properties[i].first}")
+            println("##~~~~~~~~    properties[${i}].value:     ${properties[i].second}")
+        }
+        return properties
+    }
+
+    private fun buildStringProperties(list: MutableList<Pair<String, String>>) : String {
+        var string = ""
+        for (property in list) {
+            string = string + " " + property.first + ": " + property.second + ";"
+        }
+        return string
+    }
+
 
 }
 
