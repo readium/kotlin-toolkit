@@ -14,10 +14,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListPopupWindow
@@ -35,6 +32,8 @@ import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.design.textInputLayout
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
+import org.json.JSONArray
+import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRMMModel
@@ -312,7 +311,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 // do nothing
                 Timber.e(e)
             }
-            server.loadResources(assets)
+            server.loadResources(assets, applicationContext)
         }
     }
 
@@ -402,7 +401,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 booksAdapter.notifyDataSetChanged()
             }
         }
-        server.addEpub(publication, container, "/" + fileName)
+        server.addEpub(publication, container, "/" + fileName, applicationContext)
         addBookToView()
     }
 
