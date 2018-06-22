@@ -7,6 +7,9 @@ sealed class UserProperty(var ref: String, var name: String) {
     private var value: String = ""
     get() = this.toString()
     abstract override fun toString(): String
+    fun getJson(): String {
+        return """{"name": "$name", "value": "${this}"}"""
+    }
 
 }
 
