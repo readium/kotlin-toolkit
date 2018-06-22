@@ -28,11 +28,11 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
 //    uncomment this line to use with jitpack
-    implementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+//    implementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
 //    implementation 'com.github.readium:r2-shared-kotlin:0.1.0'
 
 //    uncomment this line to use with GitHu submodules and Android Studio Modules
-//    implementation project(':r2-shared')
+    implementation project(':r2-shared')
 
     //TODO conflicting support libraries, excluding these
     implementation ('com.mcxiaoke.koi:core:0.5.5') {

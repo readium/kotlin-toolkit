@@ -1,6 +1,8 @@
 package org.readium.r2.streamer.Fetcher
 
 import android.content.Context
+import android.os.Environment
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.Publication
@@ -24,7 +26,7 @@ interface ContentFilters{
     }
 }
 
-class ContentFiltersEpub(val context: Context) : ContentFilters {
+class ContentFiltersEpub(val userProperties: String?) : ContentFilters {
 
     override var fontDecoder = FontDecoder()
     override var drmDecoder = DrmDecoder()
@@ -101,10 +103,20 @@ class ContentFiltersEpub(val context: Context) : ContentFilters {
             endHeadIndex += element.length
         }
         resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style> ").toString()
+
         // Inject userProperties
-        val beginHtmlIndex = resourceHtml.indexOf("<html", 0, false) + 5
         getProperties()?.let {
-            resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, buildStringProperties(it)).toString()
+            val html  = Regex("""<html.*>""").find(resourceHtml, 0)!!
+            val match = Regex("""(style=("([^"]*)"[ >]))|(style='([^']*)'[ >])""").find(html.value, 0)
+            if (match != null) {
+                val beginStyle = match.range.start + 7
+                var newHtml = html.value
+                newHtml = StringBuilder(newHtml).insert(beginStyle, "${buildStringProperties(it)} ").toString()
+                resourceHtml = StringBuilder(resourceHtml).replace(Regex("""<html.*>"""), newHtml)
+            } else {
+                val beginHtmlIndex = resourceHtml.indexOf("<html", 0, false) + 5
+                resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, " style=\"${buildStringProperties(it)}\"").toString()
+            }
         }
         return resourceHtml.toByteArray().inputStream()
     }
@@ -140,30 +152,28 @@ class ContentFiltersEpub(val context: Context) : ContentFilters {
     }
 
     private fun getProperties(): MutableList<Pair<String, String>>? {
-        // Storing the content of the file in a String
-        val propertiesContent: String
-        val dir = File(context.getExternalFilesDir(null).path + "/styles/")
-        val file = File(dir, "UserProperties.json")
-        if (file.isFile() && file.canRead()) {
-            propertiesContent = file.readText(Charsets.UTF_8)
-        } else {
+        // userProperties is a string containing the css userProperties as a JSON string
+
+        if (userProperties == null) {
             return null
         }
 
         // Parsing of the String into a JSONArray of JSONObject with each "name" and "value" of the css properties
-        val propertiesArray = JSONArray(propertiesContent)
+        val propertiesArray = JSONArray(userProperties)
 
         // Making that JSONArray a MutableMap<String, String> to make easier the access of data
-        val properties: MutableList<Pair<String, String>> = arrayListOf()
-        for (i in 0..(propertiesArray.length() - 1) ) {
-            val value = propertiesArray.getJSONObject(i)
-            properties.add(Pair(value.getString("name"), value.getString("value")))
-            println("##~~~~~~~~")
-            println("##~~~~~~~~    properties[${i}]      :     ${properties[i]}")
-            println("##~~~~~~~~    properties[${i}].name :     ${properties[i].first}")
-            println("##~~~~~~~~    properties[${i}].value:     ${properties[i].second}")
+        try {
+            val properties: MutableList<Pair<String, String>> = arrayListOf()
+            for (i in 0..(propertiesArray.length() - 1)) {
+                val value = JSONObject(propertiesArray.getString(i))
+                properties.add(Pair(value.getString("name"), value.getString("value")))
+                println("##~~~~~~~~    properties[${i}]      :     ${properties[i]}")
+            }
+            return properties
+        } catch (e: Error) {
+            Log.e("ContentFilter", "Error parsing json")
+            return null
         }
-        return properties
     }
 
     private fun buildStringProperties(list: MutableList<Pair<String, String>>) : String {

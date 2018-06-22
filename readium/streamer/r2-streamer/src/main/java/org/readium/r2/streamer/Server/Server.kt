@@ -12,6 +12,7 @@ import java.net.URL
 import java.util.*
 import org.json.JSONObject
 import org.json.JSONArray
+import org.readium.r2.shared.UserProperties
 import java.io.File
 
 class Server(port: Int) : AbstractServer(port) {
@@ -36,7 +37,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         ressources.add(name, body)
     }
 
-        fun loadResources(assets: AssetManager, context: Context){
+    fun loadResources(assets: AssetManager, context: Context){
         addResource("after.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-after.css"), "utf-8")
                 .useDelimiter("\\A").next())
         addResource("before.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-before.css"), "utf-8")
@@ -47,15 +48,12 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
                 .useDelimiter("\\A").next())
         addResource("utils.js", Scanner(assets.open("ReadiumCSS/utils.js"), "utf-8")
                 .useDelimiter("\\A").next())
-        // TODO addResource css
-        // save new userSettings in a new css file, and inject it here
-        // context.getExternalFilesDir(null).path + "/styles/userProperties.css"
 
     }
 
-    fun addEpub(publication: Publication, container: Container, fileName: String, context: Context) {
+    fun addEpub(publication: Publication, container: Container, fileName: String, userProperties: String?) {
 
-        val fetcher = Fetcher(publication, container, context)
+        val fetcher = Fetcher(publication, container, userProperties)
 
         addLinks(publication, fileName)
 
