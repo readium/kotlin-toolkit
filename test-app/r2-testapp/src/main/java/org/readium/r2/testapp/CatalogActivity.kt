@@ -408,13 +408,14 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     private fun getProperties() : String? {
         var str = ""
         val file = File(applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
-        if (file.isFile() && file.canRead()) {
+        return if (file.isFile() && file.canRead()) {
             for (i in file.readLines()) {
                 str += i
             }
-            return str
+            str
+        } else {
+            null
         }
-        return null
     }
 
     override fun recyclerViewListLongClicked(v: View, position: Int) {
