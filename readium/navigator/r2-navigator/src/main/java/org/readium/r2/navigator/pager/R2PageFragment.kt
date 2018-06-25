@@ -6,15 +6,16 @@ import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
-import kotlinx.android.synthetic.main.fragment_page.*
-import org.readium.r2.navigator.*
+import org.readium.r2.navigator.APPEARANCE_REF
+import org.readium.r2.navigator.R
+import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.navigator.SCROLL_REF
 
 
 class R2PageFragment : Fragment() {
@@ -50,7 +51,7 @@ class R2PageFragment : Fragment() {
             }
         }
 
-        (v.findViewById(R.id.book_title) as TextView).setText(bookTitle)
+        (v.findViewById(R.id.book_title) as TextView).text = bookTitle
 
         val webView: R2WebView = v!!.findViewById(R.id.webView) as R2WebView
 
@@ -80,18 +81,13 @@ class R2PageFragment : Fragment() {
                     //(activity as R2EpubActivity).userSettings.updateViewCSS(PUBLISHER_DEFAULT_REF)
                     val progression = (activity as R2EpubActivity).preferences.getString("${(activity as R2EpubActivity).publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
 
-                    if (progression == 0.0) {
-                        webView.scrollToBeginning()
+                    when (progression) {
+                        0.0 -> webView.scrollToBeginning()
+                        1.0 -> webView.scrollToEnd()
+                        else -> webView.scrollToPosition(progression)
                     }
-                    else if (progression == 1.0) {
-                        webView.scrollToEnd()
-                    }
-                    else {
-                        webView.scrollToPosition(progression)
-                    }
-
                 } catch (e: Exception) {
-                    //TODO double check this error, a crash happens when scrolling to fast bewteen resources.....
+                    // TODO double check this error, a crash happens when scrolling to fast between resources.....
                     // kotlin.TypeCastException: null cannot be cast to non-null type org.readium.r2.navigator.R2EpubActivity
                 }
 

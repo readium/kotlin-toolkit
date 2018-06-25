@@ -48,7 +48,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
     lateinit var resourcePager: R2ViewPager
 
     private val appearanceValues = listOf("readium-default-on", "readium-sepia-on","readium-night-on")
-    private val fontFamilyValues = listOf("Publisher's default", "sans-serif", "Roboto", "serif", "Seravek")
+    private val fontFamilyValues = listOf("Original", "PT Serif", "Roboto", "Source Sans Pro", "Vollkorn")
     private val textAlignmentValues = listOf("justify", "start")
     private val columnCountValues = listOf("auto", "1", "2")
 
@@ -216,7 +216,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         val lineHeight = userProperties.getByRef<Incrementable>(LINE_HEIGHT_REF)
 
         val fontSpinner: Spinner = layout.findViewById(R.id.spinner_action_settings_intervall_values) as Spinner
-        fontSpinner.setSelection(fontFamily.index)
 
         val fonts = context.getResources().getStringArray(R.array.font_list)
 
@@ -254,6 +253,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         // Font family
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         fontSpinner.setAdapter(dataAdapter)
+        fontSpinner.setSelection(fontFamily.index)
         fontSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, pos: Int, id: Long) {
                 fontFamily.index = pos
