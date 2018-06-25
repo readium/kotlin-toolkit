@@ -1,7 +1,5 @@
 package org.readium.r2.streamer.Fetcher
 
-import android.content.Context
-import android.os.Environment
 import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
@@ -9,7 +7,6 @@ import org.readium.r2.shared.Publication
 import org.readium.r2.shared.RenditionLayout
 import org.readium.r2.shared.removeLastComponent
 import org.readium.r2.streamer.Containers.Container
-import java.io.File
 import java.io.InputStream
 import java.net.URL
 
@@ -162,17 +159,16 @@ class ContentFiltersEpub(val userProperties: String?) : ContentFilters {
         val propertiesArray = JSONArray(userProperties)
 
         // Making that JSONArray a MutableMap<String, String> to make easier the access of data
-        try {
+        return try {
             val properties: MutableList<Pair<String, String>> = arrayListOf()
             for (i in 0..(propertiesArray.length() - 1)) {
                 val value = JSONObject(propertiesArray.getString(i))
                 properties.add(Pair(value.getString("name"), value.getString("value")))
-                println("##~~~~~~~~    properties[${i}]      :     ${properties[i]}")
             }
-            return properties
+            properties
         } catch (e: Error) {
             Log.e("ContentFilter", "Error parsing json")
-            return null
+            null
         }
     }
 
