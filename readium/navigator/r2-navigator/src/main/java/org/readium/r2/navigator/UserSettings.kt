@@ -122,10 +122,19 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
     private fun makeJson() : JSONArray {
         val array = JSONArray()
-        for(userProperty in userProperties.properties){
+        for (userProperty in userProperties.properties){
             array.put(userProperty.getJson())
         }
         return array
+    }
+
+    private fun makeCss() : String {
+        var css = "html {\n"
+        for (userProperty in userProperties.properties) {
+            css += userProperty.getCss()
+        }
+        css += "}"
+        return css
     }
 
     private fun saveChanges() {
@@ -154,9 +163,17 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         saveChanges()
     }
 
-    fun updateViewCSS(ref: String) {
+    /*fun updateViewCSS(ref: String) {
         val webView = resourcePager.getFocusedChild().findViewById(R.id.webView) as R2WebView
         applyCSS(webView, ref)
+    }
+*/
+    fun updateViewCSS(ref: String) {
+        val c = resourcePager.childCount
+        for (i in 0 until resourcePager.childCount) {
+            val webView = resourcePager.getChildAt(i).findViewById(R.id.webView) as R2WebView
+            applyCSS(webView, ref)
+        }
     }
 
     private fun applyCSS(view: R2WebView, ref: String) {
