@@ -156,10 +156,10 @@ class ContentFiltersEpub(val userProperties: String?) : ContentFilters {
         }
 
         // Parsing of the String into a JSONArray of JSONObject with each "name" and "value" of the css properties
-        val propertiesArray = JSONArray(userProperties)
 
         // Making that JSONArray a MutableMap<String, String> to make easier the access of data
         return try {
+            val propertiesArray = JSONArray(userProperties)
             val properties: MutableList<Pair<String, String>> = arrayListOf()
             for (i in 0..(propertiesArray.length() - 1)) {
                 val value = JSONObject(propertiesArray.getString(i))
@@ -170,6 +170,7 @@ class ContentFiltersEpub(val userProperties: String?) : ContentFilters {
             Log.e("ContentFilter", "Error parsing json")
             null
         }
+        return null
     }
 
     private fun buildStringProperties(list: MutableList<Pair<String, String>>) : String {

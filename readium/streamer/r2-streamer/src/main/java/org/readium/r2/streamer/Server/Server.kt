@@ -48,7 +48,21 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
                 .useDelimiter("\\A").next())
         addResource("utils.js", Scanner(assets.open("ReadiumCSS/utils.js"), "utf-8")
                 .useDelimiter("\\A").next())
+        getProperties(context)?.let {
+            addResource("userproperties.css", it)
+        }}
 
+    private fun getProperties(context: Context) : String? {
+        var str = ""
+        val file = File(context.getExternalFilesDir(null).path + "/styles/UserProperties.css")
+        return if (file.isFile() && file.canRead()) {
+            for (i in file.readLines()) {
+                str += i
+            }
+            str
+        } else {
+            null
+        }
     }
 
     fun addEpub(publication: Publication, container: Container, fileName: String, userProperties: String?) {

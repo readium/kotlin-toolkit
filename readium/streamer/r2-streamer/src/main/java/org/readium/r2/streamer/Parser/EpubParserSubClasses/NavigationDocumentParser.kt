@@ -45,7 +45,7 @@ class NavigationDocumentParser {
     private fun nodeLi(element: Node) : Link {
         val newLiNode = Link()
         val aNode = element.getFirst("a")!!
-        val title = (aNode.getFirst("span"))?.name ?: aNode.name
+        val title = (aNode.getFirst("span"))?.name ?: aNode.text ?: aNode.name
         newLiNode.href = normalize(navigationDocumentPath, aNode.attributes["href"])
         newLiNode.title = title
         element.getFirst("ol")?.let { newLiNode.children.add(nodeOl(it)) }
