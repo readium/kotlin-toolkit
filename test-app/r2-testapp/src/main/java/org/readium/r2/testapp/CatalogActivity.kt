@@ -14,10 +14,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListPopupWindow
@@ -441,7 +438,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 prepareToServe(parser, pub, book.fileName, file.absolutePath, false)
                 val publication = pub.publication
                 if (publication.spine.size > 0) {
-                    pub.container.drm?.let { drm ->
+                    pub.container.drm?.let { drm: Drm ->
                         if (drm.brand == Drm.Brand.lcp) {
                             // uncomment for lcp
                             /*
