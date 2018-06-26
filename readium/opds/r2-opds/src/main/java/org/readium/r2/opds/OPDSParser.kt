@@ -42,7 +42,7 @@ class OPDSParser {
             document.parseXml(xmlData.inputStream())
             val root = document.root()
             val title = root.getFirst("title")?.text ?: throw Exception(OPDSParserError.missingTitle.name)
-            val feed = Feed(title.toString())
+            val feed = Feed(title.toString(), 1)
             val tmpDate = root.getFirst("updated")?.text
             tmpDate?.let {
                 val date = DateTime(it).toDate()

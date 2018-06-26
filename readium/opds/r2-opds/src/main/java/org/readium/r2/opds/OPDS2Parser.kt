@@ -44,7 +44,7 @@ class OPDS2Parser {
             val topLevelDict = JSONObject(String(jsonData))
             val metadataDict:JSONObject = topLevelDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.metadataNotFound.name)
             val title = metadataDict.getString("title") ?: throw Exception(OPDS2ParserError.missingTitle.name)
-            val feed = Feed(title = title)
+            val feed = Feed(title, 2)
             parseMetadata(opdsMetadata = feed.metadata, metadataDict = metadataDict)
             if(topLevelDict.has("@context")) {
                 if (topLevelDict.get("@context") is JSONObject){
