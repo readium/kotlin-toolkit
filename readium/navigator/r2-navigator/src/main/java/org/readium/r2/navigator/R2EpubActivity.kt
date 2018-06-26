@@ -155,14 +155,17 @@ class R2EpubActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
-                val toc_item_index: Int = data.getIntExtra("toc_item_index", 0)
+                var href: String = data.getStringExtra("toc_item_uri")
                 // href is the link to the page in the toc
-                var href = publication.tableOfContents[toc_item_index].href ?: return
-                href = href.substring(0, href.indexOf("#"))
+
+                if (href.indexOf("#") > 0) {
+                    href = href.substring(0, href.indexOf("#"))
+                }
                 // Search corresponding href in the spine
                 for (i in 0..publication.spine.size - 1) {
-                    if (publication.spine[i].href == href)
-                    resourcePager.setCurrentItem(i)
+                    if (publication.spine[i].href == href) {
+                        resourcePager.setCurrentItem(i)
+                    }
                 }
                 preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
                 if (supportActionBar!!.isShowing) {
