@@ -35,19 +35,11 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-
-                    <Switch
-                        android:id="@+id/publisher_default"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
-                        android:layout_marginTop="10dp"
-                        android:text="Publisher's Default" />
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginBottom="10dp"
+                        android:layout_marginTop="20dp"
                         android:orientation="horizontal">
 
                         <ImageView
@@ -168,9 +160,7 @@
                             android:text="Night"
                             android:textColor="@drawable/rbtn_textcolor_selector" />
 
-                            
-
-                    </RadioGroup>
+                        </RadioGroup>
 
                     <Switch
                         android:id="@+id/scroll_mode"
@@ -187,14 +177,7 @@
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:orientation="vertical">
-
-                    <!--<Switch-->
-                        <!--android:id="@+id/advanced_switch"-->
-                        <!--android:layout_width="match_parent"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:layout_marginBottom="10dp"-->
-                        <!--android:layout_marginTop="10dp"-->
-                        <!--android:text="Advanced Settings" />-->
+                    
                 <LinearLayout
                     android:id="@+id/Advanced_Body"
                     android:layout_width="match_parent"
@@ -202,6 +185,13 @@
                     android:gravity="center"
                     android:orientation="vertical"
                    >
+                    <Switch
+                        android:id="@+id/publisher_default"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"
+                        android:layout_marginTop="10dp"
+                        android:text="Publisher's Default" />
 
                     <RadioGroup
                         android:id="@+id/TextAlignment"

@@ -5,19 +5,17 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
-import kotlinx.android.synthetic.main.fragment_page.*
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.UserSettings.Appearance
 import org.readium.r2.navigator.UserSettings.Scroll
+import android.view.GestureDetector
+import android.view.MotionEvent
 
 
 class R2PageFragment : Fragment() {
@@ -72,6 +70,9 @@ class R2PageFragment : Fragment() {
         webView.isHorizontalScrollBarEnabled = false
         webView.settings.useWideViewPort = true
         webView.settings.loadWithOverviewMode = true
+        webView.settings.setSupportZoom(true)
+        webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setDisplayZoomControls(true);
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 
@@ -107,75 +108,40 @@ class R2PageFragment : Fragment() {
 
         }
 
-        webView.setOnTouchListener(object : View.OnTouchListener {
-
-            internal var startX = 0
-            internal var startY = 0
-            internal var SCROLL_THRESHOLD = 300f
-
-            override fun onTouch(v: View, event: MotionEvent): Boolean {
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    startX = event.x.toInt()
-                    startY = event.y.toInt()
-                } else if (event.action == MotionEvent.ACTION_UP) {
-                    val absX = Math.abs(startX - event.x)
-                    val absY = Math.abs(startY - event.y)
-                    val angle = Math.toDegrees(Math.atan2((event.y - startY).toDouble(), (event.x - startX).toDouble())).toFloat()
-                    if (angle > -45 && angle <= 45) {
-//                        LOG.debug("Right to Left swipe performed")
-                        if (absX > SCROLL_THRESHOLD) {
-                            webView.scrollLeft()
-                            return true
-                        }
-                    }
-                    if (angle >= 135 && angle < 180 || angle < -135 && angle > -180) {
-//                        LOG.debug("Left to Right swipe performed")
-                        if (absX > SCROLL_THRESHOLD) {
-                            webView.scrollRight()
-                            return true
-                        }
-                    }
-                    if (angle < -45 && angle >= -135) {
-//                        LOG.debug("Up to Down swipe performed")
-                        if (absY > SCROLL_THRESHOLD) {
-                            webView.CenterTapped()
-                            return true
-                        }
-                    }
-                    if (angle > 45 && angle <= 135) {
-//                        LOG.debug("Down to Up swipe performed")
-                        if (absY > SCROLL_THRESHOLD) {
-                            webView.CenterTapped()
-                            return true
-                        }
-                    }
-                    return true
-                }
-                if (event.action == MotionEvent.ACTION_MOVE) {
-                    if ((activity as R2EpubActivity).userSettings.isVerticalScrollEnabled) {
-                        return false
-                    }
-                    return true
-                }
-                return true
-            }
-//            override fun onTouch(v: View, event: MotionEvent): Boolean {
-//
-//                    if (event.action == MotionEvent.ACTION_MOVE) {
-//                    if ((activity as R2EpubActivity).userSettings.isVerticalScrollEnabled) {
-//                        return false
-//                    }
-//                    return true
-//                }
-//                return false
-//            }
-        })
-
+        webView.isHapticFeedbackEnabled = false
+        webView.isLongClickable = false
+        webView.setOnLongClickListener {
+            true
+        }
+        webView.setGestureDetector(GestureDetector(context, CustomeGestureDetector(webView)))
         webView.loadUrl(resourceUrl)
 
         return v
     }
 
+    class CustomeGestureDetector(val webView: R2WebView) : GestureDetector.SimpleOnGestureListener() {
+
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+            if (e1 == null || e2 == null) return false
+            if (e1.pointerCount > 1 || e2.pointerCount > 1)
+                return false
+            else {
+                try { // right to left swipe .. go to next page
+                    if (e1.x - e2.x > 100) {
+                        webView.scrollRight()
+                        return true
+                    } //left to right swipe .. go to prev page
+                    else if (e2.x - e1.x > 100) {
+                        webView.scrollLeft()
+                        return true
+                    }
+                } catch (e: Exception) { // nothing
+                }
+
+                return false
+            }
+        }
+    }
     companion object {
 
         fun newInstance(url: String, title: String): R2PageFragment {
