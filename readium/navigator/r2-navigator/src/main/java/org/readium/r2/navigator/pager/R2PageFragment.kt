@@ -132,6 +132,7 @@ class R2PageFragment : Fragment() {
 
     class CustomeGestureDetector(val webView: R2WebView) : GestureDetector.SimpleOnGestureListener() {
 
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
             if (e1 == null || e2 == null) return false
             if (e1.pointerCount > 1 || e2.pointerCount > 1)
                 return false
