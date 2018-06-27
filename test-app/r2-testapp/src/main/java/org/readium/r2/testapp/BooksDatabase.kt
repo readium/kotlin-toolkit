@@ -78,9 +78,9 @@ class BOOKS(var database: BooksDatabaseOpenHelper) {
             dropTable(BOOKSTable.NAME, true)
         }
     }
-    fun insert(book: Book): Long? {
+    fun insert(book: Book, allowDuplicates: Boolean): Long? {
         val exists = has(book)
-        if (exists.isEmpty()) {
+        if (exists.isEmpty() || allowDuplicates) {
             return database.use {
                 return@use insert(BOOKSTable.NAME,
                         BOOKSTable.FILENAME to book.fileName,

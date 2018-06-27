@@ -9,15 +9,15 @@ import org.readium.r2.lcp.LcpSession
  */
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.support.v4.view.ViewCompat
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListPopupWindow
@@ -381,20 +381,58 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         blob?.let {
                             val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, blob)
                             if (add) {
-                                database.books.insert(book)?.let {
+                                database.books.insert(book, false)?.let {
                                     books.add(book)
                                 } ?: run {
-                                    snackbar(catalogView, "Publication alredy exists")
+//                                    snackbar(catalogView, "Publication already exists")
+                                    alert (Appcompat, "Publication already exists") {
+
+                                        positiveButton("Add anyways") { }
+                                        negativeButton("Cancel") { }
+
+                                    }.build().apply {
+                                        setCancelable(false)
+                                        setCanceledOnTouchOutside(false)
+                                        setOnShowListener(DialogInterface.OnShowListener {
+                                            val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                                            b.setOnClickListener(View.OnClickListener {
+                                                database.books.insert(book, true)?.let {
+                                                    books.add(book)
+                                                    dismiss()
+                                                    booksAdapter.notifyDataSetChanged()
+                                                }
+                                            })
+                                        })
+                                    }.show()
                                 }
                             }
                         }
                     } ?: run {
                         val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, null)
                         if (add) {
-                            database.books.insert(book)?.let {
+                            database.books.insert(book, false)?.let {
                                 books.add(book)
                             } ?: run {
-                                snackbar(catalogView, "Publication alredy exists")
+//                                snackbar(catalogView, "Publication already exists")
+                                alert (Appcompat, "Publication already exists") {
+
+                                    positiveButton("Add anyways") { }
+                                    negativeButton("Cancel") { }
+
+                                }.build().apply {
+                                    setCancelable(false)
+                                    setCanceledOnTouchOutside(false)
+                                    setOnShowListener(DialogInterface.OnShowListener {
+                                        val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                                        b.setOnClickListener(View.OnClickListener {
+                                            database.books.insert(book, true)?.let {
+                                                books.add(book)
+                                                dismiss()
+                                                booksAdapter.notifyDataSetChanged()
+                                            }
+                                        })
+                                    })
+                                }.show()
                             }
                         }
                     }
