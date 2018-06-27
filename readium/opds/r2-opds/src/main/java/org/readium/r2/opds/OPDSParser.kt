@@ -27,14 +27,17 @@ data class MimeTypeParameters(
 class OPDSParser {
     companion object {
 
+        var feedUrl:URL? = null
+
         fun parseURL(url: URL) : Promise<Feed, Exception> {
             return Fuel.get(url.toString(),null).promise() then {
                 val (request, response, result) = it
-                this.parse(xmlData = result)
+                this.parse(xmlData = result, url = url)
             }
         }
 
-        fun parse(xmlData: ByteArray) : Feed {
+        fun parse(xmlData: ByteArray, url: URL) : Feed {
+            feedUrl = url
             val document = XmlParser()
             document.parseXml(xmlData.inputStream())
             val root = document.root()
@@ -68,7 +71,7 @@ class OPDSParser {
                             }
                             if (rel == "collection" || rel == "http://opds-spec.org/group") {
                                 collectionLink.rel.add("collection")
-                                collectionLink.href = link.attributes["href"]
+                                collectionLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
                                 collectionLink.title = link.attributes["title"]
                             }
                         }
@@ -100,7 +103,8 @@ class OPDSParser {
                             newLink.properties.numberOfItems = facetElementCount
                         }
                         newLink.typeLink = link.attributes["type"]
-                        newLink.href = link.attributes["href"]
+                        newLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
+
                         if (collectionLink.href != null) {
                             addNavigationInGroup(feed, newLink, collectionLink)
                         } else {
@@ -114,7 +118,7 @@ class OPDSParser {
             if (links != null) {
                 for (link in links) {
                     val newLink = Link()
-                    newLink.href = link.attributes["href"]
+                    newLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
                     newLink.title = link.attributes["title"]
                     newLink.typeLink = link.attributes["type"]
                     val rel = link.attributes["rel"]
@@ -299,7 +303,7 @@ class OPDSParser {
             links?.let {
                 for (link in links) {
                     val newLink = Link()
-                    newLink.href = link.attributes["href"]
+                    newLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
                     newLink.title = link.attributes["title"]
                     newLink.typeLink = link.attributes["type"]
                     val rel = link.attributes["rel"]
