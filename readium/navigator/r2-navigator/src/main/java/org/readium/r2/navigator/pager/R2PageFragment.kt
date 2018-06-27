@@ -108,17 +108,6 @@ class R2PageFragment : Fragment() {
 
         }
 
-//            override fun onTouch(v: View, event: MotionEvent): Boolean {
-//
-//                    if (event.action == MotionEvent.ACTION_MOVE) {
-//                    if ((activity as R2EpubActivity).userSettings.isVerticalScrollEnabled) {
-//                        return false
-//                    }
-//                    return true
-//                }
-//                return false
-//            }
-
         webView.isHapticFeedbackEnabled = false
         webView.isLongClickable = false
         webView.setOnLongClickListener {
