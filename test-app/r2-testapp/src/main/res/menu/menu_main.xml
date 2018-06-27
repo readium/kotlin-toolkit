@@ -11,4 +11,10 @@
         android:id="@+id/opds"
         android:icon="@drawable/icon_menu"
         android:title="@string/opds_feeds"/>
+
+    <item
+        android:id="@+id/select"
+        android:icon="@drawable/icon_plus_white"
+        android:title="@string/menu_item_add_epub"/>
+
 </menu>

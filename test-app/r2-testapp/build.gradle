@@ -7,8 +7,8 @@ apply plugin: 'kotlin-android-extensions'
 
 int major = 1
 int minor = 0
-int patch = 0
-int build = 27
+int patch = 1
+int build = 3
 String type = ""
 
 def version = "$major.$minor.$patch"
@@ -55,7 +55,7 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
 //    uncomment these 5 lines to use with GitHu submodules and Android Studio Modules
 //    implementation project(':r2-navigator')
@@ -68,6 +68,7 @@ dependencies {
     implementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
     implementation 'com.github.readium:r2-streamer-kotlin:develop-SNAPSHOT'
     implementation 'com.github.readium:r2-navigator-kotlin:develop-SNAPSHOT'
+    implementation 'com.github.readium:r2-opds-kotlin:develop-SNAPSHOT'
 
 //    not supported yet, keep these 2 lines commented until further notice
 //    implementation 'com.github.readium:r2-lcp-kotlin:0.1.0'
@@ -139,6 +140,8 @@ dependencies {
     implementation 'org.slf4j:slf4j-nop:1.7.25'
     implementation 'net.theluckycoder.materialchooser:materialchooser:1.1.5'
 
+    implementation 'com.github.abacritt:sectionedmergeadapter:0.2'
+    
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
