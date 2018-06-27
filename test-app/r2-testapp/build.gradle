@@ -7,8 +7,8 @@ apply plugin: 'kotlin-android-extensions'
 
 int major = 1
 int minor = 0
-int patch = 0
-int build = 27
+int patch = 1
+int build = 1
 String type = ""
 
 def version = "$major.$minor.$patch"
