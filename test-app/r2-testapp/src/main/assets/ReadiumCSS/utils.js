@@ -12,7 +12,7 @@ var update = function(position) {
     let positionString = position.toString()
     //webkit.messageHandlers.updateProgression.postMessage(positionString);
     Android.progressionDidChange(positionString);
-    console.log("update progression position : " + positionString);
+//    console.log("update progression position : " + positionString);
 };
 
 window.addEventListener('scroll', function(e) {
@@ -50,8 +50,8 @@ var scrollToPosition = function(position) {
 };
 
 var scrollLeft = function() {
+    scrollToPosition(last_known_scroll_position)
     var offset = window.scrollX - maxScreenX;
-
     last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
     update(last_known_scroll_position);
 
@@ -65,6 +65,7 @@ var scrollLeft = function() {
 };
 
 var scrollRight = function() {
+    scrollToPosition(last_known_scroll_position)
     var offset = window.scrollX + maxScreenX;
     var scrollWidth = document.getElementsByTagName("body")[0].scrollWidth;
 
