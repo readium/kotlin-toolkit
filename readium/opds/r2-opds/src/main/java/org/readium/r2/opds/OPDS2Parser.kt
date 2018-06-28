@@ -32,14 +32,31 @@ class OPDS2Parser {
     companion object {
 
         var feedUrl:URL? = null
-        fun parseURL(url: URL) : Promise<Feed, Exception> {
+        fun parseURL(url: URL) : Promise<ParseData, Exception> {
             return Fuel.get(url.toString(),null).promise() then {
                 val (request, response, result) = it
                 this.parse(result, url)
             }
         }
 
-        fun parse(jsonData: ByteArray, url: URL) : Feed {
+        fun parse(jsonData: ByteArray, url: URL) : ParseData {
+            println(JSONObject(String(jsonData)))
+            return if (isFeed(jsonData)) {
+                ParseData(parseFeed(jsonData, url), null, 2)
+            } else {
+                ParseData(null, parsePublication(JSONObject(String(jsonData))), 2)
+            }
+        }
+
+        fun isFeed(jsonData: ByteArray) =
+                JSONObject(String(jsonData)).let {
+                    (it.getJSONArray("navigation") != null ||
+                        it.getJSONArray("groups") != null ||
+                        it.getJSONArray("publications") != null ||
+                        it.getJSONArray("facets") != null)
+            }
+
+        fun parseFeed(jsonData: ByteArray, url: URL) : Feed {
             feedUrl = url
             val topLevelDict = JSONObject(String(jsonData))
             val metadataDict:JSONObject = topLevelDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.metadataNotFound.name)

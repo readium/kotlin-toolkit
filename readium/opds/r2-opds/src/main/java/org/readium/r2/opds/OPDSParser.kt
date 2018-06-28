@@ -29,25 +29,32 @@ class OPDSParser {
 
         var feedUrl:URL? = null
 
-        fun parseURL(url: URL) : Promise<Feed, Exception> {
+        fun parseURL(url: URL) : Promise<ParseData, Exception> {
             return Fuel.get(url.toString(),null).promise() then {
                 val (request, response, result) = it
                 this.parse(xmlData = result, url = url)
             }
         }
 
-        fun parse(xmlData: ByteArray, url: URL) : Feed {
+        fun parse(xmlData: ByteArray, url: URL) : ParseData {
+            val document = XmlParser()
+            document.parseXml(xmlData.inputStream())
+            val root = document.root()
+            return if (root.name == "feed")
+                ParseData(parseFeed(xmlData, url), null, 1)
+            else
+                ParseData(null, parseEntry(xmlData), 1)
+        }
+
+        fun parseFeed(xmlData: ByteArray, url: URL) : Feed {
             feedUrl = url
             val document = XmlParser()
             document.parseXml(xmlData.inputStream())
             val root = document.root()
             val title = root.getFirst("title")?.text ?: throw Exception(OPDSParserError.missingTitle.name)
-            val feed = Feed(title.toString(), 1)
+            val feed = Feed(title, 1)
             val tmpDate = root.getFirst("updated")?.text
-            tmpDate?.let {
-                val date = DateTime(it).toDate()
-                feed.metadata.modified = date
-            }
+            feed.metadata.modified = tmpDate?.let { DateTime(it).toDate() }
 
             val totalResults = root.getFirst("TotalResults")?.text
             totalResults?.let {
@@ -57,66 +64,71 @@ class OPDSParser {
             itemsPerPage?.let {
                 feed.metadata.itemsPerPage = itemsPerPage.toString().toInt()
             }
-            val entries = root.get("entry") ?: return feed
-            for (entry in entries) {
-                var isNavigation = true
-                val collectionLink = Link()
-                val links = entry.get("link")
-                links?.let {
-                    for (link in links) {
-                        val rel = link.attributes["rel"]
-                        rel?.let {
-                            if (rel.contains("http://opds-spec.org/acquisition")) {
-                                isNavigation = false
-                            }
-                            if (rel == "collection" || rel == "http://opds-spec.org/group") {
-                                collectionLink.rel.add("collection")
-                                collectionLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
-                                collectionLink.title = link.attributes["title"]
-                            }
-                        }
-                    }
-                }
-                if ((!isNavigation)) {
-                    val publication = parseEntry(entry)
-                    if (collectionLink.href != null) {
-                        addPublicationInGroup(feed, publication, collectionLink)
-                    } else {
-                        feed.publications.add(publication)
-                    }
-                } else {
-                    val newLink = Link()
-                    val entryTitle = entry.getFirst("title")
-                    entryTitle?.let {
-                        newLink.title = entryTitle.text
-                    }
 
-                    val link = entry.getFirst("link")
-                    link?.let {
-                        val rel = link.attributes["rel"]
-                        if (rel != null) {
-                            newLink.rel.add(rel)
+            // Parse entries
+            root.get("entry") ?.let {
+                for (entry in it) {
+                    var isNavigation = true
+                    val collectionLink = Link()
+                    val links = entry.get("link")
+                    links?.let {
+                        for (link in links) {
+                            val rel = link.attributes["rel"]
+                            rel?.let {
+                                if (rel.contains("http://opds-spec.org/acquisition")) {
+                                    isNavigation = false
+                                }
+                                if (rel == "collection" || rel == "http://opds-spec.org/group") {
+                                    collectionLink.rel.add("collection")
+                                    collectionLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
+                                    collectionLink.title = link.attributes["title"]
+                                }
+                            }
                         }
-                        val facetElementCountStr = link.attributes["thr:count"]
-                        facetElementCountStr?.let {
-                            val facetElementCount = it.toInt()
-                            newLink.properties.numberOfItems = facetElementCount
-                        }
-                        newLink.typeLink = link.attributes["type"]
-                        newLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
-
+                    }
+                    if ((!isNavigation)) {
+                        val publication = parseEntry(entry)
                         if (collectionLink.href != null) {
-                            addNavigationInGroup(feed, newLink, collectionLink)
+                            addPublicationInGroup(feed, publication, collectionLink)
                         } else {
-                            feed.navigation.add(newLink)
+                            feed.publications.add(publication)
                         }
-                    }
+                    } else {
+                        val newLink = Link()
+                        val entryTitle = entry.getFirst("title")
+                        entryTitle?.let {
+                            newLink.title = entryTitle.text
+                        }
 
+                        val link = entry.getFirst("link")
+                        link?.let {
+                            val rel = link.attributes["rel"]
+                            if (rel != null) {
+                                newLink.rel.add(rel)
+                            }
+                            val facetElementCountStr = link.attributes["thr:count"]
+                            facetElementCountStr?.let {
+                                val facetElementCount = it.toInt()
+                                newLink.properties.numberOfItems = facetElementCount
+                            }
+                            newLink.typeLink = link.attributes["type"]
+                            newLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
+
+                            if (collectionLink.href != null) {
+                                addNavigationInGroup(feed, newLink, collectionLink)
+                            } else {
+                                feed.navigation.add(newLink)
+                            }
+                        }
+
+                    }
                 }
+            } ?: run {
+                return feed
             }
-            val links = root.get("link")
-            if (links != null) {
-                for (link in links) {
+            // Parse links
+            root.get("link")?.let {
+                for (link in it) {
                     val newLink = Link()
                     newLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
                     newLink.title = link.attributes["title"]
@@ -141,7 +153,7 @@ class OPDSParser {
             return feed
         }
 
-        public fun parseEntry(xmlData: ByteArray) : Publication {
+        fun parseEntry(xmlData: ByteArray) : Publication {
             val document = XmlParser()
             document.parseXml(xmlData.inputStream())
             val root = document.root()
