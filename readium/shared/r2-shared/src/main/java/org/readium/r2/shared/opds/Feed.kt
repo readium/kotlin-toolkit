@@ -5,7 +5,7 @@ import org.readium.r2.shared.Publication
 import java.io.Serializable
 
 
-data class Feed(val title: String): Serializable {
+data class Feed(val title: String, val type: Int) : Serializable {
     var metadata: OpdsMetadata
     var links:MutableList<Link> = mutableListOf()
     var facets:MutableList<Facet> = mutableListOf()
@@ -23,3 +23,5 @@ data class Feed(val title: String): Serializable {
         return searchLink?.href
     }
 }
+
+data class ParseData(val feed: Feed?, val publication: Publication?, val type: Int) : Serializable
