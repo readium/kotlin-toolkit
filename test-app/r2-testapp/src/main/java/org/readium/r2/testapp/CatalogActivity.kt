@@ -28,7 +28,7 @@ import android.widget.PopupWindow
 import com.github.kittinunf.fuel.Fuel
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.onClick
-import kotlinx.android.synthetic.main.activity_catalog.*
+//import kotlinx.android.synthetic.main.activity_catalog.*
 import net.theluckycoder.materialchooser.Chooser
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
@@ -87,10 +87,12 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     lateinit var database: BooksDatabase
     lateinit var opdsDownloader: OPDSDownloader
     lateinit var publication: Publication
+    
+    private lateinit var catalogView:RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_catalog)
+        //setContentView(R.layout.activity_catalog)
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
@@ -110,15 +112,36 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         books = database.books.list()
 
         booksAdapter = BooksAdapter(this, books, "$BASE_URL:$localPort", this)
-        catalogView.adapter = booksAdapter
+        //catalogView.adapter = booksAdapter
 
-        catalogView.layoutManager = GridAutoFitLayoutManager(act, 120)
+        //catalogView.layoutManager = GridAutoFitLayoutManager(act, 120)
 
         parseIntent(null);
 
 
-/*
+
         coordinatorLayout {
+            lparams {
+                topMargin = dip(8)
+                bottomMargin = dip(8)
+                padding = dip(0)
+                width = matchParent
+                height = matchParent
+            }
+
+            catalogView = recyclerView {
+                layoutManager = GridAutoFitLayoutManager(act, 120)
+                adapter = booksAdapter
+
+                lparams {
+                    elevation = 2F
+                    width = matchParent
+                }
+
+                addItemDecoration(VerticalSpaceItemDecoration(10))
+
+            }
+           
             floatingActionButton {
                 imageResource = R.drawable.icon_plus_white
                 onClick {
@@ -198,7 +221,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 margin = dip(16)
             }
         }
-*/
+
     }
 
     private fun parseURL(url: URL) : Promise<ParseData, Exception> {
@@ -746,4 +769,12 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         }
     }
 
+}
+
+class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) : RecyclerView.ItemDecoration() {
+
+    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView,
+                       state: RecyclerView.State) {
+        outRect.bottom = verticalSpaceHeight
+    }
 }
