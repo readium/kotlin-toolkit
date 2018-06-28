@@ -11,10 +11,12 @@ import android.widget.ListPopupWindow
 import android.widget.ListView
 import android.widget.PopupWindow
 import com.commonsware.cwac.merge.MergeAdapter
+import com.mcxiaoke.koi.async.safeExecute
 import com.mcxiaoke.koi.ext.onClick
 import kotlinx.android.synthetic.main.filter_row.view.*
 import kotlinx.android.synthetic.main.section_header.view.*
 import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.coordinatorLayout
@@ -26,6 +28,7 @@ import org.readium.r2.opds.OPDSParser
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.shared.opds.Feed
+import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.testapp.R
 import java.net.MalformedURLException
 import java.net.URL
@@ -34,7 +37,7 @@ import java.net.URL
 class OPDSCatalogActivity : AppCompatActivity() {
 
     lateinit var facets:MutableList<Facet>
-    var feed: Promise<Feed, Exception>? = null
+    var feed: Promise<ParseData, Exception>? = null
     var opdsModel:OPDSModel? = null
     var showFacetMenu = false;
     var facetPopup:PopupWindow? = null
@@ -46,22 +49,22 @@ class OPDSCatalogActivity : AppCompatActivity() {
 
 
         opdsModel?.href.let {
-            if (opdsModel?.type == 1) {
-                feed = OPDSParser.parseURL(URL(it))
+            feed = if (opdsModel?.type == 1) {
+                OPDSParser.parseURL(URL(it))
             } else {
-                feed = OPDS2Parser.parseURL(URL(it))
+                OPDS2Parser.parseURL(URL(it))
             }
             title = opdsModel?.title
-        } ?: run {
+        }/* ?: run {
             feed = OPDSParser.parseURL(URL("http://www.feedbooks.com/catalog.atom"))
-        }
+        }*/
 
         val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_loading_feed))
         progress.show()
 
         feed?.successUi { result ->
 
-            facets = result.facets
+            facets = result.feed?.facets ?: mutableListOf<Facet>()
 
             if (facets.size>0) {
                 showFacetMenu = true;
@@ -76,35 +79,47 @@ class OPDSCatalogActivity : AppCompatActivity() {
                         orientation = LinearLayout.VERTICAL
 
 
-                        for (navigation in result.navigation) {
+                        for (navigation in result.feed!!.navigation) {
                             button {
                                 text = navigation.title
                                 onClick {
                                     val model = OPDSModel(navigation.title!!,navigation.href.toString(), opdsModel?.type!!)
+/*
                                     try {
-                                        model.href.let {
-                                            if (opdsModel!!.type == 1) {
-                                                feed = OPDSParser.parseURL(URL(it))
-                                            } else {
-                                                feed = OPDS2Parser.parseURL(URL(it))
-                                            }
-                                            startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
+                                        feed = if (opdsModel!!.type == 1) {
+                                            OPDSParser.parseURL(URL(model.href))
+                                        } else {
+                                            OPDS2Parser.parseURL(URL(model.href))
                                         }
+                                        startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
                                     } catch (e: MalformedURLException) {
                                         snackbar(this, "Failed parsing OPDS")
+                                    }
+*/
+                                    val parseData = if (opdsModel!!.type == 1) {
+                                        OPDSParser.parseURL(URL(model.href))
+                                    } else {
+                                        OPDS2Parser.parseURL(URL(model.href))
+                                    }
+                                    parseData.then {
+                                        it.feed?.let {
+                                            startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
+                                        } ?: run {
+                                            startActivity(intentFor<OPDSDetailActivity>("publication" to it.publication))
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        if (result.publications.isNotEmpty()) {
+                        if (result.feed!!.publications.isNotEmpty()) {
                             recyclerView {
                                 layoutManager = GridAutoFitLayoutManager(act, 120)
-                                adapter = RecyclerViewAdapter(act, result.publications)
+                                adapter = RecyclerViewAdapter(act, result.feed!!.publications)
                             }
                         }
 
-                        for (group in result.groups) {
+                        for (group in result.feed!!.groups) {
                             if (group.publications.isNotEmpty()) {
 
                                 linearLayout {

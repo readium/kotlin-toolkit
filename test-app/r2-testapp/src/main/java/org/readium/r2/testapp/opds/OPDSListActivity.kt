@@ -32,10 +32,13 @@ import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.failUi
 import nl.komponents.kovenant.ui.successUi
+import org.json.JSONObject
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDSParser
 import org.readium.r2.shared.opds.Feed
+import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
+import java.io.Serializable
 import java.net.URL
 
 
@@ -111,9 +114,9 @@ class OPDSListActivity : AppCompatActivity() {
                                     editTextHref!!.setError("Please Enter A Valid URL.");
                                     editTextHref!!.requestFocus();
                                 } else {
-                                    var feed: Promise<Feed, Exception>? = null
-                                    feed = parseURL(URL(editTextHref!!.text.toString()))
-                                    feed.successUi {
+                                    var parseData: Promise<ParseData, Exception>? = null
+                                    parseData = parseURL(URL(editTextHref!!.text.toString()))
+                                    parseData.successUi {
                                        val opds = OPDSModel(
                                                editTextTitle!!.text.toString(),
                                                editTextHref!!.text.toString(),
@@ -123,7 +126,7 @@ class OPDSListActivity : AppCompatActivity() {
                                        opdsAdapter.notifyDataSetChanged()
                                        dismiss()
                                     }
-                                    feed.failUi {
+                                    parseData.failUi {
                                         editTextHref!!.setError("Please Enter A Valid OPDS Feed URL.");
                                         editTextHref!!.requestFocus();
                                     }
@@ -140,15 +143,23 @@ class OPDSListActivity : AppCompatActivity() {
         }
     }
 
-    private fun parseURL(url: URL) : Promise<Feed, Exception> {
+    private fun parseURL(url: URL) : Promise<ParseData, Exception> {
         return Fuel.get(url.toString(),null).promise() then {
             val (request, response, result) = it
-            val contentType = it.second.headers["Content-Type"]!!
-            if (contentType.filter { it.indexOf("json") >= 0 }.isNotEmpty()) {
+            if (isJson(result)) {
                 OPDS2Parser.parse(result, url)
             } else {
                 OPDSParser.parse(result, url)
             }
+        }
+    }
+
+    private fun isJson(byteArray: ByteArray) : Boolean {
+        return try {
+            JSONObject(String(byteArray))
+            true
+        } catch(e: Exception){
+            false
         }
     }
 }
