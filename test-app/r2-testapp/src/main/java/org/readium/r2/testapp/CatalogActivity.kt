@@ -89,6 +89,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     lateinit var publication: Publication
     
     private lateinit var catalogView:RecyclerView
+    private lateinit var alertDialog:AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,9 +146,41 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             floatingActionButton {
                 imageResource = R.drawable.icon_plus_white
                 onClick {
-                    var editTextTitle: EditText? = null
+                    
+                    alertDialog = alert(Appcompat, "Add an ePub to your library") {
+                        customView {
+                            verticalLayout {
+                                lparams {
+                                    bottomPadding = dip(16)
+                                }
+                                button {
+                                    text =  "select from your device"
+                                    onClick {
+                                        alertDialog.dismiss()
+                                        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
+                                        // browser.
+                                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+
+                                        // Filter to only show results that can be "opened", such as a
+                                        // file (as opposed to a list of contacts or timezones)
+                                        intent.addCategory(Intent.CATEGORY_OPENABLE)
+
+                                        // Filter to show only epubs, using the image MIME data type.
+                                        // To search for all documents available via installed storage providers,
+                                        // it would be "*/*".
+                                        intent.type = "application/epub+zip"
+
+                                        startActivityForResult(intent, 1)
+
+                                    }
+                                }
+                                button {
+                                    text =  "download from a url"
+                                    onClick {
+                                        alertDialog.dismiss()
+                    
                     var editTextHref: EditText? = null
-                    alert (Appcompat, "Add OPDS Book") {
+                    alert (Appcompat, "Add a publication from URL") {
 
                         customView {
                             verticalLayout {
@@ -215,6 +248,13 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         })
 
                     }.show()
+                                        
+                                    }
+                                }
+                            }
+                        }
+                    }.show()                                        
+                                        
                 }
             }.lparams {
                 gravity = Gravity.END or Gravity.BOTTOM
