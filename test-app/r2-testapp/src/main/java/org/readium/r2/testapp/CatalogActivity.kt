@@ -1,7 +1,7 @@
 package org.readium.r2.testapp
 
 
-// uncomment for lcp
+// Uncomment for lcp
 /*
 import org.readium.r2.lcp.LcpHttpService
 import org.readium.r2.lcp.LcpLicense
