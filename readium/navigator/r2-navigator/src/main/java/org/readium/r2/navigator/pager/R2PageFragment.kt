@@ -77,8 +77,6 @@ class R2PageFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 try {
-                    //(activity as R2EpubActivity).userSettings.applyAllCSS(view as R2WebView)
-                    //(activity as R2EpubActivity).userSettings.updateViewCSS(PUBLISHER_DEFAULT_REF)
                     val progression = (activity as R2EpubActivity).preferences.getString("${(activity as R2EpubActivity).publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
 
                     when (progression) {
