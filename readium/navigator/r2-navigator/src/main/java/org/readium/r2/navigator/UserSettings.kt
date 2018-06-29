@@ -128,14 +128,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         return array
     }
 
-    private fun makeCss() : String {
-        var css = "html {\n"
-        for (userProperty in userProperties.properties) {
-            css += userProperty.getCss()
-        }
-        css += "}"
-        return css
-    }
 
     private fun saveChanges() {
         val json = makeJson()
@@ -163,11 +155,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         saveChanges()
     }
 
-    /*fun updateViewCSS(ref: String) {
-        val webView = resourcePager.getFocusedChild().findViewById(R.id.webView) as R2WebView
-        applyCSS(webView, ref)
-    }
-*/
     fun updateViewCSS(ref: String) {
         val c = resourcePager.childCount
         for (i in 0 until resourcePager.childCount) {
@@ -182,12 +169,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         println("applyCss : " + userSetting.name + ": " + userSetting.toString())
     }
 
-    fun applyAllCSS(view: R2WebView) {
-        for (userSetting in userProperties.properties) {
-            println(userSetting.name + ": " + userSetting.toString())
-            view.setProperty("applyAllCss : " + userSetting.name, userSetting.toString())
-        }
-    }
 
     fun userSettingsPopUp(): PopupWindow {
 
