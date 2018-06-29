@@ -7,6 +7,7 @@ import org.readium.r2.shared.Publication
 import org.readium.r2.shared.RenditionLayout
 import org.readium.r2.shared.removeLastComponent
 import org.readium.r2.streamer.Containers.Container
+import java.io.File
 import java.io.InputStream
 import java.net.URL
 
@@ -23,7 +24,7 @@ interface ContentFilters{
     }
 }
 
-class ContentFiltersEpub(val userProperties: String?) : ContentFilters {
+class ContentFiltersEpub(val storagePath: String) : ContentFilters {
 
     override var fontDecoder = FontDecoder()
     override var drmDecoder = DrmDecoder()
@@ -102,17 +103,17 @@ class ContentFiltersEpub(val userProperties: String?) : ContentFilters {
         resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style> ").toString()
 
         // Inject userProperties
-        getProperties()?.let {
+        getProperties(userPropertiesString)?.let { propertyPair ->
             val html  = Regex("""<html.*>""").find(resourceHtml, 0)!!
             val match = Regex("""(style=("([^"]*)"[ >]))|(style='([^']*)'[ >])""").find(html.value, 0)
             if (match != null) {
                 val beginStyle = match.range.start + 7
                 var newHtml = html.value
-                newHtml = StringBuilder(newHtml).insert(beginStyle, "${buildStringProperties(it)} ").toString()
+                newHtml = StringBuilder(newHtml).insert(beginStyle, "${buildStringProperties(propertyPair)} ").toString()
                 resourceHtml = StringBuilder(resourceHtml).replace(Regex("""<html.*>"""), newHtml)
             } else {
                 val beginHtmlIndex = resourceHtml.indexOf("<html", 0, false) + 5
-                resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, " style=\"${buildStringProperties(it)}\"").toString()
+                resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, " style=\"${buildStringProperties(propertyPair)}\"").toString()
             }
         }
         return resourceHtml.toByteArray().inputStream()
@@ -148,7 +149,21 @@ class ContentFiltersEpub(val userProperties: String?) : ContentFilters {
         return prefix + ressourceName + suffix
     }
 
-    private fun getProperties(): MutableList<Pair<String, String>>? {
+
+    private val ContentFiltersEpub.userPropertiesString: String
+        get() {
+            val file = File(storagePath + "/styles/UserProperties.json");
+            var str = ""
+            if (file.isFile() && file.canRead()) {
+                for (i in file.readLines()) {
+                    str += i
+                }
+            }
+            return str
+        }
+
+
+    private fun getProperties(userProperties: String?): MutableList<Pair<String, String>>? {
         // userProperties is a string containing the css userProperties as a JSON string
 
         if (userProperties == null) {
@@ -170,7 +185,6 @@ class ContentFiltersEpub(val userProperties: String?) : ContentFilters {
             Log.e("ContentFilter", "Error parsing json")
             null
         }
-        return null
     }
 
     private fun buildStringProperties(list: MutableList<Pair<String, String>>) : String {
