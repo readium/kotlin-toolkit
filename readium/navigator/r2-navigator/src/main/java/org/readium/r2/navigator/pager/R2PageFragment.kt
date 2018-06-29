@@ -14,8 +14,6 @@ import org.readium.r2.navigator.APPEARANCE_REF
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.SCROLL_REF
-import org.readium.r2.navigator.UserSettings.Appearance
-import org.readium.r2.navigator.UserSettings.Scroll
 import android.view.GestureDetector
 import android.view.MotionEvent
 
