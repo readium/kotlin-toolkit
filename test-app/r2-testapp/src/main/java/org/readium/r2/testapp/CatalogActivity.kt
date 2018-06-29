@@ -16,27 +16,16 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.*
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
-import com.mcxiaoke.koi.HASH
 import kotlinx.android.synthetic.main.activity_catalog.*
 import net.theluckycoder.materialchooser.Chooser
-import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
-import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
-import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.snackbar
-import org.jetbrains.anko.design.textInputLayout
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
-import org.json.JSONArray
-import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.drm.DRMMModel
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.streamer.Parser.EpubParser
 import org.readium.r2.streamer.Parser.PubBox
@@ -51,7 +40,6 @@ import org.zeroturnaround.zip.commons.IOUtils
 import timber.log.Timber
 import java.io.*
 import java.net.ServerSocket
-import java.net.URL
 import java.util.*
 
 class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener {
@@ -399,7 +387,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                     }
                 }
                 booksAdapter.notifyDataSetChanged()
-                server.addEpub(publication, container, "/" + fileName, getProperties())
+                server.addEpub(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path)
             }
         }
         addBookToView()
