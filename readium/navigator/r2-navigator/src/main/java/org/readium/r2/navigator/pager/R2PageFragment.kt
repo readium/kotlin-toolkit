@@ -5,9 +5,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -16,6 +14,10 @@ import org.readium.r2.navigator.APPEARANCE_REF
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.SCROLL_REF
+import org.readium.r2.navigator.UserSettings.Appearance
+import org.readium.r2.navigator.UserSettings.Scroll
+import android.view.GestureDetector
+import android.view.MotionEvent
 
 
 class R2PageFragment : Fragment() {
@@ -158,12 +160,40 @@ class R2PageFragment : Fragment() {
 //            }
         })
 */
-
+        webView.isHapticFeedbackEnabled = false
+        webView.isLongClickable = false
+        webView.setOnLongClickListener {
+            true
+        }
+        webView.setGestureDetector(GestureDetector(context, CustomeGestureDetector(webView)))
         webView.loadUrl(resourceUrl)
 
         return v
     }
 
+    class CustomeGestureDetector(val webView: R2WebView) : GestureDetector.SimpleOnGestureListener() {
+
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+            if (e1 == null || e2 == null) return false
+            if (e1.pointerCount > 1 || e2.pointerCount > 1)
+                return false
+            else {
+                try { // right to left swipe .. go to next page
+                    if (e1.x - e2.x > 100) {
+                        webView.scrollRight()
+                        return true
+                    } //left to right swipe .. go to prev page
+                    else if (e2.x - e1.x > 100) {
+                        webView.scrollLeft()
+                        return true
+                    }
+                } catch (e: Exception) { // nothing
+                }
+
+                return false
+            }
+        }
+    }
     companion object {
 
         fun newInstance(url: String, title: String): R2PageFragment {

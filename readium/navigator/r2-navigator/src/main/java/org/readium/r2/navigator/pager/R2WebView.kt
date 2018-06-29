@@ -6,6 +6,8 @@ import android.view.View
 import android.webkit.WebView
 import org.readium.r2.navigator.R2EpubActivity
 import timber.log.Timber
+import android.view.GestureDetector
+import android.view.MotionEvent
 
 
 /**
@@ -17,20 +19,45 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     private val TAG = this::class.java.simpleName
 
     lateinit var activity: R2EpubActivity
-    var progression: Double = 0.0
 
-//    override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int) {
-//        val height = Math.floor((this.contentHeight * this.scale).toDouble()).toInt()
-//        val webViewHeight = this.measuredHeight
-//        val end = this.scrollY + webViewHeight + 5
-//        if (end >= height) {
-//            activity.nextResource()
-//        }
-//        else if (this.scrollY == 0) {
-//            activity.previousResource()
-//        }
-//        super.onScrollChanged(l, t, oldl, oldt)
-//    }
+    private var gestureDetector: GestureDetector? = null
+    var progression: Double = 0.0
+    var mIsScrolling = false
+    var scrollRight = false
+
+    /*
+     * @see android.webkit.WebView#onScrollChanged(int, int, int, int)
+     */
+    override fun onScrollChanged(x: Int, y: Int, oldX: Int, oldY: Int) {
+        if (Math.abs(x - oldX) > 1) {
+            mIsScrolling = true
+            if (x - oldX > 1) {
+                scrollRight = true
+            } else if (oldX - x > 1) {
+                scrollRight = false
+            }
+        }
+        else {
+            mIsScrolling = false
+            if (scrollRight) {
+                scrollRight()
+            } else {
+                scrollLeft()
+            }
+        }
+    }
+
+    /*
+     * @see android.webkit.WebView#onTouchEvent(android.view.MotionEvent)
+     */
+    override fun onTouchEvent(ev: MotionEvent): Boolean {
+        return gestureDetector!!.onTouchEvent(ev) || super.onTouchEvent(ev)
+    }
+
+
+    fun setGestureDetector(gestureDetector: GestureDetector) {
+        this.gestureDetector = gestureDetector
+    }
 
     @android.webkit.JavascriptInterface
     fun scrollRight() {
