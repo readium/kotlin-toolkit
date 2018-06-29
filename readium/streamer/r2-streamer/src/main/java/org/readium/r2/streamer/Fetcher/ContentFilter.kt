@@ -82,7 +82,7 @@ class ContentFiltersEpub: ContentFilters {
         beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;\"/>")
         beginIncludes.add(getHtmlLink("/styles/before.css"))
         beginIncludes.add(getHtmlLink("/styles/default.css"))
-        beginIncludes.add(getHtmlLink("/styles/transition.css"))
+//        beginIncludes.add(getHtmlLink("/styles/transition.css"))
         endIncludes.add(getHtmlLink("/styles/after.css"))
         endIncludes.add(getHtmlScript("/scripts/touchHandling.js"))
         endIncludes.add(getHtmlScript("/scripts/utils.js"))

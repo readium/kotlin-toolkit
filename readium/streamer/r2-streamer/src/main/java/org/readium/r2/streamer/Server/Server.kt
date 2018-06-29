@@ -1,8 +1,8 @@
 package org.readium.r2.streamer.Server
 
 import android.content.res.AssetManager
-import android.os.Environment
-import fi.iki.elonen.router.RouterNanoHTTPD
+import android.support.v4.view.ViewCompat
+import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.Containers.Container
 import org.readium.r2.streamer.Fetcher.Fetcher
@@ -27,7 +27,6 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
     private var containsMediaOverlay = false
 
     private val ressources = Ressources()
-//    val port = port
 
     fun addResource(name: String, body: String) {
         ressources.add(name, body)
