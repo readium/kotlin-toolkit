@@ -165,13 +165,11 @@ class ContentFiltersEpub(val storagePath: String) : ContentFilters {
 
     private fun getProperties(userProperties: String?): MutableList<Pair<String, String>>? {
         // userProperties is a string containing the css userProperties as a JSON string
-
         if (userProperties == null) {
             return null
         }
 
-        // Parsing of the String into a JSONArray of JSONObject with each "name" and "value" of the css properties
-
+        // Parsing of the String into a JSONArray of JSONObject_s with each "name" and "value" of the css properties
         // Making that JSONArray a MutableMap<String, String> to make easier the access of data
         return try {
             val propertiesArray = JSONArray(userProperties)
@@ -181,7 +179,8 @@ class ContentFiltersEpub(val storagePath: String) : ContentFilters {
                 properties.add(Pair(value.getString("name"), value.getString("value")))
             }
             properties
-        } catch (e: Error) {
+        } catch (e: Exception) {
+            // The file is empty, could not be open, or does not contain a json array
             Log.e("ContentFilter", "Error parsing json")
             null
         }
