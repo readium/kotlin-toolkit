@@ -72,7 +72,6 @@ class UserProperties : Serializable {
         properties.add(Enumeratable(index, values, ref, name))
     }
 
-    @SuppressWarnings("unchecked")
     fun <T : UserProperty>getByRef(ref: String) = properties.filter {
         it.ref == ref
     }.firstOrNull()!! as T
