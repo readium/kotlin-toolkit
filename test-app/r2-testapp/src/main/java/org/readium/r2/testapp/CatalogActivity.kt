@@ -393,19 +393,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         addBookToView()
     }
 
-    private fun getProperties() : String? {
-        var str = ""
-        val file = File(applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
-        return if (file.isFile() && file.canRead()) {
-            for (i in file.readLines()) {
-                str += i
-            }
-            str
-        } else {
-            null
-        }
-    }
-
     override fun recyclerViewListLongClicked(v: View, position: Int) {
         val layout = LayoutInflater.from(this).inflate(R.layout.popup_delete, catalogView, false) //Inflating the layout
         val popup = PopupWindow(this)
