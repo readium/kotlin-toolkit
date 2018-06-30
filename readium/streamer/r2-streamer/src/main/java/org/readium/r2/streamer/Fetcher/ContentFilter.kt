@@ -24,7 +24,7 @@ interface ContentFilters{
     }
 }
 
-class ContentFiltersEpub(val storagePath: String) : ContentFilters {
+class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
 
     override var fontDecoder = FontDecoder()
     override var drmDecoder = DrmDecoder()

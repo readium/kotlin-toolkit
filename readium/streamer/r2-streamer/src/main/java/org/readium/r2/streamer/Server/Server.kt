@@ -46,8 +46,8 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
     }
 
 
-    fun addEpub(publication: Publication, container: Container, fileName: String, storagePath: String) {
-        val fetcher = Fetcher(publication, container, storagePath)
+    fun addEpub(publication: Publication, container: Container, fileName: String, userPropertiesPath: String?) {
+        val fetcher = Fetcher(publication, container, userPropertiesPath)
 
         addLinks(publication, fileName)
 
