@@ -1,7 +1,7 @@
 package org.readium.r2.testapp
 
 
-// uncomment for lcp
+// Uncomment for lcp
 /*
 import org.readium.r2.lcp.LcpHttpService
 import org.readium.r2.lcp.LcpLicense
@@ -391,19 +391,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             }
         }
         addBookToView()
-    }
-
-    private fun getProperties() : String? {
-        var str = ""
-        val file = File(applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
-        return if (file.isFile() && file.canRead()) {
-            for (i in file.readLines()) {
-                str += i
-            }
-            str
-        } else {
-            null
-        }
     }
 
     override fun recyclerViewListLongClicked(v: View, position: Int) {
