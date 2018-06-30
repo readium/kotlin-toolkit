@@ -16,6 +16,7 @@ import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.SCROLL_REF
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.webkit.WebResourceResponse
 
 
 class R2PageFragment : Fragment() {
@@ -89,6 +90,16 @@ class R2PageFragment : Fragment() {
                     // kotlin.TypeCastException: null cannot be cast to non-null type org.readium.r2.navigator.R2EpubActivity
                 }
 
+            }
+
+            // prevent favicon.ico to be loaded, this was causing NullPointerException in NanoHttp
+            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+                if (!request.isForMainFrame && request.url.path.endsWith("/favicon.ico")) {
+                    try {
+                        return WebResourceResponse("image/png", null, null)
+                    } catch (e: Exception) { }
+                }
+                return null
             }
 
         }
