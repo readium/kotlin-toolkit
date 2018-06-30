@@ -1,7 +1,7 @@
 package org.readium.r2.streamer.Server
 
+import android.content.Context
 import android.content.res.AssetManager
-import android.os.Environment
 import fi.iki.elonen.router.RouterNanoHTTPD
 import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.Containers.Container
@@ -9,7 +9,6 @@ import org.readium.r2.streamer.Fetcher.Fetcher
 import org.readium.r2.streamer.Server.handler.*
 import java.net.URL
 import java.util.*
-
 
 class Server(port: Int) : AbstractServer(port) {
     
@@ -33,7 +32,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         ressources.add(name, body)
     }
 
-    fun loadResources(assets: AssetManager){
+    fun loadResources(assets: AssetManager, context: Context){
         addResource("after.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-after.css"), "utf-8")
                 .useDelimiter("\\A").next())
         addResource("before.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-before.css"), "utf-8")
@@ -44,12 +43,11 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
                 .useDelimiter("\\A").next())
         addResource("utils.js", Scanner(assets.open("ReadiumCSS/utils.js"), "utf-8")
                 .useDelimiter("\\A").next())
-
     }
 
-    fun addEpub(publication: Publication, container: Container, fileName: String) {
 
-        val fetcher = Fetcher(publication, container)
+    fun addEpub(publication: Publication, container: Container, fileName: String, userPropertiesPath: String?) {
+        val fetcher = Fetcher(publication, container, userPropertiesPath)
 
         addLinks(publication, fileName)
 
