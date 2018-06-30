@@ -17,13 +17,10 @@ import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_page.view.*
 import org.jetbrains.anko.contentView
 import org.jetbrains.anko.intentFor
-import org.jetbrains.anko.webView
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRMMModel
-import org.readium.r2.navigator.UserSettings
-import timber.log.Timber
 
 
 class R2EpubActivity : AppCompatActivity() {
