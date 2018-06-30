@@ -44,8 +44,11 @@ dependencies {
     }
 
     implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'org.nanohttpd:nanohttpd:2.3.1'
-    implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.1'
+
+    implementation 'org.nanohttpd:nanohttpd:2.3.2-SNAPSHOT'
+    implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.2-SNAPSHOT'
+//    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+//    implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.1'
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'commons-io:commons-io:2.4'
     implementation 'org.zeroturnaround:zt-zip:1.12'

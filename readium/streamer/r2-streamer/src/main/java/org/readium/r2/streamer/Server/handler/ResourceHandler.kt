@@ -1,25 +1,24 @@
 package org.readium.r2.streamer.Server.handler
 
 import android.util.Log
-import org.readium.r2.shared.Link
+import org.nanohttpd.protocols.http.IHTTPSession
+import org.nanohttpd.protocols.http.NanoHTTPD.MIME_PLAINTEXT
 import org.readium.r2.streamer.Fetcher.Fetcher
 
 import java.io.IOException
 import java.io.InputStream
 
-import fi.iki.elonen.NanoHTTPD
-import fi.iki.elonen.NanoHTTPD.IHTTPSession
-import fi.iki.elonen.NanoHTTPD.Method
-import fi.iki.elonen.NanoHTTPD.Response
-import fi.iki.elonen.NanoHTTPD.Response.IStatus
-import fi.iki.elonen.NanoHTTPD.Response.Status
-import fi.iki.elonen.router.RouterNanoHTTPD.DefaultHandler
-import fi.iki.elonen.router.RouterNanoHTTPD.UriResource
-
-import fi.iki.elonen.NanoHTTPD.MIME_PLAINTEXT
+import java.net.URI
+import java.net.URISyntaxException
+import org.nanohttpd.protocols.http.response.IStatus
+import org.nanohttpd.protocols.http.response.Response
+import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
+import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
+import org.nanohttpd.protocols.http.response.Status
+import org.nanohttpd.router.RouterNanoHTTPD
 
 
-class ResourceHandler : DefaultHandler() {
+class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
     private val TAG = this::class.java.simpleName
 
@@ -37,36 +36,48 @@ class ResourceHandler : DefaultHandler() {
         return Status.OK
     }
 
-    override fun get(uriResource: UriResource?, urlParams: Map<String, String>?, session: IHTTPSession?): Response {
+    override fun get(uriResource: RouterNanoHTTPD.UriResource?, urlParams: Map<String, String>?, session: IHTTPSession?): Response? {
         val method = session!!.method
-        val uri = session.uri
+        val uri: URI
+        try {
+            uri = URI(null, null, session.uri, null)
+        } catch (e: URISyntaxException) {
+            e.printStackTrace()
+            return null
+        }
 
-        println("$TAG Method: $method, Url: $uri")
+        var encodedUri = uri.toString()
+
+        if (encodedUri.contains("//")) {
+            encodedUri = session.uri.replace("//", "/")
+        }
+
+        println("$TAG Method: $method, Url: $encodedUri")
 
         try {
             val fetcher = uriResource!!.initParameter(Fetcher::class.java)
-            val offset = uri.indexOf("/", 0)
-            val startIndex = uri.indexOf("/", offset + 1)
-            val filePath = uri.substring(startIndex + 1)
+            val offset = encodedUri.indexOf("/", 0)
+            val startIndex = encodedUri.indexOf("/", offset + 1)
+            val filePath = encodedUri.substring(startIndex + 1)
             val link = fetcher.publication.linkWithHref("/" + filePath)!!
             val mimeType = link.typeLink!!
 
             // If the content is of type html return the response this is done to
             // skip the check for following font deobfuscation check
-            return if (mimeType == "application/xhtml+xml") {
-                serveResponse(session, fetcher.dataStream(filePath), mimeType)
-            } else serveResponse(session, fetcher.dataStream(filePath), mimeType)
+            if (mimeType == "application/xhtml+xml") {
+                return serveResponse(session, fetcher.dataStream(filePath), mimeType)
+            }
 
             // ********************
             //  FONT DEOBFUSCATION
             // ********************
 
 
-            
+            return serveResponse(session, fetcher.dataStream(filePath), mimeType)
         } catch (e: Exception) {
             println(TAG + " Exception " + e.toString())
             Log.e(TAG, e.toString())
-            return NanoHTTPD.newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
+            return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
 
     }
@@ -140,13 +151,13 @@ class ResourceHandler : DefaultHandler() {
     }
 
     private fun createResponse(status: Status, mimeType: String, message: InputStream): Response {
-        val response = NanoHTTPD.newChunkedResponse(status, mimeType, message)
+        val response = newChunkedResponse(status, mimeType, message)
         response.addHeader("Accept-Ranges", "bytes")
         return response
     }
 
     private fun createResponse(status: Status, mimeType: String, message: String): Response {
-        val response = NanoHTTPD.newFixedLengthResponse(status, mimeType, message)
+        val response = newFixedLengthResponse(status, mimeType, message)
         response.addHeader("Accept-Ranges", "bytes")
         return response
     }
