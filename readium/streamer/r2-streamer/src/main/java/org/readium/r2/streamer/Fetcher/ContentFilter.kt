@@ -1,9 +1,13 @@
 package org.readium.r2.streamer.Fetcher
 
+import android.util.Log
+import org.json.JSONArray
+import org.json.JSONObject
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.RenditionLayout
 import org.readium.r2.shared.removeLastComponent
 import org.readium.r2.streamer.Containers.Container
+import java.io.File
 import java.io.InputStream
 import java.net.URL
 
@@ -20,7 +24,7 @@ interface ContentFilters{
     }
 }
 
-class ContentFiltersEpub: ContentFilters {
+class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
 
     override var fontDecoder = FontDecoder()
     override var drmDecoder = DrmDecoder()
@@ -37,7 +41,7 @@ class ContentFiltersEpub: ContentFilters {
                         || resourceLink.properties.layout == "reflowable") {
                     decodedInputStream = injectReflowableHtml(decodedInputStream, baseUrl)
                 } else {
-                    decodedInputStream = injectFixedLayohtHtml(decodedInputStream, baseUrl)
+                    decodedInputStream = injectFixedLayoutHtml(decodedInputStream, baseUrl)
                 }
             }
 
@@ -61,7 +65,7 @@ class ContentFiltersEpub: ContentFilters {
                                         || resourceLink.properties.layout == "reflowable")) {
                             injectReflowableHtml(decodedInputStream, baseUrl)
                         } else {
-                            injectFixedLayohtHtml(decodedInputStream, baseUrl)
+                            injectFixedLayoutHtml(decodedInputStream, baseUrl)
                         }
             }
             return decodedInputStream.readBytes()
@@ -73,6 +77,7 @@ class ContentFiltersEpub: ContentFilters {
     private fun injectReflowableHtml(stream: InputStream, baseUrl: URL) : InputStream {
         val data = stream.readBytes()
         var resourceHtml = String(data)
+        // Inject links to css and js files
         var beginHeadIndex = resourceHtml.indexOf("<head>", 0, false) + 6
         var endHeadIndex = resourceHtml.indexOf("</head>", 0, false)
         if (endHeadIndex == -1)
@@ -96,10 +101,25 @@ class ContentFiltersEpub: ContentFilters {
             endHeadIndex += element.length
         }
         resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style> ").toString()
+
+        // Inject userProperties
+        getProperties()?.let { propertyPair ->
+            val html  = Regex("""<html.*>""").find(resourceHtml, 0)!!
+            val match = Regex("""(style=("([^"]*)"[ >]))|(style='([^']*)'[ >])""").find(html.value, 0)
+            if (match != null) {
+                val beginStyle = match.range.start + 7
+                var newHtml = html.value
+                newHtml = StringBuilder(newHtml).insert(beginStyle, "${buildStringProperties(propertyPair)} ").toString()
+                resourceHtml = StringBuilder(resourceHtml).replace(Regex("""<html.*>"""), newHtml)
+            } else {
+                val beginHtmlIndex = resourceHtml.indexOf("<html", 0, false) + 5
+                resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, " style=\"${buildStringProperties(propertyPair)}\"").toString()
+            }
+        }
         return resourceHtml.toByteArray().inputStream()
     }
 
-    private fun injectFixedLayohtHtml(stream: InputStream, baseUrl: URL) : InputStream {
+    private fun injectFixedLayoutHtml(stream: InputStream, baseUrl: URL) : InputStream {
         val data = stream.readBytes()
         var resourceHtml = String(data) //UTF-8
         val endHeadIndex = resourceHtml.indexOf("</head>", 0, false)
@@ -128,6 +148,47 @@ class ContentFiltersEpub: ContentFilters {
 
         return prefix + ressourceName + suffix
     }
+
+    private fun getProperties(): MutableList<Pair<String, String>>? {
+
+        // userProperties is a string containing the css userProperties as a JSON string
+        var userPropertiesString: String? = null
+        userPropertiesPath?.let {
+            userPropertiesString = String()
+            val file = File(it);
+            if (file.isFile() && file.canRead()) {
+                for (i in file.readLines()) {
+                    userPropertiesString += i
+                }
+            }
+        }
+
+        return userPropertiesString?.let {
+            // Parsing of the String into a JSONArray of JSONObject with each "name" and "value" of the css properties
+            // Making that JSONArray a MutableMap<String, String> to make easier the access of data
+            return@let try {
+                val propertiesArray = JSONArray(userPropertiesString)
+                val properties: MutableList<Pair<String, String>> = arrayListOf()
+                for (i in 0..(propertiesArray.length() - 1)) {
+                    val value = JSONObject(propertiesArray.getString(i))
+                    properties.add(Pair(value.getString("name"), value.getString("value")))
+                }
+                properties
+            } catch (e: Exception) {
+                Log.e("ContentFilter", "Error parsing json")
+                null
+            }
+        }
+    }
+
+    private fun buildStringProperties(list: MutableList<Pair<String, String>>) : String {
+        var string = ""
+        for (property in list) {
+            string = string + " " + property.first + ": " + property.second + ";"
+        }
+        return string
+    }
+
 
 }
 
