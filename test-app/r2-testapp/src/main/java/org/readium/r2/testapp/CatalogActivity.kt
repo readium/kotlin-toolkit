@@ -387,7 +387,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                     }
                 }
                 booksAdapter.notifyDataSetChanged()
-                server.addEpub(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path)
+                server.addEpub(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
             }
         }
         addBookToView()
