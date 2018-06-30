@@ -58,17 +58,17 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
 //    uncomment these 5 lines to use with GitHu submodules and Android Studio Modules
-    implementation project(':r2-navigator')
-    implementation project(':r2-streamer')
-    implementation project(':r2-shared')
-    implementation project(':r2-lcp')
-    implementation project(':r2-opds')
+//    implementation project(':r2-navigator')
+//    implementation project(':r2-streamer')
+//    implementation project(':r2-shared')
+//    implementation project(':r2-lcp')
+//    implementation project(':r2-opds')
 
 //    uncomment these 3 lines to use with jitpack
-//    implementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
-//    implementation 'com.github.readium:r2-streamer-kotlin:develop-SNAPSHOT'
-//    implementation 'com.github.readium:r2-navigator-kotlin:develop-SNAPSHOT'
-//    implementation 'com.github.readium:r2-opds-kotlin:develop-SNAPSHOT'
+    implementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+    implementation 'com.github.readium:r2-streamer-kotlin:develop-SNAPSHOT'
+    implementation 'com.github.readium:r2-navigator-kotlin:develop-SNAPSHOT'
+    implementation 'com.github.readium:r2-opds-kotlin:develop-SNAPSHOT'
 
 //    not supported yet, keep these 2 lines commented until further notice
 //    implementation 'com.github.readium:r2-lcp-kotlin:0.1.0'
