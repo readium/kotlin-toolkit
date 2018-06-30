@@ -44,7 +44,7 @@ class TocElement(val link: Link, val children: List<TocElement>) : JSONable {
 
 }
 
-class Publication : Serializable {
+class Publication() : Serializable {
 
     private val TAG = this::class.java.simpleName
 
@@ -73,8 +73,11 @@ class Publication : Serializable {
     var otherLinks: MutableList<Link> = mutableListOf()
     var internalData: MutableMap<String, String> = mutableMapOf()
     //var manifestDictionnary: Map<String, Any> = mapOf()
+
     var coverLink: Link?  = null
         get() = linkWithRel("cover")
+
+    var userProperties = UserProperties()
 
     fun baseUrl() : URL? {
         val selfLink = linkWithRel("self")
