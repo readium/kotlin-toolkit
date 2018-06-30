@@ -63,7 +63,7 @@ dependencies {
     implementation 'com.duolingo.open:rtl-viewpager:1.0.3'
 
     // JSON parser
-    implementation 'com.beust:klaxon:3.0.1'
+//    implementation 'com.beust:klaxon:3.0.1'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
