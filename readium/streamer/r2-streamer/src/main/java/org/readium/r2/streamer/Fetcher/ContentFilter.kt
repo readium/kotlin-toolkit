@@ -103,7 +103,7 @@ class ContentFiltersEpub(val storagePath: String) : ContentFilters {
         resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style> ").toString()
 
         // Inject userProperties
-        getProperties(userPropertiesString)?.let { propertyPair ->
+        getProperties()?.let { propertyPair ->
             val html  = Regex("""<html.*>""").find(resourceHtml, 0)!!
             val match = Regex("""(style=("([^"]*)"[ >]))|(style='([^']*)'[ >])""").find(html.value, 0)
             if (match != null) {
@@ -149,41 +149,36 @@ class ContentFiltersEpub(val storagePath: String) : ContentFilters {
         return prefix + ressourceName + suffix
     }
 
+    private fun getProperties(): MutableList<Pair<String, String>>? {
 
-    private val ContentFiltersEpub.userPropertiesString: String
-        get() {
-            val file = File(storagePath + "/styles/UserProperties.json");
-            var str = ""
+        // userProperties is a string containing the css userProperties as a JSON string
+        var userPropertiesString: String? = null
+        userPropertiesPath?.let {
+            userPropertiesString = String()
+            val file = File(it);
             if (file.isFile() && file.canRead()) {
                 for (i in file.readLines()) {
-                    str += i
+                    userPropertiesString += i
                 }
             }
-            return str
         }
 
+        return userPropertiesString?.let {
+            // Parsing of the String into a JSONArray of JSONObject with each "name" and "value" of the css properties
 
-    private fun getProperties(userProperties: String?): MutableList<Pair<String, String>>? {
-        // userProperties is a string containing the css userProperties as a JSON string
-
-        if (userProperties == null) {
-            return null
-        }
-
-        // Parsing of the String into a JSONArray of JSONObject with each "name" and "value" of the css properties
-
-        // Making that JSONArray a MutableMap<String, String> to make easier the access of data
-        return try {
-            val propertiesArray = JSONArray(userProperties)
-            val properties: MutableList<Pair<String, String>> = arrayListOf()
-            for (i in 0..(propertiesArray.length() - 1)) {
-                val value = JSONObject(propertiesArray.getString(i))
-                properties.add(Pair(value.getString("name"), value.getString("value")))
+            // Making that JSONArray a MutableMap<String, String> to make easier the access of data
+            return@let try {
+                val propertiesArray = JSONArray(userPropertiesString)
+                val properties: MutableList<Pair<String, String>> = arrayListOf()
+                for (i in 0..(propertiesArray.length() - 1)) {
+                    val value = JSONObject(propertiesArray.getString(i))
+                    properties.add(Pair(value.getString("name"), value.getString("value")))
+                }
+                properties
+            } catch (e: Error) {
+                Log.e("ContentFilter", "Error parsing json")
+                null
             }
-            properties
-        } catch (e: Error) {
-            Log.e("ContentFilter", "Error parsing json")
-            null
         }
     }
 
