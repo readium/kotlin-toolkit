@@ -2,11 +2,11 @@
     <string name="app_name">R2Navigator</string>
 
     <string-array name="font_list">
-        <item>Publisher\'s default</item>
-        <item>Helvetica Neue</item>
-        <item>Iowan</item>
-        <item>Athelas</item>
-        <item>Seravek</item>
+        <item>Original</item>
+        <item>PT Serif</item>
+        <item>Roboto</item>
+        <item>Source Sans Pro</item>
+        <item>Vollkorn</item>
     </string-array>
 
 </resources>

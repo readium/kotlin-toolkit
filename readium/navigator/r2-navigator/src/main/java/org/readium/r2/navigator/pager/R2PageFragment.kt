@@ -10,10 +10,10 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
+import org.readium.r2.navigator.APPEARANCE_REF
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.UserSettings.Appearance
-import org.readium.r2.navigator.UserSettings.Scroll
+import org.readium.r2.navigator.SCROLL_REF
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.webkit.WebResourceResponse
@@ -35,34 +35,26 @@ class R2PageFragment : Fragment() {
         val v = inflater.inflate(R.layout.fragment_page, container, false)
         val prefs = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
-        val appearance_pref = prefs?.getString("appearance", Appearance.Default.toString()) ?: Appearance.Default.toString()
-        when (appearance_pref) {
-            Appearance.Default.toString() -> {
-                (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#000000"))
-            }
-            Appearance.Sepia.toString() -> {
-                (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#000000"))
-            }
-            Appearance.Night.toString() -> {
-                (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#ffffff"))
-            }
-        }
+        // Set text color depending of appearance preference
+        (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor(
+                if (prefs?.getInt(APPEARANCE_REF, 0) ?: 0 > 1) "#ffffff" else "#000000"
+        ))
 
-        val scroll_mode = prefs?.getString("scroll", Scroll.Off.toString())
-        when (scroll_mode) {
-            Scroll.On.toString() -> {
+        val scrollMode = prefs?.getBoolean(SCROLL_REF, false)
+        when (scrollMode) {
+            true -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.GONE
                 v.setPadding(0,4,0,4)
             }
-            Scroll.Off.toString() -> {
+            false -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.VISIBLE
                 v.setPadding(0,30,0,30)
             }
         }
 
-        (v.findViewById(R.id.book_title) as TextView).setText(bookTitle)
+        (v.findViewById(R.id.book_title) as TextView).text = bookTitle
 
-        val webView: R2WebView = v!!.findViewById<R2WebView>(R.id.webView) as R2WebView
+        val webView: R2WebView = v!!.findViewById(R.id.webView) as R2WebView
 
         webView.activity = activity as R2EpubActivity
 
@@ -86,22 +78,15 @@ class R2PageFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 try {
-                    (activity as R2EpubActivity).userSettings.applyAllCSS(view as R2WebView)
-
                     val progression = (activity as R2EpubActivity).preferences.getString("${(activity as R2EpubActivity).publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
 
-                    if (progression == 0.0) {
-                        webView.scrollToBeginning()
+                    when (progression) {
+                        0.0 -> webView.scrollToBeginning()
+                        1.0 -> webView.scrollToEnd()
+                        else -> webView.scrollToPosition(progression)
                     }
-                    else if (progression == 1.0) {
-                        webView.scrollToEnd()
-                    }
-                    else {
-                        webView.scrollToPosition(progression)
-                    }
-
                 } catch (e: Exception) {
-                    //TODO double check this error, a crash happens when scrolling to fast between resources.....
+                    // TODO double check this error, a crash happens when scrolling to fast between resources.....
                     // kotlin.TypeCastException: null cannot be cast to non-null type org.readium.r2.navigator.R2EpubActivity
                 }
 
@@ -118,7 +103,6 @@ class R2PageFragment : Fragment() {
             }
 
         }
-
         webView.isHapticFeedbackEnabled = false
         webView.isLongClickable = false
         webView.setOnLongClickListener {

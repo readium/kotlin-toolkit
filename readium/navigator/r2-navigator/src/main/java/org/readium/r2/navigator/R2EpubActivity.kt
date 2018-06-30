@@ -17,8 +17,6 @@ import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_page.view.*
 import org.jetbrains.anko.contentView
 import org.jetbrains.anko.intentFor
-import org.readium.r2.navigator.UserSettings.Appearance
-import org.readium.r2.navigator.UserSettings.UserSettings
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
@@ -101,22 +99,11 @@ class R2EpubActivity : AppCompatActivity() {
             resourcePager.setCurrentItem(index)
         }
 
-        val appearance_pref = preferences.getString("appearance", Appearance.Default.toString()) ?: Appearance.Default.toString()
-        when (appearance_pref) {
-            Appearance.Default.toString() -> {
-                resourcePager.setBackgroundColor(Color.parseColor("#ffffff"))
-                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
-            }
-            Appearance.Sepia.toString() -> {
-                resourcePager.setBackgroundColor(Color.parseColor("#faf4e8"))
-                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
-            }
-            Appearance.Night.toString() -> {
-                resourcePager.setBackgroundColor(Color.parseColor("#000000"))
-                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#ffffff"))
-            }
-        }
-
+        val appearancePref = preferences.getInt("appearance", 0)
+        val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
+        val textColors = mutableListOf("#000000", "#000000", "#ffffff")
+        resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
+        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor(textColors[appearancePref]))
         toggleActionBar()
     }
 
@@ -165,8 +152,18 @@ class R2EpubActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
-                val spine_item_index: Int = data.getIntExtra("spine_item_index", 0)
-                resourcePager.setCurrentItem(spine_item_index)
+                var href: String = data.getStringExtra("toc_item_uri")
+                // href is the link to the page in the toc
+
+                if (href.indexOf("#") > 0) {
+                    href = href.substring(0, href.indexOf("#"))
+                }
+                // Search corresponding href in the spine
+                for (i in 0..publication.spine.size - 1) {
+                    if (publication.spine[i].href == href) {
+                        resourcePager.setCurrentItem(i)
+                    }
+                }
                 preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
                 if (supportActionBar!!.isShowing) {
                     resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -175,7 +172,6 @@ class R2EpubActivity : AppCompatActivity() {
                             or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                             or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                             or View.SYSTEM_UI_FLAG_IMMERSIVE)
-
                 }
             }
         }
