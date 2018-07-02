@@ -14,6 +14,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
@@ -21,14 +22,13 @@ import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
 import android.view.*
 import android.webkit.URLUtil
+import android.support.v7.widget.RecyclerView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import com.github.kittinunf.fuel.Fuel
-import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.onClick
-//import kotlinx.android.synthetic.main.activity_catalog.*
 import net.theluckycoder.materialchooser.Chooser
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
@@ -41,14 +41,12 @@ import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.design.textInputLayout
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import org.json.JSONObject
+import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDSParser
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.drm.DRMMModel
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
@@ -88,12 +86,11 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     lateinit var opdsDownloader: OPDSDownloader
     lateinit var publication: Publication
     
-    private lateinit var catalogView:RecyclerView
-    private lateinit var alertDialog:AlertDialog
+    private lateinit var catalogView: RecyclerView
+    private lateinit var alertDialog: AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //setContentView(R.layout.activity_catalog)
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
@@ -113,13 +110,8 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         books = database.books.list()
 
         booksAdapter = BooksAdapter(this, books, "$BASE_URL:$localPort", this)
-        //catalogView.adapter = booksAdapter
-
-        //catalogView.layoutManager = GridAutoFitLayoutManager(act, 120)
 
         parseIntent(null);
-
-
 
         coordinatorLayout {
             lparams {
@@ -229,11 +221,30 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                                 bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
                                                 val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray())
-                                                database.books.insert(book)?.let {
+
+                                                database.books.insert(book, false)?.let {
                                                     books.add(book)
-                                                    println("Success")
-                                                }?: run {
-                                                    println("Error")
+                                                } ?: run {
+                                                    //                                    snackbar(catalogView, "Publication already exists")
+                                                    alert (Appcompat, "Publication already exists") {
+
+                                                        positiveButton("Add anyways") { }
+                                                        negativeButton("Cancel") { }
+
+                                                    }.build().apply {
+                                                        setCancelable(false)
+                                                        setCanceledOnTouchOutside(false)
+                                                        setOnShowListener(DialogInterface.OnShowListener {
+                                                            val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                                                            b.setOnClickListener(View.OnClickListener {
+                                                                database.books.insert(book, true)?.let {
+                                                                    books.add(book)
+                                                                    dismiss()
+                                                                    booksAdapter.notifyDataSetChanged()
+                                                                }
+                                                            })
+                                                        })
+                                                    }.show()
                                                 }
                                             }
                                         }
@@ -526,7 +537,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 // do nothing
                 Timber.e(e)
             }
-            server.loadResources(assets)
+            server.loadResources(assets, applicationContext)
         }
     }
 
@@ -595,28 +606,66 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         blob?.let {
                             val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, blob)
                             if (add) {
-                                database.books.insert(book)?.let {
+                                database.books.insert(book, false)?.let {
                                     books.add(book)
                                 } ?: run {
-                                    snackbar(catalogView, "Publication alredy exists")
+//                                    snackbar(catalogView, "Publication already exists")
+                                    alert (Appcompat, "Publication already exists") {
+
+                                        positiveButton("Add anyways") { }
+                                        negativeButton("Cancel") { }
+
+                                    }.build().apply {
+                                        setCancelable(false)
+                                        setCanceledOnTouchOutside(false)
+                                        setOnShowListener(DialogInterface.OnShowListener {
+                                            val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                                            b.setOnClickListener(View.OnClickListener {
+                                                database.books.insert(book, true)?.let {
+                                                    books.add(book)
+                                                    dismiss()
+                                                    booksAdapter.notifyDataSetChanged()
+                                                }
+                                            })
+                                        })
+                                    }.show()
                                 }
                             }
                         }
                     } ?: run {
                         val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, null)
                         if (add) {
-                            database.books.insert(book)?.let {
+                            database.books.insert(book, false)?.let {
                                 books.add(book)
                             } ?: run {
-                                snackbar(catalogView, "Publication alredy exists")
+//                                snackbar(catalogView, "Publication already exists")
+                                alert (Appcompat, "Publication already exists") {
+
+                                    positiveButton("Add anyways") { }
+                                    negativeButton("Cancel") { }
+
+                                }.build().apply {
+                                    setCancelable(false)
+                                    setCanceledOnTouchOutside(false)
+                                    setOnShowListener(DialogInterface.OnShowListener {
+                                        val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                                        b.setOnClickListener(View.OnClickListener {
+                                            database.books.insert(book, true)?.let {
+                                                books.add(book)
+                                                dismiss()
+                                                booksAdapter.notifyDataSetChanged()
+                                            }
+                                        })
+                                    })
+                                }.show()
                             }
                         }
                     }
                 }
                 booksAdapter.notifyDataSetChanged()
+                server.addEpub(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
             }
         }
-        server.addEpub(publication, container, "/" + fileName)
         addBookToView()
     }
 
@@ -814,7 +863,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) : RecyclerView.ItemDecoration() {
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView,
-                       state: RecyclerView.State) {
+                                state: RecyclerView.State) {
         outRect.bottom = verticalSpaceHeight
     }
 }

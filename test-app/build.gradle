@@ -21,6 +21,7 @@ allprojects {
         jcenter()
         maven { url 'https://jitpack.io' }
         maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     }
 }
 

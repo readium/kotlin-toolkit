@@ -47,7 +47,7 @@ class R2AboutActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = "1.0.0"
+                        text = "1.0.1"
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -64,7 +64,7 @@ class R2AboutActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = "V1.0.0-beta.1"
+                        text = "V1.0.0-beta.2"
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)

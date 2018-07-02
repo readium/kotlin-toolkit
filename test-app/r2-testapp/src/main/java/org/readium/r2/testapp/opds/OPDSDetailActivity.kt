@@ -13,7 +13,6 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.shared.Publication
-import org.readium.r2.streamer.Parser.mimetype
 import org.readium.r2.testapp.Book
 import org.readium.r2.testapp.BooksDatabase
 import org.readium.r2.testapp.R
@@ -76,7 +75,7 @@ class OPDSDetailActivity : AppCompatActivity() {
                                         bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
                                         val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray())
-                                        database.books.insert(book)?.let {
+                                        database.books.insert(book, false)?.let {
                                             books.add(book)
                                             snackbar(this, "download completed")
                                             progress.dismiss()
