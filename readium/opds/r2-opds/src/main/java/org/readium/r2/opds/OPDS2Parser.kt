@@ -40,7 +40,6 @@ class OPDS2Parser {
         }
 
         fun parse(jsonData: ByteArray, url: URL) : ParseData {
-            println(JSONObject(String(jsonData)))
             return if (isFeed(jsonData)) {
                 ParseData(parseFeed(jsonData, url), null, 2)
             } else {
@@ -50,10 +49,10 @@ class OPDS2Parser {
 
         fun isFeed(jsonData: ByteArray) =
                 JSONObject(String(jsonData)).let {
-                    (it.getJSONArray("navigation") != null ||
-                        it.getJSONArray("groups") != null ||
-                        it.getJSONArray("publications") != null ||
-                        it.getJSONArray("facets") != null)
+                    (it.has("navigation")  ||
+                        it.has("groups")  ||
+                        it.has("publications")  ||
+                        it.has("facets") )
             }
 
         fun parseFeed(jsonData: ByteArray, url: URL) : Feed {
@@ -294,8 +293,8 @@ class OPDS2Parser {
         internal fun parsePublication(pubDict: JSONObject) : Publication {
             val p = Publication()
 
-            if(pubDict.has("numberOfItems")) {
-                pubDict.get("numberOfItems")?.let {
+            if(pubDict.has("metadata")) {
+                pubDict.get("metadata")?.let {
                     val metadataDict = it as? JSONObject ?: throw Exception(OPDS2ParserError.invalidPublication.name)
                     val metadata = parsePublicationMetadata(metadataDict = metadataDict)
                     p.metadata = metadata
