@@ -19,15 +19,16 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
 import android.view.*
 import android.webkit.URLUtil
-import android.support.v7.widget.RecyclerView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import com.github.kittinunf.fuel.Fuel
+import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.onClick
 import net.theluckycoder.materialchooser.Chooser
 import nl.komponents.kovenant.Promise
@@ -41,8 +42,8 @@ import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.design.textInputLayout
-import org.json.JSONObject
 import org.jetbrains.anko.recyclerview.v7.recyclerView
+import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDSParser
@@ -57,7 +58,6 @@ import org.readium.r2.streamer.Server.Server
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSDownloader
 import org.readium.r2.testapp.opds.OPDSListActivity
-import org.readium.r2.testapp.opds.OPDSModel
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
 import org.zeroturnaround.zip.ZipUtil
@@ -85,7 +85,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     lateinit var database: BooksDatabase
     lateinit var opdsDownloader: OPDSDownloader
     lateinit var publication: Publication
-    
+
     private lateinit var catalogView: RecyclerView
     private lateinit var alertDialog: AlertDialog
 
@@ -134,11 +134,11 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 addItemDecoration(VerticalSpaceItemDecoration(10))
 
             }
-           
+
             floatingActionButton {
                 imageResource = R.drawable.icon_plus_white
                 onClick {
-                    
+
                     alertDialog = alert(Appcompat, "Add an ePub to your library") {
                         customView {
                             verticalLayout {
@@ -170,101 +170,109 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                     text =  "download from a url"
                                     onClick {
                                         alertDialog.dismiss()
-                    
-                    var editTextHref: EditText? = null
-                    alert (Appcompat, "Add a publication from URL") {
 
-                        customView {
-                            verticalLayout {
-                                textInputLayout {
-                                    padding = dip(10)
-                                    editTextHref = editText {
-                                        hint = "URL"
-                                    }
-                                }
-                            }
-                        }
-                        positiveButton("Add") { }
-                        negativeButton("Cancel") { }
+                                        var editTextHref: EditText? = null
+                                        alert (Appcompat, "Add a publication from URL") {
 
-                    }.build().apply {
-                        setCancelable(false)
-                        setCanceledOnTouchOutside(false)
-                        setOnShowListener(DialogInterface.OnShowListener {
-                            val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                            b.setOnClickListener(View.OnClickListener {
-                                if (TextUtils.isEmpty(editTextHref!!.text)) {
-                                    editTextHref!!.setError("Please Enter A URL.");
-                                    editTextHref!!.requestFocus();
-                                } else if (!URLUtil.isValidUrl(editTextHref!!.text.toString())) {
-                                    editTextHref!!.setError("Please Enter A Valid URL.");
-                                    editTextHref!!.requestFocus();
-                                } else {
-                                    var parseData: Promise<ParseData, Exception>? = null
-                                    parseData = parseURL(URL(editTextHref!!.text.toString()))
-                                    parseData.successUi {
-                                        val opds = OPDSModel(
-                                                "title",
-                                                editTextHref!!.text.toString(),
-                                                it.type)
-                                        publication = it.publication ?: return@successUi
-                                        val downloadUrl = getDownloadURL(publication)!!.toString()
-                                        opdsDownloader.publicationUrl(downloadUrl).successUi { pair ->
-
-                                            val publicationIdentifier = publication.metadata.identifier
-                                            val author = authorName(publication)
-                                            task {
-                                                getBitmapFromURL(publication.images.first().href!!)
-                                            }.then {
-                                                val bitmap = it
-                                                val stream = ByteArrayOutputStream()
-                                                bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
-
-                                                val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray())
-
-                                                database.books.insert(book, false)?.let {
-                                                    books.add(book)
-                                                } ?: run {
-                                                    alert (Appcompat, "Publication already exists") {
-
-                                                        positiveButton("Add anyways") { }
-                                                        negativeButton("Cancel") { }
-
-                                                    }.build().apply {
-                                                        setCancelable(false)
-                                                        setCanceledOnTouchOutside(false)
-                                                        setOnShowListener(DialogInterface.OnShowListener {
-                                                            val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                                                            b.setOnClickListener(View.OnClickListener {
-                                                                database.books.insert(book, true)?.let {
-                                                                    books.add(book)
-                                                                    dismiss()
-                                                                    booksAdapter.notifyDataSetChanged()
-                                                                }
-                                                            })
-                                                        })
-                                                    }.show()
+                                            customView {
+                                                verticalLayout {
+                                                    textInputLayout {
+                                                        padding = dip(10)
+                                                        editTextHref = editText {
+                                                            hint = "URL"
+                                                        }
+                                                    }
                                                 }
                                             }
-                                        }
-                                        dismiss()
-                                    }
-                                    parseData.failUi {
-                                        editTextHref!!.setError("Please Enter A Valid OPDS Book URL.");
-                                        editTextHref!!.requestFocus();
-                                    }
-                                }
-                            })
-                        })
+                                            positiveButton("Add") { }
+                                            negativeButton("Cancel") { }
 
-                    }.show()
-                                        
+                                        }.build().apply {
+                                            setCancelable(false)
+                                            setCanceledOnTouchOutside(false)
+                                            setOnShowListener(DialogInterface.OnShowListener {
+                                                val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                                                b.setOnClickListener(View.OnClickListener {
+                                                    if (TextUtils.isEmpty(editTextHref!!.text)) {
+                                                        editTextHref!!.setError("Please Enter A URL.");
+                                                        editTextHref!!.requestFocus();
+                                                    } else if (!URLUtil.isValidUrl(editTextHref!!.text.toString())) {
+                                                        editTextHref!!.setError("Please Enter A Valid URL.");
+                                                        editTextHref!!.requestFocus();
+                                                    } else {
+                                                        var parseData: Promise<ParseData, Exception>? = null
+                                                        parseData = parseURL(URL(editTextHref!!.text.toString()))
+                                                        parseData.successUi {
+                                                            dismiss()
+
+                                                            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+                                                            progress.show()
+
+                                                            publication = it.publication ?: return@successUi
+                                                            val downloadUrl = getDownloadURL(publication)!!.toString()
+                                                            opdsDownloader.publicationUrl(downloadUrl).successUi { pair ->
+
+                                                                val publicationIdentifier = publication.metadata.identifier
+                                                                val author = authorName(publication)
+                                                                task {
+                                                                    getBitmapFromURL(publication.images.first().href!!)
+                                                                }.then {
+                                                                    val bitmap = it
+                                                                    val stream = ByteArrayOutputStream()
+                                                                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+
+                                                                    val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray())
+
+                                                                    runOnUiThread(Runnable {
+                                                                        progress.dismiss()
+                                                                        database.books.insert(book, false)?.let {
+                                                                            books.add(book)
+                                                                            booksAdapter.notifyDataSetChanged()
+
+                                                                        } ?: run {
+
+                                                                            val duplicateAlert = alert (Appcompat, "Publication already exists") {
+
+                                                                                positiveButton("Add anyways") { }
+                                                                                negativeButton("Cancel") { }
+
+                                                                            }.build()
+                                                                            duplicateAlert.apply {
+                                                                                setCancelable(false)
+                                                                                setCanceledOnTouchOutside(false)
+                                                                                setOnShowListener(DialogInterface.OnShowListener {
+                                                                                    val b2 = getButton(AlertDialog.BUTTON_POSITIVE)
+                                                                                    b2.setOnClickListener(View.OnClickListener {
+                                                                                        database.books.insert(book, true)?.let {
+                                                                                            books.add(book)
+                                                                                            duplicateAlert.dismiss()
+                                                                                            booksAdapter.notifyDataSetChanged()
+                                                                                        }
+                                                                                    })
+                                                                                })
+                                                                            }
+                                                                            duplicateAlert.show()
+                                                                        }
+                                                                    })
+                                                                }
+                                                            }
+                                                        }
+                                                        parseData.failUi {
+                                                            editTextHref!!.setError("Please Enter A Valid OPDS Book URL.");
+                                                            editTextHref!!.requestFocus();
+                                                        }
+                                                    }
+                                                })
+                                            })
+
+                                        }.show()
+
                                     }
                                 }
                             }
                         }
-                    }.show()                                        
-                                        
+                    }.show()
+
                 }
             }.lparams {
                 gravity = Gravity.END or Gravity.BOTTOM
@@ -478,7 +486,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         thread.start()
                     }
                 }
-    //        */
+            */
         }
     }
 
@@ -588,6 +596,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                             if (add) {
                                 database.books.insert(book, false)?.let {
                                     books.add(book)
+                                    booksAdapter.notifyDataSetChanged()
                                 } ?: run {
                                     alert (Appcompat, "Publication already exists") {
 
@@ -616,6 +625,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         if (add) {
                             database.books.insert(book, false)?.let {
                                 books.add(book)
+                                booksAdapter.notifyDataSetChanged()
                             } ?: run {
                                 alert (Appcompat, "Publication already exists") {
 
@@ -640,7 +650,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         }
                     }
                 }
-                booksAdapter.notifyDataSetChanged()
                 server.addEpub(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
             }
         }
