@@ -100,7 +100,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
         localPort = s.localPort
         server = Server(localPort)
-        R2TEST_DIRECTORY_PATH = this.getExternalFilesDir(null).path + "/" //server.rootDir
+        R2TEST_DIRECTORY_PATH = this.getExternalFilesDir(null).path + "/"
 
         permissions = Permissions(this)
         permissionHelper = PermissionHelper(this, permissions)
@@ -225,7 +225,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                                 database.books.insert(book, false)?.let {
                                                     books.add(book)
                                                 } ?: run {
-                                                    //                                    snackbar(catalogView, "Publication already exists")
                                                     alert (Appcompat, "Publication already exists") {
 
                                                         positiveButton("Add anyways") { }
@@ -499,25 +498,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 startActivity(intentFor<R2AboutActivity>())
                 return false
             }
-            R.id.select -> {
-
-                // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
-                // browser.
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-
-                // Filter to only show results that can be "opened", such as a
-                // file (as opposed to a list of contacts or timezones)
-                intent.addCategory(Intent.CATEGORY_OPENABLE)
-
-                // Filter to show only epubs, using the image MIME data type.
-                // To search for all documents available via installed storage providers,
-                // it would be "*/*".
-                intent.type = "application/epub+zip"
-
-                startActivityForResult(intent, 1)
-                return false
-
-            }
 
             else -> return super.onOptionsItemSelected(item)
         }
@@ -609,7 +589,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                 database.books.insert(book, false)?.let {
                                     books.add(book)
                                 } ?: run {
-//                                    snackbar(catalogView, "Publication already exists")
                                     alert (Appcompat, "Publication already exists") {
 
                                         positiveButton("Add anyways") { }
@@ -638,7 +617,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                             database.books.insert(book, false)?.let {
                                 books.add(book)
                             } ?: run {
-//                                snackbar(catalogView, "Publication already exists")
                                 alert (Appcompat, "Publication already exists") {
 
                                     positiveButton("Add anyways") { }
