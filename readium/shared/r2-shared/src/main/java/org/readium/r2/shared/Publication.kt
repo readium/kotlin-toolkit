@@ -167,7 +167,7 @@ fun parsePublication(pubDict: JSONObject, feedUrl: URL?) : Publication {
     if(pubDict.has("metadata")) {
         pubDict.get("metadata")?.let {
             val metadataDict = it as? JSONObject ?: throw Exception(Publication.PublicationError.invalidPublication.name)
-            val metadata = parseFeedMetadata(metadataDict, feedUrl)
+            val metadata = parseMetadata(metadataDict, feedUrl)
             p.metadata = metadata
 
         }

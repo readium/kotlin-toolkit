@@ -82,7 +82,7 @@ class Metadata : Serializable {
 
 }
 
-fun parseFeedMetadata(metadataDict:JSONObject, feedUrl: URL?) : Metadata {
+fun parseMetadata(metadataDict:JSONObject, feedUrl: URL?) : Metadata {
     val m = Metadata()
     if (metadataDict.has("title")) {
         m.multilangTitle = MultilangString()
