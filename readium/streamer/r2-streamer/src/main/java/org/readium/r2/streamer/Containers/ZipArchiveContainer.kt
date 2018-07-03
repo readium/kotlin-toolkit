@@ -1,23 +1,29 @@
 package org.readium.r2.streamer.Containers
 
-import android.renderscript.ScriptGroup
-import android.util.Log
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.zip.ZipFile
+
+/**
+ * Template for an archive ( E.g.: EPub, CBZ, .. )
+ *
+ * Contains the zipfile and methods to gather data,
+ *          size of the content or an inputstream
+ *          of the archive
+ */
 
 interface ZipArchiveContainer: Container {
     var zipFile: ZipFile
 
     override fun data(relativePath: String) : ByteArray{
 
-        val zipEntry = zipFile.getEntry(relativePath)// ?: return ByteArray(0)
-        val fis = zipFile.getInputStream(zipEntry)
+        var zipEntry = zipFile.getEntry(relativePath)// ?: return ByteArray(0)
+        var fis = zipFile.getInputStream(zipEntry)
         val buffer = ByteArrayOutputStream()
         var nRead: Int
         val data = ByteArray(16384)
 
-        nRead = fis.read(data, 0, data.size)
+        nRead = fis!!.read(data, 0, data.size)
         while (nRead != -1) {
             buffer.write(data, 0, nRead)
             nRead = fis.read(data, 0, data.size)
