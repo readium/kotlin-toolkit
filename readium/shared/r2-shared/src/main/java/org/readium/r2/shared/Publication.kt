@@ -44,7 +44,7 @@ class TocElement(val link: Link, val children: List<TocElement>) : JSONable {
 
 }
 
-class Publication() : Serializable {
+class Publication : Serializable {
 
     private val TAG = this::class.java.simpleName
 
@@ -155,4 +155,42 @@ class Publication() : Serializable {
                 spine.firstOrNull(closure) ?:
                 links.firstOrNull(closure)
 
+    enum class PublicationError(v: String) {
+        invalidPublication("Invalid publication")
+    }
+
+}
+
+fun parsePublication(pubDict: JSONObject, feedUrl: URL?) : Publication {
+    val p = Publication()
+
+    if(pubDict.has("metadata")) {
+        pubDict.get("metadata")?.let {
+            val metadataDict = it as? JSONObject ?: throw Exception(Publication.PublicationError.invalidPublication.name)
+            val metadata = parseFeedMetadata(metadataDict, feedUrl)
+            p.metadata = metadata
+
+        }
+    }
+    if(pubDict.has("links")) {
+        pubDict.get("links")?.let {
+            val links = it as? JSONArray ?: throw Exception(Publication.PublicationError.invalidPublication.name)
+            for (i in 0..(links.length() - 1)) {
+                val linkDict = links.getJSONObject(i)
+                val link = parseLink(linkDict, feedUrl)
+                p.links.add(link)
+            }
+        }
+    }
+    if(pubDict.has("images")) {
+        pubDict.get("images")?.let {
+            val links = it as? JSONArray ?: throw Exception(Publication.PublicationError.invalidPublication.name)
+            for (i in 0..(links.length() - 1)) {
+                val linkDict = links.getJSONObject(i)
+                val link = parseLink(linkDict, feedUrl)
+                p.images.add(link)
+            }
+        }
+    }
+    return p
 }
