@@ -7,8 +7,6 @@ import org.joda.time.DateTime
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.*
-import org.readium.r2.shared.Collection
-import org.readium.r2.shared.metadata.BelongsTo
 import org.readium.r2.shared.opds.*
 import java.net.URL
 
@@ -61,7 +59,7 @@ class OPDS2Parser {
             val metadataDict:JSONObject = topLevelDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.metadataNotFound.name)
             val title = metadataDict.getString("title") ?: throw Exception(OPDS2ParserError.missingTitle.name)
             val feed = Feed(title, 2)
-            parseMetadata(opdsMetadata = feed.metadata, metadataDict = metadataDict)
+            parseFeedMetadata(opdsMetadata = feed.metadata, metadataDict = metadataDict)
             if(topLevelDict.has("@context")) {
                 if (topLevelDict.get("@context") is JSONObject){
                     feed.context.add(topLevelDict.getString("@context"))
@@ -108,7 +106,7 @@ class OPDS2Parser {
             return feed
         }
 
-        internal fun parseMetadata(opdsMetadata: OpdsMetadata, metadataDict: JSONObject) {
+        internal fun parseFeedMetadata(opdsMetadata: OpdsMetadata, metadataDict: JSONObject) {
             if(metadataDict.has("title")) {
                 metadataDict.get("title")?.let {
                     opdsMetadata.title = it.toString()
@@ -135,86 +133,18 @@ class OPDS2Parser {
                 }}
         }
 
-        internal fun parseLink(linkDict: JSONObject) : Link {
-            val link = Link()
-            if(linkDict.has("title")) {
-                link.title = linkDict.getString("title")
-            }
-            if(linkDict.has("href")) {
-                link.href = getAbsolute(linkDict.getString("href")!!, feedUrl.toString())
-            }
-            if(linkDict.has("type")) {
-                link.typeLink = linkDict.getString("type")
-            }
-            if(linkDict.has("rel")) {
-                if (linkDict.get("rel") is String) {
-                    link.rel.add(linkDict.getString("rel"))
-                } else if (linkDict.get("rel") is JSONArray) {
-                    val array = linkDict.getJSONArray("rel")
-                    for (i in 0..(array.length() - 1)) {
-                        val string = array.getString(i)
-                        link.rel.add(string)
-                    }
-                }
-            }
-            if(linkDict.has("height")) {
-                link.height = linkDict.getInt("height")
-            }
-            if(linkDict.has("width")) {
-                link.width = linkDict.getInt("width")
-            }
-            if(linkDict.has("bitrate")) {
-                link.bitrate = linkDict.getInt("bitrate")
-            }
-            if(linkDict.has("duration")) {
-                link.duration = linkDict.getDouble("duration")
-            }
-            if(linkDict.has("properties")) {
-                val properties = Properties()
-                val propertiesDict = linkDict.getJSONObject("properties")
-                if (propertiesDict.has("numberOfItems")) {
-                    properties.numberOfItems = propertiesDict.getInt("numberOfItems")
-                }
-                if (propertiesDict.has("indirectAcquisition")) {
-                    val acquisitions = propertiesDict.getJSONArray("indirectAcquisition") ?: throw Exception(OPDS2ParserError.invalidLink.name)
-                    for (i in 0..(acquisitions.length() - 1)) {
-                        val acquisition = acquisitions.getJSONObject(i)
-                        val indirectAcquisition = parseIndirectAcquisition(indirectAcquisitionDict = acquisition)
-                        properties.indirectAcquisition.add(indirectAcquisition)
-                    }
-                }
-                if (propertiesDict.has("price")) {
-                    val priceDict = propertiesDict.getJSONObject("price")
-                    val currency = priceDict["currency"] as? String
-                    val value = priceDict["value"] as? Double
-                    if (priceDict == null || currency == null || value == null) {
-                        throw Exception(OPDS2ParserError.invalidLink.name)
-                    }
-                    val price = Price(currency = currency, value = value)
-                    properties.price = price
-                }
-            }
-            if(linkDict.has("children")) {
-                val childLinkDict = linkDict.getJSONObject("children") ?: throw Exception(OPDS2ParserError.invalidLink.name)
-                val childLink = parseLink(linkDict = childLinkDict)
-                link.children.add(childLink)
-            }
-            return link
-        }
-
-
         internal fun parseFacets(feed: Feed, facets: JSONArray) {
             for (i in 0..(facets.length() - 1)) {
                 val facetDict = facets.getJSONObject(i)
                 val metadata = facetDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.invalidFacet.name)
                 val title = metadata["title"] as? String ?: throw Exception(OPDS2ParserError.invalidFacet.name)
                 val facet = Facet(title = title)
-                parseMetadata(opdsMetadata = facet.metadata, metadataDict = metadata)
+                parseFeedMetadata(opdsMetadata = facet.metadata, metadataDict = metadata)
                 if (facetDict.has("links")){
                     val links = facetDict.getJSONArray("links") ?: throw Exception(OPDS2ParserError.invalidFacet.name)
                     for (k in 0..(links.length() - 1)) {
                         val linkDict = links.getJSONObject(k)
-                        val link = parseLink(linkDict = linkDict)
+                        val link = parseLink(linkDict, feedUrl)
                         facet.links.add(link)
                     }
                 }
@@ -225,7 +155,7 @@ class OPDS2Parser {
         internal fun parseLinks(feed: Feed, links: JSONArray) {
             for (i in 0..(links.length() - 1)) {
                 val linkDict = links.getJSONObject(i)
-                val link = parseLink(linkDict = linkDict)
+                val link = parseLink(linkDict, feedUrl)
                 feed.links.add(link)
             }
         }
@@ -241,7 +171,7 @@ class OPDS2Parser {
         internal fun parseNavigation(feed: Feed, navLinks:JSONArray) {
             for (i in 0..(navLinks.length() - 1)) {
                 val navDict = navLinks.getJSONObject(i)
-                val link = parseLink(linkDict = navDict)
+                val link = parseLink(navDict, feedUrl)
                 feed.navigation.add(link)
             }
         }
@@ -252,13 +182,13 @@ class OPDS2Parser {
                 val metadata = groupDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
                 val title = metadata.getString("title") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
                 val group = Group(title = title)
-                parseMetadata(opdsMetadata = group.metadata, metadataDict = metadata)
+                parseFeedMetadata(opdsMetadata = group.metadata, metadataDict = metadata)
 
                 if (groupDict.has("links")) {
                     val links = groupDict.getJSONArray("links") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
                     for (j in 0..(links.length() - 1)) {
                         val linkDict = links.getJSONObject(j)
-                        val link = parseLink(linkDict = linkDict)
+                        val link = parseLink(linkDict, feedUrl)
                         group.links.add(link)
                     }
                 }
@@ -266,7 +196,7 @@ class OPDS2Parser {
                     val links = groupDict.getJSONArray("navigation") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
                     for (j in 0..(links.length() - 1)) {
                         val linkDict = links.getJSONObject(j)
-                        val link = parseLink(linkDict = linkDict)
+                        val link = parseLink(linkDict, feedUrl)
                         group.navigation.add(link)
                     }
                 }
