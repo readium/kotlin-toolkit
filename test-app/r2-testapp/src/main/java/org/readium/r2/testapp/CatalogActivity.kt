@@ -26,14 +26,15 @@ import net.theluckycoder.materialchooser.Chooser
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
 import org.jetbrains.anko.*
+import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.snackbar
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.Drm
-import org.readium.r2.streamer.Parser.EpubParser
-import org.readium.r2.streamer.Parser.PubBox
+import org.readium.r2.streamer.Parser.*
 import org.readium.r2.streamer.Server.BASE_URL
 import org.readium.r2.streamer.Server.Server
+import org.readium.r2.testapp.R.id.catalogView
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSListActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
@@ -121,6 +122,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 }
             }
         }
+        copyCbzFromAssetsToStorage()
     }
 
     override fun onDestroy() {
@@ -337,6 +339,23 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         }
     }
 
+    private fun copyCbzFromAssetsToStorage() {
+        val list = assets.list("Samples").filter { it.endsWith(".cbz") }
+        for (file_name in list) {
+            val input = assets.open("Samples/" + file_name)
+            val fileName = UUID.randomUUID().toString()
+            val publicationPath = R2TEST_DIRECTORY_PATH + fileName
+            input.toFile(publicationPath)
+            val file = File(publicationPath)
+            val parser = CbzParser()
+            val pub = parser.parse(publicationPath)
+            if (pub != null) {
+                //TODO Build a publication CBZ oriented to render it
+//                prepareToServe(parser, pub, fileName, file.absolutePath, true)
+            }
+        }
+    }
+
     fun copyFile(src: File, dst: File) {
         var `in`: InputStream? = null
         var out: OutputStream? = null
@@ -352,7 +371,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         }
     }
 
-    private fun prepareToServe(parser: EpubParser, pub: PubBox?, fileName: String, absolutePath: String, add: Boolean) {
+    private fun prepareToServe(parser: PublicationParser, pub: PubBox?, fileName: String, absolutePath: String, add: Boolean) {
         if (pub == null) {
             snackbar(catalogView, "Invalid ePub")
             return
@@ -363,7 +382,9 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         fun addBookToView() {
             runOnUiThread {
                 val publicationIdentifier = publication.metadata.identifier
-                preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
+                publicationIdentifier.let {
+                    preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
+                }
                 val author = authorName(publication)
                 if (add) {
                     publication.coverLink?.href?.let {
