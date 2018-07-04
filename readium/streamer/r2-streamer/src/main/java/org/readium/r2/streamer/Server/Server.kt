@@ -24,6 +24,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
     private val MEDIA_OVERLAY_HANDLE = "/media-overlay"
     private val CSS_HANDLE = "/styles/(.*)"
     private val JS_HANDLE = "/scripts/(.*)"
+    private val FONT_HANDLE = "/fonts/(.*)"
     private var containsMediaOverlay = false
 
     private val ressources = Ressources()
@@ -43,6 +44,8 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
                 .useDelimiter("\\A").next())
         addResource("utils.js", Scanner(assets.open("ReadiumCSS/utils.js"), "utf-8")
                 .useDelimiter("\\A").next())
+        addResource("OpenDyslexic-Regular.otf", Scanner(assets.open("fonts/OpenDyslexic-Regular.otf"), "utf-8")
+                .useDelimiter("\\A").next())
     }
 
 
@@ -60,6 +63,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         addRoute(fileName + MANIFEST_ITEM_HANDLE, ResourceHandler::class.java, fetcher)
         addRoute( JS_HANDLE, JSHandler::class.java, ressources)
         addRoute( CSS_HANDLE, CSSHandler::class.java, ressources)
+        addRoute( FONT_HANDLE, FontHandler::class.java, ressources)
     }
 
     private fun addLinks(publication: Publication, filePath: String) {
