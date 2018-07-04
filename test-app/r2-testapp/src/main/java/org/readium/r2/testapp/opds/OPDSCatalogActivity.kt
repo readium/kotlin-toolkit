@@ -49,15 +49,13 @@ class OPDSCatalogActivity : AppCompatActivity() {
 
 
         opdsModel?.href.let {
-            feed = if (opdsModel?.type == 1) {
+                feed = if (opdsModel?.type == 1) {
                 OPDSParser.parseURL(URL(it))
             } else {
                 OPDS2Parser.parseURL(URL(it))
             }
             title = opdsModel?.title
-        }/* ?: run {
-            feed = OPDSParser.parseURL(URL("http://www.feedbooks.com/catalog.atom"))
-        }*/
+        }
 
         val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_loading_feed))
         progress.show()
