@@ -41,7 +41,7 @@ class OPDS2Parser {
             return if (isFeed(jsonData)) {
                 ParseData(parseFeed(jsonData, url), null, 2)
             } else {
-                ParseData(null, parsePublication(JSONObject(String(jsonData)), feedUrl), 2)
+                ParseData(null, parsePublication(JSONObject(String(jsonData))), 2)
             }
         }
 
@@ -144,7 +144,7 @@ class OPDS2Parser {
                     val links = facetDict.getJSONArray("links") ?: throw Exception(OPDS2ParserError.invalidFacet.name)
                     for (k in 0..(links.length() - 1)) {
                         val linkDict = links.getJSONObject(k)
-                        val link = parseLink(linkDict, feedUrl)
+                        val link = parseLink(linkDict)
                         facet.links.add(link)
                     }
                 }
@@ -163,7 +163,7 @@ class OPDS2Parser {
         internal fun parsePublications(feed: Feed, publications: JSONArray) {
             for (i in 0..(publications.length() - 1)) {
                 val pubDict = publications.getJSONObject(i)
-                val pub = parsePublication(pubDict, feedUrl)
+                val pub = parsePublication(pubDict)
                 feed.publications.add(pub)
             }
         }
@@ -171,7 +171,7 @@ class OPDS2Parser {
         internal fun parseNavigation(feed: Feed, navLinks:JSONArray) {
             for (i in 0..(navLinks.length() - 1)) {
                 val navDict = navLinks.getJSONObject(i)
-                val link = parseLink(navDict, feedUrl)
+                val link = parseLink(navDict)
                 feed.navigation.add(link)
             }
         }
@@ -188,7 +188,7 @@ class OPDS2Parser {
                     val links = groupDict.getJSONArray("links") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
                     for (j in 0..(links.length() - 1)) {
                         val linkDict = links.getJSONObject(j)
-                        val link = parseLink(linkDict, feedUrl)
+                        val link = parseLink(linkDict)
                         group.links.add(link)
                     }
                 }
@@ -196,7 +196,7 @@ class OPDS2Parser {
                     val links = groupDict.getJSONArray("navigation") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
                     for (j in 0..(links.length() - 1)) {
                         val linkDict = links.getJSONObject(j)
-                        val link = parseLink(linkDict, feedUrl)
+                        val link = parseLink(linkDict)
                         group.navigation.add(link)
                     }
                 }
@@ -204,7 +204,7 @@ class OPDS2Parser {
                     val publications = groupDict.getJSONArray("publications") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
                     for (j in 0..(publications.length() - 1)) {
                         val pubDict = publications.getJSONObject(j)
-                        val pub = parsePublication(pubDict, feedUrl)
+                        val pub = parsePublication(pubDict)
                         group.publications.add(pub)
                     }
                 }
