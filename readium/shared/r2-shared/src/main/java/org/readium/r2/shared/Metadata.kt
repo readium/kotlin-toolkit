@@ -82,7 +82,7 @@ class Metadata : Serializable {
 
 }
 
-fun parseMetadata(metadataDict:JSONObject, feedUrl: URL?) : Metadata {
+fun parseMetadata(metadataDict:JSONObject) : Metadata {
     val m = Metadata()
     if (metadataDict.has("title")) {
         m.multilangTitle = MultilangString()
@@ -100,43 +100,43 @@ fun parseMetadata(metadataDict:JSONObject, feedUrl: URL?) : Metadata {
         m.modified = DateTime(metadataDict.getString("modified")).toDate()
     }
     if (metadataDict.has("author")) {
-        m.authors.addAll(parseContributors(metadataDict.get("author"), feedUrl))
+        m.authors.addAll(parseContributors(metadataDict.get("author")))
     }
     if (metadataDict.has("translator")) {
-        m.translators.addAll(parseContributors(metadataDict.get("translator"), feedUrl))
+        m.translators.addAll(parseContributors(metadataDict.get("translator")))
     }
     if (metadataDict.has("editor")) {
-        m.editors.addAll(parseContributors(metadataDict.get("editor"), feedUrl))
+        m.editors.addAll(parseContributors(metadataDict.get("editor")))
     }
     if (metadataDict.has("artist")) {
-        m.artists.addAll(parseContributors(metadataDict.get("artist"), feedUrl))
+        m.artists.addAll(parseContributors(metadataDict.get("artist")))
     }
     if (metadataDict.has("illustrator")) {
-        m.illustrators.addAll(parseContributors(metadataDict.get("illustrator"), feedUrl))
+        m.illustrators.addAll(parseContributors(metadataDict.get("illustrator")))
     }
     if (metadataDict.has("letterer")) {
-        m.letterers.addAll(parseContributors(metadataDict.get("letterer"), feedUrl))
+        m.letterers.addAll(parseContributors(metadataDict.get("letterer")))
     }
     if (metadataDict.has("penciler")) {
-        m.pencilers.addAll(parseContributors(metadataDict.get("penciler"), feedUrl))
+        m.pencilers.addAll(parseContributors(metadataDict.get("penciler")))
     }
     if (metadataDict.has("colorist")) {
-        m.colorists.addAll(parseContributors(metadataDict.get("colorist"), feedUrl))
+        m.colorists.addAll(parseContributors(metadataDict.get("colorist")))
     }
     if (metadataDict.has("inker")) {
-        m.inkers.addAll(parseContributors(metadataDict.get("inker"), feedUrl))
+        m.inkers.addAll(parseContributors(metadataDict.get("inker")))
     }
     if (metadataDict.has("narrator")) {
-        m.narrators.addAll(parseContributors(metadataDict.get("narrator"), feedUrl))
+        m.narrators.addAll(parseContributors(metadataDict.get("narrator")))
     }
     if (metadataDict.has("contributor")) {
-        m.contributors.addAll(parseContributors(metadataDict.get("contributor"), feedUrl))
+        m.contributors.addAll(parseContributors(metadataDict.get("contributor")))
     }
     if (metadataDict.has("publisher")) {
-        m.publishers.addAll(parseContributors(metadataDict.get("publisher"), feedUrl))
+        m.publishers.addAll(parseContributors(metadataDict.get("publisher")))
     }
     if (metadataDict.has("imprint")) {
-        m.imprints.addAll(parseContributors(metadataDict.get("imprint"), feedUrl))
+        m.imprints.addAll(parseContributors(metadataDict.get("imprint")))
     }
     if (metadataDict.has("published")) {
         m.publicationDate = metadataDict.getString("published")
@@ -190,12 +190,12 @@ fun parseMetadata(metadataDict:JSONObject, feedUrl: URL?) : Metadata {
             if (belongsDict.get("collection") is String){
                 m.belongsTo?.collection?.add(Collection(belongsDict.getString("collection")))
             } else if (belongsDict.get("collection") is JSONObject) {
-                belongs.series.add(parseCollection(belongsDict.getJSONObject("collection"), feedUrl))
+                belongs.series.add(parseCollection(belongsDict.getJSONObject("collection")))
             } else if (belongsDict.get("collection") is JSONArray) {
                 val array = belongsDict.getJSONArray("collection")
                 for (i in 0..(array.length() - 1)) {
                     val obj = array.getJSONObject(i)
-                    belongs.series.add(parseCollection(obj, feedUrl))
+                    belongs.series.add(parseCollection(obj))
                 }
             }
         }

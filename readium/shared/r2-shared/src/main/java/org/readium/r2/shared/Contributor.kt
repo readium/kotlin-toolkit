@@ -31,26 +31,26 @@ class Contributor : JSONable, Serializable {
 
 }
 
-fun parseContributors(contributors: Any, feedUrl: URL?) : List<Contributor> {
+fun parseContributors(contributors: Any) : List<Contributor> {
     val result: MutableList<Contributor> = mutableListOf()
     if (contributors is String) {
         val c = Contributor()
         c.multilangName.singleString = contributors
         result.add(c)
     } else  if (contributors is JSONObject){
-        val c = parseContributor(contributors, feedUrl)
+        val c = parseContributor(contributors)
         result.add(c)
     } else if (contributors is JSONArray) {
         for (i in 0..(contributors.length() - 1)) {
             val obj = contributors.getJSONObject(i)
-            val c = parseContributor(obj, feedUrl)
+            val c = parseContributor(obj)
             result.add(c)
         }
     }
     return result
 }
 
-fun parseContributor(cDict: JSONObject, feedUrl: URL?) : Contributor {
+fun parseContributor(cDict: JSONObject) : Contributor {
     val c = Contributor()
 
     if (cDict.has("name")){
@@ -76,7 +76,7 @@ fun parseContributor(cDict: JSONObject, feedUrl: URL?) : Contributor {
     }
     if (cDict.has("links")){
         val linkDict = cDict.getJSONObject("links")
-        c.links.add(parseLink(linkDict, feedUrl))
+        c.links.add(parseLink(linkDict))
     }
     return c
 }

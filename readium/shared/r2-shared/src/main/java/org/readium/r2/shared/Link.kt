@@ -1,5 +1,6 @@
 package org.readium.r2.shared
 
+import android.net.UrlQuerySanitizer
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.opds.Price
@@ -65,13 +66,17 @@ enum class LinkError(v:String) {
     invalidLink("Invalid link"),
 }
 
-fun parseLink(linkDict: JSONObject, feedUrl: URL?) : Link {
+fun parseLink(linkDict: JSONObject, feedUrl: URL? = null) : Link {
     val link = Link()
     if(linkDict.has("title")) {
         link.title = linkDict.getString("title")
     }
     if(linkDict.has("href")) {
-        link.href = getAbsolute(linkDict.getString("href")!!, feedUrl.toString())
+        feedUrl?.let {
+            link.href = getAbsolute(linkDict.getString("href")!!, feedUrl.toString())
+        } ?: run {
+            link.href = linkDict.getString("href")!!
+        }
     }
     if(linkDict.has("type")) {
         link.typeLink = linkDict.getString("type")
@@ -126,7 +131,7 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL?) : Link {
     }
     if(linkDict.has("children")) {
         val childLinkDict = linkDict.getJSONObject("children") ?: throw Exception(LinkError.invalidLink.name)
-        val childLink = parseLink(childLinkDict, feedUrl)
+        val childLink = parseLink(childLinkDict)
         link.children.add(childLink)
     }
     return link

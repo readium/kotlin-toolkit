@@ -15,7 +15,7 @@ enum class CollectionError(v:String) {
     invalidCollection("Invalid collection")
 }
 
-fun parseCollection(collectionDict: JSONObject, feedUrl: URL?) : Collection {
+fun parseCollection(collectionDict: JSONObject) : Collection {
     val name = collectionDict["name"] as? String ?: throw Exception(CollectionError.invalidCollection.name)
     val c = Collection(name = name)
 
@@ -32,7 +32,7 @@ fun parseCollection(collectionDict: JSONObject, feedUrl: URL?) : Collection {
         val links = collectionDict.getJSONArray("links") ?: throw Exception(CollectionError.invalidCollection.name)
         for (i in 0..(links.length() - 1)) {
             val link = links.getJSONObject(i)
-            c.links.add(parseLink(link, feedUrl))
+            c.links.add(parseLink(link))
         }
     }
     return c

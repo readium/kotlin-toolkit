@@ -161,13 +161,13 @@ class Publication : Serializable {
 
 }
 
-fun parsePublication(pubDict: JSONObject, feedUrl: URL?) : Publication {
+fun parsePublication(pubDict: JSONObject) : Publication {
     val p = Publication()
 
     if(pubDict.has("metadata")) {
         pubDict.get("metadata")?.let {
             val metadataDict = it as? JSONObject ?: throw Exception(Publication.PublicationError.invalidPublication.name)
-            val metadata = parseMetadata(metadataDict, feedUrl)
+            val metadata = parseMetadata(metadataDict)
             p.metadata = metadata
 
         }
@@ -177,7 +177,7 @@ fun parsePublication(pubDict: JSONObject, feedUrl: URL?) : Publication {
             val links = it as? JSONArray ?: throw Exception(Publication.PublicationError.invalidPublication.name)
             for (i in 0..(links.length() - 1)) {
                 val linkDict = links.getJSONObject(i)
-                val link = parseLink(linkDict, feedUrl)
+                val link = parseLink(linkDict)
                 p.links.add(link)
             }
         }
@@ -187,7 +187,7 @@ fun parsePublication(pubDict: JSONObject, feedUrl: URL?) : Publication {
             val links = it as? JSONArray ?: throw Exception(Publication.PublicationError.invalidPublication.name)
             for (i in 0..(links.length() - 1)) {
                 val linkDict = links.getJSONObject(i)
-                val link = parseLink(linkDict, feedUrl)
+                val link = parseLink(linkDict)
                 p.images.add(link)
             }
         }
