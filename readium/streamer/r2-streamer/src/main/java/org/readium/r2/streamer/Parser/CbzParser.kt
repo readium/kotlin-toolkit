@@ -1,6 +1,8 @@
 package org.readium.r2.streamer.Parser
 
 import android.util.Log
+import org.readium.r2.shared.Link
+import org.readium.r2.shared.Publication
 import java.io.File
 import org.readium.r2.streamer.Containers.*
 
@@ -18,8 +20,8 @@ class CbzParser : PublicationParser {
      * Check if path exist, generate a container for CBZ file
      *              then check if creation was a success
      */
-    private fun generateContainerFrom(path: String) : CbzContainer {
-        val container: CbzContainer?
+    private fun generateContainerFrom(path: String) : ContainerCbz {
+        val container: ContainerCbz?
 
         if (!File(path).exists())
             throw Exception("Missing File")
@@ -37,7 +39,7 @@ class CbzParser : PublicationParser {
             Log.e("Error", "Could not generate container", e)
             return null
         }
-        val data = try {
+        val listFiles = try {
             container.getFilesList()
         } catch (e: Exception) {
             Log.e("Error", "Missing File : META-INF/container.xml", e)
@@ -50,13 +52,29 @@ class CbzParser : PublicationParser {
         println("###########################################")
         println("#  #  #  #  #  #  #  #  #  #  #  #  #  #  #")
         println("---      List of files ${fileAtPath}   ----")
-        println(data)
+        println(listFiles)
         println("-------------------------------------------")
         println("#  #  #  #  #  #  #  #  #  #  #  #  #  #  #")
         println("###########################################")
+
+        val pub = Publication()
+
+        pub.metadata.title = container.getTitle()
+        pub.internalData["type"] = "cbz"
+        pub.internalData["rootfile"] = container.rootFile.rootFilePath
+
+        listFiles.forEach {
+            val link = Link()
+
+            link.title = pub.metadata.title
+            //link.typeLink = container.getMimetype(it) // Either image/jpeg for .jpg or image/png for .png
+            link.href = container.rootFile.rootFilePath + "/" + it
+
+            pub.spine.add(link)
+        }
+        pub.pageList = pub.spine
         return null
     }
-
     /**
      * List all CBZ files of a particular path
      */
