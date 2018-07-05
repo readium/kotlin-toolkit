@@ -1,5 +1,6 @@
 package org.readium.r2.streamer.Containers
 
+import android.app.ExpandableListActivity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
@@ -71,8 +72,25 @@ class ContainerCbz : CbzContainer, ZipArchiveContainer {
             val input = zipFile.getInputStream(entry)
             BitmapFactory.decodeStream(input)
         } catch (e: Exception){
-            Log.e("Error", "Couldn't extract $entry from zipFile (${e.message})")
+            Log.e("Error", "Couldn't read in $entry from zipFile (${e.message})")
             null
+        }
+    }
+
+    /**
+     * Return content of the file in a ByteArray
+     *
+     * @params relativePath: String
+     * @return content: ByteArray
+     */
+    override fun data(path: String): ByteArray{
+        return try {
+            val entry = getPageEntry(path)
+            val input = zipFile.getInputStream(entry)
+            input.readBytes()
+        } catch (e: Exception){
+            Log.e("Error", "Couldn't read in $path from zipFile (${e.message})")
+            byteArrayOf()
         }
     }
 
@@ -107,5 +125,14 @@ class ContainerCbz : CbzContainer, ZipArchiveContainer {
             Log.e("Error", "Something went wrong while getMimeType() : ${e.message}")
             null
         }
+    }
+
+    /**
+     * Return the name of CBZ file
+     *
+     * @return fileName: String
+     */
+    fun getFileName(): String{
+        return zipFile.name
     }
 }
