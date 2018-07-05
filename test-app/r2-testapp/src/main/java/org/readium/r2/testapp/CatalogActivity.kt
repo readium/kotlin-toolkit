@@ -29,8 +29,12 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.snackbar
 import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.shared.CbzPublication
+import org.readium.r2.shared.PUBLICATION_TYPE
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.Drm
+import org.readium.r2.streamer.Containers.CbzContainer
+import org.readium.r2.streamer.Containers.ContainerCbz
 import org.readium.r2.streamer.Parser.*
 import org.readium.r2.streamer.Server.BASE_URL
 import org.readium.r2.streamer.Server.Server
@@ -350,7 +354,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             val parser = CbzParser()
             val pub = parser.parse(publicationPath)
             if (pub != null) {
-//                prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                prepareToServe(parser, pub, fileName, file.absolutePath, true)
             }
         }
     }
@@ -371,31 +375,61 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     }
 
     private fun prepareToServe(parser: PublicationParser, pub: PubBox?, fileName: String, absolutePath: String, add: Boolean) {
-        if (pub == null) {
-            snackbar(catalogView, "Invalid ePub")
+        if (pub == null || pub.publication.type == PUBLICATION_TYPE.UNKNOWN) {
+            snackbar(catalogView, "Invalid publication")
             return
         }
-        val publication = pub.publication as Publication
-        val container = pub.container
+        val publication = pub.publication
+        var container = pub.container
 
         fun addBookToView() {
             runOnUiThread {
-                val publicationIdentifier = publication.metadata.identifier
-                publicationIdentifier.let {
-                    preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
-                }
-                val author = authorName(publication)
-                if (add) {
-                    publication.coverLink?.href?.let {
-                        val blob = ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
-                        blob?.let {
-                            val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, blob)
+                if(publication.type == PUBLICATION_TYPE.EPUB){
+                    val publicationIdentifier = publication.metadata.identifier
+                    publicationIdentifier.let {
+                        preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
+                    }
+                    val author = authorName(publication)
+                    if (add) {
+                        publication.coverLink?.href?.let {
+                            val blob = ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
+                            blob?.let {
+                                val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, blob)
+                                if (add) {
+                                    database.books.insert(book, false)?.let {
+                                        books.add(book)
+                                    } ?: run {
+                                        // snackbar(catalogView, "Publication already exists")
+                                        alert(Appcompat, "Publication already exists") {
+
+                                            positiveButton("Add anyways") { }
+                                            negativeButton("Cancel") { }
+
+                                        }.build().apply {
+                                            setCancelable(false)
+                                            setCanceledOnTouchOutside(false)
+                                            setOnShowListener(DialogInterface.OnShowListener {
+                                                val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                                                b.setOnClickListener(View.OnClickListener {
+                                                    database.books.insert(book, true)?.let {
+                                                        books.add(book)
+                                                        dismiss()
+                                                        booksAdapter.notifyDataSetChanged()
+                                                    }
+                                                })
+                                            })
+                                        }.show()
+                                    }
+                                }
+                            }
+                        } ?: run {
+                            val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, null)
                             if (add) {
                                 database.books.insert(book, false)?.let {
                                     books.add(book)
                                 } ?: run {
-//                                    snackbar(catalogView, "Publication already exists")
-                                    alert (Appcompat, "Publication already exists") {
+                                    //                                snackbar(catalogView, "Publication already exists")
+                                    alert(Appcompat, "Publication already exists") {
 
                                         positiveButton("Add anyways") { }
                                         negativeButton("Cancel") { }
@@ -417,14 +451,18 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                 }
                             }
                         }
-                    } ?: run {
-                        val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, null)
-                        if (add) {
+                    }
+                    booksAdapter.notifyDataSetChanged()
+                    server.addEpub(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
+                } else if(publication.type == PUBLICATION_TYPE.CBZ) {
+                    if (add) {
+                        publication.coverLink?.href?.let {
+                            val book = Book(fileName, publication.metadata.title, "", absolutePath, books.size.toLong(), publication.coverLink?.href, "", container.data(it))
                             database.books.insert(book, false)?.let {
                                 books.add(book)
                             } ?: run {
-//                                snackbar(catalogView, "Publication already exists")
-                                alert (Appcompat, "Publication already exists") {
+                                // snackbar(catalogView, "Publication already exists")
+                                alert(Appcompat, "Publication already exists") {
 
                                     positiveButton("Add anyways") { }
                                     negativeButton("Cancel") { }
@@ -438,7 +476,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                             database.books.insert(book, true)?.let {
                                                 books.add(book)
                                                 dismiss()
-                                                booksAdapter.notifyDataSetChanged()
                                             }
                                         })
                                     })
@@ -446,9 +483,10 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                             }
                         }
                     }
+                    booksAdapter.notifyDataSetChanged()
+                    //TODO Implement the addCbz
+//                    server.addCbz(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
                 }
-                booksAdapter.notifyDataSetChanged()
-                server.addEpub(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
             }
         }
         addBookToView()
