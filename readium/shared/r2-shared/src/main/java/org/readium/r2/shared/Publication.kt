@@ -5,6 +5,11 @@ import org.json.JSONObject
 import java.io.Serializable
 import java.net.URL
 
+//  Type of publication actually handled
+enum class PUBLICATION_TYPE {
+    EPUB, CBZ, UNKNOWN
+}
+
 fun URL.removeLastComponent() : URL{
     var str = this.toString()
     val i = str.lastIndexOf('/', 0, true)
@@ -48,6 +53,8 @@ class Publication() : Serializable {
 
     private val TAG = this::class.java.simpleName
 
+    /// The kind of publication it is ( Epub, Cbz, ... )
+    var type = PUBLICATION_TYPE.EPUB
     /// The version of the publication, if the type needs any.
     var version: Double = 0.0
     /// The metadata (title, identifier, contributors, etc.).

@@ -2,7 +2,6 @@ package org.readium.r2.shared
 
 import java.io.Serializable
 
-
 class CbzPublication() : Serializable {
 
     /// The version of the publication, if the type needs any.
