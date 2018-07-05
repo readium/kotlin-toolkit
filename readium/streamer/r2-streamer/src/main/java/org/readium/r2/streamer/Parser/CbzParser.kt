@@ -2,23 +2,28 @@ package org.readium.r2.streamer.Parser
 
 import android.util.Log
 import org.readium.r2.shared.Link
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.CbzPublication
 import java.io.File
-import org.readium.r2.streamer.Containers.*
+import org.readium.r2.streamer.Containers.ContainerCbz
 
 // Some constants useful to parse an Cbz document
-const val mimetypeCBZ = "application/x-cbr"
+const val mimetypeCBZ = "application/vnd.comicbook+zip"
+const val mimetypeCBR = "application/x-cbr"
+
+const val mimetypeJPEG = "image/jpeg"
+const val mimetypePNG = "image/png"
 
 /**
  *      CbzParser : Handle any CBZ file. Openning, listing files
- *                  get name of the resource, creating the Publication for rendering
+ *                  get name of the resource, creating the Publication
+ *                  for rendering
  */
 
 class CbzParser : PublicationParser {
 
     /**
      * Check if path exist, generate a container for CBZ file
-     *              then check if creation was a success
+     *                   then check if creation was a success
      */
     private fun generateContainerFrom(path: String) : ContainerCbz {
         val container: ContainerCbz?
@@ -31,7 +36,10 @@ class CbzParser : PublicationParser {
         return container
     }
 
-
+    //TODO Comment that code
+    /**
+     *
+     */
     override fun parse(fileAtPath: String) : PubBox? {
         val container = try {
             generateContainerFrom(fileAtPath)
@@ -57,26 +65,29 @@ class CbzParser : PublicationParser {
         println("#  #  #  #  #  #  #  #  #  #  #  #  #  #  #")
         println("###########################################")
 
-        val pub = Publication()
-
-        pub.metadata.title = container.getTitle()
-        pub.internalData["type"] = "cbz"
-        pub.internalData["rootfile"] = container.rootFile.rootFilePath
+        val pub = CbzPublication()
 
         listFiles.forEach {
             val link = Link()
 
-            link.title = pub.metadata.title
-            //link.typeLink = container.getMimetype(it) // Either image/jpeg for .jpg or image/png for .png
-            link.href = container.rootFile.rootFilePath + "/" + it
+            link.typeLink = container.getMimeType(it)
+            link.href = container.rootFile.rootFilePath + "::" + it
 
-            pub.spine.add(link)
+            if(container.getMimeType(it) == mimetypeJPEG ||
+                    container.getMimeType(it) == mimetypePNG) {
+                pub.pageList.add(link)
+            } else {
+                pub.extraFileList.add(link)
+            }
         }
-        pub.pageList = pub.spine
-        return null
+        pub.metadata.title = container.getTitle()
+        return PubBox(pub, container)
     }
+
     /**
-     * List all CBZ files of a particular path
+     * List all CBZ files in a particular path
+     *
+     * @return listCBZ: List<String>
      */
     fun getCbzFiles(path: String): List<String>{
         var listCBZ = emptyList<String>()
@@ -84,7 +95,7 @@ class CbzParser : PublicationParser {
             val file = File(path)
             listCBZ = file.list().filter { it.endsWith(".cbz") }
         } catch (e: Exception){
-            Log.e("Error", "Can't open the file")
+            Log.e("Error", "Can't open the file (${e.message})")
         }
         return listCBZ
     }
