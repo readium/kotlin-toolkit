@@ -2,7 +2,8 @@ package org.readium.r2.streamer.Parser
 
 import android.util.Log
 import org.readium.r2.shared.Link
-import org.readium.r2.shared.CbzPublication
+import org.readium.r2.shared.PUBLICATION_TYPE
+import org.readium.r2.shared.Publication
 import java.io.File
 import org.readium.r2.streamer.Containers.ContainerCbz
 
@@ -65,7 +66,7 @@ class CbzParser : PublicationParser {
         println("#  #  #  #  #  #  #  #  #  #  #  #  #  #  #")
         println("###########################################")
 
-        val pub = CbzPublication()
+        val publication = Publication()
 
         listFiles.forEach {
             val link = Link()
@@ -75,13 +76,14 @@ class CbzParser : PublicationParser {
 
             if(container.getMimeType(it) == mimetypeJPEG ||
                     container.getMimeType(it) == mimetypePNG) {
-                pub.pageList.add(link)
+                publication.pageList.add(link)
             } else {
-                pub.extraFileList.add(link)
+                publication.resources.add(link)         //List of eventual extra files ( .nfo, ect .. )
             }
         }
-        pub.metadata.title = container.getTitle()
-        return PubBox(pub, container)
+        publication.metadata.title = container.getTitle()
+        publication.type = PUBLICATION_TYPE.CBZ
+        return PubBox(publication, container)
     }
 
     /**
