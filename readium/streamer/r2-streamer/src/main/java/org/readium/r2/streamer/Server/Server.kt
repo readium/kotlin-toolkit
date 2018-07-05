@@ -62,6 +62,23 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         addRoute( CSS_HANDLE, CSSHandler::class.java, ressources)
     }
 
+
+    fun addCbz(publication: Publication, container: Container, fileName: String, userPropertiesPath: String?) {
+        val fetcher = Fetcher(publication, container, userPropertiesPath)
+
+        addLinks(publication, fileName)
+
+        publication.addSelfLink(fileName, URL("${BASE_URL}:${port}"))
+
+        if (containsMediaOverlay) {
+            addRoute(fileName + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)
+        }
+        addRoute(fileName + MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
+        addRoute(fileName + MANIFEST_ITEM_HANDLE, ResourceHandler::class.java, fetcher)
+        addRoute( JS_HANDLE, JSHandler::class.java, ressources)
+        addRoute( CSS_HANDLE, CSSHandler::class.java, ressources)
+    }
+
     private fun addLinks(publication: Publication, filePath: String) {
         containsMediaOverlay = false
         for (link in publication.otherLinks) {
