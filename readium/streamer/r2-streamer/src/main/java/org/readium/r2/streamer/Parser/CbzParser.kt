@@ -1,10 +1,7 @@
 package org.readium.r2.streamer.Parser
 
 import android.util.Log
-import org.readium.r2.shared.CbzPublication
-import org.readium.r2.shared.Link
-import org.readium.r2.shared.PUBLICATION_TYPE
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.*
 import java.io.File
 import org.readium.r2.streamer.Containers.ContainerCbz
 
@@ -27,12 +24,12 @@ class CbzParser : PublicationParser {
      * Check if path exist, generate a container for CBZ file
      *                   then check if creation was a success
      */
-    private fun generateContainerFrom(path: String) : ContainerCbz {
+    private fun generateContainerFrom(path: String, title: String) : ContainerCbz {
         val container: ContainerCbz?
 
         if (!File(path).exists())
             throw Exception("Missing File")
-        container = ContainerCbz(path)
+        container = ContainerCbz(path, title)
         if (!container.successCreated)
             throw Exception("Missing File")
         return container
@@ -42,9 +39,9 @@ class CbzParser : PublicationParser {
     /**
      *
      */
-    override fun parse(fileAtPath: String) : PubBox? {
+    override fun parse(fileAtPath: String, title: String) : PubBox? {
         val container = try {
-            generateContainerFrom(fileAtPath)
+            generateContainerFrom(fileAtPath, title)
         } catch (e: Exception) {
             Log.e("Error", "Could not generate container", e)
             return null
@@ -84,7 +81,9 @@ class CbzParser : PublicationParser {
         }
         publication.pageList.first().rel.add("cover")
         publication.metadata.identifier = fileAtPath
-        publication.metadata.title = container.getTitle()
+        publication.metadata.multilangTitle = MultilangString()
+        publication.metadata.multilangTitle?.singleString = container.title
+//        publication.metadata.title = container.getTitle()
         publication.type = PUBLICATION_TYPE.CBZ
         return PubBox(publication, container)
     }

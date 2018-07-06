@@ -1,27 +1,25 @@
 package org.readium.r2.streamer.Containers
 
-import android.app.ExpandableListActivity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.webkit.MimeTypeMap
-import org.readium.r2.shared.drm.Drm
-import java.io.File
-import java.util.zip.ZipFile
 import org.readium.r2.shared.RootFile
+import org.readium.r2.shared.drm.Drm
 import org.readium.r2.streamer.Parser.mimetypeCBZ
+import java.io.File
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 
 
-class ContainerCbz : CbzContainer, ZipArchiveContainer {
+class ContainerCbz(path: String, val title: String) : CbzContainer, ZipArchiveContainer {
 
-    override var rootFile: RootFile
-    override var zipFile: ZipFile
+    override lateinit var rootFile: RootFile
+    override lateinit var zipFile: ZipFile
     override var drm: Drm? = null
     override var successCreated: Boolean = false    // Used to check if construction is a success
 
-    constructor(path: String) {
-
+    init {
         if (File(path).exists()) {
             successCreated = true
         }
@@ -91,21 +89,6 @@ class ContainerCbz : CbzContainer, ZipArchiveContainer {
         } catch (e: Exception){
             Log.e("Error", "Couldn't read in $path from zipFile (${e.message})")
             byteArrayOf()
-        }
-    }
-
-    /**
-     * Determines a Title from the name of the CBZ or
-     *              void string if the cbz is missing
-     *
-     * @return title: String
-     */
-    fun getTitle(): String{
-        return try {
-            zipFile.name.removeSuffix(".cbz")
-        } catch (e: Exception){
-            Log.e("Error", "Couldn't catch zipFile's name (${e.message}")
-            ""
         }
     }
 
