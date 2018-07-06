@@ -7,7 +7,7 @@ import java.net.URL
 
 //  Type of publication actually handled
 enum class PUBLICATION_TYPE {
-    EPUB, CBZ, UNKNOWN
+    EPUB, CBZ
 }
 
 fun URL.removeLastComponent() : URL{
