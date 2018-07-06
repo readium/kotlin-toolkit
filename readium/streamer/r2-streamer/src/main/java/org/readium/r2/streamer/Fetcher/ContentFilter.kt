@@ -102,7 +102,7 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
             resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, element).toString()
             endHeadIndex += element.length
         }
-        resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style type=\"text/css\">@font-face{font-family: \"OpenDyslexic\"; src:url(/fonts/OpenDyslexic-Regular.otf) format('opentype');}</style>\n").toString()
+        resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, getHtmlFont( "/fonts/OpenDyslexic-Regular.otf")).toString()
 /*
         resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>\n").toString()
 */
