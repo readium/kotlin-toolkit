@@ -1,4 +1,4 @@
-package org.readium.r2.navigator
+package org.readium.r2.testapp
 
 import android.app.Activity
 import android.content.Context
@@ -12,8 +12,10 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import org.jetbrains.anko.contentView
+import org.readium.r2.navigator.UserSettings
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.shared.PUBLICATION_TYPE
 import org.readium.r2.shared.Publication
 
 
@@ -21,7 +23,7 @@ class R2CbzActivity : AppCompatActivity() {
 
     lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
-    lateinit var resources: ArrayList<String>
+    var resources = arrayListOf<String>()
 
     lateinit var publicationPath: String
     lateinit var publication: Publication
@@ -46,29 +48,32 @@ class R2CbzActivity : AppCompatActivity() {
         publicationIdentifier = publication.metadata.identifier
         title = publication.metadata.title
 
-        publication.pageList.forEach {
-            resources.add(it.href.toString())
+        for (link in publication.pageList) {
+            resources.add(link.href.toString())
         }
 
         val index = preferences.getInt( "$publicationIdentifier-document", 0)
 
-        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title)
+        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, PUBLICATION_TYPE.CBZ)
 
         resourcePager.adapter = adapter
 
         userSettings = UserSettings(preferences, this)
         userSettings.resourcePager = resourcePager
 
+/*
         if (index == 0) {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
                 resourcePager.setCurrentItem(resources.size - 1)
             } else {
                 // The view has LTR layout
+                resourcePager.setCurrentItem(index)
             }
         } else {
             resourcePager.setCurrentItem(index)
         }
+*/
         toggleActionBar()
     }
 

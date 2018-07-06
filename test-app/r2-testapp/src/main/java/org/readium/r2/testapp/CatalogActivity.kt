@@ -28,18 +28,16 @@ import nl.komponents.kovenant.then
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.snackbar
-import org.readium.r2.navigator.R2CbzActivity
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.shared.CbzPublication
 import org.readium.r2.shared.PUBLICATION_TYPE
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.Drm
-import org.readium.r2.streamer.Containers.CbzContainer
-import org.readium.r2.streamer.Containers.ContainerCbz
-import org.readium.r2.streamer.Parser.*
+import org.readium.r2.streamer.Parser.CbzParser
+import org.readium.r2.streamer.Parser.EpubParser
+import org.readium.r2.streamer.Parser.PubBox
+import org.readium.r2.streamer.Parser.PublicationParser
 import org.readium.r2.streamer.Server.BASE_URL
 import org.readium.r2.streamer.Server.Server
-import org.readium.r2.testapp.R.id.catalogView
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSListActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
@@ -123,10 +121,10 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         dir.mkdirs()
                     }
                     copyEpubFromAssetsToStorage()
+                    copyCbzFromAssetsToStorage()
                     preferences.edit().putBoolean("samples", true).apply()
                 }
             }
-            copyCbzFromAssetsToStorage()
         }
     }
 
@@ -329,9 +327,10 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     }
 
     private fun copyEpubFromAssetsToStorage() {
-        val list = assets.list("Samples")
-        for (file_name in list) {
-            val input = assets.open("Samples/" + file_name)
+        // TODO maybe a better method should be used to determine publication type ?
+        val list = assets.list("Samples").filter { it.endsWith(".epub") }
+        for (element in list) {
+            val input = assets.open("Samples/$element")
             val fileName = UUID.randomUUID().toString()
             val publicationPath = R2TEST_DIRECTORY_PATH + fileName
             input.toFile(publicationPath)
@@ -345,15 +344,16 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     }
 
     private fun copyCbzFromAssetsToStorage() {
+        // TODO maybe a better method should be used to determine publication type ?
         val list = assets.list("Samples").filter { it.endsWith(".cbz") }
-        for (file_name in list) {
-            val input = assets.open("Samples/$file_name")
+        for (element in list) {
+            val input = assets.open("Samples/$element")
             val fileName = UUID.randomUUID().toString()
             val publicationPath = R2TEST_DIRECTORY_PATH + fileName
             input.toFile(publicationPath)
             val file = File(publicationPath)
             val parser = CbzParser()
-            val pub = parser.parse(publicationPath)
+            val pub = parser.parse(publicationPath, element)
             if (pub != null) {
                 prepareToServe(parser, pub, fileName, file.absolutePath, true)
             }
@@ -376,12 +376,12 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     }
 
     private fun prepareToServe(parser: PublicationParser, pub: PubBox?, fileName: String, absolutePath: String, add: Boolean) {
-        if (pub == null || pub.publication.type == PUBLICATION_TYPE.UNKNOWN) {
+        if (pub == null) {
             snackbar(catalogView, "Invalid publication")
             return
         }
         val publication = pub.publication
-        var container = pub.container
+        val container = pub.container
 
         fun addBookToView() {
             runOnUiThread {
@@ -520,17 +520,19 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             val book = books[position]
             val publicationPath = R2TEST_DIRECTORY_PATH + book.fileName
             val file = File(publicationPath)
+/*
             if(file.endsWith(".epub")){
                 val parser = EpubParser()
                 val pub = parser.parse(publicationPath)
                 if (pub != null) {
                     prepareToServe(parser, pub, book.fileName, file.absolutePath, false)
-                    val publication = pub.publication as Publication
+                    val publication = pub.publication
                     if (publication.spine.size > 0) {
                         pub.container.drm?.let { drm ->
                             if (drm.brand == Drm.Brand.lcp) {
                                 // uncomment for lcp
-                                /*
+                                */
+/*
                                 handleLcpPublication(publicationPath, drm, {
                                     val pair = parser.parseRemainingResource(pub.container, publication, it)
                                     pub.container = pair.first
@@ -561,22 +563,24 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                     // Do nothing
                                 }).get()
 
-                                */
+                                *//*
+
                             }
                         } ?: run {
                             startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication))
                         }
                     }
-                } else if (file.endsWith(".cbz")) {
-                    val parser = CbzParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(parser, pub, book.fileName, file.absolutePath, false)
-                        val publication = pub.publication as CbzPublication
-                        startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to publication))
-                    }
                 }
-            }
+            } else if (file.endsWith(".cbz")) {
+*/
+                val parser = CbzParser()
+                val pub = parser.parse(publicationPath)
+                if (pub != null) {
+                    prepareToServe(parser, pub, book.fileName, file.absolutePath, false)
+                    val publication = pub.publication
+                    startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to publication))
+                }
+//            }
         } then {
             progress.dismiss()
         }
@@ -688,13 +692,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             val filePath = data.getStringExtra(Chooser.RESULT_PATH)
             parseIntent(filePath)
         }
-    }
-
-    /**
-     * Function that handle the CBZ files to serve
-     */
-    fun serveCBZ(){
-
     }
 
 }

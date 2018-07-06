@@ -81,6 +81,10 @@
         <activity
             android:name=".opds.OPDSDetailActivity"
             android:label="@string/title_activity_opddetail" />
+        <activity
+            android:name=".R2CbzActivity"
+            android:label="Cbz"
+            android:theme="@style/AppTheme"/>
     </application>
 
 </manifest>
