@@ -19,6 +19,7 @@ import org.jetbrains.anko.contentView
 import org.jetbrains.anko.intentFor
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.shared.PUBLICATION_TYPE
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRMMModel
 
@@ -81,7 +82,7 @@ class R2EpubActivity : AppCompatActivity() {
         val index = preferences.getInt( "$publicationIdentifier-document", 0)
         val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.0.toString()).toDouble()
 
-        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title)
+        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, PUBLICATION_TYPE.EPUB)
 
         resourcePager.adapter = adapter
 
