@@ -139,6 +139,12 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
         return resourceHtml.toByteArray().inputStream()
     }
 
+    fun getHtmlFont(ressourceName: String) : String {
+        val prefix = "<style type=\"text/css\"> @font-face{font-family: \"OpenDyslexic\"; src:url(\""
+        val suffix = "\") format('truetype');}</style>\n"
+        return prefix + ressourceName + suffix
+    }
+
     fun getHtmlLink(ressourceName: String) : String {
         val prefix = "<link rel=\"stylesheet\" type=\"text/css\" href=\""
         val suffix = "\"/>\n"
