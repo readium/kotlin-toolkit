@@ -28,6 +28,7 @@ import nl.komponents.kovenant.then
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.snackbar
+import org.readium.r2.navigator.R2CbzActivity
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.CbzPublication
 import org.readium.r2.shared.PUBLICATION_TYPE
@@ -125,8 +126,8 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                     preferences.edit().putBoolean("samples", true).apply()
                 }
             }
+            copyCbzFromAssetsToStorage()
         }
-        copyCbzFromAssetsToStorage()
     }
 
     override fun onDestroy() {
@@ -484,8 +485,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         }
                     }
                     booksAdapter.notifyDataSetChanged()
-                    //TODO Implement the addCbz
-//                    server.addCbz(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
                 }
             }
         }
@@ -521,50 +520,60 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             val book = books[position]
             val publicationPath = R2TEST_DIRECTORY_PATH + book.fileName
             val file = File(publicationPath)
-            val parser = EpubParser()
-            val pub = parser.parse(publicationPath)
-            if (pub != null) {
-                prepareToServe(parser, pub, book.fileName, file.absolutePath, false)
-                val publication = pub.publication as Publication
-                if (publication.spine.size > 0) {
-                    pub.container.drm?.let { drm ->
-                        if (drm.brand == Drm.Brand.lcp) {
-                            // uncomment for lcp
-                            /*
-                            handleLcpPublication(publicationPath, drm, {
-                                val pair = parser.parseRemainingResource(pub.container, publication, it)
-                                pub.container = pair.first
-                                pub.publication = pair.second
-                            }, {
-                                if (supportedProfiles.contains(it.profile)) {
-                                    server.addEpub(publication, pub.container, "/" + book.fileName)
-                                    Timber.i(TAG, "handle lcp done")
+            if(file.endsWith(".epub")){
+                val parser = EpubParser()
+                val pub = parser.parse(publicationPath)
+                if (pub != null) {
+                    prepareToServe(parser, pub, book.fileName, file.absolutePath, false)
+                    val publication = pub.publication as Publication
+                    if (publication.spine.size > 0) {
+                        pub.container.drm?.let { drm ->
+                            if (drm.brand == Drm.Brand.lcp) {
+                                // uncomment for lcp
+                                /*
+                                handleLcpPublication(publicationPath, drm, {
+                                    val pair = parser.parseRemainingResource(pub.container, publication, it)
+                                    pub.container = pair.first
+                                    pub.publication = pair.second
+                                }, {
+                                    if (supportedProfiles.contains(it.profile)) {
+                                        server.addEpub(publication, pub.container, "/" + book.fileName)
+                                        Timber.i(TAG, "handle lcp done")
 
-                                    val license = (drm.license as LcpLicense)
-                                    val drmModel = DRMMModel(drm.brand.name,
-                                            license.currentStatus(),
-                                            license.provider().toString(),
-                                            DateTime(license.issued()).toString(DateTimeFormat.shortDateTime()),
-                                            DateTime(license.lastUpdate()).toString(DateTimeFormat.shortDateTime()),
-                                            DateTime(license.rightsStart()).toString(DateTimeFormat.shortDateTime()),
-                                            DateTime(license.rightsEnd()).toString(DateTimeFormat.shortDateTime()),
-                                            license.rightsPrints().toString(),
-                                            license.rightsCopies().toString())
+                                        val license = (drm.license as LcpLicense)
+                                        val drmModel = DRMMModel(drm.brand.name,
+                                                license.currentStatus(),
+                                                license.provider().toString(),
+                                                DateTime(license.issued()).toString(DateTimeFormat.shortDateTime()),
+                                                DateTime(license.lastUpdate()).toString(DateTimeFormat.shortDateTime()),
+                                                DateTime(license.rightsStart()).toString(DateTimeFormat.shortDateTime()),
+                                                DateTime(license.rightsEnd()).toString(DateTimeFormat.shortDateTime()),
+                                                license.rightsPrints().toString(),
+                                                license.rightsCopies().toString())
 
-                                    startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "drmModel" to drmModel))
-                                } else {
-                                    alert(Appcompat, "The profile of this DRM is not supported.") {
-                                        negativeButton("Ok") { }
-                                    }.show()
-                                }
-                            }, {
-                                // Do nothing
-                            }).get()
+                                        startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "drmModel" to drmModel))
+                                    } else {
+                                        alert(Appcompat, "The profile of this DRM is not supported.") {
+                                            negativeButton("Ok") { }
+                                        }.show()
+                                    }
+                                }, {
+                                    // Do nothing
+                                }).get()
 
-                            */
+                                */
+                            }
+                        } ?: run {
+                            startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication))
                         }
-                    } ?: run {
-                        startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication))
+                    }
+                } else if (file.endsWith(".cbz")) {
+                    val parser = CbzParser()
+                    val pub = parser.parse(publicationPath)
+                    if (pub != null) {
+                        prepareToServe(parser, pub, book.fileName, file.absolutePath, false)
+                        val publication = pub.publication as CbzPublication
+                        startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to publication))
                     }
                 }
             }
@@ -679,6 +688,13 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             val filePath = data.getStringExtra(Chooser.RESULT_PATH)
             parseIntent(filePath)
         }
+    }
+
+    /**
+     * Function that handle the CBZ files to serve
+     */
+    fun serveCBZ(){
+
     }
 
 }

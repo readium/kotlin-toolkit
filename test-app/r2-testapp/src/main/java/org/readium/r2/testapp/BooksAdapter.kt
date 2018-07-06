@@ -28,7 +28,6 @@ open class BooksAdapter(private val activity: Activity, var books: MutableList<B
 
         viewHolder.textView.text = book.title
 
-
         viewHolder.imageView.setImageResource(R.drawable.cover)
 
         book.cover?.let {
