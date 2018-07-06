@@ -28,9 +28,19 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
     private var containsMediaOverlay = false
 
     private val ressources = Ressources()
+    private val fonts = Fonts()
 
     fun addResource(name: String, body: String) {
         ressources.add(name, body)
+    }
+    
+    fun addFont(name: String, assets: AssetManager, context: Context) {
+        val inputStream = assets.open("fonts/" + name)
+        val dir = File(context.getExternalFilesDir(null).path + "/fonts/")
+        dir.mkdirs()
+        inputStream.toFile(context.getExternalFilesDir(null).path + "/fonts/" + name)
+        val file = File(context.getExternalFilesDir(null).path + "/fonts/" + name)
+        fonts.add(name, file)
     }
 
     fun loadResources(assets: AssetManager, context: Context){
@@ -44,8 +54,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
                 .useDelimiter("\\A").next())
         addResource("utils.js", Scanner(assets.open("ReadiumCSS/utils.js"), "utf-8")
                 .useDelimiter("\\A").next())
-        addResource("OpenDyslexic-Regular.otf", Scanner(assets.open("fonts/OpenDyslexic-Regular.otf"), "utf-8")
-                .useDelimiter("\\A").next())
+        addFont("OpenDyslexic-Regular.otf", assets, context)
     }
 
 
