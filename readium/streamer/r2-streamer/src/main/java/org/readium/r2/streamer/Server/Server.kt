@@ -84,6 +84,11 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
             }
         }
     }
+    fun InputStream.toFile(path: String) {
+        use { input ->
+            File(path).outputStream().use { input.copyTo(it) }
+        }
+    }
 
 }
 
