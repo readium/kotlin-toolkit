@@ -85,14 +85,14 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
         val endIncludes = mutableListOf<String>()
         val beginIncludes = mutableListOf<String>()
         beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;\"/>")
-/*
+
         beginIncludes.add(getHtmlLink("/styles/before.css"))
         beginIncludes.add(getHtmlLink("/styles/default.css"))
 //        beginIncludes.add(getHtmlLink("/styles/transition.css"))
         endIncludes.add(getHtmlLink("/styles/after.css"))
         endIncludes.add(getHtmlScript("/scripts/touchHandling.js"))
         endIncludes.add(getHtmlScript("/scripts/utils.js"))
-*/
+
         for (element in beginIncludes){
             resourceHtml = StringBuilder(resourceHtml).insert(beginHeadIndex, element).toString()
             beginHeadIndex += element.length
@@ -103,9 +103,7 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
             endHeadIndex += element.length
         }
         resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, getHtmlFont( "/fonts/OpenDyslexic-Regular.otf")).toString()
-/*
         resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>\n").toString()
-*/
 
         // Inject userProperties
         getProperties()?.let { propertyPair ->
