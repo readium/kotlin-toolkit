@@ -1,6 +1,7 @@
 package org.readium.r2.streamer.Parser
 
 import android.util.Log
+import org.readium.r2.shared.CbzPublication
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.PUBLICATION_TYPE
 import org.readium.r2.shared.Publication
@@ -81,6 +82,8 @@ class CbzParser : PublicationParser {
                 publication.resources.add(link)         //List of eventual extra files ( .nfo, ect .. )
             }
         }
+        publication.pageList.first().rel.add("cover")
+        publication.metadata.identifier = fileAtPath
         publication.metadata.title = container.getTitle()
         publication.type = PUBLICATION_TYPE.CBZ
         return PubBox(publication, container)
