@@ -116,7 +116,6 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
                 resourceHtml = StringBuilder(resourceHtml).replace(Regex("""<html.*>"""), newHtml)
             } else {
                 val beginHtmlIndex = resourceHtml.indexOf("<html", 0, false) + 5
-                resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, " style=\"font-family: OpenDyslexic;\"").toString()
             }
         }
         return resourceHtml.toByteArray().inputStream()
