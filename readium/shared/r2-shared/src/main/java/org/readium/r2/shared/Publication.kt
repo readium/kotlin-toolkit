@@ -160,6 +160,7 @@ class Publication() : Serializable {
     private fun findLinkInPublicationLinks (closure: (Link) -> Boolean) =
             resources.firstOrNull(closure) ?:
                 spine.firstOrNull(closure) ?:
-                links.firstOrNull(closure)
+                links.firstOrNull(closure) ?:
+             pageList.firstOrNull(closure)
 
 }
