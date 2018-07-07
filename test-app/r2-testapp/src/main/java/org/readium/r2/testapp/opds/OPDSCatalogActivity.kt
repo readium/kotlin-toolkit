@@ -1,22 +1,20 @@
 package org.readium.r2.testapp.opds
 
+import android.app.ProgressDialog
 import android.content.Context
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
-import android.util.Log
 import android.view.*
 import android.widget.LinearLayout
 import android.widget.ListPopupWindow
 import android.widget.ListView
 import android.widget.PopupWindow
 import com.commonsware.cwac.merge.MergeAdapter
-import com.mcxiaoke.koi.async.safeExecute
 import com.mcxiaoke.koi.ext.onClick
 import kotlinx.android.synthetic.main.filter_row.view.*
 import kotlinx.android.synthetic.main.section_header.view.*
 import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.coordinatorLayout
@@ -26,10 +24,11 @@ import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDSParser
 import org.readium.r2.shared.Link
+import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.opds.Facet
-import org.readium.r2.shared.opds.Feed
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.testapp.R
+import timber.log.Timber
 import java.net.MalformedURLException
 import java.net.URL
 
@@ -41,24 +40,29 @@ class OPDSCatalogActivity : AppCompatActivity() {
     var opdsModel:OPDSModel? = null
     var showFacetMenu = false;
     var facetPopup:PopupWindow? = null
+    lateinit var progress: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_loading_feed))
+
         opdsModel = intent.getSerializableExtra("opdsModel") as? OPDSModel
 
-
         opdsModel?.href.let {
+            progress.show()
+            try {
                 feed = if (opdsModel?.type == 1) {
-                OPDSParser.parseURL(URL(it))
-            } else {
-                OPDS2Parser.parseURL(URL(it))
+                    OPDSParser.parseURL(URL(it))
+                } else {
+                    OPDS2Parser.parseURL(URL(it))
+                }
+            } catch (e: MalformedURLException) {
+                progress.dismiss()
+                snackbar(act.coordinatorLayout(), "Failed parsing OPDS")
             }
             title = opdsModel?.title
         }
-
-        val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_loading_feed))
-        progress.show()
 
         feed?.successUi { result ->
 
@@ -76,36 +80,13 @@ class OPDSCatalogActivity : AppCompatActivity() {
                     linearLayout {
                         orientation = LinearLayout.VERTICAL
 
-
                         for (navigation in result.feed!!.navigation) {
                             button {
                                 text = navigation.title
                                 onClick {
-                                    val model = OPDSModel(navigation.title!!,navigation.href.toString(), opdsModel?.type!!)
-/*
-                                    try {
-                                        feed = if (opdsModel!!.type == 1) {
-                                            OPDSParser.parseURL(URL(model.href))
-                                        } else {
-                                            OPDS2Parser.parseURL(URL(model.href))
-                                        }
-                                        startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
-                                    } catch (e: MalformedURLException) {
-                                        snackbar(this, "Failed parsing OPDS")
-                                    }
-*/
-                                    val parseData = if (opdsModel!!.type == 1) {
-                                        OPDSParser.parseURL(URL(model.href))
-                                    } else {
-                                        OPDS2Parser.parseURL(URL(model.href))
-                                    }
-                                    parseData.then {
-                                        it.feed?.let {
-                                            startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
-                                        } ?: run {
-                                            startActivity(intentFor<OPDSDetailActivity>("publication" to it.publication))
-                                        }
-                                    }
+                                    val model = OPDSModel(navigation.title!!, navigation.href.toString(), opdsModel?.type!!)
+                                    progress.show()
+                                    startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
                                 }
                             }
                         }
@@ -136,18 +117,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
                                             gravity = Gravity.END
                                             onClick {
                                                 val model = OPDSModel(group.title,group.links.first().href.toString(), opdsModel?.type!!)
-                                                try {
-                                                    model.href.let {
-                                                        if (opdsModel!!.type == 1) {
-                                                            feed = OPDSParser.parseURL(URL(it))
-                                                        } else {
-                                                            feed = OPDS2Parser.parseURL(URL(it))
-                                                        }
-                                                        startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
-                                                    }
-                                                } catch (e: MalformedURLException) {
-                                                    snackbar(this, "Failed parsing OPDS")
-                                                }
+                                                startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
                                             }
                                         }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                                     }
@@ -165,19 +135,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
                                         text = navigation.title
                                         onClick {
                                             val model = OPDSModel(navigation.title!!,navigation.href.toString(), opdsModel?.type!!)
-
-                                            try {
-                                                model.href.let {
-                                                    if (opdsModel!!.type == 1) {
-                                                        feed = OPDSParser.parseURL(URL(it))
-                                                    } else {
-                                                        feed = OPDS2Parser.parseURL(URL(it))
-                                                    }
-                                                    startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
-                                                }
-                                            } catch (e: MalformedURLException) {
-                                                snackbar(this, "Failed parsing OPDS")
-                                            }
+                                            startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
                                         }
                                     }
                                 }
@@ -185,14 +143,23 @@ class OPDSCatalogActivity : AppCompatActivity() {
                         }
                     }
                 }
+                progress.dismiss()
             }
-            progress.hide()
         }
 
         feed?.fail {
-            Log.i("", it.message)
+            runOnUiThread {
+                progress.dismiss()
+//                snackbar(act.coordinatorLayout(), it.message!!)
+            }
+            Timber.e(it.message)
         }
 
+    }
+
+    override fun onPause() {
+        super.onPause()
+        progress.dismiss()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -253,20 +220,8 @@ class OPDSCatalogActivity : AppCompatActivity() {
         layout.count.setText(link.properties.numberOfItems.toString())
         layout.setOnClickListener({
             val model = OPDSModel(link.title!!,link.href.toString(), opdsModel?.type!!)
-            try {
-                model.href.let {
-                    if (opdsModel!!.type == 1) {
-                        feed = OPDSParser.parseURL(URL(it))
-                    } else {
-                        feed = OPDS2Parser.parseURL(URL(it))
-                    }
-
-                    facetPopup?.dismiss()
-                    startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
-                }
-            } catch (e: MalformedURLException) {
-                snackbar(act.coordinatorLayout(), "Failed parsing OPDS")
-            }
+            facetPopup?.dismiss()
+            startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
         })
         return layout
     }
