@@ -165,6 +165,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                         // To search for all documents available via installed storage providers,
                                         // it would be "*/*".
                                         intent.type = "application/epub+zip"
+//                                        intent.type = "application/epub+zip|application/x-cbz"
 
                                         startActivityForResult(intent, 1)
 
@@ -390,12 +391,23 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
             try {
                 runOnUiThread(Runnable {
-                    val parser = EpubParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                        progress.dismiss()
+
+                    if (filePath.endsWith(".epub")) {
+                        val parser = EpubParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                            progress.dismiss()
+                        }
+                    } else  if (filePath.endsWith(".cbz")) {
+                        val parser = CbzParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                            progress.dismiss()
+                        }
                     }
+
                 })
             } catch (e: Throwable) {
                 e.printStackTrace()
@@ -425,12 +437,23 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
                         try {
                             runOnUiThread(Runnable {
-                                val parser = EpubParser()
-                                val pub = parser.parse(publicationPath)
-                                if (pub != null) {
-                                    prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                                    progress.dismiss()
+
+                                if (uriString.endsWith(".epub")) {
+                                    val parser = EpubParser()
+                                    val pub = parser.parse(publicationPath)
+                                    if (pub != null) {
+                                        prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                                        progress.dismiss()
+                                    }
+                                } else  if (uriString.endsWith(".cbz")) {
+                                    val parser = CbzParser()
+                                    val pub = parser.parse(publicationPath)
+                                    if (pub != null) {
+                                        prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                                        progress.dismiss()
+                                    }
                                 }
+
                             })
                         } catch (e: Throwable) {
                             e.printStackTrace()
@@ -884,11 +907,20 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
             try {
                 runOnUiThread(Runnable {
-                    val parser = EpubParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                        progress.dismiss()
+                    if (uri.toString().endsWith(".epub")) {
+                        val parser = EpubParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                            progress.dismiss()
+                        }
+                    } else  if (uri.toString().endsWith(".cbz")) {
+                        val parser = CbzParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                            progress.dismiss()
+                        }
                     }
                 })
             } catch (e: Throwable) {
