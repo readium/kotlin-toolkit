@@ -1,7 +1,7 @@
 package org.readium.r2.testapp
 
 
-// Uncomment for lcp
+// uncomment for lcp
 /*
 import org.readium.r2.lcp.LcpHttpService
 import org.readium.r2.lcp.LcpLicense
@@ -12,29 +12,51 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.RecyclerView
+import android.text.TextUtils
 import android.view.*
+import android.webkit.URLUtil
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
-import kotlinx.android.synthetic.main.activity_catalog.*
+import com.github.kittinunf.fuel.Fuel
+import com.mcxiaoke.koi.HASH
+import com.mcxiaoke.koi.ext.onClick
 import net.theluckycoder.materialchooser.Chooser
+import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
+import nl.komponents.kovenant.ui.failUi
+import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
+import org.jetbrains.anko.appcompat.v7.Appcompat
+import org.jetbrains.anko.design.coordinatorLayout
+import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.design.snackbar
+import org.jetbrains.anko.design.textInputLayout
+import org.jetbrains.anko.recyclerview.v7.recyclerView
+import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.opds.OPDS2Parser
+import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.Drm
+import org.readium.r2.shared.opds.ParseData
+import org.readium.r2.shared.promise
 import org.readium.r2.streamer.Parser.EpubParser
 import org.readium.r2.streamer.Parser.PubBox
 import org.readium.r2.streamer.Server.BASE_URL
 import org.readium.r2.streamer.Server.Server
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
+import org.readium.r2.testapp.opds.OPDSDownloader
 import org.readium.r2.testapp.opds.OPDSListActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
@@ -42,7 +64,9 @@ import org.zeroturnaround.zip.ZipUtil
 import org.zeroturnaround.zip.commons.IOUtils
 import timber.log.Timber
 import java.io.*
+import java.net.HttpURLConnection
 import java.net.ServerSocket
+import java.net.URL
 import java.util.*
 
 class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener {
@@ -58,12 +82,15 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     private lateinit var preferences: SharedPreferences
     private lateinit var R2TEST_DIRECTORY_PATH: String
 
-    private var database: BooksDatabase = BooksDatabase(this)
+    lateinit var database: BooksDatabase
+    lateinit var opdsDownloader: OPDSDownloader
+    lateinit var publication: Publication
 
+    private lateinit var catalogView: RecyclerView
+    private lateinit var alertDialog: AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_catalog)
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
@@ -73,20 +100,235 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
         localPort = s.localPort
         server = Server(localPort)
-        R2TEST_DIRECTORY_PATH = this.getExternalFilesDir(null).path + "/" //server.rootDir
+        R2TEST_DIRECTORY_PATH = this.getExternalFilesDir(null).path + "/"
 
         permissions = Permissions(this)
         permissionHelper = PermissionHelper(this, permissions)
 
+        opdsDownloader = OPDSDownloader(this)
+        database = BooksDatabase(this)
         books = database.books.list()
 
         booksAdapter = BooksAdapter(this, books, "$BASE_URL:$localPort", this)
-        catalogView.adapter = booksAdapter
-
-        catalogView.layoutManager = GridAutoFitLayoutManager(act, 120)
 
         parseIntent(null);
 
+        coordinatorLayout {
+            lparams {
+                topMargin = dip(8)
+                bottomMargin = dip(8)
+                padding = dip(0)
+                width = matchParent
+                height = matchParent
+            }
+
+            catalogView = recyclerView {
+                layoutManager = GridAutoFitLayoutManager(act, 120)
+                adapter = booksAdapter
+
+                lparams {
+                    elevation = 2F
+                    width = matchParent
+                }
+
+                addItemDecoration(VerticalSpaceItemDecoration(10))
+
+            }
+
+            floatingActionButton {
+                imageResource = R.drawable.icon_plus_white
+                onClick {
+
+                    alertDialog = alert(Appcompat, "Add an ePub to your library") {
+                        customView {
+                            verticalLayout {
+                                lparams {
+                                    bottomPadding = dip(16)
+                                }
+                                button {
+                                    text =  "select from your device"
+                                    onClick {
+                                        alertDialog.dismiss()
+                                        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
+                                        // browser.
+                                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+
+                                        // Filter to only show results that can be "opened", such as a
+                                        // file (as opposed to a list of contacts or timezones)
+                                        intent.addCategory(Intent.CATEGORY_OPENABLE)
+
+                                        // Filter to show only epubs, using the image MIME data type.
+                                        // To search for all documents available via installed storage providers,
+                                        // it would be "*/*".
+                                        intent.type = "application/epub+zip"
+
+                                        startActivityForResult(intent, 1)
+
+                                    }
+                                }
+                                button {
+                                    text =  "download from a url"
+                                    onClick {
+                                        alertDialog.dismiss()
+
+                                        var editTextHref: EditText? = null
+                                        alert (Appcompat, "Add a publication from URL") {
+
+                                            customView {
+                                                verticalLayout {
+                                                    textInputLayout {
+                                                        padding = dip(10)
+                                                        editTextHref = editText {
+                                                            hint = "URL"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            positiveButton("Add") { }
+                                            negativeButton("Cancel") { }
+
+                                        }.build().apply {
+                                            setCancelable(false)
+                                            setCanceledOnTouchOutside(false)
+                                            setOnShowListener(DialogInterface.OnShowListener {
+                                                val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                                                b.setOnClickListener(View.OnClickListener {
+                                                    if (TextUtils.isEmpty(editTextHref!!.text)) {
+                                                        editTextHref!!.setError("Please Enter A URL.");
+                                                        editTextHref!!.requestFocus();
+                                                    } else if (!URLUtil.isValidUrl(editTextHref!!.text.toString())) {
+                                                        editTextHref!!.setError("Please Enter A Valid URL.");
+                                                        editTextHref!!.requestFocus();
+                                                    } else {
+                                                        var parseData: Promise<ParseData, Exception>? = null
+                                                        parseData = parseURL(URL(editTextHref!!.text.toString()))
+                                                        parseData.successUi {
+                                                            dismiss()
+
+                                                            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+                                                            progress.show()
+
+                                                            publication = it.publication ?: return@successUi
+                                                            val downloadUrl = getDownloadURL(publication)!!.toString()
+                                                            opdsDownloader.publicationUrl(downloadUrl).successUi { pair ->
+
+                                                                val publicationIdentifier = publication.metadata.identifier
+                                                                val author = authorName(publication)
+                                                                task {
+                                                                    getBitmapFromURL(publication.images.first().href!!)
+                                                                }.then {
+                                                                    val bitmap = it
+                                                                    val stream = ByteArrayOutputStream()
+                                                                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+
+                                                                    val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray())
+
+                                                                    runOnUiThread(Runnable {
+                                                                        progress.dismiss()
+                                                                        database.books.insert(book, false)?.let {
+                                                                            books.add(book)
+                                                                            booksAdapter.notifyDataSetChanged()
+
+                                                                        } ?: run {
+
+                                                                            val duplicateAlert = alert (Appcompat, "Publication already exists") {
+
+                                                                                positiveButton("Add anyways") { }
+                                                                                negativeButton("Cancel") { }
+
+                                                                            }.build()
+                                                                            duplicateAlert.apply {
+                                                                                setCancelable(false)
+                                                                                setCanceledOnTouchOutside(false)
+                                                                                setOnShowListener(DialogInterface.OnShowListener {
+                                                                                    val b2 = getButton(AlertDialog.BUTTON_POSITIVE)
+                                                                                    b2.setOnClickListener(View.OnClickListener {
+                                                                                        database.books.insert(book, true)?.let {
+                                                                                            books.add(book)
+                                                                                            duplicateAlert.dismiss()
+                                                                                            booksAdapter.notifyDataSetChanged()
+                                                                                        }
+                                                                                    })
+                                                                                })
+                                                                            }
+                                                                            duplicateAlert.show()
+                                                                        }
+                                                                    })
+                                                                }
+                                                            }
+                                                        }
+                                                        parseData.failUi {
+                                                            editTextHref!!.setError("Please Enter A Valid OPDS Book URL.");
+                                                            editTextHref!!.requestFocus();
+                                                        }
+                                                    }
+                                                })
+                                            })
+
+                                        }.show()
+
+                                    }
+                                }
+                            }
+                        }
+                    }.show()
+
+                }
+            }.lparams {
+                gravity = Gravity.END or Gravity.BOTTOM
+                margin = dip(16)
+            }
+        }
+
+    }
+
+    private fun parseURL(url: URL) : Promise<ParseData, Exception> {
+        return Fuel.get(url.toString(),null).promise() then {
+            val (request, response, result) = it
+            if (isJson(result)) {
+                OPDS2Parser.parse(result, url)
+            } else {
+                OPDS1Parser.parse(result, url)
+            }
+        }
+    }
+
+    private fun isJson(byteArray: ByteArray) : Boolean {
+        return try {
+            JSONObject(String(byteArray))
+            true
+        } catch(e: Exception){
+            false
+        }
+    }
+
+    fun getBitmapFromURL(src: String): Bitmap? {
+        try {
+            val url = URL(src)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.doInput = true
+            connection.connect()
+            val input = connection.inputStream
+            return BitmapFactory.decodeStream(input)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            return null
+        }
+    }
+
+    private fun getDownloadURL(publication:Publication) : URL? {
+        var url: URL? = null
+        val links = publication.links
+        for (link in links) {
+            val href = link.href
+            if (href != null) {
+                if (href.contains(".epub") || href.contains(".lcpl")) {
+                    url = URL(href)
+                    break
+                }
+            }
+        }
+        return url
     }
 
     override fun onResume() {
@@ -244,7 +486,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         thread.start()
                     }
                 }
-    //        */
+            */
         }
     }
 
@@ -263,25 +505,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             R.id.about -> {
                 startActivity(intentFor<R2AboutActivity>())
                 return false
-            }
-            R.id.select -> {
-
-                // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
-                // browser.
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-
-                // Filter to only show results that can be "opened", such as a
-                // file (as opposed to a list of contacts or timezones)
-                intent.addCategory(Intent.CATEGORY_OPENABLE)
-
-                // Filter to show only epubs, using the image MIME data type.
-                // To search for all documents available via installed storage providers,
-                // it would be "*/*".
-                intent.type = "application/epub+zip"
-
-                startActivityForResult(intent, 1)
-                return false
-
             }
 
             else -> return super.onOptionsItemSelected(item)
@@ -373,8 +596,8 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                             if (add) {
                                 database.books.insert(book, false)?.let {
                                     books.add(book)
+                                    booksAdapter.notifyDataSetChanged()
                                 } ?: run {
-//                                    snackbar(catalogView, "Publication already exists")
                                     alert (Appcompat, "Publication already exists") {
 
                                         positiveButton("Add anyways") { }
@@ -402,8 +625,8 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         if (add) {
                             database.books.insert(book, false)?.let {
                                 books.add(book)
+                                booksAdapter.notifyDataSetChanged()
                             } ?: run {
-//                                snackbar(catalogView, "Publication already exists")
                                 alert (Appcompat, "Publication already exists") {
 
                                     positiveButton("Add anyways") { }
@@ -427,7 +650,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         }
                     }
                 }
-                booksAdapter.notifyDataSetChanged()
                 server.addEpub(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
             }
         }
@@ -469,7 +691,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 prepareToServe(parser, pub, book.fileName, file.absolutePath, false)
                 val publication = pub.publication
                 if (publication.spine.size > 0) {
-                    pub.container.drm?.let { drm ->
+                    pub.container.drm?.let { drm: Drm ->
                         if (drm.brand == Drm.Brand.lcp) {
                             // uncomment for lcp
                             /*
@@ -623,4 +845,12 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         }
     }
 
+}
+
+class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) : RecyclerView.ItemDecoration() {
+
+    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView,
+                                state: RecyclerView.State) {
+        outRect.bottom = verticalSpaceHeight
+    }
 }

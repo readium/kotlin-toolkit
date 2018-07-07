@@ -16,23 +16,25 @@ import com.mcxiaoke.koi.ext.onClick
 import com.mcxiaoke.koi.ext.onLongClick
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
-import org.jetbrains.anko.custom.customView
 import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.design.textInputLayout
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.testapp.R
-import android.content.DialogInterface.BUTTON_POSITIVE
 import android.content.DialogInterface
 import android.support.v7.app.AlertDialog
 import android.webkit.URLUtil
+import com.github.kittinunf.fuel.Fuel
 import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.failUi
 import nl.komponents.kovenant.ui.successUi
+import org.json.JSONObject
 import org.readium.r2.opds.OPDS2Parser
-import org.readium.r2.opds.OPDSParser
-import org.readium.r2.shared.opds.Feed
+import org.readium.r2.opds.OPDS1Parser
+import org.readium.r2.shared.opds.ParseData
+import org.readium.r2.shared.promise
 import java.net.URL
 
 
@@ -70,7 +72,6 @@ class OPDSListActivity : AppCompatActivity() {
                 onClick {
                     var editTextTitle: EditText? = null
                     var editTextHref: EditText? = null
-                    var editTextType: EditText? = null
                     alert (Appcompat, "Add OPDS Feed") {
 
                         customView {
@@ -85,12 +86,6 @@ class OPDSListActivity : AppCompatActivity() {
                                     padding = dip(10)
                                     editTextHref = editText {
                                         hint = "URL"
-                                    }
-                                }
-                                textInputLayout {
-                                    padding = dip(10)
-                                    editTextType = editText {
-                                        hint = "Type (1 = OPDS 1.x, 2 = OPDS 2.x) "
                                     }
                                 }
                             }
@@ -108,42 +103,26 @@ class OPDSListActivity : AppCompatActivity() {
                                 if (TextUtils.isEmpty(editTextTitle!!.text)) {
                                     editTextTitle!!.setError("Please Enter A Title.");
                                     editTextTitle!!.requestFocus();
-                                }
-                                else if (TextUtils.isEmpty(editTextHref!!.text)) {
+                                } else if (TextUtils.isEmpty(editTextHref!!.text)) {
                                     editTextHref!!.setError("Please Enter A URL.");
                                     editTextHref!!.requestFocus();
-                                }
-                                else if (TextUtils.isEmpty(editTextType!!.text)) {
-                                    editTextType!!.setError("Please Enter A Type.");
-                                    editTextType!!.requestFocus();
-                                }
-                                else if (!URLUtil.isValidUrl(editTextHref!!.text.toString())) {
+                                } else if (!URLUtil.isValidUrl(editTextHref!!.text.toString())) {
                                     editTextHref!!.setError("Please Enter A Valid URL.");
                                     editTextHref!!.requestFocus();
-                                }
-                                else if(editTextType!!.text.toString().toIntOrNull() == null) {
-                                    editTextType!!.setError("Please Enter A Valid Type.");
-                                    editTextType!!.requestFocus();
-                                }
-                                else {
-                                    var feed: Promise<Feed, Exception>? = null
-                                    if (editTextType!!.text.toString().toInt() == 1) {
-                                        feed = OPDSParser.parseURL(URL(editTextHref!!.text.toString()))
-                                    } else {
-                                        feed = OPDS2Parser.parseURL(URL(editTextHref!!.text.toString()))
-                                    }
-                                    feed.successUi {
+                                } else {
+                                    var parseData: Promise<ParseData, Exception>? = null
+                                    parseData = parseURL(URL(editTextHref!!.text.toString()))
+                                    parseData.successUi {
                                        val opds = OPDSModel(
                                                editTextTitle!!.text.toString(),
                                                editTextHref!!.text.toString(),
-                                               editTextType!!.text.toString().toInt())
-
+                                               it.type)
                                        database.opds.insert(opds)
                                        list.add(opds)
                                        opdsAdapter.notifyDataSetChanged()
                                        dismiss()
                                     }
-                                    feed.failUi {
+                                    parseData.failUi {
                                         editTextHref!!.setError("Please Enter A Valid OPDS Feed URL.");
                                         editTextHref!!.requestFocus();
                                     }
@@ -157,6 +136,26 @@ class OPDSListActivity : AppCompatActivity() {
                 gravity = Gravity.END or Gravity.BOTTOM
                 margin = dip(16)
             }
+        }
+    }
+
+    private fun parseURL(url: URL) : Promise<ParseData, Exception> {
+        return Fuel.get(url.toString(),null).promise() then {
+            val (request, response, result) = it
+            if (isJson(result)) {
+                OPDS2Parser.parse(result, url)
+            } else {
+                OPDS1Parser.parse(result, url)
+            }
+        }
+    }
+
+    private fun isJson(byteArray: ByteArray) : Boolean {
+        return try {
+            JSONObject(String(byteArray))
+            true
+        } catch(e: Exception){
+            false
         }
     }
 }

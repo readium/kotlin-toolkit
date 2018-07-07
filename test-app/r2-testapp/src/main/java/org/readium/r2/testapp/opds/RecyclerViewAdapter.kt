@@ -38,7 +38,6 @@ class RecyclerViewAdapter(private val activity: Activity, private val strings: M
         viewHolder.itemView.onClick {
             activity.startActivity(activity.intentFor<OPDSDetailActivity>("publication" to publication))
         }
-
     }
 
     override fun getItemCount(): Int {

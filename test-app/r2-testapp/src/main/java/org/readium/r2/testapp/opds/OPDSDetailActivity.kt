@@ -122,7 +122,6 @@ class OPDSDetailActivity : AppCompatActivity() {
             e.printStackTrace()
             return null
         }
-
     }
 
     private fun authorName(publication: Publication): String {
