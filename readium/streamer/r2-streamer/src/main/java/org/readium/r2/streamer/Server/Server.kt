@@ -74,7 +74,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         addRoute(fileName + MANIFEST_ITEM_HANDLE, ResourceHandler::class.java, fetcher)
         addRoute( JS_HANDLE, JSHandler::class.java, ressources)
         addRoute( CSS_HANDLE, CSSHandler::class.java, ressources)
-        addRoute( FONT_HANDLE, FontHandler::class.java, ressources)
+        addRoute( FONT_HANDLE, FontHandler::class.java, fonts)
     }
 
     private fun addLinks(publication: Publication, filePath: String) {
