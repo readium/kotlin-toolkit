@@ -22,9 +22,8 @@ import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.opds.OPDS2Parser
-import org.readium.r2.opds.OPDSParser
+import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.shared.Link
-import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.testapp.R
@@ -53,7 +52,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
             progress.show()
             try {
                 feed = if (opdsModel?.type == 1) {
-                    OPDSParser.parseURL(URL(it))
+                    OPDS1Parser.parseURL(URL(it))
                 } else {
                     OPDS2Parser.parseURL(URL(it))
                 }

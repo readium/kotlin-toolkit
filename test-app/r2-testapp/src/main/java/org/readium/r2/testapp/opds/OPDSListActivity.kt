@@ -16,14 +16,12 @@ import com.mcxiaoke.koi.ext.onClick
 import com.mcxiaoke.koi.ext.onLongClick
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
-import org.jetbrains.anko.custom.customView
 import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.design.textInputLayout
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.testapp.R
-import android.content.DialogInterface.BUTTON_POSITIVE
 import android.content.DialogInterface
 import android.support.v7.app.AlertDialog
 import android.webkit.URLUtil
@@ -34,11 +32,9 @@ import nl.komponents.kovenant.ui.failUi
 import nl.komponents.kovenant.ui.successUi
 import org.json.JSONObject
 import org.readium.r2.opds.OPDS2Parser
-import org.readium.r2.opds.OPDSParser
-import org.readium.r2.shared.opds.Feed
+import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
-import java.io.Serializable
 import java.net.URL
 
 
@@ -149,7 +145,7 @@ class OPDSListActivity : AppCompatActivity() {
             if (isJson(result)) {
                 OPDS2Parser.parse(result, url)
             } else {
-                OPDSParser.parse(result, url)
+                OPDS1Parser.parse(result, url)
             }
         }
     }

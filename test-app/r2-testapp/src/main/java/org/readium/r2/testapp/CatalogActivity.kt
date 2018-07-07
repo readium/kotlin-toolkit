@@ -46,7 +46,7 @@ import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.opds.OPDS2Parser
-import org.readium.r2.opds.OPDSParser
+import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.opds.ParseData
@@ -288,7 +288,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             if (isJson(result)) {
                 OPDS2Parser.parse(result, url)
             } else {
-                OPDSParser.parse(result, url)
+                OPDS1Parser.parse(result, url)
             }
         }
     }
