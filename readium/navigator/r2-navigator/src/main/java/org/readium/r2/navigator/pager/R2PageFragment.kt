@@ -32,7 +32,7 @@ class R2PageFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val v = inflater.inflate(R.layout.fragment_page, container, false)
+        val v = inflater.inflate(R.layout.fragment_page_epub, container, false)
         val prefs = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         // Set text color depending of appearance preference

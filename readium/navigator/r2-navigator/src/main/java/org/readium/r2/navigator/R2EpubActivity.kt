@@ -14,7 +14,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
-import kotlinx.android.synthetic.main.fragment_page.view.*
+import kotlinx.android.synthetic.main.fragment_page_epub.view.*
 import org.jetbrains.anko.contentView
 import org.jetbrains.anko.intentFor
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -44,7 +44,7 @@ class R2EpubActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_r2_epub)
+        setContentView(R.layout.activity_r2_viewpager)
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         resourcePager = findViewById(R.id.resourcePager)
