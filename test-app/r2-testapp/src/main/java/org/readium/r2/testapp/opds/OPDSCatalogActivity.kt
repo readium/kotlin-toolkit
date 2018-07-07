@@ -35,7 +35,7 @@ import java.net.URL
 class OPDSCatalogActivity : AppCompatActivity() {
 
     lateinit var facets:MutableList<Facet>
-    var feed: Promise<ParseData, Exception>? = null
+    var parsePromise: Promise<ParseData, Exception>? = null
     var opdsModel:OPDSModel? = null
     var showFacetMenu = false;
     var facetPopup:PopupWindow? = null
@@ -51,7 +51,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
         opdsModel?.href.let {
             progress.show()
             try {
-                feed = if (opdsModel?.type == 1) {
+                parsePromise = if (opdsModel?.type == 1) {
                     OPDS1Parser.parseURL(URL(it))
                 } else {
                     OPDS2Parser.parseURL(URL(it))
@@ -63,7 +63,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
             title = opdsModel?.title
         }
 
-        feed?.successUi { result ->
+        parsePromise?.successUi { result ->
 
             facets = result.feed?.facets ?: mutableListOf<Facet>()
 
@@ -146,7 +146,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
             }
         }
 
-        feed?.fail {
+        parsePromise?.fail {
             runOnUiThread {
                 progress.dismiss()
 //                snackbar(act.coordinatorLayout(), it.message!!)
