@@ -11,7 +11,7 @@ class R2PagerAdapter (fm: FragmentManager, private val mItems: List<String>, pri
 
     override fun getItem(position: Int): Fragment =
             when (type) {
-                PUBLICATION_TYPE.EPUB -> R2PageFragment.newInstance(mItems[position], title)
+                PUBLICATION_TYPE.EPUB -> R2EpubPageFragment.newInstance(mItems[position], title)
                 PUBLICATION_TYPE.CBZ -> R2CbzPageFragment.newInstance(publicationPath, mItems[position])
             }
 

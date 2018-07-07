@@ -19,7 +19,7 @@ import android.view.MotionEvent
 import android.webkit.WebResourceResponse
 
 
-class R2PageFragment : Fragment() {
+class R2EpubPageFragment : Fragment() {
 
     private val TAG = this::class.java.simpleName
 
@@ -139,12 +139,12 @@ class R2PageFragment : Fragment() {
     }
     companion object {
 
-        fun newInstance(url: String, title: String): R2PageFragment {
+        fun newInstance(url: String, title: String): R2EpubPageFragment {
 
             val args = Bundle()
             args.putString("url", url)
             args.putString("title", title)
-            val fragment = R2PageFragment()
+            val fragment = R2EpubPageFragment()
             fragment.arguments = args
             return fragment
         }
