@@ -1,7 +1,10 @@
 package org.readium.r2.shared
 
+import android.net.UrlQuerySanitizer
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.Serializable
+import java.net.URL
 
 class Contributor : JSONable, Serializable {
 
@@ -26,4 +29,54 @@ class Contributor : JSONable, Serializable {
         return obj
     }
 
+}
+
+fun parseContributors(contributors: Any) : List<Contributor> {
+    val result: MutableList<Contributor> = mutableListOf()
+    if (contributors is String) {
+        val c = Contributor()
+        c.multilangName.singleString = contributors
+        result.add(c)
+    } else  if (contributors is JSONObject){
+        val c = parseContributor(contributors)
+        result.add(c)
+    } else if (contributors is JSONArray) {
+        for (i in 0..(contributors.length() - 1)) {
+            val obj = contributors.getJSONObject(i)
+            val c = parseContributor(obj)
+            result.add(c)
+        }
+    }
+    return result
+}
+
+fun parseContributor(cDict: JSONObject) : Contributor {
+    val c = Contributor()
+
+    if (cDict.has("name")){
+        if (cDict.get("name") is String) {
+            c.multilangName.singleString = cDict.getString("name")
+        } else if (cDict.get("name") is JSONObject) {
+            val array = cDict.getJSONObject("name")
+            c.multilangName.multiString = array as MutableMap<String, String>
+        }
+//                        let s as String -> c.multilangName.singleString = s
+//                        let multiString as Map<String, String> -> c.multilangName.multiString = multiString
+//                        else -> throw OPDS2ParserError.invalidContributor
+
+    }
+    if (cDict.has("identifier")){
+        c.identifier = cDict.getString("identifier")
+    }
+    if (cDict.has("sort_as")){
+        c.sortAs = cDict.getString("sort_as")
+    }
+    if (cDict.has("role")){
+        c.roles.add(cDict.getString("role"))
+    }
+    if (cDict.has("links")){
+        val linkDict = cDict.getJSONObject("links")
+        c.links.add(parseLink(linkDict))
+    }
+    return c
 }
