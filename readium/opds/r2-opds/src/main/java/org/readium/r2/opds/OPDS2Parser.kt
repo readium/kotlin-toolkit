@@ -29,7 +29,8 @@ class OPDS2Parser {
 
     companion object {
 
-        var feedUrl:URL? = null
+        lateinit var feed:Feed
+
         fun parseURL(url: URL) : Promise<ParseData, Exception> {
             return Fuel.get(url.toString(),null).promise() then {
                 val (request, response, result) = it
@@ -54,11 +55,10 @@ class OPDS2Parser {
             }
 
         fun parseFeed(jsonData: ByteArray, url: URL) : Feed {
-            feedUrl = url
             val topLevelDict = JSONObject(String(jsonData))
             val metadataDict:JSONObject = topLevelDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.metadataNotFound.name)
             val title = metadataDict.getString("title") ?: throw Exception(OPDS2ParserError.missingTitle.name)
-            val feed = Feed(title, 2)
+            feed = Feed(title, 2, url)
             parseFeedMetadata(opdsMetadata = feed.metadata, metadataDict = metadataDict)
             if(topLevelDict.has("@context")) {
                 if (topLevelDict.get("@context") is JSONObject){
@@ -155,7 +155,7 @@ class OPDS2Parser {
         internal fun parseLinks(feed: Feed, links: JSONArray) {
             for (i in 0..(links.length() - 1)) {
                 val linkDict = links.getJSONObject(i)
-                val link = parseLink(linkDict, feedUrl)
+                val link = parseLink(linkDict, feed.href)
                 feed.links.add(link)
             }
         }

@@ -27,7 +27,7 @@ data class MimeTypeParameters(
 class OPDSParser {
     companion object {
 
-        var feedUrl:URL? = null
+        lateinit var feed:Feed
 
         fun parseURL(url: URL) : Promise<ParseData, Exception> {
             return Fuel.get(url.toString(),null).promise() then {
@@ -47,12 +47,11 @@ class OPDSParser {
         }
 
         fun parseFeed(xmlData: ByteArray, url: URL) : Feed {
-            feedUrl = url
             val document = XmlParser()
             document.parseXml(xmlData.inputStream())
             val root = document.root()
             val title = root.getFirst("title")?.text ?: throw Exception(OPDSParserError.missingTitle.name)
-            val feed = Feed(title, 1)
+            feed = Feed(title, 1, url)
             val tmpDate = root.getFirst("updated")?.text
             feed.metadata.modified = tmpDate?.let { DateTime(it).toDate() }
 
@@ -80,7 +79,7 @@ class OPDSParser {
                                 }
                                 if (rel == "collection" || rel == "http://opds-spec.org/group") {
                                     collectionLink.rel.add("collection")
-                                    collectionLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
+                                    collectionLink.href = getAbsolute(link.attributes["href"]!!, feed.href.toString())
                                     collectionLink.title = link.attributes["title"]
                                 }
                             }
@@ -112,7 +111,7 @@ class OPDSParser {
                                 newLink.properties.numberOfItems = facetElementCount
                             }
                             newLink.typeLink = link.attributes["type"]
-                            newLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
+                            newLink.href = getAbsolute(link.attributes["href"]!!, feed.href.toString())
 
                             if (collectionLink.href != null) {
                                 addNavigationInGroup(feed, newLink, collectionLink)
@@ -130,7 +129,7 @@ class OPDSParser {
             root.get("link")?.let {
                 for (link in it) {
                     val newLink = Link()
-                    newLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
+                    newLink.href = getAbsolute(link.attributes["href"]!!, feed.href.toString())
                     newLink.title = link.attributes["title"]
                     newLink.typeLink = link.attributes["type"]
                     val rel = link.attributes["rel"]
@@ -315,7 +314,7 @@ class OPDSParser {
             links?.let {
                 for (link in links) {
                     val newLink = Link()
-                    newLink.href = getAbsolute(link.attributes["href"]!!, feedUrl.toString())
+                    newLink.href = getAbsolute(link.attributes["href"]!!, feed.href.toString())
                     newLink.title = link.attributes["title"]
                     newLink.typeLink = link.attributes["type"]
                     val rel = link.attributes["rel"]
