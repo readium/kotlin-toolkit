@@ -3,9 +3,10 @@ package org.readium.r2.shared.opds
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
 import java.io.Serializable
+import java.net.URL
 
 
-data class Feed(val title: String): Serializable {
+data class Feed(val title: String, val type: Int, val href: URL) : Serializable {
     var metadata: OpdsMetadata
     var links:MutableList<Link> = mutableListOf()
     var facets:MutableList<Facet> = mutableListOf()
@@ -23,3 +24,5 @@ data class Feed(val title: String): Serializable {
         return searchLink?.href
     }
 }
+
+data class ParseData(val feed: Feed?, val publication: Publication?, val type: Int) : Serializable
