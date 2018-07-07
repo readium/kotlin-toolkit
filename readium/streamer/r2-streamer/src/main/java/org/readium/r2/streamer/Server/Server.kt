@@ -8,6 +8,8 @@ import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.Containers.Container
 import org.readium.r2.streamer.Fetcher.Fetcher
 import org.readium.r2.streamer.Server.handler.*
+import java.io.File
+import java.io.InputStream
 import java.net.URL
 import java.util.*
 
