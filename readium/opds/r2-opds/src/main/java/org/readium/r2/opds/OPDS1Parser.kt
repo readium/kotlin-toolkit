@@ -24,7 +24,7 @@ data class MimeTypeParameters(
         var parameters:MutableMap<String, String> = mutableMapOf()
 )
 
-class OPDSParser {
+class OPDS1Parser {
     companion object {
 
         lateinit var feed:Feed
