@@ -49,17 +49,19 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
 
     fun getMimeType(url: String): String {
         val extension = MimeTypeMap.getFileExtensionFromUrl(url)
+        var mimeType:String = "application/vnd.ms-opentype"
         if (extension != null) {
-            return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-        }
-        else {
-            when (extension) {
-                ".otf" -> return "application/vnd.ms-opentype"
-                ".ttf" -> return "application/vnd.ms-truetype"
-                // TODO handle other font types
+            try {
+                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+            }catch (e:Exception) {
+                when (extension) {
+                    ".otf" -> mimeType = "application/vnd.ms-opentype"
+                    ".ttf" -> mimeType =  "application/vnd.ms-truetype"
+                    // TODO handle other font types
+                }
             }
         }
-        return "application/vnd.ms-opentype"
+        return mimeType
     }
 
     private fun createResponse(status: Status, mimeType: String, message: InputStream): Response {
