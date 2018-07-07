@@ -82,7 +82,7 @@ class R2EpubActivity : AppCompatActivity() {
         val index = preferences.getInt( "$publicationIdentifier-document", 0)
         val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.0.toString()).toDouble()
 
-        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, PUBLICATION_TYPE.EPUB)
+        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, PUBLICATION_TYPE.EPUB, publicationPath)
 
         resourcePager.adapter = adapter
 
