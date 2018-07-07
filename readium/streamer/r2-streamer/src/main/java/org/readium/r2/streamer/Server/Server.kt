@@ -24,12 +24,23 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
     private val MEDIA_OVERLAY_HANDLE = "/media-overlay"
     private val CSS_HANDLE = "/styles/(.*)"
     private val JS_HANDLE = "/scripts/(.*)"
+    private val FONT_HANDLE = "/fonts/(.*)"
     private var containsMediaOverlay = false
 
     private val ressources = Ressources()
+    private val fonts = Fonts()
 
     fun addResource(name: String, body: String) {
         ressources.add(name, body)
+    }
+    
+    fun addFont(name: String, assets: AssetManager, context: Context) {
+        val inputStream = assets.open("fonts/" + name)
+        val dir = File(context.getExternalFilesDir(null).path + "/fonts/")
+        dir.mkdirs()
+        inputStream.toFile(context.getExternalFilesDir(null).path + "/fonts/" + name)
+        val file = File(context.getExternalFilesDir(null).path + "/fonts/" + name)
+        fonts.add(name, file)
     }
 
     fun loadResources(assets: AssetManager, context: Context){
@@ -43,6 +54,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
                 .useDelimiter("\\A").next())
         addResource("utils.js", Scanner(assets.open("ReadiumCSS/utils.js"), "utf-8")
                 .useDelimiter("\\A").next())
+        addFont("OpenDyslexic-Regular.otf", assets, context)
     }
 
 
@@ -60,6 +72,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         addRoute(fileName + MANIFEST_ITEM_HANDLE, ResourceHandler::class.java, fetcher)
         addRoute( JS_HANDLE, JSHandler::class.java, ressources)
         addRoute( CSS_HANDLE, CSSHandler::class.java, ressources)
+        addRoute( FONT_HANDLE, FontHandler::class.java, ressources)
     }
 
     private fun addLinks(publication: Publication, filePath: String) {
@@ -69,6 +82,11 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
                 containsMediaOverlay = true
                 link.href = link.href?.replace("port", "localhost:" + listeningPort + filePath)
             }
+        }
+    }
+    fun InputStream.toFile(path: String) {
+        use { input ->
+            File(path).outputStream().use { input.copyTo(it) }
         }
     }
 

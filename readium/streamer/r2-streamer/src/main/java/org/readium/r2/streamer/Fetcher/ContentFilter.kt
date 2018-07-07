@@ -85,12 +85,14 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
         val endIncludes = mutableListOf<String>()
         val beginIncludes = mutableListOf<String>()
         beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;\"/>")
+
         beginIncludes.add(getHtmlLink("/styles/before.css"))
         beginIncludes.add(getHtmlLink("/styles/default.css"))
 //        beginIncludes.add(getHtmlLink("/styles/transition.css"))
         endIncludes.add(getHtmlLink("/styles/after.css"))
         endIncludes.add(getHtmlScript("/scripts/touchHandling.js"))
         endIncludes.add(getHtmlScript("/scripts/utils.js"))
+
         for (element in beginIncludes){
             resourceHtml = StringBuilder(resourceHtml).insert(beginHeadIndex, element).toString()
             beginHeadIndex += element.length
@@ -100,7 +102,8 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
             resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, element).toString()
             endHeadIndex += element.length
         }
-        resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style> ").toString()
+        resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, getHtmlFont( "/fonts/OpenDyslexic-Regular.otf")).toString()
+        resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>\n").toString()
 
         // Inject userProperties
         getProperties()?.let { propertyPair ->
@@ -127,13 +130,19 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
             return stream
         val includes = mutableListOf<String>()
         val url = baseUrl.toString()
-        includes.add("<meta name=\"viewport\" content=\"width=1024; height=768; left=50%; top=50%; bottom=auto; right=auto; transform=translate(-50%, -50%);\"/>\n")
+        includes.add("<meta name=\"viewport\" content=\"width=1024, height=768, left=50%, top=50%, bottom=auto, right=auto, transform=translate(-50%, -50%);\"/>\n")
         includes.add(getHtmlScript(url + "scripts/touchHandling.js"))
         includes.add(getHtmlScript(url + "scripts/utils.js"))
         for (element in includes){
             resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, element).toString()
         }
         return resourceHtml.toByteArray().inputStream()
+    }
+
+    fun getHtmlFont(ressourceName: String) : String {
+        val prefix = "<style type=\"text/css\"> @font-face{font-family: \"OpenDyslexic\"; src:url(\""
+        val suffix = "\") format('truetype');}</style>\n"
+        return prefix + ressourceName + suffix
     }
 
     fun getHtmlLink(ressourceName: String) : String {
