@@ -73,7 +73,7 @@ class R2CbzActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        val publicationIdentifier = publication.metadata.title
+        val publicationIdentifier = publication.metadata.identifier
         val documentIndex = resourcePager.currentItem
         preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
     }
