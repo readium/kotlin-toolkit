@@ -1,1 +1,1 @@
-include ':r2-opds', ':r2-shared'
+include ':r2-opds'
