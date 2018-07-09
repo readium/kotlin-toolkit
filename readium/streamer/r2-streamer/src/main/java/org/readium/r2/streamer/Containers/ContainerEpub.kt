@@ -37,9 +37,4 @@ class ContainerEpub : EpubContainer, ZipArchiveContainer {
         zipFile = ZipFile(path)
         rootFile = RootFile(path, mimetype)
     }
-
-    override fun data(relativePath: String): ByteArray {
-        return super.data(relativePath)
-    }
-
 }
