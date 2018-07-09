@@ -11,15 +11,8 @@ import java.util.zip.Inflater
 
 class DrmDecoder {
 
-    private val TAG = this::class.java.simpleName
 
     fun decoding(input: InputStream, resourceLink: Link, drm: Drm?): InputStream {
-
-        val encryption = resourceLink.properties.encryption?.let {
-            return@let it
-        } ?: run {
-            return input
-        }
 
         val scheme = resourceLink.properties.encryption?.scheme?.let {
             return@let it

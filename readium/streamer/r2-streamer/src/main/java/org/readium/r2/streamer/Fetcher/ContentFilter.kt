@@ -160,7 +160,7 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
 
     private fun getProperties(): MutableList<Pair<String, String>>? {
 
-        // userProperties is a string containing the css userProperties as a JSON string
+        // userProperties is a JSON string containing the css userProperties
         var userPropertiesString: String? = null
         userPropertiesPath?.let {
             userPropertiesString = String()
