@@ -2,6 +2,7 @@ package org.readium.r2.streamer.Fetcher
 
 import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.Containers.Container
+import java.io.InputStream
 
 class Fetcher(var publication: Publication, var container: Container, private val userPropertiesPath: String?) {
     var rootFileDirectory: String
@@ -24,6 +25,20 @@ class Fetcher(var publication: Publication, var container: Container, private va
         if (data != null)
             data = contentFilters?.apply(data, publication, container, path)
         return data
+    }
+
+    fun dataStream(path: String): InputStream {
+        publication.resource("/" + path) ?: throw Exception("Missing file")
+        var inputStream = container.dataInputStream(path)
+        inputStream = contentFilters?.apply(inputStream, publication, container, path) ?: inputStream
+        return inputStream
+    }
+
+    fun dataLength(path: String): Long {
+        val relativePath = rootFileDirectory.plus(path)
+
+        publication.resource(path) ?: throw Exception("Missing file")
+        return container.dataLength(relativePath)
     }
 
     private fun getContentFilters(mimeType: String?): ContentFilters {
