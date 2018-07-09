@@ -31,8 +31,4 @@ class ContainerEpubDirectory : EpubContainer, DirectoryContainer {
             successCreated = true
         rootFile = RootFile(rootPath = path, version = null)
     }
-
-    override fun data(relativePath: String): ByteArray {
-        return super.data(relativePath)
-    }
 }

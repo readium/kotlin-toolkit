@@ -4,17 +4,12 @@ import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.Containers.Container
 import java.io.InputStream
 
-class Fetcher(publication: Publication, container: Container, val userPropertiesPath: String?) {
-    var publication: Publication
-    var container: Container
+class Fetcher(var publication: Publication, var container: Container, private val userPropertiesPath: String?) {
     var rootFileDirectory: String
     var contentFilters: ContentFilters?
 
     init {
-        this.container = container
-        this.publication = publication
-
-        val rootFilePath = publication.internalData["rootfile"] ?: throw Exception("Missing root file")
+    val rootFilePath = publication.internalData["rootfile"] ?: throw Exception("Missing root file")
         if (rootFilePath.isNotEmpty() && rootFilePath.contains('/')) {
             rootFileDirectory = rootFilePath.replaceAfterLast("/", "", rootFilePath)
             rootFileDirectory = rootFileDirectory.dropLast(1)
@@ -46,10 +41,10 @@ class Fetcher(publication: Publication, container: Container, val userProperties
         return container.dataLength(relativePath)
     }
 
-    fun getContentFilters(mimeType: String?): ContentFilters {
-        when (mimeType) {
-            "application/epub+zip", "application/oebps-package+xml" -> return ContentFiltersEpub(userPropertiesPath)
-            "application/x-cbr" -> return ContentFiltersCbz()
+    private fun getContentFilters(mimeType: String?): ContentFilters {
+        return when (mimeType) {
+            "application/epub+zip", "application/oebps-package+xml" -> ContentFiltersEpub(userPropertiesPath)
+            "application/vnd.comicbook+zip", "application/x-cbr" -> ContentFiltersCbz()
             else -> throw Exception("Missing container or MIMEtype")
         }
     }

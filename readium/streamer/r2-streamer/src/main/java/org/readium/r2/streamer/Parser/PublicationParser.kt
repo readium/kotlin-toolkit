@@ -7,7 +7,7 @@ data class PubBox(var publication: Publication, var container: Container)
 
 interface PublicationParser {
 
-    fun parse(fileAtPath: String) : PubBox?
+    fun parse(fileAtPath: String, title: String = fileAtPath) : PubBox?
 
 }
 

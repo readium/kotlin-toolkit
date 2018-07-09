@@ -61,7 +61,7 @@ class EpubParser : PublicationParser {
         return Pair(container, publication)
     }
 
-    override fun parse(fileAtPath: String) : PubBox? {
+    override fun parse(fileAtPath: String, title: String) : PubBox? {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {

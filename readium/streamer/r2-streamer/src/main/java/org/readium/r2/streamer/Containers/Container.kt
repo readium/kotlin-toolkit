@@ -6,6 +6,22 @@ import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.XmlParser.XmlParser
 import java.io.InputStream
 
+/**
+ * Container of a publication
+ *
+ * @var rootfile : a RootFile class containing the path the publication, the version
+ *                 and the mime type of it
+ *
+ * @var drm : contain the brand, scheme, profile and license of DRM if it exist
+ *
+ * @var successCreated : used to checked if the Container contains a publication
+ *
+ * @func data : return the ByteArray content of a file from the publication
+ *
+ * @func dataLength : return the length of content
+ *
+ * @func dataInputStream : return the InputStream of content
+ */
 interface Container{
 
     var rootFile: RootFile
@@ -21,6 +37,13 @@ interface Container{
     fun dataInputStream(relativePath: String) : InputStream
 }
 
+/**
+ *  EpubContainer
+ *
+ *  @func xmlDocumentforFile : return the XmlParser of a file
+ *
+ *  @func xmlDocumentforResource : return the XmlParser of a link
+ */
 interface EpubContainer : Container {
 
     fun xmlDocumentforFile(relativePath: String) : XmlParser
@@ -28,6 +51,11 @@ interface EpubContainer : Container {
 
 }
 
+/**
+ * CbzContainer
+ *
+ * @func getFilesList : return the list of every files in a CBZ
+ */
 interface CbzContainer : Container {
     fun getFilesList() : List<String>
 }

@@ -11,15 +11,13 @@ import kotlin.experimental.xor
 
 class FontDecoder {
 
-    private val TAG = this::class.java.simpleName
-
     val Adobe = 1024
     val Idpf = 1040
 
-    var decodableAlgorithms = mapOf<String, String>(
+    var decodableAlgorithms = mapOf(
         "fontIdpf" to "http://www.idpf.org/2008/embedding",
         "fontAdobe" to "http://ns.adobe.com/pdf/enc#RC")
-    var decoders = mapOf<String, Int>(
+    var decoders = mapOf(
             "http://www.idpf.org/2008/embedding" to Idpf,
     "http://ns.adobe.com/pdf/enc#RC" to Adobe
     )
