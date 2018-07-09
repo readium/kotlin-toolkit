@@ -14,11 +14,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
-import kotlinx.android.synthetic.main.fragment_page.view.*
+import kotlinx.android.synthetic.main.fragment_page_epub.view.*
 import org.jetbrains.anko.contentView
 import org.jetbrains.anko.intentFor
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.shared.PUBLICATION_TYPE
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRMMModel
 
@@ -43,7 +44,7 @@ class R2EpubActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_r2_epub)
+        setContentView(R.layout.activity_r2_viewpager)
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         resourcePager = findViewById(R.id.resourcePager)
@@ -81,7 +82,7 @@ class R2EpubActivity : AppCompatActivity() {
         val index = preferences.getInt( "$publicationIdentifier-document", 0)
         val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.0.toString()).toDouble()
 
-        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title)
+        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, PUBLICATION_TYPE.EPUB, publicationPath)
 
         resourcePager.adapter = adapter
 
