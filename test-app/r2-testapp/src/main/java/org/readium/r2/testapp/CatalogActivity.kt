@@ -44,15 +44,19 @@ import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.design.textInputLayout
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.json.JSONObject
+import org.readium.r2.navigator.R2CbzActivity
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDS1Parser
+import org.readium.r2.shared.PUBLICATION_TYPE
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
+import org.readium.r2.streamer.Parser.CbzParser
 import org.readium.r2.streamer.Parser.EpubParser
 import org.readium.r2.streamer.Parser.PubBox
+import org.readium.r2.streamer.Parser.PublicationParser
 import org.readium.r2.streamer.Server.BASE_URL
 import org.readium.r2.streamer.Server.Server
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
@@ -161,6 +165,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                         // To search for all documents available via installed storage providers,
                                         // it would be "*/*".
                                         intent.type = "application/epub+zip"
+//                                        intent.type = "application/epub+zip|application/x-cbz"
 
                                         startActivityForResult(intent, 1)
 
@@ -221,7 +226,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                                                     val stream = ByteArrayOutputStream()
                                                                     bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-                                                                    val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray())
+                                                                    val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(),".epub")
 
                                                                     runOnUiThread(Runnable {
                                                                         progress.dismiss()
@@ -358,7 +363,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                     if (!dir.exists()) {
                         dir.mkdirs()
                     }
-                    copyEpubFromAssetsToStorage()
+                    copySamplesFromAssetsToStorage()
                     preferences.edit().putBoolean("samples", true).apply()
                 }
             }
@@ -386,12 +391,23 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
             try {
                 runOnUiThread(Runnable {
-                    val parser = EpubParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                        progress.dismiss()
+
+                    if (filePath.endsWith(".epub")) {
+                        val parser = EpubParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                            progress.dismiss()
+                        }
+                    } else  if (filePath.endsWith(".cbz")) {
+                        val parser = CbzParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                            progress.dismiss()
+                        }
                     }
+
                 })
             } catch (e: Throwable) {
                 e.printStackTrace()
@@ -421,12 +437,23 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
                         try {
                             runOnUiThread(Runnable {
-                                val parser = EpubParser()
-                                val pub = parser.parse(publicationPath)
-                                if (pub != null) {
-                                    prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                                    progress.dismiss()
+
+                                if (uriString.endsWith(".epub")) {
+                                    val parser = EpubParser()
+                                    val pub = parser.parse(publicationPath)
+                                    if (pub != null) {
+                                        prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                                        progress.dismiss()
+                                    }
+                                } else  if (uriString.endsWith(".cbz")) {
+                                    val parser = CbzParser()
+                                    val pub = parser.parse(publicationPath)
+                                    if (pub != null) {
+                                        prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                                        progress.dismiss()
+                                    }
                                 }
+
                             })
                         } catch (e: Throwable) {
                             e.printStackTrace()
@@ -544,18 +571,27 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         return author
     }
 
-    private fun copyEpubFromAssetsToStorage() {
-        val list = assets.list("Samples")
-        for (file_name in list) {
-            val input = assets.open("Samples/" + file_name)
+    private fun copySamplesFromAssetsToStorage() {
+        val list = assets.list("Samples").filter { it.endsWith(".epub") || it.endsWith(".cbz") }
+        for (element in list) {
+            val input = assets.open("Samples/$element")
             val fileName = UUID.randomUUID().toString()
             val publicationPath = R2TEST_DIRECTORY_PATH + fileName
             input.toFile(publicationPath)
-            val parser = EpubParser()
             val file = File(publicationPath)
-            val pub = parser.parse(publicationPath)
-            if (pub != null) {
-                prepareToServe(parser, pub, fileName, file.absolutePath, true)
+            if (element.endsWith(".epub")) {
+                val parser =  EpubParser()
+                val pub = parser.parse(publicationPath)
+                if (pub != null) {
+                    prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                }
+            }
+            else if (element.endsWith(".cbz")) {
+                val parser = CbzParser()
+                val pub = parser.parse(publicationPath)
+                if (pub != null) {
+                    prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                }
             }
         }
     }
@@ -575,9 +611,9 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         }
     }
 
-    private fun prepareToServe(parser: EpubParser, pub: PubBox?, fileName: String, absolutePath: String, add: Boolean) {
+    private fun prepareToServe(parser: PublicationParser, pub: PubBox?, fileName: String, absolutePath: String, add: Boolean) {
         if (pub == null) {
-            snackbar(catalogView, "Invalid ePub")
+            snackbar(catalogView, "Invalid publication")
             return
         }
         val publication = pub.publication
@@ -585,6 +621,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
         fun addBookToView() {
             runOnUiThread {
+            if(publication.type == PUBLICATION_TYPE.EPUB){
                 val publicationIdentifier = publication.metadata.identifier
                 preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
                 val author = authorName(publication)
@@ -592,7 +629,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                     publication.coverLink?.href?.let {
                         val blob = ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
                         blob?.let {
-                            val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, blob)
+                            val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, blob, ".epub")
                             if (add) {
                                 database.books.insert(book, false)?.let {
                                     books.add(book)
@@ -621,7 +658,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                             }
                         }
                     } ?: run {
-                        val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, null)
+                        val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, null,".epub")
                         if (add) {
                             database.books.insert(book, false)?.let {
                                 books.add(book)
@@ -651,6 +688,38 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                     }
                 }
                 server.addEpub(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
+                } else if(publication.type == PUBLICATION_TYPE.CBZ) {
+                    if (add) {
+                        publication.coverLink?.href?.let {
+                            val book = Book(fileName, publication.metadata.title, "", absolutePath, books.size.toLong(), publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it),".cbz")
+                            database.books.insert(book, false)?.let {
+                                books.add(book)
+                                booksAdapter.notifyDataSetChanged()
+                            } ?: run {
+                                // snackbar(catalogView, "Publication already exists")
+                                alert(Appcompat, "Publication already exists") {
+
+                                    positiveButton("Add anyways") { }
+                                    negativeButton("Cancel") { }
+
+                                }.build().apply {
+                                    setCancelable(false)
+                                    setCanceledOnTouchOutside(false)
+                                    setOnShowListener(DialogInterface.OnShowListener {
+                                        val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                                        b.setOnClickListener(View.OnClickListener {
+                                            database.books.insert(book, true)?.let {
+                                                books.add(book)
+                                                dismiss()
+                                                booksAdapter.notifyDataSetChanged()
+                                            }
+                                        })
+                                    })
+                                }.show()
+                            }
+                        }
+                    }
+                }
             }
         }
         addBookToView()
@@ -685,6 +754,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             val book = books[position]
             val publicationPath = R2TEST_DIRECTORY_PATH + book.fileName
             val file = File(publicationPath)
+        if(book.ext.equals(".epub")){
             val parser = EpubParser()
             val pub = parser.parse(publicationPath)
             if (pub != null) {
@@ -730,6 +800,15 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                     } ?: run {
                         startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication))
                     }
+                }
+            }
+            } else if (book.ext.equals(".cbz")) {
+
+                val parser = CbzParser()
+                val pub = parser.parse(publicationPath)
+                if (pub != null) {
+                    val publication = pub.publication
+                    startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to publication))
                 }
             }
         } then {
@@ -828,11 +907,20 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
             try {
                 runOnUiThread(Runnable {
-                    val parser = EpubParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                        progress.dismiss()
+                    if (uri.toString().endsWith(".epub")) {
+                        val parser = EpubParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                            progress.dismiss()
+                        }
+                    } else  if (uri.toString().endsWith(".cbz")) {
+                        val parser = CbzParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                            progress.dismiss()
+                        }
                     }
                 })
             } catch (e: Throwable) {

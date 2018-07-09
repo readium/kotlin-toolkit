@@ -74,7 +74,7 @@ class OPDSDetailActivity : AppCompatActivity() {
                                         val stream = ByteArrayOutputStream()
                                         bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-                                        val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray())
+                                        val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
                                         database.books.insert(book, false)?.let {
                                             books.add(book)
                                             snackbar(this, "download completed")

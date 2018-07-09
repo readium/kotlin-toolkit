@@ -12,7 +12,7 @@ val Context.database: BooksDatabaseOpenHelper
 val Context.appContext: Context
     get() = getApplicationContext()
 
-class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id: Long, val coverLink: String?, val identifier: String, val cover: ByteArray?)
+class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id: Long, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext:String)
 
 class BooksDatabase {
 
@@ -49,13 +49,15 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
                 BOOKSTable.FILEURL to TEXT,
                 BOOKSTable.IDENTIFIER to TEXT,
                 BOOKSTable.COVER to BLOB,
-                BOOKSTable.COVERURL to TEXT)
+                BOOKSTable.COVERURL to TEXT,
+                BOOKSTable.EXTENSION to TEXT)
 
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         // Here you can upgrade tables, as usual
         db.dropTable(BOOKSTable.NAME, true)
+        // TODO need to add a migration = add extension column
     }
 }
 
@@ -69,6 +71,7 @@ object BOOKSTable {
     val FILEURL = "fileUrl"
     val COVER = "cover"
     val COVERURL = "coverUrl"
+    val EXTENSION = "extension"
 }
 
 class BOOKS(var database: BooksDatabaseOpenHelper) {
@@ -89,7 +92,8 @@ class BOOKS(var database: BooksDatabaseOpenHelper) {
                         BOOKSTable.FILEURL to book.fileUrl,
                         BOOKSTable.IDENTIFIER to book.identifier,
                         BOOKSTable.COVER to book.cover,
-                        BOOKSTable.COVERURL to book.coverLink)
+                        BOOKSTable.COVERURL to book.coverLink,
+                        BOOKSTable.EXTENSION to book.ext)
             }
         }
         return null
@@ -97,7 +101,7 @@ class BOOKS(var database: BooksDatabaseOpenHelper) {
 
     fun has(book: Book): List<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME,BOOKSTable.TITLE,BOOKSTable.AUTHOR,BOOKSTable.FILEURL,BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER,BOOKSTable.COVER)
+            select(BOOKSTable.NAME, BOOKSTable.FILENAME,BOOKSTable.TITLE,BOOKSTable.AUTHOR,BOOKSTable.FILEURL,BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER,BOOKSTable.COVER, BOOKSTable.EXTENSION)
                     .whereArgs("identifier = {identifier}", "identifier" to book.identifier)
                     .exec {
                         parseList(MyRowParser())
@@ -113,7 +117,7 @@ class BOOKS(var database: BooksDatabaseOpenHelper) {
 
     fun list(): MutableList<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME,BOOKSTable.TITLE,BOOKSTable.AUTHOR,BOOKSTable.FILEURL,BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER,BOOKSTable.COVER)
+            select(BOOKSTable.NAME, BOOKSTable.FILENAME,BOOKSTable.TITLE,BOOKSTable.AUTHOR,BOOKSTable.FILEURL,BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER,BOOKSTable.COVER, BOOKSTable.EXTENSION)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
@@ -146,8 +150,11 @@ class BOOKS(var database: BooksDatabaseOpenHelper) {
             val cover = columns[7]?.let {
                 return@let it as ByteArray
             }
+            val ext = columns[8]?.let {
+                return@let it as String
+            }?: kotlin.run { return@run "" }
 
-            return  Book(filename, title, author, fileUrl, id,  coverUrl, identifier, cover)
+            return  Book(filename, title, author, fileUrl, id,  coverUrl, identifier, cover, ext)
 
         }
     }
