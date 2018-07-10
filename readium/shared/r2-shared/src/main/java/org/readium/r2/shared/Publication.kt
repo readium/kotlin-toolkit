@@ -5,7 +5,13 @@ import org.json.JSONObject
 import java.io.Serializable
 import java.net.URL
 
-//  Type of publication actually handled
+/**
+ * Enumeration of every handled mime type
+ *
+ * There you should add your new mime type to handle a new kind of publication and
+ *      use it to check the type on your implementation
+ *
+ */
 enum class PUBLICATION_TYPE {
     EPUB, CBZ
 }
@@ -49,6 +55,14 @@ class TocElement(val link: Link, val children: List<TocElement>) : JSONable {
 
 }
 
+/**
+ * Publication store every information and meta data about an artwork and provides
+ *      helpers to get some resources
+ *
+ * If you want to add new publications type, you shall add fields / methods to that
+ *      class
+ *
+ */
 class Publication : Serializable {
 
     private val TAG = this::class.java.simpleName
@@ -79,12 +93,9 @@ class Publication : Serializable {
     /// Extension point for links that shouldn't show up in the manifest.
     var otherLinks: MutableList<Link> = mutableListOf()
     var internalData: MutableMap<String, String> = mutableMapOf()
-    //var manifestDictionnary: Map<String, Any> = mapOf()
 
     var coverLink: Link?  = null
         get() = linkWithRel("cover")
-
-    var userProperties = UserProperties()
 
     fun baseUrl() : URL? {
         val selfLink = linkWithRel("self")
@@ -93,13 +104,9 @@ class Publication : Serializable {
             val index = url.toString().lastIndexOf('/')
             return URL(url.toString().substring(0, index))
         }
-
-        // temporary
-
         return null
     }
 
-    //  To see later : build the manifest
     fun manifest() : String{
         val json = JSONObject()
         json.put("metadata", metadata.writeJSON())
@@ -118,8 +125,6 @@ class Publication : Serializable {
 
     fun resource(relativePath: String) : Link? = (spine + resources).first({it.href == relativePath})
 
-    fun spineLink(href: String) : Link? = spine.first({it.href == href})
-
     fun linkWithRel(rel: String) : Link? {
         val findLinkWithRel: (Link) -> Boolean = { it.rel.contains(rel) }
         return findLinkInPublicationLinks(findLinkWithRel)
@@ -128,21 +133,6 @@ class Publication : Serializable {
     fun linkWithHref(href: String) : Link? {
         val findLinkWithHref: (Link) -> Boolean = { (href == it.href) || ("/" + href == it.href)}
         return findLinkInPublicationLinks(findLinkWithHref)
-    }
-
-    fun uriTo(link: Link?, baseURL: URL) : URL? {
-
-        if (link != null) {
-            val linkHref = link.href
-
-            val publicationBaseUrl = baseURL //baseUrl()
-            if (linkHref != null && publicationBaseUrl != null) {
-                val trimmedBaseUrlString = publicationBaseUrl.toString().trim('/')
-                return URL(trimmedBaseUrlString + linkHref)
-            }
-        }
-
-        return null
     }
 
     fun addSelfLink(endPoint: String, baseURL: URL){
@@ -169,6 +159,10 @@ class Publication : Serializable {
 
 }
 
+/**
+ * Parse a JSON dictionary of extra information into a publication
+ *
+ */
 fun parsePublication(pubDict: JSONObject) : Publication {
     val p = Publication()
 
