@@ -65,10 +65,10 @@ dependencies {
 //    implementation project(':r2-opds')
 
 //    uncomment these 3 lines to use with jitpack
-    implementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
-    implementation 'com.github.readium:r2-streamer-kotlin:develop-SNAPSHOT'
-    implementation 'com.github.readium:r2-navigator-kotlin:develop-SNAPSHOT'
-    implementation 'com.github.readium:r2-opds-kotlin:develop-SNAPSHOT'
+    implementation 'com.github.readium:r2-shared-kotlin:master-SNAPSHOT'
+    implementation 'com.github.readium:r2-streamer-kotlin:master-SNAPSHOT'
+    implementation 'com.github.readium:r2-navigator-kotlin:master-SNAPSHOT'
+    implementation 'com.github.readium:r2-opds-kotlin:master-SNAPSHOT'
 
 //    not supported yet, keep these 2 lines commented until further notice
 //    implementation 'com.github.readium:r2-lcp-kotlin:0.1.0'
