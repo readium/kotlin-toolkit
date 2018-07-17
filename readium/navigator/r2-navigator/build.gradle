@@ -62,6 +62,7 @@ dependencies {
     implementation 'com.android.support:support-core-ui:27.1.1'
     implementation 'com.duolingo.open:rtl-viewpager:1.0.3'
 
+    implementation 'org.zeroturnaround:zt-zip:1.12'
     // JSON parser
 //    implementation 'com.beust:klaxon:3.0.1'
 

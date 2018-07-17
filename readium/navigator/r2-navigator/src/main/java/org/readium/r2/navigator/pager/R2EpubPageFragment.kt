@@ -25,7 +25,7 @@ import android.view.MotionEvent
 import android.webkit.WebResourceResponse
 
 
-class R2PageFragment : Fragment() {
+class R2EpubPageFragment : Fragment() {
 
     private val TAG = this::class.java.simpleName
 
@@ -38,7 +38,7 @@ class R2PageFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val v = inflater.inflate(R.layout.fragment_page, container, false)
+        val v = inflater.inflate(R.layout.fragment_page_epub, container, false)
         val prefs = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         // Set text color depending of appearance preference
@@ -145,12 +145,12 @@ class R2PageFragment : Fragment() {
     }
     companion object {
 
-        fun newInstance(url: String, title: String): R2PageFragment {
+        fun newInstance(url: String, title: String): R2EpubPageFragment {
 
             val args = Bundle()
             args.putString("url", url)
             args.putString("title", title)
-            val fragment = R2PageFragment()
+            val fragment = R2EpubPageFragment()
             fragment.arguments = args
             return fragment
         }
