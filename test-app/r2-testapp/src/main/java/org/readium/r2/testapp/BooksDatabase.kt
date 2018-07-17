@@ -12,7 +12,16 @@ val Context.database: BooksDatabaseOpenHelper
 val Context.appContext: Context
     get() = getApplicationContext()
 
-class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id: Long, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext:String)
+class Book(val fileName: String,
+           val title: String,
+           val author: String,
+           val fileUrl: String,
+           val id: Long,
+           val coverLink: String?,
+           val identifier: String,
+           val cover: ByteArray?,
+           val ext:String)
+
 
 class BooksDatabase {
 
