@@ -48,11 +48,9 @@ import org.readium.r2.navigator.R2CbzActivity
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDS1Parser
-import org.readium.r2.shared.PUBLICATION_TYPE
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.opds.ParseData
-import org.readium.r2.shared.promise
 import org.readium.r2.streamer.Parser.CbzParser
 import org.readium.r2.streamer.Parser.EpubParser
 import org.readium.r2.streamer.Parser.PubBox
@@ -114,6 +112,9 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         books = database.books.list()
 
         booksAdapter = BooksAdapter(this, books, "$BASE_URL:$localPort", this)
+
+        //Unit Tests for Bookmarks db interactions
+        bkmkUnitTests(this)
 
         parseIntent(null);
 

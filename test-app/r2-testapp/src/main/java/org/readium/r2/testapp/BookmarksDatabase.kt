@@ -10,17 +10,92 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import org.jetbrains.anko.db.*
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.*
 
-
-class Bookmark(val book_ref: Long,
+/**
+ * Bookmark model
+ *
+ * @val pub_ref: Long -  Reference to the book
+ * @val spine_index: Long - Index to the spine element of the book
+ * @val progression: Double - Percentage of progression in the ( book or spine element ? )
+ * @val timestamp: String - Datetime when the bookmark has been created
+ *
+ * @fun toString(): String - Return a String description of the Bookmark
+ */
+class Bookmark(val pub_ref: Long,
                val spine_index: Long,
                val progression: Double = 0.0,
                var timestamp: String = SimpleDateFormat("MM/dd/yyyy hh:mm:ss").format(Date())){
 
     override fun toString(): String {
-        return "Book number ${this.book_ref}, spine item selected ${this.spine_index}, progression saved ${this.progression} and created the ${this.timestamp}."
+        return "Book number ${this.pub_ref}, spine item selected ${this.spine_index}, progression saved ${this.progression} and created the ${this.timestamp}."
     }
+
+}
+
+/**
+ * UnitTests() tests the database helpers with dummies Bookmarks
+ */
+fun bkmkUnitTests(ctx: Context){
+    val db = BookmarksDatabase(ctx)
+    val bk = mutableListOf<Bookmark>()
+    bk.add(Bookmark(1, 1, 0.0))
+    bk.add(Bookmark(2, 3, 50.0))
+    bk.add(Bookmark(2, 3, 50.0))
+    bk.add(Bookmark(15, 12, 99.99))
+
+    val bk_unknown = Bookmark(4, 34, 133.33)
+
+    println("#####################################")
+    println("###########    Test    ##############")
+    var i = 0
+    bk.forEach {
+        i++
+        println("Book $i : ")
+        println(" - bookId = ${it.pub_ref} (${it.pub_ref.javaClass})")
+        try {
+            val ret = db.bookmarks.insert(it)
+            if (ret != null) {
+                println("Added with success !")
+            } else {
+                println("Already exist !")
+            }
+        } catch (e: Exception) {
+            println("Book number $i failed : ${e.message}")
+        }
+
+        try {
+            var ret = db.bookmarks.has(it)
+            if (ret.isNotEmpty()) {
+                println("Found : $ret !")
+            } else {
+                println("Book not found !")
+            }
+//                db.bookmarks.delete(ret.first())
+//                ret = db.bookmarks.has(it)
+//                if (ret.isNotEmpty()) { println("Delete failed : $ret !") } else { println("Correctly deleted !") }
+        } catch (e: Exception) {
+            println("Book number $i finding failed : ${e.message}")
+        }
+    }
+    println("List of BookMarks  : ")
+    db.bookmarks.list().forEach { println(it) }
+    println("-------------------------------------")
+    println("------------  Unknown  --------------")
+    try {
+        var find = db.bookmarks.has(bk_unknown)
+        if (find.isNotEmpty()) {
+            println("Book unknown found ?? : $find !")
+        } else {
+            println("Unknown book not found !")
+        }
+        db.bookmarks.delete(bk_unknown)
+    } catch (e: Exception) {
+        println("Book number $i finding failed : ${e.message}")
+    }
+    //db.bookmarks.emptyTable()
+    println("###########    End     ##############")
+    println("#####################################")
 }
 
 class BookmarksDatabase {
@@ -51,8 +126,8 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
     override fun onCreate(db: SQLiteDatabase) {
 
         db.createTable(BOOKMARKSTable.NAME, true,
-                BOOKMARKSTable.ID to INTEGER + PRIMARY_KEY + UNIQUE,
-                BOOKMARKSTable.BOOK_REF to INTEGER,
+                BOOKMARKSTable.ID to INTEGER + PRIMARY_KEY,
+                BOOKMARKSTable.PUB_REF to INTEGER,
                 BOOKMARKSTable.SPINE_INDEX to INTEGER,
                 BOOKMARKSTable.PROGRESSION to REAL,
                 BOOKMARKSTable.TIMESTAMP to TEXT)
@@ -68,7 +143,7 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
 object BOOKMARKSTable {
     val NAME = "BOOKMARKS"
     val ID = "id"
-    val BOOK_REF = "book_ref"
+    val PUB_REF = "pub_ref"
     val SPINE_INDEX = "spine_index"
     val PROGRESSION = "progression"
     val TIMESTAMP = "timestamp"
@@ -89,11 +164,16 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
     }
 
     fun insert(bookmark: Bookmark): Long? {
+        if(bookmark.pub_ref < 0 ||
+                bookmark.spine_index < 0 ||
+                bookmark.progression > 100.0 || bookmark.progression < 0.0) {
+            return null
+        }
         val exists = has(bookmark)
         if (exists.isEmpty()) {
             return database.use {
                 return@use insert(BOOKMARKSTable.NAME,
-                        BOOKMARKSTable.BOOK_REF to bookmark.book_ref,
+                        BOOKMARKSTable.PUB_REF to bookmark.pub_ref,
                         BOOKMARKSTable.SPINE_INDEX to bookmark.spine_index,
                         BOOKMARKSTable.PROGRESSION to bookmark.progression,
                         BOOKMARKSTable.TIMESTAMP to bookmark.timestamp)
@@ -105,12 +185,12 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
     fun has(bookmark: Bookmark): List<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
-                    BOOKMARKSTable.BOOK_REF,
+                    BOOKMARKSTable.PUB_REF,
                     BOOKMARKSTable.SPINE_INDEX,
                     BOOKMARKSTable.PROGRESSION,
                     BOOKMARKSTable.TIMESTAMP)
-                    .whereArgs("(book_ref = {book_ref}) AND (spine_index = {spine_index}) AND (progression = {progression})",
-                            "book_ref" to bookmark.book_ref,
+                    .whereArgs("(pub_ref = {pub_ref}) AND (spine_index = {spine_index}) AND (progression = {progression})",
+                            "pub_ref" to bookmark.pub_ref,
                             "spine_index" to bookmark.spine_index,
                             "progression" to bookmark.progression)
                     .exec {
@@ -121,8 +201,8 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
 
     fun delete(bookmark: Bookmark){
         database.use {
-            delete(BOOKMARKSTable.NAME,"(book_ref = {book_ref}) AND (spine_index = {spine_index}) AND (progression = {progression})",
-                    "book_ref" to bookmark.book_ref,
+            delete(BOOKMARKSTable.NAME,"(pub_ref = {pub_ref}) AND (spine_index = {spine_index}) AND (progression = {progression})",
+                    "pub_ref" to bookmark.pub_ref,
                     "spine_index" to bookmark.spine_index,
                     "progression" to bookmark.progression)
         }
@@ -131,7 +211,7 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
     fun list(): MutableList<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
-                    BOOKMARKSTable.BOOK_REF,
+                    BOOKMARKSTable.PUB_REF,
                     BOOKMARKSTable.SPINE_INDEX,
                     BOOKMARKSTable.PROGRESSION,
                     BOOKMARKSTable.TIMESTAMP)
@@ -143,7 +223,7 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
 
     class MyRowParser : RowParser<Bookmark> {
         override fun parseRow(columns: Array<Any?>): Bookmark {
-            val book_ref = columns[0]?.let {
+            val pub_ref = columns[0]?.let {
                 return@let it
             }?: kotlin.run { return@run 0 }
             val spine_index = columns[1]?.let {
@@ -156,7 +236,7 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
                 return@let it
             }?: kotlin.run { return@run "" }
 
-            return  Bookmark(book_ref as Long, spine_index as Long, progression as Double, timestamp as String)
+            return  Bookmark(pub_ref as Long, spine_index as Long, progression as Double, timestamp as String)
 
         }
     }
