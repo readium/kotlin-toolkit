@@ -1,3 +1,10 @@
+/*
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.testapp
 
 import android.graphics.Typeface
@@ -123,7 +130,7 @@ class R2AboutActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "R2 Reader wouldn't have been developed without the financial help of the CNL (Centre National du Livre, France)."
+                        text = "R2 Reader wouldn't have been developed without the financial help of the French state."
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
@@ -138,7 +145,7 @@ class R2AboutActivity : AppCompatActivity() {
                     lparams(width = matchParent, height = wrapContent)
 
                     imageView {
-                        image = getResources().getDrawable( R.drawable.cnl, theme)
+                        image = getResources().getDrawable( R.drawable.repfr, theme)
                         scaleType = ImageView.ScaleType.FIT_CENTER
                     }.lparams(width = wrapContent, height = 200)
                 }
