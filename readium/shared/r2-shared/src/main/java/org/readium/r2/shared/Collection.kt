@@ -17,7 +17,7 @@ data class Collection(var name: String) {
 
 }
 
-enum class CollectionError(v:String) {
+enum class CollectionError(val v:String) {
     invalidCollection("Invalid collection")
 }
 
