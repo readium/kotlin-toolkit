@@ -43,7 +43,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
     }
     
     fun addFont(name: String, assets: AssetManager, context: Context) {
-        val inputStream = assets.open("fonts/" + name)
+        val inputStream = assets.open("fonts/$name")
         val dir = File(context.getExternalFilesDir(null).path + "/fonts/")
         dir.mkdirs()
         inputStream.toFile(context.getExternalFilesDir(null).path + "/fonts/" + name)
@@ -88,7 +88,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         for (link in publication.otherLinks) {
             if (link.rel.contains("media-overlay")) {
                 containsMediaOverlay = true
-                link.href = link.href?.replace("port", "localhost:" + listeningPort + filePath)
+                link.href = link.href?.replace("port", "localhost:$listeningPort$filePath")
             }
         }
     }

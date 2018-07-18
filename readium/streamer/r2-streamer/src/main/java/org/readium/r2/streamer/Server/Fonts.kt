@@ -12,7 +12,7 @@ class Fonts {
     val fonts: MutableMap<String, File> = mutableMapOf()
 
     fun add(key: String, body: File){
-        fonts.put(key, body)
+        fonts[key] = body
     }
 
     fun get(key: String) : File {

@@ -43,11 +43,11 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
             val baseUrl = publication.baseUrl()?.removeLastComponent()
             if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")
                     && baseUrl != null){
-                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && resourceLink.properties.layout == null
+                decodedInputStream = if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && resourceLink.properties.layout == null
                         || resourceLink.properties.layout == "reflowable") {
-                    decodedInputStream = injectReflowableHtml(decodedInputStream, baseUrl)
+                    injectReflowableHtml(decodedInputStream, baseUrl)
                 } else {
-                    decodedInputStream = injectFixedLayoutHtml(decodedInputStream, baseUrl)
+                    injectFixedLayoutHtml(decodedInputStream, baseUrl)
                 }
             }
 

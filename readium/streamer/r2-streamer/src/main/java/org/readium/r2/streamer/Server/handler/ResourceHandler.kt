@@ -65,7 +65,7 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             val offset = encodedUri.indexOf("/", 0)
             val startIndex = encodedUri.indexOf("/", offset + 1)
             val filePath = encodedUri.substring(startIndex + 1)
-            val link = fetcher.publication.linkWithHref("/" + filePath)!!
+            val link = fetcher.publication.linkWithHref("/$filePath")!!
             val mimeType = link.typeLink!!
 
             // If the content is of type html return the response this is done to
@@ -119,7 +119,7 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             if (rangeRequest != null && startFrom >= 0) {
                 if (startFrom >= streamLength) {
                     response = createResponse(Status.RANGE_NOT_SATISFIABLE, MIME_PLAINTEXT, "")
-                    response.addHeader("Content-Range", "bytes 0-0/" + streamLength)
+                    response.addHeader("Content-Range", "bytes 0-0/$streamLength")
                     response.addHeader("ETag", etag)
                 } else {
                     if (endAt < 0) {
@@ -182,6 +182,6 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     companion object {
-        private val TAG = "ResourceHandler"
+        private const val TAG = "ResourceHandler"
     }
 }

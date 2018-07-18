@@ -41,15 +41,15 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
 
         println("$TAG Method: $method, Url: $uri")
 
-        try {
+        return try {
             val lastSlashIndex = uri.lastIndexOf('/')
             uri = uri.substring(lastSlashIndex + 1, uri.length)
             val resources = uriResource!!.initParameter(Fonts::class.java)
             val x = createResponse(Status.OK, getMimeType(uri), resources.get(uri).inputStream())
-            return x
+            x
         } catch (e: Exception) {
             println(TAG + " Exception " + e.toString())
-            return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
+            newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
     }
 
@@ -77,6 +77,6 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     companion object {
-        private val TAG = "FontHandler"
+        private const val TAG = "FontHandler"
     }
 }

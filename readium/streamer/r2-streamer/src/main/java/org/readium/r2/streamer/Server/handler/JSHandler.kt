@@ -41,15 +41,15 @@ class JSHandler : RouterNanoHTTPD.DefaultHandler() {
 
         println("$TAG Method: $method, Url: $uri")
 
-        try {
+        return try {
             val lastSlashIndex = uri.lastIndexOf('/')
             uri = uri.substring(lastSlashIndex + 1, uri.length)
             val resources = uriResource!!.initParameter(Ressources::class.java)
             val x = createResponse(Status.OK, "text/javascript", resources.get(uri))
-            return x
+            x
         } catch (e: Exception) {
             println(TAG + " Exception " + e.toString())
-            return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
+            newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
 
     }
@@ -61,6 +61,6 @@ class JSHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     companion object {
-        private val TAG = "ResourceHandler"
+        private const val TAG = "ResourceHandler"
     }
 }

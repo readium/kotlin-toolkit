@@ -23,8 +23,8 @@ interface ZipArchiveContainer: Container {
 
     override fun data(relativePath: String) : ByteArray{
 
-        var zipEntry = zipFile.getEntry(relativePath)// ?: return ByteArray(0)
-        var fis = zipFile.getInputStream(zipEntry)
+        val zipEntry = zipFile.getEntry(relativePath)// ?: return ByteArray(0)
+        val fis = zipFile.getInputStream(zipEntry)
         val buffer = ByteArrayOutputStream()
         var nRead: Int
         val data = ByteArray(16384)

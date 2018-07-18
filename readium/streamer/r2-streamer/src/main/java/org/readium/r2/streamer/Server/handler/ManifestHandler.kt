@@ -59,6 +59,6 @@ class ManifestHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     companion object {
-        private val TAG = "ManifestHandler"
+        private const val TAG = "ManifestHandler"
     }
 }

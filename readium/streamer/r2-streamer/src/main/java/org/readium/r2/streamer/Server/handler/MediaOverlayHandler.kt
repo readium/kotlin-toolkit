@@ -39,19 +39,19 @@ class MediaOverlayHandler : RouterNanoHTTPD.DefaultHandler() {
     override fun get(uriResource: RouterNanoHTTPD.UriResource?, urlParams: Map<String, String>?, session: IHTTPSession?): Response {
         val fetcher = uriResource!!.initParameter(Fetcher::class.java)
 
-        if (session!!.parameters.containsKey("resource")) {
-            val searchQueryPath = session.parameters["resource"]!!.get(0)
+        return if (session!!.parameters.containsKey("resource")) {
+            val searchQueryPath = session.parameters["resource"]!![0]
             val spines = fetcher.publication.resources
             val objectMapper = ObjectMapper()
-            try {
+            return try {
                 val json = objectMapper.writeValueAsString(getMediaOverlay(spines, searchQueryPath))
-                return newFixedLengthResponse(status, mimeType, json)
+                newFixedLengthResponse(status, mimeType, json)
             } catch (e: JsonProcessingException) {
-                return newFixedLengthResponse(status, mimeType, ResponseStatus.FAILURE_RESPONSE)
+                newFixedLengthResponse(status, mimeType, ResponseStatus.FAILURE_RESPONSE)
             }
 
         } else {
-            return newFixedLengthResponse(status, mimeType, ResponseStatus.FAILURE_RESPONSE)
+            newFixedLengthResponse(status, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
     }
 

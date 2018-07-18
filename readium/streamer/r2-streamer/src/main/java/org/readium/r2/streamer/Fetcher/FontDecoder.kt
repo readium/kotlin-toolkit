@@ -43,8 +43,7 @@ class FontDecoder {
     }
 
     fun decodingFont(input: InputStream, pubId: String, length: Int) : ByteArrayInputStream{
-        val publicationKey: ByteArray
-        publicationKey =  when (length){
+        val publicationKey: ByteArray = when (length){
             Adobe -> getHashKeyAdobe(pubId)
             else -> HASH.sha1(pubId).toHexBytes()
         }
