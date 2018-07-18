@@ -4,7 +4,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.shared.XmlParser
+package org.readium.r2.shared.parser.xml
 
 import android.util.Xml
 import org.xmlpull.v1.XmlPullParser

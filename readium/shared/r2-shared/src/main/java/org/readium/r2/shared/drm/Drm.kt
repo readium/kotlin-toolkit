@@ -19,10 +19,10 @@ class Drm: Serializable {
     var profile: String? = null
     var license: DrmLicense? = null
 
-    enum class Brand(v:String):Serializable {
+    enum class Brand(var v:String):Serializable {
         lcp("lcp")
     }
-    enum class Scheme(v:String):Serializable {
+    enum class Scheme(var v:String):Serializable {
         lcp("http://readium.org/2014/01/lcp")
     }
 

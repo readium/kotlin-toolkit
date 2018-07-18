@@ -159,7 +159,7 @@ class Publication : Serializable {
                 links.firstOrNull(closure) ?:
              pageList.firstOrNull(closure)
 
-    enum class PublicationError(v: String) {
+    enum class PublicationError(var v: String) {
         invalidPublication("Invalid publication")
     }
 

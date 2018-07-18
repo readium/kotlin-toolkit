@@ -68,7 +68,7 @@ class Link : JSONable, Serializable {
 
 }
 
-enum class LinkError(v:String) {
+enum class LinkError(var v:String) {
     invalidLink("Invalid link"),
 }
 
