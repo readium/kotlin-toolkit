@@ -71,7 +71,8 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 
-
+    // ChrisBane/PhotoView ( for the Zoom handling )
+    implementation 'com.github.chrisbanes:PhotoView:2.1.4'
 }
 
 kotlin {
