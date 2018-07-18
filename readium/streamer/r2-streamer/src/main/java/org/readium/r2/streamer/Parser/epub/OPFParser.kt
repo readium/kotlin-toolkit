@@ -4,14 +4,13 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.Parser.EpubParserSubClasses
+package org.readium.r2.streamer.Parser.epub
 
 import android.util.Log
 import org.joda.time.DateTime
 import org.readium.r2.shared.*
-import org.readium.r2.shared.XmlParser.Node
-import org.readium.r2.shared.XmlParser.XmlParser
-import org.readium.r2.streamer.Containers.Container
+import org.readium.r2.shared.parser.xml.Node
+import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.Parser.normalize
 
 class OPFParser {
@@ -30,7 +29,7 @@ class OPFParser {
         publication.internalData["rootfile"] = rootFilePath!!
         if (!parseMetadata(document, publication))
             return null
-        parseRessources(document.getFirst("package")!!.getFirst("manifest")!!, publication)
+        parseResources(document.getFirst("package")!!.getFirst("manifest")!!, publication)
         coverLinkFromMeta(document.root().getFirst("metadata") ?:
                     document.root().getFirst("opf:metadata")!!, publication)
         parseSpine(document.getFirst("package")!!.getFirst("spine")!!, publication)
@@ -66,12 +65,13 @@ class OPFParser {
         return true
     }
 
-    private fun parseRessources(manifest: Node, publication: Publication){
+    private fun parseResources(manifest: Node, publication: Publication){
         val manifestItems = manifest.get("item")!!
         if (manifestItems.isEmpty())
             return
         for (item in manifestItems){
-            val id = item.attributes["id"] ?: continue
+//            val id = item.attributes["id"] ?: continue
+            item.attributes["id"] ?: continue
             val link = linkFromManifest(item)
 
             // TODO: SMIL for MediaOverlays

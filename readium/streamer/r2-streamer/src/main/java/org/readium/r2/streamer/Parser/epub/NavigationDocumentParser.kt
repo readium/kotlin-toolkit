@@ -4,11 +4,11 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.Parser.EpubParserSubClasses
+package org.readium.r2.streamer.Parser.epub
 
 import org.readium.r2.shared.Link
-import org.readium.r2.shared.XmlParser.XmlParser
-import org.readium.r2.shared.XmlParser.Node
+import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.shared.parser.xml.Node
 import org.readium.r2.streamer.Parser.normalize
 
 class NavigationDocumentParser {

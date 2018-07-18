@@ -4,10 +4,10 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.Parser.EpubParserSubClasses
+package org.readium.r2.streamer.Parser.epub
 
 import org.readium.r2.shared.*
-import org.readium.r2.shared.XmlParser.Node
+import org.readium.r2.shared.parser.xml.Node
 
 const val noTitleError = "Error : Publication has no title"
 

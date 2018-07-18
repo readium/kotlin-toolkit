@@ -10,15 +10,15 @@ import android.util.Log
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Encryption
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.XmlParser.XmlParser
+import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.Containers.Container
 import org.readium.r2.streamer.Containers.ContainerEpub
 import org.readium.r2.streamer.Containers.ContainerEpubDirectory
 import org.readium.r2.streamer.Containers.EpubContainer
-import org.readium.r2.streamer.Parser.EpubParserSubClasses.EncryptionParser
-import org.readium.r2.streamer.Parser.EpubParserSubClasses.NCXParser
-import org.readium.r2.streamer.Parser.EpubParserSubClasses.NavigationDocumentParser
-import org.readium.r2.streamer.Parser.EpubParserSubClasses.OPFParser
+import org.readium.r2.streamer.Parser.epub.EncryptionParser
+import org.readium.r2.streamer.Parser.epub.NCXParser
+import org.readium.r2.streamer.Parser.epub.NavigationDocumentParser
+import org.readium.r2.streamer.Parser.epub.OPFParser
 import org.zeroturnaround.zip.ZipUtil
 import java.io.File
 
@@ -62,7 +62,7 @@ class EpubParser : PublicationParser {
         fillEncryptionProfile(publication, drm)
 //            parseMediaOverlay(fetcher, publication)
         parseNavigationDocument(container as EpubContainer, publication)
-        parseNcxDocument(container as EpubContainer, publication)
+        parseNcxDocument(container, publication)
 
         return Pair(container, publication)
     }
@@ -104,7 +104,7 @@ class EpubParser : PublicationParser {
 
 //        val fetcher = Fetcher(publication, container)
         parseNavigationDocument(container as EpubContainer, publication)
-        parseNcxDocument(container as EpubContainer, publication)
+        parseNcxDocument(container, publication)
 
         container.drm = drm
         return PubBox(publication, container)

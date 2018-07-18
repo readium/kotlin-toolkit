@@ -4,12 +4,11 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.Parser.EpubParserSubClasses
+package org.readium.r2.streamer.Parser.epub
 
 import org.readium.r2.shared.Encryption
-import org.readium.r2.shared.Properties
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.XmlParser.Node
+import org.readium.r2.shared.parser.xml.Node
 import org.readium.r2.streamer.Parser.normalize
 
 class EncryptionParser{
