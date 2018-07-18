@@ -11,16 +11,16 @@ import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.readium.r2.shared.*
-import org.readium.r2.shared.XmlParser.Node
-import org.readium.r2.shared.XmlParser.XmlParser
+import org.readium.r2.shared.parser.xml.Node
+import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.opds.*
 import java.net.URL
 
-enum class OPDSParserError(v:String) {
+enum class OPDSParserError(var v:String) {
     missingTitle("The title is missing from the feed."),
     documentNotFound("Document is not found")
 }
-enum class OPDSParserOpenSearchHelperError(v:String) {
+enum class OPDSParserOpenSearchHelperError(var v:String) {
     searchLinkNotFound("Search link not found in feed"),
     searchDocumentIsInvalid("OpenSearch document is invalid")
 }
@@ -37,7 +37,7 @@ class OPDS1Parser {
 
         fun parseURL(url: URL) : Promise<ParseData, Exception> {
             return Fuel.get(url.toString(),null).promise() then {
-                val (request, response, result) = it
+                val (_, _, result) = it
                 this.parse(xmlData = result, url = url)
             }
         }
@@ -199,7 +199,7 @@ class OPDS1Parser {
             }
 
             return Fuel.get(unwrappedURL.toString(),null).promise() then {
-                val (request, response, result) = it
+                val (_, _, result) = it
 
                 val document = XmlParser()
                 document.parseXml(result.inputStream())
@@ -334,8 +334,8 @@ class OPDS1Parser {
                         }
                     }
                     val price = link.getFirst("opds:price")
-                    var priceDouble:Double? = null
-                    var currency:String? = null
+                    var priceDouble: Double?
+                    var currency: String?
                     price?.let {
                         priceDouble = price.text.toString().toDouble()
                         currency = price.attributes["currencyCode"]

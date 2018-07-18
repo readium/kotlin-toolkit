@@ -16,7 +16,7 @@ import org.readium.r2.shared.*
 import org.readium.r2.shared.opds.*
 import java.net.URL
 
-enum class OPDS2ParserError(v:String) {
+enum class OPDS2ParserError(var v:String) {
     invalidJSON("OPDS 2 manifest is not valid JSON"),
     metadataNotFound("Metadata not found"),
     invalidMetadata("Invalid metadata"),
@@ -39,7 +39,7 @@ class OPDS2Parser {
 
         fun parseURL(url: URL) : Promise<ParseData, Exception> {
             return Fuel.get(url.toString(),null).promise() then {
-                val (request, response, result) = it
+                val (_, _, result) = it
                 this.parse(result, url)
             }
         }
