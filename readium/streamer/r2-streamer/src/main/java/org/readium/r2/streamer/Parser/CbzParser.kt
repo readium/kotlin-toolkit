@@ -73,7 +73,7 @@ class CbzParser : PublicationParser {
 //        publication.metadata.multilangTitle = MultilangString()
 //        publication.metadata.multilangTitle?.singleString = container.title
 //        publication.metadata.title = container.getTitle()
-        publication.type = PUBLICATION_TYPE.CBZ
+        publication.type = Publication.TYPE.CBZ
         return PubBox(publication, container)
     }
 

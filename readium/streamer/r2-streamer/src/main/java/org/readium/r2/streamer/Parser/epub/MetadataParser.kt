@@ -16,7 +16,7 @@ class MetadataParser {
     fun parseRenditionProperties(metadataElement: Node, metadata: Metadata){
         val metas = metadataElement.get("meta")!!
         if (metas.isEmpty()){
-            metadata.rendition.layout = RenditionLayout.reflowable
+            metadata.rendition.layout = RenditionLayout.Reflowable
             return
         }
         try {
@@ -24,35 +24,35 @@ class MetadataParser {
                 metadata.rendition.layout = RenditionLayout.valueOf(it)
             }
         } catch(e: Exception) {
-            metadata.rendition.layout = RenditionLayout.reflowable
+            metadata.rendition.layout = RenditionLayout.Reflowable
         }
         try {
             metas.first { it.attributes["property"] == "rendition:flow" }.text?.let {
                 metadata.rendition.flow = RenditionFlow.valueOf(it)
             }
         } catch(e: Exception) {
-            metadata.rendition.layout = RenditionLayout.reflowable
+            metadata.rendition.layout = RenditionLayout.Reflowable
         }
         try {
             metas.first { it.attributes["property"] == "rendition:orientation" }.text?.let {
                 metadata.rendition.orientation = RenditionOrientation.valueOf(it)
             }
         } catch(e: Exception) {
-            metadata.rendition.layout = RenditionLayout.reflowable
+            metadata.rendition.layout = RenditionLayout.Reflowable
         }
         try {
             metas.first { it.attributes["property"] == "rendition:spread" }.text?.let {
                 metadata.rendition.spread = RenditionSpread.valueOf(it)
             }
         } catch(e: Exception) {
-            metadata.rendition.layout = RenditionLayout.reflowable
+            metadata.rendition.layout = RenditionLayout.Reflowable
         }
         try {
             metas.first { it.attributes["property"] == "rendition:viewport" }.text?.let {
                 metadata.rendition.viewport= it
             }
         } catch(e: Exception) {
-            metadata.rendition.layout = RenditionLayout.reflowable
+            metadata.rendition.layout = RenditionLayout.Reflowable
         }
     }
 

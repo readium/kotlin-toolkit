@@ -138,7 +138,7 @@ class EpubParser : PublicationParser {
 
     fun scanForDrm(container: EpubContainer) : Drm? {
         if (ZipUtil.containsEntry(File(container.rootFile.rootPath), lcplFilePath)) {
-            return Drm(Drm.Brand.lcp)
+            return Drm(Drm.Brand.Lcp)
         }
         return null
     }
@@ -155,8 +155,8 @@ class EpubParser : PublicationParser {
         for(encryptedDataElement in encryptedDataElements){
             val encryption = Encryption()
             val keyInfoUri = encryptedDataElement.getFirst("KeyInfo")?.getFirst("RetrievalMethod")?.let{ it.attributes["URI"] }
-            if (keyInfoUri == "license.lcpl#/encryption/content_key" && drm?.brand == Drm.Brand.lcp)
-                encryption.scheme = Drm.Scheme.lcp
+            if (keyInfoUri == "license.lcpl#/encryption/content_key" && drm?.brand == Drm.Brand.Lcp)
+                encryption.scheme = Drm.Scheme.Lcp
             encryption.algorithm = encryptedDataElement.getFirst("EncryptionMethod")?.let{ it.attributes["Algorithm"] }
             encp.parseEncryptionProperties(encryptedDataElement, encryption)
             encp.add(encryption, publication, encryptedDataElement)

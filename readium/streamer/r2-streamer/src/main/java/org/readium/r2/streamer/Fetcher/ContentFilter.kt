@@ -43,7 +43,7 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
             val baseUrl = publication.baseUrl()?.removeLastComponent()
             if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")
                     && baseUrl != null){
-                if (publication.metadata.rendition.layout == RenditionLayout.reflowable && resourceLink.properties.layout == null
+                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && resourceLink.properties.layout == null
                         || resourceLink.properties.layout == "reflowable") {
                     decodedInputStream = injectReflowableHtml(decodedInputStream, baseUrl)
                 } else {
@@ -67,7 +67,7 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
             if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")
                     && baseUrl != null){
                 decodedInputStream =
-                        if (publication.metadata.rendition.layout == RenditionLayout.reflowable && (resourceLink.properties.layout == null
+                        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && (resourceLink.properties.layout == null
                                         || resourceLink.properties.layout == "reflowable")) {
                             injectReflowableHtml(decodedInputStream, baseUrl)
                         } else {
