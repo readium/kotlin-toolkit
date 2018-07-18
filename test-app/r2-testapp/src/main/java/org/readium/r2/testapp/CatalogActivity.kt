@@ -55,7 +55,6 @@ import org.readium.r2.navigator.R2CbzActivity
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDS1Parser
-import org.readium.r2.shared.PUBLICATION_TYPE
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.opds.ParseData
@@ -628,7 +627,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
         fun addBookToView() {
             runOnUiThread {
-            if(publication.type == PUBLICATION_TYPE.EPUB){
+            if(publication.type == Publication.TYPE.EPUB){
                 val publicationIdentifier = publication.metadata.identifier
                 preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
                 val author = authorName(publication)
@@ -695,7 +694,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                     }
                 }
                 server.addEpub(publication, container, "/" + fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
-                } else if(publication.type == PUBLICATION_TYPE.CBZ) {
+                } else if(publication.type == Publication.TYPE.CBZ) {
                     if (add) {
                         publication.coverLink?.href?.let {
                             val book = Book(fileName, publication.metadata.title, "", absolutePath, books.size.toLong(), publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it),".cbz")
@@ -769,7 +768,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 val publication = pub.publication
                 if (publication.spine.size > 0) {
                     pub.container.drm?.let { drm: Drm ->
-                        if (drm.brand == Drm.Brand.lcp) {
+                        if (drm.brand == Drm.Brand.Lcp) {
                             // uncomment for lcp
                             /*
                             handleLcpPublication(publicationPath, drm, {
