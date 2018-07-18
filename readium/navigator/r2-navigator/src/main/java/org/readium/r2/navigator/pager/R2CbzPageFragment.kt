@@ -15,8 +15,6 @@ import java.io.File
 
 class R2CbzPageFragment : Fragment() {
 
-    private val TAG = this::class.java.simpleName
-
     val zipFile: String?
         get() = arguments!!.getString("zipFile")
     val zipEntry: String?

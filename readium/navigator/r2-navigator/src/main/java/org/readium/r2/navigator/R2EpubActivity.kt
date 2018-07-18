@@ -31,8 +31,6 @@ import org.readium.r2.shared.drm.DRMMModel
 
 class R2EpubActivity : AppCompatActivity() {
 
-    private val TAG = this::class.java.simpleName
-
     lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
     lateinit var resources: ArrayList<String>
@@ -60,11 +58,11 @@ class R2EpubActivity : AppCompatActivity() {
                 drmModel = intent.getSerializableExtra("drmModel") as DRMMModel
                 drmModel?.let {
                     runOnUiThread {
-                        menuDrm?.setVisible(true)
+                        menuDrm?.isVisible = true
                     }
                 } ?: run {
                     runOnUiThread {
-                        menuDrm?.setVisible(false)
+                        menuDrm?.isVisible = false
                     }
                 }
             }
@@ -96,12 +94,12 @@ class R2EpubActivity : AppCompatActivity() {
         if (index == 0) {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.setCurrentItem(resources.size - 1)
+                resourcePager.currentItem = resources.size - 1
             } else {
                 // The view has LTR layout
             }
         } else {
-            resourcePager.setCurrentItem(index)
+            resourcePager.currentItem = index
         }
 
         val appearancePref = preferences.getInt("appearance", 0)
@@ -116,7 +114,7 @@ class R2EpubActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_toc, menu)
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
-        menuDrm?.setVisible(false)
+        menuDrm?.isVisible = false
         return true
     }
 
@@ -133,7 +131,7 @@ class R2EpubActivity : AppCompatActivity() {
             }
             R.id.settings -> {
                 userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.toc), 0, 0, Gravity.END)
-                return false;
+                return false
             }
             R.id.drm -> {
                 startActivity(intentFor<DRMManagementActivity>("drmModel" to drmModel))
@@ -148,7 +146,7 @@ class R2EpubActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         val publicationIdentifier = publication.metadata.identifier
-        val documentIndex = resourcePager.getCurrentItem()
+        val documentIndex = resourcePager.currentItem
         val progression = resourcePager.webView.progression
         preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
         preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
@@ -164,9 +162,9 @@ class R2EpubActivity : AppCompatActivity() {
                     href = href.substring(0, href.indexOf("#"))
                 }
                 // Search corresponding href in the spine
-                for (i in 0..publication.spine.size - 1) {
+                for (i in 0 until publication.spine.size) {
                     if (publication.spine[i].href == href) {
-                        resourcePager.setCurrentItem(i)
+                        resourcePager.currentItem = i
                     }
                 }
                 preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
@@ -188,10 +186,10 @@ class R2EpubActivity : AppCompatActivity() {
             preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() - 1)
+                resourcePager.currentItem = resourcePager.getCurrentItem() - 1
             } else {
                 // The view has LTR layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() + 1)
+                resourcePager.currentItem = resourcePager.getCurrentItem() + 1
             }
         }
     }
@@ -201,10 +199,10 @@ class R2EpubActivity : AppCompatActivity() {
             preferences.edit().putString("$publicationIdentifier-documentProgression", 1.0.toString()).apply()
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() + 1)
+                resourcePager.currentItem = resourcePager.currentItem + 1
             } else {
                 // The view has LTR layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() - 1)
+                resourcePager.currentItem = resourcePager.currentItem - 1
             }
 
         }

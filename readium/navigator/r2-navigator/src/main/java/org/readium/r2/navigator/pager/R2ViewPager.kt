@@ -13,10 +13,8 @@ import com.duolingo.open.rtlviewpager.RtlViewPager
 
 class R2ViewPager : RtlViewPager {
 
-    private val TAG = this::class.java.simpleName
-
-    constructor(context: Context) : super(context) {}
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {}
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
     override fun setCurrentItem(item: Int, smoothScroll: Boolean) {
         super.setCurrentItem(item, false)
@@ -27,10 +25,10 @@ class R2ViewPager : RtlViewPager {
     }
 
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
-        try {
-            return super.onInterceptTouchEvent(event)
+        return try {
+            super.onInterceptTouchEvent(event)
         } catch (e: IllegalArgumentException) {
-            return false
+            false
         }
     }
 

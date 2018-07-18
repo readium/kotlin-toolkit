@@ -47,8 +47,6 @@ const val LINE_HEIGHT_NAME = "--USER__$LINE_HEIGHT_REF"
 
 class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
-    private val TAG = this::class.java.simpleName
-
     lateinit var resourcePager: R2ViewPager
 
     private val appearanceValues = listOf("readium-default-on", "readium-sepia-on","readium-night-on")
@@ -178,9 +176,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         val layoutInflater = LayoutInflater.from(context)
         val layout = layoutInflater.inflate(R.layout.popup_window_user_settings, null)
         val userSettingsPopup = PopupWindow(context)
-        userSettingsPopup.setContentView(layout)
-        userSettingsPopup.setWidth(ListPopupWindow.WRAP_CONTENT)
-        userSettingsPopup.setHeight(ListPopupWindow.WRAP_CONTENT)
+        userSettingsPopup.contentView = layout
+        userSettingsPopup.width = ListPopupWindow.WRAP_CONTENT
+        userSettingsPopup.height = ListPopupWindow.WRAP_CONTENT
         userSettingsPopup.isOutsideTouchable = true
         userSettingsPopup.isFocusable = true
 
@@ -218,7 +216,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
         val fontSpinner: Spinner = layout.findViewById(R.id.spinner_action_settings_intervall_values) as Spinner
 
-        val fonts = context.getResources().getStringArray(R.array.font_list)
+        val fonts = context.resources.getStringArray(R.array.font_list)
 
         val dataAdapter = object : ArrayAdapter<String>(context, R.layout.spinner_item_font, fonts) {
 
@@ -252,7 +250,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
         // Font family
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        fontSpinner.setAdapter(dataAdapter)
+        fontSpinner.adapter = dataAdapter
         fontSpinner.setSelection(fontFamily.index)
         fontSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, pos: Int, id: Long) {
@@ -492,14 +490,14 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             layoutParams.screenBrightness = backLightValue
             context.window.attributes = layoutParams
         }
-        brightnessSeekbar.setProgress(brightness)
+        brightnessSeekbar.progress = brightness
         brightnessSeekbar.setOnSeekBarChangeListener(
                 object : SeekBar.OnSeekBarChangeListener {
                     override fun onProgressChanged(bar: SeekBar, progress: Int, from_user: Boolean) {
                         val backLightValue = progress.toFloat() / 100
-                        val layoutParams = (context as R2EpubActivity).window.getAttributes()
+                        val layoutParams = (context as R2EpubActivity).window.attributes
                         layoutParams.screenBrightness = backLightValue
-                        context.window.setAttributes(layoutParams)
+                        context.window.attributes = layoutParams
                         preferences.edit().putInt("reader_brightness", progress).apply()
                     }
 

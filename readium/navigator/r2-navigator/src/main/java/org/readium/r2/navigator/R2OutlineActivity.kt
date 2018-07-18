@@ -55,12 +55,12 @@ class R2OutlineActivity : AppCompatActivity() {
 
         list.setOnItemClickListener { _, _, position, _ ->
 
-            val toc_item_uri = allElements.get(position).href
+            val tocItemUri = allElements[position].href
 
-            Timber.d(TAG, toc_item_uri)
+            Timber.d(TAG, tocItemUri)
 
             val intent = Intent()
-            intent.putExtra("toc_item_uri", toc_item_uri)
+            intent.putExtra("toc_item_uri", tocItemUri)
             setResult(Activity.RESULT_OK, intent)
             finish()
 
@@ -80,13 +80,13 @@ class R2OutlineActivity : AppCompatActivity() {
 
     inner class TOCAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.list_item_toc, users) {
         private inner class ViewHolder {
-            internal var toc_textView: TextView? = null
+            internal var tocTextView: TextView? = null
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             var myView = convertView
 
-            val spine_item = getItem(position)
+            val spineItem = getItem(position)
 
             val viewHolder: ViewHolder // view lookup cache stored in tag
             if (myView == null) {
@@ -94,7 +94,7 @@ class R2OutlineActivity : AppCompatActivity() {
                 viewHolder = ViewHolder()
                 val inflater = LayoutInflater.from(context)
                 myView = inflater.inflate(R.layout.list_item_toc, parent, false)
-                viewHolder.toc_textView = myView!!.toc_textView as TextView
+                viewHolder.tocTextView = myView!!.toc_textView as TextView
 
                 myView.tag = viewHolder
 
@@ -103,7 +103,7 @@ class R2OutlineActivity : AppCompatActivity() {
                 viewHolder = myView.tag as ViewHolder
             }
 
-            viewHolder.toc_textView!!.setText(spine_item!!.title)
+            viewHolder.tocTextView!!.text = spineItem!!.title
 
             return myView
         }

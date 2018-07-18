@@ -27,8 +27,6 @@ import android.webkit.WebResourceResponse
 
 class R2EpubPageFragment : Fragment() {
 
-    private val TAG = this::class.java.simpleName
-
     val resourceUrl: String?
         get() = arguments!!.getString("url")
 
@@ -70,8 +68,8 @@ class R2EpubPageFragment : Fragment() {
         webView.settings.useWideViewPort = true
         webView.settings.loadWithOverviewMode = true
         webView.settings.setSupportZoom(true)
-        webView.getSettings().setBuiltInZoomControls(true);
-        webView.getSettings().setDisplayZoomControls(true);
+        webView.getSettings().builtInZoomControls = true
+        webView.settings.displayZoomControls = true
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 

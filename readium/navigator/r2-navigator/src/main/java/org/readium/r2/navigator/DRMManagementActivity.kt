@@ -171,7 +171,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     return@let it
                 }
 
-                if ((start != null && end != null) && !start.equals(end)) {
+                if ((start != null && end != null) && start != end) {
                     drmModel.start?.let {
                         linearLayout {
                             orientation = LinearLayout.HORIZONTAL

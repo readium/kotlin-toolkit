@@ -22,8 +22,6 @@ import android.view.MotionEvent
 
 class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
-    private val TAG = this::class.java.simpleName
-
     lateinit var activity: R2EpubActivity
 
     private var gestureDetector: GestureDetector? = null
