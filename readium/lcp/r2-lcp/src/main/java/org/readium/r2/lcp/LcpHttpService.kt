@@ -7,15 +7,14 @@
 package org.readium.r2.lcp
 
 import android.content.Context
-import android.os.Environment
 import android.util.Log
 import com.github.kittinunf.fuel.Fuel
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
 import org.json.JSONObject
-import org.readium.r2.lcp.Model.Documents.LicenseDocument
-import org.readium.r2.lcp.Model.Documents.StatusDocument
+import org.readium.r2.lcp.model.documents.LicenseDocument
+import org.readium.r2.lcp.model.documents.StatusDocument
 import org.readium.r2.shared.contentTypeEncoding
 import org.readium.r2.shared.promise
 import java.io.File
@@ -54,7 +53,7 @@ class LcpHttpService {
 
     fun certificateRevocationList(url: String): Promise<String, Exception> {
         return Fuel.get(url,null).promise() then {
-            val (request, _, result) = it
+            val (_, _, result) = it
             "-----BEGIN X509 CRL-----${ Base64.encodeToString(result, Base64.DEFAULT)}-----END X509 CRL-----";
 //            "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(result)}-----END X509 CRL-----";
         }

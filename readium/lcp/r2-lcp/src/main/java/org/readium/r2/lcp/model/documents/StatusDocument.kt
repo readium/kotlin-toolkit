@@ -4,18 +4,18 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.lcp.Model.Documents
+package org.readium.r2.lcp.model.documents
 
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpParsingError
 import org.readium.r2.lcp.LcpParsingErrors
-import org.readium.r2.lcp.Model.SubParts.Link
-import org.readium.r2.lcp.Model.SubParts.Updated
-import org.readium.r2.lcp.Model.SubParts.lsd.Event
-import org.readium.r2.lcp.Model.SubParts.lsd.PotentialRights
-import org.readium.r2.lcp.Model.SubParts.lsd.parseEvents
-import org.readium.r2.lcp.Model.SubParts.parseLinks
+import org.readium.r2.lcp.model.sub.Link
+import org.readium.r2.lcp.model.sub.Updated
+import org.readium.r2.lcp.model.sub.lsd.Event
+import org.readium.r2.lcp.model.sub.lsd.PotentialRights
+import org.readium.r2.lcp.model.sub.lsd.parseEvents
+import org.readium.r2.lcp.model.sub.parseLinks
 import java.nio.charset.Charset
 
 /// Document that contains information about the history of a License Document,

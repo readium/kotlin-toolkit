@@ -14,8 +14,8 @@ import nl.komponents.kovenant.task
 import org.joda.time.DateTime
 import org.readium.lcp.sdk.DRMContext
 import org.readium.lcp.sdk.Lcp
-import org.readium.r2.lcp.Model.Documents.LicenseDocument
-import org.readium.r2.lcp.Model.Documents.StatusDocument
+import org.readium.r2.lcp.model.documents.LicenseDocument
+import org.readium.r2.lcp.model.documents.StatusDocument
 import org.readium.r2.shared.drm.DrmLicense
 import org.zeroturnaround.zip.ZipUtil
 import java.io.File

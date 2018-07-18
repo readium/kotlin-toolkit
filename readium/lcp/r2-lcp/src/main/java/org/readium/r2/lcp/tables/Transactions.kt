@@ -4,7 +4,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.lcp.Tables
+package org.readium.r2.lcp.tables
 
 import org.jetbrains.anko.db.*
 import org.readium.r2.lcp.LcpDatabaseOpenHelper
