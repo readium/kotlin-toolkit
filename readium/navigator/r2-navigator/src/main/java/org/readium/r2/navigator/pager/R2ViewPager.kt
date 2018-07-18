@@ -27,8 +27,11 @@ class R2ViewPager : RtlViewPager {
     }
 
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
-        // Never allow swiping to switch between pages
-        return false
+        try {
+            return super.onInterceptTouchEvent(event)
+        } catch (e: IllegalArgumentException) {
+            return false
+        }
     }
 
 }

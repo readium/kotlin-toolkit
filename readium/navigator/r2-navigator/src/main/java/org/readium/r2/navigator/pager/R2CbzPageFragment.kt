@@ -11,7 +11,6 @@ import org.readium.r2.navigator.R
 import org.zeroturnaround.zip.ZipUtil
 import java.io.ByteArrayInputStream
 import java.io.File
-import com.github.chrisbanes.photoview.PhotoViewAttacher
 
 
 class R2CbzPageFragment : Fragment() {
@@ -34,9 +33,6 @@ class R2CbzPageFragment : Fragment() {
             val bitmap = BitmapFactory.decodeStream(arrayInputStream)
             imageView.setImageBitmap(bitmap)
         }
-        imageView.scaleType = ImageView.ScaleType.MATRIX
-        
-        PhotoViewAttacher(imageView)
 
         return v
     }
