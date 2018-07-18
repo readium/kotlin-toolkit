@@ -14,8 +14,8 @@ import java.net.URL
 class UserKey (json: JSONObject){
 
     var hint: String
-    var algorithm: URL
-    var keyCheck: String
+    private var algorithm: URL
+    private var keyCheck: String
 
     init {
         try {

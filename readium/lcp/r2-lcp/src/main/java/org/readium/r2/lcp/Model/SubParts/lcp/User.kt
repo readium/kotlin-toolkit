@@ -9,17 +9,14 @@ package org.readium.r2.lcp.Model.SubParts.lcp
 import org.json.JSONObject
 
 class User(json: JSONObject) {
-    var id: String
-    var email: String
-    var name: String
-    var encrypted = mutableListOf<String>()
+    var id: String = json.getString("id")
+//    var email: String = json.getString("email")
+//    var name: String = json.getString("name")
+    private var encrypted = mutableListOf<String>()
 
     init {
-        id = json.getString("id")
-        email = json.getString("email")
-        name = json.getString("name")
         val encryptedArray = json.getJSONArray("encrypted")
-        for (i in 0..encryptedArray.length() - 1){
+        for (i in 0 until encryptedArray.length()){
             encrypted.add(encryptedArray.getString(i))
         }
     }

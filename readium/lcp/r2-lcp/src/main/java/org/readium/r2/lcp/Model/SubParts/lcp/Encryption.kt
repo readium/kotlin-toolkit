@@ -13,7 +13,7 @@ import java.net.URL
 
 class Encryption(json: JSONObject) {
     var profile: URL
-    var contentKey: ContentKey
+    private var contentKey: ContentKey
     var userKey: UserKey
 
     init {

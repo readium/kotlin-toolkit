@@ -28,9 +28,9 @@ class Rights (json: JSONObject){
             start = DateTime(json.getString("start")).toDate()
         }
         if (json.has("end")) {
-            val enddate = DateTime(json.getString("end"))
-            end = enddate.toDate()
-            potentialEnd = enddate.plusMonths(1).toDate()
+            val endDate = DateTime(json.getString("end"))
+            end = endDate.toDate()
+            potentialEnd = endDate.plusMonths(1).toDate()
         }
 
     }

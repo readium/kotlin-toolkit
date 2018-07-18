@@ -11,9 +11,5 @@ import org.json.JSONObject
 import java.util.*
 
 class PotentialRights(json: JSONObject) {
-    var end: Date?
-
-    init {
-        end = DateTime(json.getString("end")).toDate()
-    }
+    var end: Date? = DateTime(json.getString("end")).toDate()
 }

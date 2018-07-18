@@ -13,8 +13,8 @@ import java.net.URL
 
 class ContentKey(json: JSONObject) {
 
-    val encryptedValue: String
-    var algorithm: URL
+    private val encryptedValue: String
+    private var algorithm: URL
 
     init {
         try {
