@@ -68,7 +68,7 @@ class R2EpubPageFragment : Fragment() {
         webView.settings.useWideViewPort = true
         webView.settings.loadWithOverviewMode = true
         webView.settings.setSupportZoom(true)
-        webView.getSettings().builtInZoomControls = true
+        webView.settings.builtInZoomControls = true
         webView.settings.displayZoomControls = true
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")

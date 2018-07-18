@@ -186,10 +186,10 @@ class R2EpubActivity : AppCompatActivity() {
             preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.currentItem = resourcePager.getCurrentItem() - 1
+                resourcePager.currentItem = resourcePager.currentItem - 1
             } else {
                 // The view has LTR layout
-                resourcePager.currentItem = resourcePager.getCurrentItem() + 1
+                resourcePager.currentItem = resourcePager.currentItem + 1
             }
         }
     }

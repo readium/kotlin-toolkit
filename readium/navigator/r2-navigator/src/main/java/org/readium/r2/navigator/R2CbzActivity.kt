@@ -81,10 +81,10 @@ class R2CbzActivity : AppCompatActivity() {
         runOnUiThread {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.currentItem = resourcePager.getCurrentItem() - 1
+                resourcePager.currentItem = resourcePager.currentItem - 1
             } else {
                 // The view has LTR layout
-                resourcePager.currentItem = resourcePager.getCurrentItem() + 1
+                resourcePager.currentItem = resourcePager.currentItem + 1
             }
         }
     }
@@ -93,10 +93,10 @@ class R2CbzActivity : AppCompatActivity() {
         runOnUiThread {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.currentItem = resourcePager.getCurrentItem() + 1
+                resourcePager.currentItem = resourcePager.currentItem + 1
             } else {
                 // The view has LTR layout
-                resourcePager.currentItem = resourcePager.getCurrentItem() - 1
+                resourcePager.currentItem = resourcePager.currentItem - 1
             }
 
         }
