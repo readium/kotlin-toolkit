@@ -35,7 +35,8 @@ class R2CbzPageFragment : Fragment() {
             imageView.setImageBitmap(bitmap)
         }
         imageView.scaleType = ImageView.ScaleType.MATRIX
-        val pvAttacher = PhotoViewAttacher(imageView)
+        
+        PhotoViewAttacher(imageView)
 
         return v
     }
