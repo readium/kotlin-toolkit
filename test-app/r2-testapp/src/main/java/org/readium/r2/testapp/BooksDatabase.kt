@@ -118,7 +118,7 @@ class BOOKS(var database: BooksDatabaseOpenHelper) {
 
     fun delete(book: Book) {
         database.use {
-            delete(BOOKSTable.NAME, "id = {id}", "id" to book.id!! )
+            delete(BOOKSTable.NAME, "id = {id}", "id" to book.id)
         }
     }
 

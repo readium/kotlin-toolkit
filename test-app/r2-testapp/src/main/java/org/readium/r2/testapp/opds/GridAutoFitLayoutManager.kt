@@ -28,15 +28,15 @@ class GridAutoFitLayoutManager : GridLayoutManager {
     }/* Initially set spanCount to 1, will be changed automatically later. */
 
     private fun checkedColumnWidth(context: Context, columnWidth: Int): Int {
-        var columnWidth = columnWidth
-        if (columnWidth <= 0) {
-            columnWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sColumnWidth.toFloat(),
+        var width = columnWidth
+        if (width <= 0) {
+            width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sColumnWidth.toFloat(),
                     context.resources.displayMetrics).toInt()
         } else {
-            columnWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, columnWidth.toFloat(),
+            width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width.toFloat(),
                     context.resources.displayMetrics).toInt()
         }
-        return columnWidth
+        return width
     }
 
     private fun setColumnWidth(newColumnWidth: Int) {

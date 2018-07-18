@@ -117,7 +117,7 @@ class OPDSListActivity : AppCompatActivity() {
                                     editTextHref!!.setError("Please Enter A Valid URL.");
                                     editTextHref!!.requestFocus();
                                 } else {
-                                    var parseData: Promise<ParseData, Exception>? = null
+                                    val parseData: Promise<ParseData, Exception>?
                                     parseData = parseURL(URL(editTextHref!!.text.toString()))
                                     parseData.successUi {
                                        val opds = OPDSModel(
@@ -148,7 +148,7 @@ class OPDSListActivity : AppCompatActivity() {
 
     private fun parseURL(url: URL) : Promise<ParseData, Exception> {
         return Fuel.get(url.toString(),null).promise() then {
-            val (request, response, result) = it
+            val (_, _, result) = it
             if (isJson(result)) {
                 OPDS2Parser.parse(result, url)
             } else {

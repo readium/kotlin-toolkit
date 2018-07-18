@@ -212,7 +212,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                                         editTextHref!!.setError("Please Enter A Valid URL.");
                                                         editTextHref!!.requestFocus();
                                                     } else {
-                                                        var parseData: Promise<ParseData, Exception>? = null
+                                                        val parseData: Promise<ParseData, Exception>?
                                                         parseData = parseURL(URL(editTextHref!!.text.toString()))
                                                         parseData.successUi {
                                                             dismiss()
@@ -296,7 +296,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
     private fun parseURL(url: URL) : Promise<ParseData, Exception> {
         return Fuel.get(url.toString(),null).promise() then {
-            val (request, response, result) = it
+            val (_, _, result) = it
             if (isJson(result)) {
                 OPDS2Parser.parse(result, url)
             } else {
@@ -432,7 +432,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                     val thread = Thread(Runnable {
                         val fileName = UUID.randomUUID().toString()
                         val publicationPath = R2TEST_DIRECTORY_PATH + fileName
-                        val path = RealPathUtil.getRealPathFromURI_API19(this, uri)
+                        val path = RealPathUtil.getRealPath(this, uri)
 
                         if (path != null) {
                             copyFile(File(path), File(publicationPath))

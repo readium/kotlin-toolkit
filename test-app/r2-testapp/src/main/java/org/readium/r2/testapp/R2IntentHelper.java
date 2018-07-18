@@ -17,8 +17,8 @@ import android.net.Uri;
 
 public class R2IntentHelper {
 
-    public static String URI = "URI";
-    public static String LCP = "LCP";
+    public static final String URI = "URI";
+    public static final String LCP = "LCP";
 
     public Intent catalogActivityIntent(Context context, Uri uri) {
         return catalogActivityIntent(context,uri, false);
