@@ -56,6 +56,7 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'com.jakewharton.timber:timber:4.7.0'
 
 //    uncomment these 5 lines to use with GitHu submodules and Android Studio Modules
 //    implementation project(':r2-navigator')
@@ -79,7 +80,7 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     implementation 'com.android.support:cardview-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     implementation('com.mcxiaoke.koi:core:0.5.5') {
 //        exclude module: 'support-v4'
 //        exclude module: 'support-v7'
@@ -97,7 +98,6 @@ dependencies {
 //    implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.1'
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'com.squareup.picasso:picasso:2.5.2'
-    implementation 'com.jakewharton.timber:timber:4.7.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.1.8'
     implementation 'org.jetbrains.anko:anko-design:0.10.4'
 
