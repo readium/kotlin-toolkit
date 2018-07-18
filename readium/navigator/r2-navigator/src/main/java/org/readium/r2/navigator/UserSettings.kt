@@ -16,10 +16,8 @@ import android.widget.*
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.pager.R2WebView
 import org.readium.r2.shared.*
-import timber.log.Timber
 import java.io.File
 import org.json.JSONArray
-import org.json.JSONObject
 
 const val FONT_SIZE_REF = "fontSize"
 const val FONT_FAMILY_REF = "fontFamily"
@@ -162,7 +160,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
     }
 
     fun updateViewCSS(ref: String) {
-        val c = resourcePager.childCount
         for (i in 0 until resourcePager.childCount) {
             val webView = resourcePager.getChildAt(i).findViewById(R.id.webView) as R2WebView
             applyCSS(webView, ref)
@@ -179,7 +176,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
     fun userSettingsPopUp(): PopupWindow {
 
         val layoutInflater = LayoutInflater.from(context)
-        val layout = layoutInflater.inflate(R.layout.popup_window, null)
+        val layout = layoutInflater.inflate(R.layout.popup_window_user_settings, null)
         val userSettingsPopup = PopupWindow(context)
         userSettingsPopup.setContentView(layout)
         userSettingsPopup.setWidth(ListPopupWindow.WRAP_CONTENT)
@@ -223,15 +220,14 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
         val fonts = context.getResources().getStringArray(R.array.font_list)
 
-        val dataAdapter = object : ArrayAdapter<String>(context, R.layout.spinner_item, fonts) {
+        val dataAdapter = object : ArrayAdapter<String>(context, R.layout.spinner_item_font, fonts) {
 
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-                var v: View? = null
-                v = super.getDropDownView(position, null, parent)
+                val v: View? = super.getDropDownView(position, null, parent)
                 // Makes the selected font appear in dark
                 // If this is the selected item position
                 if (position == fontFamily.index) {
-                    v!!.setBackgroundColor(context.getResources().getColor(R.color.colorPrimaryDark))
+                    v!!.setBackgroundColor(context.color(R.color.colorPrimaryDark))
                     v.findViewById<TextView>(android.R.id.text1).setTextColor(Color.WHITE)
 
                 } else {
@@ -284,8 +280,8 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
         appearanceRadios[appearance.index].isChecked = true
 
-        appearanceGroup.setOnCheckedChangeListener { radioGroup, id ->
-            val i = findIndexOfId(id, appearanceRadios)
+        appearanceGroup.setOnCheckedChangeListener { _, id ->
+            val i = findIndexOfId(id, list = appearanceRadios)
             appearance.index = i
             when (i) {
                 0 -> {
@@ -325,7 +321,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         // Publisher defaults
         val publisherDefaultSwitch = layout.findViewById(R.id.publisher_default) as Switch
         publisherDefaultSwitch.isChecked = publisherDefault.on
-        publisherDefaultSwitch.setOnCheckedChangeListener { compoundButton, b ->
+        publisherDefaultSwitch.setOnCheckedChangeListener { _, b ->
             publisherDefault.on = b
             updateSwitchable(publisherDefault)
             updateViewCSS(PUBLISHER_DEFAULT_REF)
@@ -335,7 +331,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         // Vertical scroll
         val scrollModeSwitch = layout.findViewById(R.id.scroll_mode) as Switch
         scrollModeSwitch.isChecked = scrollMode.on
-        scrollModeSwitch.setOnCheckedChangeListener { compoundButton, b ->
+        scrollModeSwitch.setOnCheckedChangeListener { _, b ->
             scrollMode.on = scrollModeSwitch.isChecked
             when (b) {
                 true -> {
@@ -366,7 +362,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
                 (if (alignment.index == 0) context.getDrawable(R.drawable.icon_left) else context.getDrawable(R.drawable.icon_left_white)),
                 null, null)
 
-        alignmentGroup.setOnCheckedChangeListener { radioGroup, i ->
+        alignmentGroup.setOnCheckedChangeListener { _, i ->
             alignment.index = findIndexOfId(i, alignmentRadios)
             alignmentRadios[0].setCompoundDrawablesWithIntrinsicBounds(null,
                     (if (alignment.index == 0) context.getDrawable(R.drawable.icon_justify_white) else context.getDrawable(R.drawable.icon_justify)),
@@ -387,7 +383,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         columnsRadios.add(layout.findViewById(R.id.column_one))
         columnsRadios.add(layout.findViewById(R.id.column_two))
         columnsRadios[columnsCount.index].isChecked = true
-        columnsCountGroup.setOnCheckedChangeListener { radioGroup, id ->
+        columnsCountGroup.setOnCheckedChangeListener { _, id ->
             val i = findIndexOfId(id, columnsRadios)
             columnsCount.index = i
             publisherDefaultSwitch.isChecked = false

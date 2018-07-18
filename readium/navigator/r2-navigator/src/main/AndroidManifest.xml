@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="org.readium.r2.navigator">
 
-    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:allowBackup="false"

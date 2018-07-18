@@ -17,8 +17,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_outline.*
-import kotlinx.android.synthetic.main.toc_item.view.*
+import kotlinx.android.synthetic.main.activity_r2_outline.*
+import kotlinx.android.synthetic.main.list_item_toc.view.*
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
 import timber.log.Timber
@@ -31,12 +31,10 @@ class R2OutlineActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_outline)
+        setContentView(R.layout.activity_r2_outline)
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
-        val epubName = intent.getStringExtra("epubName")
         val publication = intent.getSerializableExtra("publication") as Publication
-        val publicationIdentifier = publication.metadata.identifier
 
         title = publication.metadata.title
 
@@ -57,7 +55,6 @@ class R2OutlineActivity : AppCompatActivity() {
 
         list.setOnItemClickListener { _, _, position, _ ->
 
-            val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
             val toc_item_uri = allElements.get(position).href
 
             Timber.d(TAG, toc_item_uri)
@@ -81,7 +78,7 @@ class R2OutlineActivity : AppCompatActivity() {
         return children
     }
 
-    inner class TOCAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.toc_item, users) {
+    inner class TOCAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.list_item_toc, users) {
         private inner class ViewHolder {
             internal var toc_textView: TextView? = null
         }
@@ -96,7 +93,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
                 viewHolder = ViewHolder()
                 val inflater = LayoutInflater.from(context)
-                myView = inflater.inflate(R.layout.toc_item, parent, false)
+                myView = inflater.inflate(R.layout.list_item_toc, parent, false)
                 viewHolder.toc_textView = myView!!.toc_textView as TextView
 
                 myView.tag = viewHolder
