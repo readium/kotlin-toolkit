@@ -143,8 +143,8 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         }
     }
 
-    private fun updateEnumeratable(enumeratable: Enumeratable) {
-        preferences.edit().putInt(enumeratable.ref, enumeratable.index).apply()
+    private fun updateEnumeratable(enumerable: Enumerable) {
+        preferences.edit().putInt(enumerable.ref, enumerable.index).apply()
         saveChanges()
     }
 
@@ -154,8 +154,8 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         saveChanges()
     }
 
-    private fun updateIncrementable(incrementable: Incrementable) {
-        preferences.edit().putFloat(incrementable.ref, incrementable.value).apply()
+    private fun updateIncrementable(incremental: Incremental) {
+        preferences.edit().putFloat(incremental.ref, incremental.value).apply()
         saveChanges()
     }
 
@@ -203,18 +203,18 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         (tw.getChildTabViewAt(0).findViewById(android.R.id.title) as TextView).textSize = 10f
         (tw.getChildTabViewAt(1).findViewById(android.R.id.title) as TextView).textSize = 10f
 
-        val fontFamily = (userProperties.getByRef<Enumeratable>(FONT_FAMILY_REF))
+        val fontFamily = (userProperties.getByRef<Enumerable>(FONT_FAMILY_REF))
         val fontOverride = (userProperties.getByRef<Switchable>(FONT_OVERRIDE_REF))
-        val appearance = userProperties.getByRef<Enumeratable>(APPEARANCE_REF)
-        val fontSize = userProperties.getByRef<Incrementable>(FONT_SIZE_REF)
+        val appearance = userProperties.getByRef<Enumerable>(APPEARANCE_REF)
+        val fontSize = userProperties.getByRef<Incremental>(FONT_SIZE_REF)
         val publisherDefault = userProperties.getByRef<Switchable>(PUBLISHER_DEFAULT_REF)
         val scrollMode = userProperties.getByRef<Switchable>(SCROLL_REF)
-        val alignment = userProperties.getByRef<Enumeratable>(TEXT_ALIGNMENT_REF)
-        val columnsCount = userProperties.getByRef<Enumeratable>(COLUMN_COUNT_REF)
-        val pageMargins = userProperties.getByRef<Incrementable>(PAGE_MARGINS_REF)
-        val wordSpacing = userProperties.getByRef<Incrementable>(WORD_SPACING_REF)
-        val letterSpacing = userProperties.getByRef<Incrementable>(LETTER_SPACING_REF)
-        val lineHeight = userProperties.getByRef<Incrementable>(LINE_HEIGHT_REF)
+        val alignment = userProperties.getByRef<Enumerable>(TEXT_ALIGNMENT_REF)
+        val columnsCount = userProperties.getByRef<Enumerable>(COLUMN_COUNT_REF)
+        val pageMargins = userProperties.getByRef<Incremental>(PAGE_MARGINS_REF)
+        val wordSpacing = userProperties.getByRef<Incremental>(WORD_SPACING_REF)
+        val letterSpacing = userProperties.getByRef<Incremental>(LETTER_SPACING_REF)
+        val lineHeight = userProperties.getByRef<Incremental>(LINE_HEIGHT_REF)
 
         val fontSpinner: Spinner = layout.findViewById(R.id.spinner_action_settings_intervall_values) as Spinner
 

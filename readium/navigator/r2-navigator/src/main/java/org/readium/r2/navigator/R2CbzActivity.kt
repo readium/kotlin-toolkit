@@ -9,7 +9,6 @@ import android.view.View
 import org.jetbrains.anko.contentView
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.PUBLICATION_TYPE
 import org.readium.r2.shared.Publication
 
 
@@ -43,7 +42,7 @@ class R2CbzActivity : AppCompatActivity() {
 
         val index = preferences.getInt( "$publicationIdentifier-document", 0)
 
-        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, PUBLICATION_TYPE.CBZ, publicationPath)
+        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
 
         resourcePager.adapter = adapter
 
