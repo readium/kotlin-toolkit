@@ -178,13 +178,6 @@
                     android:gravity="center"
                     android:orientation="vertical">
                     
-                <LinearLayout
-                    android:id="@+id/Advanced_Body"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                   >
                     <Switch
                         android:id="@+id/publisher_default"
                         android:layout_width="match_parent"
@@ -485,7 +478,6 @@
 
                     </LinearLayout>
 
-                </LinearLayout>
 
                 </LinearLayout>
 
