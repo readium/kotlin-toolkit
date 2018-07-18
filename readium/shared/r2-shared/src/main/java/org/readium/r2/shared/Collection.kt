@@ -7,7 +7,6 @@
 package org.readium.r2.shared
 
 import org.json.JSONObject
-import java.net.URL
 
 data class Collection(var name: String) {
     var sortAs: String? = null

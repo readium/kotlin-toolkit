@@ -9,11 +9,10 @@ package org.readium.r2.shared.drm
 import java.io.Serializable
 
 
-class Drm: Serializable {
+class Drm(brand: Brand) : Serializable {
 
     private val TAG = this::class.java.simpleName
 
-    var brand: Brand
     var scheme: Scheme
 
     var profile: String? = null
@@ -26,10 +25,10 @@ class Drm: Serializable {
         lcp("http://readium.org/2014/01/lcp")
     }
 
-    constructor(brand: Brand){
-        this.brand = brand
+    init {
         when (brand) {
             Brand.lcp -> scheme = Scheme.lcp
         }
     }
+
 }

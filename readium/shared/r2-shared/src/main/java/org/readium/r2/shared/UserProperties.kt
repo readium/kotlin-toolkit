@@ -22,19 +22,19 @@ sealed class UserProperty(var ref: String, var name: String) {
 
 // TODO add here your new Subclasses of UserPreference. It has to be an abstract class inheriting from UserSetting.
 
-class Enumeratable(var index: Int, private val values: List<String>, ref: String, name: String) :
+class Enumerable(var index: Int, private val values: List<String>, ref: String, name: String) :
         UserProperty(ref, name) {
 
     override fun toString() = values[index]
 }
 
-class Incrementable(var value: Float,
-                    val min: Float,
-                    val max: Float,
-                    val step: Float,
-                    private val suffix: String,
-                    ref: String,
-                    name: String) :
+class Incremental(var value: Float,
+                  val min: Float,
+                  val max: Float,
+                  val step: Float,
+                  private val suffix: String,
+                  ref: String,
+                  name: String) :
         UserProperty(ref, name) {
 
     fun increment() {
@@ -67,7 +67,7 @@ class UserProperties : Serializable {
     val properties: MutableList<UserProperty> = mutableListOf()
 
     fun addIncrementable(nValue: Float, min: Float, max: Float, step: Float, suffix: String, ref: String, name: String) {
-        properties.add(Incrementable(nValue, min, max, step, suffix, ref, name))
+        properties.add(Incremental(nValue, min, max, step, suffix, ref, name))
     }
 
     fun addSwitchable(onValue: String, offValue: String, on: Boolean, ref: String, name: String) {
@@ -75,11 +75,11 @@ class UserProperties : Serializable {
     }
 
     fun addEnumeratable(index: Int, values: List<String>, ref: String, name: String) {
-        properties.add(Enumeratable(index, values, ref, name))
+        properties.add(Enumerable(index, values, ref, name))
     }
 
-    fun <T : UserProperty>getByRef(ref: String) = properties.filter {
+    fun <T : UserProperty>getByRef(ref: String) = properties.firstOrNull {
         it.ref == ref
-    }.firstOrNull()!! as T
+    }!! as T
 }
 

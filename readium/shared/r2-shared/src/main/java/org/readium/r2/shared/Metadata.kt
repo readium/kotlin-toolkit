@@ -10,9 +10,7 @@ import org.joda.time.DateTime
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.metadata.BelongsTo
-import org.readium.r2.shared.opds.OpdsMetadata
 import java.io.Serializable
-import java.net.URL
 import java.util.*
 
 class Metadata : Serializable {
@@ -193,15 +191,15 @@ fun parseMetadata(metadataDict:JSONObject) : Metadata {
         }
 
         if (belongsDict.has("collection")){
-            if (belongsDict.get("collection") is String){
-                m.belongsTo?.collection?.add(Collection(belongsDict.getString("collection")))
-            } else if (belongsDict.get("collection") is JSONObject) {
-                belongs.series.add(parseCollection(belongsDict.getJSONObject("collection")))
-            } else if (belongsDict.get("collection") is JSONArray) {
-                val array = belongsDict.getJSONArray("collection")
-                for (i in 0..(array.length() - 1)) {
-                    val obj = array.getJSONObject(i)
-                    belongs.series.add(parseCollection(obj))
+            when {
+                belongsDict.get("collection") is String -> m.belongsTo?.collection?.add(Collection(belongsDict.getString("collection")))
+                belongsDict.get("collection") is JSONObject -> belongs.series.add(parseCollection(belongsDict.getJSONObject("collection")))
+                belongsDict.get("collection") is JSONArray -> {
+                    val array = belongsDict.getJSONArray("collection")
+                    for (i in 0..(array.length() - 1)) {
+                        val obj = array.getJSONObject(i)
+                        belongs.series.add(parseCollection(obj))
+                    }
                 }
             }
         }

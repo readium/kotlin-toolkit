@@ -79,11 +79,11 @@ class Publication : Serializable {
     var version: Double = 0.0
     /// The metadata (title, identifier, contributors, etc.).
     var metadata: Metadata = Metadata()
-    /// org.readium.r2shared.Publication.org.readium.r2shared.Link to special ressources which are added to the publication.
+    /// org.readium.r2shared.Publication.org.readium.r2shared.Link to special resources which are added to the publication.
     var links: MutableList<Link> = mutableListOf()
     /// Links of the spine items of the publication.
     var spine: MutableList<Link> = mutableListOf()
-    /// Link to the ressources of the publication.
+    /// Link to the resources of the publication.
     var resources: MutableList<Link> = mutableListOf()
     /// Table of content of the publication.
     var tableOfContents: MutableList<Link> = mutableListOf()
@@ -137,7 +137,7 @@ class Publication : Serializable {
     }
 
     fun linkWithHref(href: String) : Link? {
-        val findLinkWithHref: (Link) -> Boolean = { (href == it.href) || ("/" + href == it.href)}
+        val findLinkWithHref: (Link) -> Boolean = { (href == it.href) || ("/$href" == it.href)}
         return findLinkInPublicationLinks(findLinkWithHref)
     }
 

@@ -6,14 +6,12 @@
 
 package org.readium.r2.shared
 
-import android.net.UrlQuerySanitizer
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.opds.Price
 import org.readium.r2.shared.opds.parseIndirectAcquisition
 import java.io.Serializable
 import java.net.URL
-import java.sql.Timestamp
 
 //  A link to a resource
 class Link : JSONable, Serializable {

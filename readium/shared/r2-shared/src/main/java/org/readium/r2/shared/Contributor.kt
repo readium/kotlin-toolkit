@@ -6,11 +6,9 @@
 
 package org.readium.r2.shared
 
-import android.net.UrlQuerySanitizer
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.Serializable
-import java.net.URL
 
 class Contributor : JSONable, Serializable {
 
@@ -39,15 +37,17 @@ class Contributor : JSONable, Serializable {
 
 fun parseContributors(contributors: Any) : List<Contributor> {
     val result: MutableList<Contributor> = mutableListOf()
-    if (contributors is String) {
-        val c = Contributor()
-        c.multilangName.singleString = contributors
-        result.add(c)
-    } else  if (contributors is JSONObject){
-        val c = parseContributor(contributors)
-        result.add(c)
-    } else if (contributors is JSONArray) {
-        for (i in 0..(contributors.length() - 1)) {
+    when (contributors) {
+        is String -> {
+            val c = Contributor()
+            c.multilangName.singleString = contributors
+            result.add(c)
+        }
+        is JSONObject -> {
+            val c = parseContributor(contributors)
+            result.add(c)
+        }
+        is JSONArray -> for (i in 0..(contributors.length() - 1)) {
             val obj = contributors.getJSONObject(i)
             val c = parseContributor(obj)
             result.add(c)

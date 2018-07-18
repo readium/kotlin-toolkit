@@ -20,7 +20,7 @@ class Properties : JSONable, Serializable {
     /// Indicates how the linked resource should be displayed in a reading
     /// environment that displays synthetic spreads.
     var page: String? = null
-    /// Indentifies content contained in the linked resource, that cannot be
+    /// Identifies content contained in the linked resource, that cannot be
     /// strictly identified using a media type.
     var contains: MutableList<String> = mutableListOf()
     /// Location of a media-overlay for the resource referenced in the Link Object.

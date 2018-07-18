@@ -30,7 +30,7 @@ class XmlParser {
                 XmlPullParser.START_TAG -> {
                     val node = Node(parser.name)
                     for (i in 0 until parser.attributeCount)
-                        node.attributes.put(parser.getAttributeName(i), parser.getAttributeValue(i))
+                        node.attributes[parser.getAttributeName(i)] = parser.getAttributeValue(i)
                     if (!(nodes.isEmpty()))
                         nodes.last().children.add(node)
                     nodes.add(node)
