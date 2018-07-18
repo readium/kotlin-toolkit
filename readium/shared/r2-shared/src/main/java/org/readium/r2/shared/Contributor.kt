@@ -66,9 +66,6 @@ fun parseContributor(cDict: JSONObject) : Contributor {
             val array = cDict.getJSONObject("name")
             c.multilangName.multiString = array as MutableMap<String, String>
         }
-//                        let s as String -> c.multilangName.singleString = s
-//                        let multiString as Map<String, String> -> c.multilangName.multiString = multiString
-//                        else -> throw OPDS2ParserError.invalidContributor
 
     }
     if (cDict.has("identifier")){
