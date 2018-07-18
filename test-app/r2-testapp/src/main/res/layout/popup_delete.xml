@@ -13,7 +13,7 @@
        android:id="@+id/delete"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
-       android:text="DELETE"/>
+       android:text="@string/popup_delete_button"/>
 
 
 </LinearLayout>

@@ -157,7 +157,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                     bottomPadding = dip(16)
                                 }
                                 button {
-                                    text =  "select from your device"
+                                    text =  context.getString(R.string.select_from_your_device)
                                     onClick {
                                         alertDialog.dismiss()
                                         // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
@@ -179,7 +179,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                     }
                                 }
                                 button {
-                                    text =  "download from a url"
+                                    text =  context.getString(R.string.download_from_url)
                                     onClick {
                                         alertDialog.dismiss()
 

@@ -66,7 +66,7 @@ class OPDSDetailActivity : AppCompatActivity() {
                 val downloadUrl = getDownloadURL(publication)
                 downloadUrl?.let {
                     button {
-                        text = "Download"
+                        text = context.getString(R.string.opds_detail_download_button)
                         onClick {
                             val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
                             progress.show()

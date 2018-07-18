@@ -5,6 +5,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.testapp.opds
 
 import android.app.ProgressDialog
@@ -119,7 +121,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
 
                                     if (group.links.size > 0) {
                                         textView {
-                                            text = "More..."
+                                            text = context.getString(R.string.opds_list_more)
                                             gravity = Gravity.END
                                             onClick {
                                                 val model = OPDSModel(group.title,group.links.first().href.toString(), opdsModel?.type!!)

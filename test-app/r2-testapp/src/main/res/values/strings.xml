@@ -22,10 +22,24 @@
     <string name="title_activity_opdscatalog">OPDS Catalog</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_r2_about">About R2 Reader</string>
-    <string name="title_activity_opdslist">OPDS Feeds</string>
-    <string name="title_activity_opddetail">Detail</string>
+    <string name="title_activity_opds_list">OPDS Feeds</string>
+    <string name="title_activity_opds_detail">Detail</string>
     <string name="about_r2_reader">About R2 Reader</string>
     <string name="opds_feeds">OPDS Feeds</string>
+    <string name="popup_delete_button">DELETE</string>
+    <string name="select_from_your_device">select from your device</string>
+    <string name="app_version_label">Version</string>
+    <string name="app_version">App Version:</string>
+    <string name="download_from_url">download from a url</string>
+    <string name="github_tab_label">GitHub Tag:</string>
+    <string name="github_tag">V1.0.0-beta.3</string>
+    <string name="copyright_label">Copyright</string>
+    <string name="copyright">\@ 2018 European Digital Reading Lab</string>
+    <string name="bsd_license_label">[BSD-3 license]</string>
+    <string name="acknowledgements_label">Acknowledgements</string>
+    <string name="acknowledgements_french_state">R2 Reader wouldn\'t have been developed without the financial help of the French state.</string>
+    <string name="opds_list_more">More...</string>
+    <string name="opds_detail_download_button">Download</string>
 
 
 </resources>

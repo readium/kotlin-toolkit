@@ -80,10 +80,10 @@
             android:label="@string/title_activity_r2_about" />
         <activity
             android:name=".opds.OPDSListActivity"
-            android:label="@string/title_activity_opdslist" />
+            android:label="@string/title_activity_opds_list" />
         <activity
             android:name=".opds.OPDSDetailActivity"
-            android:label="@string/title_activity_opddetail" />
+            android:label="@string/title_activity_opds_detail" />
     </application>
 
 </manifest>
