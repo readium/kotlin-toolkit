@@ -17,11 +17,11 @@ data class Collection(var name: String) {
 }
 
 enum class CollectionError(val v:String) {
-    invalidCollection("Invalid collection")
+    InvalidCollection("Invalid collection")
 }
 
 fun parseCollection(collectionDict: JSONObject) : Collection {
-    val name = collectionDict["name"] as? String ?: throw Exception(CollectionError.invalidCollection.name)
+    val name = collectionDict["name"] as? String ?: throw Exception(CollectionError.InvalidCollection.name)
     val c = Collection(name = name)
 
     if (collectionDict.has("sort_as")) {
@@ -34,7 +34,7 @@ fun parseCollection(collectionDict: JSONObject) : Collection {
         c.position = collectionDict.getDouble("position")
     }
     if (collectionDict.has("links")) {
-        val links = collectionDict.getJSONArray("links") ?: throw Exception(CollectionError.invalidCollection.name)
+        val links = collectionDict.getJSONArray("links") ?: throw Exception(CollectionError.InvalidCollection.name)
         for (i in 0..(links.length() - 1)) {
             val link = links.getJSONObject(i)
             c.links.add(parseLink(link))

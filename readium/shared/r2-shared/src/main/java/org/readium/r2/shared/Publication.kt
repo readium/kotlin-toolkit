@@ -11,16 +11,6 @@ import org.json.JSONObject
 import java.io.Serializable
 import java.net.URL
 
-/**
- * Enumeration of every handled mime type
- *
- * There you should add your new mime type to handle a new kind of publication and
- *      use it to check the type on your implementation
- *
- */
-enum class PUBLICATION_TYPE {
-    EPUB, CBZ
-}
 
 fun URL.removeLastComponent() : URL{
     var str = this.toString()
@@ -71,10 +61,19 @@ class TocElement(val link: Link, val children: List<TocElement>) : JSONable {
  */
 class Publication : Serializable {
 
-    private val TAG = this::class.java.simpleName
+    /**
+     * Enumeration of every handled mime type
+     *
+     * There you should add your new mime type to handle a new kind of publication and
+     *      use it to check the type on your implementation
+     *
+     */
+    enum class TYPE {
+        EPUB, CBZ
+    }
 
     /// The kind of publication it is ( Epub, Cbz, ... )
-    var type = PUBLICATION_TYPE.EPUB
+    var type = TYPE.EPUB
     /// The version of the publication, if the type needs any.
     var version: Double = 0.0
     /// The metadata (title, identifier, contributors, etc.).
@@ -160,7 +159,7 @@ class Publication : Serializable {
              pageList.firstOrNull(closure)
 
     enum class PublicationError(var v: String) {
-        invalidPublication("Invalid publication")
+        InvalidPublication("Invalid publication")
     }
 
 }
@@ -174,7 +173,7 @@ fun parsePublication(pubDict: JSONObject) : Publication {
 
     if(pubDict.has("metadata")) {
         pubDict.get("metadata")?.let {
-            val metadataDict = it as? JSONObject ?: throw Exception(Publication.PublicationError.invalidPublication.name)
+            val metadataDict = it as? JSONObject ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             val metadata = parseMetadata(metadataDict)
             p.metadata = metadata
 
@@ -182,7 +181,7 @@ fun parsePublication(pubDict: JSONObject) : Publication {
     }
     if(pubDict.has("links")) {
         pubDict.get("links")?.let {
-            val links = it as? JSONArray ?: throw Exception(Publication.PublicationError.invalidPublication.name)
+            val links = it as? JSONArray ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0..(links.length() - 1)) {
                 val linkDict = links.getJSONObject(i)
                 val link = parseLink(linkDict)
@@ -192,7 +191,7 @@ fun parsePublication(pubDict: JSONObject) : Publication {
     }
     if(pubDict.has("images")) {
         pubDict.get("images")?.let {
-            val links = it as? JSONArray ?: throw Exception(Publication.PublicationError.invalidPublication.name)
+            val links = it as? JSONArray ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0..(links.length() - 1)) {
                 val linkDict = links.getJSONObject(i)
                 val link = parseLink(linkDict)

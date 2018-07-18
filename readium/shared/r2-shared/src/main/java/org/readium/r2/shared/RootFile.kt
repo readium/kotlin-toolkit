@@ -8,8 +8,6 @@ package org.readium.r2.shared
 
 class RootFile(){
 
-    private val TAG = this::class.java.simpleName
-
     constructor(rootPath: String = "", rootFilePath: String = "", mimetype: String = "", version: Double? = null) : this() {
         this.rootPath = rootPath
         this.rootFilePath = rootFilePath

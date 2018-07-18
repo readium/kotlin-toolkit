@@ -14,9 +14,6 @@ import java.io.Serializable
 import java.util.*
 
 class Metadata : Serializable {
-
-    private val TAG = this::class.java.simpleName
-
     /// The structure used for the serialisation.
     var multilangTitle: MultilangString? = null
     /// The title of the publication.

@@ -15,9 +15,6 @@ import java.net.URL
 
 //  A link to a resource
 class Link : JSONable, Serializable {
-
-    private val TAG = this::class.java.simpleName
-
     //  The link destination
     var href: String? = null
     /// MIME type of resource.
@@ -67,7 +64,7 @@ class Link : JSONable, Serializable {
 }
 
 enum class LinkError(var v:String) {
-    invalidLink("Invalid link"),
+    InvalidLink("Invalid link"),
 }
 
 fun parseLink(linkDict: JSONObject, feedUrl: URL? = null) : Link {
@@ -115,7 +112,7 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null) : Link {
             properties.numberOfItems = propertiesDict.getInt("numberOfItems")
         }
         if (propertiesDict.has("indirectAcquisition")) {
-            val acquisitions = propertiesDict.getJSONArray("indirectAcquisition") ?: throw Exception(LinkError.invalidLink.name)
+            val acquisitions = propertiesDict.getJSONArray("indirectAcquisition") ?: throw Exception(LinkError.InvalidLink.name)
             for (i in 0..(acquisitions.length() - 1)) {
                 val acquisition = acquisitions.getJSONObject(i)
                 val indirectAcquisition = parseIndirectAcquisition(indirectAcquisitionDict = acquisition)
@@ -127,14 +124,14 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null) : Link {
             val currency = priceDict["currency"] as? String
             val value = priceDict["value"] as? Double
             if (priceDict == null || currency == null || value == null) {
-                throw Exception(LinkError.invalidLink.name)
+                throw Exception(LinkError.InvalidLink.name)
             }
             val price = Price(currency = currency, value = value)
             properties.price = price
         }
     }
     if(linkDict.has("children")) {
-        val childLinkDict = linkDict.getJSONObject("children") ?: throw Exception(LinkError.invalidLink.name)
+        val childLinkDict = linkDict.getJSONObject("children") ?: throw Exception(LinkError.InvalidLink.name)
         val childLink = parseLink(childLinkDict)
         link.children.add(childLink)
     }

@@ -16,22 +16,22 @@ data class IndirectAcquisition(var typeAcquisition: String):Serializable {
 }
 
 enum class IndirectAcquisitionError(v:String) {
-    invalidJSON("OPDS 2 manifest is not valid JSON"),
-    metadataNotFound("Metadata not found"),
-    invalidMetadata("Invalid metadata"),
-    invalidLink("Invalid link"),
-    invalidIndirectAcquisition("Invalid indirect acquisition"),
-    missingTitle("Missing title"),
-    invalidFacet("Invalid facet"),
-    invalidGroup("Invalid group"),
-    invalidPublication("Invalid publication"),
-    invalidContributor("Invalid contributor"),
-    invalidCollection("Invalid collection"),
-    invalidNavigation("Invalid navigation")
+    InvalidJSON("OPDS 2 manifest is not valid JSON"),
+    MetadataNotFound("Metadata not found"),
+    InvalidMetadata("Invalid metadata"),
+    InvalidLink("Invalid link"),
+    InvalidIndirectAcquisition("Invalid indirect acquisition"),
+    MissingTitle("Missing title"),
+    InvalidFacet("Invalid facet"),
+    InvalidGroup("Invalid group"),
+    InvalidPublication("Invalid publication"),
+    InvalidContributor("Invalid contributor"),
+    InvalidCollection("Invalid collection"),
+    InvalidNavigation("Invalid navigation")
 }
 
 fun parseIndirectAcquisition(indirectAcquisitionDict: JSONObject) : IndirectAcquisition {
-    val indirectAcquisitionType = indirectAcquisitionDict["type"] as? String ?: throw Exception(IndirectAcquisitionError.invalidIndirectAcquisition.name)
+    val indirectAcquisitionType = indirectAcquisitionDict["type"] as? String ?: throw Exception(IndirectAcquisitionError.InvalidIndirectAcquisition.name)
     val indirectAcquisition = IndirectAcquisition(typeAcquisition = indirectAcquisitionType)
     val childDict = indirectAcquisitionDict.getJSONObject("child")
     val child = parseIndirectAcquisition(indirectAcquisitionDict = childDict)

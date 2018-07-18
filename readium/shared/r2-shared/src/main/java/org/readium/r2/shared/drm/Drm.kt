@@ -9,9 +9,7 @@ package org.readium.r2.shared.drm
 import java.io.Serializable
 
 
-class Drm(brand: Brand) : Serializable {
-
-    private val TAG = this::class.java.simpleName
+class Drm(var brand: Brand) : Serializable {
 
     var scheme: Scheme
 
@@ -19,15 +17,15 @@ class Drm(brand: Brand) : Serializable {
     var license: DrmLicense? = null
 
     enum class Brand(var v:String):Serializable {
-        lcp("lcp")
+        Lcp("lcp")
     }
     enum class Scheme(var v:String):Serializable {
-        lcp("http://readium.org/2014/01/lcp")
+        Lcp("http://readium.org/2014/01/lcp")
     }
 
     init {
         when (brand) {
-            Brand.lcp -> scheme = Scheme.lcp
+            Brand.Lcp -> scheme = Scheme.Lcp
         }
     }
 

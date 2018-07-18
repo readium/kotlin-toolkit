@@ -12,9 +12,6 @@ import org.readium.r2.shared.opds.Price
 import java.io.Serializable
 
 class Properties : JSONable, Serializable {
-
-    private val TAG = this::class.java.simpleName
-
     /// Suggested orientation for the device when displaying the linked resource.
     var orientation: String? = null
     /// Indicates how the linked resource should be displayed in a reading
@@ -35,13 +32,12 @@ class Properties : JSONable, Serializable {
     /// Indicates the condition to be met for the linked resource to be rendered
     /// within a synthetic spread.
     var spread: String? = null
-
+    ///
     var numberOfItems: Int? = null
     ///
     var price: Price? = null
     ///
     var indirectAcquisition: MutableList<IndirectAcquisition> = mutableListOf()
-
 
     override fun getJSON(): JSONObject {
         val json = JSONObject()

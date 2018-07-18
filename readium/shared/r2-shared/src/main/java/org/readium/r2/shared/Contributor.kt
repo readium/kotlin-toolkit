@@ -12,8 +12,6 @@ import java.io.Serializable
 
 class Contributor : JSONable, Serializable {
 
-    private val TAG = this::class.java.simpleName
-
     var multilangName:MultilangString = MultilangString()
     var sortAs: String? = null
     var roles: MutableList<String> = mutableListOf()

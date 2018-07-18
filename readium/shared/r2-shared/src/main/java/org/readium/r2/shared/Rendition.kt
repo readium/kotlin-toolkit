@@ -10,35 +10,32 @@ import org.json.JSONObject
 import java.io.Serializable
 
 enum class RenditionLayout(val ini: String) : Serializable{
-    reflowable("reflowable"),
-    fixed("fixed")
+    Reflowable("reflowable"),
+    Fixed("fixed")
 }
 
 enum class RenditionFlow(val ini: String) : Serializable{
-    paginated("paginated"),
-    continuous("continuous"),
-    document("document"),
-    fixed("fixed")
+    Paginated("paginated"),
+    Continuous("continuous"),
+    Document("document"),
+    Fixed("Fixed")
 }
 
 enum class RenditionOrientation(val ini: String) : Serializable{
-    auto("auto"),
-    landscape("landscape"),
-    portrait("portrait")
+    Auto("auto"),
+    Landscape("landscape"),
+    Portrait("portrait")
 }
 
 enum class RenditionSpread(val ini: String) : Serializable{
-    auto("auto"),
-    landscape("landscape"),
-    portrait("portrait"),
-    both("both"),
-    none("none")
+    Auto("auto"),
+    Landscape("landscape"),
+    Portrait("portrait"),
+    Both("both"),
+    None("none")
 }
 
 class Rendition : Serializable {
-
-    private val TAG = this::class.java.simpleName
-
     var flow: RenditionFlow? = null
     var spread: RenditionSpread? = null
     var layout: RenditionLayout? = null
