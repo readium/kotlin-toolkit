@@ -238,11 +238,12 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                                                     val stream = ByteArrayOutputStream()
                                                                     bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-                                                                    val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
+                                                                    val book = Book(pair.second, publication.metadata.title, author, pair.first, null, publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
 
                                                                     runOnUiThread({
                                                                         progress.dismiss()
                                                                         database.books.insert(book, false)?.let {
+                                                                            book.id = it
                                                                             books.add(book)
                                                                             booksAdapter.notifyDataSetChanged()
 
@@ -261,6 +262,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                                                                     val b2 = getButton(AlertDialog.BUTTON_POSITIVE)
                                                                                     b2.setOnClickListener({
                                                                                         database.books.insert(book, true)?.let {
+                                                                                            book.id = it
                                                                                             books.add(book)
                                                                                             duplicateAlert.dismiss()
                                                                                             booksAdapter.notifyDataSetChanged()
@@ -636,9 +638,10 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         publication.coverLink?.href?.let {
                             val blob = ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
                             blob?.let {
-                                val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, blob, ".epub")
+                                val book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, blob, ".epub")
                                 if (add) {
                                     database.books.insert(book, false)?.let {
+                                        book.id = it
                                         books.add(book)
                                         booksAdapter.notifyDataSetChanged()
                                     } ?: run {
@@ -665,9 +668,10 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                 }
                             }
                         } ?: run {
-                            val book = Book(fileName, publication.metadata.title, author, absolutePath, books.size.toLong(), publication.coverLink?.href, publicationIdentifier, null, ".epub")
+                            val book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, null, ".epub")
                             if (add) {
                                 database.books.insert(book, false)?.let {
+                                    book.id = it
                                     books.add(book)
                                     booksAdapter.notifyDataSetChanged()
                                 } ?: run {
@@ -698,8 +702,9 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 } else if (publication.type == Publication.TYPE.CBZ) {
                     if (add) {
                         publication.coverLink?.href?.let {
-                            val book = Book(fileName, publication.metadata.title, "", absolutePath, books.size.toLong(), publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it), ".cbz")
+                            val book = Book(fileName, publication.metadata.title, "", absolutePath,  null, publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it), ".cbz")
                             database.books.insert(book, false)?.let {
+                                book.id = it
                                 books.add(book)
                                 booksAdapter.notifyDataSetChanged()
                             } ?: run {
@@ -716,6 +721,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                         val b = getButton(AlertDialog.BUTTON_POSITIVE)
                                         b.setOnClickListener({
                                             database.books.insert(book, true)?.let {
+                                                book.id = it
                                                 books.add(book)
                                                 dismiss()
                                                 booksAdapter.notifyDataSetChanged()
