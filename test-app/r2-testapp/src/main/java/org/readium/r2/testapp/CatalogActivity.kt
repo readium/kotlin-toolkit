@@ -907,44 +907,56 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
             progress.show()
 
-            val uri: Uri? = data.data
+            task {
 
-            val fileName = UUID.randomUUID().toString()
-            val publicationPath = R2TEST_DIRECTORY_PATH + fileName
+                val uri: Uri? = data.data
 
-            val input = contentResolver.openInputStream(uri)
-            input.toFile(publicationPath)
-            val file = File(publicationPath)
+                val fileName = UUID.randomUUID().toString()
+                val publicationPath = R2TEST_DIRECTORY_PATH + fileName
 
-            try {
-                runOnUiThread({
-                    if (uri != null) {
-                        val mime = getMimeType(uri).first
-                        val name = getMimeType(uri).second
-                        if (mime == "application/epub+zip") {
-                            val parser = EpubParser()
-                            val pub = parser.parse(publicationPath)
-                            if (pub != null) {
-                                prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                                progress.dismiss()
-                            }
-                        } else if (name.endsWith(".cbz")) {
-                            val parser = CbzParser()
-                            val pub = parser.parse(publicationPath)
-                            if (pub != null) {
-                                prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                                progress.dismiss()
+                val input = contentResolver.openInputStream(uri)
+                input.toFile(publicationPath)
+                val file = File(publicationPath)
+
+                try {
+                    runOnUiThread({
+                        if (uri != null) {
+                            val mime = getMimeType(uri).first
+                            val name = getMimeType(uri).second
+                            if (mime == "application/epub+zip") {
+                                val parser = EpubParser()
+                                val pub = parser.parse(publicationPath)
+                                if (pub != null) {
+                                    prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                                }
+                            } else if (name.endsWith(".cbz")) {
+                                val parser = CbzParser()
+                                val pub = parser.parse(publicationPath)
+                                if (pub != null) {
+                                    prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                                }
                             }
                         }
-                    }
-                })
-            } catch (e: Throwable) {
-                e.printStackTrace()
+                    })
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+
+            } then {
+                progress.dismiss()
             }
 
         } else if (resultCode == RESULT_OK) {
-            val filePath = data.getStringExtra(Chooser.RESULT_PATH)
-            parseIntent(filePath)
+            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+            progress.show()
+
+            task {
+                val filePath = data.getStringExtra(Chooser.RESULT_PATH)
+                parseIntent(filePath)
+            } then {
+                progress.dismiss()
+            }
+            
         }
     }
 
