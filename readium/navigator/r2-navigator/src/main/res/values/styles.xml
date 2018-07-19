@@ -18,5 +18,5 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
         <item name="android:popupAnimationStyle">@null</item>
     </style>
-    
+
 </resources>
