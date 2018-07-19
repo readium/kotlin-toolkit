@@ -34,6 +34,7 @@ import android.widget.EditText
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import com.github.kittinunf.fuel.Fuel
+import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.onClick
 import net.theluckycoder.materialchooser.Chooser
 import nl.komponents.kovenant.Promise
@@ -48,12 +49,18 @@ import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.design.textInputLayout
 import org.jetbrains.anko.recyclerview.v7.recyclerView
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 import org.json.JSONObject
+import org.readium.r2.lcp.LcpHttpService
+import org.readium.r2.lcp.LcpLicense
+import org.readium.r2.lcp.LcpSession
 import org.readium.r2.navigator.R2CbzActivity
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDS1Parser
+import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Publication
+import org.readium.r2.shared.drm.DRMMModel
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
@@ -478,16 +485,13 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                             task {
                                 lcpLicense.fetchStatusDocument().get()
                             } then {
-                                Timber.i(TAG, "LCP fetchStatusDocument: $it")
                                 lcpLicense.checkStatus()
                                 lcpLicense.updateLicenseDocument().get()
                             } then {
-                                Timber.i(TAG, "LCP updateLicenseDocument: $it")
                                 lcpLicense.areRightsValid()
                                 lcpLicense.register()
                                 lcpLicense.fetchPublication()
                             } then {
-                                Timber.i(TAG, "LCP fetchPublication: $it")
                                 it?.let {
                                     lcpLicense.moveLicense(it, lcpLicense.archivePath)
                                 }
@@ -771,8 +775,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                     pub.publication = pair.second
                                 }, {
                                     if (supportedProfiles.contains(it.profile)) {
-                                        server.addEpub(publication, pub.container, "/" + book.fileName)
-                                        Timber.i(TAG, "handle lcp done")
+                                        server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
 
                                         val license = (drm.license as LcpLicense)
                                         val drmModel = DRMMModel(drm.brand.name,
