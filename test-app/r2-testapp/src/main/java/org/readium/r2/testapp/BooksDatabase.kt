@@ -14,20 +14,19 @@ import org.jetbrains.anko.db.*
 
 // Access property for Context
 val Context.database: BooksDatabaseOpenHelper
-    get() = BooksDatabaseOpenHelper.getInstance(getApplicationContext())
+    get() = BooksDatabaseOpenHelper.getInstance(applicationContext)
 
 val Context.appContext: Context
-    get() = getApplicationContext()
+    get() = applicationContext
 
-class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id: Long, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext:String)
+class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id: Long, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext: String)
 
-class BooksDatabase {
+class BooksDatabase(context: Context) {
 
-    val shared:BooksDatabaseOpenHelper
+    val shared: BooksDatabaseOpenHelper = BooksDatabaseOpenHelper(context)
     var books: BOOKS
 
-    constructor(context: Context) {
-        shared = BooksDatabaseOpenHelper(context)
+    init {
         books = BOOKS(shared)
     }
 
@@ -40,7 +39,7 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
         @Synchronized
         fun getInstance(ctx: Context): BooksDatabaseOpenHelper {
             if (instance == null) {
-                instance = BooksDatabaseOpenHelper(ctx.getApplicationContext())
+                instance = BooksDatabaseOpenHelper(ctx.applicationContext)
             }
             return instance!!
         }
@@ -69,25 +68,26 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
 }
 
 object BOOKSTable {
-    val NAME = "BOOKS"
-    val ID = "id"
-    val IDENTIFIER = "identifier"
-    val FILENAME = "href"
-    val TITLE = "title"
-    val AUTHOR = "author"
-    val FILEURL = "fileUrl"
-    val COVER = "cover"
-    val COVERURL = "coverUrl"
-    val EXTENSION = "extension"
+    const val NAME = "BOOKS"
+    const val ID = "id"
+    const val IDENTIFIER = "identifier"
+    const val FILENAME = "href"
+    const val TITLE = "title"
+    const val AUTHOR = "author"
+    const val FILEURL = "fileUrl"
+    const val COVER = "cover"
+    const val COVERURL = "coverUrl"
+    const val EXTENSION = "extension"
 }
 
-class BOOKS(var database: BooksDatabaseOpenHelper) {
+class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     fun dropTable() {
         database.use {
             dropTable(BOOKSTable.NAME, true)
         }
     }
+
     fun insert(book: Book, allowDuplicates: Boolean): Long? {
         val exists = has(book)
         if (exists.isEmpty() || allowDuplicates) {
@@ -106,9 +106,9 @@ class BOOKS(var database: BooksDatabaseOpenHelper) {
         return null
     }
 
-    fun has(book: Book): List<Book> {
+    private fun has(book: Book): List<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME,BOOKSTable.TITLE,BOOKSTable.AUTHOR,BOOKSTable.FILEURL,BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER,BOOKSTable.COVER, BOOKSTable.EXTENSION)
+            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION)
                     .whereArgs("identifier = {identifier}", "identifier" to book.identifier)
                     .exec {
                         parseList(MyRowParser())
@@ -118,13 +118,13 @@ class BOOKS(var database: BooksDatabaseOpenHelper) {
 
     fun delete(book: Book) {
         database.use {
-            delete(BOOKSTable.NAME, "id = {id}", "id" to book.id!! )
+            delete(BOOKSTable.NAME, "id = {id}", "id" to book.id)
         }
     }
 
     fun list(): MutableList<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME,BOOKSTable.TITLE,BOOKSTable.AUTHOR,BOOKSTable.FILEURL,BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER,BOOKSTable.COVER, BOOKSTable.EXTENSION)
+            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
@@ -135,33 +135,33 @@ class BOOKS(var database: BooksDatabaseOpenHelper) {
         override fun parseRow(columns: Array<Any?>): Book {
             val filename = columns[0]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
             val title = columns[1]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
             val author = columns[2]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
             val fileUrl = columns[3]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
             val id = columns[4]?.let {
                 return@let it as Long
-            }?: kotlin.run { return@run -1.toLong() }
+            } ?: kotlin.run { return@run (-1).toLong() }
             val coverUrl = columns[5]?.let {
                 return@let it as String
             }
             val identifier = columns[6]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
             val cover = columns[7]?.let {
                 return@let it as ByteArray
             }
             val ext = columns[8]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
 
-            return  Book(filename, title, author, fileUrl, id,  coverUrl, identifier, cover, ext)
+            return Book(filename, title, author, fileUrl, id, coverUrl, identifier, cover, ext)
 
         }
     }

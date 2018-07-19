@@ -15,19 +15,18 @@ import java.io.Serializable
 
 // Access property for Context
 val Context.database: OPDSDatabaseOpenHelper
-    get() = OPDSDatabaseOpenHelper.getInstance(getApplicationContext())
+    get() = OPDSDatabaseOpenHelper.getInstance(applicationContext)
 
 val Context.appContext: Context
-    get() = getApplicationContext()
+    get() = applicationContext
 
 
-class OPDSDatabase {
+class OPDSDatabase(context: Context) {
 
-    val shared: OPDSDatabaseOpenHelper
+    val shared: OPDSDatabaseOpenHelper = OPDSDatabaseOpenHelper(context)
     var opds: OPDS
 
-    constructor(context: Context) {
-        shared = OPDSDatabaseOpenHelper(context)
+    init {
         opds = OPDS(shared)
     }
 
@@ -42,7 +41,7 @@ class OPDSDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "opdsd
         @Synchronized
         fun getInstance(ctx: Context): OPDSDatabaseOpenHelper {
             if (instance == null) {
-                instance = OPDSDatabaseOpenHelper(ctx.getApplicationContext())
+                instance = OPDSDatabaseOpenHelper(ctx.applicationContext)
             }
             return instance!!
         }
@@ -64,14 +63,14 @@ class OPDSDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "opdsd
 }
 
 object OPDSTable {
-    val NAME = "OPDS"
-    val ID = "id"
-    val HREF = "href"
-    val TITLE = "title"
-    val TYPE = "type"
+    const val NAME = "OPDS"
+    const val ID = "id"
+    const val HREF = "href"
+    const val TITLE = "title"
+    const val TYPE = "type"
 }
 
-class OPDS(var database: OPDSDatabaseOpenHelper) {
+class OPDS(private var database: OPDSDatabaseOpenHelper) {
 
     fun insert(opds: OPDSModel) {
         val exists = list(opds)

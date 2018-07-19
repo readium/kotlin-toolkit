@@ -18,15 +18,15 @@ import java.util.*
 
 class OPDSDownloader(context: Context) {
 
-    val rootDir:String = context.getExternalFilesDir(null).path + "/"
+    private val rootDir: String = context.getExternalFilesDir(null).path + "/"
 
     fun publicationUrl(url: String, parameters: List<Pair<String, Any?>>? = null): Promise<Pair<String, String>, Exception> {
         val fileName = UUID.randomUUID().toString()
-        return Fuel.download(url).destination { response, destination ->
+        return Fuel.download(url).destination { _, _ ->
             Log.i("download destination ", rootDir + fileName)
             File(rootDir, fileName)
         }.promise() then {
-            val (request, response, result) = it
+            val (_, response, _) = it
             Log.i("download destination ", rootDir + fileName)
             Log.i("download url ", response.url.toString())
             Pair(rootDir + fileName, fileName)

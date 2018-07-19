@@ -5,6 +5,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.testapp.opds
 
 import android.app.ProgressDialog
@@ -41,12 +43,12 @@ import java.net.URL
 
 class OPDSCatalogActivity : AppCompatActivity() {
 
-    lateinit var facets:MutableList<Facet>
-    var parsePromise: Promise<ParseData, Exception>? = null
-    var opdsModel:OPDSModel? = null
-    var showFacetMenu = false;
-    var facetPopup:PopupWindow? = null
-    lateinit var progress: ProgressDialog
+    private lateinit var facets: MutableList<Facet>
+    private var parsePromise: Promise<ParseData, Exception>? = null
+    private var opdsModel: OPDSModel? = null
+    private var showFacetMenu = false
+    private var facetPopup: PopupWindow? = null
+    private lateinit var progress: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,12 +74,12 @@ class OPDSCatalogActivity : AppCompatActivity() {
 
         parsePromise?.successUi { result ->
 
-            facets = result.feed?.facets ?: mutableListOf<Facet>()
+            facets = result.feed?.facets ?: mutableListOf()
 
-            if (facets.size>0) {
-                showFacetMenu = true;
+            if (facets.size > 0) {
+                showFacetMenu = true
             }
-            invalidateOptionsMenu();
+            invalidateOptionsMenu()
 
             runOnUiThread {
                 nestedScrollView {
@@ -119,10 +121,10 @@ class OPDSCatalogActivity : AppCompatActivity() {
 
                                     if (group.links.size > 0) {
                                         textView {
-                                            text = "More..."
+                                            text = context.getString(R.string.opds_list_more)
                                             gravity = Gravity.END
                                             onClick {
-                                                val model = OPDSModel(group.title,group.links.first().href.toString(), opdsModel?.type!!)
+                                                val model = OPDSModel(group.title, group.links.first().href.toString(), opdsModel?.type!!)
                                                 startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
                                             }
                                         }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -140,7 +142,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
                                     button {
                                         text = navigation.title
                                         onClick {
-                                            val model = OPDSModel(navigation.title!!,navigation.href.toString(), opdsModel?.type!!)
+                                            val model = OPDSModel(navigation.title!!, navigation.href.toString(), opdsModel?.type!!)
                                             startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
                                         }
                                     }
@@ -176,25 +178,25 @@ class OPDSCatalogActivity : AppCompatActivity() {
 
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
 
             R.id.filter -> {
                 facetPopup = facetPopUp()
                 facetPopup?.showAsDropDown(this.findViewById(R.id.filter), 0, 0, Gravity.END)
-                return false;
+                false
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
-    fun facetPopUp(): PopupWindow {
+    private fun facetPopUp(): PopupWindow {
 
         val layoutInflater = LayoutInflater.from(this)
         val layout = layoutInflater.inflate(R.layout.filter_window, null)
         val userSettingsPopup = PopupWindow(this)
-        userSettingsPopup.setContentView(layout)
-        userSettingsPopup.setWidth(ListPopupWindow.WRAP_CONTENT)
-        userSettingsPopup.setHeight(ListPopupWindow.WRAP_CONTENT)
+        userSettingsPopup.contentView = layout
+        userSettingsPopup.width = ListPopupWindow.WRAP_CONTENT
+        userSettingsPopup.height = ListPopupWindow.WRAP_CONTENT
         userSettingsPopup.isOutsideTouchable = true
         userSettingsPopup.isFocusable = true
 
@@ -207,7 +209,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
         }
 
         val facetList = layout.findViewById<ListView>(R.id.facetList)
-        facetList.setAdapter(adapter)
+        facetList.adapter = adapter
 
         return userSettingsPopup
     }
@@ -215,17 +217,17 @@ class OPDSCatalogActivity : AppCompatActivity() {
     private fun headerLabel(value: String): View {
         val inflater = this.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val layout = inflater.inflate(R.layout.section_header, null) as LinearLayout
-        layout.header.setText(value)
+        layout.header.text = value
         return layout
     }
 
     private fun linkCell(link: Link?): View {
         val inflater = this.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val layout = inflater.inflate(R.layout.filter_row, null) as LinearLayout
-        layout.text.setText(link!!.title)
-        layout.count.setText(link.properties.numberOfItems.toString())
+        layout.text.text = link!!.title
+        layout.count.text = link.properties.numberOfItems.toString()
         layout.setOnClickListener({
-            val model = OPDSModel(link.title!!,link.href.toString(), opdsModel?.type!!)
+            val model = OPDSModel(link.title!!, link.href.toString(), opdsModel?.type!!)
             facetPopup?.dismiss()
             startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
         })

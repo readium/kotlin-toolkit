@@ -12,16 +12,16 @@ import android.content.Intent;
 import android.net.Uri;
 
 /**
- * Created by aferditamuriqi on 1/16/18.
+ * Created by Aferdita Muriqi on 1/16/18.
  */
 
 public class R2IntentHelper {
 
-    public static String URI = "URI";
-    public static String LCP = "LCP";
+    public static final String URI = "URI";
+    public static final String LCP = "LCP";
 
     public Intent catalogActivityIntent(Context context, Uri uri) {
-        return catalogActivityIntent(context,uri, false);
+        return catalogActivityIntent(context, uri, false);
     }
 
     public Intent catalogActivityIntent(Context context, Uri uri, boolean lcp) {

@@ -19,8 +19,6 @@ import timber.log.Timber
 class R2DispatcherActivity : Activity() {
     private val mMapper = R2IntentMapper(this, R2IntentHelper())
 
-    private val TAG = this.javaClass.simpleName
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
