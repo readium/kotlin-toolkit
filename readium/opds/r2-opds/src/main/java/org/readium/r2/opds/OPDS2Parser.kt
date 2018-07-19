@@ -17,25 +17,25 @@ import org.readium.r2.shared.opds.*
 import java.net.URL
 
 enum class OPDS2ParserError(var v:String) {
-    invalidJSON("OPDS 2 manifest is not valid JSON"),
-    metadataNotFound("Metadata not found"),
-    invalidMetadata("Invalid metadata"),
-    invalidLink("Invalid link"),
-    invalidIndirectAcquisition("Invalid indirect acquisition"),
-    missingTitle("Missing title"),
-    invalidFacet("Invalid facet"),
-    invalidGroup("Invalid group"),
-    invalidPublication("Invalid publication"),
-    invalidContributor("Invalid contributor"),
-    invalidCollection("Invalid collection"),
-    invalidNavigation("Invalid navigation")
+    InvalidJSON("OPDS 2 manifest is not valid JSON"),
+    MetadataNotFound("Metadata not found"),
+    InvalidMetadata("Invalid metadata"),
+    InvalidLink("Invalid link"),
+    InvalidIndirectAcquisition("Invalid indirect acquisition"),
+    MissingTitle("Missing title"),
+    InvalidFacet("Invalid facet"),
+    InvalidGroup("Invalid group"),
+    InvalidPublication("Invalid publication"),
+    InvalidContributor("Invalid contributor"),
+    InvalidCollection("Invalid collection"),
+    InvalidNavigation("Invalid navigation")
 }
 
 class OPDS2Parser {
 
     companion object {
 
-        lateinit var feed:Feed
+        private lateinit var feed:Feed
 
         fun parseURL(url: URL) : Promise<ParseData, Exception> {
             return Fuel.get(url.toString(),null).promise() then {
@@ -52,7 +52,7 @@ class OPDS2Parser {
             }
         }
 
-        fun isFeed(jsonData: ByteArray) =
+        private fun isFeed(jsonData: ByteArray) =
                 JSONObject(String(jsonData)).let {
                     (it.has("navigation")  ||
                         it.has("groups")  ||
@@ -60,10 +60,10 @@ class OPDS2Parser {
                         it.has("facets") )
             }
 
-        fun parseFeed(jsonData: ByteArray, url: URL) : Feed {
+        private fun parseFeed(jsonData: ByteArray, url: URL) : Feed {
             val topLevelDict = JSONObject(String(jsonData))
-            val metadataDict:JSONObject = topLevelDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.metadataNotFound.name)
-            val title = metadataDict.getString("title") ?: throw Exception(OPDS2ParserError.missingTitle.name)
+            val metadataDict:JSONObject = topLevelDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.MetadataNotFound.name)
+            val title = metadataDict.getString("title") ?: throw Exception(OPDS2ParserError.MissingTitle.name)
             feed = Feed(title, 2, url)
             parseFeedMetadata(opdsMetadata = feed.metadata, metadataDict = metadataDict)
             if(topLevelDict.has("@context")) {
@@ -80,39 +80,39 @@ class OPDS2Parser {
 
             if(topLevelDict.has("links")) {
                 topLevelDict.get("links")?.let {
-                    val links = it as? JSONArray ?: throw Exception(OPDS2ParserError.invalidLink.name)
+                    val links = it as? JSONArray ?: throw Exception(OPDS2ParserError.InvalidLink.name)
                     parseLinks(feed, links)
                 }
             }
 
             if(topLevelDict.has("facets")) {
                 topLevelDict.get("facets")?.let {
-                    val facets = it as? JSONArray ?: throw Exception(OPDS2ParserError.invalidLink.name)
+                    val facets = it as? JSONArray ?: throw Exception(OPDS2ParserError.InvalidLink.name)
                     parseFacets(feed, facets)
                 }
             }
             if(topLevelDict.has("publications")) {
                 topLevelDict.get("publications")?.let {
-                    val publications = it as? JSONArray ?: throw Exception(OPDS2ParserError.invalidLink.name)
+                    val publications = it as? JSONArray ?: throw Exception(OPDS2ParserError.InvalidLink.name)
                     parsePublications(feed, publications)
                 }
             }
             if(topLevelDict.has("navigation")) {
                 topLevelDict.get("navigation")?.let {
-                    val navigation = it as? JSONArray ?: throw Exception(OPDS2ParserError.invalidLink.name)
+                    val navigation = it as? JSONArray ?: throw Exception(OPDS2ParserError.InvalidLink.name)
                     parseNavigation(feed, navigation)
                 }
             }
             if(topLevelDict.has("groups")) {
                 topLevelDict.get("groups")?.let {
-                    val groups = it as? JSONArray ?: throw Exception(OPDS2ParserError.invalidLink.name)
+                    val groups = it as? JSONArray ?: throw Exception(OPDS2ParserError.InvalidLink.name)
                     parseGroups(feed, groups)
                 }
             }
             return feed
         }
 
-        internal fun parseFeedMetadata(opdsMetadata: OpdsMetadata, metadataDict: JSONObject) {
+        private fun parseFeedMetadata(opdsMetadata: OpdsMetadata, metadataDict: JSONObject) {
             if(metadataDict.has("title")) {
                 metadataDict.get("title")?.let {
                     opdsMetadata.title = it.toString()
@@ -139,15 +139,15 @@ class OPDS2Parser {
                 }}
         }
 
-        internal fun parseFacets(feed: Feed, facets: JSONArray) {
+        private fun parseFacets(feed: Feed, facets: JSONArray) {
             for (i in 0..(facets.length() - 1)) {
                 val facetDict = facets.getJSONObject(i)
-                val metadata = facetDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.invalidFacet.name)
-                val title = metadata["title"] as? String ?: throw Exception(OPDS2ParserError.invalidFacet.name)
+                val metadata = facetDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.InvalidFacet.name)
+                val title = metadata["title"] as? String ?: throw Exception(OPDS2ParserError.InvalidFacet.name)
                 val facet = Facet(title = title)
                 parseFeedMetadata(opdsMetadata = facet.metadata, metadataDict = metadata)
                 if (facetDict.has("links")){
-                    val links = facetDict.getJSONArray("links") ?: throw Exception(OPDS2ParserError.invalidFacet.name)
+                    val links = facetDict.getJSONArray("links") ?: throw Exception(OPDS2ParserError.InvalidFacet.name)
                     for (k in 0..(links.length() - 1)) {
                         val linkDict = links.getJSONObject(k)
                         val link = parseLink(linkDict)
@@ -158,7 +158,7 @@ class OPDS2Parser {
             }
         }
 
-        internal fun parseLinks(feed: Feed, links: JSONArray) {
+        private fun parseLinks(feed: Feed, links: JSONArray) {
             for (i in 0..(links.length() - 1)) {
                 val linkDict = links.getJSONObject(i)
                 val link = parseLink(linkDict, feed.href)
@@ -166,7 +166,7 @@ class OPDS2Parser {
             }
         }
 
-        internal fun parsePublications(feed: Feed, publications: JSONArray) {
+        private fun parsePublications(feed: Feed, publications: JSONArray) {
             for (i in 0..(publications.length() - 1)) {
                 val pubDict = publications.getJSONObject(i)
                 val pub = parsePublication(pubDict)
@@ -174,7 +174,7 @@ class OPDS2Parser {
             }
         }
 
-        internal fun parseNavigation(feed: Feed, navLinks:JSONArray) {
+        private fun parseNavigation(feed: Feed, navLinks:JSONArray) {
             for (i in 0..(navLinks.length() - 1)) {
                 val navDict = navLinks.getJSONObject(i)
                 val link = parseLink(navDict)
@@ -182,16 +182,16 @@ class OPDS2Parser {
             }
         }
 
-        internal fun parseGroups(feed: Feed, groups: JSONArray) {
+        private fun parseGroups(feed: Feed, groups: JSONArray) {
             for (i in 0..(groups.length() - 1)) {
                 val groupDict = groups.getJSONObject(i)
-                val metadata = groupDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
-                val title = metadata.getString("title") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
+                val metadata = groupDict.getJSONObject("metadata") ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
+                val title = metadata.getString("title") ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
                 val group = Group(title = title)
                 parseFeedMetadata(opdsMetadata = group.metadata, metadataDict = metadata)
 
                 if (groupDict.has("links")) {
-                    val links = groupDict.getJSONArray("links") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
+                    val links = groupDict.getJSONArray("links") ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
                     for (j in 0..(links.length() - 1)) {
                         val linkDict = links.getJSONObject(j)
                         val link = parseLink(linkDict)
@@ -199,7 +199,7 @@ class OPDS2Parser {
                     }
                 }
                 if (groupDict.has("navigation")) {
-                    val links = groupDict.getJSONArray("navigation") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
+                    val links = groupDict.getJSONArray("navigation") ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
                     for (j in 0..(links.length() - 1)) {
                         val linkDict = links.getJSONObject(j)
                         val link = parseLink(linkDict)
@@ -207,7 +207,7 @@ class OPDS2Parser {
                     }
                 }
                 if (groupDict.has("publications")) {
-                    val publications = groupDict.getJSONArray("publications") ?: throw Exception(OPDS2ParserError.invalidGroup.name)
+                    val publications = groupDict.getJSONArray("publications") ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
                     for (j in 0..(publications.length() - 1)) {
                         val pubDict = publications.getJSONObject(j)
                         val pub = parsePublication(pubDict)
