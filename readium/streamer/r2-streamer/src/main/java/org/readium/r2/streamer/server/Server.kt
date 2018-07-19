@@ -31,11 +31,11 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
     private val FONT_HANDLE = "/fonts/(.*)"
     private var containsMediaOverlay = false
 
-    private val ressources = Ressources()
+    private val resources = Ressources()
     private val fonts = Fonts()
 
     private fun addResource(name: String, body: String) {
-        ressources.add(name, body)
+        resources.add(name, body)
     }
     
     private fun addFont(name: String, assets: AssetManager, context: Context) {
@@ -74,8 +74,8 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         }
         addRoute(fileName + MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
         addRoute(fileName + MANIFEST_ITEM_HANDLE, ResourceHandler::class.java, fetcher)
-        addRoute( JS_HANDLE, JSHandler::class.java, ressources)
-        addRoute( CSS_HANDLE, CSSHandler::class.java, ressources)
+        addRoute( JS_HANDLE, JSHandler::class.java, resources)
+        addRoute( CSS_HANDLE, CSSHandler::class.java, resources)
         addRoute( FONT_HANDLE, FontHandler::class.java, fonts)
     }
 

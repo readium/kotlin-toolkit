@@ -13,8 +13,8 @@ import java.util.zip.ZipFile
 /**
  * Template for an archive container ( E.g.: EPub, CBZ, .. )
  *
- * Contains the zipfile and methods to gather data, size of
- * the content or an inputstream of the archive
+ * Contains the zipFile and methods to gather data, size of
+ * the content or an inputStream of the archive
  *
  */
 

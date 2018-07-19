@@ -145,23 +145,23 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         return resourceHtml.toByteArray().inputStream()
     }
 
-    private fun getHtmlFont(ressourceName: String) : String {
+    private fun getHtmlFont(resourceName: String) : String {
         val prefix = "<style type=\"text/css\"> @font-face{font-family: \"OpenDyslexic\"; src:url(\""
         val suffix = "\") format('truetype');}</style>\n"
-        return prefix + ressourceName + suffix
+        return prefix + resourceName + suffix
     }
 
-    private fun getHtmlLink(ressourceName: String) : String {
+    private fun getHtmlLink(resourceName: String) : String {
         val prefix = "<link rel=\"stylesheet\" type=\"text/css\" href=\""
         val suffix = "\"/>\n"
-        return prefix + ressourceName + suffix
+        return prefix + resourceName + suffix
     }
 
-    private fun getHtmlScript(ressourceName: String) : String {
+    private fun getHtmlScript(resourceName: String) : String {
         val prefix = "<script type=\"text/javascript\" src=\""
         val suffix = "\"></script>\n"
 
-        return prefix + ressourceName + suffix
+        return prefix + resourceName + suffix
     }
 
     private fun getProperties(): MutableList<Pair<String, String>>? {

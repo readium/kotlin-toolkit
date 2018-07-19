@@ -6,9 +6,9 @@
 
 package org.readium.r2.streamer.container
 
-import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
+import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.parser.xml.XmlParser
 import java.io.InputStream
 
@@ -46,14 +46,14 @@ interface Container{
 /**
  *  EpubContainer
  *
- *  @func xmlDocumentforFile : return the XmlParser of a file
+ *  @func xmlDocumentForFile : return the XmlParser of a file
  *
- *  @func xmlDocumentforResource : return the XmlParser of a link
+ *  @func xmlDocumentForResource : return the XmlParser of a link
  */
 interface EpubContainer : Container {
 
-    fun xmlDocumentforFile(relativePath: String) : XmlParser
-    fun xmlDocumentforResource(link: Link?) : XmlParser
+    fun xmlDocumentForFile(relativePath: String) : XmlParser
+    fun xmlDocumentForResource(link: Link?) : XmlParser
 
 }
 

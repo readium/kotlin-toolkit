@@ -165,7 +165,7 @@ class EpubParser : PublicationParser {
     private fun parseNavigationDocument(container: EpubContainer, publication: Publication) {
         val navLink = publication.linkWithRel("contents") ?: return
         val navDocument = try {
-            container.xmlDocumentforResource(navLink)
+            container.xmlDocumentForResource(navLink)
         } catch(e: Exception){
             Log.e("Error", "Navigation parsing", e)
             return
@@ -183,7 +183,7 @@ class EpubParser : PublicationParser {
     private fun parseNcxDocument(container: EpubContainer, publication: Publication){
         val ncxLink = publication.resources.firstOrNull { it.typeLink == "application/x-dtbncx+xml" } ?: return
         val ncxDocument = try {
-            container.xmlDocumentforResource(ncxLink)
+            container.xmlDocumentForResource(ncxLink)
         } catch (e: Exception) {
             Log.e("Error", "Ncx parsing", e)
             return

@@ -14,12 +14,9 @@ import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
-
 import org.readium.r2.shared.Link
-import org.readium.r2.shared.MediaOverlayNode
 import org.readium.r2.shared.MediaOverlays
 import org.readium.r2.streamer.fetcher.Fetcher
-
 
 
 class MediaOverlayHandler : RouterNanoHTTPD.DefaultHandler() {

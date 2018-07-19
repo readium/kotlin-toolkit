@@ -16,18 +16,18 @@ import org.readium.r2.streamer.parser.mimetype
 
 class ContainerEpub : EpubContainer, ZipArchiveContainer {
 
-    override fun xmlDocumentforFile(relativePath: String): XmlParser {
+    override fun xmlDocumentForFile(relativePath: String): XmlParser {
         val containerData = data(relativePath)
         val document = XmlParser()
         document.parseXml(containerData.inputStream())
         return document
     }
 
-    override fun xmlDocumentforResource(link: Link?): XmlParser {
+    override fun xmlDocumentForResource(link: Link?): XmlParser {
         var pathFile = link?.href ?: throw Exception("Missing Link : ${link?.title}")
         if (pathFile.first() == '/')
             pathFile = pathFile.substring(1)
-        return xmlDocumentforFile(pathFile)
+        return xmlDocumentForFile(pathFile)
     }
 
     override var rootFile: RootFile
