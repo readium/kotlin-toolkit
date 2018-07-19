@@ -17,7 +17,7 @@ fun Request.promise(): Promise<Triple<Request, Response, ByteArray>, Exception> 
     val deferred = deferred<Triple<Request, Response, ByteArray>, Exception>()
     task { response() } success {
         val (request, response, result) = it
-        when(result) {
+        when (result) {
             is Result.Success -> deferred.resolve(Triple(request, response, result.value))
             is Result.Failure -> deferred.reject(result.error)
         }

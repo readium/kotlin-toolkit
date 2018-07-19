@@ -10,12 +10,8 @@ import org.readium.r2.shared.Link
 import java.io.Serializable
 
 
-data class Facet(val title: String): Serializable {
-    var metadata: OpdsMetadata
+data class Facet(val title: String) : Serializable {
+    var metadata: OpdsMetadata = OpdsMetadata(title = title)
     var links = mutableListOf<Link>()
-
-    init {
-        this.metadata = OpdsMetadata(title = title)
-    }
 
 }

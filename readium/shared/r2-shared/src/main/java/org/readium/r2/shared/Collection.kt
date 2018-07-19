@@ -7,22 +7,22 @@
 package org.readium.r2.shared
 
 import org.json.JSONObject
-import java.net.URL
 
 data class Collection(var name: String) {
     var sortAs: String? = null
-     var identifier: String? = null
-     var position: Double? = null
-     var links:MutableList<Link> = mutableListOf()
+    var identifier: String? = null
+    var position: Double? = null
+    var links: MutableList<Link> = mutableListOf()
 
 }
 
-enum class CollectionError(v:String) {
-    invalidCollection("Invalid collection")
+enum class CollectionError(val v: String) {
+    InvalidCollection("Invalid collection")
 }
 
-fun parseCollection(collectionDict: JSONObject) : Collection {
-    val name = collectionDict["name"] as? String ?: throw Exception(CollectionError.invalidCollection.name)
+fun parseCollection(collectionDict: JSONObject): Collection {
+    val name = collectionDict["name"] as? String
+            ?: throw Exception(CollectionError.InvalidCollection.name)
     val c = Collection(name = name)
 
     if (collectionDict.has("sort_as")) {
@@ -35,7 +35,8 @@ fun parseCollection(collectionDict: JSONObject) : Collection {
         c.position = collectionDict.getDouble("position")
     }
     if (collectionDict.has("links")) {
-        val links = collectionDict.getJSONArray("links") ?: throw Exception(CollectionError.invalidCollection.name)
+        val links = collectionDict.getJSONArray("links")
+                ?: throw Exception(CollectionError.InvalidCollection.name)
         for (i in 0..(links.length() - 1)) {
             val link = links.getJSONObject(i)
             c.links.add(parseLink(link))

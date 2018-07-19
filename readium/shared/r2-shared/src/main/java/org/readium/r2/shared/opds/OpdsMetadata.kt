@@ -10,7 +10,7 @@ import java.io.Serializable
 import java.util.*
 
 
-data class OpdsMetadata(var title: String): Serializable {
+data class OpdsMetadata(var title: String) : Serializable {
     var numberOfItems: Int? = null
     var itemsPerPage: Int? = null
     var currentPage: Int? = null

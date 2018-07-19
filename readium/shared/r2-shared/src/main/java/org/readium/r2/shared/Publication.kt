@@ -11,18 +11,8 @@ import org.json.JSONObject
 import java.io.Serializable
 import java.net.URL
 
-/**
- * Enumeration of every handled mime type
- *
- * There you should add your new mime type to handle a new kind of publication and
- *      use it to check the type on your implementation
- *
- */
-enum class PUBLICATION_TYPE {
-    EPUB, CBZ
-}
 
-fun URL.removeLastComponent() : URL{
+fun URL.removeLastComponent(): URL {
     var str = this.toString()
     val i = str.lastIndexOf('/', 0, true)
     if (i != -1)
@@ -30,23 +20,23 @@ fun URL.removeLastComponent() : URL{
     return URL(str)
 }
 
-fun getJSONArray(list: List<JSONable>) : JSONArray{
+fun getJSONArray(list: List<JSONable>): JSONArray {
     val array = JSONArray()
-    for(i in list){
+    for (i in list) {
         array.put(i.getJSON())
     }
     return array
 }
 
-fun getStringArray(list: List<Any>) : JSONArray {
+fun getStringArray(list: List<Any>): JSONArray {
     val array = JSONArray()
-    for(i in list){
+    for (i in list) {
         array.put(i)
     }
     return array
 }
 
-fun tryPut(obj: JSONObject, list: List<JSONable>, tag: String){
+fun tryPut(obj: JSONObject, list: List<JSONable>, tag: String) {
     if (list.isNotEmpty())
         obj.putOpt(tag, getJSONArray(list))
 }
@@ -71,19 +61,28 @@ class TocElement(val link: Link, val children: List<TocElement>) : JSONable {
  */
 class Publication : Serializable {
 
-    private val TAG = this::class.java.simpleName
+    /**
+     * Enumeration of every handled mime type
+     *
+     * There you should add your new mime type to handle a new kind of publication and
+     *      use it to check the type on your implementation
+     *
+     */
+    enum class TYPE {
+        EPUB, CBZ
+    }
 
     /// The kind of publication it is ( Epub, Cbz, ... )
-    var type = PUBLICATION_TYPE.EPUB
+    var type = TYPE.EPUB
     /// The version of the publication, if the type needs any.
     var version: Double = 0.0
     /// The metadata (title, identifier, contributors, etc.).
     var metadata: Metadata = Metadata()
-    /// org.readium.r2shared.Publication.org.readium.r2shared.Link to special ressources which are added to the publication.
+    /// org.readium.r2shared.Publication.org.readium.r2shared.Link to special resources which are added to the publication.
     var links: MutableList<Link> = mutableListOf()
     /// Links of the spine items of the publication.
     var spine: MutableList<Link> = mutableListOf()
-    /// Link to the ressources of the publication.
+    /// Link to the resources of the publication.
     var resources: MutableList<Link> = mutableListOf()
     /// Table of content of the publication.
     var tableOfContents: MutableList<Link> = mutableListOf()
@@ -100,10 +99,10 @@ class Publication : Serializable {
     var otherLinks: MutableList<Link> = mutableListOf()
     var internalData: MutableMap<String, String> = mutableMapOf()
 
-    var coverLink: Link?  = null
+    var coverLink: Link? = null
         get() = linkWithRel("cover")
 
-    fun baseUrl() : URL? {
+    fun baseUrl(): URL? {
         val selfLink = linkWithRel("self")
         if (selfLink != null) {
             val url = selfLink.let { URL(selfLink.href) }
@@ -113,7 +112,7 @@ class Publication : Serializable {
         return null
     }
 
-    fun manifest() : String{
+    fun manifest(): String {
         val json = JSONObject()
         json.put("metadata", metadata.writeJSON())
         tryPut(json, links, "links")
@@ -129,19 +128,19 @@ class Publication : Serializable {
         return str
     }
 
-    fun resource(relativePath: String) : Link? = (spine + resources).first({it.href == relativePath})
+    fun resource(relativePath: String): Link? = (spine + resources).first({ it.href == relativePath })
 
-    fun linkWithRel(rel: String) : Link? {
+    fun linkWithRel(rel: String): Link? {
         val findLinkWithRel: (Link) -> Boolean = { it.rel.contains(rel) }
         return findLinkInPublicationLinks(findLinkWithRel)
     }
 
-    fun linkWithHref(href: String) : Link? {
-        val findLinkWithHref: (Link) -> Boolean = { (href == it.href) || ("/" + href == it.href)}
+    fun linkWithHref(href: String): Link? {
+        val findLinkWithHref: (Link) -> Boolean = { (href == it.href) || ("/$href" == it.href) }
         return findLinkInPublicationLinks(findLinkWithHref)
     }
 
-    fun addSelfLink(endPoint: String, baseURL: URL){
+    fun addSelfLink(endPoint: String, baseURL: URL) {
         val publicationUrl: URL
         val link = Link()
         val manifestPath = "$endPoint/manifest.json"
@@ -153,14 +152,12 @@ class Publication : Serializable {
         links.add(link)
     }
 
-    private fun findLinkInPublicationLinks (closure: (Link) -> Boolean) =
-            resources.firstOrNull(closure) ?:
-                spine.firstOrNull(closure) ?:
-                links.firstOrNull(closure) ?:
-             pageList.firstOrNull(closure)
+    private fun findLinkInPublicationLinks(closure: (Link) -> Boolean) =
+            resources.firstOrNull(closure) ?: spine.firstOrNull(closure)
+            ?: links.firstOrNull(closure) ?: pageList.firstOrNull(closure)
 
-    enum class PublicationError(v: String) {
-        invalidPublication("Invalid publication")
+    enum class PublicationError(var v: String) {
+        InvalidPublication("Invalid publication")
     }
 
 }
@@ -169,20 +166,22 @@ class Publication : Serializable {
  * Parse a JSON dictionary of extra information into a publication
  *
  */
-fun parsePublication(pubDict: JSONObject) : Publication {
+fun parsePublication(pubDict: JSONObject): Publication {
     val p = Publication()
 
-    if(pubDict.has("metadata")) {
+    if (pubDict.has("metadata")) {
         pubDict.get("metadata")?.let {
-            val metadataDict = it as? JSONObject ?: throw Exception(Publication.PublicationError.invalidPublication.name)
+            val metadataDict = it as? JSONObject
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             val metadata = parseMetadata(metadataDict)
             p.metadata = metadata
 
         }
     }
-    if(pubDict.has("links")) {
+    if (pubDict.has("links")) {
         pubDict.get("links")?.let {
-            val links = it as? JSONArray ?: throw Exception(Publication.PublicationError.invalidPublication.name)
+            val links = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0..(links.length() - 1)) {
                 val linkDict = links.getJSONObject(i)
                 val link = parseLink(linkDict)
@@ -190,9 +189,10 @@ fun parsePublication(pubDict: JSONObject) : Publication {
             }
         }
     }
-    if(pubDict.has("images")) {
+    if (pubDict.has("images")) {
         pubDict.get("images")?.let {
-            val links = it as? JSONArray ?: throw Exception(Publication.PublicationError.invalidPublication.name)
+            val links = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0..(links.length() - 1)) {
                 val linkDict = links.getJSONObject(i)
                 val link = parseLink(linkDict)

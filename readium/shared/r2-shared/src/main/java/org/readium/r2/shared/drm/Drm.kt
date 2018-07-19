@@ -9,27 +9,25 @@ package org.readium.r2.shared.drm
 import java.io.Serializable
 
 
-class Drm: Serializable {
+class Drm(var brand: Brand) : Serializable {
 
-    private val TAG = this::class.java.simpleName
-
-    var brand: Brand
     var scheme: Scheme
 
     var profile: String? = null
     var license: DrmLicense? = null
 
-    enum class Brand(v:String):Serializable {
-        lcp("lcp")
-    }
-    enum class Scheme(v:String):Serializable {
-        lcp("http://readium.org/2014/01/lcp")
+    enum class Brand(var v: String) : Serializable {
+        Lcp("lcp")
     }
 
-    constructor(brand: Brand){
-        this.brand = brand
+    enum class Scheme(var v: String) : Serializable {
+        Lcp("http://readium.org/2014/01/lcp")
+    }
+
+    init {
         when (brand) {
-            Brand.lcp -> scheme = Scheme.lcp
+            Brand.Lcp -> scheme = Scheme.Lcp
         }
     }
+
 }

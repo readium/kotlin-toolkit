@@ -9,9 +9,7 @@ package org.readium.r2.shared
 import org.json.JSONObject
 import java.io.Serializable
 
-class Subject : JSONable, Serializable{
-
-    private val TAG = this::class.java.simpleName
+class Subject : JSONable, Serializable {
 
     var name: String? = null
     //  The WebPubManifest elements

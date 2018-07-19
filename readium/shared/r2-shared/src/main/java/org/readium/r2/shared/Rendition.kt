@@ -9,43 +9,40 @@ package org.readium.r2.shared
 import org.json.JSONObject
 import java.io.Serializable
 
-enum class RenditionLayout(val ini: String) : Serializable{
-    reflowable("reflowable"),
-    fixed("fixed")
+enum class RenditionLayout(val ini: String) : Serializable {
+    Reflowable("reflowable"),
+    Fixed("fixed")
 }
 
-enum class RenditionFlow(val ini: String) : Serializable{
-    paginated("paginated"),
-    continuous("continuous"),
-    document("document"),
-    fixed("fixed")
+enum class RenditionFlow(val ini: String) : Serializable {
+    Paginated("paginated"),
+    Continuous("continuous"),
+    Document("document"),
+    Fixed("Fixed")
 }
 
-enum class RenditionOrientation(val ini: String) : Serializable{
-    auto("auto"),
-    landscape("landscape"),
-    portrait("portrait")
+enum class RenditionOrientation(val ini: String) : Serializable {
+    Auto("auto"),
+    Landscape("landscape"),
+    Portrait("portrait")
 }
 
-enum class RenditionSpread(val ini: String) : Serializable{
-    auto("auto"),
-    landscape("landscape"),
-    portrait("portrait"),
-    both("both"),
-    none("none")
+enum class RenditionSpread(val ini: String) : Serializable {
+    Auto("auto"),
+    Landscape("landscape"),
+    Portrait("portrait"),
+    Both("both"),
+    None("none")
 }
 
 class Rendition : Serializable {
-
-    private val TAG = this::class.java.simpleName
-
     var flow: RenditionFlow? = null
     var spread: RenditionSpread? = null
     var layout: RenditionLayout? = null
     var viewport: String? = null
     var orientation: RenditionOrientation? = null
 
-    fun isEmpty() : Boolean {
+    fun isEmpty(): Boolean {
         return (layout == null
                 && flow == null
                 && spread == null
@@ -53,7 +50,7 @@ class Rendition : Serializable {
                 && orientation == null)
     }
 
-    fun getJSON() : JSONObject{
+    fun getJSON(): JSONObject {
         val obj = JSONObject()
         obj.putOpt("flow", flow?.toString())
         obj.putOpt("spread", spread?.toString())
