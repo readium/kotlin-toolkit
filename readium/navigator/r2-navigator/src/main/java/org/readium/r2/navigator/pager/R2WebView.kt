@@ -17,7 +17,7 @@ import android.view.MotionEvent
 
 
 /**
- * Created by aferditamuriqi on 12/2/17.
+ * Created by Aferdita Muriqi on 12/2/17.
  */
 
 class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {

@@ -99,23 +99,23 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         // Font override
         userProperties.addSwitchable("readium-font-on", "readium-font-off", fontOverride, FONT_OVERRIDE_REF, FONT_OVERRIDE_NAME)
         // Column count
-        userProperties.addEnumeratable(columnCount, columnCountValues, COLUMN_COUNT_REF, COLUMN_COUNT_NAME)
+        userProperties.addEnumerable(columnCount, columnCountValues, COLUMN_COUNT_REF, COLUMN_COUNT_NAME)
         // Appearance
-        userProperties.addEnumeratable(appearance, appearanceValues, APPEARANCE_REF, APPEARANCE_NAME)
+        userProperties.addEnumerable(appearance, appearanceValues, APPEARANCE_REF, APPEARANCE_NAME)
         // Page margins
-        userProperties.addIncrementable(pageMargins, 0.5f, 2f, 0.25f, "", PAGE_MARGINS_REF, PAGE_MARGINS_NAME)
+        userProperties.addIncremental(pageMargins, 0.5f, 2f, 0.25f, "", PAGE_MARGINS_REF, PAGE_MARGINS_NAME)
         // Text alignment
-        userProperties.addEnumeratable(textAlignment, textAlignmentValues, TEXT_ALIGNMENT_REF, TEXT_ALIGNMENT_NAME)
+        userProperties.addEnumerable(textAlignment, textAlignmentValues, TEXT_ALIGNMENT_REF, TEXT_ALIGNMENT_NAME)
         // Font family
-        userProperties.addEnumeratable(fontFamily, fontFamilyValues, FONT_FAMILY_REF, FONT_FAMILY_NAME)
+        userProperties.addEnumerable(fontFamily, fontFamilyValues, FONT_FAMILY_REF, FONT_FAMILY_NAME)
         // Font size
-        userProperties.addIncrementable(fontSize, 100f, 300f, 25f, "%", FONT_SIZE_REF, FONT_SIZE_NAME)
+        userProperties.addIncremental(fontSize, 100f, 300f, 25f, "%", FONT_SIZE_REF, FONT_SIZE_NAME)
         // Line height
-        userProperties.addIncrementable(lineHeight, 1f, 2f, 0.25f, "", LINE_HEIGHT_REF, LINE_HEIGHT_NAME)
+        userProperties.addIncremental(lineHeight, 1f, 2f, 0.25f, "", LINE_HEIGHT_REF, LINE_HEIGHT_NAME)
         // Word spacing
-        userProperties.addIncrementable(wordSpacing, 0f, 0.5f, 0.25f, "rem", WORD_SPACING_REF, WORD_SPACING_NAME)
+        userProperties.addIncremental(wordSpacing, 0f, 0.5f, 0.25f, "rem", WORD_SPACING_REF, WORD_SPACING_NAME)
         // Letter spacing
-        userProperties.addIncrementable(letterSpacing, 0f, 0.5f, 0.0625f, "em", LETTER_SPACING_REF, LETTER_SPACING_NAME)
+        userProperties.addIncremental(letterSpacing, 0f, 0.5f, 0.0625f, "em", LETTER_SPACING_REF, LETTER_SPACING_NAME)
         // Scroll
         userProperties.addSwitchable("readium-scroll-on", "readium-scroll-off", verticalScroll, SCROLL_REF, SCROLL_NAME)
 
@@ -141,7 +141,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         }
     }
 
-    private fun updateEnumeratable(enumerable: Enumerable) {
+    private fun updateEnumerable(enumerable: Enumerable) {
         preferences.edit().putInt(enumerable.ref, enumerable.index).apply()
         saveChanges()
     }
@@ -152,7 +152,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         saveChanges()
     }
 
-    private fun updateIncrementable(incremental: Incremental) {
+    private fun updateIncremental(incremental: Incremental) {
         preferences.edit().putFloat(incremental.ref, incremental.value).apply()
         saveChanges()
     }
@@ -257,7 +257,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
                 fontFamily.index = pos
                 fontOverride.on = (pos != 0)
                 updateSwitchable(fontOverride)
-                updateEnumeratable(fontFamily)
+                updateEnumerable(fontFamily)
                 println("selected a font")
                 updateViewCSS(FONT_OVERRIDE_REF)
                 updateViewCSS(FONT_FAMILY_REF)
@@ -295,7 +295,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
                     (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#ffffff"))
                 }
             }
-            updateEnumeratable(appearance)
+            updateEnumerable(appearance)
             updateViewCSS(APPEARANCE_REF)
         }
 
@@ -305,13 +305,13 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         val fontIncreaseButton = layout.findViewById(R.id.font_increase) as ImageButton
         fontDecreaseButton.setOnClickListener {
             fontSize.decrement()
-            updateIncrementable(fontSize)
+            updateIncremental(fontSize)
             updateViewCSS(FONT_SIZE_REF)
         }
 
         fontIncreaseButton.setOnClickListener {
             fontSize.increment()
-            updateIncrementable(fontSize)
+            updateIncremental(fontSize)
             updateViewCSS(FONT_SIZE_REF)
         }
 
@@ -369,7 +369,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
                     (if (alignment.index == 0) context.getDrawable(R.drawable.icon_left) else context.getDrawable(R.drawable.icon_left_white)),
                     null, null)
             publisherDefaultSwitch.isChecked = false
-            updateEnumeratable(alignment)
+            updateEnumerable(alignment)
             updateViewCSS(TEXT_ALIGNMENT_REF)
         }
 
@@ -385,7 +385,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             val i = findIndexOfId(id, columnsRadios)
             columnsCount.index = i
             publisherDefaultSwitch.isChecked = false
-            updateEnumeratable(columnsCount)
+            updateEnumerable(columnsCount)
             updateViewCSS(COLUMN_COUNT_REF)
         }
 
@@ -400,7 +400,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             pageMargins.decrement()
             pageMarginsDisplay.text = pageMargins.value.toString()
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(pageMargins)
+            updateIncremental(pageMargins)
             updateViewCSS(PAGE_MARGINS_REF)
         }
 
@@ -408,7 +408,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             pageMargins.increment()
             pageMarginsDisplay.text = pageMargins.value.toString()
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(pageMargins)
+            updateIncremental(pageMargins)
             updateViewCSS(PAGE_MARGINS_REF)
         }
 
@@ -423,7 +423,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             wordSpacing.decrement()
             wordSpacingDisplay.text = (if (wordSpacing.value == wordSpacing.min) "auto" else wordSpacing.value.toString())
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(wordSpacing)
+            updateIncremental(wordSpacing)
             updateViewCSS(WORD_SPACING_REF)
         }
 
@@ -431,7 +431,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             wordSpacing.increment()
             wordSpacingDisplay.text = wordSpacing.value.toString()
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(wordSpacing)
+            updateIncremental(wordSpacing)
             updateViewCSS(WORD_SPACING_REF)
         }
 
@@ -447,7 +447,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             letterSpacing.decrement()
             letterSpacingDisplay.text = (if (letterSpacing.value == letterSpacing.min) "auto" else letterSpacing.value.toString())
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(letterSpacing)
+            updateIncremental(letterSpacing)
             updateViewCSS(LETTER_SPACING_REF)
         }
 
@@ -455,7 +455,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             letterSpacing.increment()
             letterSpacingDisplay.text = (if (letterSpacing.value == letterSpacing.min) "auto" else letterSpacing.value.toString())
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(letterSpacing)
+            updateIncremental(letterSpacing)
             updateViewCSS(LETTER_SPACING_REF)
         }
 
@@ -470,14 +470,14 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             lineHeight.decrement()
             lineHeightDisplay.text = (if (lineHeight.value == lineHeight.min) "auto" else lineHeight.value.toString())
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(lineHeight)
+            updateIncremental(lineHeight)
             updateViewCSS(LINE_HEIGHT_REF)
         }
         lineHeightIncreaseButton.setOnClickListener {
             lineHeight.increment()
             lineHeightDisplay.text = (if (lineHeight.value == lineHeight.min) "auto" else lineHeight.value.toString())
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(lineHeight)
+            updateIncremental(lineHeight)
             updateViewCSS(LINE_HEIGHT_REF)
         }
 

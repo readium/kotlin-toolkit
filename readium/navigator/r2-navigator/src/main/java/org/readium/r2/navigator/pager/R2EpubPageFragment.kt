@@ -112,13 +112,13 @@ class R2EpubPageFragment : Fragment() {
         webView.setOnLongClickListener {
             true
         }
-        webView.setGestureDetector(GestureDetector(context, CustomeGestureDetector(webView)))
+        webView.setGestureDetector(GestureDetector(context, CustomGestureDetector(webView)))
         webView.loadUrl(resourceUrl)
 
         return v
     }
 
-    class CustomeGestureDetector(val webView: R2WebView) : GestureDetector.SimpleOnGestureListener() {
+    class CustomGestureDetector(val webView: R2WebView) : GestureDetector.SimpleOnGestureListener() {
 
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
             if (e1 == null || e2 == null) return false
