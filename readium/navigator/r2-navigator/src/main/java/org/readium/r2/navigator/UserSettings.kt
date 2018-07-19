@@ -13,13 +13,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import org.json.JSONArray
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.pager.R2WebView
 import org.readium.r2.shared.*
-import timber.log.Timber
 import java.io.File
-import org.json.JSONArray
-import org.json.JSONObject
 
 const val FONT_SIZE_REF = "fontSize"
 const val FONT_FAMILY_REF = "fontFamily"
@@ -49,29 +47,27 @@ const val LINE_HEIGHT_NAME = "--USER__$LINE_HEIGHT_REF"
 
 class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
-    private val TAG = this::class.java.simpleName
-
     lateinit var resourcePager: R2ViewPager
 
-    private val appearanceValues = listOf("readium-default-on", "readium-sepia-on","readium-night-on")
+    private val appearanceValues = listOf("readium-default-on", "readium-sepia-on", "readium-night-on")
     private val fontFamilyValues = listOf("Original", "PT Serif", "Roboto", "Source Sans Pro", "Vollkorn", "OpenDyslexic")
     private val textAlignmentValues = listOf("justify", "start")
     private val columnCountValues = listOf("auto", "1", "2")
 
-    var fontSize = 100f
-    var fontOverride = false
+    private var fontSize = 100f
+    private var fontOverride = false
     var fontFamily = 0
     var appearance = 0
     var verticalScroll = false
 
     //Advanced settings
-    var publisherDefaults = false
-    var textAlignment = 0
-    var columnCount = 0
-    var wordSpacing = 0f
-    var letterSpacing = 0f
-    var pageMargins = 0.5f
-    var lineHeight = 1f
+    private var publisherDefaults = false
+    private var textAlignment = 0
+    private var columnCount = 0
+    private var wordSpacing = 0f
+    private var letterSpacing = 0f
+    private var pageMargins = 0.5f
+    private var lineHeight = 1f
 
     private var userProperties: UserProperties
 
@@ -95,7 +91,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         userProperties = getUserSettings()
     }
 
-    fun getUserSettings() : UserProperties {
+    private fun getUserSettings(): UserProperties {
 
         val userProperties = UserProperties()
         // Publisher default system
@@ -103,32 +99,32 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         // Font override
         userProperties.addSwitchable("readium-font-on", "readium-font-off", fontOverride, FONT_OVERRIDE_REF, FONT_OVERRIDE_NAME)
         // Column count
-        userProperties.addEnumeratable(columnCount, columnCountValues, COLUMN_COUNT_REF, COLUMN_COUNT_NAME)
+        userProperties.addEnumerable(columnCount, columnCountValues, COLUMN_COUNT_REF, COLUMN_COUNT_NAME)
         // Appearance
-        userProperties.addEnumeratable(appearance, appearanceValues, APPEARANCE_REF, APPEARANCE_NAME)
+        userProperties.addEnumerable(appearance, appearanceValues, APPEARANCE_REF, APPEARANCE_NAME)
         // Page margins
-        userProperties.addIncrementable(pageMargins, 0.5f, 2f, 0.25f, "", PAGE_MARGINS_REF, PAGE_MARGINS_NAME)
+        userProperties.addIncremental(pageMargins, 0.5f, 2f, 0.25f, "", PAGE_MARGINS_REF, PAGE_MARGINS_NAME)
         // Text alignment
-        userProperties.addEnumeratable(textAlignment, textAlignmentValues, TEXT_ALIGNMENT_REF, TEXT_ALIGNMENT_NAME)
+        userProperties.addEnumerable(textAlignment, textAlignmentValues, TEXT_ALIGNMENT_REF, TEXT_ALIGNMENT_NAME)
         // Font family
-        userProperties.addEnumeratable(fontFamily, fontFamilyValues, FONT_FAMILY_REF, FONT_FAMILY_NAME)
+        userProperties.addEnumerable(fontFamily, fontFamilyValues, FONT_FAMILY_REF, FONT_FAMILY_NAME)
         // Font size
-        userProperties.addIncrementable(fontSize, 100f, 300f, 25f, "%", FONT_SIZE_REF, FONT_SIZE_NAME)
+        userProperties.addIncremental(fontSize, 100f, 300f, 25f, "%", FONT_SIZE_REF, FONT_SIZE_NAME)
         // Line height
-        userProperties.addIncrementable(lineHeight, 1f, 2f, 0.25f, "", LINE_HEIGHT_REF, LINE_HEIGHT_NAME)
+        userProperties.addIncremental(lineHeight, 1f, 2f, 0.25f, "", LINE_HEIGHT_REF, LINE_HEIGHT_NAME)
         // Word spacing
-        userProperties.addIncrementable(wordSpacing, 0f, 0.5f, 0.25f, "rem", WORD_SPACING_REF, WORD_SPACING_NAME)
+        userProperties.addIncremental(wordSpacing, 0f, 0.5f, 0.25f, "rem", WORD_SPACING_REF, WORD_SPACING_NAME)
         // Letter spacing
-        userProperties.addIncrementable(letterSpacing, 0f, 0.5f, 0.0625f, "em", LETTER_SPACING_REF, LETTER_SPACING_NAME)
+        userProperties.addIncremental(letterSpacing, 0f, 0.5f, 0.0625f, "em", LETTER_SPACING_REF, LETTER_SPACING_NAME)
         // Scroll
         userProperties.addSwitchable("readium-scroll-on", "readium-scroll-off", verticalScroll, SCROLL_REF, SCROLL_NAME)
 
         return userProperties
     }
 
-    private fun makeJson() : JSONArray {
+    private fun makeJson(): JSONArray {
         val array = JSONArray()
-        for (userProperty in userProperties.properties){
+        for (userProperty in userProperties.properties) {
             array.put(userProperty.getJson())
         }
         return array
@@ -145,8 +141,8 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         }
     }
 
-    private fun updateEnumeratable(enumeratable: Enumeratable) {
-        preferences.edit().putInt(enumeratable.ref, enumeratable.index).apply()
+    private fun updateEnumerable(enumerable: Enumerable) {
+        preferences.edit().putInt(enumerable.ref, enumerable.index).apply()
         saveChanges()
     }
 
@@ -156,13 +152,12 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         saveChanges()
     }
 
-    private fun updateIncrementable(incrementable: Incrementable) {
-        preferences.edit().putFloat(incrementable.ref, incrementable.value).apply()
+    private fun updateIncremental(incremental: Incremental) {
+        preferences.edit().putFloat(incremental.ref, incremental.value).apply()
         saveChanges()
     }
 
     fun updateViewCSS(ref: String) {
-        val c = resourcePager.childCount
         for (i in 0 until resourcePager.childCount) {
             val webView = resourcePager.getChildAt(i).findViewById(R.id.webView) as R2WebView
             applyCSS(webView, ref)
@@ -179,11 +174,11 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
     fun userSettingsPopUp(): PopupWindow {
 
         val layoutInflater = LayoutInflater.from(context)
-        val layout = layoutInflater.inflate(R.layout.popup_window, null)
+        val layout = layoutInflater.inflate(R.layout.popup_window_user_settings, null)
         val userSettingsPopup = PopupWindow(context)
-        userSettingsPopup.setContentView(layout)
-        userSettingsPopup.setWidth(ListPopupWindow.WRAP_CONTENT)
-        userSettingsPopup.setHeight(ListPopupWindow.WRAP_CONTENT)
+        userSettingsPopup.contentView = layout
+        userSettingsPopup.width = ListPopupWindow.WRAP_CONTENT
+        userSettingsPopup.height = ListPopupWindow.WRAP_CONTENT
         userSettingsPopup.isOutsideTouchable = true
         userSettingsPopup.isFocusable = true
 
@@ -206,32 +201,31 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         (tw.getChildTabViewAt(0).findViewById(android.R.id.title) as TextView).textSize = 10f
         (tw.getChildTabViewAt(1).findViewById(android.R.id.title) as TextView).textSize = 10f
 
-        val fontFamily = (userProperties.getByRef<Enumeratable>(FONT_FAMILY_REF))
+        val fontFamily = (userProperties.getByRef<Enumerable>(FONT_FAMILY_REF))
         val fontOverride = (userProperties.getByRef<Switchable>(FONT_OVERRIDE_REF))
-        val appearance = userProperties.getByRef<Enumeratable>(APPEARANCE_REF)
-        val fontSize = userProperties.getByRef<Incrementable>(FONT_SIZE_REF)
+        val appearance = userProperties.getByRef<Enumerable>(APPEARANCE_REF)
+        val fontSize = userProperties.getByRef<Incremental>(FONT_SIZE_REF)
         val publisherDefault = userProperties.getByRef<Switchable>(PUBLISHER_DEFAULT_REF)
         val scrollMode = userProperties.getByRef<Switchable>(SCROLL_REF)
-        val alignment = userProperties.getByRef<Enumeratable>(TEXT_ALIGNMENT_REF)
-        val columnsCount = userProperties.getByRef<Enumeratable>(COLUMN_COUNT_REF)
-        val pageMargins = userProperties.getByRef<Incrementable>(PAGE_MARGINS_REF)
-        val wordSpacing = userProperties.getByRef<Incrementable>(WORD_SPACING_REF)
-        val letterSpacing = userProperties.getByRef<Incrementable>(LETTER_SPACING_REF)
-        val lineHeight = userProperties.getByRef<Incrementable>(LINE_HEIGHT_REF)
+        val alignment = userProperties.getByRef<Enumerable>(TEXT_ALIGNMENT_REF)
+        val columnsCount = userProperties.getByRef<Enumerable>(COLUMN_COUNT_REF)
+        val pageMargins = userProperties.getByRef<Incremental>(PAGE_MARGINS_REF)
+        val wordSpacing = userProperties.getByRef<Incremental>(WORD_SPACING_REF)
+        val letterSpacing = userProperties.getByRef<Incremental>(LETTER_SPACING_REF)
+        val lineHeight = userProperties.getByRef<Incremental>(LINE_HEIGHT_REF)
 
         val fontSpinner: Spinner = layout.findViewById(R.id.spinner_action_settings_intervall_values) as Spinner
 
-        val fonts = context.getResources().getStringArray(R.array.font_list)
+        val fonts = context.resources.getStringArray(R.array.font_list)
 
-        val dataAdapter = object : ArrayAdapter<String>(context, R.layout.spinner_item, fonts) {
+        val dataAdapter = object : ArrayAdapter<String>(context, R.layout.spinner_item_font, fonts) {
 
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-                var v: View? = null
-                v = super.getDropDownView(position, null, parent)
+                val v: View? = super.getDropDownView(position, null, parent)
                 // Makes the selected font appear in dark
                 // If this is the selected item position
                 if (position == fontFamily.index) {
-                    v!!.setBackgroundColor(context.getResources().getColor(R.color.colorPrimaryDark))
+                    v!!.setBackgroundColor(context.color(R.color.colorPrimaryDark))
                     v.findViewById<TextView>(android.R.id.text1).setTextColor(Color.WHITE)
 
                 } else {
@@ -244,7 +238,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             }
         }
 
-        fun findIndexOfId(id: Int, list: MutableList<RadioButton>) : Int {
+        fun findIndexOfId(id: Int, list: MutableList<RadioButton>): Int {
             for (i in 0..list.size) {
                 if (list[i].id == id) {
                     return i
@@ -256,14 +250,14 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
         // Font family
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        fontSpinner.setAdapter(dataAdapter)
+        fontSpinner.adapter = dataAdapter
         fontSpinner.setSelection(fontFamily.index)
         fontSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, pos: Int, id: Long) {
                 fontFamily.index = pos
                 fontOverride.on = (pos != 0)
                 updateSwitchable(fontOverride)
-                updateEnumeratable(fontFamily)
+                updateEnumerable(fontFamily)
                 println("selected a font")
                 updateViewCSS(FONT_OVERRIDE_REF)
                 updateViewCSS(FONT_FAMILY_REF)
@@ -284,8 +278,8 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
         appearanceRadios[appearance.index].isChecked = true
 
-        appearanceGroup.setOnCheckedChangeListener { radioGroup, id ->
-            val i = findIndexOfId(id, appearanceRadios)
+        appearanceGroup.setOnCheckedChangeListener { _, id ->
+            val i = findIndexOfId(id, list = appearanceRadios)
             appearance.index = i
             when (i) {
                 0 -> {
@@ -301,7 +295,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
                     (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#ffffff"))
                 }
             }
-            updateEnumeratable(appearance)
+            updateEnumerable(appearance)
             updateViewCSS(APPEARANCE_REF)
         }
 
@@ -311,13 +305,13 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         val fontIncreaseButton = layout.findViewById(R.id.font_increase) as ImageButton
         fontDecreaseButton.setOnClickListener {
             fontSize.decrement()
-            updateIncrementable(fontSize)
+            updateIncremental(fontSize)
             updateViewCSS(FONT_SIZE_REF)
         }
 
         fontIncreaseButton.setOnClickListener {
             fontSize.increment()
-            updateIncrementable(fontSize)
+            updateIncremental(fontSize)
             updateViewCSS(FONT_SIZE_REF)
         }
 
@@ -325,7 +319,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         // Publisher defaults
         val publisherDefaultSwitch = layout.findViewById(R.id.publisher_default) as Switch
         publisherDefaultSwitch.isChecked = publisherDefault.on
-        publisherDefaultSwitch.setOnCheckedChangeListener { compoundButton, b ->
+        publisherDefaultSwitch.setOnCheckedChangeListener { _, b ->
             publisherDefault.on = b
             updateSwitchable(publisherDefault)
             updateViewCSS(PUBLISHER_DEFAULT_REF)
@@ -335,7 +329,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         // Vertical scroll
         val scrollModeSwitch = layout.findViewById(R.id.scroll_mode) as Switch
         scrollModeSwitch.isChecked = scrollMode.on
-        scrollModeSwitch.setOnCheckedChangeListener { compoundButton, b ->
+        scrollModeSwitch.setOnCheckedChangeListener { _, b ->
             scrollMode.on = scrollModeSwitch.isChecked
             when (b) {
                 true -> {
@@ -366,7 +360,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
                 (if (alignment.index == 0) context.getDrawable(R.drawable.icon_left) else context.getDrawable(R.drawable.icon_left_white)),
                 null, null)
 
-        alignmentGroup.setOnCheckedChangeListener { radioGroup, i ->
+        alignmentGroup.setOnCheckedChangeListener { _, i ->
             alignment.index = findIndexOfId(i, alignmentRadios)
             alignmentRadios[0].setCompoundDrawablesWithIntrinsicBounds(null,
                     (if (alignment.index == 0) context.getDrawable(R.drawable.icon_justify_white) else context.getDrawable(R.drawable.icon_justify)),
@@ -375,7 +369,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
                     (if (alignment.index == 0) context.getDrawable(R.drawable.icon_left) else context.getDrawable(R.drawable.icon_left_white)),
                     null, null)
             publisherDefaultSwitch.isChecked = false
-            updateEnumeratable(alignment)
+            updateEnumerable(alignment)
             updateViewCSS(TEXT_ALIGNMENT_REF)
         }
 
@@ -387,11 +381,11 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         columnsRadios.add(layout.findViewById(R.id.column_one))
         columnsRadios.add(layout.findViewById(R.id.column_two))
         columnsRadios[columnsCount.index].isChecked = true
-        columnsCountGroup.setOnCheckedChangeListener { radioGroup, id ->
+        columnsCountGroup.setOnCheckedChangeListener { _, id ->
             val i = findIndexOfId(id, columnsRadios)
             columnsCount.index = i
             publisherDefaultSwitch.isChecked = false
-            updateEnumeratable(columnsCount)
+            updateEnumerable(columnsCount)
             updateViewCSS(COLUMN_COUNT_REF)
         }
 
@@ -406,7 +400,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             pageMargins.decrement()
             pageMarginsDisplay.text = pageMargins.value.toString()
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(pageMargins)
+            updateIncremental(pageMargins)
             updateViewCSS(PAGE_MARGINS_REF)
         }
 
@@ -414,7 +408,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             pageMargins.increment()
             pageMarginsDisplay.text = pageMargins.value.toString()
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(pageMargins)
+            updateIncremental(pageMargins)
             updateViewCSS(PAGE_MARGINS_REF)
         }
 
@@ -429,7 +423,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             wordSpacing.decrement()
             wordSpacingDisplay.text = (if (wordSpacing.value == wordSpacing.min) "auto" else wordSpacing.value.toString())
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(wordSpacing)
+            updateIncremental(wordSpacing)
             updateViewCSS(WORD_SPACING_REF)
         }
 
@@ -437,7 +431,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             wordSpacing.increment()
             wordSpacingDisplay.text = wordSpacing.value.toString()
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(wordSpacing)
+            updateIncremental(wordSpacing)
             updateViewCSS(WORD_SPACING_REF)
         }
 
@@ -453,7 +447,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             letterSpacing.decrement()
             letterSpacingDisplay.text = (if (letterSpacing.value == letterSpacing.min) "auto" else letterSpacing.value.toString())
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(letterSpacing)
+            updateIncremental(letterSpacing)
             updateViewCSS(LETTER_SPACING_REF)
         }
 
@@ -461,7 +455,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             letterSpacing.increment()
             letterSpacingDisplay.text = (if (letterSpacing.value == letterSpacing.min) "auto" else letterSpacing.value.toString())
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(letterSpacing)
+            updateIncremental(letterSpacing)
             updateViewCSS(LETTER_SPACING_REF)
         }
 
@@ -476,14 +470,14 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             lineHeight.decrement()
             lineHeightDisplay.text = (if (lineHeight.value == lineHeight.min) "auto" else lineHeight.value.toString())
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(lineHeight)
+            updateIncremental(lineHeight)
             updateViewCSS(LINE_HEIGHT_REF)
         }
         lineHeightIncreaseButton.setOnClickListener {
             lineHeight.increment()
             lineHeightDisplay.text = (if (lineHeight.value == lineHeight.min) "auto" else lineHeight.value.toString())
             publisherDefaultSwitch.isChecked = false
-            updateIncrementable(lineHeight)
+            updateIncremental(lineHeight)
             updateViewCSS(LINE_HEIGHT_REF)
         }
 
@@ -496,14 +490,14 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             layoutParams.screenBrightness = backLightValue
             context.window.attributes = layoutParams
         }
-        brightnessSeekbar.setProgress(brightness)
+        brightnessSeekbar.progress = brightness
         brightnessSeekbar.setOnSeekBarChangeListener(
                 object : SeekBar.OnSeekBarChangeListener {
                     override fun onProgressChanged(bar: SeekBar, progress: Int, from_user: Boolean) {
                         val backLightValue = progress.toFloat() / 100
-                        val layoutParams = (context as R2EpubActivity).window.getAttributes()
+                        val layoutParams = (context as R2EpubActivity).window.attributes
                         layoutParams.screenBrightness = backLightValue
-                        context.window.setAttributes(layoutParams)
+                        context.window.attributes = layoutParams
                         preferences.edit().putInt("reader_brightness", progress).apply()
                     }
 

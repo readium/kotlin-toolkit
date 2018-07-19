@@ -15,11 +15,9 @@ import java.io.File
 
 class R2CbzPageFragment : Fragment() {
 
-    private val TAG = this::class.java.simpleName
-
-    val zipFile: String?
+    private val zipFile: String?
         get() = arguments!!.getString("zipFile")
-    val zipEntry: String?
+    private val zipEntry: String?
         get() = arguments!!.getString("zipEntry")
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
