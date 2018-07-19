@@ -41,7 +41,7 @@ class Link : JSONable, Serializable {
     //  The MediaOverlays associated to the resource of the Link
     var mediaOverlays: MediaOverlays? = null
 
-    fun isEncrypted() : Boolean {
+    fun isEncrypted(): Boolean {
         return properties.encryption != null
     }
 
@@ -63,26 +63,26 @@ class Link : JSONable, Serializable {
 
 }
 
-enum class LinkError(var v:String) {
+enum class LinkError(var v: String) {
     InvalidLink("Invalid link"),
 }
 
-fun parseLink(linkDict: JSONObject, feedUrl: URL? = null) : Link {
+fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link {
     val link = Link()
-    if(linkDict.has("title")) {
+    if (linkDict.has("title")) {
         link.title = linkDict.getString("title")
     }
-    if(linkDict.has("href")) {
+    if (linkDict.has("href")) {
         feedUrl?.let {
             link.href = getAbsolute(linkDict.getString("href")!!, feedUrl.toString())
         } ?: run {
             link.href = linkDict.getString("href")!!
         }
     }
-    if(linkDict.has("type")) {
+    if (linkDict.has("type")) {
         link.typeLink = linkDict.getString("type")
     }
-    if(linkDict.has("rel")) {
+    if (linkDict.has("rel")) {
         if (linkDict.get("rel") is String) {
             link.rel.add(linkDict.getString("rel"))
         } else if (linkDict.get("rel") is JSONArray) {
@@ -93,26 +93,27 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null) : Link {
             }
         }
     }
-    if(linkDict.has("height")) {
+    if (linkDict.has("height")) {
         link.height = linkDict.getInt("height")
     }
-    if(linkDict.has("width")) {
+    if (linkDict.has("width")) {
         link.width = linkDict.getInt("width")
     }
-    if(linkDict.has("bitrate")) {
+    if (linkDict.has("bitrate")) {
         link.bitrate = linkDict.getInt("bitrate")
     }
-    if(linkDict.has("duration")) {
+    if (linkDict.has("duration")) {
         link.duration = linkDict.getDouble("duration")
     }
-    if(linkDict.has("properties")) {
+    if (linkDict.has("properties")) {
         val properties = Properties()
         val propertiesDict = linkDict.getJSONObject("properties")
         if (propertiesDict.has("numberOfItems")) {
             properties.numberOfItems = propertiesDict.getInt("numberOfItems")
         }
         if (propertiesDict.has("indirectAcquisition")) {
-            val acquisitions = propertiesDict.getJSONArray("indirectAcquisition") ?: throw Exception(LinkError.InvalidLink.name)
+            val acquisitions = propertiesDict.getJSONArray("indirectAcquisition")
+                    ?: throw Exception(LinkError.InvalidLink.name)
             for (i in 0..(acquisitions.length() - 1)) {
                 val acquisition = acquisitions.getJSONObject(i)
                 val indirectAcquisition = parseIndirectAcquisition(indirectAcquisitionDict = acquisition)
@@ -130,8 +131,9 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null) : Link {
             properties.price = price
         }
     }
-    if(linkDict.has("children")) {
-        val childLinkDict = linkDict.getJSONObject("children") ?: throw Exception(LinkError.InvalidLink.name)
+    if (linkDict.has("children")) {
+        val childLinkDict = linkDict.getJSONObject("children")
+                ?: throw Exception(LinkError.InvalidLink.name)
         val childLink = parseLink(childLinkDict)
         link.children.add(childLink)
     }

@@ -10,12 +10,12 @@ import org.json.JSONObject
 import java.io.Serializable
 
 
-data class IndirectAcquisition(var typeAcquisition: String):Serializable {
+data class IndirectAcquisition(var typeAcquisition: String) : Serializable {
     var child = mutableListOf<IndirectAcquisition>()
 
 }
 
-enum class IndirectAcquisitionError(v:String) {
+enum class IndirectAcquisitionError(v: String) {
     InvalidJSON("OPDS 2 manifest is not valid JSON"),
     MetadataNotFound("Metadata not found"),
     InvalidMetadata("Invalid metadata"),
@@ -30,8 +30,9 @@ enum class IndirectAcquisitionError(v:String) {
     InvalidNavigation("Invalid navigation")
 }
 
-fun parseIndirectAcquisition(indirectAcquisitionDict: JSONObject) : IndirectAcquisition {
-    val indirectAcquisitionType = indirectAcquisitionDict["type"] as? String ?: throw Exception(IndirectAcquisitionError.InvalidIndirectAcquisition.name)
+fun parseIndirectAcquisition(indirectAcquisitionDict: JSONObject): IndirectAcquisition {
+    val indirectAcquisitionType = indirectAcquisitionDict["type"] as? String
+            ?: throw Exception(IndirectAcquisitionError.InvalidIndirectAcquisition.name)
     val indirectAcquisition = IndirectAcquisition(typeAcquisition = indirectAcquisitionType)
     val childDict = indirectAcquisitionDict.getJSONObject("child")
     val child = parseIndirectAcquisition(indirectAcquisitionDict = childDict)

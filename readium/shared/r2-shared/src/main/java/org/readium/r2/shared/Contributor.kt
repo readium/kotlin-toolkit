@@ -12,7 +12,7 @@ import java.io.Serializable
 
 class Contributor : JSONable, Serializable {
 
-    var multilanguageName:MultilanguageString = MultilanguageString()
+    var multilanguageName: MultilanguageString = MultilanguageString()
     var sortAs: String? = null
     var roles: MutableList<String> = mutableListOf()
     var links: MutableList<Link> = mutableListOf()
@@ -21,7 +21,7 @@ class Contributor : JSONable, Serializable {
     var name: String? = null
         get() = multilanguageName.singleString
 
-    override fun getJSON() : JSONObject{
+    override fun getJSON(): JSONObject {
         val obj = JSONObject()
         obj.put("name", name)
         if (roles.isNotEmpty()) {
@@ -33,7 +33,7 @@ class Contributor : JSONable, Serializable {
 
 }
 
-fun parseContributors(contributors: Any) : List<Contributor> {
+fun parseContributors(contributors: Any): List<Contributor> {
     val result: MutableList<Contributor> = mutableListOf()
     when (contributors) {
         is String -> {
@@ -54,10 +54,10 @@ fun parseContributors(contributors: Any) : List<Contributor> {
     return result
 }
 
-fun parseContributor(cDict: JSONObject) : Contributor {
+fun parseContributor(cDict: JSONObject): Contributor {
     val c = Contributor()
 
-    if (cDict.has("name")){
+    if (cDict.has("name")) {
         if (cDict.get("name") is String) {
             c.multilanguageName.singleString = cDict.getString("name")
         } else if (cDict.get("name") is JSONObject) {
@@ -66,16 +66,16 @@ fun parseContributor(cDict: JSONObject) : Contributor {
         }
 
     }
-    if (cDict.has("identifier")){
+    if (cDict.has("identifier")) {
         c.identifier = cDict.getString("identifier")
     }
-    if (cDict.has("sort_as")){
+    if (cDict.has("sort_as")) {
         c.sortAs = cDict.getString("sort_as")
     }
-    if (cDict.has("role")){
+    if (cDict.has("role")) {
         c.roles.add(cDict.getString("role"))
     }
-    if (cDict.has("links")){
+    if (cDict.has("links")) {
         val linkDict = cDict.getJSONObject("links")
         c.links.add(parseLink(linkDict))
     }

@@ -34,7 +34,7 @@ class Metadata : Serializable {
     var inkers: MutableList<Contributor> = mutableListOf()
     var narrators: MutableList<Contributor> = mutableListOf()
     var imprints: MutableList<Contributor> = mutableListOf()
-    var direction:String = "default"
+    var direction: String = "default"
     var subjects: MutableList<Subject> = mutableListOf()
     var publishers: MutableList<Contributor> = mutableListOf()
     var contributors: MutableList<Contributor> = mutableListOf()
@@ -52,9 +52,9 @@ class Metadata : Serializable {
 
     var duration: Int? = null
 
-    fun titleForLang(key: String) : String?  = multilanguageTitle?.multiString?.get(key)
+    fun titleForLang(key: String): String? = multilanguageTitle?.multiString?.get(key)
 
-    fun writeJSON() : JSONObject{
+    fun writeJSON(): JSONObject {
         val obj = JSONObject()
         obj.putOpt("languages", getStringArray(languages))
         obj.putOpt("publicationDate", publicationDate)
@@ -83,7 +83,7 @@ class Metadata : Serializable {
 
 }
 
-fun parseMetadata(metadataDict:JSONObject) : Metadata {
+fun parseMetadata(metadataDict: JSONObject): Metadata {
     val m = Metadata()
     if (metadataDict.has("title")) {
         m.multilanguageTitle = MultilanguageString()
@@ -152,20 +152,20 @@ fun parseMetadata(metadataDict:JSONObject) : Metadata {
         m.rights = metadataDict.getString("rights")
     }
     if (metadataDict.has("subject")) {
-        val subjDict= metadataDict.getJSONArray("subject")
+        val subjDict = metadataDict.getJSONArray("subject")
         for (i in 0..(subjDict.length() - 1)) {
             val sub = subjDict.getJSONObject(i)
             val subject = Subject()
-            if (sub.has("name")){
+            if (sub.has("name")) {
                 subject.name = sub.getString("name")
             }
-            if (sub.has("sort_as")){
+            if (sub.has("sort_as")) {
                 subject.sortAs = sub.getString("sort_as")
             }
-            if (sub.has("scheme")){
+            if (sub.has("scheme")) {
                 subject.scheme = sub.getString("scheme")
             }
-            if (sub.has("code")){
+            if (sub.has("code")) {
                 subject.code = sub.getString("code")
             }
             m.subjects.add(subject)
@@ -174,9 +174,9 @@ fun parseMetadata(metadataDict:JSONObject) : Metadata {
     if (metadataDict.has("belongs_to")) {
         val belongsDict = metadataDict.getJSONObject("belongs_to")
         val belongs = BelongsTo()
-        if (belongsDict.has("series")){
+        if (belongsDict.has("series")) {
 
-            if (belongsDict.get("series") is JSONObject){
+            if (belongsDict.get("series") is JSONObject) {
                 m.belongsTo?.series?.add(Collection(belongsDict.getString("series")))
             } else if (belongsDict.get("series") is JSONArray) {
                 val array = belongsDict.getJSONArray("series")
@@ -187,7 +187,7 @@ fun parseMetadata(metadataDict:JSONObject) : Metadata {
             }
         }
 
-        if (belongsDict.has("collection")){
+        if (belongsDict.has("collection")) {
             when {
                 belongsDict.get("collection") is String -> m.belongsTo?.collection?.add(Collection(belongsDict.getString("collection")))
                 belongsDict.get("collection") is JSONObject -> belongs.series.add(parseCollection(belongsDict.getJSONObject("collection")))
@@ -207,7 +207,7 @@ fun parseMetadata(metadataDict:JSONObject) : Metadata {
         m.duration = metadataDict.getInt("duration")
     }
     if (metadataDict.has("language")) {
-        if (metadataDict.get("language") is JSONObject){
+        if (metadataDict.get("language") is JSONObject) {
             m.languages.add(metadataDict.getString("language"))
         } else if (metadataDict.get("language") is JSONArray) {
             val array = metadataDict.getJSONArray("language")

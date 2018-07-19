@@ -6,7 +6,7 @@
 
 package org.readium.r2.shared
 
-class RootFile(){
+class RootFile() {
 
     constructor(rootPath: String = "", rootFilePath: String = "", mimetype: String = "", version: Double? = null) : this() {
         this.rootPath = rootPath

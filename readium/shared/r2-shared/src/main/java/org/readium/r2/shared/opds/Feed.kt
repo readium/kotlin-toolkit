@@ -14,14 +14,14 @@ import java.net.URL
 
 data class Feed(val title: String, val type: Int, val href: URL) : Serializable {
     var metadata: OpdsMetadata = OpdsMetadata(title = title)
-    var links:MutableList<Link> = mutableListOf()
-    var facets:MutableList<Facet> = mutableListOf()
-    var groups:MutableList<Group> = mutableListOf()
-    var publications:MutableList<Publication> = mutableListOf()
-    var navigation:MutableList<Link> = mutableListOf()
-    var context:MutableList<String> = mutableListOf()
+    var links: MutableList<Link> = mutableListOf()
+    var facets: MutableList<Facet> = mutableListOf()
+    var groups: MutableList<Group> = mutableListOf()
+    var publications: MutableList<Publication> = mutableListOf()
+    var navigation: MutableList<Link> = mutableListOf()
+    var context: MutableList<String> = mutableListOf()
 
-    internal fun getSearchLinkHref() : String? {
+    internal fun getSearchLinkHref(): String? {
         val searchLink = links.firstOrNull { it.rel.contains("search") }
         return searchLink?.href
     }

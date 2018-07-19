@@ -6,18 +6,22 @@
 
 package org.readium.r2.shared.parser.xml
 
-class Node (val name: String) {
+class Node(val name: String) {
 
     var children: MutableList<Node> = mutableListOf()
     var attributes: MutableMap<String, String> = mutableMapOf()
     var text: String? = ""
 
     fun get(name: String) = try {
-        children.filter{it.name == name}
-    } catch(e: Exception) { null }
+        children.filter { it.name == name }
+    } catch (e: Exception) {
+        null
+    }
 
     fun getFirst(name: String) = try {
-        children.first{it.name == name}
-    } catch(e: Exception) { null }
+        children.first { it.name == name }
+    } catch (e: Exception) {
+        null
+    }
 
 }

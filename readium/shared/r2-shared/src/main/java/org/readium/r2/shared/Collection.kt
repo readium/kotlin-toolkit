@@ -10,18 +10,19 @@ import org.json.JSONObject
 
 data class Collection(var name: String) {
     var sortAs: String? = null
-     var identifier: String? = null
-     var position: Double? = null
-     var links:MutableList<Link> = mutableListOf()
+    var identifier: String? = null
+    var position: Double? = null
+    var links: MutableList<Link> = mutableListOf()
 
 }
 
-enum class CollectionError(val v:String) {
+enum class CollectionError(val v: String) {
     InvalidCollection("Invalid collection")
 }
 
-fun parseCollection(collectionDict: JSONObject) : Collection {
-    val name = collectionDict["name"] as? String ?: throw Exception(CollectionError.InvalidCollection.name)
+fun parseCollection(collectionDict: JSONObject): Collection {
+    val name = collectionDict["name"] as? String
+            ?: throw Exception(CollectionError.InvalidCollection.name)
     val c = Collection(name = name)
 
     if (collectionDict.has("sort_as")) {
@@ -34,7 +35,8 @@ fun parseCollection(collectionDict: JSONObject) : Collection {
         c.position = collectionDict.getDouble("position")
     }
     if (collectionDict.has("links")) {
-        val links = collectionDict.getJSONArray("links") ?: throw Exception(CollectionError.InvalidCollection.name)
+        val links = collectionDict.getJSONArray("links")
+                ?: throw Exception(CollectionError.InvalidCollection.name)
         for (i in 0..(links.length() - 1)) {
             val link = links.getJSONObject(i)
             c.links.add(parseLink(link))
