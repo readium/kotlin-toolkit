@@ -15,6 +15,7 @@ import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpSession
  */
 
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -23,11 +24,13 @@ import android.graphics.BitmapFactory
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
 import android.view.*
+import android.webkit.MimeTypeMap
 import android.webkit.URLUtil
 import android.widget.Button
 import android.widget.EditText
@@ -909,19 +912,23 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
             try {
                 runOnUiThread({
-                    if (uri.toString().endsWith(".epub")) {
-                        val parser = EpubParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                            progress.dismiss()
-                        }
-                    } else if (uri.toString().endsWith(".cbz")) {
-                        val parser = CbzParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                            progress.dismiss()
+                    if (uri != null) {
+                        val mime = getMimeType(uri).first
+                        val name = getMimeType(uri).second
+                        if (mime == "application/epub+zip") {
+                            val parser = EpubParser()
+                            val pub = parser.parse(publicationPath)
+                            if (pub != null) {
+                                prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                                progress.dismiss()
+                            }
+                        } else if (name.endsWith(".cbz")) {
+                            val parser = CbzParser()
+                            val pub = parser.parse(publicationPath)
+                            if (pub != null) {
+                                prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                                progress.dismiss()
+                            }
                         }
                     }
                 })
@@ -934,6 +941,38 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             parseIntent(filePath)
         }
     }
+
+    fun  getMimeType( uri:Uri): Pair<String, String> {
+        var mimeType:String? = null;
+        var fileName = String();
+        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            val contentResolver: ContentResolver = applicationContext.getContentResolver();
+            mimeType = contentResolver.getType(uri);
+            getContentName(contentResolver,uri)?.let {
+                fileName = it
+            }
+        } else {
+            val fileExtension:String = MimeTypeMap.getFileExtensionFromUrl(uri
+                    .toString());
+            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                    fileExtension.toLowerCase());
+        }
+        return Pair(mimeType, fileName);
+    }
+
+    private fun getContentName(resolver: ContentResolver, uri: Uri): String? {
+        val cursor = resolver.query(uri, null, null, null, null)
+        cursor!!.moveToFirst()
+        val nameIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
+        if (nameIndex >= 0) {
+            val name = cursor.getString(nameIndex)
+            cursor.close()
+            return name
+        } else {
+            return null
+        }
+    }
+
 
 }
 
