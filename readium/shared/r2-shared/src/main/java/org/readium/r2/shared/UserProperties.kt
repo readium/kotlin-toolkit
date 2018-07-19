@@ -31,7 +31,7 @@ class Enumerable(var index: Int, private val values: List<String>, ref: String, 
 class Incremental(var value: Float,
                   val min: Float,
                   val max: Float,
-                  val step: Float,
+                  private val step: Float,
                   private val suffix: String,
                   ref: String,
                   name: String) :
@@ -66,7 +66,7 @@ class UserProperties : Serializable {
 
     val properties: MutableList<UserProperty> = mutableListOf()
 
-    fun addIncrementable(nValue: Float, min: Float, max: Float, step: Float, suffix: String, ref: String, name: String) {
+    fun addIncremental(nValue: Float, min: Float, max: Float, step: Float, suffix: String, ref: String, name: String) {
         properties.add(Incremental(nValue, min, max, step, suffix, ref, name))
     }
 
@@ -74,7 +74,7 @@ class UserProperties : Serializable {
         properties.add(Switchable(onValue, offValue, on, ref, name))
     }
 
-    fun addEnumeratable(index: Int, values: List<String>, ref: String, name: String) {
+    fun addEnumerable(index: Int, values: List<String>, ref: String, name: String) {
         properties.add(Enumerable(index, values, ref, name))
     }
 

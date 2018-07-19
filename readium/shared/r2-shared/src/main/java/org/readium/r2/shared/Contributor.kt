@@ -12,14 +12,14 @@ import java.io.Serializable
 
 class Contributor : JSONable, Serializable {
 
-    var multilangName:MultilangString = MultilangString()
+    var multilanguageName:MultilanguageString = MultilanguageString()
     var sortAs: String? = null
     var roles: MutableList<String> = mutableListOf()
     var links: MutableList<Link> = mutableListOf()
     var identifier: String? = null
 
     var name: String? = null
-        get() = multilangName.singleString
+        get() = multilanguageName.singleString
 
     override fun getJSON() : JSONObject{
         val obj = JSONObject()
@@ -38,7 +38,7 @@ fun parseContributors(contributors: Any) : List<Contributor> {
     when (contributors) {
         is String -> {
             val c = Contributor()
-            c.multilangName.singleString = contributors
+            c.multilanguageName.singleString = contributors
             result.add(c)
         }
         is JSONObject -> {
@@ -59,10 +59,10 @@ fun parseContributor(cDict: JSONObject) : Contributor {
 
     if (cDict.has("name")){
         if (cDict.get("name") is String) {
-            c.multilangName.singleString = cDict.getString("name")
+            c.multilanguageName.singleString = cDict.getString("name")
         } else if (cDict.get("name") is JSONObject) {
             val array = cDict.getJSONObject("name")
-            c.multilangName.multiString = array as MutableMap<String, String>
+            c.multilanguageName.multiString = array as MutableMap<String, String>
         }
 
     }

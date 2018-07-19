@@ -15,10 +15,10 @@ import java.util.*
 
 class Metadata : Serializable {
     /// The structure used for the serialisation.
-    var multilangTitle: MultilangString? = null
+    var multilanguageTitle: MultilanguageString? = null
     /// The title of the publication.
     var title: String = ""
-        get() = multilangTitle?.singleString ?: ""
+        get() = multilanguageTitle?.singleString ?: ""
 
     var languages: MutableList<String> = mutableListOf()
     lateinit var identifier: String
@@ -52,7 +52,7 @@ class Metadata : Serializable {
 
     var duration: Int? = null
 
-    fun titleForLang(key: String) : String?  = multilangTitle?.multiString?.get(key)
+    fun titleForLang(key: String) : String?  = multilanguageTitle?.multiString?.get(key)
 
     fun writeJSON() : JSONObject{
         val obj = JSONObject()
@@ -86,8 +86,8 @@ class Metadata : Serializable {
 fun parseMetadata(metadataDict:JSONObject) : Metadata {
     val m = Metadata()
     if (metadataDict.has("title")) {
-        m.multilangTitle = MultilangString()
-        m.multilangTitle?.singleString = metadataDict.getString("title")
+        m.multilanguageTitle = MultilanguageString()
+        m.multilanguageTitle?.singleString = metadataDict.getString("title")
     }
     if (metadataDict.has("identifier")) {
         m.identifier = metadataDict.getString("identifier")

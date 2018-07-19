@@ -36,7 +36,7 @@ class Link : JSONable, Serializable {
     /// Indicate the bitrate for the link resource.
     var bitrate: Int? = null
 
-    //  The underlaying nodes in a tree structure of Links
+    //  The underlying nodes in a tree structure of Links
     var children: MutableList<Link> = mutableListOf()
     //  The MediaOverlays associated to the resource of the Link
     var mediaOverlays: MediaOverlays? = null
