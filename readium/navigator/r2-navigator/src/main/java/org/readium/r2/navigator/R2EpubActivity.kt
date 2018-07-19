@@ -38,7 +38,7 @@ class R2EpubActivity : AppCompatActivity() {
     private lateinit var publicationPath: String
     private lateinit var publication: Publication
     private lateinit var epubName: String
-    lateinit var publicationIdentifier:String
+    lateinit var publicationIdentifier: String
 
     lateinit var userSettings: UserSettings
     private var drmModel: DRMMModel? = null
@@ -54,7 +54,7 @@ class R2EpubActivity : AppCompatActivity() {
         resources = ArrayList()
 
         Handler().postDelayed({
-            if ( intent.getSerializableExtra("drmModel") != null) {
+            if (intent.getSerializableExtra("drmModel") != null) {
                 drmModel = intent.getSerializableExtra("drmModel") as DRMMModel
                 drmModel?.let {
                     runOnUiThread {
@@ -82,7 +82,7 @@ class R2EpubActivity : AppCompatActivity() {
             resources.add(uri)
         }
 
-        val index = preferences.getInt( "$publicationIdentifier-document", 0)
+        val index = preferences.getInt("$publicationIdentifier-document", 0)
 
         val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
 

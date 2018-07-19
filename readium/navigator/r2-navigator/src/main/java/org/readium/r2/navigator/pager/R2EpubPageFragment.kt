@@ -48,11 +48,11 @@ class R2EpubPageFragment : Fragment() {
         when (scrollMode) {
             true -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.GONE
-                v.setPadding(0,4,0,4)
+                v.setPadding(0, 4, 0, 4)
             }
             false -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.VISIBLE
-                v.setPadding(0,30,0,30)
+                v.setPadding(0, 30, 0, 30)
             }
         }
 
@@ -101,7 +101,8 @@ class R2EpubPageFragment : Fragment() {
                 if (!request.isForMainFrame && request.url.path.endsWith("/favicon.ico")) {
                     try {
                         return WebResourceResponse("image/png", null, null)
-                    } catch (e: Exception) { }
+                    } catch (e: Exception) {
+                    }
                 }
                 return null
             }
@@ -141,6 +142,7 @@ class R2EpubPageFragment : Fragment() {
             }
         }
     }
+
     companion object {
 
         fun newInstance(url: String, title: String): R2EpubPageFragment {

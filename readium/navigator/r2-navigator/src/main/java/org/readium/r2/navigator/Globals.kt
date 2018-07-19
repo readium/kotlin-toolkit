@@ -25,7 +25,6 @@ const val BASE_URL = "http://localhost"
 //val MANIFEST = "/manifest"
 
 
-
 /**
  * Extensions
  */

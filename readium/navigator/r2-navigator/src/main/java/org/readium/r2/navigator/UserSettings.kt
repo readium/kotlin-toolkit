@@ -49,7 +49,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
     lateinit var resourcePager: R2ViewPager
 
-    private val appearanceValues = listOf("readium-default-on", "readium-sepia-on","readium-night-on")
+    private val appearanceValues = listOf("readium-default-on", "readium-sepia-on", "readium-night-on")
     private val fontFamilyValues = listOf("Original", "PT Serif", "Roboto", "Source Sans Pro", "Vollkorn", "OpenDyslexic")
     private val textAlignmentValues = listOf("justify", "start")
     private val columnCountValues = listOf("auto", "1", "2")
@@ -91,7 +91,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         userProperties = getUserSettings()
     }
 
-    private fun getUserSettings() : UserProperties {
+    private fun getUserSettings(): UserProperties {
 
         val userProperties = UserProperties()
         // Publisher default system
@@ -122,9 +122,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         return userProperties
     }
 
-    private fun makeJson() : JSONArray {
+    private fun makeJson(): JSONArray {
         val array = JSONArray()
-        for (userProperty in userProperties.properties){
+        for (userProperty in userProperties.properties) {
             array.put(userProperty.getJson())
         }
         return array
@@ -238,7 +238,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             }
         }
 
-        fun findIndexOfId(id: Int, list: MutableList<RadioButton>) : Int {
+        fun findIndexOfId(id: Int, list: MutableList<RadioButton>): Int {
             for (i in 0..list.size) {
                 if (list[i].id == id) {
                     return i

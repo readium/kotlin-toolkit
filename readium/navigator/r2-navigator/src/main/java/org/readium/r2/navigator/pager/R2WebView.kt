@@ -40,8 +40,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
             } else if (oldX - x > 1) {
                 scrollRight = false
             }
-        }
-        else {
+        } else {
             mIsScrolling = false
             if (scrollRight) {
                 scrollRight()
@@ -119,17 +118,19 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     fun scrollToPosition(progression: Double) {
         this.evaluateJavascript("scrollToPosition(\"$progression\");", null)
     }
+
     @android.webkit.JavascriptInterface
     fun scrollToBeginning() {
         this.evaluateJavascript("scrollToPosition(\"0\");", null)
     }
+
     @android.webkit.JavascriptInterface
     fun scrollToEnd() {
         this.evaluateJavascript("scrollToPosition(\"1\");", null)
     }
 
     @android.webkit.JavascriptInterface
-    fun progressionDidChange(body:String) {
+    fun progressionDidChange(body: String) {
         progression = body.toDouble()
         Timber.d("progression: $progression")
     }

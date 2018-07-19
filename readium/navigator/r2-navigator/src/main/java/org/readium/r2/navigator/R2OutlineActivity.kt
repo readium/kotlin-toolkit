@@ -27,7 +27,7 @@ import timber.log.Timber
 class R2OutlineActivity : AppCompatActivity() {
 
     private val TAG = this::class.java.simpleName
-    private lateinit var preferences:SharedPreferences
+    private lateinit var preferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

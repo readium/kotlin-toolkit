@@ -11,7 +11,7 @@ import android.support.v4.app.FragmentManager
 import org.readium.r2.shared.Publication
 
 
-class R2PagerAdapter (fm: FragmentManager, private val mItems: List<String>, private val title: String, private val type: Publication.TYPE, private val publicationPath: String) : R2FragmentPagerAdapter(fm) {
+class R2PagerAdapter(fm: FragmentManager, private val mItems: List<String>, private val title: String, private val type: Publication.TYPE, private val publicationPath: String) : R2FragmentPagerAdapter(fm) {
 
     override fun getItem(position: Int): Fragment =
             when (type) {

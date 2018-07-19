@@ -21,7 +21,7 @@ class R2CbzActivity : AppCompatActivity() {
     private lateinit var publicationPath: String
     private lateinit var publication: Publication
     private lateinit var cbzName: String
-    private lateinit var publicationIdentifier:String
+    private lateinit var publicationIdentifier: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +40,7 @@ class R2CbzActivity : AppCompatActivity() {
             resources.add(link.href.toString())
         }
 
-        val index = preferences.getInt( "$publicationIdentifier-document", 0)
+        val index = preferences.getInt("$publicationIdentifier-document", 0)
 
         val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
 
@@ -77,7 +77,7 @@ class R2CbzActivity : AppCompatActivity() {
         preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
     }
 
-    fun nextResource(v:View? = null) {
+    fun nextResource(v: View? = null) {
         runOnUiThread {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
@@ -89,7 +89,7 @@ class R2CbzActivity : AppCompatActivity() {
         }
     }
 
-    fun previousResource(v:View? = null) {
+    fun previousResource(v: View? = null) {
         runOnUiThread {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
@@ -102,7 +102,7 @@ class R2CbzActivity : AppCompatActivity() {
         }
     }
 
-     fun toggleActionBar(v:View? = null) {
+    fun toggleActionBar(v: View? = null) {
         runOnUiThread {
             if (supportActionBar!!.isShowing) {
                 resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
