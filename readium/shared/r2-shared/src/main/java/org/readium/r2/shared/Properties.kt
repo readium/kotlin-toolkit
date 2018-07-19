@@ -41,8 +41,7 @@ class Properties : JSONable, Serializable {
 
     override fun getJSON(): JSONObject {
         val json = JSONObject()
-        if (contains.isNotEmpty())
-            json.put("contains", getStringArray(contains))
+        if (contains.isNotEmpty()) json.put("contains", getStringArray(contains))
         json.putOpt("mediaOverlay", mediaOverlay)
         json.putOpt("encryption", encryption)
         json.putOpt("layout", layout)

@@ -11,7 +11,8 @@ import java.io.Serializable
 sealed class UserProperty(var ref: String, var name: String) {
 
     private var value: String = ""
-    get() = this.toString()
+        get() = this.toString()
+
     abstract override fun toString(): String
     fun getJson(): String {
         return """{name:"$name",value:"${this}"}"""
@@ -22,9 +23,7 @@ sealed class UserProperty(var ref: String, var name: String) {
 
 // TODO add here your new Subclasses of UserPreference. It has to be an abstract class inheriting from UserSetting.
 
-class Enumerable(var index: Int, private val values: List<String>, ref: String, name: String) :
-        UserProperty(ref, name) {
-
+class Enumerable(var index: Int, private val values: List<String>, ref: String, name: String) : UserProperty(ref, name) {
     override fun toString() = values[index]
 }
 
@@ -34,11 +33,10 @@ class Incremental(var value: Float,
                   private val step: Float,
                   private val suffix: String,
                   ref: String,
-                  name: String) :
-        UserProperty(ref, name) {
+                  name: String) : UserProperty(ref, name) {
 
     fun increment() {
-        value +=  (if (value + step <= max) step else 0.0f)
+        value += (if (value + step <= max) step else 0.0f)
     }
 
     fun decrement() {
@@ -48,9 +46,7 @@ class Incremental(var value: Float,
     override fun toString() = value.toString() + suffix
 }
 
-class Switchable(onValue: String, offValue: String, var on: Boolean,
-        ref: String, name: String) :
-        UserProperty(ref, name) {
+class Switchable(onValue: String, offValue: String, var on: Boolean, ref: String, name: String) : UserProperty(ref, name) {
 
     private val values = mapOf(true to onValue, false to offValue)
 
@@ -78,7 +74,7 @@ class UserProperties : Serializable {
         properties.add(Enumerable(index, values, ref, name))
     }
 
-    fun <T : UserProperty>getByRef(ref: String) = properties.firstOrNull {
+    fun <T : UserProperty> getByRef(ref: String) = properties.firstOrNull {
         it.ref == ref
     }!! as T
 }
