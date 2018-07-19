@@ -2,8 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/colorAccent">
+    android:background="@color/colorAccent"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/header"
@@ -14,6 +14,6 @@
         android:paddingStart="20dp"
         android:paddingTop="10dp"
         android:textAllCaps="true"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
 
 </LinearLayout>

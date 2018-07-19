@@ -12,36 +12,37 @@
         android:weightSum="4">
 
 
-            <FrameLayout
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            tools:ignore="UselessParent">
+
+            <ImageView
+                android:id="@+id/coverImageView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center_horizontal"
-                tools:ignore="UselessParent">
+                android:layout_gravity="center"
+                android:scaleType="centerCrop" />
 
-                <ImageView
-                    android:id="@+id/coverImageView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:scaleType="centerCrop" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|bottom"
+                android:background="@android:drawable/screen_background_dark_transparent"
+                android:orientation="vertical">
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/titleTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="start|bottom"
-                    android:background="@android:drawable/screen_background_dark_transparent"
-                    android:orientation="vertical">
-                    <TextView
-                        android:id="@+id/titleTextView"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:textColor="#FFFFFF"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                    android:padding="16dp"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
-            </FrameLayout>
+        </FrameLayout>
 
     </LinearLayout>
 

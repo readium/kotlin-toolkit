@@ -4,11 +4,11 @@
     <item
         android:id="@+id/about"
         android:icon="@drawable/icon_settings"
-        android:title="@string/about_r2_reader"/>
+        android:title="@string/about_r2_reader" />
 
     <item
         android:id="@+id/opds"
         android:icon="@drawable/icon_menu"
-        android:title="@string/opds_feeds"/>
+        android:title="@string/opds_feeds" />
 
 </menu>
