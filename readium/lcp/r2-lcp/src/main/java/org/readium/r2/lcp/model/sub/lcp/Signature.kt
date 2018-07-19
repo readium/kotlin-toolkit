@@ -4,26 +4,27 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.lcp.Model.SubParts.lcp
+package org.readium.r2.lcp.model.sub.lcp
 
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpParsingError
 import org.readium.r2.lcp.LcpParsingErrors
 import java.net.URL
 
-class UserKey (json: JSONObject){
+class Signature (json: JSONObject) {
 
-    var hint: String
-    var algorithm: URL
-    var keyCheck: String
+    private var algorithm: URL
+    private var certificate: String
+    private var value: String
 
     init {
         try {
-            hint = json.getString("text_hint")
             algorithm = URL(json.getString("algorithm"))
-            keyCheck = json.getString("key_check")
-        } catch (e: Exception) {
-            throw Exception(LcpParsingError().errorDescription(LcpParsingErrors.json))
+            certificate = json.getString("certificate")
+            value = json.getString("value")
+        } catch (e: Exception){
+            throw Exception(LcpParsingError().errorDescription(LcpParsingErrors.signature))
         }
     }
+
 }

@@ -4,13 +4,13 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.lcp.Tables
+package org.readium.r2.lcp.tables
 
 import android.util.Log
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpDatabaseOpenHelper
-import org.readium.r2.lcp.Model.Documents.LicenseDocument
+import org.readium.r2.lcp.model.documents.LicenseDocument
 
 object LicensesTable {
     val NAME = "Licenses"

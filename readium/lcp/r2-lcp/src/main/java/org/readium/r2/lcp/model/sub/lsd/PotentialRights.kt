@@ -4,16 +4,12 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.lcp.Model.SubParts.lsd
+package org.readium.r2.lcp.model.sub.lsd
 
 import org.joda.time.DateTime
 import org.json.JSONObject
 import java.util.*
 
 class PotentialRights(json: JSONObject) {
-    var end: Date?
-
-    init {
-        end = DateTime(json.getString("end")).toDate()
-    }
+    var end: Date? = DateTime(json.getString("end")).toDate()
 }
