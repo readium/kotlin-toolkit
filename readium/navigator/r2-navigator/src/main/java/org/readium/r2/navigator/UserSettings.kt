@@ -13,11 +13,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import org.json.JSONArray
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.pager.R2WebView
 import org.readium.r2.shared.*
 import java.io.File
-import org.json.JSONArray
 
 const val FONT_SIZE_REF = "fontSize"
 const val FONT_FAMILY_REF = "fontFamily"
@@ -54,20 +54,20 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
     private val textAlignmentValues = listOf("justify", "start")
     private val columnCountValues = listOf("auto", "1", "2")
 
-    var fontSize = 100f
-    var fontOverride = false
+    private var fontSize = 100f
+    private var fontOverride = false
     var fontFamily = 0
     var appearance = 0
     var verticalScroll = false
 
     //Advanced settings
-    var publisherDefaults = false
-    var textAlignment = 0
-    var columnCount = 0
-    var wordSpacing = 0f
-    var letterSpacing = 0f
-    var pageMargins = 0.5f
-    var lineHeight = 1f
+    private var publisherDefaults = false
+    private var textAlignment = 0
+    private var columnCount = 0
+    private var wordSpacing = 0f
+    private var letterSpacing = 0f
+    private var pageMargins = 0.5f
+    private var lineHeight = 1f
 
     private var userProperties: UserProperties
 
@@ -91,7 +91,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         userProperties = getUserSettings()
     }
 
-    fun getUserSettings() : UserProperties {
+    private fun getUserSettings() : UserProperties {
 
         val userProperties = UserProperties()
         // Publisher default system

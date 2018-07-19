@@ -27,10 +27,10 @@ import android.webkit.WebResourceResponse
 
 class R2EpubPageFragment : Fragment() {
 
-    val resourceUrl: String?
+    private val resourceUrl: String?
         get() = arguments!!.getString("url")
 
-    val bookTitle: String?
+    private val bookTitle: String?
         get() = arguments!!.getString("title")
 
     @SuppressLint("SetJavaScriptEnabled")

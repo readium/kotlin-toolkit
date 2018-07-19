@@ -35,13 +35,13 @@ class R2EpubActivity : AppCompatActivity() {
     lateinit var resourcePager: R2ViewPager
     lateinit var resources: ArrayList<String>
 
-    lateinit var publicationPath: String
-    lateinit var publication: Publication
-    lateinit var epubName: String
+    private lateinit var publicationPath: String
+    private lateinit var publication: Publication
+    private lateinit var epubName: String
     lateinit var publicationIdentifier:String
 
     lateinit var userSettings: UserSettings
-    var drmModel: DRMMModel? = null
+    private var drmModel: DRMMModel? = null
     private var menuDrm: MenuItem? = null
     private var menuToc: MenuItem? = null
 

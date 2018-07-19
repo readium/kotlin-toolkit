@@ -26,8 +26,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
 
     private var gestureDetector: GestureDetector? = null
     var progression: Double = 0.0
-    var mIsScrolling = false
-    var scrollRight = false
+    private var mIsScrolling = false
+    private var scrollRight = false
 
     /*
      * @see android.webkit.WebView#onScrollChanged(int, int, int, int)

@@ -27,7 +27,7 @@ import timber.log.Timber
 class R2OutlineActivity : AppCompatActivity() {
 
     private val TAG = this::class.java.simpleName
-    lateinit var preferences:SharedPreferences
+    private lateinit var preferences:SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,7 +69,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
     }
 
-    fun childrenOf(parent: Link): MutableList<Link> {
+    private fun childrenOf(parent: Link): MutableList<Link> {
         val children = mutableListOf<Link>()
         for (link in parent.children) {
             children.add(link)

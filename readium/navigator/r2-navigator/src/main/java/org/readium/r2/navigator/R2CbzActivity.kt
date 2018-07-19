@@ -14,14 +14,14 @@ import org.readium.r2.shared.Publication
 
 class R2CbzActivity : AppCompatActivity() {
 
-    lateinit var preferences: SharedPreferences
+    private lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
     var resources = arrayListOf<String>()
 
-    lateinit var publicationPath: String
-    lateinit var publication: Publication
-    lateinit var cbzName: String
-    lateinit var publicationIdentifier:String
+    private lateinit var publicationPath: String
+    private lateinit var publication: Publication
+    private lateinit var cbzName: String
+    private lateinit var publicationIdentifier:String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,7 +102,7 @@ class R2CbzActivity : AppCompatActivity() {
         }
     }
 
-    fun toggleActionBar(v:View? = null) {
+     fun toggleActionBar(v:View? = null) {
         runOnUiThread {
             if (supportActionBar!!.isShowing) {
                 resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
