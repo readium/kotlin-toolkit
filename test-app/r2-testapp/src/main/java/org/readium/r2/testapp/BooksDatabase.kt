@@ -19,7 +19,7 @@ val Context.database: BooksDatabaseOpenHelper
 val Context.appContext: Context
     get() = applicationContext
 
-class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id: Long, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext: String)
+class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, var id: Long?, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext: String)
 
 class BooksDatabase(context: Context) {
 
@@ -48,7 +48,7 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
     override fun onCreate(db: SQLiteDatabase) {
 
         db.createTable(BOOKSTable.NAME, true,
-                BOOKSTable.ID to INTEGER + PRIMARY_KEY + UNIQUE,
+                BOOKSTable.ID to INTEGER + PRIMARY_KEY  + AUTOINCREMENT,
                 BOOKSTable.FILENAME to TEXT,
                 BOOKSTable.TITLE to TEXT,
                 BOOKSTable.AUTHOR to TEXT,
@@ -118,7 +118,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     fun delete(book: Book) {
         database.use {
-            delete(BOOKSTable.NAME, "id = {id}", "id" to book.id)
+            delete(BOOKSTable.NAME, "id = {id}", "id" to book.id!!)
         }
     }
 
