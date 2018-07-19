@@ -22,7 +22,7 @@ class Server(port: Int) : AbstractServer(port)
 
 abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
 
-//    private val SEARCH_QUERY_HANDLE = "/search"
+    //    private val SEARCH_QUERY_HANDLE = "/search"
     private val MANIFEST_HANDLE = "/manifest"
     private val MANIFEST_ITEM_HANDLE = "/(.*)"
     private val MEDIA_OVERLAY_HANDLE = "/media-overlay"
@@ -37,7 +37,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
     private fun addResource(name: String, body: String) {
         resources.add(name, body)
     }
-    
+
     private fun addFont(name: String, assets: AssetManager, context: Context) {
         val inputStream = assets.open("fonts/$name")
         val dir = File(context.getExternalFilesDir(null).path + "/fonts/")
@@ -47,7 +47,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         fonts.add(name, file)
     }
 
-    fun loadResources(assets: AssetManager, context: Context){
+    fun loadResources(assets: AssetManager, context: Context) {
         addResource("after.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-after.css"), "utf-8")
                 .useDelimiter("\\A").next())
         addResource("before.css", Scanner(assets.open("ReadiumCSS/ReadiumCSS-before.css"), "utf-8")
@@ -74,9 +74,9 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         }
         addRoute(fileName + MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
         addRoute(fileName + MANIFEST_ITEM_HANDLE, ResourceHandler::class.java, fetcher)
-        addRoute( JS_HANDLE, JSHandler::class.java, resources)
-        addRoute( CSS_HANDLE, CSSHandler::class.java, resources)
-        addRoute( FONT_HANDLE, FontHandler::class.java, fonts)
+        addRoute(JS_HANDLE, JSHandler::class.java, resources)
+        addRoute(CSS_HANDLE, CSSHandler::class.java, resources)
+        addRoute(FONT_HANDLE, FontHandler::class.java, fonts)
     }
 
     private fun addLinks(publication: Publication, filePath: String) {
@@ -88,6 +88,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
             }
         }
     }
+
     private fun InputStream.toFile(path: String) {
         use { input ->
             File(path).outputStream().use { input.copyTo(it) }

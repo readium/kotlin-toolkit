@@ -18,10 +18,10 @@ import java.util.zip.ZipFile
  *
  */
 
-interface ZipArchiveContainer: Container {
+interface ZipArchiveContainer : Container {
     var zipFile: ZipFile
 
-    override fun data(relativePath: String) : ByteArray{
+    override fun data(relativePath: String): ByteArray {
 
         val zipEntry = zipFile.getEntry(relativePath)// ?: return ByteArray(0)
         val fis = zipFile.getInputStream(zipEntry)
@@ -38,11 +38,11 @@ interface ZipArchiveContainer: Container {
         return buffer.toByteArray()
     }
 
-    override fun dataLength(relativePath: String) : Long {
+    override fun dataLength(relativePath: String): Long {
         return zipFile.size().toLong()
     }
 
-    override fun dataInputStream(relativePath: String) : InputStream {
+    override fun dataInputStream(relativePath: String): InputStream {
         return zipFile.getInputStream(zipFile.getEntry(relativePath))
     }
 

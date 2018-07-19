@@ -12,7 +12,7 @@ import java.io.FileInputStream
 
 interface DirectoryContainer : Container {
 
-    override fun data(relativePath: String) : ByteArray {
+    override fun data(relativePath: String): ByteArray {
         val filePath = rootFile.toString() + "/" + relativePath
         val epubFile = File(filePath)
 

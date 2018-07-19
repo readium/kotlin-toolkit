@@ -9,26 +9,22 @@ package org.readium.r2.streamer.server.handler
 import android.util.Log
 import org.nanohttpd.protocols.http.IHTTPSession
 import org.nanohttpd.protocols.http.NanoHTTPD.MIME_PLAINTEXT
-import org.readium.r2.streamer.fetcher.Fetcher
-
-import java.io.IOException
-import java.io.InputStream
-
-import java.net.URI
-import java.net.URISyntaxException
 import org.nanohttpd.protocols.http.response.IStatus
 import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
 import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
+import org.readium.r2.streamer.fetcher.Fetcher
+import java.io.IOException
+import java.io.InputStream
+import java.net.URI
+import java.net.URISyntaxException
 
 
 class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
     private val TAG = this::class.java.simpleName
-
-    private val fonts = arrayOf(".woff", ".ttf", ".obf", ".woff2", ".eot", ".otf")
 
     override fun getMimeType(): String? {
         return null
@@ -170,15 +166,6 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
     private fun getResponse(message: String): Response {
         return createResponse(Status.OK, "text/plain", message)
-    }
-
-    private fun isFontFile(file: String): Boolean {
-        for (font in fonts) {
-            if (file.endsWith(font)) {
-                return true
-            }
-        }
-        return false
     }
 
 }

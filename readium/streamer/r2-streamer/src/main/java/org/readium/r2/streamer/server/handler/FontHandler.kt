@@ -20,8 +20,6 @@ import java.io.InputStream
 
 class FontHandler : RouterNanoHTTPD.DefaultHandler() {
 
-    private val fonts = arrayOf(".woff", ".ttf", ".obf", ".woff2", ".eot", ".otf")
-
     override fun getMimeType(): String? {
         return null
     }
@@ -59,11 +57,11 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
         if (extension != null) {
             try {
                 mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-            }catch (e:Exception) {
+            } catch (e: Exception) {
                 when (extension) {
                     ".otf" -> mimeType = "application/vnd.ms-opentype"
-                    ".ttf" -> mimeType =  "application/vnd.ms-truetype"
-                    // TODO handle other font types
+                    ".ttf" -> mimeType = "application/vnd.ms-truetype"
+                // TODO handle other font types
                 }
             }
         }

@@ -13,11 +13,11 @@ data class PubBox(var publication: Publication, var container: Container)
 
 interface PublicationParser {
 
-    fun parse(fileAtPath: String, title: String = fileAtPath) : PubBox?
+    fun parse(fileAtPath: String, title: String = fileAtPath): PubBox?
 
 }
 
-fun normalize(base: String, href: String?) : String {
+fun normalize(base: String, href: String?): String {
     if (href == null || href.isEmpty())
         return ""
     val hrefComponents = href.split('/').filter({ !it.isEmpty() })
@@ -26,11 +26,11 @@ fun normalize(base: String, href: String?) : String {
     // Remove the /folder/folder/"PATH.extension" part to keep only the path.
     baseComponents = baseComponents.dropLast(1)
     // Find the number of ".." in the path to replace them.
-    val replacementsNumber = hrefComponents.filter ({ it == ".." }).count()
+    val replacementsNumber = hrefComponents.filter({ it == ".." }).count()
     // Get the valid part of href, reversed for next operation.
     var normalizedComponents = hrefComponents.filter({ it != ".." })
     // Add the part from base to replace the "..".
-    for (i in 0 until  replacementsNumber) {
+    for (i in 0 until replacementsNumber) {
         baseComponents = baseComponents.dropLast(1)
     }
     normalizedComponents = baseComponents + normalizedComponents

@@ -17,8 +17,6 @@ import org.readium.r2.streamer.server.Ressources
 
 class CSSHandler : RouterNanoHTTPD.DefaultHandler() {
 
-    private val fonts = arrayOf(".woff", ".ttf", ".obf", ".woff2", ".eot", ".otf")
-
     override fun getMimeType(): String? {
         return null
     }

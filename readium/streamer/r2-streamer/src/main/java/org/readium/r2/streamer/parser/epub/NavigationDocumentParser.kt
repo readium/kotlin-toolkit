@@ -23,24 +23,24 @@ class NavigationDocumentParser {
     fun listOfAudiofiles(document: XmlParser) = nodeArray(document, "loa")
     fun listOfVideos(document: XmlParser) = nodeArray(document, "lov")
 
-    private fun nodeArray(document: XmlParser, navType: String) : List<Link> {
+    private fun nodeArray(document: XmlParser, navType: String): List<Link> {
         var body = document.root().getFirst("body")
         body?.getFirst("section")?.let { body = it }
-        val navPoint = body?.get("nav")?.firstOrNull{ it.attributes["epub:type"] == navType }
+        val navPoint = body?.get("nav")?.firstOrNull { it.attributes["epub:type"] == navType }
         val olElement = navPoint?.getFirst("ol") ?: return emptyList()
         return nodeOl(olElement).children
     }
 
-    private fun nodeOl(element: Node) : Link {
+    private fun nodeOl(element: Node): Link {
         val newOlNode = Link()
         val liElements = element.get("li") ?: return newOlNode
-        for (li in liElements){
+        for (li in liElements) {
             val spanText = li.getFirst("span")?.name
-            if (spanText != null && !spanText.isEmpty()){
+            if (spanText != null && !spanText.isEmpty()) {
                 li.getFirst("ol")?.let {
                     newOlNode.children.add(nodeOl(it))
                 }
-            } else{
+            } else {
                 val childLiNode = nodeLi(li)
                 newOlNode.children.add(childLiNode)
             }
@@ -48,7 +48,7 @@ class NavigationDocumentParser {
         return newOlNode
     }
 
-    private fun nodeLi(element: Node) : Link {
+    private fun nodeLi(element: Node): Link {
         val newLiNode = Link()
         val aNode = element.getFirst("a")!!
         val title = (aNode.getFirst("span"))?.name ?: aNode.text ?: aNode.name

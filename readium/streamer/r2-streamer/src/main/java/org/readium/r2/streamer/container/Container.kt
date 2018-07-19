@@ -28,7 +28,7 @@ import java.io.InputStream
  *
  * @func dataInputStream : return the InputStream of content
  */
-interface Container{
+interface Container {
 
     var rootFile: RootFile
 
@@ -36,11 +36,11 @@ interface Container{
 
     var successCreated: Boolean
 
-    fun data(relativePath: String) : ByteArray
+    fun data(relativePath: String): ByteArray
 
-    fun dataLength(relativePath: String) : Long
+    fun dataLength(relativePath: String): Long
 
-    fun dataInputStream(relativePath: String) : InputStream
+    fun dataInputStream(relativePath: String): InputStream
 }
 
 /**
@@ -52,8 +52,8 @@ interface Container{
  */
 interface EpubContainer : Container {
 
-    fun xmlDocumentForFile(relativePath: String) : XmlParser
-    fun xmlDocumentForResource(link: Link?) : XmlParser
+    fun xmlDocumentForFile(relativePath: String): XmlParser
+    fun xmlDocumentForResource(link: Link?): XmlParser
 
 }
 
@@ -63,5 +63,5 @@ interface EpubContainer : Container {
  * @func getFilesList : return the list of every files in a CBZ
  */
 interface CbzContainer : Container {
-    fun getFilesList() : List<String>
+    fun getFilesList(): List<String>
 }

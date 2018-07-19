@@ -11,38 +11,38 @@ import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.parser.xml.Node
 import org.readium.r2.streamer.parser.normalize
 
-class NCXParser{
+class NCXParser {
 
     lateinit var ncxDocumentPath: String
 
-    fun tableOfContents(document: XmlParser) : List<Link> {
+    fun tableOfContents(document: XmlParser): List<Link> {
         val navMapElement = document.root().getFirst("navMap")
         return nodeArray(navMapElement, "navPoint")
     }
 
-    fun pageList(document: XmlParser) : List<Link> {
+    fun pageList(document: XmlParser): List<Link> {
         val pageListElement = document.root().getFirst("pageList")
         return nodeArray(pageListElement, "pageTarget")
     }
 
-    private fun nodeArray(element: Node?, type: String) : List<Link> {
+    private fun nodeArray(element: Node?, type: String): List<Link> {
         // The "to be returned" node array.
         val newNodeArray: MutableList<Link> = mutableListOf()
 
         // Find the elements of `type` in the XML element.
         val elements = element?.get(type) ?: return emptyList()
         // For each element create a new node of type `type`.
-        for (newNode in elements.map{node(it, type)})
+        for (newNode in elements.map { node(it, type) })
             newNodeArray.plusAssign(newNode)
         return newNodeArray
     }
 
-    private fun node(element: Node, type: String) : Link{
+    private fun node(element: Node, type: String): Link {
         val newNode = Link()
         newNode.href = normalize(ncxDocumentPath, element.getFirst("content")?.attributes?.get("src"))
         newNode.title = element.getFirst("navLabel")!!.getFirst("text")!!.text
         element.get("navPoint")?.let {
-            for (childNode in it){
+            for (childNode in it) {
                 newNode.children.plusAssign(node(childNode, type))
             }
         }

@@ -38,7 +38,7 @@ class EpubParser : PublicationParser {
     private val ncxp = NCXParser()
     private val encp = EncryptionParser()
 
-    private fun generateContainerFrom(path: String) : EpubContainer {
+    private fun generateContainerFrom(path: String): EpubContainer {
         val isDirectory = File(path).isDirectory
         val container: EpubContainer?
 
@@ -65,7 +65,7 @@ class EpubParser : PublicationParser {
         return Pair(container, publication)
     }
 
-    override fun parse(fileAtPath: String, title: String) : PubBox? {
+    override fun parse(fileAtPath: String, title: String): PubBox? {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
@@ -92,9 +92,10 @@ class EpubParser : PublicationParser {
         }
 
         xmlParser.parseXml(documentData.inputStream())
-        
+
         val epubVersion = xmlParser.root().attributes["version"]!!.toDouble()
-        val publication = opfParser.parseOpf(xmlParser, container.rootFile.rootFilePath, epubVersion) ?: return null
+        val publication = opfParser.parseOpf(xmlParser, container.rootFile.rootFilePath, epubVersion)
+                ?: return null
 
         val drm = scanForDrm(container)
 
@@ -134,7 +135,7 @@ class EpubParser : PublicationParser {
         return publication
     }
 
-    private fun scanForDrm(container: EpubContainer) : Drm? {
+    private fun scanForDrm(container: EpubContainer): Drm? {
         if (ZipUtil.containsEntry(File(container.rootFile.rootPath), lcplFilePath)) {
             return Drm(Drm.Brand.Lcp)
         }
@@ -150,12 +151,12 @@ class EpubParser : PublicationParser {
         val document = XmlParser()
         document.parseXml(documentData.inputStream())
         val encryptedDataElements = document.getFirst("encryption")?.get("EncryptedData") ?: return
-        for(encryptedDataElement in encryptedDataElements){
+        for (encryptedDataElement in encryptedDataElements) {
             val encryption = Encryption()
-            val keyInfoUri = encryptedDataElement.getFirst("KeyInfo")?.getFirst("RetrievalMethod")?.let{ it.attributes["URI"] }
+            val keyInfoUri = encryptedDataElement.getFirst("KeyInfo")?.getFirst("RetrievalMethod")?.let { it.attributes["URI"] }
             if (keyInfoUri == "license.lcpl#/encryption/content_key" && drm?.brand == Drm.Brand.Lcp)
                 encryption.scheme = Drm.Scheme.Lcp
-            encryption.algorithm = encryptedDataElement.getFirst("EncryptionMethod")?.let{ it.attributes["Algorithm"] }
+            encryption.algorithm = encryptedDataElement.getFirst("EncryptionMethod")?.let { it.attributes["Algorithm"] }
             encp.parseEncryptionProperties(encryptedDataElement, encryption)
             encp.add(encryption, publication, encryptedDataElement)
         }
@@ -166,7 +167,7 @@ class EpubParser : PublicationParser {
         val navLink = publication.linkWithRel("contents") ?: return
         val navDocument = try {
             container.xmlDocumentForResource(navLink)
-        } catch(e: Exception){
+        } catch (e: Exception) {
             Log.e("Error", "Navigation parsing", e)
             return
         }
@@ -180,8 +181,9 @@ class EpubParser : PublicationParser {
         publication.pageList.plusAssign(ndp.pageList(navDocument))
     }
 
-    private fun parseNcxDocument(container: EpubContainer, publication: Publication){
-        val ncxLink = publication.resources.firstOrNull { it.typeLink == "application/x-dtbncx+xml" } ?: return
+    private fun parseNcxDocument(container: EpubContainer, publication: Publication) {
+        val ncxLink = publication.resources.firstOrNull { it.typeLink == "application/x-dtbncx+xml" }
+                ?: return
         val ncxDocument = try {
             container.xmlDocumentForResource(ncxLink)
         } catch (e: Exception) {

@@ -15,17 +15,16 @@ import org.readium.r2.shared.removeLastComponent
 import org.readium.r2.streamer.container.Container
 import java.io.File
 import java.io.InputStream
-import java.net.URL
 
-interface ContentFilters{
+interface ContentFilters {
     var fontDecoder: FontDecoder
     var drmDecoder: DrmDecoder
 
-    fun apply(input: InputStream, publication: Publication, container:Container, path: String) : InputStream {
+    fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
         return input
     }
 
-    fun apply(input: ByteArray, publication: Publication, container:Container, path: String) : ByteArray {
+    fun apply(input: ByteArray, publication: Publication, container: Container, path: String): ByteArray {
         return input
     }
 }
@@ -35,52 +34,50 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
     override var fontDecoder = FontDecoder()
     override var drmDecoder = DrmDecoder()
 
-    override fun apply(input: InputStream, publication: Publication, container:Container, path: String): InputStream {
-        publication.linkWithHref(path)?.let {resourceLink ->
+    override fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
+        publication.linkWithHref(path)?.let { resourceLink ->
 
             var decodedInputStream = drmDecoder.decoding(input, resourceLink, container.drm)
             decodedInputStream = fontDecoder.decoding(decodedInputStream, publication, path)
-            val baseUrl = publication.baseUrl()?.removeLastComponent()
-            if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")
-                    && baseUrl != null){
+            if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")) {
                 decodedInputStream = if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && resourceLink.properties.layout == null
                         || resourceLink.properties.layout == "reflowable") {
-                    injectReflowableHtml(decodedInputStream, baseUrl)
+                    injectReflowableHtml(decodedInputStream)
                 } else {
-                    injectFixedLayoutHtml(decodedInputStream, baseUrl)
+                    injectFixedLayoutHtml(decodedInputStream)
                 }
             }
 
             return decodedInputStream
-        }?: run {
+        } ?: run {
             return input
         }
 
     }
 
-    override fun apply(input: ByteArray, publication: Publication, container:Container, path: String): ByteArray {
-        publication.linkWithHref(path)?.let {resourceLink ->
+    override fun apply(input: ByteArray, publication: Publication, container: Container, path: String): ByteArray {
+        publication.linkWithHref(path)?.let { resourceLink ->
             val inputStream = input.inputStream()
             var decodedInputStream = drmDecoder.decoding(inputStream, resourceLink, container.drm)
             decodedInputStream = fontDecoder.decoding(decodedInputStream, publication, path)
             val baseUrl = publication.baseUrl()?.removeLastComponent()
             if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")
-                    && baseUrl != null){
+                    && baseUrl != null) {
                 decodedInputStream =
                         if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && (resourceLink.properties.layout == null
                                         || resourceLink.properties.layout == "reflowable")) {
-                            injectReflowableHtml(decodedInputStream, baseUrl)
+                            injectReflowableHtml(decodedInputStream)
                         } else {
-                            injectFixedLayoutHtml(decodedInputStream, baseUrl)
+                            injectFixedLayoutHtml(decodedInputStream)
                         }
             }
             return decodedInputStream.readBytes()
-        }?: run {
+        } ?: run {
             return input
         }
     }
 
-    private fun injectReflowableHtml(stream: InputStream, baseUrl: URL) : InputStream {
+    private fun injectReflowableHtml(stream: InputStream): InputStream {
         val data = stream.readBytes()
         var resourceHtml = String(data)
         // Inject links to css and js files
@@ -99,21 +96,21 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         endIncludes.add(getHtmlScript("/scripts/touchHandling.js"))
         endIncludes.add(getHtmlScript("/scripts/utils.js"))
 
-        for (element in beginIncludes){
+        for (element in beginIncludes) {
             resourceHtml = StringBuilder(resourceHtml).insert(beginHeadIndex, element).toString()
             beginHeadIndex += element.length
             endHeadIndex += element.length
         }
-        for (element in endIncludes){
+        for (element in endIncludes) {
             resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, element).toString()
             endHeadIndex += element.length
         }
-        resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, getHtmlFont( "/fonts/OpenDyslexic-Regular.otf")).toString()
+        resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, getHtmlFont("/fonts/OpenDyslexic-Regular.otf")).toString()
         resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>\n").toString()
 
         // Inject userProperties
         getProperties()?.let { propertyPair ->
-            val html  = Regex("""<html.*>""").find(resourceHtml, 0)!!
+            val html = Regex("""<html.*>""").find(resourceHtml, 0)!!
             val match = Regex("""(style=("([^"]*)"[ >]))|(style='([^']*)'[ >])""").find(html.value, 0)
             if (match != null) {
                 val beginStyle = match.range.start + 7
@@ -128,36 +125,35 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         return resourceHtml.toByteArray().inputStream()
     }
 
-    private fun injectFixedLayoutHtml(stream: InputStream, baseUrl: URL) : InputStream {
+    private fun injectFixedLayoutHtml(stream: InputStream): InputStream {
         val data = stream.readBytes()
         var resourceHtml = String(data) //UTF-8
         val endHeadIndex = resourceHtml.indexOf("</head>", 0, false)
         if (endHeadIndex == -1)
             return stream
         val includes = mutableListOf<String>()
-        val url = baseUrl.toString()
         includes.add("<meta name=\"viewport\" content=\"width=1024, height=768, left=50%, top=50%, bottom=auto, right=auto, transform=translate(-50%, -50%);\"/>\n")
-        includes.add(getHtmlScript(url + "scripts/touchHandling.js"))
-        includes.add(getHtmlScript(url + "scripts/utils.js"))
-        for (element in includes){
+        includes.add(getHtmlScript("/scripts/touchHandling.js"))
+        includes.add(getHtmlScript("/scripts/utils.js"))
+        for (element in includes) {
             resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, element).toString()
         }
         return resourceHtml.toByteArray().inputStream()
     }
 
-    private fun getHtmlFont(resourceName: String) : String {
+    private fun getHtmlFont(resourceName: String): String {
         val prefix = "<style type=\"text/css\"> @font-face{font-family: \"OpenDyslexic\"; src:url(\""
         val suffix = "\") format('truetype');}</style>\n"
         return prefix + resourceName + suffix
     }
 
-    private fun getHtmlLink(resourceName: String) : String {
+    private fun getHtmlLink(resourceName: String): String {
         val prefix = "<link rel=\"stylesheet\" type=\"text/css\" href=\""
         val suffix = "\"/>\n"
         return prefix + resourceName + suffix
     }
 
-    private fun getHtmlScript(resourceName: String) : String {
+    private fun getHtmlScript(resourceName: String): String {
         val prefix = "<script type=\"text/javascript\" src=\""
         val suffix = "\"></script>\n"
 
@@ -196,7 +192,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         }
     }
 
-    private fun buildStringProperties(list: MutableList<Pair<String, String>>) : String {
+    private fun buildStringProperties(list: MutableList<Pair<String, String>>): String {
         var string = ""
         for (property in list) {
             string = string + " " + property.first + ": " + property.second + ";"

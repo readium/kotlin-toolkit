@@ -25,7 +25,7 @@ class CbzParser : PublicationParser {
      * Check if path exist, generate a container for CBZ file
      *                   then check if creation was a success
      */
-    private fun generateContainerFrom(path: String) : ContainerCbz {
+    private fun generateContainerFrom(path: String): ContainerCbz {
         val container: ContainerCbz?
 
         if (!File(path).exists())
@@ -40,7 +40,7 @@ class CbzParser : PublicationParser {
     /**
      *
      */
-    override fun parse(fileAtPath: String, title: String) : PubBox? {
+    override fun parse(fileAtPath: String, title: String): PubBox? {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
@@ -62,7 +62,7 @@ class CbzParser : PublicationParser {
             link.typeLink = getMimeType(it)
             link.href = it
 
-            if(getMimeType(it) == mimetypeJPEG || getMimeType(it) == mimetypePNG) {
+            if (getMimeType(it) == mimetypeJPEG || getMimeType(it) == mimetypePNG) {
                 publication.pageList.add(link)
             } else {
                 publication.resources.add(link)         //List of eventual extra files ( .nfo, ect .. )
@@ -77,7 +77,7 @@ class CbzParser : PublicationParser {
         return PubBox(publication, container)
     }
 
-    private fun getMimeType(fileName: String): String?{
+    private fun getMimeType(fileName: String): String? {
         return try {
             val name = fileName.replace(" ", "").replace("'", "").replace(",", "")
             val extension = MimeTypeMap.getFileExtensionFromUrl(name)
