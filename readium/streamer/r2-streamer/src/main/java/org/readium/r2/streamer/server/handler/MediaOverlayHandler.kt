@@ -64,7 +64,4 @@ class MediaOverlayHandler : RouterNanoHTTPD.DefaultHandler() {
         return MediaOverlays()
     }
 
-    companion object {
-        val TAG = MediaOverlayNode::class.java.simpleName
-    }
 }

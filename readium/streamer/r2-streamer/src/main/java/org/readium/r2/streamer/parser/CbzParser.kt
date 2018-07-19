@@ -70,8 +70,8 @@ class CbzParser : PublicationParser {
         }
         publication.pageList.first().rel.add("cover")
         publication.metadata.identifier = fileAtPath
-//        publication.metadata.multilangTitle = MultilangString()
-//        publication.metadata.multilangTitle?.singleString = container.title
+//        publication.metadata.multilanguageTitle = MultilanguageString()
+//        publication.metadata.multilanguageTitle?.singleString = container.title
 //        publication.metadata.title = container.getTitle()
         publication.type = Publication.TYPE.CBZ
         return PubBox(publication, container)

@@ -61,25 +61,25 @@ class MetadataParser {
     // In the simplest cases it just return the value of the <dc:title> XML
     // element, but sometimes there are alternative titles (titles in others
     // languages).
-    // See `MultilangString` for complementary informations.
+    // See `MultilanguageString` for complementary informations.
     //
     // - Parameter metadata: The `<metadata>` element.
     // - Returns: The content of the `<dc:title>` element, `nil` if the element
     //            wasn't found.
-    fun mainTitle(metadata: Node): MultilangString? {
+    fun mainTitle(metadata: Node): MultilanguageString? {
         val titles = metadata.children.filter { node -> node.name == "dc:title" }
         if (titles.isEmpty())
             throw Exception(noTitleError)
-        val multilangTitle = MultilangString()
+        val multilanguageTitle = MultilanguageString()
 
-        multilangTitle.singleString = try {
+        multilanguageTitle.singleString = try {
             metadata.get("dc:title")?.first()?.text ?: throw Exception("No title")
         } catch (e: Exception) {
             throw Exception(noTitleError)
         }
-        val mainTitle = getMainTitleElement(titles, metadata) ?: return multilangTitle
-        multilangTitle.multiString = multiString(mainTitle, metadata).toMutableMap()
-        return multilangTitle
+        val mainTitle = getMainTitleElement(titles, metadata) ?: return multilanguageTitle
+        multilanguageTitle.multiString = multiString(mainTitle, metadata).toMutableMap()
+        return multilanguageTitle
     }
 
     // Parse and return the Epub unique identifier.
@@ -165,8 +165,8 @@ class MetadataParser {
 
     private fun createContributor(element: Node, metadata: Node) : Contributor {
         val contributor = Contributor()
-        contributor.multilangName.singleString = element.text
-        contributor.multilangName.multiString = multiString(element, metadata).toMutableMap()
+        contributor.multilanguageName.singleString = element.text
+        contributor.multilanguageName.multiString = multiString(element, metadata).toMutableMap()
         element.attributes["opf:role"]?.let { contributor.roles.add(it) }
         element.attributes["opf:file-as"]?.let { contributor.sortAs = it }
         return contributor

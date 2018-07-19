@@ -37,28 +37,28 @@ class OPFParser {
 
     private fun parseMetadata(document: XmlParser, publication: Publication) : Boolean {
         val metadata = Metadata()
-        val mp = MetadataParser()
+        val metadataParser = MetadataParser()
         val metadataElement: Node? = document
                 .root().getFirst("metadata") ?: document.root().getFirst("opf:metadata")
-        metadata.multilangTitle = mp.mainTitle(metadataElement!!)
-        metadata.identifier = mp.uniqueIdentifier(metadataElement,
+        metadata.multilanguageTitle = metadataParser.mainTitle(metadataElement!!)
+        metadata.identifier = metadataParser.uniqueIdentifier(metadataElement,
                     document.getFirst("package")!!.attributes) ?: return false
         metadata.description = metadataElement.getFirst("dc:description")?.text
         metadata.publicationDate = metadataElement.getFirst("dc:date")?.text
-        metadata.modified = DateTime(mp.modifiedDate(metadataElement)).toDate()
+        metadata.modified = DateTime(metadataParser.modifiedDate(metadataElement)).toDate()
         metadata.source = metadataElement.getFirst("dc:sources")?.text
-        mp.subject(metadataElement)?.let { metadata.subjects.add(it) }
+        metadataParser.subject(metadataElement)?.let { metadata.subjects.add(it) }
         metadata.languages = metadataElement.get("dc:language")?.map { it.text!! }?.toMutableList()
                 ?: throw Exception("No language")
         val rightsMap = metadataElement.get("dc:rights")?.map { it.text }
         if (rightsMap != null && rightsMap.isNotEmpty())
             metadata.rights = rightsMap.joinToString { " " }
-        mp.parseContributors(metadataElement, metadata, publication.version)
+        metadataParser.parseContributors(metadataElement, metadata, publication.version)
         document.root().getFirst("spine")?.attributes?.get("page-progression-direction")?.let {
             metadata.direction = it
         }
-        mp.parseRenditionProperties(metadataElement, metadata)
-        metadata.otherMetadata = mp.parseMediaDurations(metadataElement, metadata.otherMetadata)
+        metadataParser.parseRenditionProperties(metadataElement, metadata)
+        metadata.otherMetadata = metadataParser.parseMediaDurations(metadataElement, metadata.otherMetadata)
         publication.metadata = metadata
         return true
     }
