@@ -9,6 +9,7 @@ package org.readium.r2.testapp.opds
 
 import android.app.Activity
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -16,11 +17,17 @@ import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.URLUtil
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import com.github.kittinunf.fuel.Fuel
 import com.mcxiaoke.koi.ext.onClick
 import com.mcxiaoke.koi.ext.onLongClick
+import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.then
+import nl.komponents.kovenant.ui.failUi
+import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.coordinatorLayout
@@ -28,20 +35,12 @@ import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.design.textInputLayout
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.support.v4.nestedScrollView
-import org.readium.r2.testapp.R
-import android.content.DialogInterface
-import android.support.v7.app.AlertDialog
-import android.webkit.URLUtil
-import com.github.kittinunf.fuel.Fuel
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.then
-import nl.komponents.kovenant.ui.failUi
-import nl.komponents.kovenant.ui.successUi
 import org.json.JSONObject
-import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDS1Parser
+import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
+import org.readium.r2.testapp.R
 import java.net.URL
 
 

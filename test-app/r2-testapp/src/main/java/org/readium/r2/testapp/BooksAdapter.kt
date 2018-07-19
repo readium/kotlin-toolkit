@@ -67,11 +67,8 @@ open class BooksAdapter(private val activity: Activity, private var books: Mutab
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textView: TextView = view.findViewById<View>(R.id.titleTextView) as TextView
-        val imageView: ImageView
+        val imageView: ImageView = view.findViewById(R.id.coverImageView) as ImageView
 
-        init {
-            imageView = view.findViewById(R.id.coverImageView) as ImageView
-        }
     }
 
     interface RecyclerViewClickListener {

@@ -56,8 +56,7 @@ class GridAutoFitLayoutManager : GridLayoutManager {
         }
 
         if (mColumnWidthChanged && mColumnWidth > 0 && width > 0 && height > 0 || mWidthChanged) {
-            val totalSpace: Int
-            totalSpace = if (orientation == LinearLayoutManager.VERTICAL) {
+            val totalSpace: Int = if (orientation == LinearLayoutManager.VERTICAL) {
                 width - paddingRight - paddingLeft
             } else {
                 height - paddingTop - paddingBottom
@@ -71,6 +70,6 @@ class GridAutoFitLayoutManager : GridLayoutManager {
     }
 
     companion object {
-        private val sColumnWidth = 200 // assume cell width of 200dp
+        private const val sColumnWidth = 200 // assume cell width of 200dp
     }
 }

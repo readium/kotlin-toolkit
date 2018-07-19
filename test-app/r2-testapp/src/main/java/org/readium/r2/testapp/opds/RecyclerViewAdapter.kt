@@ -53,10 +53,7 @@ class RecyclerViewAdapter(private val activity: Activity, private val strings: M
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textView: TextView = view.findViewById<View>(R.id.titleTextView) as TextView
-        val imageView: ImageView
+        val imageView: ImageView = view.findViewById(R.id.coverImageView) as ImageView
 
-        init {
-            imageView = view.findViewById(R.id.coverImageView) as ImageView
-        }
     }
 }

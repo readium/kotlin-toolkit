@@ -23,11 +23,10 @@ class Book(val fileName: String, val title: String, val author: String, val file
 
 class BooksDatabase(context: Context) {
 
-    val shared:BooksDatabaseOpenHelper
+    val shared:BooksDatabaseOpenHelper = BooksDatabaseOpenHelper(context)
     var books: BOOKS
 
     init {
-        shared = BooksDatabaseOpenHelper(context)
         books = BOOKS(shared)
     }
 
@@ -69,16 +68,16 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
 }
 
 object BOOKSTable {
-    val NAME = "BOOKS"
-    val ID = "id"
-    val IDENTIFIER = "identifier"
-    val FILENAME = "href"
-    val TITLE = "title"
-    val AUTHOR = "author"
-    val FILEURL = "fileUrl"
-    val COVER = "cover"
-    val COVERURL = "coverUrl"
-    val EXTENSION = "extension"
+    const val NAME = "BOOKS"
+    const val ID = "id"
+    const val IDENTIFIER = "identifier"
+    const val FILENAME = "href"
+    const val TITLE = "title"
+    const val AUTHOR = "author"
+    const val FILEURL = "fileUrl"
+    const val COVER = "cover"
+    const val COVERURL = "coverUrl"
+    const val EXTENSION = "extension"
 }
 
 class BOOKS(private var database: BooksDatabaseOpenHelper) {

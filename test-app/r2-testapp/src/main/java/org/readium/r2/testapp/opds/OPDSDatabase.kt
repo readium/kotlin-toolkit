@@ -23,11 +23,10 @@ val Context.appContext: Context
 
 class OPDSDatabase(context: Context) {
 
-    val shared: OPDSDatabaseOpenHelper
+    val shared: OPDSDatabaseOpenHelper = OPDSDatabaseOpenHelper(context)
     var opds: OPDS
 
     init {
-        shared = OPDSDatabaseOpenHelper(context)
         opds = OPDS(shared)
     }
 
@@ -64,11 +63,11 @@ class OPDSDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "opdsd
 }
 
 object OPDSTable {
-    val NAME = "OPDS"
-    val ID = "id"
-    val HREF = "href"
-    val TITLE = "title"
-    val TYPE = "type"
+    const val NAME = "OPDS"
+    const val ID = "id"
+    const val HREF = "href"
+    const val TITLE = "title"
+    const val TYPE = "type"
 }
 
 class OPDS(private var database: OPDSDatabaseOpenHelper) {

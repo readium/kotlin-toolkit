@@ -12,7 +12,7 @@ import android.content.Intent;
 import android.net.Uri;
 
 /**
- * Created by aferditamuriqi on 1/16/18.
+ * Created by Aferdita Muriqi on 1/16/18.
  */
 
 public class R2IntentHelper {
