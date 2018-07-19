@@ -19,11 +19,11 @@ val Context.database: BooksDatabaseOpenHelper
 val Context.appContext: Context
     get() = applicationContext
 
-class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id: Long, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext:String)
+class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id: Long, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext: String)
 
 class BooksDatabase(context: Context) {
 
-    val shared:BooksDatabaseOpenHelper = BooksDatabaseOpenHelper(context)
+    val shared: BooksDatabaseOpenHelper = BooksDatabaseOpenHelper(context)
     var books: BOOKS
 
     init {
@@ -87,6 +87,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
             dropTable(BOOKSTable.NAME, true)
         }
     }
+
     fun insert(book: Book, allowDuplicates: Boolean): Long? {
         val exists = has(book)
         if (exists.isEmpty() || allowDuplicates) {
@@ -107,7 +108,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     private fun has(book: Book): List<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME,BOOKSTable.TITLE,BOOKSTable.AUTHOR,BOOKSTable.FILEURL,BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER,BOOKSTable.COVER, BOOKSTable.EXTENSION)
+            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION)
                     .whereArgs("identifier = {identifier}", "identifier" to book.identifier)
                     .exec {
                         parseList(MyRowParser())
@@ -123,7 +124,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     fun list(): MutableList<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME,BOOKSTable.TITLE,BOOKSTable.AUTHOR,BOOKSTable.FILEURL,BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER,BOOKSTable.COVER, BOOKSTable.EXTENSION)
+            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
@@ -134,33 +135,33 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
         override fun parseRow(columns: Array<Any?>): Book {
             val filename = columns[0]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
             val title = columns[1]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
             val author = columns[2]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
             val fileUrl = columns[3]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
             val id = columns[4]?.let {
                 return@let it as Long
-            }?: kotlin.run { return@run (-1).toLong() }
+            } ?: kotlin.run { return@run (-1).toLong() }
             val coverUrl = columns[5]?.let {
                 return@let it as String
             }
             val identifier = columns[6]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
             val cover = columns[7]?.let {
                 return@let it as ByteArray
             }
             val ext = columns[8]?.let {
                 return@let it as String
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
 
-            return  Book(filename, title, author, fileUrl, id,  coverUrl, identifier, cover, ext)
+            return Book(filename, title, author, fileUrl, id, coverUrl, identifier, cover, ext)
 
         }
     }

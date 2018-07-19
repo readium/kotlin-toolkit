@@ -21,7 +21,7 @@ public class R2IntentHelper {
     public static final String LCP = "LCP";
 
     public Intent catalogActivityIntent(Context context, Uri uri) {
-        return catalogActivityIntent(context,uri, false);
+        return catalogActivityIntent(context, uri, false);
     }
 
     public Intent catalogActivityIntent(Context context, Uri uri, boolean lcp) {

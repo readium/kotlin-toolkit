@@ -56,7 +56,7 @@ open class BooksAdapter(private val activity: Activity, private var books: Mutab
             itemListener.recyclerViewListLongClicked(v, position)
             true
         })
-        
+
 
     }
 

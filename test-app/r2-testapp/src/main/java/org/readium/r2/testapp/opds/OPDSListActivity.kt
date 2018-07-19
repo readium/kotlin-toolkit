@@ -78,7 +78,7 @@ class OPDSListActivity : AppCompatActivity() {
                 onClick {
                     var editTextTitle: EditText? = null
                     var editTextHref: EditText? = null
-                    alert (Appcompat, "Add OPDS Feed") {
+                    alert(Appcompat, "Add OPDS Feed") {
 
                         customView {
                             verticalLayout {
@@ -119,14 +119,14 @@ class OPDSListActivity : AppCompatActivity() {
                                     val parseData: Promise<ParseData, Exception>?
                                     parseData = parseURL(URL(editTextHref!!.text.toString()))
                                     parseData.successUi {
-                                       val opds = OPDSModel(
-                                               editTextTitle!!.text.toString(),
-                                               editTextHref!!.text.toString(),
-                                               it.type)
-                                       database.opds.insert(opds)
-                                       list.add(opds)
-                                       opdsAdapter.notifyDataSetChanged()
-                                       dismiss()
+                                        val opds = OPDSModel(
+                                                editTextTitle!!.text.toString(),
+                                                editTextHref!!.text.toString(),
+                                                it.type)
+                                        database.opds.insert(opds)
+                                        list.add(opds)
+                                        opdsAdapter.notifyDataSetChanged()
+                                        dismiss()
                                     }
                                     parseData.failUi {
                                         editTextHref!!.error = "Please Enter A Valid OPDS Feed URL."
@@ -145,8 +145,8 @@ class OPDSListActivity : AppCompatActivity() {
         }
     }
 
-    private fun parseURL(url: URL) : Promise<ParseData, Exception> {
-        return Fuel.get(url.toString(),null).promise() then {
+    private fun parseURL(url: URL): Promise<ParseData, Exception> {
+        return Fuel.get(url.toString(), null).promise() then {
             val (_, _, result) = it
             if (isJson(result)) {
                 OPDS2Parser.parse(result, url)
@@ -156,11 +156,11 @@ class OPDSListActivity : AppCompatActivity() {
         }
     }
 
-    private fun isJson(byteArray: ByteArray) : Boolean {
+    private fun isJson(byteArray: ByteArray): Boolean {
         return try {
             JSONObject(String(byteArray))
             true
-        } catch(e: Exception){
+        } catch (e: Exception) {
             false
         }
     }

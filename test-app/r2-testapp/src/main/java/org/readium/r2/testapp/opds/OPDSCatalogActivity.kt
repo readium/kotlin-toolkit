@@ -43,11 +43,11 @@ import java.net.URL
 
 class OPDSCatalogActivity : AppCompatActivity() {
 
-    private lateinit var facets:MutableList<Facet>
+    private lateinit var facets: MutableList<Facet>
     private var parsePromise: Promise<ParseData, Exception>? = null
-    private var opdsModel:OPDSModel? = null
+    private var opdsModel: OPDSModel? = null
     private var showFacetMenu = false
-    private var facetPopup:PopupWindow? = null
+    private var facetPopup: PopupWindow? = null
     private lateinit var progress: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,7 +76,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
 
             facets = result.feed?.facets ?: mutableListOf()
 
-            if (facets.size>0) {
+            if (facets.size > 0) {
                 showFacetMenu = true
             }
             invalidateOptionsMenu()
@@ -124,7 +124,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
                                             text = context.getString(R.string.opds_list_more)
                                             gravity = Gravity.END
                                             onClick {
-                                                val model = OPDSModel(group.title,group.links.first().href.toString(), opdsModel?.type!!)
+                                                val model = OPDSModel(group.title, group.links.first().href.toString(), opdsModel?.type!!)
                                                 startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
                                             }
                                         }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -142,7 +142,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
                                     button {
                                         text = navigation.title
                                         onClick {
-                                            val model = OPDSModel(navigation.title!!,navigation.href.toString(), opdsModel?.type!!)
+                                            val model = OPDSModel(navigation.title!!, navigation.href.toString(), opdsModel?.type!!)
                                             startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
                                         }
                                     }
@@ -227,7 +227,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
         layout.text.text = link!!.title
         layout.count.text = link.properties.numberOfItems.toString()
         layout.setOnClickListener({
-            val model = OPDSModel(link.title!!,link.href.toString(), opdsModel?.type!!)
+            val model = OPDSModel(link.title!!, link.href.toString(), opdsModel?.type!!)
             facetPopup?.dismiss()
             startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
         })

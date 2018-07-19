@@ -73,24 +73,24 @@ class OPDSDetailActivity : AppCompatActivity() {
 
 //                            for (link in publication.links) {
 //                                if (link.typeLink.equals(mimetype)) {
-                                    opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
+                            opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
-                                        val publicationIdentifier = publication.metadata.identifier
-                                        val author = authorName(publication)
-                                        val bitmap = getBitmapFromURL(publication.images.first().href!!)
-                                        val stream = ByteArrayOutputStream()
-                                        bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                val publicationIdentifier = publication.metadata.identifier
+                                val author = authorName(publication)
+                                val bitmap = getBitmapFromURL(publication.images.first().href!!)
+                                val stream = ByteArrayOutputStream()
+                                bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-                                        val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
-                                        database.books.insert(book, false)?.let {
-                                            books.add(book)
-                                            snackbar(this, "download completed")
-                                            progress.dismiss()
-                                        }?: run {
-                                            snackbar(this, "download failed")
-                                            progress.dismiss()
-                                        }
-                                    }
+                                val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
+                                database.books.insert(book, false)?.let {
+                                    books.add(book)
+                                    snackbar(this, "download completed")
+                                    progress.dismiss()
+                                } ?: run {
+                                    snackbar(this, "download failed")
+                                    progress.dismiss()
+                                }
+                            }
 //                                }
 //                            }
                         }
@@ -101,7 +101,7 @@ class OPDSDetailActivity : AppCompatActivity() {
     }
 
 
-    private fun getDownloadURL(publication:Publication) : URL? {
+    private fun getDownloadURL(publication: Publication): URL? {
         var url: URL? = null
         val links = publication.links
         for (link in links) {

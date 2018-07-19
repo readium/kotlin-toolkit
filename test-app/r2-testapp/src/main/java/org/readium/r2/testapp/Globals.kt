@@ -23,7 +23,7 @@ import java.io.InputStream
  * Global Parameters
  */
 
-lateinit var books:MutableList<Book>
+lateinit var books: MutableList<Book>
 val supportedProfiles = arrayListOf("http://readium.org/lcp/basic-profile", "http://readium.org/lcp/profile-1.0")
 
 
