@@ -11,38 +11,39 @@ import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.readium.r2.shared.*
-import org.readium.r2.shared.XmlParser.Node
-import org.readium.r2.shared.XmlParser.XmlParser
+import org.readium.r2.shared.parser.xml.Node
+import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.opds.*
 import java.net.URL
 
-enum class OPDSParserError(v:String) {
-    missingTitle("The title is missing from the feed."),
-    documentNotFound("Document is not found")
+enum class OPDSParserError(var v: String) {
+    MissingTitle("The title is missing from the feed."),
+    DocumentNotFound("Document is not found")
 }
-enum class OPDSParserOpenSearchHelperError(v:String) {
-    searchLinkNotFound("Search link not found in feed"),
-    searchDocumentIsInvalid("OpenSearch document is invalid")
+
+enum class OPDSParserOpenSearchHelperError(var v: String) {
+    SearchLinkNotFound("Search link not found in feed"),
+    SearchDocumentIsInvalid("OpenSearch document is invalid")
 }
 
 data class MimeTypeParameters(
         var type: String,
-        var parameters:MutableMap<String, String> = mutableMapOf()
+        var parameters: MutableMap<String, String> = mutableMapOf()
 )
 
 class OPDS1Parser {
     companion object {
 
-        lateinit var feed:Feed
+        private lateinit var feed: Feed
 
-        fun parseURL(url: URL) : Promise<ParseData, Exception> {
-            return Fuel.get(url.toString(),null).promise() then {
-                val (request, response, result) = it
+        fun parseURL(url: URL): Promise<ParseData, Exception> {
+            return Fuel.get(url.toString(), null).promise() then {
+                val (_, _, result) = it
                 this.parse(xmlData = result, url = url)
             }
         }
 
-        fun parse(xmlData: ByteArray, url: URL) : ParseData {
+        fun parse(xmlData: ByteArray, url: URL): ParseData {
             val document = XmlParser()
             document.parseXml(xmlData.inputStream())
             val root = document.root()
@@ -52,11 +53,12 @@ class OPDS1Parser {
                 ParseData(null, parseEntry(xmlData), 1)
         }
 
-        fun parseFeed(xmlData: ByteArray, url: URL) : Feed {
+        private fun parseFeed(xmlData: ByteArray, url: URL): Feed {
             val document = XmlParser()
             document.parseXml(xmlData.inputStream())
             val root = document.root()
-            val title = root.getFirst("title")?.text ?: throw Exception(OPDSParserError.missingTitle.name)
+            val title = root.getFirst("title")?.text
+                    ?: throw Exception(OPDSParserError.MissingTitle.name)
             feed = Feed(title, 1, url)
             val tmpDate = root.getFirst("updated")?.text
             feed.metadata.modified = tmpDate?.let { DateTime(it).toDate() }
@@ -71,7 +73,7 @@ class OPDS1Parser {
             }
 
             // Parse entries
-            root.get("entry") ?.let {
+            root.get("entry")?.let {
                 for (entry in it) {
                     var isNavigation = true
                     val collectionLink = Link()
@@ -158,17 +160,17 @@ class OPDS1Parser {
             return feed
         }
 
-        fun parseEntry(xmlData: ByteArray) : Publication {
+        private fun parseEntry(xmlData: ByteArray): Publication {
             val document = XmlParser()
             document.parseXml(xmlData.inputStream())
             val root = document.root()
             return parseEntry(entry = root)
         }
 
-        fun parseMimeType(mimeTypeString: String) : MimeTypeParameters {
+        private fun parseMimeType(mimeTypeString: String): MimeTypeParameters {
             val substrings = mimeTypeString.split(";")
             val type = substrings[0].replace("\\s".toRegex(), "")
-            val params:MutableMap<String, String> = mutableMapOf()
+            val params: MutableMap<String, String> = mutableMapOf()
             for (defn in substrings.drop(0)) {
                 val halves = defn.split("=")
                 val paramName = halves[0].replace("\\s".toRegex(), "")
@@ -178,7 +180,7 @@ class OPDS1Parser {
             return MimeTypeParameters(type = type, parameters = params)
         }
 
-        public fun fetchOpenSearchTemplate(feed: Feed) : Promise<String?, Exception> {
+        fun fetchOpenSearchTemplate(feed: Feed): Promise<String?, Exception> {
 
             var openSearchURL: URL? = null
             var selfMimeType: String? = null
@@ -198,8 +200,8 @@ class OPDS1Parser {
                 return@let it
             }
 
-            return Fuel.get(unwrappedURL.toString(),null).promise() then {
-                val (request, response, result) = it
+            return Fuel.get(unwrappedURL.toString(), null).promise() then {
+                val (_, _, result) = it
 
                 val document = XmlParser()
                 document.parseXml(result.inputStream())
@@ -214,10 +216,7 @@ class OPDS1Parser {
                     val selfMimeParams = parseMimeType(mimeTypeString = it)
                     urls?.let {
                         for (url in urls) {
-                            val urlMimeType = url.attributes["type"]
-                            if (urlMimeType == null) {
-                                continue
-                            }
+                            val urlMimeType = url.attributes["type"] ?: continue
                             val otherMimeParams = parseMimeType(mimeTypeString = urlMimeType)
                             if (selfMimeParams.type == otherMimeParams.type) {
                                 if (typeMatch == null) {
@@ -240,21 +239,21 @@ class OPDS1Parser {
 
         }
 
-        internal fun parseEntry(entry: Node) : Publication {
+        private fun parseEntry(entry: Node): Publication {
             val publication = Publication()
             val metadata = Metadata()
             publication.metadata = metadata
             val entryTitle = entry.getFirst("title")
             entryTitle?.let {
-                if (metadata.multilangTitle == null) {
-                    metadata.multilangTitle = MultilangString()
+                if (metadata.multilanguageTitle == null) {
+                    metadata.multilanguageTitle = MultilanguageString()
                 }
-                metadata.multilangTitle?.singleString = entryTitle.text
+                metadata.multilanguageTitle?.singleString = entryTitle.text
             }
             var identifier = entry.getFirst("identifier")
             identifier?.let {
                 metadata.identifier = it.text.toString()
-            }?: run {
+            } ?: run {
                 identifier = entry.getFirst("id")
                 identifier?.let {
                     metadata.identifier = it.text.toString()
@@ -280,7 +279,7 @@ class OPDS1Parser {
             val publisher = entry.get("dcterms:publisher")
             publisher?.let {
                 val contributor = Contributor()
-                contributor.multilangName.singleString = publisher.toString()
+                contributor.multilanguageName.singleString = publisher.toString()
                 metadata.publishers.add(contributor)
             }
             val categories = entry.get("category")
@@ -303,7 +302,7 @@ class OPDS1Parser {
                         link.href = uri.toString()
                         contributor.links.add(link)
                     }
-                    contributor.multilangName.singleString = author.get("name").toString()
+                    contributor.multilanguageName.singleString = author.get("name").toString()
                     metadata.authors.add(contributor)
                 }
             }
@@ -334,8 +333,8 @@ class OPDS1Parser {
                         }
                     }
                     val price = link.getFirst("opds:price")
-                    var priceDouble:Double? = null
-                    var currency:String? = null
+                    var priceDouble: Double?
+                    var currency: String?
                     price?.let {
                         priceDouble = price.text.toString().toDouble()
                         currency = price.attributes["currencyCode"]
@@ -359,7 +358,7 @@ class OPDS1Parser {
             return publication
         }
 
-        internal fun addFacet(feed: Feed, link: Link, title: String) {
+        private fun addFacet(feed: Feed, link: Link, title: String) {
             for (facet in feed.facets) {
                 if (facet.metadata.title == title) {
                     facet.links.add(link)
@@ -371,7 +370,7 @@ class OPDS1Parser {
             feed.facets.add(newFacet)
         }
 
-        internal fun addPublicationInGroup(feed: Feed, publication: Publication, collectionLink: Link) {
+        private fun addPublicationInGroup(feed: Feed, publication: Publication, collectionLink: Link) {
             for (group in feed.groups) {
                 for (l in group.links) {
                     if (l.href == collectionLink.href) {
@@ -393,7 +392,7 @@ class OPDS1Parser {
             }
         }
 
-        internal fun addNavigationInGroup(feed: Feed, link: Link, collectionLink: Link) {
+        private fun addNavigationInGroup(feed: Feed, link: Link, collectionLink: Link) {
             for (group in feed.groups) {
                 for (l in group.links) {
                     if (l.href == collectionLink.href) {
@@ -415,7 +414,7 @@ class OPDS1Parser {
             }
         }
 
-        internal fun parseIndirectAcquisition(children: MutableList<Node>) : MutableList<IndirectAcquisition> {
+        private fun parseIndirectAcquisition(children: MutableList<Node>): MutableList<IndirectAcquisition> {
             val ret = mutableListOf<IndirectAcquisition>()
             for (child in children) {
                 val typeAcquisition = child.attributes["type"]
@@ -423,9 +422,9 @@ class OPDS1Parser {
                     val newIndAcq = IndirectAcquisition(typeAcquisition = typeAcquisition)
                     val grandChildren = child.get("opds:indirectAcquisition")?.toMutableList()
                     grandChildren?.let {
-                       if (it.isNotEmpty()) {
-                           newIndAcq.child = parseIndirectAcquisition(grandChildren)
-                       }
+                        if (it.isNotEmpty()) {
+                            newIndAcq.child = parseIndirectAcquisition(grandChildren)
+                        }
                     }
                     ret.add(newIndAcq)
                 }
