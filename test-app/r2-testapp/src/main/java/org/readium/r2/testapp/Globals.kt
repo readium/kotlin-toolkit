@@ -8,7 +8,6 @@
 package org.readium.r2.testapp
 
 import android.content.Context
-import android.os.Environment
 import android.support.annotation.ColorInt
 import android.support.annotation.ColorRes
 import android.support.v4.content.ContextCompat

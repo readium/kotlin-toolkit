@@ -14,19 +14,19 @@ import org.jetbrains.anko.db.*
 
 // Access property for Context
 val Context.database: BooksDatabaseOpenHelper
-    get() = BooksDatabaseOpenHelper.getInstance(getApplicationContext())
+    get() = BooksDatabaseOpenHelper.getInstance(applicationContext)
 
 val Context.appContext: Context
-    get() = getApplicationContext()
+    get() = applicationContext
 
 class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, val id: Long, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext:String)
 
-class BooksDatabase {
+class BooksDatabase(context: Context) {
 
     val shared:BooksDatabaseOpenHelper
     var books: BOOKS
 
-    constructor(context: Context) {
+    init {
         shared = BooksDatabaseOpenHelper(context)
         books = BOOKS(shared)
     }
@@ -40,7 +40,7 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
         @Synchronized
         fun getInstance(ctx: Context): BooksDatabaseOpenHelper {
             if (instance == null) {
-                instance = BooksDatabaseOpenHelper(ctx.getApplicationContext())
+                instance = BooksDatabaseOpenHelper(ctx.applicationContext)
             }
             return instance!!
         }
@@ -81,7 +81,7 @@ object BOOKSTable {
     val EXTENSION = "extension"
 }
 
-class BOOKS(var database: BooksDatabaseOpenHelper) {
+class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     fun dropTable() {
         database.use {
@@ -106,7 +106,7 @@ class BOOKS(var database: BooksDatabaseOpenHelper) {
         return null
     }
 
-    fun has(book: Book): List<Book> {
+    private fun has(book: Book): List<Book> {
         return database.use {
             select(BOOKSTable.NAME, BOOKSTable.FILENAME,BOOKSTable.TITLE,BOOKSTable.AUTHOR,BOOKSTable.FILEURL,BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER,BOOKSTable.COVER, BOOKSTable.EXTENSION)
                     .whereArgs("identifier = {identifier}", "identifier" to book.identifier)
@@ -147,7 +147,7 @@ class BOOKS(var database: BooksDatabaseOpenHelper) {
             }?: kotlin.run { return@run "" }
             val id = columns[4]?.let {
                 return@let it as Long
-            }?: kotlin.run { return@run -1.toLong() }
+            }?: kotlin.run { return@run (-1).toLong() }
             val coverUrl = columns[5]?.let {
                 return@let it as String
             }

@@ -15,18 +15,18 @@ import java.io.Serializable
 
 // Access property for Context
 val Context.database: OPDSDatabaseOpenHelper
-    get() = OPDSDatabaseOpenHelper.getInstance(getApplicationContext())
+    get() = OPDSDatabaseOpenHelper.getInstance(applicationContext)
 
 val Context.appContext: Context
-    get() = getApplicationContext()
+    get() = applicationContext
 
 
-class OPDSDatabase {
+class OPDSDatabase(context: Context) {
 
     val shared: OPDSDatabaseOpenHelper
     var opds: OPDS
 
-    constructor(context: Context) {
+    init {
         shared = OPDSDatabaseOpenHelper(context)
         opds = OPDS(shared)
     }
@@ -42,7 +42,7 @@ class OPDSDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "opdsd
         @Synchronized
         fun getInstance(ctx: Context): OPDSDatabaseOpenHelper {
             if (instance == null) {
-                instance = OPDSDatabaseOpenHelper(ctx.getApplicationContext())
+                instance = OPDSDatabaseOpenHelper(ctx.applicationContext)
             }
             return instance!!
         }
@@ -71,7 +71,7 @@ object OPDSTable {
     val TYPE = "type"
 }
 
-class OPDS(var database: OPDSDatabaseOpenHelper) {
+class OPDS(private var database: OPDSDatabaseOpenHelper) {
 
     fun insert(opds: OPDSModel) {
         val exists = list(opds)

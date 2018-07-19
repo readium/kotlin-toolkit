@@ -18,7 +18,7 @@ import java.util.*
 
 class OPDSDownloader(context: Context) {
 
-    val rootDir:String = context.getExternalFilesDir(null).path + "/"
+    private val rootDir:String = context.getExternalFilesDir(null).path + "/"
 
     fun publicationUrl(url: String, parameters: List<Pair<String, Any?>>? = null): Promise<Pair<String, String>, Exception> {
         val fileName = UUID.randomUUID().toString()

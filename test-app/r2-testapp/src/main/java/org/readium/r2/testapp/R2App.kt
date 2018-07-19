@@ -15,8 +15,6 @@ import nl.komponents.kovenant.android.stopKovenant
 
 class R2App : Application() {
 
-  private val TAG = this::class.java.simpleName
-
   override fun onCreate() {
     super.onCreate()
     // Configure Kovenant with standard dispatchers

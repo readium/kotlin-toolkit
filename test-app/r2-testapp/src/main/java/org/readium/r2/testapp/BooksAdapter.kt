@@ -18,9 +18,7 @@ import com.squareup.picasso.Picasso
 import java.io.ByteArrayInputStream
 
 
-open class BooksAdapter(private val activity: Activity, var books: MutableList<Book>, val server: String, var itemListener: RecyclerViewClickListener) : RecyclerView.Adapter<BooksAdapter.ViewHolder>() {
-
-    private val TAG = this::class.java.simpleName
+open class BooksAdapter(private val activity: Activity, private var books: MutableList<Book>, private val server: String, private var itemListener: RecyclerViewClickListener) : RecyclerView.Adapter<BooksAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BooksAdapter.ViewHolder {
         val inflater = activity.layoutInflater
@@ -44,16 +42,16 @@ open class BooksAdapter(private val activity: Activity, var books: MutableList<B
         } ?: run {
             book.coverLink?.let {
                 val baseUrl = server + "/" + book.fileName + it
-                Picasso.with(activity).load(baseUrl).into(viewHolder.imageView);
+                Picasso.with(activity).load(baseUrl).into(viewHolder.imageView)
             }
         }
 
-        viewHolder.itemView.setOnClickListener(View.OnClickListener { v ->
+        viewHolder.itemView.setOnClickListener({ v ->
             //get the position of the image which is clicked
             itemListener.recyclerViewListClicked(v, position)
         })
 
-        viewHolder.itemView.setOnLongClickListener(View.OnLongClickListener { v ->
+        viewHolder.itemView.setOnLongClickListener({ v ->
             //get the position of the image which is clicked
             itemListener.recyclerViewListLongClicked(v, position)
             true
@@ -68,11 +66,10 @@ open class BooksAdapter(private val activity: Activity, var books: MutableList<B
 
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val textView: TextView
+        val textView: TextView = view.findViewById<View>(R.id.titleTextView) as TextView
         val imageView: ImageView
 
         init {
-            textView = view.findViewById<View>(R.id.titleTextView) as TextView
             imageView = view.findViewById(R.id.coverImageView) as ImageView
         }
     }

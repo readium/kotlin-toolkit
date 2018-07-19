@@ -29,11 +29,11 @@ class GridAutoFitLayoutManager : GridLayoutManager {
 
     private fun checkedColumnWidth(context: Context, columnWidth: Int): Int {
         var width = columnWidth
-        if (width <= 0) {
-            width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sColumnWidth.toFloat(),
+        width = if (width <= 0) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sColumnWidth.toFloat(),
                     context.resources.displayMetrics).toInt()
         } else {
-            width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width.toFloat(),
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width.toFloat(),
                     context.resources.displayMetrics).toInt()
         }
         return width
@@ -57,10 +57,10 @@ class GridAutoFitLayoutManager : GridLayoutManager {
 
         if (mColumnWidthChanged && mColumnWidth > 0 && width > 0 && height > 0 || mWidthChanged) {
             val totalSpace: Int
-            if (orientation == LinearLayoutManager.VERTICAL) {
-                totalSpace = width - paddingRight - paddingLeft
+            totalSpace = if (orientation == LinearLayoutManager.VERTICAL) {
+                width - paddingRight - paddingLeft
             } else {
-                totalSpace = height - paddingTop - paddingBottom
+                height - paddingTop - paddingBottom
             }
             val spanCount = Math.max(1, totalSpace / mColumnWidth)
             setSpanCount(spanCount)

@@ -10,10 +10,8 @@ package org.readium.r2.testapp;
 import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -67,12 +65,16 @@ public class RealPathUtil {
                 final String type = split[0];
 
                 Uri contentUri = null;
-                if ("image".equals(type)) {
-                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                } else if ("video".equals(type)) {
-                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                } else if ("audio".equals(type)) {
-                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                switch (type) {
+                    case "image":
+                        contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                        break;
+                    case "video":
+                        contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                        break;
+                    case "audio":
+                        contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                        break;
                 }
 
                 final String selection = "_id=?";

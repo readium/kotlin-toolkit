@@ -103,19 +103,19 @@ class OPDSListActivity : AppCompatActivity() {
                     }.build().apply {
                         setCancelable(false)
                         setCanceledOnTouchOutside(false)
-                        setOnShowListener(DialogInterface.OnShowListener {
+                        setOnShowListener({
                             val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                            b.setOnClickListener(View.OnClickListener {
+                            b.setOnClickListener({
 
                                 if (TextUtils.isEmpty(editTextTitle!!.text)) {
-                                    editTextTitle!!.setError("Please Enter A Title.");
-                                    editTextTitle!!.requestFocus();
+                                    editTextTitle!!.error = "Please Enter A Title."
+                                    editTextTitle!!.requestFocus()
                                 } else if (TextUtils.isEmpty(editTextHref!!.text)) {
-                                    editTextHref!!.setError("Please Enter A URL.");
-                                    editTextHref!!.requestFocus();
+                                    editTextHref!!.error = "Please Enter A URL."
+                                    editTextHref!!.requestFocus()
                                 } else if (!URLUtil.isValidUrl(editTextHref!!.text.toString())) {
-                                    editTextHref!!.setError("Please Enter A Valid URL.");
-                                    editTextHref!!.requestFocus();
+                                    editTextHref!!.error = "Please Enter A Valid URL."
+                                    editTextHref!!.requestFocus()
                                 } else {
                                     val parseData: Promise<ParseData, Exception>?
                                     parseData = parseURL(URL(editTextHref!!.text.toString()))
@@ -130,8 +130,8 @@ class OPDSListActivity : AppCompatActivity() {
                                        dismiss()
                                     }
                                     parseData.failUi {
-                                        editTextHref!!.setError("Please Enter A Valid OPDS Feed URL.");
-                                        editTextHref!!.requestFocus();
+                                        editTextHref!!.error = "Please Enter A Valid OPDS Feed URL."
+                                        editTextHref!!.requestFocus()
                                     }
                                 }
                             })
@@ -201,10 +201,7 @@ private class OPDSViewAdapter(private val activity: Activity, private val list: 
     }
 
     internal inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val button: Button
+        val button: Button = view.findViewById<View>(R.id.button) as Button
 
-        init {
-            button = view.findViewById<View>(R.id.button) as Button
-        }
     }
 }

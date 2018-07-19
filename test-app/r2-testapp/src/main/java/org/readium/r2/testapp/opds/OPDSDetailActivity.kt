@@ -34,9 +34,9 @@ class OPDSDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val database: BooksDatabase = BooksDatabase(this)
+        val database = BooksDatabase(this)
 
-        val opdsDownloader: OPDSDownloader = OPDSDownloader(this)
+        val opdsDownloader = OPDSDownloader(this)
         val publication: Publication = intent.getSerializableExtra("publication") as Publication
         nestedScrollView {
             fitsSystemWindows = true
@@ -48,7 +48,7 @@ class OPDSDetailActivity : AppCompatActivity() {
 
                 imageView {
                     this@linearLayout.gravity = Gravity.CENTER
-                    Picasso.with(act).load(publication.images.first().href).into(this);
+                    Picasso.with(act).load(publication.images.first().href).into(this)
                 }.lparams {
                     height = 800
                 }
@@ -81,7 +81,7 @@ class OPDSDetailActivity : AppCompatActivity() {
                                         val stream = ByteArrayOutputStream()
                                         bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-                                        val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
+                                        val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
                                         database.books.insert(book, false)?.let {
                                             books.add(book)
                                             snackbar(this, "download completed")
@@ -117,27 +117,26 @@ class OPDSDetailActivity : AppCompatActivity() {
     }
 
 
-    fun getBitmapFromURL(src: String): Bitmap? {
-        try {
+    private fun getBitmapFromURL(src: String): Bitmap? {
+        return try {
             val url = URL(src)
             val connection = url.openConnection() as HttpURLConnection
             connection.doInput = true
             connection.connect()
             val input = connection.inputStream
-            return BitmapFactory.decodeStream(input)
+            BitmapFactory.decodeStream(input)
         } catch (e: IOException) {
             e.printStackTrace()
-            return null
+            null
         }
     }
 
     private fun authorName(publication: Publication): String {
-        val author = publication.metadata.authors.firstOrNull()?.name?.let {
+        return publication.metadata.authors.firstOrNull()?.name?.let {
             return@let it
         } ?: run {
             return@run String()
         }
-        return author
     }
 
 
