@@ -6,6 +6,4 @@
 
 package org.readium.r2.streamer.parser.epub
 
-class SMILParser{
-
-}
+class SMILParser

@@ -33,8 +33,6 @@ const val mediaOverlayURL = "media-overlay?resource="
 
 class EpubParser : PublicationParser {
 
-    private val TAG = this::class.java.simpleName
-
     private val opfParser = OPFParser()
     private val ndp = NavigationDocumentParser()
     private val ncxp = NCXParser()
@@ -103,7 +101,7 @@ class EpubParser : PublicationParser {
         parseEncryption(container, publication, drm)
 
 //        val fetcher = Fetcher(publication, container)
-        parseNavigationDocument(container as EpubContainer, publication)
+        parseNavigationDocument(container, publication)
         parseNcxDocument(container, publication)
 
         container.drm = drm
@@ -136,7 +134,7 @@ class EpubParser : PublicationParser {
         return publication
     }
 
-    fun scanForDrm(container: EpubContainer) : Drm? {
+    private fun scanForDrm(container: EpubContainer) : Drm? {
         if (ZipUtil.containsEntry(File(container.rootFile.rootPath), lcplFilePath)) {
             return Drm(Drm.Brand.Lcp)
         }

@@ -181,7 +181,4 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         return false
     }
 
-    companion object {
-        private const val TAG = "ResourceHandler"
-    }
 }

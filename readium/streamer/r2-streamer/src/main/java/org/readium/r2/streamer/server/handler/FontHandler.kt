@@ -53,9 +53,9 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
         }
     }
 
-    fun getMimeType(url: String): String {
+    private fun getMimeType(url: String): String {
         val extension = MimeTypeMap.getFileExtensionFromUrl(url)
-        var mimeType:String = "application/vnd.ms-opentype"
+        var mimeType = "application/vnd.ms-opentype"
         if (extension != null) {
             try {
                 mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)

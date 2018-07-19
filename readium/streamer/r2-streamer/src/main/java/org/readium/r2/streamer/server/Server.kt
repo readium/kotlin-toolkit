@@ -18,10 +18,7 @@ import java.io.InputStream
 import java.net.URL
 import java.util.*
 
-class Server(port: Int) : AbstractServer(port) {
-    
-
-}
+class Server(port: Int) : AbstractServer(port)
 
 abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
 
@@ -37,11 +34,11 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
     private val ressources = Ressources()
     private val fonts = Fonts()
 
-    fun addResource(name: String, body: String) {
+    private fun addResource(name: String, body: String) {
         ressources.add(name, body)
     }
     
-    fun addFont(name: String, assets: AssetManager, context: Context) {
+    private fun addFont(name: String, assets: AssetManager, context: Context) {
         val inputStream = assets.open("fonts/$name")
         val dir = File(context.getExternalFilesDir(null).path + "/fonts/")
         dir.mkdirs()
@@ -70,7 +67,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
 
         addLinks(publication, fileName)
 
-        publication.addSelfLink(fileName, URL("${BASE_URL}:${port}"))
+        publication.addSelfLink(fileName, URL("$BASE_URL:$port"))
 
         if (containsMediaOverlay) {
             addRoute(fileName + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)
@@ -91,7 +88,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
             }
         }
     }
-    fun InputStream.toFile(path: String) {
+    private fun InputStream.toFile(path: String) {
         use { input ->
             File(path).outputStream().use { input.copyTo(it) }
         }

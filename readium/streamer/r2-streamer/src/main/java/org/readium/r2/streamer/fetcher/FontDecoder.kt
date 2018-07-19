@@ -17,15 +17,15 @@ import kotlin.experimental.xor
 
 class FontDecoder {
 
-    val Adobe = 1024
-    val Idpf = 1040
+    private val adobe = 1024
+    private val idpf = 1040
 
-    var decodableAlgorithms = mapOf(
+    private var decodableAlgorithms = mapOf(
         "fontIdpf" to "http://www.idpf.org/2008/embedding",
         "fontAdobe" to "http://ns.adobe.com/pdf/enc#RC")
-    var decoders = mapOf(
-            "http://www.idpf.org/2008/embedding" to Idpf,
-    "http://ns.adobe.com/pdf/enc#RC" to Adobe
+    private var decoders = mapOf(
+            "http://www.idpf.org/2008/embedding" to idpf,
+    "http://ns.adobe.com/pdf/enc#RC" to adobe
     )
 
 
@@ -42,15 +42,15 @@ class FontDecoder {
         return decodingFont(input, publicationIdentifier, type)
     }
 
-    fun decodingFont(input: InputStream, pubId: String, length: Int) : ByteArrayInputStream{
+    private fun decodingFont(input: InputStream, pubId: String, length: Int) : ByteArrayInputStream{
         val publicationKey: ByteArray = when (length){
-            Adobe -> getHashKeyAdobe(pubId)
+            adobe -> getHashKeyAdobe(pubId)
             else -> HASH.sha1(pubId).toHexBytes()
         }
         return ByteArrayInputStream(deobfuscate(input, publicationKey, length))
     }
 
-    fun deobfuscate(input: InputStream, publicationKey: ByteArray, obfuscationLength: Int) : ByteArray {
+    private fun deobfuscate(input: InputStream, publicationKey: ByteArray, obfuscationLength: Int) : ByteArray {
         val buffer = input.readBytes()
         val count = if (buffer.size > obfuscationLength) obfuscationLength else buffer.size
         for(i in 0..(count - 1))
@@ -58,7 +58,7 @@ class FontDecoder {
         return buffer
     }
 
-    fun getHashKeyAdobe(pubId: String) =
+    private fun getHashKeyAdobe(pubId: String) =
             pubId.replace("urn:uuid:", "")
                     .replace("-", "")
                     .toHexBytes()

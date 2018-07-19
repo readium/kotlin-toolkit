@@ -20,7 +20,7 @@ class EncryptionParser{
         }
     }
 
-    fun parseCompressionElement(encryptionProperty: Node, encryption: Encryption){
+    private fun parseCompressionElement(encryptionProperty: Node, encryption: Encryption){
         val compressionElement = encryptionProperty.getFirst("Compression") ?: return
         val originalLength = compressionElement.attributes["OriginalLength"]
         encryption.originalLength = originalLength?.toInt()

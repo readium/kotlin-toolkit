@@ -15,8 +15,6 @@ import org.readium.r2.streamer.parser.normalize
 
 class OPFParser {
 
-    private val TAG = this::class.java.simpleName
-
     val smilp = SMILParser()
     private var rootFilePath: String? = null
 

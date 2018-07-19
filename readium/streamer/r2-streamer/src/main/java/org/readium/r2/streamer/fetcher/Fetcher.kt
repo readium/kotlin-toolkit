@@ -11,8 +11,8 @@ import org.readium.r2.streamer.container.Container
 import java.io.InputStream
 
 class Fetcher(var publication: Publication, var container: Container, private val userPropertiesPath: String?) {
-    var rootFileDirectory: String
-    var contentFilters: ContentFilters?
+    private var rootFileDirectory: String
+    private var contentFilters: ContentFilters?
 
     init {
     val rootFilePath = publication.internalData["rootfile"] ?: throw Exception("Missing root file")

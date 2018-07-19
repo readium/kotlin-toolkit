@@ -77,7 +77,7 @@ class CbzParser : PublicationParser {
         return PubBox(publication, container)
     }
 
-    fun getMimeType(fileName: String): String?{
+    private fun getMimeType(fileName: String): String?{
         return try {
             val name = fileName.replace(" ", "").replace("'", "").replace(",", "")
             val extension = MimeTypeMap.getFileExtensionFromUrl(name)

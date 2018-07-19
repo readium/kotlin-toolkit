@@ -30,7 +30,7 @@ interface ContentFilters{
     }
 }
 
-class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
+class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilters {
 
     override var fontDecoder = FontDecoder()
     override var drmDecoder = DrmDecoder()
@@ -145,19 +145,19 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
         return resourceHtml.toByteArray().inputStream()
     }
 
-    fun getHtmlFont(ressourceName: String) : String {
+    private fun getHtmlFont(ressourceName: String) : String {
         val prefix = "<style type=\"text/css\"> @font-face{font-family: \"OpenDyslexic\"; src:url(\""
         val suffix = "\") format('truetype');}</style>\n"
         return prefix + ressourceName + suffix
     }
 
-    fun getHtmlLink(ressourceName: String) : String {
+    private fun getHtmlLink(ressourceName: String) : String {
         val prefix = "<link rel=\"stylesheet\" type=\"text/css\" href=\""
         val suffix = "\"/>\n"
         return prefix + ressourceName + suffix
     }
 
-    fun getHtmlScript(ressourceName: String) : String {
+    private fun getHtmlScript(ressourceName: String) : String {
         val prefix = "<script type=\"text/javascript\" src=\""
         val suffix = "\"></script>\n"
 
@@ -170,8 +170,8 @@ class ContentFiltersEpub(val userPropertiesPath: String?) : ContentFilters {
         var userPropertiesString: String? = null
         userPropertiesPath?.let {
             userPropertiesString = String()
-            val file = File(it);
-            if (file.isFile() && file.canRead()) {
+            val file = File(it)
+            if (file.isFile && file.canRead()) {
                 for (i in file.readLines()) {
                     userPropertiesString += i
                 }
