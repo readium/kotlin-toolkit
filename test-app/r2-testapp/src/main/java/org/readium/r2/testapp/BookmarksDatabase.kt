@@ -37,15 +37,21 @@ class Bookmark(val pub_ref: Long,
  * UnitTests() tests the database helpers with dummies Bookmarks
  */
 fun bkmkUnitTests(ctx: Context){
-    val db = BookmarksDatabase(ctx)
     val bk = mutableListOf<Bookmark>()
     bk.add(Bookmark(1, 1, 0.0))
     bk.add(Bookmark(2, 3, 50.0))
     bk.add(Bookmark(2, 3, 50.0))
     bk.add(Bookmark(15, 12, 99.99))
 
-    val bk_unknown = Bookmark(4, 34, 133.33)
 
+    val bkUnknown = mutableListOf<Bookmark>()
+    bkUnknown.add(Bookmark(4, 34, 133.33))
+    bkUnknown.add(Bookmark(4, 34, 33.33))
+    bkUnknown.add(Bookmark(4, -34, 33.33))
+    bkUnknown.add(Bookmark(-4, 34, 33.33))
+    bkUnknown.add(Bookmark(-4, -34, 33.33))
+
+    val db = BookmarksDatabase(ctx)
     println("#####################################")
     println("###########    Test    ##############")
     var i = 0
@@ -82,16 +88,34 @@ fun bkmkUnitTests(ctx: Context){
     db.bookmarks.list().forEach { println(it) }
     println("-------------------------------------")
     println("------------  Unknown  --------------")
-    try {
-        var find = db.bookmarks.has(bk_unknown)
-        if (find.isNotEmpty()) {
-            println("Book unknown found ?? : $find !")
-        } else {
-            println("Unknown book not found !")
+    bkUnknown.forEach {
+        i++
+        println("Book $i : ")
+        println(" - bookId = ${it.pub_ref} (${it.pub_ref.javaClass})")
+        try {
+            val ret = db.bookmarks.insert(it)
+            if (ret != null) {
+                println("Added with success ?!?")
+            } else {
+                println("Book number $i : Not added !")
+            }
+        } catch (e: Exception) {
+            println("Book number $i failed : ${e.message}")
         }
-        db.bookmarks.delete(bk_unknown)
-    } catch (e: Exception) {
-        println("Book number $i finding failed : ${e.message}")
+
+        try {
+            var ret = db.bookmarks.has(it)
+            if (ret.isNotEmpty()) {
+                println("Found an unknown book ?! : $ret !")
+            } else {
+                println("Book number $i : Not found !")
+            }
+//                db.bookmarks.delete(ret.first())
+//                ret = db.bookmarks.has(it)
+//                if (ret.isNotEmpty()) { println("Delete failed : $ret !") } else { println("Correctly deleted !") }
+        } catch (e: Exception) {
+            println("Book number $i finding failed : ${e.message}")
+        }
     }
     //db.bookmarks.emptyTable()
     println("###########    End     ##############")

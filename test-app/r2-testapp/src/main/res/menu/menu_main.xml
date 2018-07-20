@@ -12,4 +12,9 @@
         android:icon="@drawable/icon_menu"
         android:title="@string/opds_feeds"/>
 
+    <item
+        android:id="@+id/bmk_button"
+        android:icon="@drawable/icon_plus_white"
+        android:title="Bookmarks"/>
+
 </menu>
