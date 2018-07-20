@@ -22,20 +22,20 @@ import java.nio.charset.Charset
 /// along with its current status and available interactions.
 class StatusDocument {
 
-    var id: String
-    var status: Status
+    var id: String?  = null
+    var status: Status?  = null
     /// A message meant to be displayed to the User regarding the current status
     /// of the license.
-    var message: String
+    var message: String? = null
     /// Must contain at least a link to the LicenseDocument associated to this.
     /// Status Document.
-    var links: List<Link>
-    var updated: Updated?
-    /// Dictionnary of potential rights associated with Dates.
-    var potentialRights: PotentialRights? = null
+    var links: List<Link>?  = null
+    private var updated: Updated? = null
+    /// Dictionary of potential rights associated with Dates.
+    private var potentialRights: PotentialRights? = null
     /// Ordered list of events related to the change in status of a License
     /// Document.
-    var events: List<Event?>
+    private var events: List<Event?>? = null
 
     /// Describes the status of the license.
     ///
@@ -71,17 +71,16 @@ class StatusDocument {
     constructor(data: ByteArray) {
         try {
             val text = data.toString(Charset.defaultCharset())
-
             val json = JSONObject(text)
-            id = json.getString("id")
-            status =  Status.valueOf(json.getString("status"))
-            message = json.getString("message")
-            updated = Updated(json.getJSONObject("updated"))
-            links = parseLinks(json["links"] as JSONArray)
-            events = parseEvents(json["events"] as JSONArray)
-            if (json.has("potential_rights")) {
-                potentialRights = PotentialRights(json.getJSONObject("potential_rights"))
-            }
+
+            if (json.has("id")) id = json.getString("id")
+            if (json.has("status")) status = Status.valueOf(json.getString("status"))
+            if (json.has("message")) message = json.getString("message")
+            if (json.has("updated")) updated = Updated(json.getJSONObject("updated"))
+            if (json.has("links")) links = parseLinks(json["links"] as JSONArray)
+            if (json.has("events")) events = parseEvents(json["events"] as JSONArray)
+            if (json.has("potential_rights")) potentialRights = PotentialRights(json.getJSONObject("potential_rights"))
+
         } catch (e: Exception){
             throw Exception(LcpParsingError().errorDescription(LcpParsingErrors.json))
         }
@@ -90,15 +89,14 @@ class StatusDocument {
     constructor(json: JSONObject) {
         try {
 
-            id = json.getString("id")
-            status =  Status.valueOf(json.getString("status"))
-            message = json.getString("message")
-            updated = Updated(json.getJSONObject("updated"))
-            links = parseLinks(json["links"] as JSONArray)
-            events = parseEvents(json["events"] as JSONArray)
-            if (json.has("potential_rights")) {
-                potentialRights = PotentialRights(json.getJSONObject("potential_rights"))
-            }
+            if (json.has("id")) id = json.getString("id")
+            if (json.has("status")) status = Status.valueOf(json.getString("status"))
+            if (json.has("message")) message = json.getString("message")
+            if (json.has("updated")) updated = Updated(json.getJSONObject("updated"))
+            if (json.has("links")) links = parseLinks(json["links"] as JSONArray)
+            if (json.has("events")) events = parseEvents(json["events"] as JSONArray)
+            if (json.has("potential_rights")) potentialRights = PotentialRights(json.getJSONObject("potential_rights"))
+
         } catch (e: Exception){
             throw Exception(LcpParsingError().errorDescription(LcpParsingErrors.json))
         }
@@ -112,6 +110,6 @@ class StatusDocument {
     /// - Parameter rel: The rel to look for.
     /// - Returns: The first link containing the rel.
     fun link(rel: String) : Link? {
-        return links.firstOrNull { it.rel.contains(rel) }
+        return links?.firstOrNull { it.rel.contains(rel) }
     }
 }
