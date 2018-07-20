@@ -34,7 +34,7 @@ dependencies {
 
 //    uncomment this line to use with GitHu submodules and Android Studio Modules
 //    implementation project(':r2-shared')
-//    implementation project(':liblcp')
+    implementation project(':liblcp')
 
     implementation 'joda-time:joda-time:2.9.9'
 
