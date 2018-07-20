@@ -10,6 +10,13 @@
     </item>
 
     <item
+        android:id="@+id/bookmark"
+        android:icon="@drawable/icon_bookmark"
+        android:title="Bookmark"
+        app:showAsAction="always|always">
+    </item>
+
+    <item
         android:id="@+id/settings"
         android:icon="@drawable/icon_settings"
         android:title="Settings"

@@ -135,6 +135,10 @@ class R2EpubActivity : AppCompatActivity() {
                 startActivity(intentFor<DRMManagementActivity>("drmModel" to drmModel))
                 return false
             }
+            R.id.bookmark -> {
+                println("Bookmark added ?!")
+                return false
+            }
 
             else -> return super.onOptionsItemSelected(item)
         }
