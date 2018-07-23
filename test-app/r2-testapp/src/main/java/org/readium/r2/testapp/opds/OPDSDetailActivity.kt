@@ -1,3 +1,10 @@
+/*
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.testapp.opds
 
 import android.graphics.Bitmap
@@ -27,9 +34,9 @@ class OPDSDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val database: BooksDatabase = BooksDatabase(this)
+        val database = BooksDatabase(this)
 
-        val opdsDownloader: OPDSDownloader = OPDSDownloader(this)
+        val opdsDownloader = OPDSDownloader(this)
         val publication: Publication = intent.getSerializableExtra("publication") as Publication
         nestedScrollView {
             fitsSystemWindows = true
@@ -41,7 +48,7 @@ class OPDSDetailActivity : AppCompatActivity() {
 
                 imageView {
                     this@linearLayout.gravity = Gravity.CENTER
-                    Picasso.with(act).load(publication.images.first().href).into(this);
+                    Picasso.with(act).load(publication.images.first().href).into(this)
                 }.lparams {
                     height = 800
                 }
@@ -59,31 +66,31 @@ class OPDSDetailActivity : AppCompatActivity() {
                 val downloadUrl = getDownloadURL(publication)
                 downloadUrl?.let {
                     button {
-                        text = "Download"
+                        text = context.getString(R.string.opds_detail_download_button)
                         onClick {
                             val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
                             progress.show()
 
 //                            for (link in publication.links) {
 //                                if (link.typeLink.equals(mimetype)) {
-                                    opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
+                            opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
-                                        val publicationIdentifier = publication.metadata.identifier
-                                        val author = authorName(publication)
-                                        val bitmap = getBitmapFromURL(publication.images.first().href!!)
-                                        val stream = ByteArrayOutputStream()
-                                        bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                val publicationIdentifier = publication.metadata.identifier
+                                val author = authorName(publication)
+                                val bitmap = getBitmapFromURL(publication.images.first().href!!)
+                                val stream = ByteArrayOutputStream()
+                                bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-                                        val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
-                                        database.books.insert(book, false)?.let {
-                                            books.add(book)
-                                            snackbar(this, "download completed")
-                                            progress.dismiss()
-                                        }?: run {
-                                            snackbar(this, "download failed")
-                                            progress.dismiss()
-                                        }
-                                    }
+                                val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
+                                database.books.insert(book, false)?.let {
+                                    books.add(book)
+                                    snackbar(this, "download completed")
+                                    progress.dismiss()
+                                } ?: run {
+                                    snackbar(this, "download failed")
+                                    progress.dismiss()
+                                }
+                            }
 //                                }
 //                            }
                         }
@@ -94,7 +101,7 @@ class OPDSDetailActivity : AppCompatActivity() {
     }
 
 
-    private fun getDownloadURL(publication:Publication) : URL? {
+    private fun getDownloadURL(publication: Publication): URL? {
         var url: URL? = null
         val links = publication.links
         for (link in links) {
@@ -110,27 +117,26 @@ class OPDSDetailActivity : AppCompatActivity() {
     }
 
 
-    fun getBitmapFromURL(src: String): Bitmap? {
-        try {
+    private fun getBitmapFromURL(src: String): Bitmap? {
+        return try {
             val url = URL(src)
             val connection = url.openConnection() as HttpURLConnection
             connection.doInput = true
             connection.connect()
             val input = connection.inputStream
-            return BitmapFactory.decodeStream(input)
+            BitmapFactory.decodeStream(input)
         } catch (e: IOException) {
             e.printStackTrace()
-            return null
+            null
         }
     }
 
     private fun authorName(publication: Publication): String {
-        val author = publication.metadata.authors.firstOrNull()?.name?.let {
+        return publication.metadata.authors.firstOrNull()?.name?.let {
             return@let it
         } ?: run {
             return@run String()
         }
-        return author
     }
 
 

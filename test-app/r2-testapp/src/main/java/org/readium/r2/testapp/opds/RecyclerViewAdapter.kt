@@ -1,3 +1,10 @@
+/*
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.testapp.opds
 
 import android.app.Activity
@@ -27,11 +34,11 @@ class RecyclerViewAdapter(private val activity: Activity, private val strings: M
         viewHolder.textView.text = publication.metadata.title
 
         if (publication.images.isNotEmpty()) {
-            Picasso.with(activity).load(publication.images[0].href).into(viewHolder.imageView);
+            Picasso.with(activity).load(publication.images[0].href).into(viewHolder.imageView)
         } else {
             for (link in publication.links) {
                 if (link.rel.contains("http://opds-spec.org/image/thumbnail")) {
-                    Picasso.with(activity).load(link.href).into(viewHolder.imageView);
+                    Picasso.with(activity).load(link.href).into(viewHolder.imageView)
                 }
             }
         }
@@ -45,12 +52,8 @@ class RecyclerViewAdapter(private val activity: Activity, private val strings: M
     }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val textView: TextView
-        val imageView: ImageView
+        val textView: TextView = view.findViewById<View>(R.id.titleTextView) as TextView
+        val imageView: ImageView = view.findViewById(R.id.coverImageView) as ImageView
 
-        init {
-            textView = view.findViewById<View>(R.id.titleTextView) as TextView
-            imageView = view.findViewById(R.id.coverImageView) as ImageView
-        }
     }
 }

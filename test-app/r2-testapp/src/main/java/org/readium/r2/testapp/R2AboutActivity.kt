@@ -1,3 +1,10 @@
+/*
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.testapp
 
 import android.graphics.Typeface
@@ -8,7 +15,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.coordinatorLayout
-import org.jetbrains.anko.sdk25.coroutines.onClick
 
 
 class R2AboutActivity : AppCompatActivity() {
@@ -31,7 +37,7 @@ class R2AboutActivity : AppCompatActivity() {
                 textView {
                     padding = dip(10)
                     topPadding = dip(30)
-                    text = "Version"
+                    text = context.getString(R.string.app_version_label)
                     textSize = 20f
                     typeface = Typeface.DEFAULT_BOLD
                 }
@@ -42,12 +48,12 @@ class R2AboutActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "App Version:"
+                        text = context.getString(R.string.app_version)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = "1.0.1"
+                        text = "1.0.2"
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -59,12 +65,12 @@ class R2AboutActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "GitHub Tag:"
+                        text = context.getString(R.string.github_tab_label)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = "V1.0.0-beta.2"
+                        text = context.getString(R.string.github_tag)
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -73,7 +79,7 @@ class R2AboutActivity : AppCompatActivity() {
                 textView {
                     padding = dip(10)
                     topPadding = dip(30)
-                    text = "Copyright"
+                    text = context.getString(R.string.copyright_label)
                     textSize = 20f
                     typeface = Typeface.DEFAULT_BOLD
                 }
@@ -83,7 +89,7 @@ class R2AboutActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "@ 2018 European Digital Reading Lab"
+                        text = context.getString(R.string.copyright)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
@@ -99,7 +105,7 @@ class R2AboutActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "[BSD-3 license]"
+                        text = context.getString(R.string.bsd_license_label)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
@@ -113,7 +119,7 @@ class R2AboutActivity : AppCompatActivity() {
                 textView {
                     padding = dip(10)
                     topPadding = dip(30)
-                    text = "Acknowledgements"
+                    text = context.getString(R.string.acknowledgements_label)
                     textSize = 20f
                     typeface = Typeface.DEFAULT_BOLD
                 }
@@ -123,7 +129,7 @@ class R2AboutActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "R2 Reader wouldn't have been developed without the financial help of the CNL (Centre National du Livre, France)."
+                        text = context.getString(R.string.acknowledgements_french_state)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
@@ -138,7 +144,7 @@ class R2AboutActivity : AppCompatActivity() {
                     lparams(width = matchParent, height = wrapContent)
 
                     imageView {
-                        image = getResources().getDrawable( R.drawable.cnl, theme)
+                        image = resources.getDrawable(R.drawable.repfr, theme)
                         scaleType = ImageView.ScaleType.FIT_CENTER
                     }.lparams(width = wrapContent, height = 200)
                 }

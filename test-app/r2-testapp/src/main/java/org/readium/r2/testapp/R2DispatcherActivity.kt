@@ -1,3 +1,10 @@
+/*
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.testapp
 
 import android.app.Activity
@@ -11,8 +18,6 @@ import timber.log.Timber
 
 class R2DispatcherActivity : Activity() {
     private val mMapper = R2IntentMapper(this, R2IntentHelper())
-
-    private val TAG = this.javaClass.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

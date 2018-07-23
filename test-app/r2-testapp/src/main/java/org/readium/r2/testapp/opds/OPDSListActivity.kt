@@ -1,7 +1,15 @@
+/*
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.testapp.opds
 
 import android.app.Activity
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -9,11 +17,17 @@ import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.URLUtil
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import com.github.kittinunf.fuel.Fuel
 import com.mcxiaoke.koi.ext.onClick
 import com.mcxiaoke.koi.ext.onLongClick
+import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.then
+import nl.komponents.kovenant.ui.failUi
+import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.coordinatorLayout
@@ -21,20 +35,12 @@ import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.design.textInputLayout
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.support.v4.nestedScrollView
-import org.readium.r2.testapp.R
-import android.content.DialogInterface
-import android.support.v7.app.AlertDialog
-import android.webkit.URLUtil
-import com.github.kittinunf.fuel.Fuel
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.then
-import nl.komponents.kovenant.ui.failUi
-import nl.komponents.kovenant.ui.successUi
 import org.json.JSONObject
-import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDS1Parser
+import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
+import org.readium.r2.testapp.R
 import java.net.URL
 
 
@@ -72,7 +78,7 @@ class OPDSListActivity : AppCompatActivity() {
                 onClick {
                     var editTextTitle: EditText? = null
                     var editTextHref: EditText? = null
-                    alert (Appcompat, "Add OPDS Feed") {
+                    alert(Appcompat, "Add OPDS Feed") {
 
                         customView {
                             verticalLayout {
@@ -96,35 +102,35 @@ class OPDSListActivity : AppCompatActivity() {
                     }.build().apply {
                         setCancelable(false)
                         setCanceledOnTouchOutside(false)
-                        setOnShowListener(DialogInterface.OnShowListener {
+                        setOnShowListener({
                             val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                            b.setOnClickListener(View.OnClickListener {
+                            b.setOnClickListener({
 
                                 if (TextUtils.isEmpty(editTextTitle!!.text)) {
-                                    editTextTitle!!.setError("Please Enter A Title.");
-                                    editTextTitle!!.requestFocus();
+                                    editTextTitle!!.error = "Please Enter A Title."
+                                    editTextTitle!!.requestFocus()
                                 } else if (TextUtils.isEmpty(editTextHref!!.text)) {
-                                    editTextHref!!.setError("Please Enter A URL.");
-                                    editTextHref!!.requestFocus();
+                                    editTextHref!!.error = "Please Enter A URL."
+                                    editTextHref!!.requestFocus()
                                 } else if (!URLUtil.isValidUrl(editTextHref!!.text.toString())) {
-                                    editTextHref!!.setError("Please Enter A Valid URL.");
-                                    editTextHref!!.requestFocus();
+                                    editTextHref!!.error = "Please Enter A Valid URL."
+                                    editTextHref!!.requestFocus()
                                 } else {
-                                    var parseData: Promise<ParseData, Exception>? = null
+                                    val parseData: Promise<ParseData, Exception>?
                                     parseData = parseURL(URL(editTextHref!!.text.toString()))
                                     parseData.successUi {
-                                       val opds = OPDSModel(
-                                               editTextTitle!!.text.toString(),
-                                               editTextHref!!.text.toString(),
-                                               it.type)
-                                       database.opds.insert(opds)
-                                       list.add(opds)
-                                       opdsAdapter.notifyDataSetChanged()
-                                       dismiss()
+                                        val opds = OPDSModel(
+                                                editTextTitle!!.text.toString(),
+                                                editTextHref!!.text.toString(),
+                                                it.type)
+                                        database.opds.insert(opds)
+                                        list.add(opds)
+                                        opdsAdapter.notifyDataSetChanged()
+                                        dismiss()
                                     }
                                     parseData.failUi {
-                                        editTextHref!!.setError("Please Enter A Valid OPDS Feed URL.");
-                                        editTextHref!!.requestFocus();
+                                        editTextHref!!.error = "Please Enter A Valid OPDS Feed URL."
+                                        editTextHref!!.requestFocus()
                                     }
                                 }
                             })
@@ -139,9 +145,9 @@ class OPDSListActivity : AppCompatActivity() {
         }
     }
 
-    private fun parseURL(url: URL) : Promise<ParseData, Exception> {
-        return Fuel.get(url.toString(),null).promise() then {
-            val (request, response, result) = it
+    private fun parseURL(url: URL): Promise<ParseData, Exception> {
+        return Fuel.get(url.toString(), null).promise() then {
+            val (_, _, result) = it
             if (isJson(result)) {
                 OPDS2Parser.parse(result, url)
             } else {
@@ -150,11 +156,11 @@ class OPDSListActivity : AppCompatActivity() {
         }
     }
 
-    private fun isJson(byteArray: ByteArray) : Boolean {
+    private fun isJson(byteArray: ByteArray): Boolean {
         return try {
             JSONObject(String(byteArray))
             true
-        } catch(e: Exception){
+        } catch (e: Exception) {
             false
         }
     }
@@ -194,10 +200,7 @@ private class OPDSViewAdapter(private val activity: Activity, private val list: 
     }
 
     internal inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val button: Button
+        val button: Button = view.findViewById<View>(R.id.button) as Button
 
-        init {
-            button = view.findViewById<View>(R.id.button) as Button
-        }
     }
 }
