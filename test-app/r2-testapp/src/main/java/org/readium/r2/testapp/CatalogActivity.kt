@@ -817,7 +817,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                 */
                             }
                         } ?: run {
-                            startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication))
+                            startActivity(intentFor<R2EpubMenuActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication))
                         }
                     }
                 }
