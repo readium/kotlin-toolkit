@@ -75,7 +75,7 @@ class R2OutlineActivity : AppCompatActivity() {
         return children
     }
 
-    inner class TOCAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.toc_item, users) {
+    inner class TOCAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.list_item_toc, users) {
         private inner class ViewHolder {
             internal var toc_textView: TextView? = null
         }
