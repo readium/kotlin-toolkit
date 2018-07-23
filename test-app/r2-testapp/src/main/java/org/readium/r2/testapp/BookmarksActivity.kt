@@ -50,6 +50,13 @@ class BookmarksActivity: AppCompatActivity() {
 
     }
 
+    fun addBookmark(pub_ref: Long = 42,
+                    spine_index: Long = 42,
+                    progression: Double = 42.42): Bookmark{
+        println("Haha Mocked ( addBookmark( pub_ref: Long = ${pub_ref}, spine_index: Long = ${spine_index}, progression: Double = ${progression} ) not implemented yet ! ")
+        return Bookmark(pub_ref, spine_index, progression)
+    }
+
 
     inner class BookMarksAdapter(val context: Context, val bmkList: MutableList<Bookmark>) : BaseAdapter() {
 
