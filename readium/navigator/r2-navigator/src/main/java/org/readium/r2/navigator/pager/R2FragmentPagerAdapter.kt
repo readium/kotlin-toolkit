@@ -1,3 +1,9 @@
+/*
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
@@ -15,7 +21,7 @@ import timber.log.Timber
 
 abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : PagerAdapter() {
 
-    private val TAG = this::class.java.simpleName
+    private val TAG = R2FragmentPagerAdapter::class.java.simpleName
 
     private val mFragments = LongSparseArray<Fragment>()
     private val mSavedStates = LongSparseArray<Fragment.SavedState>()
@@ -52,7 +58,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
         fragment.setMenuVisibility(false)
         fragment.userVisibleHint = false
         mFragments.put(tag, fragment)
-        mCurTransaction!!.add(container.id, fragment, "f" + tag)
+        mCurTransaction!!.add(container.id, fragment, "f$tag")
 
         return fragment
     }
@@ -163,7 +169,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
     }
 
 
-    fun getItemId(position: Int): Long {
+    private fun getItemId(position: Int): Long {
         return position.toLong()
     }
 

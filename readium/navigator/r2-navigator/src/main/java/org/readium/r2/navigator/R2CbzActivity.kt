@@ -9,27 +9,26 @@ import android.view.View
 import org.jetbrains.anko.contentView
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.PUBLICATION_TYPE
 import org.readium.r2.shared.Publication
 
 
 class R2CbzActivity : AppCompatActivity() {
 
-    lateinit var preferences: SharedPreferences
+    private lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
     var resources = arrayListOf<String>()
 
-    lateinit var publicationPath: String
-    lateinit var publication: Publication
-    lateinit var cbzName: String
-    lateinit var publicationIdentifier:String
+    private lateinit var publicationPath: String
+    private lateinit var publication: Publication
+    private lateinit var cbzName: String
+    private lateinit var publicationIdentifier: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_r2_viewpager)
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
-        resourcePager = findViewById(R.id.resourcePager) as R2ViewPager
+        resourcePager = findViewById(R.id.resourcePager)
 
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
@@ -41,22 +40,22 @@ class R2CbzActivity : AppCompatActivity() {
             resources.add(link.href.toString())
         }
 
-        val index = preferences.getInt( "$publicationIdentifier-document", 0)
+        val index = preferences.getInt("$publicationIdentifier-document", 0)
 
-        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, PUBLICATION_TYPE.CBZ, publicationPath)
+        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
 
         resourcePager.adapter = adapter
 
         if (index == 0) {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.setCurrentItem(resources.size - 1)
+                resourcePager.currentItem = resources.size - 1
             } else {
                 // The view has LTR layout
-                resourcePager.setCurrentItem(index)
+                resourcePager.currentItem = index
             }
         } else {
-            resourcePager.setCurrentItem(index)
+            resourcePager.currentItem = index
         }
 
         toggleActionBar()
@@ -78,32 +77,32 @@ class R2CbzActivity : AppCompatActivity() {
         preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
     }
 
-    fun nextResource(v:View? = null) {
+    fun nextResource(v: View? = null) {
         runOnUiThread {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() - 1)
+                resourcePager.currentItem = resourcePager.currentItem - 1
             } else {
                 // The view has LTR layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() + 1)
+                resourcePager.currentItem = resourcePager.currentItem + 1
             }
         }
     }
 
-    fun previousResource(v:View? = null) {
+    fun previousResource(v: View? = null) {
         runOnUiThread {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() + 1)
+                resourcePager.currentItem = resourcePager.currentItem + 1
             } else {
                 // The view has LTR layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() - 1)
+                resourcePager.currentItem = resourcePager.currentItem - 1
             }
 
         }
     }
 
-    fun toggleActionBar(v:View? = null) {
+    fun toggleActionBar(v: View? = null) {
         runOnUiThread {
             if (supportActionBar!!.isShowing) {
                 resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE

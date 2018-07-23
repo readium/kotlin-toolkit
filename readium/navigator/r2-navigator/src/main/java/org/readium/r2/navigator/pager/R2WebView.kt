@@ -1,3 +1,9 @@
+/*
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.navigator.pager
 
 import android.content.Context
@@ -11,19 +17,17 @@ import android.view.MotionEvent
 
 
 /**
- * Created by aferditamuriqi on 12/2/17.
+ * Created by Aferdita Muriqi on 12/2/17.
  */
 
 class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
-
-    private val TAG = this::class.java.simpleName
 
     lateinit var activity: R2EpubActivity
 
     private var gestureDetector: GestureDetector? = null
     var progression: Double = 0.0
-    var mIsScrolling = false
-    var scrollRight = false
+    private var mIsScrolling = false
+    private var scrollRight = false
 
     /*
      * @see android.webkit.WebView#onScrollChanged(int, int, int, int)
@@ -36,8 +40,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
             } else if (oldX - x > 1) {
                 scrollRight = false
             }
-        }
-        else {
+        } else {
             mIsScrolling = false
             if (scrollRight) {
                 scrollRight()
@@ -115,17 +118,19 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     fun scrollToPosition(progression: Double) {
         this.evaluateJavascript("scrollToPosition(\"$progression\");", null)
     }
+
     @android.webkit.JavascriptInterface
     fun scrollToBeginning() {
         this.evaluateJavascript("scrollToPosition(\"0\");", null)
     }
+
     @android.webkit.JavascriptInterface
     fun scrollToEnd() {
         this.evaluateJavascript("scrollToPosition(\"1\");", null)
     }
 
     @android.webkit.JavascriptInterface
-    fun progressionDidChange(body:String) {
+    fun progressionDidChange(body: String) {
         progression = body.toDouble()
         Timber.d("progression: $progression")
     }

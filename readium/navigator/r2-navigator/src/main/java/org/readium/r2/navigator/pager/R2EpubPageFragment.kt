@@ -1,3 +1,9 @@
+/*
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
@@ -21,12 +27,10 @@ import android.webkit.WebResourceResponse
 
 class R2EpubPageFragment : Fragment() {
 
-    private val TAG = this::class.java.simpleName
-
-    val resourceUrl: String?
+    private val resourceUrl: String?
         get() = arguments!!.getString("url")
 
-    val bookTitle: String?
+    private val bookTitle: String?
         get() = arguments!!.getString("title")
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -44,11 +48,11 @@ class R2EpubPageFragment : Fragment() {
         when (scrollMode) {
             true -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.GONE
-                v.setPadding(0,4,0,4)
+                v.setPadding(0, 4, 0, 4)
             }
             false -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.VISIBLE
-                v.setPadding(0,30,0,30)
+                v.setPadding(0, 30, 0, 30)
             }
         }
 
@@ -64,8 +68,8 @@ class R2EpubPageFragment : Fragment() {
         webView.settings.useWideViewPort = true
         webView.settings.loadWithOverviewMode = true
         webView.settings.setSupportZoom(true)
-        webView.getSettings().setBuiltInZoomControls(true);
-        webView.getSettings().setDisplayZoomControls(true);
+        webView.settings.builtInZoomControls = true
+        webView.settings.displayZoomControls = true
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 
@@ -97,7 +101,8 @@ class R2EpubPageFragment : Fragment() {
                 if (!request.isForMainFrame && request.url.path.endsWith("/favicon.ico")) {
                     try {
                         return WebResourceResponse("image/png", null, null)
-                    } catch (e: Exception) { }
+                    } catch (e: Exception) {
+                    }
                 }
                 return null
             }
@@ -108,13 +113,13 @@ class R2EpubPageFragment : Fragment() {
         webView.setOnLongClickListener {
             true
         }
-        webView.setGestureDetector(GestureDetector(context, CustomeGestureDetector(webView)))
+        webView.setGestureDetector(GestureDetector(context, CustomGestureDetector(webView)))
         webView.loadUrl(resourceUrl)
 
         return v
     }
 
-    class CustomeGestureDetector(val webView: R2WebView) : GestureDetector.SimpleOnGestureListener() {
+    class CustomGestureDetector(val webView: R2WebView) : GestureDetector.SimpleOnGestureListener() {
 
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
             if (e1 == null || e2 == null) return false
@@ -137,6 +142,7 @@ class R2EpubPageFragment : Fragment() {
             }
         }
     }
+
     companion object {
 
         fun newInstance(url: String, title: String): R2EpubPageFragment {
