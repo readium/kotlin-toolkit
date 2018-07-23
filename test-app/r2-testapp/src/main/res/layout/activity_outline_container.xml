@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ // Copyright 2018 Readium Foundation. All rights reserved.
+  ~ // Use of this source code is governed by a BSD-style license which is detailed in the LICENSE file
+  ~ // present in the project repository where this source code is maintained.
+  -->
+
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.readium.r2.testapp.OutlineContainer">
+
+
+    <TabHost
+        android:id="@+id/tabhost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <FrameLayout
+                android:id="@android:id/tabcontent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                    <LinearLayout
+                        android:id="@+id/toc"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        <include layout="@layout/activity_r2_outline"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/bookmarks"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        <include layout="@layout/activity_bmk"/>
+                    </LinearLayout>
+
+            </FrameLayout>
+
+        </LinearLayout>
+   </TabHost>
+
+</android.support.constraint.ConstraintLayout>
