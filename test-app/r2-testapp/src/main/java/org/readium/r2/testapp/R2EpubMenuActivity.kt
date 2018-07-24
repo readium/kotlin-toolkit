@@ -8,13 +8,12 @@ package org.readium.r2.testapp
 
 
 import android.content.Intent
-import android.os.Bundle
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import org.jetbrains.anko.intentFor
+import org.readium.r2.lcp.model.documents.LicenseDocument
 import org.readium.r2.navigator.*
-import org.readium.r2.navigator.R
 
 
 class R2EpubMenuActivity : R2EpubActivity() {
@@ -23,10 +22,10 @@ class R2EpubMenuActivity : R2EpubActivity() {
 
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_navigation, menu)
+        menuInflater.inflate(R.menu.menu_navigation, menu)
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
-        menuBmk = menu?.findItem(org.readium.r2.testapp.R.id.bmk_list)
+        menuBmk = menu?.findItem(R.id.bmk_list)
         menuDrm?.setVisible(false)
         return true
     }
@@ -37,7 +36,7 @@ class R2EpubMenuActivity : R2EpubActivity() {
             R.id.toc -> {
                 val intent = Intent(this, OutlineContainer::class.java)
                 intent.putExtra("publicationPath", publicationPath)
-                intent.putExtra("publication", publication)
+                intent.putExtra("publication", LicenseDocument.Rel.publication)
                 intent.putExtra("epubName", epubName)
                 startActivityForResult(intent, 2)
                 return false

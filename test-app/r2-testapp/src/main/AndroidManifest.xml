@@ -79,6 +79,12 @@
             android:name=".R2AboutActivity"
             android:label="@string/title_activity_r2_about" />
         <activity
+            android:name=".R2EpubMenuActivity"
+            android:label="Menu activity for Epub" />
+        <activity
+            android:name=".R2OutlineActivity"
+            android:label="Container for the ToC" />
+        <activity
             android:name=".BookmarksActivity"
             android:label="Bookmarks" />
         <activity
