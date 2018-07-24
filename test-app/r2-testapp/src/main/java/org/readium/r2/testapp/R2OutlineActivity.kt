@@ -15,7 +15,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_r2_outline.*
-//import kotlinx.android.synthetic.main.toc_item.view.*
+import kotlinx.android.synthetic.main.list_item_toc.view.*
 
 
 class R2OutlineActivity : AppCompatActivity() {
@@ -90,10 +90,10 @@ class R2OutlineActivity : AppCompatActivity() {
 
                 viewHolder = ViewHolder()
                 val inflater = LayoutInflater.from(context)
-//                myView = inflater.inflate(R.layout.toc_item, parent, false)
-//                viewHolder.toc_textView = myView!!.toc_textView as TextView
+                myView = inflater.inflate(R.layout.list_item_toc, parent, false)
+                viewHolder.toc_textView = myView!!.toc_textView as TextView
 
-                myView!!.tag = viewHolder
+                myView.tag = viewHolder
 
             } else {
 

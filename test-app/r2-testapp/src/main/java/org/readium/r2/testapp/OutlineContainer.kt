@@ -6,12 +6,15 @@
 
 package org.readium.r2.testapp
 
+
+import android.app.ActivityGroup
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TabHost
 import org.jetbrains.anko.intentFor
+import org.readium.r2.shared.Publication
 
 class OutlineContainer : AppCompatActivity() {
 
@@ -19,23 +22,31 @@ class OutlineContainer : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_outline_container)
 
-        val tabHost = findViewById<TabHost>(R.id.tabhost)
+        val tabHost = findViewById(R.id.tabhost) as TabHost
 
-        tabHost.setup()
+        val lam = ActivityGroup().localActivityManager
+        lam.dispatchCreate(savedInstanceState)
+        tabHost.setup(lam)
+
 
         //Table of Content Tab
-        var spec: TabHost.TabSpec = tabHost.newTabSpec("Table Of Content")
-        spec.setContent(R.id.toc)
-        spec.setIndicator("Table Of Content")
-        tabHost.addTab(spec)
+        var tab1: TabHost.TabSpec = tabHost.newTabSpec("Table Of Content")
+        tab1.setIndicator("Table Of Content")
+        val intent = Intent(this, R2OutlineActivity::class.java)
+
+        intent.putExtra("publicationPath", this.intent.getStringExtra("publicationPath"))
+        intent.putExtra("publication", this.intent.getSerializableExtra("publication") as Publication)
+        intent.putExtra("epubName", this.intent.getStringExtra("epubName"))
+        tab1.setContent(intent)
 
         //Bookmarks Tab
-        spec = tabHost.newTabSpec("Bookmarks")
-        spec.setContent(R.id.bookmarks)
-        spec.setIndicator("Bookmarks")
-        tabHost.addTab(spec)
+        var tab2: TabHost.TabSpec = tabHost.newTabSpec("Bookmarks")
+        tab2.setIndicator("Bookmarks")
+        tab2.setContent(Intent(this, BookmarksActivity::class.java))
 
 
+        tabHost.addTab(tab1)
+        tabHost.addTab(tab2)
 
     }
 
