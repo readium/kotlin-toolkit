@@ -29,21 +29,21 @@ import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRMMModel
 
 
-class R2EpubActivity : AppCompatActivity() {
+open class R2EpubActivity : AppCompatActivity() {
 
     lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
     lateinit var resources: ArrayList<String>
 
-    private lateinit var publicationPath: String
-    private lateinit var publication: Publication
-    private lateinit var epubName: String
+    protected lateinit var publicationPath: String
+    protected lateinit var publication: Publication
+    protected lateinit var epubName: String
     lateinit var publicationIdentifier: String
 
     lateinit var userSettings: UserSettings
-    private var drmModel: DRMMModel? = null
-    private var menuDrm: MenuItem? = null
-    private var menuToc: MenuItem? = null
+    protected var drmModel: DRMMModel? = null
+    protected var menuDrm: MenuItem? = null
+    protected var menuToc: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,42 +110,42 @@ class R2EpubActivity : AppCompatActivity() {
         toggleActionBar()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_toc, menu)
-        menuDrm = menu?.findItem(R.id.drm)
-        menuToc = menu?.findItem(R.id.toc)
-        menuDrm?.isVisible = false
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-
-            R.id.toc -> {
-                val intent = Intent(this, R2OutlineActivity::class.java)
-                intent.putExtra("publicationPath", publicationPath)
-                intent.putExtra("publication", publication)
-                intent.putExtra("epubName", epubName)
-                startActivityForResult(intent, 2)
-                return false
-            }
-            R.id.settings -> {
-                userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.toc), 0, 0, Gravity.END)
-                return false
-            }
-            R.id.drm -> {
-                startActivity(intentFor<DRMManagementActivity>("drmModel" to drmModel))
-                return false
-            }
-            R.id.bookmark -> {
-                println("Bookmark added ?!")
-                return false
-            }
-
-            else -> return super.onOptionsItemSelected(item)
-        }
-
-    }
+//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+//        menuInflater.inflate(R.menu.menu_toc, menu)
+//        menuDrm = menu?.findItem(R.id.drm)
+//        menuToc = menu?.findItem(R.id.toc)
+//        menuDrm?.isVisible = false
+//        return true
+//    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        when (item.itemId) {
+//
+//            R.id.toc -> {
+//                val intent = Intent(this, R2OutlineActivity::class.java)
+//                intent.putExtra("publicationPath", publicationPath)
+//                intent.putExtra("publication", publication)
+//                intent.putExtra("epubName", epubName)
+//                startActivityForResult(intent, 2)
+//                return false
+//            }
+//            R.id.settings -> {
+//                userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.toc), 0, 0, Gravity.END)
+//                return false
+//            }
+//            R.id.drm -> {
+//                startActivity(intentFor<DRMManagementActivity>("drmModel" to drmModel))
+//                return false
+//            }
+//            R.id.bookmark -> {
+//                println("Bookmark added ?!")
+//                return false
+//            }
+//
+//            else -> return super.onOptionsItemSelected(item)
+//        }
+//
+//    }
 
     override fun onPause() {
         super.onPause()
