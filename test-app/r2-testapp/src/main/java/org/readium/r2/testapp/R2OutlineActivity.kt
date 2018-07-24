@@ -14,7 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_r2_outline.*
+import kotlinx.android.synthetic.main.activity_outline_container.*
 import kotlinx.android.synthetic.main.list_item_toc.view.*
 
 
@@ -25,7 +25,8 @@ class R2OutlineActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_r2_outline)
+        supportActionBar?.hide()
+        setContentView(R.layout.activity_outline_container)
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         val epubName = intent.getStringExtra("epubName")
@@ -47,9 +48,9 @@ class R2OutlineActivity : AppCompatActivity() {
 
         val listAdapter = TOCAdapter(this, allElements)
 
-        list.adapter = listAdapter
+        toc_list.adapter = listAdapter
 
-        list.setOnItemClickListener { _, _, position, _ ->
+        toc_list.setOnItemClickListener { _, _, position, _ ->
 
             val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
             val toc_item_uri = allElements.get(position).href

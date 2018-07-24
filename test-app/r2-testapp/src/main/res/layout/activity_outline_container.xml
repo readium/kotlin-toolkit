@@ -20,7 +20,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TabWidget
@@ -31,20 +31,30 @@
             <FrameLayout
                 android:id="@android:id/tabcontent"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content">
 
                     <LinearLayout
-                        android:id="@+id/toc"
+                        android:id="@+id/toc_tab"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
-                        <include layout="@layout/activity_r2_outline"/>
+
+                        <ListView
+                            android:id="@+id/toc_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="fill_parent" />
+
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/bookmarks"
+                        android:id="@+id/bookmarks_tab"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
-                        <include layout="@layout/activity_bmk"/>
+
+                        <ListView
+                            android:id="@+id/bmk_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="fill_parent"/>
+
                     </LinearLayout>
 
             </FrameLayout>

@@ -22,6 +22,9 @@ class OutlineContainer : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_outline_container)
 
+        val publication = intent.getSerializableExtra("publication") as Publication
+        title = publication.metadata.title
+
         val tabHost = findViewById(R.id.tabhost) as TabHost
 
         val lam = ActivityGroup().localActivityManager
@@ -32,11 +35,12 @@ class OutlineContainer : AppCompatActivity() {
         //Table of Content Tab
         var tab1: TabHost.TabSpec = tabHost.newTabSpec("Table Of Content")
         tab1.setIndicator("Table Of Content")
-        val intent = Intent(this, R2OutlineActivity::class.java)
 
+        val intent = Intent(this, R2OutlineActivity::class.java)
         intent.putExtra("publicationPath", this.intent.getStringExtra("publicationPath"))
         intent.putExtra("publication", this.intent.getSerializableExtra("publication") as Publication)
         intent.putExtra("epubName", this.intent.getStringExtra("epubName"))
+
         tab1.setContent(intent)
 
         //Bookmarks Tab
