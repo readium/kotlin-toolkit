@@ -35,26 +35,19 @@ class BookmarksActivity: AppCompatActivity() {
 //        bk.add(Booktest("Frankenstein", "Preface", 15.47))
 
 
-        val bkAdapter = BookMarksAdapter(this, bmks)
+        val bmkAdapter = BookMarksAdapter(this, bmks)
 
-        bmk_list.adapter = bkAdapter
+        bmk_list.adapter = bmkAdapter
 
         bmk_list.setOnItemLongClickListener { _, _, position, _ ->
 
             bmkDB.bookmarks.delete(bmks[position])
             bmks.removeAt(position)
-            bkAdapter.notifyDataSetChanged()
+            bmkAdapter.notifyDataSetChanged()
 
             true
         }
 
-    }
-
-    fun addBookmark(pub_ref: Long = 42,
-                    spine_index: Long = 42,
-                    progression: Double = 42.42): Bookmark{
-        println("Haha Mocked ( addBookmark( pub_ref: Long = ${pub_ref}, spine_index: Long = ${spine_index}, progression: Double = ${progression} ) not implemented yet ! ")
-        return Bookmark(pub_ref, spine_index, progression)
     }
 
 
