@@ -116,6 +116,16 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
         }
     }
 
+    fun has(identifier: String): List<Book> {
+        return database.use {
+            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION)
+                    .whereArgs("identifier = {identifier}", "identifier" to identifier)
+                    .exec {
+                        parseList(MyRowParser())
+                    }
+        }
+    }
+
     fun delete(book: Book) {
         database.use {
             delete(BOOKSTable.NAME, "id = {id}", "id" to book.id!!)
