@@ -13,16 +13,15 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup">
         <activity android:name=".CatalogActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".R2DispatcherActivity"
             android:launchMode="singleInstance"
@@ -34,7 +33,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="content"/>
+                <data android:scheme="content" />
                 <data android:scheme="file" />
                 <data android:scheme="http" />
                 <data android:scheme="https" />
@@ -45,7 +44,6 @@
                 <data android:pathPattern=".*\.cbz" />
                 <data android:mimeType="application/epub+zip" />
                 <data android:mimeType="application/x-cbz" />
-
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -55,7 +53,6 @@
 
                 <data android:mimeType="application/epub+zip" />
             </intent-filter>
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -69,9 +66,7 @@
                 <data android:pathPattern=".*\.lcpl" />
                 <data android:pathPattern=".*\.cbz" />
             </intent-filter>
-
         </activity>
-
         <activity
             android:name=".opds.OPDSCatalogActivity"
             android:label="@string/title_activity_opdscatalog" />
@@ -98,6 +93,7 @@
         <activity
             android:name=".opds.OPDSDetailActivity"
             android:label="@string/title_activity_opds_detail" />
+
     </application>
 
 </manifest>

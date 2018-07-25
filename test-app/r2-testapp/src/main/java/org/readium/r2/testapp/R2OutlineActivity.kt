@@ -14,8 +14,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_r2_outline.*
-//import kotlinx.android.synthetic.main.toc_item.view.*
+import kotlinx.android.synthetic.main.activity_outline_container.*
+import kotlinx.android.synthetic.main.list_item_toc.view.*
 
 
 class R2OutlineActivity : AppCompatActivity() {
@@ -25,7 +25,8 @@ class R2OutlineActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_r2_outline)
+        supportActionBar?.hide()
+        setContentView(R.layout.activity_outline_container)
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         val epubName = intent.getStringExtra("epubName")
@@ -47,9 +48,9 @@ class R2OutlineActivity : AppCompatActivity() {
 
         val listAdapter = TOCAdapter(this, allElements)
 
-        list.adapter = listAdapter
+        toc_list.adapter = listAdapter
 
-        list.setOnItemClickListener { _, _, position, _ ->
+        toc_list.setOnItemClickListener { _, _, position, _ ->
 
             val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
             val toc_item_uri = allElements.get(position).href
@@ -90,10 +91,10 @@ class R2OutlineActivity : AppCompatActivity() {
 
                 viewHolder = ViewHolder()
                 val inflater = LayoutInflater.from(context)
-//                myView = inflater.inflate(R.layout.toc_item, parent, false)
-//                viewHolder.toc_textView = myView!!.toc_textView as TextView
+                myView = inflater.inflate(R.layout.list_item_toc, parent, false)
+                viewHolder.toc_textView = myView!!.toc_textView as TextView
 
-                myView!!.tag = viewHolder
+                myView.tag = viewHolder
 
             } else {
 
