@@ -41,7 +41,7 @@
                         <ListView
                             android:id="@+id/toc_list"
                             android:layout_width="match_parent"
-                            android:layout_height="fill_parent" />
+                            android:layout_height="wrap_content" />
 
                     </LinearLayout>
 
@@ -53,7 +53,7 @@
                         <ListView
                             android:id="@+id/bmk_list"
                             android:layout_width="match_parent"
-                            android:layout_height="fill_parent"/>
+                            android:layout_height="wrap_content"/>
 
                     </LinearLayout>
 
