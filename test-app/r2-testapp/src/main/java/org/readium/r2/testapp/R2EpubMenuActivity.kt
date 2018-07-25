@@ -6,15 +6,13 @@
 
 package org.readium.r2.testapp
 
-
 import android.content.Intent
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import org.jetbrains.anko.intentFor
-import org.readium.r2.lcp.model.documents.LicenseDocument
-import org.readium.r2.navigator.*
-
+import org.readium.r2.navigator.DRMManagementActivity
+import org.readium.r2.navigator.R2EpubActivity
 
 class R2EpubMenuActivity : R2EpubActivity() {
 
@@ -36,7 +34,7 @@ class R2EpubMenuActivity : R2EpubActivity() {
             R.id.toc -> {
                 val intent = Intent(this, OutlineContainer::class.java)
                 intent.putExtra("publicationPath", publicationPath)
-                intent.putExtra("publication", LicenseDocument.Rel.publication)
+                intent.putExtra("publication", publication)
                 intent.putExtra("epubName", epubName)
                 startActivityForResult(intent, 2)
                 return false
@@ -58,5 +56,6 @@ class R2EpubMenuActivity : R2EpubActivity() {
         }
 
     }
+
 
 }

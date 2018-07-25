@@ -89,9 +89,6 @@
             android:label="Bookmarks" />
 
         <activity
-            android:name=".R2EpubMenuActivity"
-            android:label="EpubMenu" />
-        <activity
             android:name=".OutlineContainer"
             android:label="Outline Container" />
 
