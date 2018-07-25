@@ -13,10 +13,12 @@ import android.view.MenuItem
 import org.jetbrains.anko.intentFor
 import org.readium.r2.navigator.DRMManagementActivity
 import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.navigator.pager.R2WebView
 
 class R2EpubMenuActivity : R2EpubActivity() {
 
     private var menuBmk: MenuItem? = null
+    lateinit var bmkDB: BookmarksDatabase
 
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -37,22 +39,33 @@ class R2EpubMenuActivity : R2EpubActivity() {
                 intent.putExtra("publication", publication)
                 intent.putExtra("epubName", epubName)
                 startActivityForResult(intent, 2)
-                return false
+                return true
             }
             R.id.settings -> {
                 userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.toc), 0, 0, Gravity.END)
-                return false
+                return true
             }
             R.id.drm -> {
                 startActivity(intentFor<DRMManagementActivity>("drmModel" to drmModel))
-                return false
+                return true
             }
             R.id.bookmark -> {
-                BookmarksActivity().addBookmark()
-                return false
+                println("#####################################################")
+                println("#############     Bookmark button !     #############")
+                println("Publication identifier : $publicationIdentifier")
+                bmkDB = BookmarksDatabase(this)
+                val bmk = Bookmark(
+                    publicationIdentifier,
+                    resourcePager.currentItem.toLong(),
+                    findViewById<R2WebView>(R.id.webView).progression
+                )
+                println(bmk)
+                bmkDB.bookmarks.insert(bmk)
+                println("#####################################################")
+                return true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> return false
         }
 
     }
