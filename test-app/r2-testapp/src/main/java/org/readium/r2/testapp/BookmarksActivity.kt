@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_bmk.*
+import kotlinx.android.synthetic.main.activity_outline_container.*
 import kotlinx.android.synthetic.main.bmk_item.view.*
 
 data class Booktest(val book_title: String, val spine_title: String, val progression: Double)
@@ -20,7 +20,7 @@ class BookmarksActivity: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_bmk)
+        setContentView(R.layout.activity_outline_container)
 
         bmkDB = BookmarksDatabase(this)
 
