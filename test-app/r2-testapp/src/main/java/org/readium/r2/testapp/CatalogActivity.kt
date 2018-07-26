@@ -547,10 +547,6 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                 startActivity(intentFor<R2AboutActivity>())
                 false
             }
-            R.id.bmk_button -> {
-                startActivity(intentFor<BookmarksActivity>())
-                return false
-            }
 
             else -> super.onOptionsItemSelected(item)
         }
