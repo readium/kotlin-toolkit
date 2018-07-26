@@ -28,7 +28,7 @@ class Bookmark(val pub_ref: String,
                var timestamp: String = SimpleDateFormat("MM/dd/yyyy hh:mm:ss").format(Date())){
 
     override fun toString(): String {
-        return "Book number ${this.pub_ref}, spine item selected ${this.spine_index}, progression saved ${this.progression} and created the ${this.timestamp}."
+        return "Book identifier : ${this.pub_ref}, spine item selected ${this.spine_index}, progression saved ${this.progression} and created the ${this.timestamp}."
     }
 
 }

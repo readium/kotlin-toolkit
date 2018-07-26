@@ -10,6 +10,7 @@ import android.content.Intent
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.webkit.ValueCallback
 import org.jetbrains.anko.intentFor
 import org.readium.r2.navigator.DRMManagementActivity
 import org.readium.r2.navigator.R2EpubActivity
@@ -50,16 +51,18 @@ class R2EpubMenuActivity : R2EpubActivity() {
                 return true
             }
             R.id.bookmark -> {
+                val webView = findViewById<R2WebView>(R.id.webView)
                 println("#####################################################")
                 println("#############     Bookmark button !     #############")
-                println("Publication identifier : $publicationIdentifier")
                 bmkDB = BookmarksDatabase(this)
                 val bmk = Bookmark(
                     publicationIdentifier,
                     resourcePager.currentItem.toLong(),
-                    findViewById<R2WebView>(R.id.webView).progression
+//                  preferences.getString("$publicationIdentifier-documentProgression", 0.toString()).toDouble()
+                    webView.progression
                 )
                 println(bmk)
+
                 bmkDB.bookmarks.insert(bmk)
                 println("#####################################################")
                 return true

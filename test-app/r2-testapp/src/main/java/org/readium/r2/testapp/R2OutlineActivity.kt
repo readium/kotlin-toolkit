@@ -22,7 +22,6 @@ import android.widget.ArrayAdapter
 import android.widget.BaseAdapter
 import android.widget.TabHost
 import android.widget.TextView
-import com.mcxiaoke.koi.ext.round
 import kotlinx.android.synthetic.main.activity_outline_container.*
 import kotlinx.android.synthetic.main.bmk_item.view.*
 import kotlinx.android.synthetic.main.list_item_toc.view.*
@@ -107,7 +106,6 @@ class R2OutlineActivity : AppCompatActivity() {
             setResult(Activity.RESULT_OK, intent)
             finish()
         }
-
 
         bmk_list.setOnItemLongClickListener { _, _, position, _ ->
 
