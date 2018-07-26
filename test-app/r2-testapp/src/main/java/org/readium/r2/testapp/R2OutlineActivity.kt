@@ -13,8 +13,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.BaseAdapter
+import android.widget.TabHost
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_outline_container.*
+import kotlinx.android.synthetic.main.bmk_item.view.*
 import kotlinx.android.synthetic.main.list_item_toc.view.*
 
 
@@ -22,18 +25,26 @@ class R2OutlineActivity : AppCompatActivity() {
 
     private val TAG = this::class.java.simpleName
     lateinit var preferences:SharedPreferences
+    lateinit var bmkDB: BookmarksDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        supportActionBar?.hide()
         setContentView(R.layout.activity_outline_container)
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+
+        val tabHost = findViewById(R.id.tabhost) as TabHost
+        tabHost.setup()
 
         val epubName = intent.getStringExtra("epubName")
         val publication = intent.getSerializableExtra("publication") as Publication
         val publicationIdentifier = publication.metadata.identifier
 
         title = publication.metadata.title
+
+
+        /*
+         * Retrieve the Table of Content
+         */
 
         val tableOfContents: MutableList<Link> = publication.tableOfContents
         val allElements = mutableListOf<Link>()
@@ -63,7 +74,43 @@ class R2OutlineActivity : AppCompatActivity() {
             finish()
 
         }
+
+
+        /*
+         * Retrieve the list of bookmarks
+         */
+        bmkDB = BookmarksDatabase(this)
+
+        val bmks = bmkDB.bookmarks.list()
+        val bmkAdapter = BookMarksAdapter(this, bmks)
+
+        bmk_list.adapter = bmkAdapter
+
+        bmk_list.setOnItemLongClickListener { _, _, position, _ ->
+
+            bmkDB.bookmarks.delete(bmks[position])
+            bmks.removeAt(position)
+            bmkAdapter.notifyDataSetChanged()
+
+            true
+        }
+
         actionBar?.setDisplayHomeAsUpEnabled(true)
+
+
+
+        val tab1: TabHost.TabSpec = tabHost.newTabSpec("Table Of Content")
+        tab1.setIndicator("Table Of Content")
+        tab1.setContent(R.id.toc_tab)
+
+
+        val tab2: TabHost.TabSpec = tabHost.newTabSpec("Bookmarks")
+        tab2.setIndicator("Bookmarks")
+        tab2.setContent(R.id.bookmarks_tab)
+
+
+        tabHost.addTab(tab1)
+        tabHost.addTab(tab2)
 
     }
 
@@ -75,6 +122,8 @@ class R2OutlineActivity : AppCompatActivity() {
         }
         return children
     }
+
+
 
     inner class TOCAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.list_item_toc, users) {
         private inner class ViewHolder {
@@ -106,5 +155,63 @@ class R2OutlineActivity : AppCompatActivity() {
             return myView
         }
     }
+
+
+    inner class BookMarksAdapter(val context: Context, val bmkList: MutableList<Bookmark>) : BaseAdapter() {
+
+        private inner class ViewHolder {
+            internal var bmk_title: TextView? = null
+            internal var bmk_chapter: TextView? = null
+            internal var bmk_progression: TextView? = null
+            internal var bmk_timestamp: TextView? = null
+        }
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+            var bmkView = convertView
+
+            val viewHolder: ViewHolder
+
+            val bookmark = getItem(position) as Bookmark
+
+            if(bmkView == null) {
+                viewHolder = ViewHolder()
+
+                val inflater = LayoutInflater.from(context)
+                bmkView = inflater.inflate(R.layout.bmk_item, parent, false)
+
+                viewHolder.bmk_title = bmkView!!.bmk_title as TextView
+                viewHolder.bmk_chapter = bmkView!!.bmk_chapter as TextView
+                viewHolder.bmk_progression = bmkView.bmk_progression as TextView
+                viewHolder.bmk_timestamp = bmkView!!.bmk_timestamp as TextView
+
+                bmkView.tag = viewHolder
+
+            } else {
+                viewHolder = bmkView.tag as ViewHolder
+
+            }
+
+            viewHolder.bmk_title!!.setText(bookmark.pub_ref.toString())
+            viewHolder.bmk_chapter!!.setText(bookmark.spine_index.toString())
+            viewHolder.bmk_progression!!.setText(bookmark.progression.toString())
+            viewHolder.bmk_timestamp!!.setText(bookmark.timestamp)
+
+            return bmkView
+        }
+
+        override fun getCount(): Int {
+            return bmkList.size
+        }
+
+        override fun getItem(position: Int): Any {
+            return bmkList[position]
+        }
+
+        override fun getItemId(position: Int): Long {
+            return position.toLong()
+        }
+
+    }
+
 }
 
