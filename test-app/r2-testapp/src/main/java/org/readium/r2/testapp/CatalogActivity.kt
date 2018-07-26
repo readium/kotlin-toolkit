@@ -173,8 +173,11 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                         // Filter to show only epubs, using the image MIME data type.
                                         // To search for all documents available via installed storage providers,
                                         // it would be "*/*".
-                                        intent.type = "application/epub+zip"
-//                                        intent.type = "application/epub+zip|application/x-cbz"
+                                        intent.type = "*/*"
+                                        val mimeTypes = arrayOf(
+                                                "application/epub+zip",
+                                                "application/x-cbz"
+                                        )
 
                                         startActivityForResult(intent, 1)
 
