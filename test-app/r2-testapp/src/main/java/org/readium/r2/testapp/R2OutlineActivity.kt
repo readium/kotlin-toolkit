@@ -39,6 +39,7 @@ class R2OutlineActivity : AppCompatActivity() {
         val publication = intent.getSerializableExtra("publication") as Publication
         val publicationIdentifier = publication.metadata.identifier
 
+
         title = publication.metadata.title
 
 
@@ -81,7 +82,7 @@ class R2OutlineActivity : AppCompatActivity() {
          */
         bmkDB = BookmarksDatabase(this)
 
-        val bmks = bmkDB.bookmarks.list()
+        val bmks = bmkDB.bookmarks.list(publicationIdentifier)
         val bmkAdapter = BookMarksAdapter(this, bmks)
 
         bmk_list.adapter = bmkAdapter
@@ -160,7 +161,6 @@ class R2OutlineActivity : AppCompatActivity() {
     inner class BookMarksAdapter(val context: Context, val bmkList: MutableList<Bookmark>) : BaseAdapter() {
 
         private inner class ViewHolder {
-            internal var bmk_title: TextView? = null
             internal var bmk_chapter: TextView? = null
             internal var bmk_progression: TextView? = null
             internal var bmk_timestamp: TextView? = null
@@ -179,10 +179,9 @@ class R2OutlineActivity : AppCompatActivity() {
                 val inflater = LayoutInflater.from(context)
                 bmkView = inflater.inflate(R.layout.bmk_item, parent, false)
 
-                viewHolder.bmk_title = bmkView!!.bmk_title as TextView
                 viewHolder.bmk_chapter = bmkView!!.bmk_chapter as TextView
                 viewHolder.bmk_progression = bmkView.bmk_progression as TextView
-                viewHolder.bmk_timestamp = bmkView!!.bmk_timestamp as TextView
+                viewHolder.bmk_timestamp = bmkView.bmk_timestamp as TextView
 
                 bmkView.tag = viewHolder
 
@@ -191,7 +190,6 @@ class R2OutlineActivity : AppCompatActivity() {
 
             }
 
-            viewHolder.bmk_title!!.setText(bookmark.pub_ref.toString())
             viewHolder.bmk_chapter!!.setText(bookmark.spine_index.toString())
             viewHolder.bmk_progression!!.setText(bookmark.progression.toString())
             viewHolder.bmk_timestamp!!.setText(bookmark.timestamp)

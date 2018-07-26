@@ -7,12 +7,6 @@
     >
 
     <TextView
-        android:id="@+id/bmk_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Title" />
-
-    <TextView
         android:id="@+id/bmk_chapter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
