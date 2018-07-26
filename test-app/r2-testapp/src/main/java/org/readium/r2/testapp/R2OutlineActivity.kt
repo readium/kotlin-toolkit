@@ -1,3 +1,9 @@
+/*
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.testapp
 
 import android.support.v7.app.AppCompatActivity
@@ -16,9 +22,11 @@ import android.widget.ArrayAdapter
 import android.widget.BaseAdapter
 import android.widget.TabHost
 import android.widget.TextView
+import com.mcxiaoke.koi.ext.round
 import kotlinx.android.synthetic.main.activity_outline_container.*
 import kotlinx.android.synthetic.main.bmk_item.view.*
 import kotlinx.android.synthetic.main.list_item_toc.view.*
+import kotlin.math.roundToInt
 
 
 class R2OutlineActivity : AppCompatActivity() {
@@ -83,9 +91,23 @@ class R2OutlineActivity : AppCompatActivity() {
         bmkDB = BookmarksDatabase(this)
 
         val bmks = bmkDB.bookmarks.list(publicationIdentifier)
-        val bmkAdapter = BookMarksAdapter(this, bmks)
+        val bmkAdapter = BookMarksAdapter(this, bmks, allElements)
 
         bmk_list.adapter = bmkAdapter
+
+
+        bmk_list.setOnItemClickListener { _, _, position, _ ->
+
+            val bmks_item_uri = bmks.get(position).spine_index.toString()
+
+            Timber.d(TAG, bmks_item_uri)
+
+            val intent = Intent()
+            intent.putExtra("toc_item_uri", bmks_item_uri)
+            setResult(Activity.RESULT_OK, intent)
+            finish()
+        }
+
 
         bmk_list.setOnItemLongClickListener { _, _, position, _ ->
 
@@ -158,7 +180,7 @@ class R2OutlineActivity : AppCompatActivity() {
     }
 
 
-    inner class BookMarksAdapter(val context: Context, val bmkList: MutableList<Bookmark>) : BaseAdapter() {
+    inner class BookMarksAdapter(val context: Context, val bmkList: MutableList<Bookmark>, val pub_info: MutableList<Link>) : BaseAdapter() {
 
         private inner class ViewHolder {
             internal var bmk_chapter: TextView? = null
@@ -172,6 +194,7 @@ class R2OutlineActivity : AppCompatActivity() {
             val viewHolder: ViewHolder
 
             val bookmark = getItem(position) as Bookmark
+            val spine_item = getBookSpineItem(bookmark.spine_index.toInt() - 1) as Link
 
             if(bmkView == null) {
                 viewHolder = ViewHolder()
@@ -190,9 +213,12 @@ class R2OutlineActivity : AppCompatActivity() {
 
             }
 
-            viewHolder.bmk_chapter!!.setText(bookmark.spine_index.toString())
-            viewHolder.bmk_progression!!.setText(bookmark.progression.toString())
-            viewHolder.bmk_timestamp!!.setText(bookmark.timestamp)
+
+            val progessionText = "${((bookmark.progression * 100).roundToInt())}% through chapter"
+
+            viewHolder.bmk_chapter!!.text = spine_item!!.title
+            viewHolder.bmk_progression!!.text = progessionText
+            viewHolder.bmk_timestamp!!.text = bookmark.timestamp
 
             return bmkView
         }
@@ -203,6 +229,10 @@ class R2OutlineActivity : AppCompatActivity() {
 
         override fun getItem(position: Int): Any {
             return bmkList[position]
+        }
+
+        private fun getBookSpineItem(position: Int): Any {
+            return pub_info[position]
         }
 
         override fun getItemId(position: Int): Long {
