@@ -216,13 +216,28 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
         }
     }
 
-    fun list(pub_ref: Long? = null): MutableList<Bookmark> {
+    fun list(): MutableList<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.PUB_REF,
                     BOOKMARKSTable.SPINE_INDEX,
                     BOOKMARKSTable.PROGRESSION,
                     BOOKMARKSTable.TIMESTAMP)
+                    .exec {
+                        parseList(MyRowParser()).toMutableList()
+                    }
+        }
+    }
+
+
+    fun list(pub_ref: String? = null): MutableList<Bookmark> {
+        return database.use {
+            select(BOOKMARKSTable.NAME,
+                    BOOKMARKSTable.PUB_REF,
+                    BOOKMARKSTable.SPINE_INDEX,
+                    BOOKMARKSTable.PROGRESSION,
+                    BOOKMARKSTable.TIMESTAMP)
+                    .whereArgs("pub_ref = {pub_ref}", "pub_ref" to pub_ref as Any)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
