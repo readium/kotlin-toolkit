@@ -34,7 +34,7 @@ class R2EpubMenuActivity : R2EpubActivity() {
         when (item.itemId) {
 
             R.id.toc -> {
-                val intent = Intent(this, OutlineContainer::class.java)
+                val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publicationPath", publicationPath)
                 intent.putExtra("publication", publication)
                 intent.putExtra("epubName", epubName)
