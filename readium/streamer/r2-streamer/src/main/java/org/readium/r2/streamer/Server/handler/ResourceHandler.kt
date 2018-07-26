@@ -65,7 +65,7 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             val offset = encodedUri.indexOf("/", 0)
             val startIndex = encodedUri.indexOf("/", offset + 1)
             val filePath = encodedUri.substring(startIndex + 1)
-            val link = fetcher.publication.linkWithHref("/" + filePath)!!
+            val link = fetcher.publication.linkWithHref(filePath)!!
             val mimeType = link.typeLink!!
 
             // If the content is of type html return the response this is done to
@@ -81,8 +81,8 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
             return serveResponse(session, fetcher.dataStream(filePath), mimeType)
         } catch (e: Exception) {
-            println(TAG + " Exception " + e.toString())
-            Log.e(TAG, e.toString())
+            println(TAG + " Exception " + Log.getStackTraceString(e))
+            Log.e(TAG, e.toString(), e)
             return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
 

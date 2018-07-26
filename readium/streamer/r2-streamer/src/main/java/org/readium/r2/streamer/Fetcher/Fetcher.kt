@@ -34,7 +34,7 @@ class Fetcher(var publication: Publication, var container: Container, private va
     }
 
     fun dataStream(path: String): InputStream {
-        publication.resource("/" + path) ?: throw Exception("Missing file")
+        publication.resource(path) ?: throw Exception("Missing file")
         var inputStream = container.dataInputStream(path)
         inputStream = contentFilters?.apply(inputStream, publication, container, path) ?: inputStream
         return inputStream
