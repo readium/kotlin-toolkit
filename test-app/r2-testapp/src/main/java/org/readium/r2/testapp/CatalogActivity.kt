@@ -55,9 +55,6 @@ import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.json.JSONObject
-import org.readium.r2.lcp.LcpHttpService
-import org.readium.r2.lcp.LcpLicense
-import org.readium.r2.lcp.LcpSession
 import org.readium.r2.navigator.R2CbzActivity
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.opds.OPDS1Parser
