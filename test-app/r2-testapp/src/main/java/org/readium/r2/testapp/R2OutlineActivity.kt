@@ -78,6 +78,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
             val intent = Intent()
             intent.putExtra("toc_item_uri", toc_item_uri)
+            intent.putExtra("item_progression", 0.0)
             setResult(Activity.RESULT_OK, intent)
             finish()
 
@@ -97,12 +98,13 @@ class R2OutlineActivity : AppCompatActivity() {
 
         bmk_list.setOnItemClickListener { _, _, position, _ ->
 
-            val bmks_item_uri = bmks.get(position).spine_index.toString()
+            val bmks_item_uri = allElements.get(bmks.get(position).spine_index.toInt() - 1).href
 
             Timber.d(TAG, bmks_item_uri)
 
             val intent = Intent()
             intent.putExtra("toc_item_uri", bmks_item_uri)
+            intent.putExtra("item_progression", bmks.get(position).progression)
             setResult(Activity.RESULT_OK, intent)
             finish()
         }
@@ -194,6 +196,9 @@ class R2OutlineActivity : AppCompatActivity() {
             val bookmark = getItem(position) as Bookmark
             val spine_item = getBookSpineItem(bookmark.spine_index.toInt() - 1) as Link
 
+            println("Bookmark's spine_index is : ${bookmark.spine_index.toInt()}")
+            println("Spine_item is : ${spine_item.title}")
+
             if(bmkView == null) {
                 viewHolder = ViewHolder()
 
@@ -214,7 +219,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
             val progessionText = "${((bookmark.progression * 100).roundToInt())}% through chapter"
 
-            viewHolder.bmk_chapter!!.text = spine_item!!.title
+            viewHolder.bmk_chapter!!.text = spine_item.title
             viewHolder.bmk_progression!!.text = progessionText
             viewHolder.bmk_timestamp!!.text = bookmark.timestamp
 
@@ -230,6 +235,7 @@ class R2OutlineActivity : AppCompatActivity() {
         }
 
         private fun getBookSpineItem(position: Int): Any {
+            if (position < 0) return pub_info[0]
             return pub_info[position]
         }
 
