@@ -52,20 +52,16 @@ var scrollToPosition = function(position) {
 var scrollLeft = function() {
     scrollToPosition(last_known_scroll_position)
     var offset = window.scrollX - maxScreenX;
-    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-    update(last_known_scroll_position);
-//    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-//    update(last_known_scroll_position);
 
     if (offset >= 0) {
         document.body.scrollLeft = offset;
-            last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-            update(last_known_scroll_position);
+        last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
+        update(last_known_scroll_position);
         return "";
     } else {
         document.body.scrollLeft = 0;
-            last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-            update(last_known_scroll_position);
+        last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
+        update(last_known_scroll_position);
         return "edge"; // Need to previousDocument.
     }
 };
@@ -75,20 +71,15 @@ var scrollRight = function() {
     var offset = window.scrollX + maxScreenX;
     var scrollWidth = document.getElementsByTagName("body")[0].scrollWidth;
 
-    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-    update(last_known_scroll_position);
-//    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-//    update(last_known_scroll_position);
-
     if (offset < scrollWidth) {
         document.body.scrollLeft = offset;
-    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-    update(last_known_scroll_position);
+        last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
+        update(last_known_scroll_position);
         return "";
     } else {
         document.body.scrollLeft = scrollWidth;
-    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-    update(last_known_scroll_position);
+        last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
+        update(last_known_scroll_position);
         return "edge"; // Need to nextDocument.
     }
 };
