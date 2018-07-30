@@ -216,7 +216,7 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
         }
     }
 
-    fun list(): MutableList<Bookmark> {
+    fun listAll(): MutableList<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.PUB_REF,
