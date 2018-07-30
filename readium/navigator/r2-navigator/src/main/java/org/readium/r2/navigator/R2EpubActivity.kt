@@ -15,14 +15,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
-import android.view.Gravity
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_page_epub.view.*
 import org.jetbrains.anko.contentView
-import org.jetbrains.anko.intentFor
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
@@ -162,6 +159,7 @@ open class R2EpubActivity : AppCompatActivity() {
                 var href: String = data.getStringExtra("toc_item_uri")
                 // href is the link to the page in the toc
 
+                val progression = data.getDoubleExtra("item_progression", 0.0)
                 if (href.indexOf("#") > 0) {
                     href = href.substring(0, href.indexOf("#"))
                 }
@@ -171,7 +169,7 @@ open class R2EpubActivity : AppCompatActivity() {
                         resourcePager.currentItem = i
                     }
                 }
-                preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
+                preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
                 if (supportActionBar!!.isShowing) {
                     resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
