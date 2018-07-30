@@ -119,20 +119,12 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
         this.evaluateJavascript("scrollToPosition(\"$progression\");", null)
     }
 
-    @android.webkit.JavascriptInterface
-    fun scrollToBeginning() {
-        this.evaluateJavascript("scrollToPosition(\"0\");", null)
-    }
-
-    @android.webkit.JavascriptInterface
-    fun scrollToEnd() {
-        this.evaluateJavascript("scrollToPosition(\"1\");", null)
-    }
 
     @android.webkit.JavascriptInterface
     fun progressionDidChange(body: String) {
         progression = body.toDouble()
         Timber.d("progression: $progression")
+        activity.storeProgression(progression)
     }
 
     @android.webkit.JavascriptInterface

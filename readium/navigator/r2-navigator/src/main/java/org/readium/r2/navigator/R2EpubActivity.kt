@@ -42,6 +42,9 @@ open class R2EpubActivity : AppCompatActivity() {
     protected var menuDrm: MenuItem? = null
     protected var menuToc: MenuItem? = null
 
+    var pagerPosition = 0
+    var relaodPagerPositions = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_r2_viewpager)
@@ -82,7 +85,7 @@ open class R2EpubActivity : AppCompatActivity() {
         val index = preferences.getInt("$publicationIdentifier-document", 0)
 
         val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
-
+        relaodPagerPositions = true
         resourcePager.adapter = adapter
 
         userSettings = UserSettings(preferences, this)
@@ -146,9 +149,12 @@ open class R2EpubActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        storeProgression(resourcePager.webView.progression)
+    }
+
+    fun storeProgression(progression:Double) {
         val publicationIdentifier = publication.metadata.identifier
         val documentIndex = resourcePager.currentItem
-        val progression = resourcePager.webView.progression
         preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
         preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
     }
@@ -156,10 +162,19 @@ open class R2EpubActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
+
+                pagerPosition = 0
+                relaodPagerPositions = true
+
+                val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
+                resourcePager.adapter = adapter
+
                 var href: String = data.getStringExtra("toc_item_uri")
                 // href is the link to the page in the toc
 
                 val progression = data.getDoubleExtra("item_progression", 0.0)
+                preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
+
                 if (href.indexOf("#") > 0) {
                     href = href.substring(0, href.indexOf("#"))
                 }
@@ -169,7 +184,6 @@ open class R2EpubActivity : AppCompatActivity() {
                         resourcePager.currentItem = i
                     }
                 }
-                preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
                 if (supportActionBar!!.isShowing) {
                     resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -185,7 +199,9 @@ open class R2EpubActivity : AppCompatActivity() {
 
     fun nextResource() {
         runOnUiThread {
-            preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
+            pagerPosition = 0
+            resourcePager.webView.progression = 0.0
+
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
                 resourcePager.currentItem = resourcePager.currentItem - 1
@@ -198,7 +214,9 @@ open class R2EpubActivity : AppCompatActivity() {
 
     fun previousResource() {
         runOnUiThread {
-            preferences.edit().putString("$publicationIdentifier-documentProgression", 1.0.toString()).apply()
+            pagerPosition = 0
+            resourcePager.webView.progression = 1.0
+
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
                 resourcePager.currentItem = resourcePager.currentItem + 1
