@@ -42,7 +42,6 @@ class R2OutlineActivity : AppCompatActivity() {
         val tabHost = findViewById(R.id.tabhost) as TabHost
         tabHost.setup()
 
-        val epubName = intent.getStringExtra("epubName")
         val publication = intent.getSerializableExtra("publication") as Publication
         val publicationIdentifier = publication.metadata.identifier
 
@@ -71,7 +70,6 @@ class R2OutlineActivity : AppCompatActivity() {
 
         toc_list.setOnItemClickListener { _, _, position, _ ->
 
-            val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
             val toc_item_uri = allElements.get(position).href
 
             Timber.d(TAG, toc_item_uri)
