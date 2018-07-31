@@ -13,6 +13,7 @@ package org.readium.r2.testapp
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import org.jetbrains.anko.db.*
+import org.readium.r2.shared.Publication
 
 
 // Access property for Context
@@ -22,7 +23,7 @@ val Context.database: BooksDatabaseOpenHelper
 val Context.appContext: Context
     get() = applicationContext
 
-class Book(val fileName: String, val title: String, val author: String, val fileUrl: String, var id: Long?, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext: String)
+class Book(val fileName: String, val title: String, val author: String?, val fileUrl: String, var id: Long?, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext: Publication.EXTENSION)
 
 class BooksDatabase(context: Context) {
 
@@ -103,7 +104,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
                         BOOKSTable.IDENTIFIER to book.identifier,
                         BOOKSTable.COVER to book.cover,
                         BOOKSTable.COVERURL to book.coverLink,
-                        BOOKSTable.EXTENSION to book.ext)
+                        BOOKSTable.EXTENSION to book.ext.value)
             }
         }
         return null
@@ -164,7 +165,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
                 return@let it as String
             } ?: kotlin.run { return@run "" }
 
-            return Book(filename, title, author, fileUrl, id, coverUrl, identifier, cover, ext)
+            return Book(filename, title, author, fileUrl, id, coverUrl, identifier, cover, Publication.EXTENSION.fromString(ext)!!)
 
         }
     }
