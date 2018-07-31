@@ -15,11 +15,11 @@ import org.jetbrains.anko.intentFor
 import org.readium.r2.navigator.DRMManagementActivity
 import org.readium.r2.navigator.R2EpubActivity
 
+
 class R2EpubMenuActivity : R2EpubActivity() {
 
     private var menuBmk: MenuItem? = null
     lateinit var bmkDB: BookmarksDatabase
-
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_navigation, menu)
@@ -55,18 +55,22 @@ class R2EpubMenuActivity : R2EpubActivity() {
                 println("#####################################################")
                 println("#############     Bookmark button !     #############")
                 bmkDB = BookmarksDatabase(this)
-                val bmk = Bookmark(
+                val bmk = Bookmark(null,
                     publicationIdentifier,
                     resourcePager.currentItem.toLong(),
                     progression
                 )
+                println("#####################################################")
                 println(bmk)
 
-                val insertBmk = bmkDB.bookmarks.insert(bmk)
-                if (insertBmk != null) {
+                if (bmkDB.bookmarks.insert(bmk)?.let {
+                            bmk.id = it
+                        } != null) {
                     snackbar(super.resourcePager.findViewById(R.id.webView), "Bookmark added")
+                } else {
+                    snackbar(super.resourcePager.findViewById(R.id.webView), "Error while adding bookmark")
                 }
-                println("#####################################################")
+
                 return true
             }
 
