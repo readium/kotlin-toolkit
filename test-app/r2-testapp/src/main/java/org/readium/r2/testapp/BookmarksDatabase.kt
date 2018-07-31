@@ -38,18 +38,15 @@ class Bookmark(val pub_ref: String,
  */
 fun bkmkUnitTests(ctx: Context){
     val bk = mutableListOf<Bookmark>()
-    bk.add(Bookmark("1", 1, 0.0))
-    bk.add(Bookmark("2", 3, 50.0))
-    bk.add(Bookmark("2", 3, 50.0))
-    bk.add(Bookmark("15", 12, 99.99))
+    bk.add(Bookmark("First", 1, 0.0))
+    bk.add(Bookmark("Second", 3, 50.0))
+    bk.add(Bookmark("Second", 3, 50.0))
+    bk.add(Bookmark("Fifteen", 12, 99.99))
 
 
     val bkUnknown = mutableListOf<Bookmark>()
-    bkUnknown.add(Bookmark("4", 34, 133.33))
-    bkUnknown.add(Bookmark("4", 34, 33.33))
-    bkUnknown.add(Bookmark("4", -34, 33.33))
-    bkUnknown.add(Bookmark("-4", 34, 33.33))
-    bkUnknown.add(Bookmark("-4", -34, 33.33))
+    bkUnknown.add(Bookmark("Four", 34, 133.33))
+    bkUnknown.add(Bookmark("MinusFour", -34, 33.33))
 
     val db = BookmarksDatabase(ctx)
     println("#####################################")
@@ -85,7 +82,7 @@ fun bkmkUnitTests(ctx: Context){
         }
     }
     println("List of BookMarks  : ")
-    db.bookmarks.list().forEach { println(it) }
+    db.bookmarks.listAll().forEach { println(it) }
     println("-------------------------------------")
     println("------------  Unknown  --------------")
     bkUnknown.forEach {
@@ -230,7 +227,7 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
     }
 
 
-    fun list(pub_ref: String? = null): MutableList<Bookmark> {
+    fun list(pub_ref: String): MutableList<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.PUB_REF,
