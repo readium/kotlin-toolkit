@@ -86,7 +86,8 @@ class R2OutlineActivity : AppCompatActivity() {
          */
         bmkDB = BookmarksDatabase(this)
 
-        val bmks = bmkDB.bookmarks.list(intent.getLongExtra("bookId", -1))
+        val bkId = intent.getLongExtra("bookId", -1)
+        val bmks = bmkDB.bookmarks.list(bkId)
         val bmkAdapter = BookMarksAdapter(this, bmks, allElements)
 
         bmk_list.adapter = bmkAdapter

@@ -34,10 +34,11 @@ class R2EpubMenuActivity : R2EpubActivity() {
         when (item.itemId) {
 
             R.id.toc -> {
+                val bkId = intent.getLongExtra("bookId", -1)
                 val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publicationPath", publicationPath)
                 intent.putExtra("publication", publication)
-                intent.putExtra("bookId", intent.getLongExtra("bookId", -1))
+                intent.putExtra("bookId", bkId)
                 startActivityForResult(intent, 2)
                 return true
             }
@@ -55,8 +56,9 @@ class R2EpubMenuActivity : R2EpubActivity() {
                 println("#####################################################")
                 println("#############     Bookmark button !     #############")
                 bmkDB = BookmarksDatabase(this)
+                val bkId = intent.getLongExtra("bookId", -1)
                 val bmk = Bookmark(
-                        intent.getLongExtra("bookId", -1),
+                        bkId,
                         resourcePager.currentItem.toLong(),
                         progression
                 )
