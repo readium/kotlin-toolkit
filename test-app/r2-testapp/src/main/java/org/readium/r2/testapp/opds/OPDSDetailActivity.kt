@@ -10,6 +10,7 @@ package org.readium.r2.testapp.opds
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.widget.LinearLayout
@@ -17,6 +18,7 @@ import com.mcxiaoke.koi.ext.onClick
 import com.squareup.picasso.Picasso
 import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
+import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.shared.Publication
@@ -25,6 +27,7 @@ import org.readium.r2.testapp.BooksDatabase
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.books
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -71,35 +74,62 @@ class OPDSDetailActivity : AppCompatActivity() {
                             val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
                             progress.show()
 
-//                            for (link in publication.links) {
-//                                if (link.typeLink.equals(mimetype)) {
                             opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
                                 val publicationIdentifier = publication.metadata.identifier
                                 val author = authorName(publication)
-                                val bitmap = getBitmapFromURL(publication.images.first().href!!)
-                                val stream = ByteArrayOutputStream()
-                                bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                Thread({
+                                    val bitmap = getBitmapFromURL(publication.images.first().href!!)
+                                    val stream = ByteArrayOutputStream()
+                                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                    val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
+                                    database.books.insert(book, false)?.let {
+                                        book.id = it
+                                        books.add(book)
+                                        snackbar(this, "download completed")
+                                        progress.dismiss()
+                                    } ?: run {
+                                        progress.dismiss()
+                                        runOnUiThread({
 
-                                val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
-                                database.books.insert(book, false)?.let {
-                                    books.add(book)
-                                    snackbar(this, "download completed")
-                                    progress.dismiss()
-                                } ?: run {
-                                    snackbar(this, "download failed")
-                                    progress.dismiss()
-                                }
+                                            val duplicateAlert = alert(Appcompat, "Publication already exists") {
+
+                                                positiveButton("Add anyways") { }
+                                                negativeButton("Cancel") { }
+
+                                            }.build()
+                                            duplicateAlert.apply {
+                                                setCancelable(false)
+                                                setCanceledOnTouchOutside(false)
+                                                setOnShowListener({
+                                                    val b2 = getButton(AlertDialog.BUTTON_POSITIVE)
+                                                    b2.setOnClickListener({
+                                                        database.books.insert(book, true)?.let {
+                                                            book.id = it
+                                                            books.add(book)
+                                                            duplicateAlert.dismiss()
+                                                        }
+                                                    })
+                                                    val bCancel = getButton(AlertDialog.BUTTON_NEGATIVE)
+                                                    bCancel.setOnClickListener({
+                                                        File(book.fileUrl).delete()
+                                                        duplicateAlert.dismiss()
+                                                    })
+                                                })
+                                            }
+                                            duplicateAlert.show()
+                                        })
+
+                                    }
+
+                                }).start()
                             }
-//                                }
-//                            }
                         }
                     }
                 }
             }
         }
     }
-
 
     private fun getDownloadURL(publication: Publication): URL? {
         var url: URL? = null
