@@ -37,7 +37,7 @@ class R2EpubMenuActivity : R2EpubActivity() {
                 val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publicationPath", publicationPath)
                 intent.putExtra("publication", publication)
-                intent.putExtra("epubName", epubName)
+                intent.putExtra("bookId", intent.getLongExtra("bookId", -1))
                 startActivityForResult(intent, 2)
                 return true
             }
@@ -55,20 +55,21 @@ class R2EpubMenuActivity : R2EpubActivity() {
                 println("#####################################################")
                 println("#############     Bookmark button !     #############")
                 bmkDB = BookmarksDatabase(this)
-                val bmk = Bookmark(null,
-                    publicationIdentifier,
-                    resourcePager.currentItem.toLong(),
-                    progression
+                val bmk = Bookmark(
+                        intent.getLongExtra("bookId", -1),
+                        resourcePager.currentItem.toLong(),
+                        progression
                 )
                 println("#####################################################")
                 println(bmk)
 
-                if (bmkDB.bookmarks.insert(bmk)?.let {
-                            bmk.id = it
-                        } != null) {
+                bmkDB.bookmarks.insert(bmk)?.let {
+                    bmk.id = it
+                }
+                if (bmk.id != null) {
                     snackbar(super.resourcePager.findViewById(R.id.webView), "Bookmark added")
                 } else {
-                    snackbar(super.resourcePager.findViewById(R.id.webView), "Error while adding bookmark")
+                    snackbar(super.resourcePager.findViewById(R.id.webView), "Bookmark already exist")
                 }
 
                 return true
