@@ -85,7 +85,7 @@ class OPDSDetailActivity : AppCompatActivity() {
                                     val bitmap = getBitmapFromURL(publication.images.first().href!!)
                                     val stream = ByteArrayOutputStream()
                                     bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
-                                    val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
+                                    val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
                                     database.books.insert(book, false)?.let {
                                         book.id = it
                                         books.add(book)
