@@ -10,10 +10,8 @@ import android.content.Intent
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
-import org.jetbrains.anko.contentView
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.intentFor
-import org.jetbrains.anko.webView
 import org.readium.r2.navigator.DRMManagementActivity
 import org.readium.r2.navigator.R2EpubActivity
 
