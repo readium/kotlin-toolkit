@@ -11,13 +11,10 @@
 package org.readium.r2.testapp
 
 
-// uncomment for lcp
-/*
-import org.readium.r2.lcp.LcpHttpService
-import org.readium.r2.lcp.LcpLicense
-import org.readium.r2.lcp.LcpSession
- */
-
+//import org.readium.r2.lcp.LcpHttpService
+//import org.readium.r2.lcp.LcpLicense
+//import org.readium.r2.lcp.LcpSession
+import android.app.ProgressDialog
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -87,7 +84,7 @@ import java.net.ServerSocket
 import java.net.URL
 import java.util.*
 
-class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener {
+class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions {
 
     private lateinit var server: Server
     private var localPort: Int = 0
@@ -96,7 +93,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     private lateinit var permissionHelper: PermissionHelper
     private lateinit var permissions: Permissions
     private lateinit var preferences: SharedPreferences
-    private lateinit var R2TEST_DIRECTORY_PATH: String
+    private lateinit var R2DIRECTORY: String
 
     private lateinit var database: BooksDatabase
     private lateinit var opdsDownloader: OPDSDownloader
@@ -116,7 +113,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
         localPort = s.localPort
         server = Server(localPort)
-        R2TEST_DIRECTORY_PATH = this.getExternalFilesDir(null).path + "/"
+        R2DIRECTORY = this.getExternalFilesDir(null).path + "/"
 
         permissions = Permissions(this)
         permissionHelper = PermissionHelper(this, permissions)
@@ -165,130 +162,14 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                                     text = context.getString(R.string.select_from_your_device)
                                     onClick {
                                         alertDialog.dismiss()
-                                        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
-                                        // browser.
-                                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-
-                                        // Filter to only show results that can be "opened", such as a
-                                        // file (as opposed to a list of contacts or timezones)
-                                        intent.addCategory(Intent.CATEGORY_OPENABLE)
-
-                                        // Filter to show only epubs, using the image MIME data type.
-                                        // To search for all documents available via installed storage providers,
-                                        // it would be "*/*".
-                                        intent.type = "*/*"
-                                        val mimeTypes = arrayOf(
-                                                "application/epub+zip",
-                                                "application/x-cbz"
-                                        )
-
-                                        startActivityForResult(intent, 1)
-
+                                        showDocumentPicker()
                                     }
                                 }
                                 button {
                                     text = context.getString(R.string.download_from_url)
                                     onClick {
                                         alertDialog.dismiss()
-
-                                        var editTextHref: EditText? = null
-                                        alert(Appcompat, "Add a publication from URL") {
-
-                                            customView {
-                                                verticalLayout {
-                                                    textInputLayout {
-                                                        padding = dip(10)
-                                                        editTextHref = editText {
-                                                            hint = "URL"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            positiveButton("Add") { }
-                                            negativeButton("Cancel") { }
-
-                                        }.build().apply {
-                                            setCancelable(false)
-                                            setCanceledOnTouchOutside(false)
-                                            setOnShowListener({
-                                                val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                                                b.setOnClickListener({
-                                                    if (TextUtils.isEmpty(editTextHref!!.text)) {
-                                                        editTextHref!!.error = "Please Enter A URL."
-                                                        editTextHref!!.requestFocus()
-                                                    } else if (!URLUtil.isValidUrl(editTextHref!!.text.toString())) {
-                                                        editTextHref!!.error = "Please Enter A Valid URL."
-                                                        editTextHref!!.requestFocus()
-                                                    } else {
-                                                        val parseData: Promise<ParseData, Exception>?
-                                                        parseData = parseURL(URL(editTextHref!!.text.toString()))
-                                                        parseData.successUi {
-                                                            dismiss()
-
-                                                            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
-                                                            progress.show()
-
-                                                            publication = it.publication ?: return@successUi
-                                                            val downloadUrl = getDownloadURL(publication)!!.toString()
-                                                            opdsDownloader.publicationUrl(downloadUrl).successUi { pair ->
-
-                                                                val publicationIdentifier = publication.metadata.identifier
-                                                                val author = authorName(publication)
-                                                                task {
-                                                                    getBitmapFromURL(publication.images.first().href!!)
-                                                                }.then {
-                                                                    val bitmap = it
-                                                                    val stream = ByteArrayOutputStream()
-                                                                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
-
-                                                                    val book = Book(pair.second, publication.metadata.title, author, pair.first, null, publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), ".epub")
-
-                                                                    runOnUiThread({
-                                                                        progress.dismiss()
-                                                                        database.books.insert(book, false)?.let {
-                                                                            book.id = it
-                                                                            books.add(book)
-                                                                            booksAdapter.notifyDataSetChanged()
-
-                                                                        } ?: run {
-
-                                                                            val duplicateAlert = alert(Appcompat, "Publication already exists") {
-
-                                                                                positiveButton("Add anyways") { }
-                                                                                negativeButton("Cancel") { }
-
-                                                                            }.build()
-                                                                            duplicateAlert.apply {
-                                                                                setCancelable(false)
-                                                                                setCanceledOnTouchOutside(false)
-                                                                                setOnShowListener({
-                                                                                    val b2 = getButton(AlertDialog.BUTTON_POSITIVE)
-                                                                                    b2.setOnClickListener({
-                                                                                        database.books.insert(book, true)?.let {
-                                                                                            book.id = it
-                                                                                            books.add(book)
-                                                                                            duplicateAlert.dismiss()
-                                                                                            booksAdapter.notifyDataSetChanged()
-                                                                                        }
-                                                                                    })
-                                                                                })
-                                                                            }
-                                                                            duplicateAlert.show()
-                                                                        }
-                                                                    })
-                                                                }
-                                                            }
-                                                        }
-                                                        parseData.failUi {
-                                                            editTextHref!!.error = "Please Enter A Valid OPDS Book URL."
-                                                            editTextHref!!.requestFocus()
-                                                        }
-                                                    }
-                                                })
-                                            })
-
-                                        }.show()
-
+                                        showDownloadFromUrlAlert()
                                     }
                                 }
                             }
@@ -302,6 +183,171 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             }
         }
 
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        startServer()
+
+        permissionHelper.storagePermission {
+            if (books.isEmpty()) {
+                if (!preferences.contains("samples")) {
+                    val dir = File(R2DIRECTORY)
+                    if (!dir.exists()) {
+                        dir.mkdirs()
+                    }
+                    copySamplesFromAssetsToStorage()
+                    preferences.edit().putBoolean("samples", true).apply()
+                }
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        booksAdapter.notifyDataSetChanged()
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        //TODO not sure if this is needed
+        stopServer()
+    }
+
+    private fun showDownloadFromUrlAlert() {
+        var editTextHref: EditText? = null
+        alert(Appcompat, "Add a publication from URL") {
+
+            customView {
+                verticalLayout {
+                    textInputLayout {
+                        padding = dip(10)
+                        editTextHref = editText {
+                            hint = "URL"
+                        }
+                    }
+                }
+            }
+            positiveButton("Add") { }
+            negativeButton("Cancel") { }
+
+        }.build().apply {
+            setCancelable(false)
+            setCanceledOnTouchOutside(false)
+            setOnShowListener({
+                val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                b.setOnClickListener({
+                    if (TextUtils.isEmpty(editTextHref!!.text)) {
+                        editTextHref!!.error = "Please Enter A URL."
+                        editTextHref!!.requestFocus()
+                    } else if (!URLUtil.isValidUrl(editTextHref!!.text.toString())) {
+                        editTextHref!!.error = "Please Enter A Valid URL."
+                        editTextHref!!.requestFocus()
+                    } else {
+                        val parseDataPromise = parseURL(URL(editTextHref!!.text.toString()))
+                        parseDataPromise.successUi { parseData ->
+                            dismiss()
+                            downloadData(parseData)
+                        }
+                        parseDataPromise.failUi {
+                            editTextHref!!.error = "Please Enter A Valid OPDS Book URL."
+                            editTextHref!!.requestFocus()
+                        }
+                    }
+                })
+            })
+
+        }.show()
+    }
+
+    private fun downloadData(parseData: ParseData) {
+        val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+        progress.show()
+
+        publication = parseData.publication ?: return
+        val downloadUrl = getDownloadURL(publication)!!.toString()
+        opdsDownloader.publicationUrl(downloadUrl).successUi { pair ->
+
+            val publicationIdentifier = publication.metadata.identifier
+            val author = authorName(publication)
+            task {
+                getBitmapFromURL(publication.images.first().href!!)
+            }.then {
+                val bitmap = it
+                val stream = ByteArrayOutputStream()
+                bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+
+                val book = Book(pair.second, publication.metadata.title, author, pair.first, null, publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
+
+                runOnUiThread({
+                    progress.dismiss()
+                    database.books.insert(book, false)?.let {
+                        book.id = it
+                        books.add(book)
+                        booksAdapter.notifyDataSetChanged()
+
+                    } ?: run {
+
+                        showDuplicateBookAlert(book)
+
+                    }
+                })
+            }
+        }
+    }
+
+    private fun showDuplicateBookAlert(book: Book) {
+        val duplicateAlert = alert(Appcompat, "Publication already exists") {
+
+            positiveButton("Add anyways") { }
+            negativeButton("Cancel") { }
+
+        }.build()
+        duplicateAlert.apply {
+            setCancelable(false)
+            setCanceledOnTouchOutside(false)
+            setOnShowListener({
+                val button = getButton(AlertDialog.BUTTON_POSITIVE)
+                button.setOnClickListener({
+                    database.books.insert(book, true)?.let {
+                        book.id = it
+                        books.add(book)
+                        duplicateAlert.dismiss()
+                        booksAdapter.notifyDataSetChanged()
+                    }
+                })
+                val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
+                cancelButton.setOnClickListener({
+                    File(book.fileUrl).delete()
+                    duplicateAlert.dismiss()
+                })
+            })
+        }
+        duplicateAlert.show()
+    }
+
+    private fun showDocumentPicker() {
+        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
+        // browser.
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+
+        // Filter to only show results that can be "opened", such as a
+        // file (as opposed to a list of contacts or timezones)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+
+        // Filter to show only epubs, using the image MIME data type.
+        // To search for all documents available via installed storage providers,
+        // it would be "*/*".
+        intent.type = "*/*"
+//        val mimeTypes = arrayOf(
+//                "application/epub+zip",
+//                "application/x-cbz"
+//        )
+//        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+
+        startActivityForResult(intent, 1)
     }
 
     private fun parseURL(url: URL): Promise<ParseData, Exception> {
@@ -353,181 +399,85 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         return url
     }
 
-    override fun onResume() {
-        super.onResume()
-        booksAdapter.notifyDataSetChanged()
-    }
+    private fun parseIntent(filePath: String?) {
 
-    override fun onStart() {
-        super.onStart()
+        filePath?.let {
 
-        startServer()
+            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+            progress.show()
 
-        permissionHelper.storagePermission {
-            if (books.isEmpty()) {
-                val listOfFiles = File(R2TEST_DIRECTORY_PATH).listFilesSafely()
-                for (i in listOfFiles.indices) {
-                    val file = listOfFiles[i]
-                    val publicationPath = R2TEST_DIRECTORY_PATH + file.name
-                    val parser = EpubParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(parser, pub, file.name, file.absolutePath, true)
-                    }
-                }
-                if (!preferences.contains("samples")) {
-                    val dir = File(R2TEST_DIRECTORY_PATH)
-                    if (!dir.exists()) {
-                        dir.mkdirs()
-                    }
-                    copySamplesFromAssetsToStorage()
-                    preferences.edit().putBoolean("samples", true).apply()
+            val fileName = UUID.randomUUID().toString()
+            val publicationPath = R2DIRECTORY + fileName
+
+            task {
+                copyFile(File(filePath), File(publicationPath))
+            } then {
+                preparePublication(publicationPath, filePath, fileName, progress)
+            }
+
+        } ?: run {
+            val intent = intent
+            val uriString: String? = intent.getStringExtra(R2IntentHelper.URI)
+            val lcp: Boolean = intent.getBooleanExtra(R2IntentHelper.LCP, false)
+            uriString?.let {
+                when {
+                    lcp -> parseIntentLcpl(uriString)
+                    else -> parseIntentEpub(uriString)
                 }
             }
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        //TODO not sure if this is needed
-        stopServer()
+    private fun parseIntentEpub(uriString: String) {
+        val uri: Uri? = Uri.parse(uriString)
+        if (uri != null) {
+
+            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+            progress.show()
+            val fileName = UUID.randomUUID().toString()
+            val publicationPath = R2DIRECTORY + fileName
+            val path = RealPathUtil.getRealPath(this, uri)
+            task {
+                if (path != null) {
+                    copyFile(File(path), File(publicationPath))
+                } else {
+                    val input = URL(uri.toString()).openStream()
+                    input.toFile(publicationPath)
+                }
+            } then {
+                preparePublication(publicationPath, uriString, fileName, progress)
+            }
+
+        }
     }
 
 
-    private fun parseIntent(filePath: String?) {
+    private fun preparePublication(publicationPath: String, uriString: String, fileName: String, progress: ProgressDialog) {
 
-        if (filePath != null) {
-            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
-            progress.show()
+        val file = File(publicationPath)
 
-            val fileName = UUID.randomUUID().toString()
-            val publicationPath = R2TEST_DIRECTORY_PATH + fileName
+        try {
+            runOnUiThread({
 
-            copyFile(File(filePath), File(publicationPath))
-            val file = File(publicationPath)
-
-            try {
-                runOnUiThread({
-
-                    if (filePath.endsWith(".epub")) {
-                        val parser = EpubParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                            progress.dismiss()
-                        }
-                    } else if (filePath.endsWith(".cbz")) {
-                        val parser = CbzParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                            progress.dismiss()
-                        }
+                if (uriString.endsWith(".epub")) {
+                    val parser = EpubParser()
+                    val pub = parser.parse(publicationPath)
+                    if (pub != null) {
+                        prepareToServe(pub, fileName, file.absolutePath, true, false)
+                        progress.dismiss()
                     }
-
-                })
-            } catch (e: Throwable) {
-                e.printStackTrace()
-            }
-        } else {
-            val intent = intent
-            val uriString: String? = intent.getStringExtra(R2IntentHelper.URI)
-            val lcp: Boolean = intent.getBooleanExtra(R2IntentHelper.LCP, false)
-            if (uriString != null && !lcp) {
-                val uri: Uri? = Uri.parse(uriString)
-                if (uri != null) {
-
-                    val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
-                    progress.show()
-                    val thread = Thread(Runnable {
-                        val fileName = UUID.randomUUID().toString()
-                        val publicationPath = R2TEST_DIRECTORY_PATH + fileName
-                        val path = RealPathUtil.getRealPath(this, uri)
-
-                        if (path != null) {
-                            copyFile(File(path), File(publicationPath))
-                        } else {
-                            val input = java.net.URL(uri.toString()).openStream()
-                            input.toFile(publicationPath)
-                        }
-                        val file = File(publicationPath)
-
-                        try {
-                            runOnUiThread({
-
-                                if (uriString.endsWith(".epub")) {
-                                    val parser = EpubParser()
-                                    val pub = parser.parse(publicationPath)
-                                    if (pub != null) {
-                                        prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                                        progress.dismiss()
-                                    }
-                                } else if (uriString.endsWith(".cbz")) {
-                                    val parser = CbzParser()
-                                    val pub = parser.parse(publicationPath)
-                                    if (pub != null) {
-                                        prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                                        progress.dismiss()
-                                    }
-                                }
-
-                            })
-                        } catch (e: Throwable) {
-                            e.printStackTrace()
-                        }
-                    })
-                    thread.start()
-                }
-
-            }
-
-            // uncomment for lcp
-            /*
-                else if (uriString != null && lcp == true) {
-                    val uri: Uri? = Uri.parse(uriString)
-                    if (uri != null) {
-                        val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
-                        progress.show()
-                        val thread = Thread(Runnable {
-                            val lcpLicense = LcpLicense(URL(uri.toString()), false, this)
-                            task {
-                                lcpLicense.fetchStatusDocument().get()
-                            } then {
-                                lcpLicense.checkStatus()
-                                lcpLicense.updateLicenseDocument().get()
-                            } then {
-                                lcpLicense.areRightsValid()
-                                lcpLicense.register()
-                                lcpLicense.fetchPublication()
-                            } then {
-                                it?.let {
-                                    lcpLicense.moveLicense(it, lcpLicense.archivePath)
-                                }
-                                it!!
-                            } successUi { path ->
-                                val file = File(path)
-                                try {
-                                    runOnUiThread(Runnable {
-                                        val parser = EpubParser()
-                                        val pub = parser.parse(path)
-                                        if (pub != null) {
-                                            val pair = parser.parseRemainingResource(pub.container, pub.publication, pub.container.drm)
-                                            pub.container = pair.first
-                                            pub.publication = pair.second
-                                            prepareToServe(parser, pub, file.name, file.absolutePath, true)
-                                            progress.dismiss()
-
-                                        }
-                                    })
-                                } catch (e: Throwable) {
-                                    e.printStackTrace()
-                                }
-                            }
-                        })
-                        thread.start()
+                } else if (uriString.endsWith(".cbz")) {
+                    val parser = CbzParser()
+                    val pub = parser.parse(publicationPath)
+                    if (pub != null) {
+                        prepareToServe(pub, fileName, file.absolutePath, true, false)
+                        progress.dismiss()
                     }
                 }
-            */
+
+            })
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
     }
 
@@ -589,20 +539,20 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         for (element in list) {
             val input = assets.open("Samples/$element")
             val fileName = UUID.randomUUID().toString()
-            val publicationPath = R2TEST_DIRECTORY_PATH + fileName
+            val publicationPath = R2DIRECTORY + fileName
             input.toFile(publicationPath)
             val file = File(publicationPath)
             if (element.endsWith(".epub")) {
                 val parser = EpubParser()
                 val pub = parser.parse(publicationPath)
                 if (pub != null) {
-                    prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                    prepareToServe(pub, fileName, file.absolutePath, true, false)
                 }
             } else if (element.endsWith(".cbz")) {
                 val parser = CbzParser()
                 val pub = parser.parse(publicationPath)
                 if (pub != null) {
-                    prepareToServe(parser, pub, fileName, file.absolutePath, true)
+                    prepareToServe(pub, fileName, file.absolutePath, true, false)
                 }
             }
         }
@@ -623,7 +573,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         }
     }
 
-    private fun prepareToServe(parser: PublicationParser, pub: PubBox?, fileName: String, absolutePath: String, add: Boolean) {
+    private fun prepareToServe(pub: PubBox?, fileName: String, absolutePath: String, add: Boolean, lcp: Boolean) {
         if (pub == null) {
             snackbar(catalogView, "Invalid publication")
             return
@@ -631,114 +581,56 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         val publication = pub.publication
         val container = pub.container
 
-        fun addBookToView() {
-            runOnUiThread {
-                if (publication.type == Publication.TYPE.EPUB) {
-                    val publicationIdentifier = publication.metadata.identifier
-                    preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
-                    val author = authorName(publication)
-                    if (add) {
-                        publication.coverLink?.href?.let {
-                            val blob = ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
-                            blob?.let {
-                                val book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, blob, ".epub")
-                                if (add) {
-                                    database.books.insert(book, false)?.let {
-                                        book.id = it
-                                        books.add(book)
-                                        booksAdapter.notifyDataSetChanged()
-                                    } ?: run {
-                                        alert(Appcompat, "Publication already exists") {
+        runOnUiThread {
+            if (publication.type == Publication.TYPE.EPUB) {
+                val publicationIdentifier = publication.metadata.identifier
+                preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
+                val author = authorName(publication)
+                if (add) {
 
-                                            positiveButton("Add anyways") { }
-                                            negativeButton("Cancel") { }
-
-                                        }.build().apply {
-                                            setCancelable(false)
-                                            setCanceledOnTouchOutside(false)
-                                            setOnShowListener({
-                                                val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                                                b.setOnClickListener({
-                                                    database.books.insert(book, true)?.let {
-                                                        books.add(book)
-                                                        dismiss()
-                                                        booksAdapter.notifyDataSetChanged()
-                                                    }
-                                                })
-                                            })
-                                        }.show()
-                                    }
-                                }
-                            }
+                    var book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, null, Publication.EXTENSION.EPUB)
+                    publication.coverLink?.href?.let {
+                        val blob = ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
+                        blob?.let {
+                            book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, blob, Publication.EXTENSION.EPUB)
                         } ?: run {
-                            val book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, null, ".epub")
-                            if (add) {
-                                database.books.insert(book, false)?.let {
-                                    book.id = it
-                                    books.add(book)
-                                    booksAdapter.notifyDataSetChanged()
-                                } ?: run {
-                                    alert(Appcompat, "Publication already exists") {
-
-                                        positiveButton("Add anyways") { }
-                                        negativeButton("Cancel") { }
-
-                                    }.build().apply {
-                                        setCancelable(false)
-                                        setCanceledOnTouchOutside(false)
-                                        setOnShowListener({
-                                            val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                                            b.setOnClickListener({
-                                                database.books.insert(book, true)?.let {
-                                                    books.add(book)
-                                                    dismiss()
-                                                    booksAdapter.notifyDataSetChanged()
-                                                }
-                                            })
-                                        })
-                                    }.show()
-                                }
-                            }
+                            book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, null, Publication.EXTENSION.EPUB)
                         }
+                    } ?: run {
+                        book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, null, Publication.EXTENSION.EPUB)
                     }
+
+                    database.books.insert(book, false)?.let {
+                        book.id = it
+                        books.add(book)
+                        booksAdapter.notifyDataSetChanged()
+                    } ?: run {
+
+                        showDuplicateBookAlert(book)
+
+                    }
+                }
+                if (!lcp) {
                     server.addEpub(publication, container, "/$fileName", applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
-                } else if (publication.type == Publication.TYPE.CBZ) {
-                    if (add) {
-                        publication.coverLink?.href?.let {
-                            val book = Book(fileName, publication.metadata.title, "", absolutePath,  null, publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it), ".cbz")
-                            database.books.insert(book, false)?.let {
-                                book.id = it
-                                books.add(book)
-                                booksAdapter.notifyDataSetChanged()
-                            } ?: run {
-                                // snackbar(catalogView, "Publication already exists")
-                                alert(Appcompat, "Publication already exists") {
+                }
 
-                                    positiveButton("Add anyways") { }
-                                    negativeButton("Cancel") { }
+            } else if (publication.type == Publication.TYPE.CBZ) {
+                if (add) {
+                    publication.coverLink?.href?.let {
+                        val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it), Publication.EXTENSION.CBZ)
+                        database.books.insert(book, false)?.let {
+                            book.id = it
+                            books.add(book)
+                            booksAdapter.notifyDataSetChanged()
+                        } ?: run {
 
-                                }.build().apply {
-                                    setCancelable(false)
-                                    setCanceledOnTouchOutside(false)
-                                    setOnShowListener({
-                                        val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                                        b.setOnClickListener({
-                                            database.books.insert(book, true)?.let {
-                                                book.id = it
-                                                books.add(book)
-                                                dismiss()
-                                                booksAdapter.notifyDataSetChanged()
-                                            }
-                                        })
-                                    })
-                                }.show()
-                            }
+                            showDuplicateBookAlert(book)
+
                         }
                     }
                 }
             }
         }
-        addBookToView()
     }
 
     override fun recyclerViewListLongClicked(v: View, position: Int) {
@@ -753,7 +645,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         val delete: Button = layout.findViewById(R.id.delete) as Button
         delete.setOnClickListener {
             val book = books[position]
-            val publicationPath = R2TEST_DIRECTORY_PATH + book.fileName
+            val publicationPath = R2DIRECTORY + book.fileName
             books.remove(book)
             booksAdapter.notifyDataSetChanged()
             val file = File(publicationPath)
@@ -768,133 +660,40 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         progress.show()
         task {
             val book = books[position]
-            val publicationPath = R2TEST_DIRECTORY_PATH + book.fileName
+            val publicationPath = R2DIRECTORY + book.fileName
             val file = File(publicationPath)
-            if (book.ext == ".epub") {
-                val parser = EpubParser()
-                val pub = parser.parse(publicationPath)
-                if (pub != null) {
-                    prepareToServe(parser, pub, book.fileName, file.absolutePath, false)
-                    val publication = pub.publication
-                    if (publication.spine.size > 0) {
+            when {
+                book.ext == Publication.EXTENSION.EPUB -> {
+                    val parser = EpubParser()
+                    val pub = parser.parse(publicationPath)
+                    pub?.let {
                         pub.container.drm?.let { drm: Drm ->
-                            if (drm.brand == Drm.Brand.Lcp) {
-                                // uncomment for lcp
-                                /*
-                                handleLcpPublication(publicationPath, drm, {
-                                    val pair = parser.parseRemainingResource(pub.container, publication, it)
-                                    pub.container = pair.first
-                                    pub.publication = pair.second
-                                }, {
-                                    if (supportedProfiles.contains(it.profile)) {
-                                        server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
-
-                                        val license = (drm.license as LcpLicense)
-                                        val drmModel = DRMMModel(drm.brand.name,
-                                                license.currentStatus(),
-                                                license.provider().toString(),
-                                                DateTime(license.issued()).toString(DateTimeFormat.shortDateTime()),
-                                                DateTime(license.lastUpdate()).toString(DateTimeFormat.shortDateTime()),
-                                                DateTime(license.rightsStart()).toString(DateTimeFormat.shortDateTime()),
-                                                DateTime(license.rightsEnd()).toString(DateTimeFormat.shortDateTime()),
-                                                license.rightsPrints().toString(),
-                                                license.rightsCopies().toString())
-
-                                        startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "drmModel" to drmModel))
-                                    } else {
-                                        alert(Appcompat, "The profile of this DRM is not supported.") {
-                                            negativeButton("Ok") { }
-                                        }.show()
-                                    }
-                                }, {
-                                    // Do nothing
-                                }).get()
-
-                                */
-                            }
+                            prepareAndStartActivityWithLCP(drm, pub, book, file, publicationPath, parser, pub.publication)
                         } ?: run {
-                            startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication))
+                            prepareAndStartActivity(pub, book, file, publicationPath, pub.publication)
                         }
                     }
                 }
-            } else if (book.ext == ".cbz") {
-
-                val parser = CbzParser()
-                val pub = parser.parse(publicationPath)
-                if (pub != null) {
-                    val publication = pub.publication
-                    startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to publication))
+                book.ext == Publication.EXTENSION.CBZ -> {
+                    val parser = CbzParser()
+                    val pub = parser.parse(publicationPath)
+                    pub?.let {
+                        startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to pub.publication))
+                    }
                 }
+                else -> null
             }
         } then {
             progress.dismiss()
         }
     }
 
-    // uncomment for lcp
-/*
-    private fun handleLcpPublication(publicationPath: String, drm: Drm, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception> {
-
-        val lcpHttpService = LcpHttpService()
-        val session = LcpSession(publicationPath, this)
-
-        fun validatePassphrase(passphraseHash: String): Promise<LcpLicense, Exception> {
-            return task {
-                lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl").get()
-            } then { pemCrtl ->
-                session.resolve(passphraseHash, pemCrtl).get()
-            }
-        }
-
-        fun promptPassphrase(reason: String? = null, callback: (pass: String) -> Unit) {
-            runOnUiThread {
-                val hint = session.getHint()
-                alert(Appcompat, hint, reason ?: "LCP Passphrase") {
-                    var editText: EditText? = null
-                    customView {
-                        verticalLayout {
-                            textInputLayout {
-                                editText = editText { }
-                            }
-                        }
-                    }
-                    positiveButton("OK") {
-                        task {
-                            editText!!.text.toString()
-                        } then { clearPassphrase ->
-                            val passphraseHash = HASH.sha256(clearPassphrase)
-                            session.checkPassphrases(listOf(passphraseHash))
-                        } then { validPassphraseHash ->
-                            session.storePassphrase(validPassphraseHash)
-                            callback(validPassphraseHash)
-                        }
-                    }
-                    negativeButton("Cancel") { }
-                }.show()
-            }
-        }
-
-        return task {
-            val passphrases = session.passphraseFromDb()
-            passphrases?.let {
-                val lcpLicense = validatePassphrase(it).get()
-                drm.license = lcpLicense
-                drm.profile = session.getProfile()
-                parsingCallback(drm)
-                callback(drm)
-            } ?: run {
-                promptPassphrase(null, {
-                    val lcpLicense = validatePassphrase(it).get()
-                    drm.license = lcpLicense
-                    drm.profile = session.getProfile()
-                    parsingCallback(drm)
-                    callback(drm)
-                    callbackUI()
-                })
-            }
-        }
+    private fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication) {
+        prepareToServe(pub, book.fileName, file.absolutePath, false, false)
+        startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication))
     }
-*/
+
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -908,45 +707,27 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         if (requestCode == 1 && resultCode == RESULT_OK) {
 
             val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
-            progress.show()
 
             task {
 
-                val uri: Uri? = data.data
-
-                val fileName = UUID.randomUUID().toString()
-                val publicationPath = R2TEST_DIRECTORY_PATH + fileName
-
-                val input = contentResolver.openInputStream(uri)
-                input.toFile(publicationPath)
-                val file = File(publicationPath)
-
-                try {
-                    runOnUiThread({
-                        if (uri != null) {
-                            val mime = getMimeType(uri).first
-                            val name = getMimeType(uri).second
-                            if (mime == "application/epub+zip") {
-                                val parser = EpubParser()
-                                val pub = parser.parse(publicationPath)
-                                if (pub != null) {
-                                    prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                                }
-                            } else if (name.endsWith(".cbz")) {
-                                val parser = CbzParser()
-                                val pub = parser.parse(publicationPath)
-                                if (pub != null) {
-                                    prepareToServe(parser, pub, fileName, file.absolutePath, true)
-                                }
-                            }
-                        }
-                    })
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                }
+                progress.show()
 
             } then {
-                progress.dismiss()
+
+                val uri: Uri? = data.data
+                uri?.let {
+                    val fileType = getMimeType(uri)
+                    val mime = fileType.first
+                    val name = fileType.second
+
+                    if (name.endsWith(".lcpl")) {
+                        processLcpActivityResult(uri, it, progress)
+                    } else {
+                        processEpubResult(uri, mime, progress, name)
+                    }
+
+                }
+
             }
 
         } else if (resultCode == RESULT_OK) {
@@ -959,48 +740,276 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             } then {
                 progress.dismiss()
             }
-            
+
         }
     }
 
-    fun  getMimeType( uri:Uri): Pair<String, String> {
-        var mimeType:String? = null;
-        var fileName = String();
-        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-            val contentResolver: ContentResolver = applicationContext.getContentResolver();
-            mimeType = contentResolver.getType(uri);
-            getContentName(contentResolver,uri)?.let {
+
+    private fun processEpubResult(uri: Uri?, mime: String, progress: ProgressDialog, name: String) {
+        val fileName = UUID.randomUUID().toString()
+        val publicationPath = R2DIRECTORY + fileName
+
+        val input = contentResolver.openInputStream(uri)
+        input.toFile(publicationPath)
+        val file = File(publicationPath)
+
+        try {
+            runOnUiThread({
+                if (mime == "application/epub+zip") {
+                    val parser = EpubParser()
+                    val pub = parser.parse(publicationPath)
+                    if (pub != null) {
+                        prepareToServe(pub, fileName, file.absolutePath, true, false)
+                        progress.dismiss()
+
+                    }
+                } else if (name.endsWith(".cbz")) {
+                    val parser = CbzParser()
+                    val pub = parser.parse(publicationPath)
+                    if (pub != null) {
+                        prepareToServe(pub, fileName, file.absolutePath, true, false)
+                        progress.dismiss()
+
+                    }
+                }
+            })
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    }
+
+
+    private fun getMimeType(uri: Uri): Pair<String, String> {
+        val mimeType: String?
+        var fileName = String()
+        if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
+            val contentResolver: ContentResolver = applicationContext.contentResolver
+            mimeType = contentResolver.getType(uri)
+            getContentName(contentResolver, uri)?.let {
                 fileName = it
             }
         } else {
-            val fileExtension:String = MimeTypeMap.getFileExtensionFromUrl(uri
-                    .toString());
+            val fileExtension: String = MimeTypeMap.getFileExtensionFromUrl(uri
+                    .toString())
             mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                    fileExtension.toLowerCase());
+                    fileExtension.toLowerCase())
         }
-        return Pair(mimeType, fileName);
+        return Pair(mimeType, fileName)
     }
 
     private fun getContentName(resolver: ContentResolver, uri: Uri): String? {
         val cursor = resolver.query(uri, null, null, null, null)
         cursor!!.moveToFirst()
         val nameIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
-        if (nameIndex >= 0) {
+        return if (nameIndex >= 0) {
             val name = cursor.getString(nameIndex)
             cursor.close()
-            return name
+            name
         } else {
-            return null
+            null
+        }
+    }
+
+    class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) : RecyclerView.ItemDecoration() {
+
+        override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView,
+                                    state: RecyclerView.State) {
+            outRect.bottom = verticalSpaceHeight
         }
     }
 
 
-}
 
-class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) : RecyclerView.ItemDecoration() {
 
-    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView,
-                                state: RecyclerView.State) {
-        outRect.bottom = verticalSpaceHeight
+     override fun parseIntentLcpl(uriString: String) {
+//        val uri: Uri? = Uri.parse(uriString)
+//        if (uri != null) {
+//            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+//            progress.show()
+//            val thread = Thread(Runnable {
+//                val lcpLicense = LcpLicense(URL(uri.toString()).openStream().readBytes(), this)
+//                task {
+//                    lcpLicense.fetchStatusDocument().get()
+//                } then {
+//                    lcpLicense.checkStatus()
+//                    lcpLicense.updateLicenseDocument().get()
+//                } then {
+//                    lcpLicense.areRightsValid()
+//                    lcpLicense.register()
+//                    lcpLicense.fetchPublication()
+//                } then {
+//                    it?.let {
+//                        lcpLicense.moveLicense(it, URL(uri.toString()).openStream().readBytes())
+//                    }
+//                    it!!
+//                } successUi { path ->
+//                    val file = File(path)
+//                    try {
+//                        runOnUiThread({
+//                            val parser = EpubParser()
+//                            val pub = parser.parse(path)
+//                            if (pub != null) {
+//                                val pair = parser.parseRemainingResource(pub.container, pub.publication, pub.container.drm)
+//                                pub.container = pair.first
+//                                pub.publication = pair.second
+//                                prepareToServe(pub, file.name, file.absolutePath, true, true)
+//                                progress.dismiss()
+//
+//                            }
+//                        })
+//                    } catch (e: Throwable) {
+//                        e.printStackTrace()
+//                    }
+//                }
+//            })
+//            thread.start()
+//        }
     }
+
+     override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication) {
+//        if (drm.brand == Drm.Brand.Lcp) {
+//            prepareToServe(pub, book.fileName, file.absolutePath, false, true)
+//
+//            handleLcpPublication(publicationPath, drm, {
+//                val pair = parser.parseRemainingResource(pub.container, publication, it)
+//                pub.container = pair.first
+//                pub.publication = pair.second
+//            }, {
+//                if (supportedProfiles.contains(it.profile)) {
+//                    server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
+//
+//                    val license = (drm.license as LcpLicense)
+//                    val drmModel = DRMMModel(drm.brand.name,
+//                            license.currentStatus(),
+//                            license.provider().toString(),
+//                            DateTime(license.issued()).toString(DateTimeFormat.shortDateTime()),
+//                            DateTime(license.lastUpdate()).toString(DateTimeFormat.shortDateTime()),
+//                            DateTime(license.rightsStart()).toString(DateTimeFormat.shortDateTime()),
+//                            DateTime(license.rightsEnd()).toString(DateTimeFormat.shortDateTime()),
+//                            license.rightsPrints().toString(),
+//                            license.rightsCopies().toString())
+//
+//                    startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "drmModel" to drmModel))
+//                } else {
+//                    alert(Appcompat, "The profile of this DRM is not supported.") {
+//                        negativeButton("Ok") { }
+//                    }.show()
+//                }
+//            }, {
+//                // Do nothing
+//            }).get()
+//
+//        }
+    }
+
+     override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog) {
+//        val input = contentResolver.openInputStream(uri)
+//
+//        val thread = Thread(Runnable {
+//            val lcpLicense = LcpLicense(input.readBytes(), this)
+//            task {
+//                lcpLicense.fetchStatusDocument().get()
+//            } then {
+//                lcpLicense.checkStatus()
+//                lcpLicense.updateLicenseDocument().get()
+//            } then {
+//                lcpLicense.areRightsValid()
+//                lcpLicense.register()
+//                lcpLicense.fetchPublication()
+//            } then {
+//                it?.let {
+//                    lcpLicense.moveLicense(it, contentResolver.openInputStream(uri).readBytes())
+//                }
+//                it!!
+//            } successUi { path ->
+//                val file = File(path)
+//                try {
+//                    runOnUiThread({
+//                        val parser = EpubParser()
+//                        val pub = parser.parse(path)
+//                        if (pub != null) {
+//                            val pair = parser.parseRemainingResource(pub.container, pub.publication, pub.container.drm)
+//                            pub.container = pair.first
+//                            pub.publication = pair.second
+//                            prepareToServe(pub, file.name, file.absolutePath, true, true)
+//                            progress.dismiss()
+//                        }
+//                    })
+//                } catch (e: Throwable) {
+//                    e.printStackTrace()
+//                }
+//            }
+//        })
+//        thread.start()
+    }
+
+//     override fun handleLcpPublication(publicationPath: String, drm: Drm, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception> {
+//           val lcpHttpService = LcpHttpService()
+//           val session = LcpSession(publicationPath, this)
+//
+//           fun validatePassphrase(passphraseHash: String): Promise<LcpLicense, Exception> {
+//               return task {
+//                   lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl").get()
+//               } then { pemCrtl ->
+//                   session.resolve(passphraseHash, pemCrtl).get()
+//               }
+//           }
+//
+//           fun promptPassphrase(reason: String? = null, callback: (pass: String) -> Unit) {
+//               runOnUiThread {
+//                   val hint = session.getHint()
+//                   alert(Appcompat, hint, reason ?: "LCP Passphrase") {
+//                       var editText: EditText? = null
+//                       customView {
+//                           verticalLayout {
+//                               textInputLayout {
+//                                   editText = editText { }
+//                               }
+//                           }
+//                       }
+//                       positiveButton("OK") {
+//                           task {
+//                               editText!!.text.toString()
+//                           } then { clearPassphrase ->
+//                               val passphraseHash = HASH.sha256(clearPassphrase)
+//                               session.checkPassphrases(listOf(passphraseHash))
+//                           } then { validPassphraseHash ->
+//                               session.storePassphrase(validPassphraseHash)
+//                               callback(validPassphraseHash)
+//                           }
+//                       }
+//                       negativeButton("Cancel") { }
+//                   }.show()
+//               }
+//           }
+//
+//           return task {
+//               val passphrases = session.passphraseFromDb()
+//               passphrases?.let {
+//                   val lcpLicense = validatePassphrase(it).get()
+//                   drm.license = lcpLicense
+//                   drm.profile = session.getProfile()
+//                   parsingCallback(drm)
+//                   callback(drm)
+//               } ?: run {
+//                   promptPassphrase(null, {
+//                       val lcpLicense = validatePassphrase(it).get()
+//                       drm.license = lcpLicense
+//                       drm.profile = session.getProfile()
+//                       parsingCallback(drm)
+//                       callback(drm)
+//                       callbackUI()
+//                   })
+//               }
+//           }
+//       }
+
 }
+
+interface LcpFunctions {
+     fun parseIntentLcpl(uriString: String)
+     fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication)
+     fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog)
+//     fun handleLcpPublication(publicationPath: String, drm: Drm, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception>
+}
+
