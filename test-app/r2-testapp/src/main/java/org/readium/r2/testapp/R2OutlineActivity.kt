@@ -43,8 +43,6 @@ class R2OutlineActivity : AppCompatActivity() {
         tabHost.setup()
 
         val publication = intent.getSerializableExtra("publication") as Publication
-        val publicationIdentifier = publication.metadata.identifier
-
 
         title = publication.metadata.title
 
@@ -88,15 +86,14 @@ class R2OutlineActivity : AppCompatActivity() {
          */
         bmkDB = BookmarksDatabase(this)
 
-        val bmks = bmkDB.bookmarks.list(publicationIdentifier)
+        val bmks = bmkDB.bookmarks.list(intent.getLongExtra("bookId", -1))
         val bmkAdapter = BookMarksAdapter(this, bmks, allElements)
 
         bmk_list.adapter = bmkAdapter
 
 
         bmk_list.setOnItemClickListener { _, _, position, _ ->
-
-            val bmks_item_uri = allElements.get(bmks.get(position).spine_index.toInt() - 1).href
+            val bmks_item_uri = publication.spine.get(bmks.get(position).spine_index.toInt()).href
 
             Timber.d(TAG, bmks_item_uri)
 
@@ -192,7 +189,7 @@ class R2OutlineActivity : AppCompatActivity() {
             val viewHolder: ViewHolder
 
             val bookmark = getItem(position) as Bookmark
-            val spine_item = getBookSpineItem(bookmark.spine_index.toInt() - 1) as Link
+            val spine_item = getBookSpineItem(bookmark.spine_index.toInt()) as Link
 
             println("Bookmark's spine_index is : ${bookmark.spine_index.toInt()}")
             println("Spine_item is : ${spine_item.title}")
@@ -211,13 +208,16 @@ class R2OutlineActivity : AppCompatActivity() {
 
             } else {
                 viewHolder = bmkView.tag as ViewHolder
-
             }
 
 
             val progessionText = "${((bookmark.progression * 100).roundToInt())}% through chapter"
 
-            viewHolder.bmk_chapter!!.text = spine_item.title
+            var title = spine_item.title
+            if(title.isNullOrEmpty()){
+                title = "*Title Missing*"
+            }
+            viewHolder.bmk_chapter!!.text = title
             viewHolder.bmk_progression!!.text = progessionText
             viewHolder.bmk_timestamp!!.text = bookmark.timestamp
 
@@ -233,7 +233,7 @@ class R2OutlineActivity : AppCompatActivity() {
         }
 
         private fun getBookSpineItem(position: Int): Any {
-            if (position < 0) return pub_info[0]
+            if (position <= 0) return pub_info[0]
             return pub_info[position]
         }
 
