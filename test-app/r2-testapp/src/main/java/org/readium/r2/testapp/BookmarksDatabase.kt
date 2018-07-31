@@ -15,6 +15,7 @@ import java.util.*
 /**
  * Bookmark model
  *
+ * @var id: Long? - ID of the bookmark in database
  * @val pub_ref: Long -  Reference to the book
  * @val spine_index: Long - Index to the spine element of the book
  * @val progression: Double - Percentage of progression in the ( book or spine element ? )
@@ -22,13 +23,14 @@ import java.util.*
  *
  * @fun toString(): String - Return a String description of the Bookmark
  */
-class Bookmark(val pub_ref: String,
+class Bookmark(var id: Long?,
+               val pub_ref: String,
                val spine_index: Long,
                val progression: Double = 0.0,
                var timestamp: String = SimpleDateFormat("MM/dd/yyyy hh:mm:ss").format(Date())){
 
     override fun toString(): String {
-        return "Book identifier : ${this.pub_ref}, spine item selected ${this.spine_index}, progression saved ${this.progression} and created the ${this.timestamp}."
+        return "Bookmark id : ${this.id}, book identifier : ${this.pub_ref}, spine item selected ${this.spine_index}, progression saved ${this.progression} and created the ${this.timestamp}."
     }
 
 }
@@ -38,18 +40,18 @@ class Bookmark(val pub_ref: String,
  */
 fun bkmkUnitTests(ctx: Context){
     val bk = mutableListOf<Bookmark>()
-    bk.add(Bookmark("1", 1, 0.0))
-    bk.add(Bookmark("2", 3, 50.0))
-    bk.add(Bookmark("2", 3, 50.0))
-    bk.add(Bookmark("15", 12, 99.99))
+    bk.add(Bookmark(null,"1", 1, 0.0))
+    bk.add(Bookmark(null,"2", 3, 50.0))
+    bk.add(Bookmark(null,"2", 3, 50.0))
+    bk.add(Bookmark(null,"15", 12, 99.99))
 
 
     val bkUnknown = mutableListOf<Bookmark>()
-    bkUnknown.add(Bookmark("4", 34, 133.33))
-    bkUnknown.add(Bookmark("4", 34, 33.33))
-    bkUnknown.add(Bookmark("4", -34, 33.33))
-    bkUnknown.add(Bookmark("-4", 34, 33.33))
-    bkUnknown.add(Bookmark("-4", -34, 33.33))
+    bkUnknown.add(Bookmark(null,"4", 34, 133.33))
+    bkUnknown.add(Bookmark(null,"4", 34, 33.33))
+    bkUnknown.add(Bookmark(null,"4", -34, 33.33))
+    bkUnknown.add(Bookmark(null,"-4", 34, 33.33))
+    bkUnknown.add(Bookmark(null,"-4", -34, 33.33))
 
     val db = BookmarksDatabase(ctx)
     println("#####################################")
@@ -85,7 +87,7 @@ fun bkmkUnitTests(ctx: Context){
         }
     }
     println("List of BookMarks  : ")
-    db.bookmarks.list().forEach { println(it) }
+    db.bookmarks.listAll().forEach { println(it) }
     println("-------------------------------------")
     println("------------  Unknown  --------------")
     bkUnknown.forEach {
@@ -139,7 +141,7 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
     override fun onCreate(db: SQLiteDatabase) {
 
         db.createTable(BOOKMARKSTable.NAME, true,
-                BOOKMARKSTable.ID to INTEGER + PRIMARY_KEY,
+                BOOKMARKSTable.ID to INTEGER + PRIMARY_KEY + AUTOINCREMENT,
                 BOOKMARKSTable.PUB_REF to TEXT,
                 BOOKMARKSTable.SPINE_INDEX to INTEGER,
                 BOOKMARKSTable.PROGRESSION to REAL,
@@ -178,7 +180,7 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
 
     fun insert(bookmark: Bookmark): Long? {
         val exists = has(bookmark)
-        if (exists.isEmpty()) {
+        if (exists.isEmpty() && bookmark.spine_index > 0) {
             return database.use {
                 return@use insert(BOOKMARKSTable.NAME,
                         BOOKMARKSTable.PUB_REF to bookmark.pub_ref,
@@ -193,6 +195,7 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
     fun has(bookmark: Bookmark): List<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
+                    BOOKMARKSTable.ID,
                     BOOKMARKSTable.PUB_REF,
                     BOOKMARKSTable.SPINE_INDEX,
                     BOOKMARKSTable.PROGRESSION,
@@ -209,16 +212,15 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
 
     fun delete(bookmark: Bookmark){
         database.use {
-            delete(BOOKMARKSTable.NAME,"(pub_ref = {pub_ref}) AND (spine_index = {spine_index}) AND (progression = {progression})",
-                    "pub_ref" to bookmark.pub_ref,
-                    "spine_index" to bookmark.spine_index,
-                    "progression" to bookmark.progression)
+            delete(BOOKMARKSTable.NAME,"id = {id}",
+                    "id" to bookmark.id!!)
         }
     }
 
     fun listAll(): MutableList<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
+                    BOOKMARKSTable.ID,
                     BOOKMARKSTable.PUB_REF,
                     BOOKMARKSTable.SPINE_INDEX,
                     BOOKMARKSTable.PROGRESSION,
@@ -230,9 +232,10 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
     }
 
 
-    fun list(pub_ref: String? = null): MutableList<Bookmark> {
+    fun list(pub_ref: String): MutableList<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
+                    BOOKMARKSTable.ID,
                     BOOKMARKSTable.PUB_REF,
                     BOOKMARKSTable.SPINE_INDEX,
                     BOOKMARKSTable.PROGRESSION,
@@ -246,20 +249,23 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
 
     class MyRowParser : RowParser<Bookmark> {
         override fun parseRow(columns: Array<Any?>): Bookmark {
-            val pub_ref = columns[0]?.let {
+            val id = columns[0]?.let {
+                return@let it
+            }?: kotlin.run { return@run (-1).toLong() }
+            val pub_ref = columns[1]?.let {
                 return@let it
             }?: kotlin.run { return@run "Unknown Publication" }
-            val spine_index = columns[1]?.let {
+            val spine_index = columns[2]?.let {
                 return@let it
             }?: kotlin.run { return@run 0 }
-            val progression = columns[2]?.let {
+            val progression = columns[3]?.let {
                 return@let it
             }?: kotlin.run { return@run 0.0f }
-            val timestamp = columns[3]?.let {
+            val timestamp = columns[4]?.let {
                 return@let it
             }?: kotlin.run { return@run "" }
 
-            return  Bookmark(pub_ref as String, spine_index as Long, progression as Double, timestamp as String)
+            return  Bookmark(id as Long, pub_ref as String, spine_index as Long, progression as Double, timestamp as String)
 
         }
     }
