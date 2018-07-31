@@ -72,8 +72,19 @@ class Publication : Serializable {
      *
      */
     enum class TYPE {
-        EPUB, CBZ
+        EPUB, CBZ, FXL
     }
+
+    open class EnumCompanion<T, V>(private val valueMap: Map<T, V>) {
+        fun fromString(type: T) = valueMap[type]
+    }
+
+    enum class EXTENSION(var value: String) {
+        EPUB(".epub"),
+        CBZ(".cbz");
+        companion object : EnumCompanion<String, EXTENSION>(EXTENSION.values().associateBy(EXTENSION::value))
+    }
+
 
     /// The kind of publication it is ( Epub, Cbz, ... )
     var type = TYPE.EPUB
