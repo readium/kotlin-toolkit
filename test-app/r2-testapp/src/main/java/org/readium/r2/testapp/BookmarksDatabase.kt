@@ -23,11 +23,12 @@ import java.util.*
  *
  * @fun toString(): String - Return a String description of the Bookmark
  */
-class Bookmark(var id: Long?,
-               val pub_ref: String,
+class Bookmark(val pub_ref: Long,
                val spine_index: Long,
                val progression: Double = 0.0,
-               var timestamp: String = SimpleDateFormat("MM/dd/yyyy hh:mm:ss").format(Date())){
+               var timestamp: String = SimpleDateFormat("MM/dd/yyyy hh:mm:ss").format(Date()),
+               var id: Long? = null
+               ){
 
     override fun toString(): String {
         return "Bookmark id : ${this.id}, book identifier : ${this.pub_ref}, spine item selected ${this.spine_index}, progression saved ${this.progression} and created the ${this.timestamp}."
@@ -40,18 +41,15 @@ class Bookmark(var id: Long?,
  */
 fun bkmkUnitTests(ctx: Context){
     val bk = mutableListOf<Bookmark>()
-    bk.add(Bookmark(null,"1", 1, 0.0))
-    bk.add(Bookmark(null,"2", 3, 50.0))
-    bk.add(Bookmark(null,"2", 3, 50.0))
-    bk.add(Bookmark(null,"15", 12, 99.99))
+    bk.add(Bookmark(1, 1, 0.0))
+    bk.add(Bookmark(2, 3, 50.0))
+    bk.add(Bookmark(2, 3, 50.0))
+    bk.add(Bookmark(15, 12, 99.99))
 
 
     val bkUnknown = mutableListOf<Bookmark>()
-    bkUnknown.add(Bookmark(null,"4", 34, 133.33))
-    bkUnknown.add(Bookmark(null,"4", 34, 33.33))
-    bkUnknown.add(Bookmark(null,"4", -34, 33.33))
-    bkUnknown.add(Bookmark(null,"-4", 34, 33.33))
-    bkUnknown.add(Bookmark(null,"-4", -34, 33.33))
+    bkUnknown.add(Bookmark(4, 34, 133.33))
+    bkUnknown.add(Bookmark(-4, -34, 33.33))
 
     val db = BookmarksDatabase(ctx)
     println("#####################################")
@@ -142,7 +140,7 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
 
         db.createTable(BOOKMARKSTable.NAME, true,
                 BOOKMARKSTable.ID to INTEGER + PRIMARY_KEY + AUTOINCREMENT,
-                BOOKMARKSTable.PUB_REF to TEXT,
+                BOOKMARKSTable.PUB_REF to INTEGER,
                 BOOKMARKSTable.SPINE_INDEX to INTEGER,
                 BOOKMARKSTable.PROGRESSION to REAL,
                 BOOKMARKSTable.TIMESTAMP to TEXT)
@@ -180,7 +178,7 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
 
     fun insert(bookmark: Bookmark): Long? {
         val exists = has(bookmark)
-        if (exists.isEmpty() && bookmark.spine_index > 0) {
+        if (exists.isEmpty() && bookmark.pub_ref >= 0) {
             return database.use {
                 return@use insert(BOOKMARKSTable.NAME,
                         BOOKMARKSTable.PUB_REF to bookmark.pub_ref,
@@ -232,7 +230,7 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
     }
 
 
-    fun list(pub_ref: String): MutableList<Bookmark> {
+    fun list(bookId: Long): MutableList<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.ID,
@@ -240,7 +238,7 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
                     BOOKMARKSTable.SPINE_INDEX,
                     BOOKMARKSTable.PROGRESSION,
                     BOOKMARKSTable.TIMESTAMP)
-                    .whereArgs("pub_ref = {pub_ref}", "pub_ref" to pub_ref as Any)
+                    .whereArgs("pub_ref = {bookId}", "bookId" to bookId as Any)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
@@ -251,10 +249,10 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
         override fun parseRow(columns: Array<Any?>): Bookmark {
             val id = columns[0]?.let {
                 return@let it
-            }?: kotlin.run { return@run (-1).toLong() }
+            }?: kotlin.run { return@run 0 }
             val pub_ref = columns[1]?.let {
                 return@let it
-            }?: kotlin.run { return@run "Unknown Publication" }
+            }?: kotlin.run { return@run 0 }
             val spine_index = columns[2]?.let {
                 return@let it
             }?: kotlin.run { return@run 0 }
@@ -265,8 +263,7 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
                 return@let it
             }?: kotlin.run { return@run "" }
 
-            return  Bookmark(id as Long, pub_ref as String, spine_index as Long, progression as Double, timestamp as String)
-
+            return Bookmark(pub_ref as Long, spine_index as Long, progression as Double, timestamp as String, id as Long)
         }
     }
 
