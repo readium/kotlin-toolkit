@@ -16,13 +16,12 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_outline_container.*
-import kotlinx.android.synthetic.main.bmk_item.*
 import kotlinx.android.synthetic.main.bmk_item.view.*
 import kotlinx.android.synthetic.main.list_item_toc.view.*
 import org.joda.time.DateTime
@@ -37,7 +36,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
     private val TAG = this::class.java.simpleName
     lateinit var preferences:SharedPreferences
-    lateinit var bmkDB: BookmarksDatabase
+    lateinit var bookmarkDB: BookmarksDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,67 +88,43 @@ class R2OutlineActivity : AppCompatActivity() {
         /*
          * Retrieve the list of bookmarks
          */
-        bmkDB = BookmarksDatabase(this)
+        bookmarkDB = BookmarksDatabase(this)
 
-        val bkId = intent.getLongExtra("bookId", -1)
-        val bmks = bmkDB.bookmarks.list(bkId)
-        val bmkAdapter = BookMarksAdapter(this, bmks, allElements)
+        val bookID = intent.getLongExtra("bookId", -1)
+        val bookmarks = bookmarkDB.bookmarks.list(bookID)
+        val bookmarkskAdapter = BookMarksAdapter(this, bookmarks, allElements)
 
-        bmk_list.adapter = bmkAdapter
+        bookmark_list.adapter = bookmarkskAdapter
 
 
-        bmk_list.setOnItemClickListener { _, _, position, _ ->
+        bookmark_list.setOnItemClickListener { _, _, position, _ ->
 
-            val bmks_item_uri = bmks.get(position).resourceHref
+            val bmks_item_uri = bookmarks.get(position).resourceHref
 
             Timber.d(TAG, bmks_item_uri)
 
             val intent = Intent()
             intent.putExtra("toc_item_uri", bmks_item_uri)
-            intent.putExtra("item_progression", bmks.get(position).progression)
+            intent.putExtra("item_progression", bookmarks.get(position).progression)
             setResult(Activity.RESULT_OK, intent)
             finish()
-        }
-
-        bmk_list.setOnItemLongClickListener { _, v, position, _ ->
-
-            //popup to confirm deletion
-            val layoutInflater = LayoutInflater.from(this).inflate(R.layout.popup_delete, bmk_list, false)
-            val popup = PopupWindow(this)
-            popup.contentView = layoutInflater
-            popup.width = bmk_item.width/4
-            popup.height = bmk_item.height
-            popup.isOutsideTouchable = true
-            popup.isFocusable = true
-            popup.showAsDropDown(v, 0, -bmk_item.height, Gravity.END)
-            val delete: Button = layoutInflater.findViewById(R.id.delete) as Button
-
-            delete.setOnClickListener {
-                bmkDB.bookmarks.delete(bmks[position])
-                bmks.removeAt(position)
-                bmkAdapter.notifyDataSetChanged()
-                popup.dismiss()
-            }
-
-            true
         }
 
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
 
-
-        val tab1: TabHost.TabSpec = tabHost.newTabSpec("Table Of Content")
-        tab1.setIndicator("Table Of Content")
-        tab1.setContent(R.id.toc_tab)
-
-
-        val tab2: TabHost.TabSpec = tabHost.newTabSpec("Bookmarks")
-        tab2.setIndicator("Bookmarks")
-        tab2.setContent(R.id.bookmarks_tab)
+        val tabTOC: TabHost.TabSpec = tabHost.newTabSpec("Table Of Content")
+        tabTOC.setIndicator("Table Of Content")
+        tabTOC.setContent(R.id.toc_tab)
 
 
-        tabHost.addTab(tab1)
-        tabHost.addTab(tab2)
+        val tabBookmarks: TabHost.TabSpec = tabHost.newTabSpec("Bookmarks")
+        tabBookmarks.setIndicator("Bookmarks")
+        tabBookmarks.setContent(R.id.bookmarks_tab)
+
+
+        tabHost.addTab(tabTOC)
+        tabHost.addTab(tabBookmarks)
 
     }
 
@@ -202,6 +177,7 @@ class R2OutlineActivity : AppCompatActivity() {
             internal var bmk_chapter: TextView? = null
             internal var bmk_progression: TextView? = null
             internal var bmk_timestamp: TextView? = null
+            internal var bmk_overflow: ImageView? = null
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
@@ -217,6 +193,7 @@ class R2OutlineActivity : AppCompatActivity() {
                 viewHolder.bmk_chapter = bookmarkView!!.bmk_chapter as TextView
                 viewHolder.bmk_progression = bookmarkView.bmk_progression as TextView
                 viewHolder.bmk_timestamp = bookmarkView.bmk_timestamp as TextView
+                viewHolder.bmk_overflow = bookmarkView.overflow as ImageView
 
                 bookmarkView.tag = viewHolder
 
@@ -235,6 +212,25 @@ class R2OutlineActivity : AppCompatActivity() {
             viewHolder.bmk_chapter!!.text = title
             viewHolder.bmk_progression!!.text = formattedProgression
             viewHolder.bmk_timestamp!!.text = formattedDate
+
+            viewHolder.bmk_overflow?.setOnClickListener {
+
+                val popupMenu = PopupMenu(parent?.context, viewHolder.bmk_chapter)
+                popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
+                popupMenu.show()
+
+                popupMenu.setOnMenuItemClickListener(object : PopupMenu.OnMenuItemClickListener {
+                    override fun onMenuItemClick(item: MenuItem): Boolean {
+                        if (item.itemId == R.id.delete) {
+                            bookmarkDB.bookmarks.delete(bookmarks[position])
+                            bookmarks.removeAt(position)
+                            notifyDataSetChanged()
+                        }
+                        return false
+                    }
+                })
+            }
+
 
             return bookmarkView
         }
