@@ -23,7 +23,7 @@ import org.readium.r2.navigator.R2EpubActivity
 class R2EpubActivity : R2EpubActivity() {
 
     private var menuBmk: MenuItem? = null
-    lateinit var bmkDB: BookmarksDatabase
+    lateinit var bookmarkkDB: BookmarksDatabase
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_navigation, menu)
@@ -55,20 +55,23 @@ class R2EpubActivity : R2EpubActivity() {
                 return true
             }
             R.id.bookmark -> {
+                val bookId = intent.getLongExtra("bookId", -1)
+                val resourceIndex = resourcePager.currentItem.toLong()
+                val resourceHref = publication.spine[resourcePager.currentItem].href!!
                 val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.toString()).toDouble()
-                val index = preferences.getInt("$publicationIdentifier-document", 0).toLong()
-                bmkDB = BookmarksDatabase(this)
-                val bkId = intent.getLongExtra("bookId", -1)
-                val bmk = Bookmark(
-                        bkId,
-                        index,
+
+                bookmarkkDB = BookmarksDatabase(this)
+                val bookmark = Bookmark(
+                        bookId,
+                        resourceIndex,
+                        resourceHref,
                         progression
                 )
 
-                bmkDB.bookmarks.insert(bmk)?.let {
-                    bmk.id = it
+                bookmarkkDB.bookmarks.insert(bookmark)?.let {
+                    bookmark.id = it
                 }
-                if (bmk.id != null) {
+                if (bookmark.id != null) {
                     snackbar(super.resourcePager.findViewById(R.id.webView), "Bookmark added")
                 } else {
                     snackbar(super.resourcePager.findViewById(R.id.webView), "Bookmark already exist")

@@ -25,6 +25,8 @@ import kotlinx.android.synthetic.main.activity_outline_container.*
 import kotlinx.android.synthetic.main.bmk_item.*
 import kotlinx.android.synthetic.main.bmk_item.view.*
 import kotlinx.android.synthetic.main.list_item_toc.view.*
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
 import timber.log.Timber
@@ -98,8 +100,8 @@ class R2OutlineActivity : AppCompatActivity() {
 
         bmk_list.setOnItemClickListener { _, _, position, _ ->
 
-            val bmks_item_uri = allElements.get(bmks.get(position).spine_index.toInt()).href
-            
+            val bmks_item_uri = bmks.get(position).resourceHref
+
             Timber.d(TAG, bmks_item_uri)
 
             val intent = Intent()
@@ -194,7 +196,7 @@ class R2OutlineActivity : AppCompatActivity() {
     }
 
 
-    inner class BookMarksAdapter(val context: Context, val bmkList: MutableList<Bookmark>, val pub_info: MutableList<Link>) : BaseAdapter() {
+    inner class BookMarksAdapter(val context: Context, val bookmarks: MutableList<Bookmark>, val elements: MutableList<Link>) : BaseAdapter() {
 
         private inner class ViewHolder {
             internal var bmk_chapter: TextView? = null
@@ -203,54 +205,55 @@ class R2OutlineActivity : AppCompatActivity() {
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-            var bmkView = convertView
-
+            var bookmarkView = convertView
             val viewHolder: ViewHolder
 
-            val bookmark = getItem(position) as Bookmark
-            val spine_item = getBookSpineItem(bookmark.spine_index.toInt()) as Link
-
-            if(bmkView == null) {
+            if(bookmarkView == null) {
                 viewHolder = ViewHolder()
 
                 val inflater = LayoutInflater.from(context)
-                bmkView = inflater.inflate(R.layout.bmk_item, parent, false)
+                bookmarkView = inflater.inflate(R.layout.bmk_item, parent, false)
 
-                viewHolder.bmk_chapter = bmkView!!.bmk_chapter as TextView
-                viewHolder.bmk_progression = bmkView.bmk_progression as TextView
-                viewHolder.bmk_timestamp = bmkView.bmk_timestamp as TextView
+                viewHolder.bmk_chapter = bookmarkView!!.bmk_chapter as TextView
+                viewHolder.bmk_progression = bookmarkView.bmk_progression as TextView
+                viewHolder.bmk_timestamp = bookmarkView.bmk_timestamp as TextView
 
-                bmkView.tag = viewHolder
+                bookmarkView.tag = viewHolder
 
             } else {
-                viewHolder = bmkView.tag as ViewHolder
+                viewHolder = bookmarkView.tag as ViewHolder
             }
 
-
-            val progessionText = "${((bookmark.progression * 100).roundToInt())}% through chapter"
-
-            var title = spine_item.title
+            val bookmark = getItem(position) as Bookmark
+            var title = getBookSpineItem(bookmark.resourceHref)
             if(title.isNullOrEmpty()){
                 title = "*Title Missing*"
             }
-            viewHolder.bmk_chapter!!.text = title
-            viewHolder.bmk_progression!!.text = progessionText
-            viewHolder.bmk_timestamp!!.text = bookmark.timestamp
+            val formattedProgression = "${((bookmark.progression * 100).roundToInt())}% through resource"
+            val formattedDate = DateTime(bookmark.timestamp).toString(DateTimeFormat.shortDateTime())
 
-            return bmkView
+            viewHolder.bmk_chapter!!.text = title
+            viewHolder.bmk_progression!!.text = formattedProgression
+            viewHolder.bmk_timestamp!!.text = formattedDate
+
+            return bookmarkView
         }
 
         override fun getCount(): Int {
-            return bmkList.size
+            return bookmarks.size
         }
 
         override fun getItem(position: Int): Any {
-            return bmkList[position]
+            return bookmarks[position]
         }
 
-        private fun getBookSpineItem(position: Int): Any {
-            if (position <= 0) return pub_info[0]
-            return pub_info[position]
+        private fun getBookSpineItem(href: String): String? {
+            for (link in elements) {
+                if (link.href == href) {
+                    return link.title
+                }
+            }
+            return null
         }
 
         override fun getItemId(position: Int): Long {

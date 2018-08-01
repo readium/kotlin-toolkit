@@ -125,7 +125,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         booksAdapter = BooksAdapter(this, books, "$BASE_URL:$localPort", this)
 
         //Unit Tests for Bookmarks db interactions
-        bkmkUnitTests(this)
+//        bkmkUnitTests(this)
 
         parseIntent(null);
 
