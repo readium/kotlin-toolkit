@@ -1,7 +1,11 @@
 /*
- * // Copyright 2018 Readium Foundation. All rights reserved.
- * // Use of this source code is governed by a BSD-style license which is detailed in the LICENSE file
- * // present in the project repository where this source code is maintained.
+ * Module: r2-testapp-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann, Mostapha Idoubihi, Paul Stoica
+ *
+ * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
  */
 
 package org.readium.r2.testapp
@@ -16,7 +20,7 @@ import org.readium.r2.navigator.DRMManagementActivity
 import org.readium.r2.navigator.R2EpubActivity
 
 
-class R2EpubMenuActivity : R2EpubActivity() {
+class R2EpubActivity : R2EpubActivity() {
 
     private var menuBmk: MenuItem? = null
     lateinit var bmkDB: BookmarksDatabase
@@ -53,8 +57,6 @@ class R2EpubMenuActivity : R2EpubActivity() {
             R.id.bookmark -> {
                 val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.toString()).toDouble()
 
-                println("#####################################################")
-                println("#############     Bookmark button !     #############")
                 bmkDB = BookmarksDatabase(this)
                 val bkId = intent.getLongExtra("bookId", -1)
                 val bmk = Bookmark(
@@ -62,8 +64,6 @@ class R2EpubMenuActivity : R2EpubActivity() {
                         resourcePager.currentItem.toLong(),
                         progression
                 )
-                println("#####################################################")
-                println(bmk)
 
                 bmkDB.bookmarks.insert(bmk)?.let {
                     bmk.id = it

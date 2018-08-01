@@ -1,5 +1,9 @@
 /*
- * Copyright 2018 Readium Foundation. All rights reserved.
+ * Module: r2-testapp-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann, Mostapha Idoubihi, Paul Stoica
+ *
+ * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -15,14 +19,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.BaseAdapter
-import android.widget.TabHost
-import android.widget.TextView
+import android.widget.*
 import kotlinx.android.synthetic.main.activity_outline_container.*
+import kotlinx.android.synthetic.main.bmk_item.*
 import kotlinx.android.synthetic.main.bmk_item.view.*
 import kotlinx.android.synthetic.main.list_item_toc.view.*
 import kotlin.math.roundToInt
@@ -105,11 +108,25 @@ class R2OutlineActivity : AppCompatActivity() {
             finish()
         }
 
-        bmk_list.setOnItemLongClickListener { _, _, position, _ ->
+        bmk_list.setOnItemLongClickListener { _, v, position, _ ->
 
-            bmkDB.bookmarks.delete(bmks[position])
-            bmks.removeAt(position)
-            bmkAdapter.notifyDataSetChanged()
+            //popup to confirm deletion
+            val layoutInflater = LayoutInflater.from(this).inflate(R.layout.popup_delete, bmk_list, false)
+            val popup = PopupWindow(this)
+            popup.contentView = layoutInflater
+            popup.width = bmk_item.width/4
+            popup.height = bmk_item.height
+            popup.isOutsideTouchable = true
+            popup.isFocusable = true
+            popup.showAsDropDown(v, 0, -bmk_item.height, Gravity.END)
+            val delete: Button = layoutInflater.findViewById(R.id.delete) as Button
+
+            delete.setOnClickListener {
+                bmkDB.bookmarks.delete(bmks[position])
+                bmks.removeAt(position)
+                bmkAdapter.notifyDataSetChanged()
+                popup.dismiss()
+            }
 
             true
         }
@@ -191,9 +208,6 @@ class R2OutlineActivity : AppCompatActivity() {
 
             val bookmark = getItem(position) as Bookmark
             val spine_item = getBookSpineItem(bookmark.spine_index.toInt()) as Link
-
-            println("Bookmark's spine_index is : ${bookmark.spine_index.toInt()}")
-            println("Spine_item is : ${spine_item.title}")
 
             if(bmkView == null) {
                 viewHolder = ViewHolder()

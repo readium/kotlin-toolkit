@@ -24,6 +24,8 @@
     <string name="title_activity_r2_about">About R2 Reader</string>
     <string name="title_activity_opds_list">OPDS Feeds</string>
     <string name="title_activity_opds_detail">Detail</string>
+    <string name="title_activity_outline_detail">Activity for ToC and Bookmarks</string>
+    <string name="title_activity_epub_detail">Menu Activity for epub</string>
     <string name="about_r2_reader">About R2 Reader</string>
     <string name="opds_feeds">OPDS Feeds</string>
     <string name="popup_delete_button">DELETE</string>
