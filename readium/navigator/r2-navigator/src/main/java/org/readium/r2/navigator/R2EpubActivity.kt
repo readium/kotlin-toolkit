@@ -104,6 +104,7 @@ open class R2EpubActivity : AppCompatActivity() {
         } else {
             resourcePager.currentItem = index
         }
+        storeDocumentIndex()
 
         val appearancePref = preferences.getInt("appearance", 0)
         val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
@@ -122,11 +123,16 @@ open class R2EpubActivity : AppCompatActivity() {
      * storeProgression : save in the preference the last progression
      */
     fun storeProgression(progression:Double) {
+        storeDocumentIndex()
         val publicationIdentifier = publication.metadata.identifier
-        val documentIndex = resourcePager.currentItem
-        preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
         preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
     }
+
+    fun storeDocumentIndex() {
+        val documentIndex = resourcePager.currentItem
+        preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
+    }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
@@ -154,6 +160,7 @@ open class R2EpubActivity : AppCompatActivity() {
                 for (i in 0 until publication.spine.size) {
                     if (publication.spine[i].href == href) {
                         resourcePager.currentItem = i
+                        storeDocumentIndex()
                     }
                 }
                 if (supportActionBar!!.isShowing) {
@@ -181,6 +188,7 @@ open class R2EpubActivity : AppCompatActivity() {
                 // The view has LTR layout
                 resourcePager.currentItem = resourcePager.currentItem + 1
             }
+            storeDocumentIndex()
         }
     }
 
@@ -196,7 +204,7 @@ open class R2EpubActivity : AppCompatActivity() {
                 // The view has LTR layout
                 resourcePager.currentItem = resourcePager.currentItem - 1
             }
-
+            storeDocumentIndex()
         }
     }
 
