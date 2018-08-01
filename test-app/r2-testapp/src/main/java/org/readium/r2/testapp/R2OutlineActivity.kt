@@ -10,15 +10,12 @@
 
 package org.readium.r2.testapp
 
-import android.support.v7.app.AppCompatActivity
-import org.readium.r2.shared.Link
-import org.readium.r2.shared.Publication
-import timber.log.Timber
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -28,6 +25,9 @@ import kotlinx.android.synthetic.main.activity_outline_container.*
 import kotlinx.android.synthetic.main.bmk_item.*
 import kotlinx.android.synthetic.main.bmk_item.view.*
 import kotlinx.android.synthetic.main.list_item_toc.view.*
+import org.readium.r2.shared.Link
+import org.readium.r2.shared.Publication
+import timber.log.Timber
 import kotlin.math.roundToInt
 
 
@@ -97,8 +97,9 @@ class R2OutlineActivity : AppCompatActivity() {
 
 
         bmk_list.setOnItemClickListener { _, _, position, _ ->
-            val bmks_item_uri = publication.spine.get(bmks.get(position).spine_index.toInt()).href
 
+            val bmks_item_uri = allElements.get(bmks.get(position).spine_index.toInt()).href
+            
             Timber.d(TAG, bmks_item_uri)
 
             val intent = Intent()

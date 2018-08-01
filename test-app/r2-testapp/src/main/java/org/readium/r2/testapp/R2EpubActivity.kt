@@ -56,12 +56,12 @@ class R2EpubActivity : R2EpubActivity() {
             }
             R.id.bookmark -> {
                 val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.toString()).toDouble()
-
+                val index = preferences.getInt("$publicationIdentifier-document", 0).toLong()
                 bmkDB = BookmarksDatabase(this)
                 val bkId = intent.getLongExtra("bookId", -1)
                 val bmk = Bookmark(
                         bkId,
-                        resourcePager.currentItem.toLong(),
+                        index,
                         progression
                 )
 
