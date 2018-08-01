@@ -110,48 +110,14 @@ open class R2EpubActivity : AppCompatActivity() {
         toggleActionBar()
     }
 
-//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-//        menuInflater.inflate(R.menu.menu_toc, menu)
-//        menuDrm = menu?.findItem(R.id.drm)
-//        menuToc = menu?.findItem(R.id.toc)
-//        menuDrm?.isVisible = false
-//        return true
-//    }
-//
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        when (item.itemId) {
-//
-//            R.id.toc -> {
-//                val intent = Intent(this, R2OutlineActivity::class.java)
-//                intent.putExtra("publicationPath", publicationPath)
-//                intent.putExtra("publication", publication)
-//                intent.putExtra("epubName", epubName)
-//                startActivityForResult(intent, 2)
-//                return false
-//            }
-//            R.id.settings -> {
-//                userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.toc), 0, 0, Gravity.END)
-//                return false
-//            }
-//            R.id.drm -> {
-//                startActivity(intentFor<DRMManagementActivity>("drmModel" to drmModel))
-//                return false
-//            }
-//            R.id.bookmark -> {
-//                println("Bookmark added ?!")
-//                return false
-//            }
-//
-//            else -> return super.onOptionsItemSelected(item)
-//        }
-//
-//    }
-
     override fun onPause() {
         super.onPause()
         storeProgression(resourcePager.webView.progression)
     }
 
+    /**
+     * storeProgression : save in the preference the last progression
+     */
     fun storeProgression(progression:Double) {
         val publicationIdentifier = publication.metadata.identifier
         val documentIndex = resourcePager.currentItem
@@ -169,10 +135,13 @@ open class R2EpubActivity : AppCompatActivity() {
                 val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
                 resourcePager.adapter = adapter
 
-                var href: String = data.getStringExtra("toc_item_uri")
                 // href is the link to the page in the toc
+                var href: String = data.getStringExtra("toc_item_uri")
 
+                // Fetching the last progression saved ( default : 0.0 )
                 val progression = data.getDoubleExtra("item_progression", 0.0)
+
+                // Set the progression fetched
                 preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
 
                 if (href.indexOf("#") > 0) {
