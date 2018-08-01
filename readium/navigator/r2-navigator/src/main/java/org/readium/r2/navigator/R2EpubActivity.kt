@@ -151,7 +151,7 @@ open class R2EpubActivity : AppCompatActivity() {
                 val progression = data.getDoubleExtra("item_progression", 0.0)
 
                 // Set the progression fetched
-                preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
+                storeProgression(progression)
 
                 if (href.indexOf("#") > 0) {
                     href = href.substring(0, href.indexOf("#"))
