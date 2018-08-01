@@ -56,7 +56,6 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.json.JSONObject
 import org.readium.r2.navigator.R2CbzActivity
-import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Publication
@@ -67,7 +66,6 @@ import org.readium.r2.shared.promise
 import org.readium.r2.streamer.parser.CbzParser
 import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
-import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
