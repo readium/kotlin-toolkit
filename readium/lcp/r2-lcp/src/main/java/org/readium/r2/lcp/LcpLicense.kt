@@ -1,5 +1,8 @@
 /*
- * Copyright 2018 Readium Foundation. All rights reserved.
+ * Module: r2-lcp-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -29,13 +32,24 @@ class LcpLicense : DrmLicense {
 
     private val TAG = this::class.java.simpleName
 
-    var archivePath: URL
+    var archivePath: URL? = null
     var license: LicenseDocument
     var status: StatusDocument? = null
     var context: DRMContext? = null
     var androidContext:Context
     val lcpHttpService: LcpHttpService = LcpHttpService()
     val database:LcpDatabase
+
+    constructor(lcplData: ByteArray, context: Context) {
+
+        androidContext = context
+
+        database = LcpDatabase(androidContext)
+
+        val data: ByteArray  = lcplData
+        license = LicenseDocument(data)
+
+    }
 
     constructor(path: URL, inArchive: Boolean, context: Context) {
 
@@ -255,6 +269,21 @@ class LcpLicense : DrmLicense {
         ZipUtil.addEntry(tmpZip, lcplFilePath,  licenseURL.openStream().readBytes(),  source);
         tmpZip.delete()
     }
+
+    fun moveLicense(archivePath: String, licenseData: ByteArray) {
+        Log.i(TAG,"LCP moveLicense")
+        val source = File(archivePath)
+        val tmpZip = File(archivePath+".tmp")
+        tmpZip.delete()
+        source.copyTo(tmpZip)
+        source.delete()
+        if (ZipUtil.containsEntry(tmpZip, lcplFilePath)) {
+            ZipUtil.removeEntry(tmpZip, lcplFilePath)
+        }
+        ZipUtil.addEntry(tmpZip, lcplFilePath,  licenseData,  source);
+        tmpZip.delete()
+    }
+
 
     override fun currentStatus(): String {
         Log.i(TAG,"LCP currentStatus")
