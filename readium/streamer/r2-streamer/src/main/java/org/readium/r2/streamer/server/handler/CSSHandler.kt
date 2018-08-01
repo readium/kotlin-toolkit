@@ -1,5 +1,5 @@
 /*
- * Module: r2-testapp-kotlin
+ * Module: r2-streamer-kotlin
  * Developers: Aferdita Muriqi, Clément Baumann
  *
  * Copyright (c) 2018. Readium Foundation. All rights reserved.
