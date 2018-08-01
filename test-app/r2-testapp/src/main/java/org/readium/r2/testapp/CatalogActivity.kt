@@ -693,7 +693,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
     private fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication) {
         prepareToServe(pub, book.fileName, file.absolutePath, false, false)
-        startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath,
+        startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to publicationPath,
                 "epubName" to book.fileName,
                 "publication" to publication,
                 "bookId" to book.id))

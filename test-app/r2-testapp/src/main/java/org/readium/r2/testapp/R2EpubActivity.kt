@@ -26,7 +26,7 @@ class R2EpubActivity : R2EpubActivity() {
     lateinit var bmkDB: BookmarksDatabase
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_navigation, menu)
+        menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_navigation, menu)
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
         menuBmk = menu?.findItem(R.id.bmk_list)
