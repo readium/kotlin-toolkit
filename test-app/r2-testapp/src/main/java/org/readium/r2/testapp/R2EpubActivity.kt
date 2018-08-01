@@ -11,11 +11,12 @@
 package org.readium.r2.testapp
 
 import android.content.Intent
+import android.os.Bundle
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
-import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.intentFor
+import org.jetbrains.anko.toast
 import org.readium.r2.navigator.DRMManagementActivity
 import org.readium.r2.navigator.R2EpubActivity
 
@@ -24,6 +25,11 @@ class R2EpubActivity : R2EpubActivity() {
 
     private var menuBmk: MenuItem? = null
     lateinit var bookmarkkDB: BookmarksDatabase
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        bookmarkkDB = BookmarksDatabase(this)
+    }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_navigation, menu)
@@ -60,7 +66,6 @@ class R2EpubActivity : R2EpubActivity() {
                 val resourceHref = publication.spine[resourcePager.currentItem].href!!
                 val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.toString()).toDouble()
 
-                bookmarkkDB = BookmarksDatabase(this)
                 val bookmark = Bookmark(
                         bookId,
                         resourceIndex,
@@ -69,12 +74,13 @@ class R2EpubActivity : R2EpubActivity() {
                 )
 
                 bookmarkkDB.bookmarks.insert(bookmark)?.let {
-                    bookmark.id = it
-                }
-                if (bookmark.id != null) {
-                    snackbar(super.resourcePager.findViewById(R.id.webView), "Bookmark added")
-                } else {
-                    snackbar(super.resourcePager.findViewById(R.id.webView), "Bookmark already exist")
+                    runOnUiThread {
+                        toast("Bookmark added")
+                    }
+                } ?: run {
+                    runOnUiThread {
+                        toast("Bookmark already exist")
+                    }
                 }
 
                 return true
