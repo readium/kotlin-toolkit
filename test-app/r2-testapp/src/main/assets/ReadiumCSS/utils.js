@@ -47,6 +47,8 @@ var scrollToPosition = function(position) {
 
     console.log("ScrollToOffset " + offset);
     document.body.scrollLeft = snapOffset(offset);
+    update(position);
+
 };
 
 var scrollLeft = function() {
@@ -60,8 +62,7 @@ var scrollLeft = function() {
         return "";
     } else {
         document.body.scrollLeft = 0;
-        last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-        update(last_known_scroll_position);
+        update(1.0);
         return "edge"; // Need to previousDocument.
     }
 };
@@ -78,8 +79,7 @@ var scrollRight = function() {
         return "";
     } else {
         document.body.scrollLeft = scrollWidth;
-        last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-        update(last_known_scroll_position);
+        update(0.0);
         return "edge"; // Need to nextDocument.
     }
 };
