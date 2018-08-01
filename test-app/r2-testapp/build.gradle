@@ -1,3 +1,13 @@
+/*
+ * Module: r2-testapp-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 apply plugin: 'com.android.application'
 
 apply plugin: 'kotlin-android'
@@ -117,10 +127,10 @@ dependencies {
 
     // Anko SQLite
     implementation 'org.jetbrains.anko:anko-sqlite:0.10.4'
-    implementation 'com.github.kittinunf.fuel:fuel:1.12.1'
+    implementation 'com.github.kittinunf.fuel:fuel:1.14.0'
 
     //for JVM
-    implementation 'com.github.kittinunf.fuel:fuel-android:1.12.1'
+    implementation 'com.github.kittinunf.fuel:fuel-android:1.14.0'
 
     //for Android
 //    implementation 'com.github.kittinunf.fuel:fuel-livedata:1.12.1' //for LiveData support
