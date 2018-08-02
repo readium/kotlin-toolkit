@@ -18,11 +18,13 @@ import org.joda.time.DateTime
 /**
  * Bookmark model
  *
- * @var id: Long? - ID of the bookmark in database
- * @val pub_ref: Long -  Reference to the book
+ * @var bookId: Long? - Book index in the database
+ * @val resourceIndex: Long -  Index to the spine element
+ * @val resourceHref: String -  Reference to the spine element
  * @val spine_index: Long - Index to the spine element of the book
- * @val progression: Double - Percentage of progression in the ( book or spine element ? )
+ * @val progression: Double - Percentage of progression in the spine element
  * @val timestamp: String - Datetime when the bookmark has been created
+ * @var id: Long? - ID of the bookmark in database
  *
  * @fun toString(): String - Return a String description of the Bookmark
  */
