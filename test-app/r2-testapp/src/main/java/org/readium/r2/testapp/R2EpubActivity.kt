@@ -20,10 +20,19 @@ import org.jetbrains.anko.toast
 import org.readium.r2.navigator.DRMManagementActivity
 import org.readium.r2.navigator.R2EpubActivity
 
-
+/**
+ * R2EpubActivity : Extension of the R2EpubActivity() from navigator
+ *
+ * That Activity manage everything related to the menu
+ *      ( Table of content, User Settings, Drm, Bookmarks )
+ *
+ */
 class R2EpubActivity : R2EpubActivity() {
 
+    // List of bookmarks on acivity_outline_container.xml
     private var menuBmk: MenuItem? = null
+
+    // Provide access to the Bookmarks Database
     lateinit var bookmarkkDB: BookmarksDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +55,6 @@ class R2EpubActivity : R2EpubActivity() {
             R.id.toc -> {
                 val bkId = intent.getLongExtra("bookId", -1)
                 val intent = Intent(this, R2OutlineActivity::class.java)
-                intent.putExtra("publicationPath", publicationPath)
                 intent.putExtra("publication", publication)
                 intent.putExtra("bookId", bkId)
                 startActivityForResult(intent, 2)
