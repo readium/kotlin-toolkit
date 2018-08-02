@@ -34,7 +34,7 @@ class Bookmark(val bookID: Long,
                val progression: Double = 0.0,
                var timestamp: Long = DateTime().toDate().time,
                var id: Long? = null
-               ){
+) {
 
     override fun toString(): String {
         return "Bookmark id : ${this.id}, book identifier : ${this.bookID}, resource href selected ${this.resourceHref}, progression saved ${this.progression} and created the ${this.timestamp}."
@@ -42,84 +42,9 @@ class Bookmark(val bookID: Long,
 
 }
 
-/**
- * UnitTests() tests the database helpers with dummies Bookmarks
- */
-//fun bkmkUnitTests(ctx: Context){
-//    val bk = mutableListOf<Bookmark>()
-//    bk.add(Bookmark(1, 1, 0.0))
-//    bk.add(Bookmark(2, 3, 50.0))
-//    bk.add(Bookmark(2, 3, 50.0))
-//    bk.add(Bookmark(15, 12, 99.99))
-//
-//
-//    val bkUnknown = mutableListOf<Bookmark>()
-//    bkUnknown.add(Bookmark(4, 34, 133.33))
-//    bkUnknown.add(Bookmark(-4, -34, 33.33))
-//
-//    val db = BookmarksDatabase(ctx)
-//    println("#####################################")
-//    println("###########    Test    ##############")
-//    var i = 0
-//    bk.forEach {
-//        i++
-//        println("Book $i : ")
-//        println(" - bookId = ${it.bookID} (${it.bookID.javaClass})")
-//        try {
-//            val ret = db.bookmarks.insert(it)
-//            if (ret != null) {
-//                println("Added with success !")
-//            } else {
-//                println("Already exist !")
-//            }
-//        } catch (e: Exception) {
-//            println("Book number $i failed : ${e.message}")
-//        }
-//
-//        try {
-//            var ret = db.bookmarks.has(it)
-//            if (ret.isNotEmpty()) {
-//                println("Found : $ret !")
-//            } else {
-//                println("Book not found !")
-//            }
-////                db.bookmarks.delete(ret.first())
-////                ret = db.bookmarks.has(it)
-////                if (ret.isNotEmpty()) { println("Delete failed : $ret !") } else { println("Correctly deleted !") }
-//        } catch (e: Exception) {
-//            println("Book number $i finding failed : ${e.message}")
-//        }
-//    }
-//    println("List of BookMarks  : ")
-//    db.bookmarks.listAll().forEach { println(it) }
-//    println("-------------------------------------")
-//    println("------------  Unknown  --------------")
-//    bkUnknown.forEach {
-//        i++
-//        println("Book $i : ")
-//        println(" - bookId = ${it.bookID} (${it.bookID.javaClass})")
-//        try {
-//            var ret = db.bookmarks.has(it)
-//            if (ret.isNotEmpty()) {
-//                println("Found an unknown book ?! : $ret !")
-//            } else {
-//                println("Book number $i : Not found !")
-//            }
-////                db.bookmarks.delete(ret.first())
-////                ret = db.bookmarks.has(it)
-////                if (ret.isNotEmpty()) { println("Delete failed : $ret !") } else { println("Correctly deleted !") }
-//        } catch (e: Exception) {
-//            println("Book number $i finding failed : ${e.message}")
-//        }
-//    }
-//    //db.bookmarks.emptyTable()
-//    println("###########    End     ##############")
-//    println("#####################################")
-//}
-
 class BookmarksDatabase {
 
-    val shared:BookmarksDatabaseOpenHelper
+    val shared: BookmarksDatabaseOpenHelper
     var bookmarks: BOOKMARKS
 
     constructor(context: Context) {
@@ -184,6 +109,11 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
     }
 
     fun insert(bookmark: Bookmark): Long? {
+        if (bookmark.bookID < 0 ||
+                bookmark.resourceIndex < 0 ||
+                bookmark.progression < 0 || bookmark.progression > 100){
+            return null
+        }
         val exists = has(bookmark)
         if (exists.isEmpty()) {
             return database.use {
@@ -218,9 +148,9 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
         }
     }
 
-    fun delete(bookmark: Bookmark){
+    fun delete(bookmark: Bookmark) {
         database.use {
-            delete(BOOKMARKSTable.NAME,"id = {id}",
+            delete(BOOKMARKSTable.NAME, "id = {id}",
                     "id" to bookmark.id!!)
         }
     }
@@ -263,22 +193,22 @@ class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
         override fun parseRow(columns: Array<Any?>): Bookmark {
             val id = columns[0]?.let {
                 return@let it
-            }?: kotlin.run { return@run 0 }
+            } ?: kotlin.run { return@run 0 }
             val bookID = columns[1]?.let {
                 return@let it
-            }?: kotlin.run { return@run 0 }
+            } ?: kotlin.run { return@run 0 }
             val resourceIndex = columns[2]?.let {
                 return@let it
-            }?: kotlin.run { return@run 0 }
+            } ?: kotlin.run { return@run 0 }
             val resourceHref = columns[3]?.let {
                 return@let it
-            }?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run "" }
             val progression = columns[4]?.let {
                 return@let it
-            }?: kotlin.run { return@run 0.0f }
+            } ?: kotlin.run { return@run 0.0f }
             val timestamp = columns[5]?.let {
                 return@let it
-            }?: kotlin.run { return@run 0 }
+            } ?: kotlin.run { return@run 0 }
 
             return Bookmark(bookID as Long, resourceIndex as Long, resourceHref as String, progression as Double, timestamp as Long, id as Long)
         }
