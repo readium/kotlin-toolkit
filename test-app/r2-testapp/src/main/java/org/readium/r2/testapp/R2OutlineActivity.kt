@@ -72,6 +72,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
         toc_list.setOnItemClickListener { _, _, position, _ ->
 
+            //Link to the resource in the publication
             val toc_item_uri = allElements.get(position).href
 
             Timber.d(TAG, toc_item_uri)
@@ -99,19 +100,24 @@ class R2OutlineActivity : AppCompatActivity() {
 
         bookmark_list.setOnItemClickListener { _, _, position, _ ->
 
-            val bmks_item_uri = bookmarks.get(position).resourceHref
+            //Link to the resource in the publication
+            val bmk_item_uri = bookmarks.get(position).resourceHref
+            //Progression of the selected bookmark
+            val bmk_progression = bookmarks.get(position).progression
 
-            Timber.d(TAG, bmks_item_uri)
+            Timber.d(TAG, bmk_item_uri)
 
             val intent = Intent()
-            intent.putExtra("toc_item_uri", bmks_item_uri)
-            intent.putExtra("item_progression", bookmarks.get(position).progression)
+            intent.putExtra("toc_item_uri", bmk_item_uri)
+            intent.putExtra("item_progression", bmk_progression)
             setResult(Activity.RESULT_OK, intent)
             finish()
         }
 
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
+
+        // Setting up tabs
 
         val tabTOC: TabHost.TabSpec = tabHost.newTabSpec("Table Of Content")
         tabTOC.setIndicator("Table Of Content")
@@ -202,6 +208,7 @@ class R2OutlineActivity : AppCompatActivity() {
             }
 
             val bookmark = getItem(position) as Bookmark
+            
             var title = getBookSpineItem(bookmark.resourceHref)
             if(title.isNullOrEmpty()){
                 title = "*Title Missing*"
