@@ -29,15 +29,15 @@ import org.readium.r2.navigator.R2EpubActivity
  */
 class R2EpubActivity : R2EpubActivity() {
 
-    // List of bookmarks on acivity_outline_container.xml
+    // List of bookmarks on activity_outline_container.xml
     private var menuBmk: MenuItem? = null
 
     // Provide access to the Bookmarks Database
-    lateinit var bookmarkkDB: BookmarksDatabase
+    private lateinit var bookmarkDB: BookmarksDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        bookmarkkDB = BookmarksDatabase(this)
+        bookmarkDB = BookmarksDatabase(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -45,7 +45,7 @@ class R2EpubActivity : R2EpubActivity() {
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
         menuBmk = menu?.findItem(R.id.bookmark_list)
-        menuDrm?.setVisible(false)
+        menuDrm?.isVisible = false
         return true
     }
 
@@ -81,7 +81,7 @@ class R2EpubActivity : R2EpubActivity() {
                         progression
                 )
 
-                bookmarkkDB.bookmarks.insert(bookmark)?.let {
+                bookmarkDB.bookmarks.insert(bookmark)?.let {
                     runOnUiThread {
                         toast("Bookmark added")
                     }

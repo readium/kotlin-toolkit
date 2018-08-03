@@ -37,7 +37,6 @@ import android.widget.EditText
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import com.github.kittinunf.fuel.Fuel
-import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.onClick
 import net.theluckycoder.materialchooser.Chooser
 import nl.komponents.kovenant.Promise
@@ -52,14 +51,11 @@ import org.jetbrains.anko.design.floatingActionButton
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.design.textInputLayout
 import org.jetbrains.anko.recyclerview.v7.recyclerView
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import org.json.JSONObject
 import org.readium.r2.navigator.R2CbzActivity
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.drm.DRMMModel
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
@@ -125,7 +121,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         //Unit Tests for Bookmarks db interactions
 //        TestBookmarksDatabase(this).test()
 
-        parseIntent(null);
+        parseIntent(null)
 
         coordinatorLayout {
             lparams {
@@ -237,9 +233,9 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         }.build().apply {
             setCancelable(false)
             setCanceledOnTouchOutside(false)
-            setOnShowListener({
+            setOnShowListener {
                 val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                b.setOnClickListener({
+                b.setOnClickListener {
                     if (TextUtils.isEmpty(editTextHref!!.text)) {
                         editTextHref!!.error = "Please Enter A URL."
                         editTextHref!!.requestFocus()
@@ -257,8 +253,8 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                             editTextHref!!.requestFocus()
                         }
                     }
-                })
-            })
+                }
+            }
 
         }.show()
     }
@@ -282,7 +278,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
                 val book = Book(pair.second, publication.metadata.title, author, pair.first, null, publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
 
-                runOnUiThread({
+                runOnUiThread {
                     progress.dismiss()
                     database.books.insert(book, false)?.let {
                         book.id = it
@@ -294,7 +290,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                         showDuplicateBookAlert(book)
 
                     }
-                })
+                }
             }
         }
     }
@@ -309,22 +305,22 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         duplicateAlert.apply {
             setCancelable(false)
             setCanceledOnTouchOutside(false)
-            setOnShowListener({
+            setOnShowListener {
                 val button = getButton(AlertDialog.BUTTON_POSITIVE)
-                button.setOnClickListener({
+                button.setOnClickListener {
                     database.books.insert(book, true)?.let {
                         book.id = it
                         books.add(book)
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
                     }
-                })
+                }
                 val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
-                cancelButton.setOnClickListener({
+                cancelButton.setOnClickListener {
                     File(book.fileUrl).delete()
                     duplicateAlert.dismiss()
-                })
-            })
+                }
+            }
         }
         duplicateAlert.show()
     }
@@ -458,7 +454,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         val file = File(publicationPath)
 
         try {
-            runOnUiThread({
+            runOnUiThread {
 
                 if (uriString.endsWith(".epub")) {
                     val parser = EpubParser()
@@ -476,7 +472,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                     }
                 }
 
-            })
+            }
         } catch (e: Throwable) {
             e.printStackTrace()
         }
@@ -758,7 +754,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         val file = File(publicationPath)
 
         try {
-            runOnUiThread({
+            runOnUiThread {
                 if (mime == "application/epub+zip") {
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
@@ -776,7 +772,7 @@ class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
 
                     }
                 }
-            })
+            }
         } catch (e: Throwable) {
             e.printStackTrace()
         }

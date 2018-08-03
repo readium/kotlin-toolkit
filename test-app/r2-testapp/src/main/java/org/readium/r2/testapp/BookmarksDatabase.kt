@@ -42,13 +42,12 @@ class Bookmark(val bookID: Long,
 
 }
 
-class BookmarksDatabase {
+class BookmarksDatabase(context: Context) {
 
-    val shared: BookmarksDatabaseOpenHelper
+    val shared: BookmarksDatabaseOpenHelper = BookmarksDatabaseOpenHelper(context)
     var bookmarks: BOOKMARKS
 
-    constructor(context: Context) {
-        shared = BookmarksDatabaseOpenHelper(context)
+    init {
         bookmarks = BOOKMARKS(shared)
     }
 
@@ -61,7 +60,7 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
         @Synchronized
         fun getInstance(ctx: Context): BookmarksDatabaseOpenHelper {
             if (instance == null) {
-                instance = BookmarksDatabaseOpenHelper(ctx.getApplicationContext())
+                instance = BookmarksDatabaseOpenHelper(ctx.applicationContext)
             }
             return instance!!
         }
@@ -94,7 +93,7 @@ object BOOKMARKSTable {
     val TIMESTAMP = "timestamp"
 }
 
-class BOOKMARKS(var database: BookmarksDatabaseOpenHelper) {
+class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
 
     fun dropTable() {
         database.use {

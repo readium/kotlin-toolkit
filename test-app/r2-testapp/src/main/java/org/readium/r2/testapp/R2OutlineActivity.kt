@@ -17,7 +17,6 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -28,14 +27,12 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
-import timber.log.Timber
 import kotlin.math.roundToInt
 
 
 class R2OutlineActivity : AppCompatActivity() {
 
-    private val TAG = this::class.java.simpleName
-    lateinit var preferences:SharedPreferences
+    private lateinit var preferences:SharedPreferences
     lateinit var bookmarkDB: BookmarksDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +40,7 @@ class R2OutlineActivity : AppCompatActivity() {
         setContentView(R.layout.activity_outline_container)
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
-        val tabHost = findViewById(R.id.tabhost) as TabHost
+        val tabHost = findViewById<TabHost>(R.id.tabhost)
         tabHost.setup()
 
         val publication = intent.getSerializableExtra("publication") as Publication
@@ -73,12 +70,10 @@ class R2OutlineActivity : AppCompatActivity() {
         toc_list.setOnItemClickListener { _, _, position, _ ->
 
             //Link to the resource in the publication
-            val toc_item_uri = allElements.get(position).href
-
-            Timber.d(TAG, toc_item_uri)
+            val tocItemUri = allElements[position].href
 
             val intent = Intent()
-            intent.putExtra("toc_item_uri", toc_item_uri)
+            intent.putExtra("toc_item_uri", tocItemUri)
             intent.putExtra("item_progression", 0.0)
             setResult(Activity.RESULT_OK, intent)
             finish()
@@ -101,15 +96,13 @@ class R2OutlineActivity : AppCompatActivity() {
         bookmark_list.setOnItemClickListener { _, _, position, _ ->
 
             //Link to the resource in the publication
-            val bmk_item_uri = bookmarks.get(position).resourceHref
+            val bmkItemUri = bookmarks[position].resourceHref
             //Progression of the selected bookmark
-            val bmk_progression = bookmarks.get(position).progression
-
-            Timber.d(TAG, bmk_item_uri)
+            val bmkProgression = bookmarks[position].progression
 
             val intent = Intent()
-            intent.putExtra("toc_item_uri", bmk_item_uri)
-            intent.putExtra("item_progression", bmk_progression)
+            intent.putExtra("toc_item_uri", bmkItemUri)
+            intent.putExtra("item_progression", bmkProgression)
             setResult(Activity.RESULT_OK, intent)
             finish()
         }
@@ -134,7 +127,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
     }
 
-    fun childrenOf(parent: Link): MutableList<Link> {
+    private fun childrenOf(parent: Link): MutableList<Link> {
         val children = mutableListOf<Link>()
         for (link in parent.children) {
             children.add(link)
@@ -147,13 +140,13 @@ class R2OutlineActivity : AppCompatActivity() {
 
     inner class TOCAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.list_item_toc, users) {
         private inner class ViewHolder {
-            internal var toc_textView: TextView? = null
+            internal var tocTextView: TextView? = null
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             var myView = convertView
 
-            val spine_item = getItem(position)
+            val spineItem = getItem(position)
 
             val viewHolder: ViewHolder // view lookup cache stored in tag
             if (myView == null) {
@@ -161,7 +154,7 @@ class R2OutlineActivity : AppCompatActivity() {
                 viewHolder = ViewHolder()
                 val inflater = LayoutInflater.from(context)
                 myView = inflater.inflate(R.layout.list_item_toc, parent, false)
-                viewHolder.toc_textView = myView!!.toc_textView as TextView
+                viewHolder.tocTextView = myView!!.toc_textView as TextView
 
                 myView.tag = viewHolder
 
@@ -170,20 +163,20 @@ class R2OutlineActivity : AppCompatActivity() {
                 viewHolder = myView.tag as ViewHolder
             }
 
-            viewHolder.toc_textView!!.setText(spine_item!!.title)
+            viewHolder.tocTextView!!.text = spineItem!!.title
 
             return myView
         }
     }
 
 
-    inner class BookMarksAdapter(val context: Context, val bookmarks: MutableList<Bookmark>, val elements: MutableList<Link>) : BaseAdapter() {
+    inner class BookMarksAdapter(val context: Context, private val bookmarks: MutableList<Bookmark>, private val elements: MutableList<Link>) : BaseAdapter() {
 
         private inner class ViewHolder {
-            internal var bmk_chapter: TextView? = null
-            internal var bmk_progression: TextView? = null
-            internal var bmk_timestamp: TextView? = null
-            internal var bmk_overflow: ImageView? = null
+            internal var bmkChapter: TextView? = null
+            internal var bmkProgression: TextView? = null
+            internal var bmkTimestamp: TextView? = null
+            internal var bmkOverflow: ImageView? = null
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
@@ -196,10 +189,10 @@ class R2OutlineActivity : AppCompatActivity() {
                 val inflater = LayoutInflater.from(context)
                 bookmarkView = inflater.inflate(R.layout.bmk_item, parent, false)
 
-                viewHolder.bmk_chapter = bookmarkView!!.bmk_chapter as TextView
-                viewHolder.bmk_progression = bookmarkView.bmk_progression as TextView
-                viewHolder.bmk_timestamp = bookmarkView.bmk_timestamp as TextView
-                viewHolder.bmk_overflow = bookmarkView.overflow as ImageView
+                viewHolder.bmkChapter = bookmarkView!!.bmk_chapter as TextView
+                viewHolder.bmkProgression = bookmarkView.bmk_progression as TextView
+                viewHolder.bmkTimestamp = bookmarkView.bmk_timestamp as TextView
+                viewHolder.bmkOverflow = bookmarkView.overflow as ImageView
 
                 bookmarkView.tag = viewHolder
 
@@ -216,26 +209,24 @@ class R2OutlineActivity : AppCompatActivity() {
             val formattedProgression = "${((bookmark.progression * 100).roundToInt())}% through resource"
             val formattedDate = DateTime(bookmark.timestamp).toString(DateTimeFormat.shortDateTime())
 
-            viewHolder.bmk_chapter!!.text = title
-            viewHolder.bmk_progression!!.text = formattedProgression
-            viewHolder.bmk_timestamp!!.text = formattedDate
+            viewHolder.bmkChapter!!.text = title
+            viewHolder.bmkProgression!!.text = formattedProgression
+            viewHolder.bmkTimestamp!!.text = formattedDate
 
-            viewHolder.bmk_overflow?.setOnClickListener {
+            viewHolder.bmkOverflow?.setOnClickListener {
 
-                val popupMenu = PopupMenu(parent?.context, viewHolder.bmk_chapter)
+                val popupMenu = PopupMenu(parent?.context, viewHolder.bmkChapter)
                 popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
                 popupMenu.show()
 
-                popupMenu.setOnMenuItemClickListener(object : PopupMenu.OnMenuItemClickListener {
-                    override fun onMenuItemClick(item: MenuItem): Boolean {
-                        if (item.itemId == R.id.delete) {
-                            bookmarkDB.bookmarks.delete(bookmarks[position])
-                            bookmarks.removeAt(position)
-                            notifyDataSetChanged()
-                        }
-                        return false
+                popupMenu.setOnMenuItemClickListener { item ->
+                    if (item.itemId == R.id.delete) {
+                        bookmarkDB.bookmarks.delete(bookmarks[position])
+                        bookmarks.removeAt(position)
+                        notifyDataSetChanged()
                     }
-                })
+                    false
+                }
             }
 
 
