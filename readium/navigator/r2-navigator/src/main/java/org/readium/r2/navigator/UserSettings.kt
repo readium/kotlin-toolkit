@@ -170,7 +170,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
     private fun applyCSS(view: R2WebView, ref: String) {
         val userSetting = userProperties.getByRef<UserProperty>(ref)
         view.setProperty(userSetting.name, userSetting.toString())
-        println("applyCss : " + userSetting.name + ": " + userSetting.toString())
     }
 
 
@@ -261,7 +260,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
                 fontOverride.on = (pos != 0)
                 updateSwitchable(fontOverride)
                 updateEnumerable(fontFamily)
-                println("selected a font")
                 updateViewCSS(FONT_OVERRIDE_REF)
                 updateViewCSS(FONT_FAMILY_REF)
             }
