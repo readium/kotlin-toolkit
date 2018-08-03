@@ -1,6 +1,6 @@
 /*
  * Module: r2-navigator-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Developers: Aferdita Muriqi, Clément Baumann, Mostapha Idoubihi, Paul Stoica
  *
  * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -42,7 +42,7 @@ class R2EpubPageFragment : Fragment() {
 
         // Set text color depending of appearance preference
         (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor(
-                if (preferences.getInt(APPEARANCE_REF, 0) ?: 0 > 1) "#ffffff" else "#000000"
+                if (preferences.getInt(APPEARANCE_REF, 0) > 1) "#ffffff" else "#000000"
         ))
 
         val scrollMode = preferences.getBoolean(SCROLL_REF, false)
