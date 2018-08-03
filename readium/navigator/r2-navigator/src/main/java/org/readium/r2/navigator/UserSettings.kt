@@ -287,15 +287,15 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             when (i) {
                 0 -> {
                     resourcePager.setBackgroundColor(Color.parseColor("#ffffff"))
-                    (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#000000"))
+                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
                 }
                 1 -> {
                     resourcePager.setBackgroundColor(Color.parseColor("#faf4e8"))
-                    (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#000000"))
+                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
                 }
                 2 -> {
                     resourcePager.setBackgroundColor(Color.parseColor("#000000"))
-                    (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#ffffff"))
+                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#ffffff"))
                 }
             }
             updateEnumerable(appearance)
@@ -336,12 +336,12 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             scrollMode.on = scrollModeSwitch.isChecked
             when (b) {
                 true -> {
-                    (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).visibility = View.GONE
-                    resourcePager.focusedChild.setPadding(0, 5, 0, 5)
+                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.GONE
+                    resourcePager.focusedChild?.setPadding(0, 5, 0, 5)
                 }
                 false -> {
-                    (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).visibility = View.VISIBLE
-                    resourcePager.focusedChild.setPadding(0, 30, 0, 30)
+                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.VISIBLE
+                    resourcePager.focusedChild?.setPadding(0, 30, 0, 30)
                 }
             }
             updateSwitchable(scrollMode)
