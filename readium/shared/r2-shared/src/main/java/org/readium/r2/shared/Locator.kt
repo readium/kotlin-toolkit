@@ -20,13 +20,13 @@ import java.net.URI
  * @param title: URI - Title of the spine element
  * @param locations: Location - Object that's used to locate the target
  *
+ *
  * @var text: LocatorText? - If there's one, describe the Locator's context
  *
  */
 class Locator(val publicationId: String, val spineIndex: Integer, val created: DateTime, val title: URI, val locations: Location): JSONable {
 
     var text = LocatorText(null, null, null)
-        get
 
     override fun getJSON(): JSONObject {
         val json = JSONObject()
@@ -34,16 +34,16 @@ class Locator(val publicationId: String, val spineIndex: Integer, val created: D
         json.putOpt("spineIndex", spineIndex)
         json.putOpt("created", created)
         json.putOpt("title", title)
-        json.putOpt("location", locations.toJson())
+        json.putOpt("location", locations.toString())
         if (text != null) {
             json.putOpt("text", text)
         }
         return json
     }
 
-    fun toJsonString(): String{
-        var jsonString = """{ "publicationId": "$publicationId", "spineIndex": "$spineIndex", "created": "$created", "title": "$title", "locations" : ${locations.toJson()} """
-        if (text != null) { jsonString += """, "text" : "${text.toJson()}"""" }
+    override fun toString(): String{
+        var jsonString = """{ "publicationId": "$publicationId", "spineIndex": "$spineIndex", "created": "$created", "title": "$title", "locations" : ${locations} """
+        if (text != null) { jsonString += """, "text" : "${text}"""" }
         jsonString += """ }"""
         return jsonString
     }
@@ -70,7 +70,7 @@ class Locator(val publicationId: String, val spineIndex: Integer, val created: D
             return json
         }
 
-        fun toJson(): String{
+        override fun toString(): String{
             var jsonString =  """{"""
             after.let { jsonString += """ "after": "$after" """ }
             before.let { jsonString += """, "before": "$before" """ }
@@ -107,7 +107,7 @@ class Location(val id: String, val cfi: String?, val css: String?, val progressi
         return json
     }
 
-    fun toJson(): String {
+    override fun toString(): String {
         var jsonString = """{"""
         id.let { jsonString += """ "id": "$id" """ }
         cfi.let { jsonString += """, "cfi": "$cfi" """ }
