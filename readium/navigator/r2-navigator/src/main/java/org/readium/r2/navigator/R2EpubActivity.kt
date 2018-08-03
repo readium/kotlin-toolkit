@@ -120,7 +120,7 @@ open class R2EpubActivity : AppCompatActivity() {
     }
 
     /**
-     * storeProgression : save in the preference the last progression
+     * storeProgression() : save in the preference the last progression in the spine item
      */
     fun storeProgression(progression:Double) {
         storeDocumentIndex()
@@ -128,6 +128,9 @@ open class R2EpubActivity : AppCompatActivity() {
         preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
     }
 
+    /**
+     * storeDocumentIndex() : save in the preference the last spine item
+     */
     fun storeDocumentIndex() {
         val documentIndex = resourcePager.currentItem
         preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
