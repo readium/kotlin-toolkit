@@ -46,7 +46,7 @@ open class R2EpubActivity : AppCompatActivity() {
     protected var menuToc: MenuItem? = null
 
     var pagerPosition = 0
-    var relaodPagerPositions = true
+    var reloadPagerPositions = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,7 +88,7 @@ open class R2EpubActivity : AppCompatActivity() {
         val index = preferences.getInt("$publicationIdentifier-document", 0)
 
         val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
-        relaodPagerPositions = true
+        reloadPagerPositions = true
         resourcePager.adapter = adapter
 
         userSettings = UserSettings(preferences, this)
@@ -139,7 +139,7 @@ open class R2EpubActivity : AppCompatActivity() {
             if (data != null) {
 
                 pagerPosition = 0
-                relaodPagerPositions = true
+                reloadPagerPositions = true
 
                 val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
                 resourcePager.adapter = adapter

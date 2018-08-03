@@ -85,7 +85,7 @@ class R2EpubPageFragment : Fragment() {
                 try {
                     val childCount = webView.activity.resourcePager.childCount
 
-                    if (webView.activity.relaodPagerPositions) {
+                    if (webView.activity.reloadPagerPositions) {
                         if (childCount == 2) {
                             when {
                                 webView.activity.pagerPosition == 0 -> {
@@ -96,7 +96,7 @@ class R2EpubPageFragment : Fragment() {
                                 else -> {
                                     webView.scrollToPosition(0.0)
                                     webView.activity.pagerPosition = 0
-                                    webView.activity.relaodPagerPositions = false
+                                    webView.activity.reloadPagerPositions = false
                                 }
                             }
                         } else {
@@ -113,7 +113,7 @@ class R2EpubPageFragment : Fragment() {
                                 else -> {
                                     webView.scrollToPosition(0.0)
                                     webView.activity.pagerPosition = 0
-                                    webView.activity.relaodPagerPositions = false
+                                    webView.activity.reloadPagerPositions = false
                                 }
                             }
                         }
