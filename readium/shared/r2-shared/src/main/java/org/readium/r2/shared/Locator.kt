@@ -12,7 +12,7 @@ import org.json.JSONObject
 import java.net.URI
 
 /**
- * Locator : Class that's used to define a precise location in a Publication
+ * Locator : That class is used to define a precise location in a Publication
  *
  * @param publicationId: String - Identifier of a Publication
  * @param spineIndex: Integer - Index at a spine element
@@ -85,7 +85,7 @@ class Locator(val publicationId: String, val spineIndex: Integer, val created: D
  * Location : Class that contain the different variables needed to localize a particular position
  *
  * @param id: String - Identifier of a Publication
- * @param cfi: String? - String formatted to design a place in a EPUB
+ * @param cfi: String? - String formatted to designed a particular place in an EPUB
  * @param css: String? - Css selector
  * @param progression: Float - A percentage ( between 0 and 1 ) of the progression in a Publication
  * @param position: integer - Index of a segment in the resource.
@@ -112,9 +112,8 @@ class Location(val id: String, val cfi: String?, val css: String?, val progressi
         id.let { jsonString += """ "id": "$id" """ }
         cfi.let { jsonString += """, "cfi": "$cfi" """ }
         css.let { jsonString += """, "css": "$css" """ }
-        progression.let { jsonString += """ "progression": "$id" """ }
-        position.let { jsonString += """ "position": "$id" """ }
-        id.let { jsonString += """ "id": "$id" """ }
+        progression.let { jsonString += """ "progression": "$progression" """ }
+        position.let { jsonString += """ "position": "$position" """ }
         jsonString += """}"""
         return jsonString
     }
