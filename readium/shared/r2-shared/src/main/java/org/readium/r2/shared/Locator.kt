@@ -24,7 +24,7 @@ import java.net.URI
  * @var text: LocatorText? - If there's one, describe the Locator's context
  *
  */
-class Locator(val publicationId: String, val spineIndex: Integer, val created: DateTime, val title: URI, val locations: Location): JSONable {
+class Locator(val publicationId: String, val spineIndex: Int, val created: DateTime, val title: URI, val locations: Location): JSONable {
 
     var text = LocatorText(null, null, null)
 
@@ -35,17 +35,12 @@ class Locator(val publicationId: String, val spineIndex: Integer, val created: D
         json.putOpt("created", created)
         json.putOpt("title", title)
         json.putOpt("location", locations.toString())
-        if (text != null) {
-            json.putOpt("text", text)
-        }
+        json.putOpt("text", text)
         return json
     }
 
     override fun toString(): String{
-        var jsonString = """{ "publicationId": "$publicationId", "spineIndex": "$spineIndex", "created": "$created", "title": "$title", "locations" : ${locations} """
-        if (text != null) { jsonString += """, "text" : "${text}"""" }
-        jsonString += """ }"""
-        return jsonString
+        return """{ "publicationId": "$publicationId", "spineIndex": "$spineIndex", "created": "$created", "title": "$title", "locations" : ${locations}  "text" : "${text}" """
     }
 
     fun setText(after: String? = null, before: String? = null, highlight: String? = null){
@@ -84,18 +79,18 @@ class Locator(val publicationId: String, val spineIndex: Integer, val created: D
 /**
  * Location : Class that contain the different variables needed to localize a particular position
  *
- * @param id: String - Identifier of a Publication
+ * @param pubId: String - Identifier of a Publication
  * @param cfi: String? - String formatted to designed a particular place in an EPUB
  * @param css: String? - Css selector
  * @param progression: Float - A percentage ( between 0 and 1 ) of the progression in a Publication
  * @param position: integer - Index of a segment in the resource.
  *
  */
-class Location(val id: String, val cfi: String?, val css: String?, val progression: Float, val position: Integer): JSONable{
+class Location(val pubId: String, val cfi: String?, val css: String?, val progression: Float, val position: Integer): JSONable{
 
     override fun getJSON(): JSONObject {
         val json = JSONObject()
-        json.putOpt("id", id)
+        json.putOpt("pubId", pubId)
         if (cfi != null) {
             json.putOpt("cfi", cfi)
         }
@@ -109,11 +104,11 @@ class Location(val id: String, val cfi: String?, val css: String?, val progressi
 
     override fun toString(): String {
         var jsonString = """{"""
-        id.let { jsonString += """ "id": "$id" """ }
+        pubId.let { jsonString += """ "id": "$pubId" """ }
         cfi.let { jsonString += """, "cfi": "$cfi" """ }
         css.let { jsonString += """, "css": "$css" """ }
-        progression.let { jsonString += """ "progression": "$progression" """ }
-        position.let { jsonString += """ "position": "$position" """ }
+        progression.let { jsonString += """, "progression": "$progression" """ }
+        position.let { jsonString += """, "position": "$position" """ }
         jsonString += """}"""
         return jsonString
     }
