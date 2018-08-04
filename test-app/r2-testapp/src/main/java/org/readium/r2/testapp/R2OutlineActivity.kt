@@ -21,7 +21,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_outline_container.*
-import kotlinx.android.synthetic.main.bmk_item.view.*
+import kotlinx.android.synthetic.main.bookmark_item.view.*
 import kotlinx.android.synthetic.main.list_item_toc.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
@@ -187,7 +187,7 @@ class R2OutlineActivity : AppCompatActivity() {
                 viewHolder = ViewHolder()
 
                 val inflater = LayoutInflater.from(context)
-                bookmarkView = inflater.inflate(R.layout.bmk_item, parent, false)
+                bookmarkView = inflater.inflate(R.layout.bookmark_item, parent, false)
 
                 viewHolder.bmkChapter = bookmarkView!!.bmk_chapter as TextView
                 viewHolder.bmkProgression = bookmarkView.bmk_progression as TextView
