@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Module: r2-navigator-kotlin
+  ~ Developers: Aferdita Muriqi, Clément Baumann
+  ~
+  ~ Copyright (c) 2018. Readium Foundation. All rights reserved.
+  ~ Use of this source code is governed by a BSD-style license which is detailed in the
+  ~ LICENSE file present in the project repository where this source code is maintained.
+  -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="org.readium.r2.navigator">
 
-    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:allowBackup="false"
@@ -12,6 +22,9 @@
 
         <activity
             android:name=".R2EpubActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".R2CbzActivity"
             android:theme="@style/AppTheme" />
         <activity
             android:name=".R2OutlineActivity"

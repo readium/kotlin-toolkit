@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <!--
   ~ Module: r2-navigator-kotlin
   ~ Developers: Aferdita Muriqi, Clément Baumann
@@ -8,14 +9,8 @@
   ~ LICENSE file present in the project repository where this source code is maintained.
   -->
 
-<resources>
-    <color name="colorPrimary">#1f21b5</color>
-    <color name="colorPrimaryDark">#17188c</color>
-    <color name="colorAccent">#eceaeb</color>
-    <color name="colorAccentPrefs">#17188c</color>
-
-
-    <color name="snackbar_background_color">@color/colorPrimaryDark</color>
-    <color name="snackbar_text_color">@color/colorAccent</color>
-
-</resources>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="end"
+    android:textSize="12sp" />

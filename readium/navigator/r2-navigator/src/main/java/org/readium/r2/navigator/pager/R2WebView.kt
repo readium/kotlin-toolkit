@@ -1,3 +1,12 @@
+/*
+ * Module: r2-navigator-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.navigator.pager
 
 import android.content.Context
@@ -5,26 +14,23 @@ import android.util.AttributeSet
 import android.view.View
 import android.webkit.WebView
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.UserSettings.Scroll
 import timber.log.Timber
 import android.view.GestureDetector
 import android.view.MotionEvent
 
 
 /**
- * Created by aferditamuriqi on 12/2/17.
+ * Created by Aferdita Muriqi on 12/2/17.
  */
 
 class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
-
-    private val TAG = this::class.java.simpleName
 
     lateinit var activity: R2EpubActivity
 
     private var gestureDetector: GestureDetector? = null
     var progression: Double = 0.0
-    var mIsScrolling = false
-    var scrollRight = false
+    private var mIsScrolling = false
+    private var scrollRight = false
 
     /*
      * @see android.webkit.WebView#onScrollChanged(int, int, int, int)
@@ -37,8 +43,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
             } else if (oldX - x > 1) {
                 scrollRight = false
             }
-        }
-        else {
+        } else {
             mIsScrolling = false
             if (scrollRight) {
                 scrollRight()
@@ -71,7 +76,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            if (activity.userSettings.verticalScroll.equals(Scroll.On.toString())) {
+            if (activity.userSettings.verticalScroll) {
                 if (!this.canScrollVertically(1)) {
                     activity.nextResource()
                 }
@@ -97,7 +102,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            if (activity.userSettings.verticalScroll.equals(Scroll.On.toString())) {
+            if (activity.userSettings.verticalScroll) {
                 if (!this.canScrollVertically(-1)) {
                     activity.previousResource()
                 }
@@ -116,17 +121,19 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     fun scrollToPosition(progression: Double) {
         this.evaluateJavascript("scrollToPosition(\"$progression\");", null)
     }
+
     @android.webkit.JavascriptInterface
     fun scrollToBeginning() {
         this.evaluateJavascript("scrollToPosition(\"0\");", null)
     }
+
     @android.webkit.JavascriptInterface
     fun scrollToEnd() {
         this.evaluateJavascript("scrollToPosition(\"1\");", null)
     }
 
     @android.webkit.JavascriptInterface
-    fun progressionDidChange(body:String) {
+    fun progressionDidChange(body: String) {
         progression = body.toDouble()
         Timber.d("progression: $progression")
     }

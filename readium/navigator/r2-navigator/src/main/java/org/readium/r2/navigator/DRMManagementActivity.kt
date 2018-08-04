@@ -1,3 +1,12 @@
+/*
+ * Module: r2-navigator-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.navigator
 
 import android.graphics.Typeface
@@ -31,7 +40,7 @@ class DRMManagementActivity : AppCompatActivity() {
                 textView {
                     padding = dip(10)
                     topPadding = dip(30)
-                    text = "INFORMATION"
+                    text = context.getString(R.string.drm_information_header)
                     textSize = 20f
                     typeface = Typeface.DEFAULT_BOLD
                 }
@@ -42,7 +51,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "License Type"
+                        text = context.getString(R.string.drm_label_license_type)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
@@ -59,7 +68,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "State"
+                        text = context.getString(R.string.drm_label_state)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
@@ -75,7 +84,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "Provider"
+                        text = context.getString(R.string.drm_label_provider)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
@@ -91,7 +100,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "Issued"
+                        text = context.getString(R.string.drm_label_issued)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
@@ -107,7 +116,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "Updated"
+                        text = context.getString(R.string.drm_label_updated)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
@@ -121,7 +130,7 @@ class DRMManagementActivity : AppCompatActivity() {
                 textView {
                     padding = dip(10)
                     topPadding = dip(30)
-                    text = "RIGHTS"
+                    text = context.getString(R.string.drm_label_rights)
                     textSize = 20f
                     typeface = Typeface.DEFAULT_BOLD
                 }
@@ -131,7 +140,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "Prints left"
+                        text = context.getString(R.string.drm_label_prints_left)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
@@ -147,7 +156,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = "Copies left"
+                        text = context.getString(R.string.drm_label_copies_left)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
@@ -165,7 +174,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     return@let it
                 }
 
-                if ((start != null && end != null) && !start.equals(end)) {
+                if ((start != null && end != null) && start != end) {
                     drmModel.start?.let {
                         linearLayout {
                             orientation = LinearLayout.HORIZONTAL
@@ -173,7 +182,7 @@ class DRMManagementActivity : AppCompatActivity() {
                             weightSum = 2f
                             textView {
                                 padding = dip(10)
-                                text = "Start"
+                                text = context.getString(R.string.drm_label_start)
                                 textSize = 18f
                                 gravity = Gravity.START
                             }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -192,7 +201,7 @@ class DRMManagementActivity : AppCompatActivity() {
                             weightSum = 2f
                             textView {
                                 padding = dip(10)
-                                text = "End"
+                                text = context.getString(R.string.drm_label_end)
                                 textSize = 18f
                             }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                             textView {
@@ -208,16 +217,16 @@ class DRMManagementActivity : AppCompatActivity() {
                         textView {
                             padding = dip(10)
                             topPadding = dip(30)
-                            text = "ACTIONS"
+                            text = context.getString(R.string.drm_label_actions)
                             textSize = 20f
                             typeface = Typeface.DEFAULT_BOLD
                         }
                         button {
-                            text = "RENEW"
+                            text = context.getString(R.string.drm_label_renew)
                             onClick { }
                         }
                         button {
-                            text = "RETURN"
+                            text = context.getString(R.string.drm_label_return)
                             onClick { }
                         }
                     }

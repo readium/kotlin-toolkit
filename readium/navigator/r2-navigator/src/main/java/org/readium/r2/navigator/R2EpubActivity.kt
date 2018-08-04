@@ -1,3 +1,12 @@
+/*
+ * Module: r2-navigator-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.navigator
 
 import android.app.Activity
@@ -14,11 +23,9 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
-import kotlinx.android.synthetic.main.fragment_page.view.*
+import kotlinx.android.synthetic.main.fragment_page_epub.view.*
 import org.jetbrains.anko.contentView
 import org.jetbrains.anko.intentFor
-import org.readium.r2.navigator.UserSettings.Appearance
-import org.readium.r2.navigator.UserSettings.UserSettings
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
@@ -27,40 +34,38 @@ import org.readium.r2.shared.drm.DRMMModel
 
 class R2EpubActivity : AppCompatActivity() {
 
-    private val TAG = this::class.java.simpleName
-
     lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
     lateinit var resources: ArrayList<String>
 
-    lateinit var publicationPath: String
-    lateinit var publication: Publication
-    lateinit var epubName: String
-    lateinit var publicationIdentifier:String
+    private lateinit var publicationPath: String
+    private lateinit var publication: Publication
+    private lateinit var epubName: String
+    lateinit var publicationIdentifier: String
 
     lateinit var userSettings: UserSettings
-    var drmModel: DRMMModel? = null
+    private var drmModel: DRMMModel? = null
     private var menuDrm: MenuItem? = null
     private var menuToc: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_r2_epub)
+        setContentView(R.layout.activity_r2_viewpager)
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         resourcePager = findViewById(R.id.resourcePager)
         resources = ArrayList()
 
         Handler().postDelayed({
-            if ( intent.getSerializableExtra("drmModel") != null) {
+            if (intent.getSerializableExtra("drmModel") != null) {
                 drmModel = intent.getSerializableExtra("drmModel") as DRMMModel
                 drmModel?.let {
                     runOnUiThread {
-                        menuDrm?.setVisible(true)
+                        menuDrm?.isVisible = true
                     }
                 } ?: run {
                     runOnUiThread {
-                        menuDrm?.setVisible(false)
+                        menuDrm?.isVisible = false
                     }
                 }
             }
@@ -80,10 +85,9 @@ class R2EpubActivity : AppCompatActivity() {
             resources.add(uri)
         }
 
-        val index = preferences.getInt( "$publicationIdentifier-document", 0)
-        val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.0.toString()).toDouble()
+        val index = preferences.getInt("$publicationIdentifier-document", 0)
 
-        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title)
+        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
 
         resourcePager.adapter = adapter
 
@@ -93,30 +97,19 @@ class R2EpubActivity : AppCompatActivity() {
         if (index == 0) {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.setCurrentItem(resources.size - 1)
+                resourcePager.currentItem = resources.size - 1
             } else {
                 // The view has LTR layout
             }
         } else {
-            resourcePager.setCurrentItem(index)
+            resourcePager.currentItem = index
         }
 
-        val appearance_pref = preferences.getString("appearance", Appearance.Default.toString()) ?: Appearance.Default.toString()
-        when (appearance_pref) {
-            Appearance.Default.toString() -> {
-                resourcePager.setBackgroundColor(Color.parseColor("#ffffff"))
-                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
-            }
-            Appearance.Sepia.toString() -> {
-                resourcePager.setBackgroundColor(Color.parseColor("#faf4e8"))
-                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
-            }
-            Appearance.Night.toString() -> {
-                resourcePager.setBackgroundColor(Color.parseColor("#000000"))
-                (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#ffffff"))
-            }
-        }
-
+        val appearancePref = preferences.getInt("appearance", 0)
+        val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
+        val textColors = mutableListOf("#000000", "#000000", "#ffffff")
+        resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
+        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor(textColors[appearancePref]))
         toggleActionBar()
     }
 
@@ -124,7 +117,7 @@ class R2EpubActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_toc, menu)
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
-        menuDrm?.setVisible(false)
+        menuDrm?.isVisible = false
         return true
     }
 
@@ -141,7 +134,7 @@ class R2EpubActivity : AppCompatActivity() {
             }
             R.id.settings -> {
                 userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.toc), 0, 0, Gravity.END)
-                return false;
+                return false
             }
             R.id.drm -> {
                 startActivity(intentFor<DRMManagementActivity>("drmModel" to drmModel))
@@ -156,7 +149,7 @@ class R2EpubActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         val publicationIdentifier = publication.metadata.identifier
-        val documentIndex = resourcePager.getCurrentItem()
+        val documentIndex = resourcePager.currentItem
         val progression = resourcePager.webView.progression
         preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
         preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
@@ -165,8 +158,18 @@ class R2EpubActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
-                val spine_item_index: Int = data.getIntExtra("spine_item_index", 0)
-                resourcePager.setCurrentItem(spine_item_index)
+                var href: String = data.getStringExtra("toc_item_uri")
+                // href is the link to the page in the toc
+
+                if (href.indexOf("#") > 0) {
+                    href = href.substring(0, href.indexOf("#"))
+                }
+                // Search corresponding href in the spine
+                for (i in 0 until publication.spine.size) {
+                    if (publication.spine[i].href == href) {
+                        resourcePager.currentItem = i
+                    }
+                }
                 preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
                 if (supportActionBar!!.isShowing) {
                     resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -175,7 +178,6 @@ class R2EpubActivity : AppCompatActivity() {
                             or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                             or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                             or View.SYSTEM_UI_FLAG_IMMERSIVE)
-
                 }
             }
         }
@@ -187,10 +189,10 @@ class R2EpubActivity : AppCompatActivity() {
             preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() - 1)
+                resourcePager.currentItem = resourcePager.currentItem - 1
             } else {
                 // The view has LTR layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() + 1)
+                resourcePager.currentItem = resourcePager.currentItem + 1
             }
         }
     }
@@ -200,10 +202,10 @@ class R2EpubActivity : AppCompatActivity() {
             preferences.edit().putString("$publicationIdentifier-documentProgression", 1.0.toString()).apply()
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() + 1)
+                resourcePager.currentItem = resourcePager.currentItem + 1
             } else {
                 // The view has LTR layout
-                resourcePager.setCurrentItem(resourcePager.getCurrentItem() - 1)
+                resourcePager.currentItem = resourcePager.currentItem - 1
             }
 
         }

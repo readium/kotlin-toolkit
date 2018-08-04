@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!--
+  ~ Module: r2-navigator-kotlin
+  ~ Developers: Aferdita Muriqi, Clément Baumann
+  ~
+  ~ Copyright (c) 2018. Readium Foundation. All rights reserved.
+  ~ Use of this source code is governed by a BSD-style license which is detailed in the
+  ~ LICENSE file present in the project repository where this source code is maintained.
+  -->
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="200dp"
@@ -53,8 +62,7 @@
                             android:id="@+id/brightness"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="100"
-                            />
+                            android:layout_weight="100" />
 
                         <ImageView
                             android:id="@+id/imageView4"
@@ -104,15 +112,14 @@
                             android:layout_gravity="center_vertical"
                             android:layout_marginEnd="20dp"
                             android:gravity="center_horizontal"
-                            android:text="Font" />
+                            android:text="@string/usersettings_label_font" />
 
 
                         <Spinner
                             android:id="@+id/spinner_action_settings_intervall_values"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:spinnerMode="dialog"
-                            />
+                            android:spinnerMode="dialog" />
                     </LinearLayout>
 
                     <RadioGroup
@@ -133,7 +140,7 @@
                             android:checked="true"
                             android:gravity="center"
                             android:padding="5dp"
-                            android:text="Default"
+                            android:text="@string/usersettings_appearance_default"
                             android:textColor="@drawable/rbtn_textcolor_selector" />
 
                         <RadioButton
@@ -145,7 +152,7 @@
                             android:button="@null"
                             android:gravity="center"
                             android:padding="5dp"
-                            android:text="Sepia"
+                            android:text="@string/usersettings_appearance_sepia"
                             android:textColor="@drawable/rbtn_textcolor_selector" />
 
                         <RadioButton
@@ -157,16 +164,16 @@
                             android:button="@null"
                             android:gravity="center"
                             android:padding="5dp"
-                            android:text="Night"
+                            android:text="@string/usersettings_appearance_night"
                             android:textColor="@drawable/rbtn_textcolor_selector" />
 
-                        </RadioGroup>
+                    </RadioGroup>
 
                     <Switch
                         android:id="@+id/scroll_mode"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Scroll mode" />
+                        android:text="@string/usersettings_label_scroll_mode" />
 
 
                 </LinearLayout>
@@ -177,21 +184,14 @@
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:orientation="vertical">
-                    
-                <LinearLayout
-                    android:id="@+id/Advanced_Body"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                   >
+
                     <Switch
                         android:id="@+id/publisher_default"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="10dp"
                         android:layout_marginTop="10dp"
-                        android:text="Publisher's Default" />
+                        android:text="@string/usersettings_publisher_default" />
 
                     <RadioGroup
                         android:id="@+id/TextAlignment"
@@ -199,7 +199,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="10dp"
                         android:layout_marginTop="10dp"
-                        android:orientation="horizontal" >
+                        android:orientation="horizontal">
 
 
                         <RadioButton
@@ -243,7 +243,7 @@
                             android:layout_gravity="center_vertical"
                             android:layout_marginEnd="20dp"
                             android:gravity="center_horizontal"
-                            android:text="Columns" />
+                            android:text="@string/usersettings_label_columns" />
 
                         <RadioGroup
                             android:id="@+id/columns"
@@ -262,7 +262,7 @@
                                 android:checked="true"
                                 android:gravity="center"
                                 android:padding="5dp"
-                                android:text="Auto"
+                                android:text="@string/usersettings_auto"
                                 android:textColor="@drawable/rbtn_textcolor_selector" />
 
                             <RadioButton
@@ -274,7 +274,7 @@
                                 android:button="@null"
                                 android:gravity="center"
                                 android:padding="5dp"
-                                android:text="1"
+                                android:text="@string/usersettings_column_one"
                                 android:textColor="@drawable/rbtn_textcolor_selector" />
 
                             <RadioButton
@@ -286,7 +286,7 @@
                                 android:button="@null"
                                 android:gravity="center"
                                 android:padding="5dp"
-                                android:text="2"
+                                android:text="@string/usersettings_column_two"
                                 android:textColor="@drawable/rbtn_textcolor_selector" />
 
                         </RadioGroup>
@@ -321,13 +321,13 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Page Margins" />
+                                android:text="@string/usersettings_label_page_margins" />
 
                             <TextView
                                 android:id="@+id/pm_display"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="0.75" />
+                                android:text="@string/usersettings_page_margin_default" />
                         </LinearLayout>
 
                         <ImageButton
@@ -368,13 +368,13 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Word Spacing" />
+                                android:text="@string/usersettings_label_word_spacing" />
 
                             <TextView
                                 android:id="@+id/ws_display"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="auto" />
+                                android:text="@string/usersettings_auto" />
                         </LinearLayout>
 
                         <ImageButton
@@ -417,14 +417,14 @@
 
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Letter Spacing" />
+                                android:text="@string/usersettings_label_letter_spacing" />
 
                             <TextView
                                 android:id="@+id/ls_display"
 
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="auto" />
+                                android:text="@string/usersettings_auto" />
                         </LinearLayout>
 
                         <ImageButton
@@ -438,7 +438,54 @@
                             android:src="@drawable/icon_plus" />
 
                     </LinearLayout>
-                </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginBottom="10dp"
+                        android:orientation="horizontal">
+
+                        <ImageButton
+                            android:id="@+id/lh_decrease"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="@android:color/white"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/icon_minus" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_weight="100"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/usersettings_label_line_height" />
+
+                            <TextView
+                                android:id="@+id/lh_display"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/usersettings_auto" />
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/lh_increase"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="@android:color/white"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/icon_plus" />
+
+                    </LinearLayout>
+
 
                 </LinearLayout>
 
