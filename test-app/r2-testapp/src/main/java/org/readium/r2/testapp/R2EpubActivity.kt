@@ -41,7 +41,7 @@ class R2EpubActivity : R2EpubActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_navigation, menu)
+        menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_epub, menu)
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
         menuBmk = menu?.findItem(R.id.bookmark_list)
