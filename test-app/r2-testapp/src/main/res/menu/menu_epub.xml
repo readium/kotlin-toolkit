@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Module: r2-testapp-kotlin
+  ~ Developers: Aferdita Muriqi, Clément Baumann, Mostapha Idoubihi, Paul Stoica
+  ~
+  ~ Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+  ~ Licensed to the Readium Foundation under one or more contributor license agreements.
+  ~ Use of this source code is governed by a BSD-style license which is detailed in the
+  ~ LICENSE file present in the project repository where this source code is maintained.
+  -->
+
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context='org.readium.r2.testapp.R2EpubActivity'>
+
+    <item
+        android:id="@+id/drm"
+        android:icon="@drawable/icon_drm"
+        android:title="DRM"
+        app:showAsAction="always|always">
+    </item>
+
+    <item
+        android:id="@+id/bookmark"
+        android:icon="@drawable/icon_bookmark"
+        android:title="Bookmark"
+        app:showAsAction="always|always">
+    </item>
+
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/icon_settings"
+        android:title="Settings"
+        app:showAsAction="always|always">
+    </item>
+
+
+    <item
+        android:id="@+id/toc"
+        android:icon="@drawable/icon_menu"
+        android:title="TOC"
+        app:showAsAction="always|always" >
+    </item>
+
+</menu>

@@ -1,6 +1,6 @@
 /*
  * Module: r2-testapp-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Developers: Aferdita Muriqi, Clément Baumann, Paul Stoica
  *
  * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
  * Licensed to the Readium Foundation under one or more contributor license agreements.
