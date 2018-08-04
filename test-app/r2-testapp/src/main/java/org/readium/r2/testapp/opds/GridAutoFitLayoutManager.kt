@@ -1,3 +1,13 @@
+/*
+ * Module: r2-testapp-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.testapp.opds
 
 import android.content.Context
@@ -21,15 +31,15 @@ class GridAutoFitLayoutManager : GridLayoutManager {
     }/* Initially set spanCount to 1, will be changed automatically later. */
 
     private fun checkedColumnWidth(context: Context, columnWidth: Int): Int {
-        var columnWidth = columnWidth
-        if (columnWidth <= 0) {
-            columnWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sColumnWidth.toFloat(),
+        var width = columnWidth
+        width = if (width <= 0) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sColumnWidth.toFloat(),
                     context.resources.displayMetrics).toInt()
         } else {
-            columnWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, columnWidth.toFloat(),
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width.toFloat(),
                     context.resources.displayMetrics).toInt()
         }
-        return columnWidth
+        return width
     }
 
     private fun setColumnWidth(newColumnWidth: Int) {
@@ -49,11 +59,10 @@ class GridAutoFitLayoutManager : GridLayoutManager {
         }
 
         if (mColumnWidthChanged && mColumnWidth > 0 && width > 0 && height > 0 || mWidthChanged) {
-            val totalSpace: Int
-            if (orientation == LinearLayoutManager.VERTICAL) {
-                totalSpace = width - paddingRight - paddingLeft
+            val totalSpace: Int = if (orientation == LinearLayoutManager.VERTICAL) {
+                width - paddingRight - paddingLeft
             } else {
-                totalSpace = height - paddingTop - paddingBottom
+                height - paddingTop - paddingBottom
             }
             val spanCount = Math.max(1, totalSpace / mColumnWidth)
             setSpanCount(spanCount)
@@ -64,6 +73,6 @@ class GridAutoFitLayoutManager : GridLayoutManager {
     }
 
     companion object {
-        private val sColumnWidth = 200 // assume cell width of 200dp
+        private const val sColumnWidth = 200 // assume cell width of 200dp
     }
 }

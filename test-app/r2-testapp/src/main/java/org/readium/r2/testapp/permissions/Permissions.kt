@@ -1,3 +1,13 @@
+/*
+ * Module: r2-testapp-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.testapp.permissions
 
 import android.app.Activity
@@ -12,41 +22,41 @@ import io.reactivex.subjects.PublishSubject
  */
 class Permissions(private val activity: Activity) {
 
-  private val REQUEST_CODE = 1512
+    private val REQUEST_CODE = 1512
 
-  private val permissionSubject = PublishSubject.create<Array<String>>()
+    private val permissionSubject = PublishSubject.create<Array<String>>()
 
-  fun request(permission: String): Single<PermissionResult> =
-      if (hasPermission(permission)) Single.just(PermissionResult.GRANTED)
-      else permissionSubject
-          .doOnSubscribe { ActivityCompat.requestPermissions(activity, arrayOf(permission), REQUEST_CODE) }
-          .filter { it.contains(permission) }
-          .firstOrError()
-          .map {
-            when {
-              hasPermission(permission) -> PermissionResult.GRANTED
-              showRationale(permission) -> PermissionResult.DENIED_ASK_AGAIN
-              else -> PermissionResult.DENIED_FOREVER
-            }
-          }
+    fun request(permission: String): Single<PermissionResult> =
+            if (hasPermission(permission)) Single.just(PermissionResult.GRANTED)
+            else permissionSubject
+                    .doOnSubscribe { ActivityCompat.requestPermissions(activity, arrayOf(permission), REQUEST_CODE) }
+                    .filter { it.contains(permission) }
+                    .firstOrError()
+                    .map {
+                        when {
+                            hasPermission(permission) -> PermissionResult.GRANTED
+                            showRationale(permission) -> PermissionResult.DENIED_ASK_AGAIN
+                            else -> PermissionResult.DENIED_FOREVER
+                        }
+                    }
 
-  @Suppress("UNUSED_PARAMETER")
-  fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-    if (requestCode == REQUEST_CODE) {
-      permissionSubject.onNext(permissions)
+    @Suppress("UNUSED_PARAMETER")
+    fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        if (requestCode == REQUEST_CODE) {
+            permissionSubject.onNext(permissions)
+        }
     }
-  }
 
-  private fun hasPermission(permission: String) = ContextCompat.checkSelfPermission(
-      activity,
-      permission
-  ) == PackageManager.PERMISSION_GRANTED
+    private fun hasPermission(permission: String) = ContextCompat.checkSelfPermission(
+            activity,
+            permission
+    ) == PackageManager.PERMISSION_GRANTED
 
-  private fun showRationale(permission: String) = ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
+    private fun showRationale(permission: String) = ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
 
-  enum class PermissionResult {
-    GRANTED,
-    DENIED_FOREVER,
-    DENIED_ASK_AGAIN
-  }
+    enum class PermissionResult {
+        GRANTED,
+        DENIED_FOREVER,
+        DENIED_ASK_AGAIN
+    }
 }

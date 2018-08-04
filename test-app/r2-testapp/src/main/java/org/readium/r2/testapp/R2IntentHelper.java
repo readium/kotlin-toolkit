@@ -1,3 +1,13 @@
+/*
+ * Module: r2-testapp-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.testapp;
 
 import android.content.Context;
@@ -5,16 +15,16 @@ import android.content.Intent;
 import android.net.Uri;
 
 /**
- * Created by aferditamuriqi on 1/16/18.
+ * Created by Aferdita Muriqi on 1/16/18.
  */
 
 public class R2IntentHelper {
 
-    public static String URI = "URI";
-    public static String LCP = "LCP";
+    public static final String URI = "URI";
+    public static final String LCP = "LCP";
 
     public Intent catalogActivityIntent(Context context, Uri uri) {
-        return catalogActivityIntent(context,uri, false);
+        return catalogActivityIntent(context, uri, false);
     }
 
     public Intent catalogActivityIntent(Context context, Uri uri, boolean lcp) {

@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Module: r2-testapp-kotlin
+  ~ Developers: Aferdita Muriqi, Clément Baumann
+  ~
+  ~ Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+  ~ Licensed to the Readium Foundation under one or more contributor license agreements.
+  ~ Use of this source code is governed by a BSD-style license which is detailed in the
+  ~ LICENSE file present in the project repository where this source code is maintained.
+  -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="org.readium.r2.testapp">
@@ -13,7 +23,6 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup">
         <activity android:name=".CatalogActivity">
@@ -42,7 +51,9 @@
                 <data android:host="*" />
                 <data android:pathPattern=".*\.epub" />
                 <data android:pathPattern=".*\.lcpl" />
+                <data android:pathPattern=".*\.cbz" />
                 <data android:mimeType="application/epub+zip" />
+                <data android:mimeType="application/x-cbz" />
 
             </intent-filter>
             <intent-filter>
@@ -65,6 +76,7 @@
                 <data android:host="*" />
                 <data android:pathPattern=".*\.epub" />
                 <data android:pathPattern=".*\.lcpl" />
+                <data android:pathPattern=".*\.cbz" />
             </intent-filter>
 
         </activity>
@@ -77,10 +89,10 @@
             android:label="@string/title_activity_r2_about" />
         <activity
             android:name=".opds.OPDSListActivity"
-            android:label="@string/title_activity_opdslist" />
+            android:label="@string/title_activity_opds_list" />
         <activity
             android:name=".opds.OPDSDetailActivity"
-            android:label="@string/title_activity_opddetail" />
+            android:label="@string/title_activity_opds_detail" />
     </application>
 
 </manifest>

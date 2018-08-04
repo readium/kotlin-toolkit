@@ -1,8 +1,19 @@
+/*
+ * Module: r2-testapp-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.testapp.opds
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.widget.LinearLayout
@@ -10,6 +21,7 @@ import com.mcxiaoke.koi.ext.onClick
 import com.squareup.picasso.Picasso
 import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
+import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.shared.Publication
@@ -18,6 +30,7 @@ import org.readium.r2.testapp.BooksDatabase
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.books
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -27,9 +40,9 @@ class OPDSDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val database: BooksDatabase = BooksDatabase(this)
+        val database = BooksDatabase(this)
 
-        val opdsDownloader: OPDSDownloader = OPDSDownloader(this)
+        val opdsDownloader = OPDSDownloader(this)
         val publication: Publication = intent.getSerializableExtra("publication") as Publication
         nestedScrollView {
             fitsSystemWindows = true
@@ -41,7 +54,7 @@ class OPDSDetailActivity : AppCompatActivity() {
 
                 imageView {
                     this@linearLayout.gravity = Gravity.CENTER
-                    Picasso.with(act).load(publication.images.first().href).into(this);
+                    Picasso.with(act).load(publication.images.first().href).into(this)
                 }.lparams {
                     height = 800
                 }
@@ -59,33 +72,61 @@ class OPDSDetailActivity : AppCompatActivity() {
                 val downloadUrl = getDownloadURL(publication)
                 downloadUrl?.let {
                     button {
-                        text = "Download"
+                        text = context.getString(R.string.opds_detail_download_button)
                         onClick {
                             val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
                             progress.show()
 
-//                            for (link in publication.links) {
-//                                if (link.typeLink.equals(mimetype)) {
-                                    opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
+                            opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
-                                        val publicationIdentifier = publication.metadata.identifier
-                                        val author = authorName(publication)
-                                        val bitmap = getBitmapFromURL(publication.images.first().href!!)
-                                        val stream = ByteArrayOutputStream()
-                                        bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                val publicationIdentifier = publication.metadata.identifier
+                                val author = authorName(publication)
+                                Thread({
+                                    val bitmap = getBitmapFromURL(publication.images.first().href!!)
+                                    val stream = ByteArrayOutputStream()
+                                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                    val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
+                                    database.books.insert(book, false)?.let {
+                                        book.id = it
+                                        books.add(book)
+                                        snackbar(this, "download completed")
+                                        progress.dismiss()
+                                    } ?: run {
+                                        progress.dismiss()
+                                        runOnUiThread({
 
-                                        val book = Book(pair.second, publication.metadata.title, author, pair.first, -1.toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray())
-                                        database.books.insert(book, false)?.let {
-                                            books.add(book)
-                                            snackbar(this, "download completed")
-                                            progress.dismiss()
-                                        }?: run {
-                                            snackbar(this, "download failed")
-                                            progress.dismiss()
-                                        }
+                                            val duplicateAlert = alert(Appcompat, "Publication already exists") {
+
+                                                positiveButton("Add anyways") { }
+                                                negativeButton("Cancel") { }
+
+                                            }.build()
+                                            duplicateAlert.apply {
+                                                setCancelable(false)
+                                                setCanceledOnTouchOutside(false)
+                                                setOnShowListener({
+                                                    val b2 = getButton(AlertDialog.BUTTON_POSITIVE)
+                                                    b2.setOnClickListener({
+                                                        database.books.insert(book, true)?.let {
+                                                            book.id = it
+                                                            books.add(book)
+                                                            duplicateAlert.dismiss()
+                                                        }
+                                                    })
+                                                    val bCancel = getButton(AlertDialog.BUTTON_NEGATIVE)
+                                                    bCancel.setOnClickListener({
+                                                        File(book.fileUrl).delete()
+                                                        duplicateAlert.dismiss()
+                                                    })
+                                                })
+                                            }
+                                            duplicateAlert.show()
+                                        })
+
                                     }
-//                                }
-//                            }
+
+                                }).start()
+                            }
                         }
                     }
                 }
@@ -93,8 +134,7 @@ class OPDSDetailActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun getDownloadURL(publication:Publication) : URL? {
+    private fun getDownloadURL(publication: Publication): URL? {
         var url: URL? = null
         val links = publication.links
         for (link in links) {
@@ -110,28 +150,26 @@ class OPDSDetailActivity : AppCompatActivity() {
     }
 
 
-    fun getBitmapFromURL(src: String): Bitmap? {
-        try {
+    private fun getBitmapFromURL(src: String): Bitmap? {
+        return try {
             val url = URL(src)
             val connection = url.openConnection() as HttpURLConnection
             connection.doInput = true
             connection.connect()
             val input = connection.inputStream
-            return BitmapFactory.decodeStream(input)
+            BitmapFactory.decodeStream(input)
         } catch (e: IOException) {
             e.printStackTrace()
-            return null
+            null
         }
-
     }
 
     private fun authorName(publication: Publication): String {
-        val author = publication.metadata.authors.firstOrNull()?.name?.let {
+        return publication.metadata.authors.firstOrNull()?.name?.let {
             return@let it
         } ?: run {
             return@run String()
         }
-        return author
     }
 
 
