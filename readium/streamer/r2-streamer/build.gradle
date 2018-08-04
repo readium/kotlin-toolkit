@@ -1,3 +1,12 @@
+/*
+ * Module: r2-streamer-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
@@ -26,6 +35,7 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'com.jakewharton.timber:timber:4.7.0'
 
 //    uncomment this line to use with jitpack
     implementation 'com.github.readium:r2-shared-kotlin:master-SNAPSHOT'
@@ -44,8 +54,11 @@ dependencies {
     }
 
     implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'org.nanohttpd:nanohttpd:2.3.1'
-    implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.1'
+
+    implementation 'org.nanohttpd:nanohttpd:2.3.2-SNAPSHOT'
+    implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.2-SNAPSHOT'
+//    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+//    implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.1'
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'commons-io:commons-io:2.4'
     implementation 'org.zeroturnaround:zt-zip:1.12'
