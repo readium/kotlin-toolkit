@@ -7,17 +7,13 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.shared.opds
+package org.readium.r2.shared
 
 import java.io.Serializable
-import java.util.*
 
+class MultilanguageString : Serializable {
 
-data class OpdsMetadata(var title: String) : Serializable {
-    var numberOfItems: Int? = null
-    var itemsPerPage: Int? = null
-    var currentPage: Int? = null
-    var modified: Date? = null
-    var position: Int? = null
-    var rdfType: String? = null
+    var singleString: String? = null
+    var multiString: MutableMap<String, String> = mutableMapOf()
+
 }

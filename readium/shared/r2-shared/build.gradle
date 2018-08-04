@@ -1,3 +1,12 @@
+/*
+ * Module: r2-shared-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
@@ -26,8 +35,8 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'com.jakewharton.timber:timber:4.7.0'
 
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.google.code.gson:gson:2.8.2'
@@ -39,6 +48,8 @@ dependencies {
     implementation 'nl.komponents.kovenant:kovenant-combine:3.3.0'
     implementation 'nl.komponents.kovenant:kovenant-jvm:3.3.0'
     implementation 'nl.komponents.kovenant:kovenant-functional:3.3.0'
+    implementation 'joda-time:joda-time:2.9.9'
+
 
     testImplementation 'junit:junit:4.12'
     testImplementation "org.mockito:mockito-core:2.12.0"
