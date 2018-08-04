@@ -114,10 +114,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         books = database.books.list()
 
         booksAdapter = BooksAdapter(this, books, "$BASE_URL:$localPort", this)
-
-        //Unit Tests for Bookmarks db interactions
-//        TestBookmarksDatabase(this).test()
-
+        
         parseIntent(null)
 
         coordinatorLayout {
