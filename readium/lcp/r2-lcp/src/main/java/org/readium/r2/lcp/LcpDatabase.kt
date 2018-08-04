@@ -1,12 +1,21 @@
+/*
+ * Module: r2-lcp-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.lcp
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import org.jetbrains.anko.db.*
-import org.readium.r2.lcp.Tables.Licenses
-import org.readium.r2.lcp.Tables.LicensesTable
-import org.readium.r2.lcp.Tables.Transactions
-import org.readium.r2.lcp.Tables.TransactionsTable
+import org.readium.r2.lcp.tables.Licenses
+import org.readium.r2.lcp.tables.LicensesTable
+import org.readium.r2.lcp.tables.Transactions
+import org.readium.r2.lcp.tables.TransactionsTable
 
 
 // Access property for Context

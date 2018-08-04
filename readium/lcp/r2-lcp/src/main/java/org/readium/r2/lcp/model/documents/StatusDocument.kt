@@ -1,35 +1,44 @@
-package org.readium.r2.lcp.Model.Documents
+/*
+ * Module: r2-lcp-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
+package org.readium.r2.lcp.model.documents
 
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpParsingError
 import org.readium.r2.lcp.LcpParsingErrors
-import org.readium.r2.lcp.Model.SubParts.Link
-import org.readium.r2.lcp.Model.SubParts.Updated
-import org.readium.r2.lcp.Model.SubParts.lsd.Event
-import org.readium.r2.lcp.Model.SubParts.lsd.PotentialRights
-import org.readium.r2.lcp.Model.SubParts.lsd.parseEvents
-import org.readium.r2.lcp.Model.SubParts.parseLinks
+import org.readium.r2.lcp.model.sub.Link
+import org.readium.r2.lcp.model.sub.Updated
+import org.readium.r2.lcp.model.sub.lsd.Event
+import org.readium.r2.lcp.model.sub.lsd.PotentialRights
+import org.readium.r2.lcp.model.sub.lsd.parseEvents
+import org.readium.r2.lcp.model.sub.parseLinks
 import java.nio.charset.Charset
 
 /// Document that contains information about the history of a License Document,
 /// along with its current status and available interactions.
 class StatusDocument {
 
-    var id: String
-    var status: Status
+    var id: String?  = null
+    var status: Status?  = null
     /// A message meant to be displayed to the User regarding the current status
     /// of the license.
-    var message: String
+    var message: String? = null
     /// Must contain at least a link to the LicenseDocument associated to this.
     /// Status Document.
-    var links: List<Link>
-    var updated: Updated?
-    /// Dictionnary of potential rights associated with Dates.
-    var potentialRights: PotentialRights? = null
+    var links: List<Link>?  = null
+    private var updated: Updated? = null
+    /// Dictionary of potential rights associated with Dates.
+    private var potentialRights: PotentialRights? = null
     /// Ordered list of events related to the change in status of a License
     /// Document.
-    var events: List<Event?>
+    private var events: List<Event?>? = null
 
     /// Describes the status of the license.
     ///
@@ -65,17 +74,16 @@ class StatusDocument {
     constructor(data: ByteArray) {
         try {
             val text = data.toString(Charset.defaultCharset())
-
             val json = JSONObject(text)
-            id = json.getString("id")
-            status =  Status.valueOf(json.getString("status"))
-            message = json.getString("message")
-            updated = Updated(json.getJSONObject("updated"))
-            links = parseLinks(json["links"] as JSONArray)
-            events = parseEvents(json["events"] as JSONArray)
-            if (json.has("potential_rights")) {
-                potentialRights = PotentialRights(json.getJSONObject("potential_rights"))
-            }
+
+            if (json.has("id")) id = json.getString("id")
+            if (json.has("status")) status = Status.valueOf(json.getString("status"))
+            if (json.has("message")) message = json.getString("message")
+            if (json.has("updated")) updated = Updated(json.getJSONObject("updated"))
+            if (json.has("links")) links = parseLinks(json["links"] as JSONArray)
+            if (json.has("events")) events = parseEvents(json["events"] as JSONArray)
+            if (json.has("potential_rights")) potentialRights = PotentialRights(json.getJSONObject("potential_rights"))
+
         } catch (e: Exception){
             throw Exception(LcpParsingError().errorDescription(LcpParsingErrors.json))
         }
@@ -84,15 +92,14 @@ class StatusDocument {
     constructor(json: JSONObject) {
         try {
 
-            id = json.getString("id")
-            status =  Status.valueOf(json.getString("status"))
-            message = json.getString("message")
-            updated = Updated(json.getJSONObject("updated"))
-            links = parseLinks(json["links"] as JSONArray)
-            events = parseEvents(json["events"] as JSONArray)
-            if (json.has("potential_rights")) {
-                potentialRights = PotentialRights(json.getJSONObject("potential_rights"))
-            }
+            if (json.has("id")) id = json.getString("id")
+            if (json.has("status")) status = Status.valueOf(json.getString("status"))
+            if (json.has("message")) message = json.getString("message")
+            if (json.has("updated")) updated = Updated(json.getJSONObject("updated"))
+            if (json.has("links")) links = parseLinks(json["links"] as JSONArray)
+            if (json.has("events")) events = parseEvents(json["events"] as JSONArray)
+            if (json.has("potential_rights")) potentialRights = PotentialRights(json.getJSONObject("potential_rights"))
+
         } catch (e: Exception){
             throw Exception(LcpParsingError().errorDescription(LcpParsingErrors.json))
         }
@@ -106,6 +113,6 @@ class StatusDocument {
     /// - Parameter rel: The rel to look for.
     /// - Returns: The first link containing the rel.
     fun link(rel: String) : Link? {
-        return links.firstOrNull { it.rel.contains(rel) }
+        return links?.firstOrNull { it.rel.contains(rel) }
     }
 }

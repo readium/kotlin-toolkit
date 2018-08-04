@@ -1,19 +1,27 @@
-package org.readium.r2.lcp.Model.Documents
+/*
+ * Module: r2-lcp-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
+package org.readium.r2.lcp.model.documents
 
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpErrorCase
-import org.readium.r2.lcp.Model.SubParts.Link
-import org.readium.r2.lcp.Model.SubParts.lcp.Encryption
-import org.readium.r2.lcp.Model.SubParts.lcp.Rights
-import org.readium.r2.lcp.Model.SubParts.lcp.User
-import org.readium.r2.lcp.Model.SubParts.lcp.Signature
+import org.readium.r2.lcp.model.sub.Link
+import org.readium.r2.lcp.model.sub.lcp.Encryption
+import org.readium.r2.lcp.model.sub.lcp.Rights
+import org.readium.r2.lcp.model.sub.lcp.User
+import org.readium.r2.lcp.model.sub.lcp.Signature
 import java.net.URL
 import java.nio.charset.Charset
-import java.util.*
 import org.joda.time.DateTime
 import org.json.JSONArray
-import org.readium.r2.lcp.Model.SubParts.parseLinks
+import org.readium.r2.lcp.model.sub.parseLinks
 
 /// Document that contains references to the various keys, links to related
 /// external resources, rights and restrictions that are applied to the
