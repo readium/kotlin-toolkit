@@ -53,10 +53,10 @@ class R2EpubActivity : R2EpubActivity() {
         when (item.itemId) {
 
             R.id.toc -> {
-                val bkId = intent.getLongExtra("bookId", -1)
+                val bookId = intent.getLongExtra("bookId", -1)
                 val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publication", publication)
-                intent.putExtra("bookId", bkId)
+                intent.putExtra("bookId", bookId)
                 startActivityForResult(intent, 2)
                 return true
             }
