@@ -85,10 +85,10 @@
             android:label="@string/title_activity_r2_about" />
         <activity
             android:name=".R2EpubActivity"
-            android:label="@string/title_activity_epub_detail" />
+            android:label="@string/title_activity_epub" />
         <activity
             android:name=".R2OutlineActivity"
-            android:label="@string/title_activity_outline_detail" />
+            android:label="@string/title_activity_outline" />
         <activity
             android:name=".opds.OPDSListActivity"
             android:label="@string/title_activity_opds_list" />
