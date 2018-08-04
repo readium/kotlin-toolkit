@@ -27,10 +27,6 @@
             android:name=".R2CbzActivity"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".R2OutlineActivity"
-            android:label="Table of Contents"
-            android:theme="@style/AppTheme" />
-        <activity
             android:name=".DRMManagementActivity"
             android:label="DRM Management"
             android:theme="@style/AppTheme"/>
