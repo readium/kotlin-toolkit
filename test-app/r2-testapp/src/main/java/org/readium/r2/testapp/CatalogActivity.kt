@@ -43,10 +43,7 @@ import nl.komponents.kovenant.ui.failUi
 import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
-import org.jetbrains.anko.design.coordinatorLayout
-import org.jetbrains.anko.design.floatingActionButton
-import org.jetbrains.anko.design.snackbar
-import org.jetbrains.anko.design.textInputLayout
+import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.json.JSONObject
 import org.readium.r2.navigator.R2CbzActivity
@@ -766,6 +763,10 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         progress.dismiss()
 
                     }
+                } else {
+                    longSnackbar(catalogView, "Unsupported file")
+                    progress.dismiss()
+                    file.delete()
                 }
             }
         } catch (e: Throwable) {
