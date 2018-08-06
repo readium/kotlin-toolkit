@@ -90,7 +90,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     private lateinit var opdsDownloader: OPDSDownloader
     private lateinit var publication: Publication
 
-    private lateinit var catalogView: RecyclerView
+    protected lateinit var catalogView: RecyclerView
     private lateinit var alertDialog: AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -675,6 +675,8 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 else -> null
             }
         } then {
+            progress.dismiss()
+        } fail {
             progress.dismiss()
         }
     }
