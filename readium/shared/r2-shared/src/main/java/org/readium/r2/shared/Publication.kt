@@ -1,5 +1,8 @@
 /*
- * Copyright 2018 Readium Foundation. All rights reserved.
+ * Module: r2-shared-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -69,8 +72,19 @@ class Publication : Serializable {
      *
      */
     enum class TYPE {
-        EPUB, CBZ
+        EPUB, CBZ, FXL
     }
+
+    open class EnumCompanion<T, V>(private val valueMap: Map<T, V>) {
+        fun fromString(type: T) = valueMap[type]
+    }
+
+    enum class EXTENSION(var value: String) {
+        EPUB(".epub"),
+        CBZ(".cbz");
+        companion object : EnumCompanion<String, EXTENSION>(EXTENSION.values().associateBy(EXTENSION::value))
+    }
+
 
     /// The kind of publication it is ( Epub, Cbz, ... )
     var type = TYPE.EPUB
