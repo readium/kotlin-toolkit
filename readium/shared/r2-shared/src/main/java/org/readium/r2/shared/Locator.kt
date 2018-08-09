@@ -45,11 +45,10 @@ open class Locator(val publicationId: String,
 
     override fun getJSON(): JSONObject {
         val json = JSONObject()
-        json.putOpt("publicationId", publicationId)
-        json.putOpt("spineIndex", spineIndex)
-        json.putOpt("spineHref", spineHref)
-        json.putOpt("timestamp", timestamp)
+//        json.putOpt("spineIndex", spineIndex)
+        json.putOpt("href", spineHref)
         json.putOpt("title", title)
+        json.putOpt("timestamp", timestamp)
         json.putOpt("location", locations.toString())
         json.putOpt("text", text)
         return json
