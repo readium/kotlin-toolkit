@@ -14,6 +14,8 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
+import org.readium.r2.shared.Location
+import org.readium.r2.shared.Locator
 
 /**
  * Bookmark model
@@ -28,15 +30,15 @@ import org.joda.time.DateTime
  *
  * @fun toString(): String - Return a String description of the Bookmark
  */
+
 class Bookmark(val bookID: Long,
                val resourceIndex: Long,
                val resourceHref: String,
                val progression: Double = 0.0,
-               var timestamp: Long = DateTime().toDate().time,
-               var id: Long? = null
-) {
+               var id: Long? = null): Locator(bookID.toString(), resourceIndex, resourceHref, "", Location(bookID.toString(), null, null, progression, resourceIndex)) {
 
     override fun toString(): String {
+        println(super.toString())
         return "Bookmark id : ${this.id}, book identifier : ${this.bookID}, resource href selected ${this.resourceHref}, progression saved ${this.progression} and created the ${this.timestamp}."
     }
 
@@ -110,7 +112,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
     fun insert(bookmark: Bookmark): Long? {
         if (bookmark.bookID < 0 ||
                 bookmark.resourceIndex < 0 ||
-                bookmark.progression < 0 || bookmark.progression > 100){
+                bookmark.progression < 0 || bookmark.progression > 1){
             return null
         }
         val exists = has(bookmark)
@@ -207,9 +209,11 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
             } ?: kotlin.run { return@run 0.0f }
             val timestamp = columns[5]?.let {
                 return@let it
-            } ?: kotlin.run { return@run 0 }
+            } ?: kotlin.run { return@run null }
 
-            return Bookmark(bookID as Long, resourceIndex as Long, resourceHref as String, progression as Double, timestamp as Long, id as Long)
+            val res = Bookmark(bookID as Long, resourceIndex as Long, resourceHref as String, progression as Double, id as Long)
+            res.timestamp = timestamp as Long
+            return res
         }
     }
 

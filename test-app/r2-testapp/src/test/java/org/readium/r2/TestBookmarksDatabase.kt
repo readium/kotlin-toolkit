@@ -25,13 +25,13 @@ class TestBookmarksDatabase(val context: Context) {
 
     init {
         bmk_list.add(Bookmark(1, 1, "dummy",0.0))
-        bmk_list.add(Bookmark(2, 3, "dummy",50.0))
-        bmk_list.add(Bookmark(2, 3, "dummy",50.0))
-        bmk_list.add(Bookmark(15, 12, "dummy",99.99))
+        bmk_list.add(Bookmark(2, 3, "dummy",0.5))
+        bmk_list.add(Bookmark(2, 3, "dummy",0.5))
+        bmk_list.add(Bookmark(15, 12, "dummy",0.9999))
 
-        wrong_bmk_list.add(Bookmark(4, 34, "dummy",133.33))
-        wrong_bmk_list.add(Bookmark(-4, 34, "dummy",33.33))
-        wrong_bmk_list.add(Bookmark(4, -34, "dummy",33.33))
+        wrong_bmk_list.add(Bookmark(4, 34, "dummy",1.3333))
+        wrong_bmk_list.add(Bookmark(-4, 34, "dummy",0.3333))
+        wrong_bmk_list.add(Bookmark(4, -34, "dummy",0.3333))
     }
 
     fun test(){
@@ -98,7 +98,7 @@ class TestBookmarksDatabase(val context: Context) {
         }
         try {
             bmk_db.bookmarks.emptyTable()
-            println("Bookmark cleared with success !")
+            println("Bookmarks cleared with success !")
         } catch (e: Exception) {
             println("Failed : Error while communicating with the database : ${e.message}")
         }

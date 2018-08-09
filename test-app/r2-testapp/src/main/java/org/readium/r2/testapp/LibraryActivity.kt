@@ -116,6 +116,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         
         parseIntent(null)
 
+        TestBookmarksDatabase(this).test()
+
         coordinatorLayout {
             lparams {
                 topMargin = dip(8)
