@@ -91,12 +91,13 @@ open class Locator(val publicationId: String,
  *
  * @var pubId: String - Identifier of a Publication
  * @var cfi: String? - String formatted to designed a particular place in an EPUB
- * @var css: String? - Css selector
+ * @var cssSelector: String? - Css selector
+ * @var xpath: String? - An xpath in the resource
  * @var progression: Float - A percentage ( between 0 and 1 ) of the progression in a Publication
  * @var position: integer - Index of a segment in the resource.
  *
  */
-class Location(val pubId: String, val cfi: String?, val css: String?, val progression: Double, val position: Long): JSONable{
+class Location(val pubId: String, val cfi: String?, val cssSelector: String?, val xpath: String?, val progression: Double, val position: Long): JSONable{
 
     override fun getJSON(): JSONObject {
         val json = JSONObject()
@@ -104,8 +105,11 @@ class Location(val pubId: String, val cfi: String?, val css: String?, val progre
         if (cfi != null) {
             json.putOpt("cfi", cfi)
         }
-        if (css != null) {
-            json.putOpt("css", css)
+        if (cssSelector != null) {
+            json.putOpt("cssSelector", cssSelector)
+        }
+        if (xpath != null) {
+            json.putOpt("xpath", xpath)
         }
         json.putOpt("progression", progression)
         json.putOpt("position", position)
@@ -116,7 +120,8 @@ class Location(val pubId: String, val cfi: String?, val css: String?, val progre
         var jsonString = """{"""
         pubId.let { jsonString += """ "id": "$pubId" """ }
         cfi.let { jsonString += """, "cfi": "$cfi" """ }
-        css.let { jsonString += """, "css": "$css" """ }
+        cssSelector.let { jsonString += """, "cssSelector": "$cssSelector" """ }
+        xpath.let { jsonString += """, "xpath": "$xpath" """ }
         progression.let { jsonString += """, "progression": "$progression" """ }
         position.let { jsonString += """, "position": "$position" """ }
         jsonString += """}"""
