@@ -9,9 +9,9 @@
 
 package org.readium.r2.shared
 
+import com.google.gson.Gson
 import org.joda.time.DateTime
 import org.json.JSONObject
-import java.net.URI
 
 /**
  * Locator : That class is used to define a precise location in a Publication
@@ -19,43 +19,39 @@ import java.net.URI
  * @var publicationId: String - Identifier of a Publication
  * @var spineIndex: Long - Index at a spine element
  * @var spineHref: String? - ( Optional ) String reference to the spine element
- * @var timestamp: DateTime - Date when the Locator has been timestamp
- * @var title: URI - Title of the spine element
- * @var locations: Location - Object that's used to locate the target
+ * @var title: String - Title of the spine element
  *
+ * @var location: Location - List of objects used to locate the target
+ * @var timestamp: DateTime - Date when the Locator has been timestamp
  *
  * @var text: LocatorText? - ( Optional ) Describe the Locator's context
  *
  */
 open class Locator(val publicationId: String,
-                   val spineIndex: Long,
                    val spineHref: String?,
+                   val spineIndex: Long,
                    val title: String,
-                   location: Location? = null): JSONable {
+                   val location: Location? = null): JSONable {
 
-    val locations = mutableListOf<Location>()
     var timestamp = DateTime.now().toDate().time
     var text = LocatorText(null, null, null)
 
-    init {
-        if(location != null){
-            locations.add(location)
-        }
+    fun toJson(): String{
+        return Gson().toJson(this)
     }
 
     override fun getJSON(): JSONObject {
         val json = JSONObject()
-//        json.putOpt("spineIndex", spineIndex)
         json.putOpt("href", spineHref)
         json.putOpt("title", title)
         json.putOpt("timestamp", timestamp)
-        json.putOpt("location", locations.toString())
+        json.putOpt("location", location.toString())
         json.putOpt("text", text)
         return json
     }
 
     override fun toString(): String{
-        return """{ "publicationId": "$publicationId", "spineIndex": "$spineIndex",  "spineHref": "$spineHref", "timestamp": "$timestamp", "title": "$title", "locations" : ${locations}  "text" : "${text}" """
+        return """{ "href": "$spineHref", "title": "$title", "timestamp": "$timestamp", "locations" : $location  "text" : "$text" """
     }
 
     fun setText(before: String? = null, highlight: String? = null, after: String? = null){
@@ -65,6 +61,10 @@ open class Locator(val publicationId: String,
     }
 
     inner class LocatorText(var before: String?, var highlight: String?, var after: String?): JSONable{
+
+        fun toJson(): String{
+            return Gson().toJson(this)
+        }
 
         override fun getJSON(): JSONObject {
             val json = JSONObject()
@@ -76,9 +76,21 @@ open class Locator(val publicationId: String,
 
         override fun toString(): String{
             var jsonString =  """{"""
-            before.let { jsonString += """ "before": "$before" """ }
-            highlight.let { jsonString += """, "highlight": "$highlight" """ }
-            after.let { jsonString += """, "after": "$after" """ }
+            if (before != null) {
+                before.let { jsonString += """ "before": "$before" """ }
+                if (highlight != null) {
+                    jsonString += ""","""
+                }
+            }
+            if (highlight != null) {
+                highlight.let { jsonString += """ "highlight": "$highlight" """ }
+                if (after != null) {
+                    jsonString += ""","""
+                }
+            }
+            if (after != null) {
+                after.let { jsonString += """ "after": "$after" """ }
+            }
             jsonString += """}"""
             return jsonString
         }
@@ -88,19 +100,24 @@ open class Locator(val publicationId: String,
 /**
  * Location : Class that contain the different variables needed to localize a particular position
  *
- * @var pubId: String - Identifier of a Publication
- * @var cfi: String? - String formatted to designed a particular place in an EPUB
+ * @var id: Long? - Identifier of a specific fragment in the publication
+ * @var cfi: String? - String formatted to designed a particular place in an Publication
  * @var cssSelector: String? - Css selector
  * @var xpath: String? - An xpath in the resource
- * @var progression: Float - A percentage ( between 0 and 1 ) of the progression in a Publication
- * @var position: integer - Index of a segment in the resource.
+ * @var progression: Double - A percentage ( between 0 and 1 ) of the progression in a Publication
+ * @var position: Long - Index of a segment in the resource
  *
  */
-class Location(val pubId: String, val cfi: String?, val cssSelector: String?, val xpath: String?, val progression: Double, val position: Long): JSONable{
+class Location(val id: Long?, val cfi: String?, val cssSelector: String?, val xpath: String?, val progression: Double, val position: Long): JSONable{
+
+
+    fun toJson(): String{
+        return Gson().toJson(this)
+    }
 
     override fun getJSON(): JSONObject {
         val json = JSONObject()
-        json.putOpt("pubId", pubId)
+        json.putOpt("id", id)
         if (cfi != null) {
             json.putOpt("cfi", cfi)
         }
@@ -117,12 +134,20 @@ class Location(val pubId: String, val cfi: String?, val cssSelector: String?, va
 
     override fun toString(): String {
         var jsonString = """{"""
-        pubId.let { jsonString += """ "id": "$pubId" """ }
-        cfi.let { jsonString += """, "cfi": "$cfi" """ }
-        cssSelector.let { jsonString += """, "cssSelector": "$cssSelector" """ }
-        xpath.let { jsonString += """, "xpath": "$xpath" """ }
-        progression.let { jsonString += """, "progression": "$progression" """ }
-        position.let { jsonString += """, "position": "$position" """ }
+        if (id != null) {
+            id.let { jsonString += """ "id": "$id" ,""" }
+        }
+        if (cfi != null) {
+            cfi.let { jsonString += """ "cfi": "$cfi" ,""" }
+        }
+        if (cssSelector != null) {
+            cssSelector.let { jsonString += """ "cssSelector": "$cssSelector" ,""" }
+        }
+        if (xpath != null) {
+            xpath.let { jsonString += """ "xpath": "$xpath" ,""" }
+        }
+        progression.let { jsonString += """ "progression": "$progression" ,""" }
+        position.let { jsonString += """ "position": "$position" """ }
         jsonString += """}"""
         return jsonString
     }
