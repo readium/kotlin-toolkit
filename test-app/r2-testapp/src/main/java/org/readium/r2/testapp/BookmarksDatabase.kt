@@ -35,10 +35,10 @@ class Bookmark(val bookID: Long,
                val resourceIndex: Long,
                val resourceHref: String,
                val progression: Double = 0.0,
-               var id: Long? = null): Locator(bookID.toString(), resourceIndex, resourceHref, "", Location(bookID.toString(), null, null, progression, resourceIndex)) {
+               var id: Long? = null): Locator(bookID.toString(), resourceHref, resourceIndex,"", Location(resourceIndex, null, null, null, progression, 0)) {
 
     override fun toString(): String {
-        println(super.toString())
+        println(super.toJson())
         return "Bookmark id : ${this.id}, book identifier : ${this.bookID}, resource href selected ${this.resourceHref}, progression saved ${this.progression} and created the ${this.timestamp}."
     }
 
