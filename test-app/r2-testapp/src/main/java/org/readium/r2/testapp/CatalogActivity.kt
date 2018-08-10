@@ -636,7 +636,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val delete: Button = layout.findViewById(R.id.delete) as Button
         delete.setOnClickListener {
             val book = books[position]
-            BookmarksDatabase().bookmarks.delete(book.id)
+            BookmarksDatabase(this).bookmarks.delete(book.id)
             val publicationPath = R2DIRECTORY + book.fileName
             books.remove(book)
             booksAdapter.notifyDataSetChanged()
