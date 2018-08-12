@@ -26,7 +26,7 @@ import org.jetbrains.anko.contentView
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.drm.DRMMModel
+import org.readium.r2.shared.drm.DRMModel
 
 
 open class R2EpubActivity : AppCompatActivity() {
@@ -41,7 +41,7 @@ open class R2EpubActivity : AppCompatActivity() {
     lateinit var publicationIdentifier: String
 
     lateinit var userSettings: UserSettings
-    protected var drmModel: DRMMModel? = null
+    protected var drmModel: DRMModel? = null
     protected var menuDrm: MenuItem? = null
     protected var menuToc: MenuItem? = null
 
@@ -58,7 +58,7 @@ open class R2EpubActivity : AppCompatActivity() {
 
         Handler().postDelayed({
             if (intent.getSerializableExtra("drmModel") != null) {
-                drmModel = intent.getSerializableExtra("drmModel") as DRMMModel
+                drmModel = intent.getSerializableExtra("drmModel") as DRMModel
                 drmModel?.let {
                     runOnUiThread {
                         menuDrm?.isVisible = true
