@@ -72,7 +72,7 @@ import java.net.ServerSocket
 import java.net.URL
 import java.util.*
 
-open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions {
+open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions {
 
     protected lateinit var server: Server
     private var localPort: Int = 0
@@ -89,6 +89,8 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
     protected lateinit var catalogView: RecyclerView
     private lateinit var alertDialog: AlertDialog
+
+    protected var listener:LibraryActivity? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -686,7 +688,6 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 "bookId" to book.id))
     }
 
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         data ?: return
@@ -816,18 +817,15 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
 
     override fun parseIntentLcpl(uriString: String) {
-        // use CatalogActivityPlusLcp for LCP support
-        // update AndroidManifest <activity android:name=".CatalogActivityPlusLcp">
+        listener?.parseIntentLcpl(uriString)
     }
 
     override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication) {
-        // use CatalogActivityPlusLcp for LCP support
-        // update AndroidManifest <activity android:name=".CatalogActivityPlusLcp">
+        listener?.prepareAndStartActivityWithLCP(drm,pub,book,file,publicationPath,parser,publication)
     }
 
     override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog) {
-        // use CatalogActivityPlusLcp for LCP support
-        // update AndroidManifest <activity android:name=".CatalogActivityPlusLcp">
+        listener?.processLcpActivityResult(uri,it,progress)
     }
 
 }
