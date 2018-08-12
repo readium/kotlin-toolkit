@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp.test
+package org.readium.r2
 
 import android.content.Context
 import org.readium.r2.testapp.Bookmark
