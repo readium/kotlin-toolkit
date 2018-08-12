@@ -11,14 +11,13 @@ package org.readium.r2.lcp.model.sub.lcp
 
 import org.joda.time.DateTime
 import org.json.JSONObject
-import java.util.*
 
 class Rights (json: JSONObject){
     var print: Int? = null
     var copy: Int? = null
-    var start: Date? = null
-    var end: Date? = null
-    var potentialEnd: Date? = null
+    var start: DateTime? = null
+    var end: DateTime? = null
+    var potentialEnd: DateTime? = null
 
     init {
         if (json.has("print")) {
@@ -28,12 +27,12 @@ class Rights (json: JSONObject){
             copy = json.getInt("copy")
         }
         if (json.has("start")) {
-            start = DateTime(json.getString("start")).toDate()
+            start = DateTime(json.getString("start"))
         }
         if (json.has("end")) {
             val endDate = DateTime(json.getString("end"))
-            end = endDate.toDate()
-            potentialEnd = endDate.plusMonths(1).toDate()
+            end = endDate
+            potentialEnd = endDate.plusMonths(1)
         }
 
     }

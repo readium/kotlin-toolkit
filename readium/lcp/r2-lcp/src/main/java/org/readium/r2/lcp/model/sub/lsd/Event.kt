@@ -38,7 +38,7 @@ class Event(val json: JSONObject) {
 fun parseEvents(json: JSONArray) : List<Event> {
 //    val jsonEvents = json.getJSONArray(key)
     val events = mutableListOf<Event>()
-    for (i in 0..json.length() - 1) {
+    for (i in 0 until json.length()) {
         val event = Event(JSONObject(json[i].toString()))
         events.add(event)
     }

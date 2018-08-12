@@ -9,19 +9,19 @@
 
 package org.readium.r2.lcp.model.documents
 
+import org.joda.time.DateTime
+import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpError
 import org.readium.r2.lcp.LcpErrorCase
 import org.readium.r2.lcp.model.sub.Link
 import org.readium.r2.lcp.model.sub.lcp.Encryption
 import org.readium.r2.lcp.model.sub.lcp.Rights
-import org.readium.r2.lcp.model.sub.lcp.User
 import org.readium.r2.lcp.model.sub.lcp.Signature
+import org.readium.r2.lcp.model.sub.lcp.User
+import org.readium.r2.lcp.model.sub.parseLinks
 import java.net.URL
 import java.nio.charset.Charset
-import org.joda.time.DateTime
-import org.json.JSONArray
-import org.readium.r2.lcp.model.sub.parseLinks
 
 /// Document that contains references to the various keys, links to related
 /// external resources, rights and restrictions that are applied to the
@@ -73,7 +73,7 @@ class LicenseDocument {
         links = parseLinks(json["links"] as JSONArray)
         rights = Rights(json.getJSONObject("rights"))
         if (json.has("potential_rights")) {
-            rights.potentialEnd = DateTime(json.getJSONObject("potential_rights").getString("end")).toDate()
+            rights.potentialEnd = DateTime(json.getJSONObject("potential_rights").getString("end"))
         }
         user = User(json.getJSONObject("user"))
         signature = Signature(json.getJSONObject("signature"))

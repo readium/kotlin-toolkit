@@ -30,14 +30,36 @@ class LcpSession {
 
     fun resolve(passphrase: String, pemCrl: String) : Promise<LcpLicense, Exception> {
         return task {
-            lcpLicense.fetchStatusDocument().get()
+            try {
+                lcpLicense.fetchStatusDocument().get()
+            } catch (e: Exception) {
+                //
+            }
+
         } then {
-            lcpLicense.checkStatus()
+            try {
+                lcpLicense.checkStatus()
+            } catch (e: Exception) {
+                //
+            }
             lcpLicense.updateLicenseDocument().get()
         } then {
-            lcpLicense.areRightsValid()
-            lcpLicense.register()
+            // doesn't look like this is needed
+//            try {
+//                lcpLicense.areRightsValid()
+//            } catch (e: Exception) {
+//                //
+//            }
+//            try {
+//                lcpLicense.register()
+//            } catch (e: Exception) {
+//                //
+//            }
+
             getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
+
+        } fail {
+            it
         }
     }
 
@@ -61,8 +83,7 @@ class LcpSession {
     }
 
     fun passphraseFromDb() : String? {
-        val passphrases: List<String>
-        passphrases = database.transactions.possiblePasshprases(lcpLicense.license.id, lcpLicense.license.user.id)
+        val passphrases: List<String> = database.transactions.possiblePasshprases(lcpLicense.license.id, lcpLicense.license.user.id)
         if (passphrases.isEmpty())
             return null
         return checkPassphrases(passphrases)

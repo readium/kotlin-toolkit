@@ -9,16 +9,19 @@
 
 package org.readium.r2.lcp.tables
 
-import org.jetbrains.anko.db.*
+import org.jetbrains.anko.db.insert
+import org.jetbrains.anko.db.parseList
+import org.jetbrains.anko.db.rowParser
+import org.jetbrains.anko.db.select
 import org.readium.r2.lcp.LcpDatabaseOpenHelper
 import org.readium.r2.lcp.LcpLicense
 
 object TransactionsTable {
-    val NAME = "Transactions"
-    val ID = "licenseId"
-    val ORIGIN = "origin"
-    val USERID = "userId"
-    val PASSPHRASE = "passphrase"
+    const val NAME = "Transactions"
+    const  val ID = "licenseId"
+    const val ORIGIN = "origin"
+    const val USERID = "userId"
+    const val PASSPHRASE = "passphrase"
 }
 
 class Transactions(var database: LcpDatabaseOpenHelper) {
@@ -43,11 +46,8 @@ class Transactions(var database: LcpDatabaseOpenHelper) {
     fun possiblePasshprases(licenseId: String, userId: String): List<String> {
 
         val possiblePassphrases = mutableListOf<String>()
-        val licensePassphrase: String?
-        val userIdPassphrases: List<String>
-
-        licensePassphrase = passphrase(licenseId)
-        userIdPassphrases = passphrases(userId)
+        val licensePassphrase: String? = passphrase(licenseId)
+        val userIdPassphrases: List<String> = passphrases(userId)
 
         possiblePassphrases.addAll(userIdPassphrases)
 
