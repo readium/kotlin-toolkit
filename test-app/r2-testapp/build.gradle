@@ -41,6 +41,10 @@ android {
     buildToolsVersion "27.0.3"
     signingConfigs {
         release {
+            keyAlias 'EDRLab'
+            keyPassword '###'
+            storeFile file('/###')
+            storePassword '###'
         }
     }
     defaultConfig {
