@@ -142,7 +142,7 @@ class Publication : Serializable {
         return str
     }
 
-    fun resource(relativePath: String): Link? = (spine + resources).first({ it.href == relativePath })
+    fun resource(relativePath: String): Link? = (spine + resources).first { it.href == relativePath }
 
     fun linkWithRel(rel: String): Link? {
         val findLinkWithRel: (Link) -> Boolean = { it.rel.contains(rel) }
