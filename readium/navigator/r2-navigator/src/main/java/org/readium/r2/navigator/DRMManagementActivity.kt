@@ -17,7 +17,7 @@ import android.widget.LinearLayout
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.sdk25.coroutines.onClick
-import org.readium.r2.shared.drm.DRMMModel
+import org.readium.r2.shared.drm.DRMModel
 
 
 class DRMManagementActivity : AppCompatActivity() {
@@ -25,7 +25,7 @@ class DRMManagementActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val drmModel: DRMMModel = intent.getSerializableExtra("drmModel") as DRMMModel
+        val drmModel: DRMModel = intent.getSerializableExtra("drmModel") as DRMModel
 
 
         coordinatorLayout {
