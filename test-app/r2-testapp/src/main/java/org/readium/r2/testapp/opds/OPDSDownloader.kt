@@ -28,7 +28,7 @@ class OPDSDownloader(context: Context) {
 
     fun publicationUrl(url: String, parameters: List<Pair<String, Any?>>? = null): Promise<Pair<String, String>, Exception> {
         val fileName = UUID.randomUUID().toString()
-        Timber.i(TAG,"download url ", url.toString())
+        Timber.i(TAG,"download url ", url)
 
         return Fuel.download(url).destination { _, request_url ->
             Timber.i(TAG,"request url ", request_url.toString())
