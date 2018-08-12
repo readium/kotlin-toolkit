@@ -14,9 +14,10 @@ apply plugin: 'com.github.dcendents.android-maven'
 group='com.github.readium'
 
 android {
+    flavorDimensions "testapp"
+
     compileSdkVersion 27
     buildToolsVersion "27.0.3"
-
 
     defaultConfig {
         minSdkVersion 21
@@ -31,6 +32,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    productFlavors {
+        intTestapp {
+            dimension "testapp"
+        }
+        intTestappWithLcp {
+            dimension "testapp"
+        }
+        devTestapp {
+            dimension "testapp"
+        }
+        devTestappWithLcp {
+            dimension "testapp"
+        }
+    }
 }
 
 dependencies {
@@ -38,42 +53,39 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.7.0'
 
-//    uncomment this line to use with jitpack
-    implementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+    intTestappImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+    intTestappWithLcpImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
 
-//    uncomment this line to use with GitHu submodules and Android Studio Modules
-//    implementation project(':r2-shared')
+    devTestappImplementation project(':r2-shared')
+    devTestappWithLcpImplementation project(':r2-shared')
 
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     implementation 'com.android.support:support-v4:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
-    implementation "org.jetbrains.anko:anko-design:0.10.4" // For SnackBars
+    implementation "org.jetbrains.anko:anko-design:0.10.5" // For SnackBars
 
-    implementation "org.jetbrains.anko:anko-commons:0.10.4"
+    implementation "org.jetbrains.anko:anko-commons:0.10.5"
 
     // Anko Layouts
-    implementation "org.jetbrains.anko:anko-sdk25:0.10.4"
+    implementation "org.jetbrains.anko:anko-sdk25:0.10.5"
     // sdk15, sdk19, sdk21, sdk23 are also available
-    implementation "org.jetbrains.anko:anko-appcompat-v7:0.10.4"
-    implementation "org.jetbrains.anko:anko-recyclerview-v7:0.10.4"
+    implementation "org.jetbrains.anko:anko-appcompat-v7:0.10.5"
+    implementation "org.jetbrains.anko:anko-recyclerview-v7:0.10.5"
 
     // Coroutine listeners for Anko Layouts
-    implementation "org.jetbrains.anko:anko-sdk25-coroutines:0.10.4"
-    implementation "org.jetbrains.anko:anko-appcompat-v7-coroutines:0.10.4"
+    implementation "org.jetbrains.anko:anko-sdk25-coroutines:0.10.5"
+    implementation "org.jetbrains.anko:anko-appcompat-v7-coroutines:0.10.5"
 
     // Anko SQLite
-    implementation "org.jetbrains.anko:anko-sqlite:0.10.4"
+    implementation "org.jetbrains.anko:anko-sqlite:0.10.5"
     implementation 'joda-time:joda-time:2.9.9'
-
 
     implementation 'com.android.support:support-core-ui:27.1.1'
     implementation 'com.duolingo.open:rtl-viewpager:1.0.3'
 
     implementation 'org.zeroturnaround:zt-zip:1.12'
-    // JSON parser
-//    implementation 'com.beust:klaxon:3.0.1'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
