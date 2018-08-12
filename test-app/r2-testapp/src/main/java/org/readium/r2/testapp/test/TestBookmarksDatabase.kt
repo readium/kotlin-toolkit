@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.test
 
 import android.content.Context
 import org.readium.r2.testapp.Bookmark
@@ -54,7 +54,7 @@ class TestBookmarksDatabase(val context: Context) {
             }
 
             try {
-                var ret = bmk_db.bookmarks.has(it)
+                val ret = bmk_db.bookmarks.has(it)
                 if (ret.isNotEmpty()) {
                     println("Success : The Bookmark was found in the database ! result : $ret")
                 } else {
@@ -86,7 +86,7 @@ class TestBookmarksDatabase(val context: Context) {
                 } catch (e: Exception) {
                     println("Failed : Error while communicating with the database : ${e.message}")
                 }
-                var ret = bmk_db.bookmarks.has(it)
+                val ret = bmk_db.bookmarks.has(it)
                 if (ret.isNotEmpty()) {
                     println("Failed : That Bookmark wasn't supposed to be founded ! result : $ret")
                 } else {
