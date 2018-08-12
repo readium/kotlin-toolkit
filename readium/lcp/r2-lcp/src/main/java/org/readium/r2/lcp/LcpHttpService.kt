@@ -10,6 +10,7 @@
 package org.readium.r2.lcp
 
 import android.content.Context
+import android.util.Base64
 import android.util.Log
 import com.github.kittinunf.fuel.Fuel
 import nl.komponents.kovenant.Promise
@@ -23,7 +24,6 @@ import org.readium.r2.shared.promise
 import java.io.File
 import java.nio.charset.Charset
 import java.util.*
-import android.util.Base64
 
 class LcpHttpService {
 
@@ -54,19 +54,19 @@ class LcpHttpService {
         }
     }
 
-    fun certificateRevocationList(url: String): Promise<String, Exception> {
+    fun certificateRevocationList(url: String): Promise<String?, Exception> {
         return Fuel.get(url,null).promise() then {
             val (_, _, result) = it
-            "-----BEGIN X509 CRL-----${ Base64.encodeToString(result, Base64.DEFAULT)}-----END X509 CRL-----";
+            "-----BEGIN X509 CRL-----${ Base64.encodeToString(result, Base64.DEFAULT)}-----END X509 CRL-----"
 //            "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(result)}-----END X509 CRL-----";
         }
     }
     
     fun register(registerUrl: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
-        return Fuel.post(registerUrl.toString(), params).promise() then {
+        return Fuel.post(registerUrl, params).promise() then {
             val (_, response, result) = it
             var status:String? = null
-                if (response.statusCode.equals(200)) {
+                if (response.statusCode == 200) {
                 val jsonObject = JSONObject(String(result, Charset.forName(response.contentTypeEncoding)))
                 status = jsonObject["status"] as String
             }

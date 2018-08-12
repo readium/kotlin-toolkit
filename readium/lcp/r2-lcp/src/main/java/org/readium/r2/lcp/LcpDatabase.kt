@@ -11,7 +11,10 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import org.jetbrains.anko.db.*
+import org.jetbrains.anko.db.INTEGER
+import org.jetbrains.anko.db.ManagedSQLiteOpenHelper
+import org.jetbrains.anko.db.TEXT
+import org.jetbrains.anko.db.createTable
 import org.readium.r2.lcp.tables.Licenses
 import org.readium.r2.lcp.tables.LicensesTable
 import org.readium.r2.lcp.tables.Transactions
@@ -20,10 +23,10 @@ import org.readium.r2.lcp.tables.TransactionsTable
 
 // Access property for Context
 val Context.database: LcpDatabaseOpenHelper
-    get() = LcpDatabaseOpenHelper.getInstance(getApplicationContext())
+    get() = LcpDatabaseOpenHelper.getInstance(applicationContext)
 
 val Context.appContext: Context
-    get() = getApplicationContext()
+    get() = applicationContext
 
 
 class LcpDatabase {
@@ -48,7 +51,7 @@ class LcpDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "lcpdat
         @Synchronized
         fun getInstance(ctx: Context): LcpDatabaseOpenHelper {
             if (instance == null) {
-                instance = LcpDatabaseOpenHelper(ctx.getApplicationContext())
+                instance = LcpDatabaseOpenHelper(ctx.applicationContext)
             }
             return instance!!
         }

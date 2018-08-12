@@ -84,7 +84,7 @@ class Link(val json: JSONObject) {
 fun parseLinks(json: JSONArray) : List<Link> {
 //    val array = json.getJSONArray(key)
     val links = mutableListOf<Link>()
-    for (i in 0..json.length()- 1 ){
+    for (i in 0 until json.length()){
         links.add(Link(json[i] as JSONObject))
     }
     return links
