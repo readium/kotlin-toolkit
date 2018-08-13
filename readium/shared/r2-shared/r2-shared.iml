@@ -17,6 +17,7 @@
         <option name="ALLOW_USER_CONFIGURATION" value="false" />
         <option name="MANIFEST_FILE_RELATIVE_PATH" value="/src/main/AndroidManifest.xml" />
         <option name="RES_FOLDER_RELATIVE_PATH" value="/src/main/res" />
+        <option name="RES_FOLDERS_RELATIVE_PATH" value="" />
         <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/src/main/assets" />
         <option name="PROJECT_TYPE" value="1" />
       </configuration>
@@ -36,7 +37,7 @@
               <option value="plugin:org.jetbrains.kotlin.android:experimental=false" />
               <option value="plugin:org.jetbrains.kotlin.android:enabled=true" />
               <option value="plugin:org.jetbrains.kotlin.android:defaultCacheImplementation=hashMap" />
-              <option value="plugin:org.jetbrains.kotlin.android:configuration=rO0ABXoAAAJsAAAAAwAIZmVhdHVyZXMAAAABAAV2aWV3cwAHcGFja2FnZQAAAAEAFW9yZy5yZWFkaXVtLnIyLnNoYXJlZAAHdmFyaWFudAAAAAUAXG1haW47L1ZvbHVtZXMvRGF0YS9FRFJMYWIvS290bGluL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItc2hhcmVkLWtvdGxpbi9yMi1zaGFyZWQvc3JjL21haW4vcmVzAGhkZXZUZXN0YXBwOy9Wb2x1bWVzL0RhdGEvRURSTGFiL0tvdGxpbi9yMi13b3Jrc3BhY2Uta290bGluL3IyLXNoYXJlZC1rb3RsaW4vcjItc2hhcmVkL3NyYy9kZXZUZXN0YXBwL3JlcwB2ZGV2VGVzdGFwcFdpdGhMY3A7L1ZvbHVtZXMvRGF0YS9FRFJMYWIvS290bGluL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItc2hhcmVkLWtvdGxpbi9yMi1zaGFyZWQvc3JjL2RldlRlc3RhcHBXaXRoTGNwL3JlcwBoaW50VGVzdGFwcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9Lb3RsaW4vcjItd29ya3NwYWNlLWtvdGxpbi9yMi1zaGFyZWQta290bGluL3IyLXNoYXJlZC9zcmMvaW50VGVzdGFwcC9yZXMAdmludFRlc3RhcHBXaXRoTGNwOy9Wb2x1bWVzL0RhdGEvRURSTGFiL0tvdGxpbi9yMi13b3Jrc3BhY2Uta290bGluL3IyLXNoYXJlZC1rb3RsaW4vcjItc2hhcmVkL3NyYy9pbnRUZXN0YXBwV2l0aExjcC9yZXM=" />
+              <option value="plugin:org.jetbrains.kotlin.android:configuration=rO0ABXoAAAKPAAAAAwAIZmVhdHVyZXMAAAABAAV2aWV3cwAHcGFja2FnZQAAAAEAFW9yZy5yZWFkaXVtLnIyLnNoYXJlZAAHdmFyaWFudAAAAAUAY21haW47L1ZvbHVtZXMvRGF0YS9FRFJMYWIvbmV3IHdvcmtzcGFjZS9yMi13b3Jrc3BhY2Uta290bGluL3IyLXNoYXJlZC1rb3RsaW4vcjItc2hhcmVkL3NyYy9tYWluL3JlcwBvZGV2VGVzdGFwcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItc2hhcmVkLWtvdGxpbi9yMi1zaGFyZWQvc3JjL2RldlRlc3RhcHAvcmVzAH1kZXZUZXN0YXBwV2l0aExjcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItc2hhcmVkLWtvdGxpbi9yMi1zaGFyZWQvc3JjL2RldlRlc3RhcHBXaXRoTGNwL3JlcwBvaW50VGVzdGFwcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItc2hhcmVkLWtvdGxpbi9yMi1zaGFyZWQvc3JjL2ludFRlc3RhcHAvcmVzAH1pbnRUZXN0YXBwV2l0aExjcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItc2hhcmVkLWtvdGxpbi9yMi1zaGFyZWQvc3JjL2ludFRlc3RhcHBXaXRoTGNwL3Jlcw==" />
             </array>
           </option>
           <option name="pluginClasspaths">
@@ -139,13 +140,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/shaders" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/res" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/assets" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/aidl" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/rs" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/res" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/assets" type="java-test-resource" />
@@ -153,17 +147,34 @@
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/rs" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/shaders" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/res" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/assets" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/aidl" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/rs" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/shaders" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/attr" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/check-manifest" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/classes" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/incremental" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/intermediate-jars" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/javaPrecompile" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/jniLibs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/lint" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/manifests" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/packaged-aidl" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/packagedAssets" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/packaged_res" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/public_res" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/res" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/rs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/shaders" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/symbols" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/transforms" />
+      <excludeFolder url="file://$MODULE_DIR$/build/kotlin" />
       <excludeFolder url="file://$MODULE_DIR$/build/outputs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 27 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
