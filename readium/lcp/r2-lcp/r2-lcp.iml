@@ -37,7 +37,7 @@
               <option value="plugin:org.jetbrains.kotlin.android:experimental=false" />
               <option value="plugin:org.jetbrains.kotlin.android:enabled=true" />
               <option value="plugin:org.jetbrains.kotlin.android:defaultCacheImplementation=hashMap" />
-              <option value="plugin:org.jetbrains.kotlin.android:configuration=rO0ABXoAAAJLAAAAAwAIZmVhdHVyZXMAAAABAAV2aWV3cwAHcGFja2FnZQAAAAEAEm9yZy5yZWFkaXVtLnIyLmxjcAAHdmFyaWFudAAAAAUAVm1haW47L1ZvbHVtZXMvRGF0YS9FRFJMYWIvS290bGluL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbGNwLWtvdGxpbi9yMi1sY3Avc3JjL21haW4vcmVzAGJkZXZUZXN0YXBwOy9Wb2x1bWVzL0RhdGEvRURSTGFiL0tvdGxpbi9yMi13b3Jrc3BhY2Uta290bGluL3IyLWxjcC1rb3RsaW4vcjItbGNwL3NyYy9kZXZUZXN0YXBwL3JlcwBwZGV2VGVzdGFwcFdpdGhMY3A7L1ZvbHVtZXMvRGF0YS9FRFJMYWIvS290bGluL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbGNwLWtvdGxpbi9yMi1sY3Avc3JjL2RldlRlc3RhcHBXaXRoTGNwL3JlcwBiaW50VGVzdGFwcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9Lb3RsaW4vcjItd29ya3NwYWNlLWtvdGxpbi9yMi1sY3Ata290bGluL3IyLWxjcC9zcmMvaW50VGVzdGFwcC9yZXMAcGludFRlc3RhcHBXaXRoTGNwOy9Wb2x1bWVzL0RhdGEvRURSTGFiL0tvdGxpbi9yMi13b3Jrc3BhY2Uta290bGluL3IyLWxjcC1rb3RsaW4vcjItbGNwL3NyYy9pbnRUZXN0YXBwV2l0aExjcC9yZXM=" />
+              <option value="plugin:org.jetbrains.kotlin.android:configuration=rO0ABXoAAAJuAAAAAwAIZmVhdHVyZXMAAAABAAV2aWV3cwAHcGFja2FnZQAAAAEAEm9yZy5yZWFkaXVtLnIyLmxjcAAHdmFyaWFudAAAAAUAXW1haW47L1ZvbHVtZXMvRGF0YS9FRFJMYWIvbmV3IHdvcmtzcGFjZS9yMi13b3Jrc3BhY2Uta290bGluL3IyLWxjcC1rb3RsaW4vcjItbGNwL3NyYy9tYWluL3JlcwBpZGV2VGVzdGFwcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbGNwLWtvdGxpbi9yMi1sY3Avc3JjL2RldlRlc3RhcHAvcmVzAHdkZXZUZXN0YXBwV2l0aExjcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbGNwLWtvdGxpbi9yMi1sY3Avc3JjL2RldlRlc3RhcHBXaXRoTGNwL3JlcwBpaW50VGVzdGFwcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbGNwLWtvdGxpbi9yMi1sY3Avc3JjL2ludFRlc3RhcHAvcmVzAHdpbnRUZXN0YXBwV2l0aExjcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbGNwLWtvdGxpbi9yMi1sY3Avc3JjL2ludFRlc3RhcHBXaXRoTGNwL3Jlcw==" />
             </array>
           </option>
           <option name="pluginClasspaths">
@@ -140,13 +140,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/shaders" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/res" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/assets" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/aidl" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/rs" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/res" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/assets" type="java-test-resource" />
@@ -154,72 +147,93 @@
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/rs" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/shaders" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/res" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/assets" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/aidl" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/rs" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/shaders" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/attr" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/check-manifest" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/classes" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/incremental" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/intermediate-jars" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/javaPrecompile" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/jniLibs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/library_and_local_jars_jni" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/lint" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/manifests" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/packaged-aidl" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/packagedAssets" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/packaged_res" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/public_res" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/publish-proguard" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/res" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/rs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/shaders" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/symbols" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/transforms" />
+      <excludeFolder url="file://$MODULE_DIR$/build/kotlin" />
       <excludeFolder url="file://$MODULE_DIR$/build/outputs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 27 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Gradle: org.zeroturnaround:zt-zip:1.12@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-annotations-common:1.2.50@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.slf4j:slf4j-api:1.6.6@jar" level="project" />
-    <orderEntry type="library" name="Gradle: android.arch.lifecycle:common:1.1.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.github.readium:r2-shared-kotlin-develop-SNAPSHOT" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:runner-1.0.2" level="project" />
+    <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-functional:3.3.0@jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support:support-annotations:27.1.1@jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.jakewharton.timber:timber-4.7.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.kittinunf.result:result:1.5.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.2.50@jar" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.2.51@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-common:1.2.50@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.squareup:javawriter:2.1.1@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-junit:1.2.50@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-core-ui-27.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.anko:anko-commons:0.10.5@jar" level="project" />
+    <orderEntry type="library" name="Gradle: joda-time:joda-time:2.9.9@jar" level="project" />
     <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-ui:3.3.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.kittinunf.fuel:fuel-android-1.15.0" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-android:3.3.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-jvm:3.3.0@jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: javax.inject:javax.inject:1@jar" level="project" />
-    <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-core:3.3.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-fragment-27.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: android.arch.core:runtime-1.1.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:monitor-1.0.2" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:appcompat-v7-27.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-combine:3.3.0@jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test:1.2.50@jar" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.anko:anko-sqlite:0.10.5@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.github.kittinunf.fuel:fuel:1.15.0@jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: net.sf.kxml:kxml2:2.3.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: android.arch.lifecycle:runtime-1.1.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:runner-1.0.2" level="project" />
-    <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-functional:3.3.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-annotations:27.1.1@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.jakewharton.timber:timber-4.7.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.github.kittinunf.result:result:1.5.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:animated-vector-drawable-27.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-compat-27.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.2.50@jar" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.2.51@jar" level="project" />
-    <orderEntry type="library" name="Gradle: android.arch.lifecycle:viewmodel-1.1.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-vector-drawable-27.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.anko:anko-commons:0.10.5@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-core-utils-27.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: joda-time:joda-time:2.9.9@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.github.kittinunf.fuel:fuel-android-1.15.0" level="project" />
     <orderEntry type="library" name="Gradle: artifacts:liblcp" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.code.findbugs:jsr305:2.0.1@jar" level="project" />
+    <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-jvm:3.3.0@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test.espresso:espresso-core-3.0.2" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.2.51@jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: javax.inject:javax.inject:1@jar" level="project" />
+    <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-core:3.3.0@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: junit:junit:4.12@jar" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.2.51@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-core:1.3@jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:monitor-1.0.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test.espresso:espresso-idling-resource-3.0.2" level="project" />
+    <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-combine:3.3.0@jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test:1.2.50@jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-library:1.3@jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-integration:1.3@jar" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.anko:anko-sqlite:0.10.5@jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.kittinunf.fuel:fuel:1.15.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.50@jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: net.sf.kxml:kxml2:2.3.0@jar" level="project" />
+    <orderEntry type="module" module-name="r2-shared" />
+    <orderEntry type="library" name="Gradle: android.arch.lifecycle:common:1.1.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.readium:r2-shared-kotlin-develop-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-core-ui-27.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-fragment-27.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: android.arch.core:runtime-1.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:appcompat-v7-27.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: android.arch.lifecycle:runtime-1.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-annotations:27.1.1@jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:animated-vector-drawable-27.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-compat-27.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: android.arch.lifecycle:viewmodel-1.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-vector-drawable-27.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-core-utils-27.1.1" level="project" />
     <orderEntry type="library" name="Gradle: com.google.code.gson:gson:2.8.2@jar" level="project" />
     <orderEntry type="library" name="Gradle: android.arch.lifecycle:livedata-core-1.1.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-integration:1.3@jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-library:1.3@jar" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.50@jar" level="project" />
     <orderEntry type="library" name="Gradle: android.arch.core:common:1.1.0@jar" level="project" />
   </component>
 </module>

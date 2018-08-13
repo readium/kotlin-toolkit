@@ -60,6 +60,8 @@ dependencies {
         devTestappImplementation project(':r2-shared')
         devTestappWithLcpImplementation project(':r2-shared')
     }
+    intTestappImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+    intTestappWithLcpImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
 
 
     implementation project(':liblcp')
