@@ -53,11 +53,12 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.7.0'
 
+    if (findProject(':r2-shared')) {
+        devTestappImplementation project(':r2-shared')
+        devTestappWithLcpImplementation project(':r2-shared')
+    }
     intTestappImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
     intTestappWithLcpImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
-
-    devTestappImplementation project(':r2-shared')
-    devTestappWithLcpImplementation project(':r2-shared')
 
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
