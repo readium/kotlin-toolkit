@@ -17,19 +17,19 @@
         <option name="ALLOW_USER_CONFIGURATION" value="false" />
         <option name="MANIFEST_FILE_RELATIVE_PATH" value="/src/main/AndroidManifest.xml" />
         <option name="RES_FOLDER_RELATIVE_PATH" value="/src/main/res" />
+        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/src/main/res" />
         <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/src/main/assets" />
         <option name="PROJECT_TYPE" value="1" />
       </configuration>
     </facet>
     <facet type="kotlin-language" name="Kotlin">
-      <configuration version="3" platform="JVM 1.8" useProjectSettings="false">
+      <configuration version="3" platform="JVM 1.6" useProjectSettings="false">
         <compilerSettings />
         <compilerArguments>
           <option name="destination" value="$MODULE_DIR$/build/tmp/kotlin-classes/intTestappDebug" />
           <option name="noStdlib" value="true" />
           <option name="noReflect" value="true" />
           <option name="moduleName" value="r2-navigator_intTestappDebug" />
-          <option name="jvmTarget" value="1.8" />
           <option name="addCompilerBuiltIns" value="true" />
           <option name="loadBuiltInsFromDependencies" value="true" />
           <option name="pluginOptions">
@@ -37,13 +37,11 @@
               <option value="plugin:org.jetbrains.kotlin.android:experimental=false" />
               <option value="plugin:org.jetbrains.kotlin.android:enabled=true" />
               <option value="plugin:org.jetbrains.kotlin.android:defaultCacheImplementation=hashMap" />
-              <option value="plugin:org.jetbrains.kotlin.android:configuration=rO0ABXoAAAKNAAAAAwAIZmVhdHVyZXMAAAABAAV2aWV3cwAHcGFja2FnZQAAAAEAGG9yZy5yZWFkaXVtLnIyLm5hdmlnYXRvcgAHdmFyaWFudAAAAAUAYm1haW47L1ZvbHVtZXMvRGF0YS9FRFJMYWIvS290bGluL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbmF2aWdhdG9yLWtvdGxpbi9yMi1uYXZpZ2F0b3Ivc3JjL21haW4vcmVzAG5kZXZUZXN0YXBwOy9Wb2x1bWVzL0RhdGEvRURSTGFiL0tvdGxpbi9yMi13b3Jrc3BhY2Uta290bGluL3IyLW5hdmlnYXRvci1rb3RsaW4vcjItbmF2aWdhdG9yL3NyYy9kZXZUZXN0YXBwL3JlcwB8ZGV2VGVzdGFwcFdpdGhMY3A7L1ZvbHVtZXMvRGF0YS9FRFJMYWIvS290bGluL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbmF2aWdhdG9yLWtvdGxpbi9yMi1uYXZpZ2F0b3Ivc3JjL2RldlRlc3RhcHBXaXRoTGNwL3JlcwBuaW50VGVzdGFwcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9Lb3RsaW4vcjItd29ya3NwYWNlLWtvdGxpbi9yMi1uYXZpZ2F0b3Ita290bGluL3IyLW5hdmlnYXRvci9zcmMvaW50VGVzdGFwcC9yZXMAfGludFRlc3RhcHBXaXRoTGNwOy9Wb2x1bWVzL0RhdGEvRURSTGFiL0tvdGxpbi9yMi13b3Jrc3BhY2Uta290bGluL3IyLW5hdmlnYXRvci1rb3RsaW4vcjItbmF2aWdhdG9yL3NyYy9pbnRUZXN0YXBwV2l0aExjcC9yZXM=" />
-              <option value="plugin:org.jetbrains.kotlin.android:configuration=rO0ABXoAAAKNAAAAAwAIZmVhdHVyZXMAAAABAAV2aWV3cwAHcGFja2FnZQAAAAEAGG9yZy5yZWFkaXVtLnIyLm5hdmlnYXRvcgAHdmFyaWFudAAAAAUAYm1haW47L1ZvbHVtZXMvRGF0YS9FRFJMYWIvS290bGluL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbmF2aWdhdG9yLWtvdGxpbi9yMi1uYXZpZ2F0b3Ivc3JjL21haW4vcmVzAG5kZXZUZXN0YXBwOy9Wb2x1bWVzL0RhdGEvRURSTGFiL0tvdGxpbi9yMi13b3Jrc3BhY2Uta290bGluL3IyLW5hdmlnYXRvci1rb3RsaW4vcjItbmF2aWdhdG9yL3NyYy9kZXZUZXN0YXBwL3JlcwB8ZGV2VGVzdGFwcFdpdGhMY3A7L1ZvbHVtZXMvRGF0YS9FRFJMYWIvS290bGluL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbmF2aWdhdG9yLWtvdGxpbi9yMi1uYXZpZ2F0b3Ivc3JjL2RldlRlc3RhcHBXaXRoTGNwL3JlcwBuaW50VGVzdGFwcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9Lb3RsaW4vcjItd29ya3NwYWNlLWtvdGxpbi9yMi1uYXZpZ2F0b3Ita290bGluL3IyLW5hdmlnYXRvci9zcmMvaW50VGVzdGFwcC9yZXMAfGludFRlc3RhcHBXaXRoTGNwOy9Wb2x1bWVzL0RhdGEvRURSTGFiL0tvdGxpbi9yMi13b3Jrc3BhY2Uta290bGluL3IyLW5hdmlnYXRvci1rb3RsaW4vcjItbmF2aWdhdG9yL3NyYy9pbnRUZXN0YXBwV2l0aExjcC9yZXM=" />
+              <option value="plugin:org.jetbrains.kotlin.android:configuration=rO0ABXoAAAKwAAAAAwAIZmVhdHVyZXMAAAABAAV2aWV3cwAHcGFja2FnZQAAAAEAGG9yZy5yZWFkaXVtLnIyLm5hdmlnYXRvcgAHdmFyaWFudAAAAAUAaW1haW47L1ZvbHVtZXMvRGF0YS9FRFJMYWIvbmV3IHdvcmtzcGFjZS9yMi13b3Jrc3BhY2Uta290bGluL3IyLW5hdmlnYXRvci1rb3RsaW4vcjItbmF2aWdhdG9yL3NyYy9tYWluL3JlcwB1ZGV2VGVzdGFwcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbmF2aWdhdG9yLWtvdGxpbi9yMi1uYXZpZ2F0b3Ivc3JjL2RldlRlc3RhcHAvcmVzAINkZXZUZXN0YXBwV2l0aExjcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbmF2aWdhdG9yLWtvdGxpbi9yMi1uYXZpZ2F0b3Ivc3JjL2RldlRlc3RhcHBXaXRoTGNwL3JlcwB1aW50VGVzdGFwcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbmF2aWdhdG9yLWtvdGxpbi9yMi1uYXZpZ2F0b3Ivc3JjL2ludFRlc3RhcHAvcmVzAINpbnRUZXN0YXBwV2l0aExjcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbmF2aWdhdG9yLWtvdGxpbi9yMi1uYXZpZ2F0b3Ivc3JjL2ludFRlc3RhcHBXaXRoTGNwL3Jlcw==" />
             </array>
           </option>
           <option name="pluginClasspaths">
             <array>
-              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-android-extensions/1.2.50/a5309d96fd097320a75947d2e9673a86c948f605/kotlin-android-extensions-1.2.50.jar" />
               <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-android-extensions/1.2.50/a5309d96fd097320a75947d2e9673a86c948f605/kotlin-android-extensions-1.2.50.jar" />
               <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-android-extensions/1.2.50/a5309d96fd097320a75947d2e9673a86c948f605/kotlin-android-extensions-1.2.50.jar" />
             </array>
@@ -122,13 +120,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/debug/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/shaders" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/res" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/assets" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/aidl" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/rs" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/res" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/assets" type="java-test-resource" />
@@ -136,6 +127,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/rs" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/shaders" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/res" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/assets" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/aidl" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/rs" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/testDebug/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/res" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/assets" type="java-resource" />
@@ -143,13 +141,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/shaders" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/res" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/assets" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/aidl" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/rs" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/res" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/assets" type="java-test-resource" />
@@ -157,17 +148,36 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/rs" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/shaders" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/res" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/assets" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/aidl" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/rs" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/shaders" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/attr" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/check-manifest" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/classes" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/incremental" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/intermediate-jars" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/javaPrecompile" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/jniLibs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/library_and_local_jars_jni" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/lint" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/manifests" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/packaged-aidl" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/packagedAssets" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/packaged_res" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/public_res" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/publish-proguard" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/res" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/rs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/shaders" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/symbols" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/transforms" />
+      <excludeFolder url="file://$MODULE_DIR$/build/kotlin" />
       <excludeFolder url="file://$MODULE_DIR$/build/outputs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 27 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
