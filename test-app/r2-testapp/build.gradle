@@ -106,16 +106,26 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.7.0'
 
-    devTestappImplementation project(':r2-navigator')
-    devTestappImplementation project(':r2-streamer')
-    devTestappImplementation project(':r2-shared')
-    devTestappImplementation project(':r2-opds')
-
-    devTestappWithLcpImplementation project(':r2-navigator')
-    devTestappWithLcpImplementation project(':r2-streamer')
-    devTestappWithLcpImplementation project(':r2-shared')
-    devTestappWithLcpImplementation project(':r2-opds')
-    devTestappWithLcpImplementation project(':r2-lcp')
+    if (findProject(':r2-navigator')) {
+        devTestappImplementation project(':r2-navigator')
+        devTestappWithLcpImplementation project(':r2-navigator')
+    }
+    if (findProject(':r2-streamer')) {
+        devTestappImplementation project(':r2-streamer')
+        devTestappWithLcpImplementation project(':r2-streamer')
+    }
+    if (findProject(':r2-shared')) {
+        devTestappImplementation project(':r2-shared')
+        devTestappWithLcpImplementation project(':r2-shared')
+    }
+    if (findProject(':r2-opds')) {
+        devTestappImplementation project(':r2-opds')
+        devTestappWithLcpImplementation project(':r2-opds')
+    }
+    if (findProject(':r2-lcp')) {
+        devTestappWithLcpImplementation project(':r2-lcp')
+        intTestappWithLcpImplementation project(':r2-lcp')
+    }
 
     intTestappImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
     intTestappImplementation 'com.github.readium:r2-streamer-kotlin:develop-SNAPSHOT'
@@ -126,7 +136,6 @@ dependencies {
     intTestappWithLcpImplementation 'com.github.readium:r2-streamer-kotlin:develop-SNAPSHOT'
     intTestappWithLcpImplementation 'com.github.readium:r2-navigator-kotlin:develop-SNAPSHOT'
     intTestappWithLcpImplementation 'com.github.readium:r2-opds-kotlin:develop-SNAPSHOT'
-    intTestappWithLcpImplementation project(':r2-lcp')
 
     //    implementation 'androidx.core:core-ktx:0.3'
     implementation 'com.android.support:appcompat-v7:27.1.1'
