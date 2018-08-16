@@ -53,19 +53,6 @@ android {
 }
 
 // Publish default flavour as main artifact, otherwise the maven pom is not generated
-if( android.productFlavors.size() > 0 ) {
-    android.libraryVariants.all { variant ->
-        if(variant.name == android.defaultPublishConfig ) {
-            def bundleTask = tasks["bundle${name.capitalize()}"]
-            artifacts {
-                archives(bundleTask.archivePath) {
-                    classifier null
-                    builtBy bundleTask
-                }
-            }
-        }
-    }
-}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
