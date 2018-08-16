@@ -44,6 +44,11 @@ android {
             dimension "testapp"
         }
     }
+
+    // default build flavour
+    defaultPublishConfig "intTestapp"
+    // true to publish all flavour artifacts
+    publishNonDefault false
 }
 
 dependencies {
