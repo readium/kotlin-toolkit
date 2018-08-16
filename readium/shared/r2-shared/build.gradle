@@ -49,15 +49,13 @@ android {
 
     // default build flavour
     defaultPublishConfig "intTestapp"
-    // true to publish all flavour artifacts
-    publishNonDefault false
 
 }
 
 // Publish default flavour as main artifact, otherwise the maven pom is not generated
 if( android.productFlavors.size() > 0 ) {
     android.libraryVariants.all { variant ->
-        if( android.publishNonDefault && variant.name == android.defaultPublishConfig ) {
+        if(variant.name == android.defaultPublishConfig ) {
             def bundleTask = tasks["bundle${name.capitalize()}"]
             artifacts {
                 archives(bundleTask.archivePath) {
