@@ -49,10 +49,7 @@ android {
 
     // default build flavour
     defaultPublishConfig "intTestappDebug"
-
 }
-
-// Publish default flavour as main artifact, otherwise the maven pom is not generated
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
