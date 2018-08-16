@@ -48,7 +48,7 @@ android {
     }
 
     // default build flavour
-    defaultPublishConfig "intTestapp"
+    defaultPublishConfig "intTestappDebug"
 
 }
 
