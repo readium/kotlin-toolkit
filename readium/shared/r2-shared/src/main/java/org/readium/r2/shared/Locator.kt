@@ -28,8 +28,8 @@ import org.json.JSONObject
  *
  */
 open class Locator(val publicationId: String,
-                   val spineHref: String?,
                    val spineIndex: Long,
+                   val spineHref: String?,
                    val title: String,
                    val location: Location? = null): JSONable {
 
