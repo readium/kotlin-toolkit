@@ -157,8 +157,12 @@ class R2EpubPageFragment : Fragment() {
 
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
             if (e1 == null || e2 == null) return false
-            if (e1.pointerCount > 1 || e2.pointerCount > 1)
+            if (e1.pointerCount > 1 || e2.pointerCount > 1) {
                 return false
+            }
+            else if (webView.activity.userSettings.verticalScroll) {
+                return false
+            }
             else {
                 try { // right to left swipe .. go to next page
                     if (e1.x - e2.x > 100) {
