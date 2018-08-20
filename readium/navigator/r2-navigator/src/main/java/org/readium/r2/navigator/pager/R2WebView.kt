@@ -17,6 +17,7 @@ import org.readium.r2.navigator.R2EpubActivity
 import timber.log.Timber
 import android.view.GestureDetector
 import android.view.MotionEvent
+import org.readium.r2.navigator.SCROLL_REF
 
 
 /**
@@ -76,7 +77,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            if (activity.userSettings.verticalScroll) {
+            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+            if (scrollMode) {
                 if (!this.canScrollVertically(1)) {
 //                    activity.nextResource()
                 }
@@ -102,7 +104,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            if (activity.userSettings.verticalScroll) {
+            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+            if (scrollMode) {
                 if (!this.canScrollVertically(-1)) {
 //                    activity.previousResource()
                 }
