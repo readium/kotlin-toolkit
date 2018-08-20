@@ -59,9 +59,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
     private var fontSize = 100f
     private var fontOverride = false
-    var fontFamily = 0
-    var appearance = 0
-    var verticalScroll = false
+    private var fontFamily = 0
+    private var appearance = 0
+    private var verticalScroll = false
 
     //Advanced settings
     private var publisherDefaults = false
