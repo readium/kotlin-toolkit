@@ -78,7 +78,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
             }
             if (activity.userSettings.verticalScroll) {
                 if (!this.canScrollVertically(1)) {
-                    activity.nextResource()
+//                    activity.nextResource()
                 }
             } else {
 
@@ -104,7 +104,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
             }
             if (activity.userSettings.verticalScroll) {
                 if (!this.canScrollVertically(-1)) {
-                    activity.previousResource()
+//                    activity.previousResource()
                 }
             } else {
                 // fix this for when vertical scrolling is enabled
