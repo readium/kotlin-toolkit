@@ -319,9 +319,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun showDocumentPicker() {
-        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
-        // browser.
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        // ACTION_GET_DOCUMENT allows to import a system file by creating a copy of it
+        // with access to every app that manages files
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
 
         // Filter to only show results that can be "opened", such as a
         // file (as opposed to a list of contacts or timezones)
