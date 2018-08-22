@@ -17,23 +17,23 @@ import org.json.JSONObject
  * Locator : That class is used to define a precise location in a Publication
  *
  * @var publicationId: String - Identifier of a Publication
- * @var spineIndex: Long - Index at a spine element
+ * @var spineIndex: Long - Index of a spine element
  * @var spineHref: String? - ( Optional ) String reference to the spine element
  * @var title: String - Title of the spine element
  *
  * @var location: Location - List of objects used to locate the target
- * @var timestamp: DateTime - Date when the Locator has been timestamp
+ * @var created: DateTime - Date when the Locator has been created
  *
  * @var text: LocatorText? - ( Optional ) Describe the Locator's context
  *
  */
 open class Locator(val publicationId: String,
-                   val spineIndex: Long,
-                   val spineHref: String?,
+                   val spineIndex: Long?,
+                   val spineHref: String,
                    val title: String,
                    val location: Location? = null): JSONable {
 
-    var timestamp = DateTime.now().toDate().time
+    var created = DateTime.now().toDate().time
     var text = LocatorText(null, null, null)
 
     fun toJson(): String{
@@ -44,14 +44,14 @@ open class Locator(val publicationId: String,
         val json = JSONObject()
         json.putOpt("href", spineHref)
         json.putOpt("title", title)
-        json.putOpt("timestamp", timestamp)
+        json.putOpt("created", created)
         json.putOpt("location", location.toString())
         json.putOpt("text", text)
         return json
     }
 
     override fun toString(): String{
-        return """{ "href": "$spineHref", "title": "$title", "timestamp": "$timestamp", "locations" : $location  "text" : "$text" """
+        return """{ "href": "$spineHref", "title": "$title", "created": "$created", "locations" : $location  "text" : "$text" """
     }
 
     fun setText(before: String? = null, highlight: String? = null, after: String? = null){
