@@ -26,6 +26,7 @@ import kotlinx.android.synthetic.main.list_item_toc.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.Link
+import org.readium.r2.shared.Locator
 import org.readium.r2.shared.Publication
 import kotlin.math.roundToInt
 
@@ -34,11 +35,13 @@ class R2OutlineActivity : AppCompatActivity() {
 
     private lateinit var preferences:SharedPreferences
     lateinit var bookmarkDB: BookmarksDatabase
+    lateinit var locatorUtils: LocatorUtils
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_outline_container)
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+        locatorUtils = LocatorUtils(this)
 
         val tabHost = findViewById<TabHost>(R.id.tabhost)
         tabHost.setup()
@@ -87,7 +90,7 @@ class R2OutlineActivity : AppCompatActivity() {
         bookmarkDB = BookmarksDatabase(this)
 
         val bookID = intent.getLongExtra("bookId", -1)
-        val bookmarks = bookmarkDB.bookmarks.list(bookID)
+        val bookmarks = locatorUtils.getBookmarks(bookID)
         val bookmarkskAdapter = BookMarksAdapter(this, bookmarks, allElements)
 
         bookmark_list.adapter = bookmarkskAdapter
@@ -96,9 +99,9 @@ class R2OutlineActivity : AppCompatActivity() {
         bookmark_list.setOnItemClickListener { _, _, position, _ ->
 
             //Link to the resource in the publication
-            val bmkItemUri = bookmarks[position].resourceHref
+            val bmkItemUri = bookmarks[position].spineHref
             //Progression of the selected bookmark
-            val bmkProgression = bookmarks[position].progression
+            val bmkProgression = bookmarks[position].location!!.progression
 
             val intent = Intent()
             intent.putExtra("toc_item_uri", bmkItemUri)
@@ -170,7 +173,7 @@ class R2OutlineActivity : AppCompatActivity() {
     }
 
 
-    inner class BookMarksAdapter(val context: Context, private val bookmarks: MutableList<Bookmark>, private val elements: MutableList<Link>) : BaseAdapter() {
+    inner class BookMarksAdapter(val context: Context, private val bookmarks: MutableList<Locator>, private val elements: MutableList<Link>) : BaseAdapter() {
 
         private inner class ViewHolder {
             internal var bmkChapter: TextView? = null
@@ -207,7 +210,7 @@ class R2OutlineActivity : AppCompatActivity() {
                 title = "*Title Missing*"
             }
             val formattedProgression = "${((bookmark.progression * 100).roundToInt())}% through resource"
-            val formattedDate = DateTime(bookmark.timestamp).toString(DateTimeFormat.shortDateTime())
+            val formattedDate = DateTime(bookmark.created).toString(DateTimeFormat.shortDateTime())
 
             viewHolder.bmkChapter!!.text = title
             viewHolder.bmkProgression!!.text = formattedProgression
@@ -221,8 +224,10 @@ class R2OutlineActivity : AppCompatActivity() {
 
                 popupMenu.setOnMenuItemClickListener { item ->
                     if (item.itemId == R.id.delete) {
-                        bookmarkDB.bookmarks.delete(bookmarks[position])
-                        bookmarks.removeAt(position)
+                        locatorUtils.deleteLocator(bookmarks[position], bookmarks)
+
+                        //bookmarkDB.bookmarks.delete(bookmarks[position])
+//                        bookmarks.removeAt(position)
                         notifyDataSetChanged()
                     }
                     false
