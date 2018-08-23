@@ -25,7 +25,7 @@ import org.readium.r2.shared.Locator
  * @val resourceHref: String -  Reference to the spine element
  * @val spine_index: Long - Index to the spine element of the book
  * @val progression: Double - Percentage of progression in the spine element
- * @val timestamp: String - Datetime when the bookmark has been created
+ * @val created: String - Datetime when the bookmark has been created
  * @var id: Long? - ID of the bookmark in database
  *
  * @fun toString(): String - Return a String description of the Bookmark
@@ -36,7 +36,7 @@ class Bookmark(val bookID: Long, val resourceIndex: Long, val resourceHref: Stri
 
     override fun toString(): String {
         println(super.toJson())
-        return "Bookmark id : ${this.id}, book identifier : ${this.bookID}, resource href selected ${this.resourceHref}, progression saved ${this.progression} and created the ${this.timestamp}."
+        return "Bookmark id : ${this.id}, book identifier : ${this.bookID}, resource href selected ${this.resourceHref}, progression saved ${this.progression} and created the ${this.created}."
     }
 
 }
@@ -73,7 +73,7 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
                 BOOKMARKSTable.RESOURCE_INDEX to INTEGER,
                 BOOKMARKSTable.RESOURCE_HREF to TEXT,
                 BOOKMARKSTable.PROGRESSION to REAL,
-                BOOKMARKSTable.TIMESTAMP to INTEGER)
+                BOOKMARKSTable.CREATED to INTEGER)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -89,7 +89,7 @@ object BOOKMARKSTable {
     const val RESOURCE_INDEX = "resourceIndex"
     const val RESOURCE_HREF = "resourceHref"
     const val PROGRESSION = "progression"
-    const val TIMESTAMP = "timestamp"
+    const val CREATED = "created"
 }
 
 class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
@@ -120,7 +120,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                         BOOKMARKSTable.RESOURCE_INDEX to bookmark.resourceIndex,
                         BOOKMARKSTable.RESOURCE_HREF to bookmark.resourceHref,
                         BOOKMARKSTable.PROGRESSION to bookmark.progression,
-                        BOOKMARKSTable.TIMESTAMP to bookmark.timestamp)
+                        BOOKMARKSTable.CREATED to bookmark.created)
             }
         }
         return null
@@ -134,7 +134,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
                     BOOKMARKSTable.PROGRESSION,
-                    BOOKMARKSTable.TIMESTAMP)
+                    BOOKMARKSTable.CREATED)
                     .whereArgs("(bookID = {bookID}) AND (resourceIndex = {resourceIndex}) AND (resourceHref = {resourceHref}) AND (progression = {progression})",
                             "bookID" to bookmark.bookID,
                             "resourceIndex" to bookmark.resourceIndex,
@@ -161,7 +161,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
                     BOOKMARKSTable.PROGRESSION,
-                    BOOKMARKSTable.TIMESTAMP)
+                    BOOKMARKSTable.CREATED)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
@@ -177,7 +177,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
                     BOOKMARKSTable.PROGRESSION,
-                    BOOKMARKSTable.TIMESTAMP)
+                    BOOKMARKSTable.CREATED)
                     .whereArgs("bookID = {bookID}", "bookID" to bookID as Any)
                     .orderBy(BOOKMARKSTable.RESOURCE_INDEX, SqlOrderDirection.ASC)
                     .orderBy(BOOKMARKSTable.PROGRESSION, SqlOrderDirection.ASC)
@@ -204,12 +204,12 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
             val progression = columns[4]?.let {
                 return@let it
             } ?: kotlin.run { return@run 0.0f }
-            val timestamp = columns[5]?.let {
+            val created = columns[5]?.let {
                 return@let it
             } ?: kotlin.run { return@run null }
 
             val res = Bookmark(bookID as Long, resourceIndex as Long, resourceHref as String, progression as Double, id as Long)
-            res.timestamp = timestamp as Long
+            res.created = created as Long
             return res
         }
     }
