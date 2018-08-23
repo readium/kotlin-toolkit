@@ -34,17 +34,19 @@ class R2EpubActivity : R2EpubActivity() {
 
     // Provide access to the Bookmarks Database
     private lateinit var bookmarkDB: BookmarksDatabase
+    private lateinit var locatorUtils: LocatorUtils
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bookmarkDB = BookmarksDatabase(this)
+        locatorUtils = LocatorUtils(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_epub, menu)
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
-        menuBmk = menu?.findItem(R.id.bookmark_list)
+        menuBmk = menu?.findItem(R.id.bookmark)
         menuDrm?.isVisible = false
         return true
     }
@@ -80,15 +82,18 @@ class R2EpubActivity : R2EpubActivity() {
                         resourceHref,
                         progression
                 )
+                
+                val lbmks = locatorUtils.getBookmarks(bookId)
+                val addBmk = locatorUtils.addLocator(bookmark, lbmks)
 
-                bookmarkDB.bookmarks.insert(bookmark)?.let {
+                if(addBmk) {
                     runOnUiThread {
                         toast("Bookmark added")
                     }
-                } ?: run {
+                } else {
                     runOnUiThread {
-                        toast("Bookmark already exist")
-                    }
+                        toast("Bookmark already exists")
+                }
                 }
 
                 return true
