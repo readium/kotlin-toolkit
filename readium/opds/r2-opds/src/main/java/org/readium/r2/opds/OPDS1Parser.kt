@@ -264,7 +264,7 @@ class OPDS1Parser {
             }
             val languages = entry.get("dcterms:language")
             languages?.let {
-                metadata.languages = languages.map({ it.text.toString() }).toMutableList()
+                metadata.languages = languages.map { it.text.toString() }.toMutableList()
             }
             val tmpDate = entry.getFirst("updated")
             tmpDate?.let {
@@ -277,7 +277,7 @@ class OPDS1Parser {
             }
             val rights = entry.get("rights")
             rights?.let {
-                metadata.rights = rights.map({ it.text }).joinToString(" ")
+                metadata.rights = rights.map { it.text }.joinToString(" ")
             }
             val publisher = entry.get("dcterms:publisher")
             publisher?.let {
