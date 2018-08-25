@@ -1,6 +1,6 @@
 /*
  * Module: r2-navigator-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Developers: Aferdita Muriqi, Clément Baumann, Mostapha Idoubihi
  *
  * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -59,9 +59,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
     private var fontSize = 100f
     private var fontOverride = false
-    var fontFamily = 0
-    var appearance = 0
-    var verticalScroll = false
+    private var fontFamily = 0
+    private var appearance = 0
+    private var verticalScroll = false
 
     //Advanced settings
     private var publisherDefaults = false
@@ -170,7 +170,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
     private fun applyCSS(view: R2WebView, ref: String) {
         val userSetting = userProperties.getByRef<UserProperty>(ref)
         view.setProperty(userSetting.name, userSetting.toString())
-        println("applyCss : " + userSetting.name + ": " + userSetting.toString())
     }
 
 
@@ -261,7 +260,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
                 fontOverride.on = (pos != 0)
                 updateSwitchable(fontOverride)
                 updateEnumerable(fontFamily)
-                println("selected a font")
                 updateViewCSS(FONT_OVERRIDE_REF)
                 updateViewCSS(FONT_FAMILY_REF)
             }
@@ -287,15 +285,15 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             when (i) {
                 0 -> {
                     resourcePager.setBackgroundColor(Color.parseColor("#ffffff"))
-                    (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#000000"))
+                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
                 }
                 1 -> {
                     resourcePager.setBackgroundColor(Color.parseColor("#faf4e8"))
-                    (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#000000"))
+                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
                 }
                 2 -> {
                     resourcePager.setBackgroundColor(Color.parseColor("#000000"))
-                    (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor("#ffffff"))
+                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#ffffff"))
                 }
             }
             updateEnumerable(appearance)
@@ -336,12 +334,12 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
             scrollMode.on = scrollModeSwitch.isChecked
             when (b) {
                 true -> {
-                    (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).visibility = View.GONE
-                    resourcePager.focusedChild.setPadding(0, 5, 0, 5)
+                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.GONE
+                    resourcePager.focusedChild?.setPadding(0, 5, 0, 5)
                 }
                 false -> {
-                    (resourcePager.focusedChild.findViewById(R.id.book_title) as TextView).visibility = View.VISIBLE
-                    resourcePager.focusedChild.setPadding(0, 30, 0, 30)
+                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.VISIBLE
+                    resourcePager.focusedChild?.setPadding(0, 30, 0, 30)
                 }
             }
             updateSwitchable(scrollMode)

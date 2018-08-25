@@ -18,35 +18,35 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
-import android.view.Gravity
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_page_epub.view.*
 import org.jetbrains.anko.contentView
-import org.jetbrains.anko.intentFor
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.drm.DRMMModel
+import org.readium.r2.shared.drm.DRMModel
 
 
-class R2EpubActivity : AppCompatActivity() {
+open class R2EpubActivity : AppCompatActivity() {
 
     lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
     lateinit var resources: ArrayList<String>
 
-    private lateinit var publicationPath: String
-    private lateinit var publication: Publication
-    private lateinit var epubName: String
+    protected lateinit var publicationPath: String
+    protected lateinit var publication: Publication
+    protected lateinit var epubName: String
     lateinit var publicationIdentifier: String
 
     lateinit var userSettings: UserSettings
-    private var drmModel: DRMMModel? = null
-    private var menuDrm: MenuItem? = null
-    private var menuToc: MenuItem? = null
+    protected var drmModel: DRMModel? = null
+    protected var menuDrm: MenuItem? = null
+    protected var menuToc: MenuItem? = null
+
+    var pagerPosition = 0
+    var reloadPagerPositions = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +58,7 @@ class R2EpubActivity : AppCompatActivity() {
 
         Handler().postDelayed({
             if (intent.getSerializableExtra("drmModel") != null) {
-                drmModel = intent.getSerializableExtra("drmModel") as DRMMModel
+                drmModel = intent.getSerializableExtra("drmModel") as DRMModel
                 drmModel?.let {
                     runOnUiThread {
                         menuDrm?.isVisible = true
@@ -88,7 +88,7 @@ class R2EpubActivity : AppCompatActivity() {
         val index = preferences.getInt("$publicationIdentifier-document", 0)
 
         val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
-
+        reloadPagerPositions = true
         resourcePager.adapter = adapter
 
         userSettings = UserSettings(preferences, this)
@@ -104,6 +104,7 @@ class R2EpubActivity : AppCompatActivity() {
         } else {
             resourcePager.currentItem = index
         }
+        storeDocumentIndex()
 
         val appearancePref = preferences.getInt("appearance", 0)
         val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
@@ -113,53 +114,47 @@ class R2EpubActivity : AppCompatActivity() {
         toggleActionBar()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_toc, menu)
-        menuDrm = menu?.findItem(R.id.drm)
-        menuToc = menu?.findItem(R.id.toc)
-        menuDrm?.isVisible = false
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-
-            R.id.toc -> {
-                val intent = Intent(this, R2OutlineActivity::class.java)
-                intent.putExtra("publicationPath", publicationPath)
-                intent.putExtra("publication", publication)
-                intent.putExtra("epubName", epubName)
-                startActivityForResult(intent, 2)
-                return false
-            }
-            R.id.settings -> {
-                userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.toc), 0, 0, Gravity.END)
-                return false
-            }
-            R.id.drm -> {
-                startActivity(intentFor<DRMManagementActivity>("drmModel" to drmModel))
-                return false
-            }
-
-            else -> return super.onOptionsItemSelected(item)
-        }
-
-    }
-
     override fun onPause() {
         super.onPause()
+        storeProgression(resourcePager.webView.progression)
+    }
+
+    /**
+     * storeProgression() : save in the preference the last progression in the spine item
+     */
+    fun storeProgression(progression:Double) {
+        storeDocumentIndex()
         val publicationIdentifier = publication.metadata.identifier
-        val documentIndex = resourcePager.currentItem
-        val progression = resourcePager.webView.progression
-        preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
         preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
     }
+
+    /**
+     * storeDocumentIndex() : save in the preference the last spine item
+     */
+    fun storeDocumentIndex() {
+        val documentIndex = resourcePager.currentItem
+        preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
+    }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
-                var href: String = data.getStringExtra("toc_item_uri")
+
+                pagerPosition = 0
+                reloadPagerPositions = true
+
+                val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
+                resourcePager.adapter = adapter
+
                 // href is the link to the page in the toc
+                var href: String = data.getStringExtra("toc_item_uri")
+
+                // Fetching the last progression saved ( default : 0.0 )
+                val progression = data.getDoubleExtra("item_progression", 0.0)
+
+                // Set the progression fetched
+                storeProgression(progression)
 
                 if (href.indexOf("#") > 0) {
                     href = href.substring(0, href.indexOf("#"))
@@ -168,9 +163,9 @@ class R2EpubActivity : AppCompatActivity() {
                 for (i in 0 until publication.spine.size) {
                     if (publication.spine[i].href == href) {
                         resourcePager.currentItem = i
+                        storeDocumentIndex()
                     }
                 }
-                preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
                 if (supportActionBar!!.isShowing) {
                     resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -186,7 +181,9 @@ class R2EpubActivity : AppCompatActivity() {
 
     fun nextResource() {
         runOnUiThread {
-            preferences.edit().putString("$publicationIdentifier-documentProgression", 0.0.toString()).apply()
+            pagerPosition = 0
+            resourcePager.webView.progression = 0.0
+
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
                 resourcePager.currentItem = resourcePager.currentItem - 1
@@ -194,12 +191,15 @@ class R2EpubActivity : AppCompatActivity() {
                 // The view has LTR layout
                 resourcePager.currentItem = resourcePager.currentItem + 1
             }
+            storeDocumentIndex()
         }
     }
 
     fun previousResource() {
         runOnUiThread {
-            preferences.edit().putString("$publicationIdentifier-documentProgression", 1.0.toString()).apply()
+            pagerPosition = 0
+            resourcePager.webView.progression = 1.0
+
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
                 resourcePager.currentItem = resourcePager.currentItem + 1
@@ -207,7 +207,7 @@ class R2EpubActivity : AppCompatActivity() {
                 // The view has LTR layout
                 resourcePager.currentItem = resourcePager.currentItem - 1
             }
-
+            storeDocumentIndex()
         }
     }
 

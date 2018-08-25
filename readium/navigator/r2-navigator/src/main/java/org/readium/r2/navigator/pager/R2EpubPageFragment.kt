@@ -1,6 +1,6 @@
 /*
  * Module: r2-navigator-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Developers: Aferdita Muriqi, Clément Baumann, Mostapha Idoubihi, Paul Stoica
  *
  * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.*
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
@@ -23,9 +24,6 @@ import org.readium.r2.navigator.APPEARANCE_REF
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.SCROLL_REF
-import android.view.GestureDetector
-import android.view.MotionEvent
-import android.webkit.WebResourceResponse
 
 
 class R2EpubPageFragment : Fragment() {
@@ -40,14 +38,14 @@ class R2EpubPageFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val v = inflater.inflate(R.layout.fragment_page_epub, container, false)
-        val prefs = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+        val preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
 
         // Set text color depending of appearance preference
         (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor(
-                if (prefs?.getInt(APPEARANCE_REF, 0) ?: 0 > 1) "#ffffff" else "#000000"
+                if (preferences.getInt(APPEARANCE_REF, 0) > 1) "#ffffff" else "#000000"
         ))
 
-        val scrollMode = prefs?.getBoolean(SCROLL_REF, false)
+        val scrollMode = preferences.getBoolean(SCROLL_REF, false)
         when (scrollMode) {
             true -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.GONE
@@ -85,12 +83,45 @@ class R2EpubPageFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 try {
-                    val progression = (activity as R2EpubActivity).preferences.getString("${(activity as R2EpubActivity).publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
+                    val childCount = webView.activity.resourcePager.childCount
 
-                    when (progression) {
-                        0.0 -> webView.scrollToBeginning()
-                        1.0 -> webView.scrollToEnd()
-                        else -> webView.scrollToPosition(progression)
+                    if (webView.activity.reloadPagerPositions) {
+                        if (childCount == 2) {
+                            when {
+                                webView.activity.pagerPosition == 0 -> {
+                                    val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
+                                    webView.scrollToPosition(progression)
+                                    webView.activity.pagerPosition++
+                                }
+                                else -> {
+                                    webView.scrollToPosition(0.0)
+                                    webView.activity.pagerPosition = 0
+                                    webView.activity.reloadPagerPositions = false
+                                }
+                            }
+                        } else {
+                            when {
+                                webView.activity.pagerPosition == 0 -> {
+                                    val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
+                                    webView.scrollToPosition(progression)
+                                    webView.activity.pagerPosition++
+                                }
+                                webView.activity.pagerPosition == 1 -> {
+                                    webView.scrollToPosition(1.0)
+                                    webView.activity.pagerPosition++
+                                }
+                                else -> {
+                                    webView.scrollToPosition(0.0)
+                                    webView.activity.pagerPosition = 0
+                                    webView.activity.reloadPagerPositions = false
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        webView.activity.pagerPosition = 0
+                        val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
+                        webView.scrollToPosition(progression)
                     }
                 } catch (e: Exception) {
                     // TODO double check this error, a crash happens when scrolling to fast between resources.....
@@ -125,9 +156,14 @@ class R2EpubPageFragment : Fragment() {
     class CustomGestureDetector(val webView: R2WebView) : GestureDetector.SimpleOnGestureListener() {
 
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+            val scrollMode = webView.activity.preferences.getBoolean(SCROLL_REF, false)
             if (e1 == null || e2 == null) return false
-            if (e1.pointerCount > 1 || e2.pointerCount > 1)
+            if (e1.pointerCount > 1 || e2.pointerCount > 1) {
                 return false
+            }
+            else if (scrollMode) {
+                return false
+            }
             else {
                 try { // right to left swipe .. go to next page
                     if (e1.x - e2.x > 100) {

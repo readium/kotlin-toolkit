@@ -17,6 +17,7 @@ import org.readium.r2.navigator.R2EpubActivity
 import timber.log.Timber
 import android.view.GestureDetector
 import android.view.MotionEvent
+import org.readium.r2.navigator.SCROLL_REF
 
 
 /**
@@ -76,9 +77,10 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            if (activity.userSettings.verticalScroll) {
+            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+            if (scrollMode) {
                 if (!this.canScrollVertically(1)) {
-                    activity.nextResource()
+//                    activity.nextResource()
                 }
             } else {
 
@@ -102,9 +104,10 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            if (activity.userSettings.verticalScroll) {
+            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+            if (scrollMode) {
                 if (!this.canScrollVertically(-1)) {
-                    activity.previousResource()
+//                    activity.previousResource()
                 }
             } else {
                 // fix this for when vertical scrolling is enabled
@@ -122,20 +125,12 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
         this.evaluateJavascript("scrollToPosition(\"$progression\");", null)
     }
 
-    @android.webkit.JavascriptInterface
-    fun scrollToBeginning() {
-        this.evaluateJavascript("scrollToPosition(\"0\");", null)
-    }
-
-    @android.webkit.JavascriptInterface
-    fun scrollToEnd() {
-        this.evaluateJavascript("scrollToPosition(\"1\");", null)
-    }
 
     @android.webkit.JavascriptInterface
     fun progressionDidChange(body: String) {
         progression = body.toDouble()
         Timber.d("progression: $progression")
+        activity.storeProgression(progression)
     }
 
     @android.webkit.JavascriptInterface
