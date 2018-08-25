@@ -16,15 +16,15 @@ import org.readium.r2.lcp.LcpDatabaseOpenHelper
 import org.readium.r2.lcp.model.documents.LicenseDocument
 
 object LicensesTable {
-    val NAME = "Licenses"
-    val ID = "id"
-    val PRINTSLEFT = "printsLeft"
-    val COPIESLEFT = "copiesLeft"
-    val PROVIDER = "provider"
-    val ISSUED = "issued"
-    val UPDATED = "updated"
-    val END = "end"
-    val STATE = "state"
+    const val NAME = "Licenses"
+    const val ID = "id"
+    const val PRINTSLEFT = "printsLeft"
+    const val COPIESLEFT = "copiesLeft"
+    const val PROVIDER = "provider"
+    const  val ISSUED = "issued"
+    const val UPDATED = "updated"
+    const val END = "end"
+    const val STATE = "state"
 }
 
 class Licenses(var database: LcpDatabaseOpenHelper) {
@@ -88,9 +88,9 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
                     LicensesTable.PRINTSLEFT to license.rights.print,
                     LicensesTable.COPIESLEFT to license.rights.copy,
                     LicensesTable.PROVIDER to license.provider.toString(),
-                    LicensesTable.ISSUED to license.issued.toDate().toString(),
-                    LicensesTable.UPDATED to license.updated?.toDate()?.toString(),
-                    LicensesTable.END to license.rights.end,
+                    LicensesTable.ISSUED to license.issued.toString(),
+                    LicensesTable.UPDATED to license.updated?.toString(),
+                    LicensesTable.END to license.rights.end?.toString(),
                     LicensesTable.STATE to status)
 
         }

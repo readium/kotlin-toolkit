@@ -92,12 +92,12 @@ class LcpLicense : DrmLicense {
         Log.i(TAG,"LCP areRightsValid")
         val now = Date()
         license.rights.start.let {
-            if (it != null && DateTime(it).toDate().before(now)) {
+            if (it != null && it.toDate().before(now)) {
                 throw Exception(LcpError().errorDescription(LcpErrorCase.invalidRights))
             }
         }
         license.rights.end.let {
-            if (it != null && DateTime(it).toDate().after(now)) {
+            if (it != null && it.toDate().after(now)) {
                 throw Exception(LcpError().errorDescription(LcpErrorCase.invalidRights))
             }
         }
@@ -119,7 +119,7 @@ class LcpLicense : DrmLicense {
         Log.i(TAG,"LCP register")
 
         val date = database.licenses.dateOfLastUpdate(license.id)
-        Log.i(TAG, "LCP dateOfLastUpdate ${date}")
+        Log.i(TAG, "LCP dateOfLastUpdate $date")
 
         if (database.licenses.existingLicense(license.id)) return
         if (status == null) return
@@ -215,7 +215,7 @@ class LcpLicense : DrmLicense {
 
 
     // TODO : double check his.
-    fun updateLicenseDocument() : Promise<Unit, Exception> {
+    fun updateLicenseDocument() : Promise<Unit?, java.lang.Exception> {
         return task {
             Log.i(TAG,"LCP updateLicenseDocument")
             if (status != null) {
@@ -259,28 +259,28 @@ class LcpLicense : DrmLicense {
     fun moveLicense(archivePath: String, licenseURL: URL) {
         Log.i(TAG,"LCP moveLicense")
         val source = File(archivePath)
-        val tmpZip = File(archivePath+".tmp")
+        val tmpZip = File("$archivePath.tmp")
         tmpZip.delete()
         source.copyTo(tmpZip)
         source.delete()
         if (ZipUtil.containsEntry(tmpZip, lcplFilePath)) {
             ZipUtil.removeEntry(tmpZip, lcplFilePath)
         }
-        ZipUtil.addEntry(tmpZip, lcplFilePath,  licenseURL.openStream().readBytes(),  source);
+        ZipUtil.addEntry(tmpZip, lcplFilePath,  licenseURL.openStream().readBytes(),  source)
         tmpZip.delete()
     }
 
     fun moveLicense(archivePath: String, licenseData: ByteArray) {
         Log.i(TAG,"LCP moveLicense")
         val source = File(archivePath)
-        val tmpZip = File(archivePath+".tmp")
+        val tmpZip = File("$archivePath.tmp")
         tmpZip.delete()
         source.copyTo(tmpZip)
         source.delete()
         if (ZipUtil.containsEntry(tmpZip, lcplFilePath)) {
             ZipUtil.removeEntry(tmpZip, lcplFilePath)
         }
-        ZipUtil.addEntry(tmpZip, lcplFilePath,  licenseData,  source);
+        ZipUtil.addEntry(tmpZip, lcplFilePath,  licenseData,  source)
         tmpZip.delete()
     }
 
@@ -307,17 +307,17 @@ class LcpLicense : DrmLicense {
 
     override fun rightsEnd(): Date? {
         Log.i(TAG,"LCP rightsEnd")
-        return DateTime(license.rights.end).toDate()
+        return license.rights.end?.toDate()
     }
 
     override fun potentialRightsEnd(): Date? {
         Log.i(TAG,"LCP potentialRightsEnd")
-        return DateTime(license.rights.potentialEnd).toDate()
+        return license.rights.potentialEnd?.toDate()
     }
 
     override fun rightsStart(): Date? {
         Log.i(TAG,"LCP rightsStart")
-        return DateTime(license.rights.start).toDate()
+        return license.rights.start?.toDate()
     }
 
     override fun rightsPrints(): Int? {
