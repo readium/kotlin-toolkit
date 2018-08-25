@@ -152,7 +152,7 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             response = getResponse("Forbidden: Reading file failed")
         }
 
-        return if (response == null) getResponse("Error 404: File not found") else response
+        return response ?: getResponse("Error 404: File not found")
     }
 
     private fun createResponse(status: Status, mimeType: String, message: InputStream): Response {

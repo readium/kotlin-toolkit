@@ -14,14 +14,14 @@ apply plugin: 'com.github.dcendents.android-maven'
 group='com.github.readium'
 
 android {
+    flavorDimensions "testapp"
+
     compileSdkVersion 27
     buildToolsVersion "27.0.3"
-
 
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 27
-
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -30,6 +30,23 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    productFlavors {
+        intTestapp {
+            dimension "testapp"
+        }
+        intTestappWithLcp {
+            dimension "testapp"
+        }
+        devTestapp {
+            dimension "testapp"
+        }
+        devTestappWithLcp {
+            dimension "testapp"
+        }
+    }
+
+    // default build flavour
+    defaultPublishConfig "intTestappDebug"
 }
 
 dependencies {
@@ -37,12 +54,15 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.7.0'
 
-//    uncomment this line to use with jitpack
-    implementation 'com.github.readium:r2-shared-kotlin:master-SNAPSHOT'
-//    implementation 'com.github.readium:r2-shared-kotlin:0.1.0'
+    intTestappImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+    intTestappWithLcpImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
 
-//    uncomment this line to use with GitHu submodules and Android Studio Modules
-//    implementation project(':r2-shared')
+    if (findProject(':r2-shared')) {
+        devTestappImplementation project(':r2-shared')
+        devTestappWithLcpImplementation project(':r2-shared')
+    }
+    intTestappImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+    intTestappWithLcpImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
 
     //TODO conflicting support libraries, excluding these
     implementation ('com.mcxiaoke.koi:core:0.5.5') {
@@ -54,27 +74,22 @@ dependencies {
     }
 
     implementation 'com.android.support:appcompat-v7:27.1.1'
-
     implementation 'org.nanohttpd:nanohttpd:2.3.2-SNAPSHOT'
     implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.2-SNAPSHOT'
-//    implementation 'org.nanohttpd:nanohttpd:2.3.1'
-//    implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.1'
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'commons-io:commons-io:2.4'
     implementation 'org.zeroturnaround:zt-zip:1.12'
     implementation 'joda-time:joda-time:2.9.9'
-
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
+
     final JACKSON_VERSION = '2.8.6'
     implementation "com.fasterxml.jackson.core:jackson-core:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-annotations:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION"
     implementation 'org.jsoup:jsoup:1.10.2'
 
-
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-
 }
