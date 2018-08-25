@@ -34,6 +34,8 @@
     <string name="title_activity_r2_about">About R2 Reader</string>
     <string name="title_activity_opds_list">OPDS Feeds</string>
     <string name="title_activity_opds_detail">Detail</string>
+    <string name="title_activity_outline">Outline</string>
+    <string name="title_activity_epub">Detail</string>
     <string name="about_r2_reader">About R2 Reader</string>
     <string name="opds_feeds">OPDS Feeds</string>
     <string name="popup_delete_button">DELETE</string>
@@ -42,7 +44,7 @@
     <string name="app_version">App Version:</string>
     <string name="download_from_url">download from a url</string>
     <string name="github_tab_label">GitHub Tag:</string>
-    <string name="github_tag">V1.0.0-beta.3</string>
+    <string name="github_tag">V1.0.0-beta.4</string>
     <string name="copyright_label">Copyright</string>
     <string name="copyright">\@ 2018 European Digital Reading Lab</string>
     <string name="bsd_license_label">[BSD-3 license]</string>

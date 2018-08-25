@@ -47,19 +47,22 @@ var scrollToPosition = function(position) {
 
     console.log("ScrollToOffset " + offset);
     document.body.scrollLeft = snapOffset(offset);
+    update(position);
+
 };
 
 var scrollLeft = function() {
     scrollToPosition(last_known_scroll_position)
     var offset = window.scrollX - maxScreenX;
-    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-    update(last_known_scroll_position);
 
     if (offset >= 0) {
         document.body.scrollLeft = offset;
+        last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
+        update(last_known_scroll_position);
         return "";
     } else {
         document.body.scrollLeft = 0;
+        update(1.0);
         return "edge"; // Need to previousDocument.
     }
 };
@@ -69,14 +72,14 @@ var scrollRight = function() {
     var offset = window.scrollX + maxScreenX;
     var scrollWidth = document.getElementsByTagName("body")[0].scrollWidth;
 
-    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-    update(last_known_scroll_position);
-
     if (offset < scrollWidth) {
         document.body.scrollLeft = offset;
+        last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
+        update(last_known_scroll_position);
         return "";
     } else {
         document.body.scrollLeft = scrollWidth;
+        update(0.0);
         return "edge"; // Need to nextDocument.
     }
 };

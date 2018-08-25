@@ -49,16 +49,16 @@ open class BooksAdapter(private val activity: Activity, private var books: Mutab
             }
         }
 
-        viewHolder.itemView.setOnClickListener({ v ->
+        viewHolder.itemView.setOnClickListener { v ->
             //get the position of the image which is clicked
             itemListener.recyclerViewListClicked(v, position)
-        })
+        }
 
-        viewHolder.itemView.setOnLongClickListener({ v ->
+        viewHolder.itemView.setOnLongClickListener { v ->
             //get the position of the image which is clicked
             itemListener.recyclerViewListLongClicked(v, position)
             true
-        })
+        }
 
 
     }

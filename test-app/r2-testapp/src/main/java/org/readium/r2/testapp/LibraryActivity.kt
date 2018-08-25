@@ -1,6 +1,6 @@
 /*
  * Module: r2-testapp-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Developers: Aferdita Muriqi, Clément Baumann, Mostapha Idoubihi, Paul Stoica
  *
  * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
  * Licensed to the Readium Foundation under one or more contributor license agreements.
@@ -34,7 +34,6 @@ import android.widget.EditText
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import com.github.kittinunf.fuel.Fuel
-import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.onClick
 import net.theluckycoder.materialchooser.Chooser
 import nl.komponents.kovenant.Promise
@@ -44,27 +43,19 @@ import nl.komponents.kovenant.ui.failUi
 import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
-import org.jetbrains.anko.design.coordinatorLayout
-import org.jetbrains.anko.design.floatingActionButton
-import org.jetbrains.anko.design.snackbar
-import org.jetbrains.anko.design.textInputLayout
+import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import org.json.JSONObject
 import org.readium.r2.navigator.R2CbzActivity
-import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.drm.DRMMModel
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
 import org.readium.r2.streamer.parser.CbzParser
 import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
-import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
@@ -81,7 +72,7 @@ import java.net.ServerSocket
 import java.net.URL
 import java.util.*
 
-open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions {
+open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions {
 
     protected lateinit var server: Server
     private var localPort: Int = 0
@@ -96,8 +87,10 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     private lateinit var opdsDownloader: OPDSDownloader
     private lateinit var publication: Publication
 
-    private lateinit var catalogView: RecyclerView
+    protected lateinit var catalogView: RecyclerView
     private lateinit var alertDialog: AlertDialog
+
+    protected var listener:LibraryActivity? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,7 +113,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         books = database.books.list()
 
         booksAdapter = BooksAdapter(this, books, "$BASE_URL:$localPort", this)
-
+        
         parseIntent(null)
 
         coordinatorLayout {
@@ -233,9 +226,9 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }.build().apply {
             setCancelable(false)
             setCanceledOnTouchOutside(false)
-            setOnShowListener({
+            setOnShowListener {
                 val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                b.setOnClickListener({
+                b.setOnClickListener {
                     if (TextUtils.isEmpty(editTextHref!!.text)) {
                         editTextHref!!.error = "Please Enter A URL."
                         editTextHref!!.requestFocus()
@@ -253,8 +246,8 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             editTextHref!!.requestFocus()
                         }
                     }
-                })
-            })
+                }
+            }
 
         }.show()
     }
@@ -278,7 +271,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                 val book = Book(pair.second, publication.metadata.title, author, pair.first, null, publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
 
-                runOnUiThread({
+                runOnUiThread {
                     progress.dismiss()
                     database.books.insert(book, false)?.let {
                         book.id = it
@@ -290,7 +283,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         showDuplicateBookAlert(book)
 
                     }
-                })
+                }
             }
         }
     }
@@ -305,22 +298,22 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         duplicateAlert.apply {
             setCancelable(false)
             setCanceledOnTouchOutside(false)
-            setOnShowListener({
+            setOnShowListener {
                 val button = getButton(AlertDialog.BUTTON_POSITIVE)
-                button.setOnClickListener({
+                button.setOnClickListener {
                     database.books.insert(book, true)?.let {
                         book.id = it
                         books.add(book)
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
                     }
-                })
+                }
                 val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
-                cancelButton.setOnClickListener({
+                cancelButton.setOnClickListener {
                     File(book.fileUrl).delete()
                     duplicateAlert.dismiss()
-                })
-            })
+                }
+            }
         }
         duplicateAlert.show()
     }
@@ -454,7 +447,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val file = File(publicationPath)
 
         try {
-            runOnUiThread({
+            runOnUiThread {
 
                 if (uriString.endsWith(".epub")) {
                     val parser = EpubParser()
@@ -472,7 +465,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 }
 
-            })
+            }
         } catch (e: Throwable) {
             e.printStackTrace()
         }
@@ -682,14 +675,18 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             }
         } then {
             progress.dismiss()
+        } fail {
+            progress.dismiss()
         }
     }
 
     private fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication) {
         prepareToServe(pub, book.fileName, file.absolutePath, false, false)
-        startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication))
+        startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to publicationPath,
+                "epubName" to book.fileName,
+                "publication" to publication,
+                "bookId" to book.id))
     }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -750,7 +747,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val file = File(publicationPath)
 
         try {
-            runOnUiThread({
+            runOnUiThread {
                 if (mime == "application/epub+zip") {
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
@@ -767,8 +764,12 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         progress.dismiss()
 
                     }
+                } else {
+                    longSnackbar(catalogView, "Unsupported file")
+                    progress.dismiss()
+                    file.delete()
                 }
-            })
+            }
         } catch (e: Throwable) {
             e.printStackTrace()
         }
@@ -816,18 +817,15 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
 
     override fun parseIntentLcpl(uriString: String) {
-        // use CatalogActivityPlusLcp for LCP support
-        // update AndroidManifest <activity android:name=".CatalogActivityPlusLcp">
+        listener?.parseIntentLcpl(uriString)
     }
 
     override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication) {
-        // use CatalogActivityPlusLcp for LCP support
-        // update AndroidManifest <activity android:name=".CatalogActivityPlusLcp">
+        listener?.prepareAndStartActivityWithLCP(drm,pub,book,file,publicationPath,parser,publication)
     }
 
     override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog) {
-        // use CatalogActivityPlusLcp for LCP support
-        // update AndroidManifest <activity android:name=".CatalogActivityPlusLcp">
+        listener?.processLcpActivityResult(uri,it,progress)
     }
 
 }

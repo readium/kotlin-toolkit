@@ -33,8 +33,8 @@ import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.support.v4.nestedScrollView
-import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.opds.OPDS1Parser
+import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.shared.opds.ParseData
@@ -229,11 +229,11 @@ class OPDSCatalogActivity : AppCompatActivity() {
         val layout = inflater.inflate(R.layout.filter_row, null) as LinearLayout
         layout.text.text = link!!.title
         layout.count.text = link.properties.numberOfItems.toString()
-        layout.setOnClickListener({
+        layout.setOnClickListener {
             val model = OPDSModel(link.title!!, link.href.toString(), opdsModel?.type!!)
             facetPopup?.dismiss()
             startActivity(intentFor<OPDSCatalogActivity>("opdsModel" to model))
-        })
+        }
         return layout
     }
 

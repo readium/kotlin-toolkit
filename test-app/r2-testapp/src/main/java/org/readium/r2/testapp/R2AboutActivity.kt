@@ -1,6 +1,6 @@
 /*
  * Module: r2-testapp-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Developers: Aferdita Muriqi, Clément Baumann, Paul Stoica
  *
  * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
  * Licensed to the Readium Foundation under one or more contributor license agreements.
@@ -56,7 +56,7 @@ class R2AboutActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = "1.0.2"
+                        text = "1.0.3"
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
