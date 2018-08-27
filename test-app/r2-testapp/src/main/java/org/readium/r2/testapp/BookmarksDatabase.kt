@@ -31,7 +31,7 @@ import org.readium.r2.shared.Locator
  * @fun toString(): String - Return a String description of the Bookmark
  */
 
-class Bookmark(val bookID: Long, val resourceIndex: Long, val resourceHref: String, val progression: Double = 0.0, var id: Long? = null):
+class Bookmark(val bookID: Long, val resourceIndex: Long, override val resourceHref: String, val progression: Double = 0.0, var id: Long? = null):
         Locator(bookID.toString(), resourceIndex, resourceHref,"", Location(resourceIndex, null, null, null, progression, 0)) {
 
     override fun toString(): String {
