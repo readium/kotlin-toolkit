@@ -18,7 +18,7 @@ import org.json.JSONObject
  *
  * @var publicationId: String - Identifier of a Publication
  * @var spineIndex: Long - Index of a spine element
- * @var spineHref: String? - ( Optional ) String reference to the spine element
+ * @var resourceHref: String? - ( Optional ) String reference to the spine element
  * @var title: String - Title of the spine element
  *
  * @var location: Location - List of objects used to locate the target
@@ -29,7 +29,7 @@ import org.json.JSONObject
  */
 open class Locator(val publicationId: String,
                    val spineIndex: Long?,
-                   val spineHref: String,
+                   open val resourceHref: String,
                    val title: String,
                    val location: Location? = null): JSONable {
 
@@ -42,7 +42,7 @@ open class Locator(val publicationId: String,
 
     override fun getJSON(): JSONObject {
         val json = JSONObject()
-        json.putOpt("href", spineHref)
+        json.putOpt("href", resourceHref)
         json.putOpt("title", title)
         json.putOpt("created", created)
         json.putOpt("location", location.toString())
@@ -51,7 +51,7 @@ open class Locator(val publicationId: String,
     }
 
     override fun toString(): String{
-        return """{ "href": "$spineHref", "title": "$title", "created": "$created", "locations" : $location  "text" : "$text" """
+        return """{ "href": "$resourceHref", "title": "$title", "created": "$created", "locations" : $location  "text" : "$text" """
     }
 
     fun setText(before: String? = null, highlight: String? = null, after: String? = null){
