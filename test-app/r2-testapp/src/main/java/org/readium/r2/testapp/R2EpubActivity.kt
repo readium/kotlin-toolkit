@@ -83,17 +83,16 @@ class R2EpubActivity : R2EpubActivity() {
                         progression
                 )
                 
-                val lbmks = locatorUtils.getBookmarks(bookId)
-                val addBmk = locatorUtils.addLocator(bookmark, lbmks)
+                val bookmarksList = locatorUtils.getBookmarks(bookId)
 
-                if(addBmk) {
+                locatorUtils.addLocator(bookmark, bookmarksList)?.let {
                     runOnUiThread {
                         toast("Bookmark added")
                     }
-                } else {
+                } ?:run {
                     runOnUiThread {
                         toast("Bookmark already exists")
-                }
+                    }
                 }
 
                 return true
