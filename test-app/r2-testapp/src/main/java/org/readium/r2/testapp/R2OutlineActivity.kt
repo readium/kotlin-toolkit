@@ -99,7 +99,7 @@ class R2OutlineActivity : AppCompatActivity() {
         bookmark_list.setOnItemClickListener { _, _, position, _ ->
 
             //Link to the resource in the publication
-            val bmkItemUri = bookmarks[position].spineHref
+            val bmkItemUri = bookmarks[position].resourceHref
             //Progression of the selected bookmark
             val bmkProgression = bookmarks[position].location!!.progression
 
