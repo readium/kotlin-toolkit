@@ -10,14 +10,9 @@
 package org.readium.r2.testapp
 
 import android.content.Context
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
 import org.jetbrains.anko.db.parseList
 import org.jetbrains.anko.db.select
-import org.json.JSONObject
 import org.readium.r2.shared.Locator
-import org.readium.r2.shared.Publication
 
 
 /**
@@ -71,73 +66,71 @@ class LocatorUtils(context: Context) {
         return Locator("pid", 1, "href", "title", null)
     }
 
-    fun goToLocator(){
+    fun goToLocator(locator: Locator) {
 
     }
 
 
-    fun addLocator(locator: Locator, listOfLocators: MutableList<Locator>): Boolean {
+    fun addLocator(locator: Locator, listOfLocators: MutableList<Locator>): Locator? {
 
-        var added = false
+        var addedLocator: Locator? = null
 
         if (listOfLocators.isEmpty()) {
             when(locator) {
                 is Bookmark -> {
                     bookmarkDB.bookmarks.insert(locator)
-                    added = true
+                    addedLocator = locator
                 }
                 else -> {
                     println("An error has occurred while adding the locator")
-                    added = false
+                    addedLocator = null
                 }
             }
         } else {
             for (loc in listOfLocators) {
-                print("C1 : ")
-                println( loc.location.toString() != locator.location.toString() )
-                print("C2 : ")
-                println( loc.location.toString() == listOfLocators.last().location.toString() )
-
                 if ( loc.location.toString() != locator.location.toString() && loc.location.toString() == listOfLocators.last().location.toString() ) {
                     when(locator) {
                         is Bookmark -> {
                             bookmarkDB.bookmarks.insert(locator)
-                            added = true
+                            addedLocator = locator
                         }
                         else -> {
                             println("An error has occurred while adding the locator")
-                            added = false
+                            addedLocator = null
                         }
                     }
                 } else if (loc.location == locator.location) {
-                    println("is someone there ?")
-                    return false
+                    addedLocator = null
                 }
             }
         }
 
-        return added
+        return addedLocator
     }
 
 
-    fun deleteLocator(locator: Locator, listOfLocators: MutableList<Locator>): Boolean {
+    fun deleteLocator(locator: Locator, listOfLocators: MutableList<Locator>): Locator? {
+
+        var deletedLocator: Locator? = null
 
         if( listOfLocators.indexOf(locator) != -1 ) {
             listOfLocators.remove(locator)
             when(locator) {
                 is Bookmark -> {
                     bookmarkDB.bookmarks.delete(locator)
-                    return true
+                    deletedLocator = locator
                 }
                 else -> {
                     println("An error has occurred while deleting the locator")
-                    return false
+                    deletedLocator = null
                 }
             }
         } else {
             println("Your locator does not exists, and thus, cannot be deleted")
-            return false
+            deletedLocator = null
         }
+
+        return deletedLocator
 
     }
 
