@@ -35,7 +35,6 @@ import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import com.github.kittinunf.fuel.Fuel
 import com.mcxiaoke.koi.ext.onClick
-import net.theluckycoder.materialchooser.Chooser
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
@@ -728,7 +727,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             progress.show()
 
             task {
-                val filePath = data.getStringExtra(Chooser.RESULT_PATH)
+                val filePath = data.getStringExtra("resultPath")
                 parseIntent(filePath)
             } then {
                 progress.dismiss()

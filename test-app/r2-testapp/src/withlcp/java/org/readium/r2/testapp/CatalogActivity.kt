@@ -103,12 +103,12 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         if (drm.brand == Drm.Brand.Lcp) {
             prepareToServe(pub, book.fileName, file.absolutePath, false, true)
 
-            handleLcpPassphrase(publicationPath, drm, {
-                val pair = parser.parseRemainingResource(pub.container, publication, it)
+            handleLcpPassphrase(publicationPath, drm, { drm1 ->
+                val pair = parser.parseRemainingResource(pub.container, publication, drm1)
                 pub.container = pair.first
                 pub.publication = pair.second
-            }, {
-                if (supportedProfiles.contains(it.profile)) {
+            }, { drm2 ->
+                if (supportedProfiles.contains(drm2.profile)) {
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
 
                     val license = (drm.license as LcpLicense)
@@ -161,35 +161,40 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             }
             lcpLicense.register()
             lcpLicense.fetchPublication()
-        } then {
-            it?.let {
-                lcpLicense.moveLicense(it, bytes)
+        } then {publcationPath ->
+            publcationPath?.let { path ->
+                lcpLicense.moveLicense(path, bytes)
+                publcationPath
+            }?: run {
+                null
             }
-            it!!
-        } successUi { path ->
-            val file = File(path)
-            runOnUiThread {
-                val parser = EpubParser()
-                val pub = parser.parse(path)
-                if (pub != null) {
-                    val pair = parser.parseRemainingResource(pub.container, pub.publication, pub.container.drm)
-                    pub.container = pair.first
-                    pub.publication = pair.second
-                    prepareToServe(pub, file.name, file.absolutePath, true, true)
-                    progress.dismiss()
-                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), {
-                        // Do nothing
-                    }, {
-                        // Do nothing
-                    }, {
-                        // Do nothing
-                    }).get()
+        } successUi { publcationPath ->
+            publcationPath?.let {path ->
+                val file = File(path)
+                runOnUiThread {
+                    val parser = EpubParser()
+                    val pub = parser.parse(path)
+                    if (pub != null) {
+                        val pair = parser.parseRemainingResource(pub.container, pub.publication, pub.container.drm)
+                        pub.container = pair.first
+                        pub.publication = pair.second
+                        prepareToServe(pub, file.name, file.absolutePath, true, true)
+                        progress.dismiss()
+                        handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), {
+                            // Do nothing
+                        }, {
+                            // Do nothing
+                        }, {
+                            // Do nothing
+                        }).get()
+                    }
                 }
             }
-        } fail {
-            it.printStackTrace()
-            it.localizedMessage?.let {
-                longSnackbar(catalogView, it)
+            progress.dismiss()
+        } fail { exception ->
+            exception.printStackTrace()
+            exception.localizedMessage?.let { message ->
+                longSnackbar(catalogView, message)
             } ?: run {
                 longSnackbar(catalogView, "An error occurred")
             }
@@ -197,7 +202,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         }
     }
 
-    fun handleLcpPassphrase(publicationPath: String, drm: Drm, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception> {
+    private fun handleLcpPassphrase(publicationPath: String, drm: Drm, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception> {
         val lcpHttpService = LcpHttpService()
         val session = LcpSession(publicationPath, this)
 
@@ -218,8 +223,8 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                 } else {
                     session.resolve(passphraseHash, preferences.getString("pemCrtl", "")).get()
                 }
-            } fail {
-                it.printStackTrace()
+            } fail { exception ->
+                exception.printStackTrace()
             }
         }
 
@@ -244,8 +249,8 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                         } then { validPassphraseHash ->
                             session.storePassphrase(validPassphraseHash)
                             callback(validPassphraseHash)
-                        } fail {
-                            it.printStackTrace()
+                        } fail { exception ->
+                            exception.printStackTrace()
                         }
                     }
                     negativeButton("Cancel") { }
@@ -255,15 +260,15 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
 
         return task {
             val passphrases = session.passphraseFromDb()
-            passphrases?.let {
-                val lcpLicense = validatePassphrase(it).get()
+            passphrases?.let { passphraseHash ->
+                val lcpLicense = validatePassphrase(passphraseHash).get()
                 drm.license = lcpLicense
                 drm.profile = session.getProfile()
                 parsingCallback(drm)
                 callback(drm)
             } ?: run {
-                promptPassphrase(null) {
-                    val lcpLicense = validatePassphrase(it).get()
+                promptPassphrase(null) { passphraseHash ->
+                    val lcpLicense = validatePassphrase(passphraseHash).get()
                     drm.license = lcpLicense
                     drm.profile = session.getProfile()
                     parsingCallback(drm)
