@@ -14,6 +14,7 @@ import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpDatabaseOpenHelper
 import org.readium.r2.lcp.model.documents.LicenseDocument
+import timber.log.Timber
 
 object LicensesTable {
     const val NAME = "Licenses"
@@ -21,13 +22,15 @@ object LicensesTable {
     const val PRINTSLEFT = "printsLeft"
     const val COPIESLEFT = "copiesLeft"
     const val PROVIDER = "provider"
-    const  val ISSUED = "issued"
+    const val ISSUED = "issued"
     const val UPDATED = "updated"
     const val END = "end"
     const val STATE = "state"
 }
 
 class Licenses(var database: LcpDatabaseOpenHelper) {
+
+    private val TAG = this::class.java.simpleName
 
     fun dateOfLastUpdate(id: String): DateTime? {
         val lastUpdated = database.use {
@@ -68,7 +71,7 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
             select(LicensesTable.NAME, "count(${LicensesTable.ID})").whereArgs("(${LicensesTable.ID} = {id})",
                     "id" to id).exec {
                 val parser = rowParser { count: Int ->
-                    Log.i("count", count.toString())
+                    Timber.i(TAG,"count", count.toString())
                     return@rowParser count == 1
                 }
                 parseList(parser)[0]
