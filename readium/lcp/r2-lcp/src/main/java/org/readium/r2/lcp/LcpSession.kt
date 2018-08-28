@@ -58,8 +58,8 @@ class LcpSession {
 
             getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
 
-        } fail {
-            it
+        } fail { exception ->
+            exception.printStackTrace()
         }
     }
 
