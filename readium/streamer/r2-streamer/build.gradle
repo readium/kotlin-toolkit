@@ -17,8 +17,6 @@ android {
     flavorDimensions "testapp"
 
     compileSdkVersion 27
-    buildToolsVersion "27.0.3"
-
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 27
@@ -52,11 +50,9 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'com.jakewharton.timber:timber:4.7.0'
-
+    implementation 'com.jakewharton.timber:timber:4.7.1'
     intTestappImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
     intTestappWithLcpImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
-
     if (findProject(':r2-shared')) {
         devTestappImplementation project(':r2-shared')
         devTestappWithLcpImplementation project(':r2-shared')
@@ -65,15 +61,14 @@ dependencies {
     intTestappWithLcpImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
 
     //TODO conflicting support libraries, excluding these
-    implementation ('com.mcxiaoke.koi:core:0.5.5') {
+    implementation('com.mcxiaoke.koi:core:0.5.5') {
         exclude module: 'support-v4'
     }
     // useful extensions (only ~100k)
-    implementation ('com.mcxiaoke.koi:async:0.5.5') {
+    implementation('com.mcxiaoke.koi:async:0.5.5') {
         exclude module: 'support-v4'
     }
-
-    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation "com.android.support:appcompat-v7:$support_version"
     implementation 'org.nanohttpd:nanohttpd:2.3.2-SNAPSHOT'
     implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.2-SNAPSHOT'
     implementation 'com.google.code.gson:gson:2.8.2'
