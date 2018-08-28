@@ -197,7 +197,13 @@ class LcpLicense : DrmLicense {
     fun getDeviceName() : String {
         Timber.i(TAG,"LCP getDeviceName")
         val deviceName = BluetoothAdapter.getDefaultAdapter()
-        return deviceName.name
+
+        return deviceName?.name?.let  {
+            return@let it
+        }?: run {
+            return@run "Android Unknown"
+        }
+
     }
 
     fun getStatus() : StatusDocument.Status? {
