@@ -157,9 +157,12 @@ class LcpLicense : DrmLicense {
             return
         }
         val returnUrl = URL(url.toString().replace("%7B?id,name%7D", "") + "?id=$deviceId&name=$deviceName")
-        //TODO : Http request
-        lcpHttpService.returnLicense(returnUrl.toString()).get()?.let {
-            //TODO
+        try {
+            lcpHttpService.returnLicense(returnUrl.toString()).get()?.let {
+                database.licenses.updateState(license.id, it)
+            }
+        } catch (e: Exception) {
+            Timber.e(TAG, "LCP return ${e.message}")
         }
     }
 
