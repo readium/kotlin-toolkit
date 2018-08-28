@@ -21,11 +21,14 @@ import org.readium.r2.lcp.model.documents.LicenseDocument
 import org.readium.r2.lcp.model.documents.StatusDocument
 import org.readium.r2.shared.contentTypeEncoding
 import org.readium.r2.shared.promise
+import timber.log.Timber
 import java.io.File
 import java.nio.charset.Charset
 import java.util.*
 
 class LcpHttpService {
+
+    private val TAG = this::class.java.simpleName
 
     fun statusDocument(url: String): Promise<StatusDocument, Exception> {
         return Fuel.get(url,null).promise() then {
@@ -44,12 +47,12 @@ class LcpHttpService {
         val rootDir:String = context.getExternalFilesDir(null).path + "/"
         val fileName = UUID.randomUUID().toString()
         return Fuel.download(url).destination { _, _ ->
-            Log.i("LCP  destination ", rootDir + fileName)
+            Timber.i(TAG,"LCP  destination ", rootDir + fileName)
             File(rootDir, fileName)
         }.promise() then {
             val (_, response, _) = it
-            Log.i("LCP destination ", rootDir + fileName)
-            Log.i("LCP then ", response.url.toString())
+            Timber.i(TAG, "LCP destination ", rootDir + fileName)
+            Timber.i(TAG,"LCP then ", response.url.toString())
             rootDir + fileName
         }
     }
