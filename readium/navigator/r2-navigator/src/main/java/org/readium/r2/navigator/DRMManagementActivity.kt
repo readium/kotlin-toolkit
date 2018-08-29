@@ -170,7 +170,7 @@ class DRMManagementActivity : AppCompatActivity() {
                 val start = drmModel.start?.let {
                     return@let it
                 }
-                val end = drmModel.start?.let {
+                val end = drmModel.end?.let {
                     return@let it
                 }
 
