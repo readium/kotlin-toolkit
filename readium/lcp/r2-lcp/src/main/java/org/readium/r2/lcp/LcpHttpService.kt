@@ -82,7 +82,15 @@ class LcpHttpService {
     }
 
     fun returnLicense(url: String): Promise<String?, Exception> {
-        return task { null }
+        return Fuel.put(url, null).promise() then {
+            val (_, response, result) = it
+            var status: String? = null
+            if (response.statusCode == 200) {
+                val jsonObject = JSONObject(String(result, Charset.forName(response.contentTypeEncoding)))
+                status = jsonObject["status"] as String
+            }
+            status
+        }
     }
 
 }
