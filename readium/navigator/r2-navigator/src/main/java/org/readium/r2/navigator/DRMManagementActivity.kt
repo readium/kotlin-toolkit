@@ -224,11 +224,11 @@ class DRMManagementActivity : AppCompatActivity() {
                         button {
                             text = context.getString(R.string.drm_label_renew)
                             onClick { }
-                        }
+                        }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                         button {
                             text = context.getString(R.string.drm_label_return)
                             onClick { }
-                        }
+                        }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                     }
                 }
 
