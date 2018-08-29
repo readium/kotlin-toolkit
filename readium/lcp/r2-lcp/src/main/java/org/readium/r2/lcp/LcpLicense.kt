@@ -163,7 +163,6 @@ class LcpLicense : DrmLicense {
         }
     }
 
-    // TODO : incomplete
     override fun renew (endDate: Date?, completion: (String) -> Void) {
         Timber.i(TAG,"LCP renew")
         if (status == null) {
@@ -177,12 +176,17 @@ class LcpLicense : DrmLicense {
             completion(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
             return
         }
-        val returnUrl = URL(url.toString().replace("%7B?id,name%7D", "") + "?id=$deviceId&name=$deviceName")
-        //TODO : Http request
+        val returnUrl = URL(url.toString().replace("%7B?end,id,name%7D", "") + "?id=$deviceId&name=$deviceName")
 
-        lcpHttpService.renewLicense(returnUrl.toString()).get()?.let {
-            //TODO
+        try {
+            lcpHttpService.renewLicense(returnUrl.toString()).get()?.let {
+                database.licenses.updateState(license.id, it)
+            }
+        } catch (e:Exception) {
+            Timber.e(TAG, "LCP renew ${e.message}")
         }
+
+
     }
 
     fun getDeviceId() : String {
