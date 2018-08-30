@@ -122,7 +122,7 @@ class LcpLicense : DrmLicense {
         val date = database.licenses.dateOfLastUpdate(license.id)
         Timber.i(TAG, "LCP dateOfLastUpdate $date")
 
-        if (database.licenses.existingLicense(license.id)) return
+        if (!database.licenses.existingLicense(license.id)) return
         if (status == null) return
 
         val url = status?.link("register")?.href ?: return
