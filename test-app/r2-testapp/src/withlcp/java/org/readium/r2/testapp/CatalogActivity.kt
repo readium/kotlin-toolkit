@@ -13,6 +13,7 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.widget.EditText
 import com.mcxiaoke.koi.HASH
 import nl.komponents.kovenant.Promise
@@ -230,30 +231,47 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
 
         fun promptPassphrase(reason: String? = null, callback: (pass: String) -> Unit) {
             runOnUiThread {
-                val hint = session.getHint()
-                alert(Appcompat, hint, reason ?: "LCP Passphrase") {
-                    var editText: EditText? = null
+//                var hint = session.getHint()
+                var editTextTitle: EditText? = null
+
+                alert(Appcompat, "Hint: " + session.getHint(), reason ?: "LCP Passphrase") {
                     customView {
                         verticalLayout {
                             textInputLayout {
-                                editText = editText { }
+                                padding = dip(10)
+                                editTextTitle = editText {
+                                    hint = "Passphrase"
+                                }
                             }
                         }
                     }
-                    positiveButton("OK") {
-                        task {
-                            editText!!.text.toString()
-                        } then { clearPassphrase ->
-                            val passphraseHash = HASH.sha256(clearPassphrase)
-                            session.checkPassphrases(listOf(passphraseHash))
-                        } then { validPassphraseHash ->
-                            session.storePassphrase(validPassphraseHash)
-                            callback(validPassphraseHash)
-                        } fail { exception ->
-                            exception.printStackTrace()
+                    positiveButton("OK") { }
+                    negativeButton("Cancel") { }
+                }.build().apply {
+                    setCancelable(false)
+                    setCanceledOnTouchOutside(false)
+                    setOnShowListener {
+                        val b = getButton(AlertDialog.BUTTON_POSITIVE)
+                        b.setOnClickListener {
+                            task {
+                                editTextTitle!!.text.toString()
+                            } then { clearPassphrase ->
+                                val passphraseHash = HASH.sha256(clearPassphrase)
+                                session.checkPassphrases(listOf(passphraseHash))
+                            } then { validPassphraseHash ->
+                                session.storePassphrase(validPassphraseHash)
+                                callback(validPassphraseHash)
+                                dismiss()
+                            } fail { exception ->
+                                exception.printStackTrace()
+                                runOnUiThread {
+                                    editTextTitle!!.error = "You entered a wrong passphrase."
+                                    editTextTitle!!.requestFocus()
+                                }
+                            }
                         }
                     }
-                    negativeButton("Cancel") { }
+
                 }.show()
             }
         }
