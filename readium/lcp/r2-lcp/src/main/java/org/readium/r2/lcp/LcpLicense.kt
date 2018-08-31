@@ -163,7 +163,7 @@ class LcpLicense : DrmLicense {
         }
     }
 
-    override fun renew (endDate: Date?) : Promise<Unit?, Exception>{
+    override fun renew (endDate: Date?) : Promise<Unit?, Exception> {
         Timber.i(TAG,"LCP renew")
         if (status == null) {
             return task {
@@ -183,9 +183,14 @@ class LcpLicense : DrmLicense {
                 database.licenses.updateState(license.id, it)
             }
         } catch (e:Exception) {
-            Timber.e(TAG, "LCP renew ${e.message}")
+            return task {
+                Timber.e(TAG, "LCP renew ${e.message}")
+            }
         }
 
+        return task {
+            println("License renewed")
+        }
 
     }
 
