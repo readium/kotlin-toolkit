@@ -20,16 +20,22 @@ import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.navigator.R
 import org.readium.r2.shared.drm.DRMModel
+import java.net.URL
 import java.util.*
 
 
 class DRMManagementActivity : AppCompatActivity() {
 
+    private var licenseURL: URL? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val drmModel: DRMModel = intent.getSerializableExtra("drmModel") as DRMModel
-        val lcpLicense = intent.getSerializableExtra("lcpLicense") as LcpLicense
+
+        licenseURL = intent.getSerializableExtra("lcpURL") as URL?
+        val bytes: ByteArray = licenseURL!!.readBytes()
+        val lcpLicense = LcpLicense(bytes , this)
 
 
         coordinatorLayout {
@@ -228,13 +234,13 @@ class DRMManagementActivity : AppCompatActivity() {
                         button {
                             text = context.getString(R.string.drm_label_renew)
                             onClick {
-//                                lcpLicense.renew(Date(2018, 30, 9, 16, 9))
+                                lcpLicense.renew(null)
                             }
                         }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                         button {
                             text = context.getString(R.string.drm_label_return)
                             onClick {
-
+                                lcpLicense.ret()
                             }
                         }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                     }

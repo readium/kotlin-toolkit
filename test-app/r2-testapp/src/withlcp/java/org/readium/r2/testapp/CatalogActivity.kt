@@ -11,6 +11,7 @@ package org.readium.r2.testapp
 
 import android.app.ProgressDialog
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.EditText
@@ -111,7 +112,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                 if (supportedProfiles.contains(drm2.profile)) {
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
 
-                    val license = (drm.license as LcpLicense)
+                    val license = drm.license as LcpLicense
                     val drmModel = DRMModel(drm.brand.name,
                             license.currentStatus(),
                             license.provider().toString(),
@@ -122,7 +123,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                             license.rightsPrints().toString(),
                             license.rightsCopies().toString())
 
-                    startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "lcpLicense" to license, "drmModel" to drmModel))
+                    startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "lcpURL" to license.archivePath, "drmModel" to drmModel))
                 } else {
                     alert(Appcompat, "The profile of this DRM is not supported.") {
                         negativeButton("Ok") { }

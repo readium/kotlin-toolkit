@@ -19,6 +19,7 @@ import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.navigator.R2EpubActivity
+import java.net.URL
 
 /**
  * R2EpubActivity : Extension of the R2EpubActivity() from navigator
@@ -34,12 +35,12 @@ class R2EpubActivity : R2EpubActivity() {
 
     // Provide access to the Bookmarks Database
     private lateinit var bookmarkDB: BookmarksDatabase
-    private var lcpLicense: LcpLicense? = null
+    private var lcpURL: URL? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bookmarkDB = BookmarksDatabase(this)
-        lcpLicense = intent.getSerializableExtra("lcpLicense") as LcpLicense?
+        lcpURL = intent.getSerializableExtra("lcpURL") as URL?
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -67,7 +68,7 @@ class R2EpubActivity : R2EpubActivity() {
                 return true
             }
             R.id.drm -> {
-                startActivity(intentFor<DRMManagementActivity>("lcpLicense" to lcpLicense, "drmModel" to drmModel))
+                startActivity(intentFor<DRMManagementActivity>("lcpURL" to lcpURL, "drmModel" to drmModel))
                 return true
             }
             R.id.bookmark -> {
