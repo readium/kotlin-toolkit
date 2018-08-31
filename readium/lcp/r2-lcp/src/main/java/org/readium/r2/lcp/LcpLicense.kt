@@ -163,19 +163,19 @@ class LcpLicense : DrmLicense {
         }
     }
 
-    override fun renew (endDate: Date?, completion: (String) -> Void) {
+    override fun renew (endDate: Date?) : Promise<Unit?, Exception>{
         Timber.i(TAG,"LCP renew")
         if (status == null) {
-            completion(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
-            return
+            return task {
+                throw Exception(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
+            }
         }
         val deviceId = android.os.Build.ID
         val deviceName = android.os.Build.MODEL
-        val url = status!!.link("return")?.href
-        if (url == null){
-            completion(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
-            return
-        }
+        val url = status!!.link("return")?.href ?: return task {
+                throw Exception(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
+            }
+
         val renewUrl = URL(url.toString().replace("%7B?end,id,name%7D", "") + "?id=$deviceId&name=$deviceName")
 
         try {
