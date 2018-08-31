@@ -122,7 +122,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                             license.rightsPrints().toString(),
                             license.rightsCopies().toString())
 
-                    startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "drmModel" to drmModel))
+                    startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "lcpLicense" to license, "drmModel" to drmModel))
                 } else {
                     alert(Appcompat, "The profile of this DRM is not supported.") {
                         negativeButton("Ok") { }

@@ -17,7 +17,7 @@ import android.view.Menu
 import android.view.MenuItem
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
-import org.readium.r2.navigator.DRMManagementActivity
+import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.navigator.R2EpubActivity
 
 /**
@@ -34,10 +34,12 @@ class R2EpubActivity : R2EpubActivity() {
 
     // Provide access to the Bookmarks Database
     private lateinit var bookmarkDB: BookmarksDatabase
+    private var lcpLicense: LcpLicense? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bookmarkDB = BookmarksDatabase(this)
+        lcpLicense = intent.getSerializableExtra("lcpLicense") as LcpLicense?
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -65,7 +67,7 @@ class R2EpubActivity : R2EpubActivity() {
                 return true
             }
             R.id.drm -> {
-                startActivity(intentFor<DRMManagementActivity>("drmModel" to drmModel))
+                startActivity(intentFor<DRMManagementActivity>("lcpLicense" to lcpLicense, "drmModel" to drmModel))
                 return true
             }
             R.id.bookmark -> {
