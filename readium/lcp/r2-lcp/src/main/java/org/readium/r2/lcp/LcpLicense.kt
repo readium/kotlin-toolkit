@@ -176,10 +176,10 @@ class LcpLicense : DrmLicense {
             completion(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
             return
         }
-        val returnUrl = URL(url.toString().replace("%7B?end,id,name%7D", "") + "?id=$deviceId&name=$deviceName")
+        val renewUrl = URL(url.toString().replace("%7B?end,id,name%7D", "") + "?id=$deviceId&name=$deviceName")
 
         try {
-            lcpHttpService.renewLicense(returnUrl.toString()).get()?.let {
+            lcpHttpService.renewLicense(renewUrl.toString()).get()?.let {
                 database.licenses.updateState(license.id, it)
             }
         } catch (e:Exception) {
