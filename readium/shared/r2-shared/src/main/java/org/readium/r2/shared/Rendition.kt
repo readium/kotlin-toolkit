@@ -12,30 +12,34 @@ package org.readium.r2.shared
 import org.json.JSONObject
 import java.io.Serializable
 
-enum class RenditionLayout(val ini: String) : Serializable {
+enum class RenditionLayout(val value: String) : Serializable {
     Reflowable("reflowable"),
-    Fixed("fixed")
+    Fixed("pre-paginated");
+    companion object : Publication.EnumCompanion<String, RenditionLayout>(RenditionLayout.values().associateBy(RenditionLayout::value))
 }
 
-enum class RenditionFlow(val ini: String) : Serializable {
+enum class RenditionFlow(val value: String) : Serializable {
     Paginated("paginated"),
     Continuous("continuous"),
     Document("document"),
-    Fixed("Fixed")
+    Fixed("fixed");
+    companion object : Publication.EnumCompanion<String, RenditionFlow>(RenditionFlow.values().associateBy(RenditionFlow::value))
 }
 
-enum class RenditionOrientation(val ini: String) : Serializable {
+enum class RenditionOrientation(val value: String) : Serializable {
     Auto("auto"),
     Landscape("landscape"),
-    Portrait("portrait")
+    Portrait("portrait");
+    companion object : Publication.EnumCompanion<String, RenditionOrientation>(RenditionOrientation.values().associateBy(RenditionOrientation::value))
 }
 
-enum class RenditionSpread(val ini: String) : Serializable {
+enum class RenditionSpread(val value: String) : Serializable {
     Auto("auto"),
     Landscape("landscape"),
     Portrait("portrait"),
     Both("both"),
-    None("none")
+    None("none");
+    companion object : Publication.EnumCompanion<String, RenditionSpread>(RenditionSpread.values().associateBy(RenditionSpread::value))
 }
 
 class Rendition : Serializable {
