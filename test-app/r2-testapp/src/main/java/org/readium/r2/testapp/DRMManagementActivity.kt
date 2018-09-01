@@ -18,26 +18,21 @@ import android.widget.LinearLayout
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.sdk25.coroutines.onClick
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.LcpLicense
+import org.readium.r2.lcp.model.documents.LicenseDocument
 import org.readium.r2.navigator.R
 import org.readium.r2.shared.drm.DRMModel
-import java.net.URL
-import java.util.*
 
 
 class DRMManagementActivity : AppCompatActivity() {
-
-    private var licenseURL: URL? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val drmModel: DRMModel = intent.getSerializableExtra("drmModel") as DRMModel
-
-        licenseURL = intent.getSerializableExtra("lcpURL") as URL?
-        val bytes: ByteArray = licenseURL!!.readBytes()
-        val lcpLicense = LcpLicense(bytes , this)
-
+        val lcpLicense = LcpLicense(drmModel.licensePath,true , this)
 
         coordinatorLayout {
             fitsSystemWindows = true
@@ -84,7 +79,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = drmModel.state
+                        text = lcpLicense.currentStatus()
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -100,7 +95,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = drmModel.provider
+                        text = lcpLicense.provider().toString()
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -116,7 +111,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = drmModel.issued
+                        text = DateTime(lcpLicense.issued()).toString(DateTimeFormat.shortDateTime())
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -132,7 +127,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = drmModel.updated
+                        text = DateTime(lcpLicense.lastUpdate()).toString(DateTimeFormat.shortDateTime())
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -156,7 +151,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = drmModel.prints
+                        text = lcpLicense.rightsPrints().toString()
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -172,84 +167,84 @@ class DRMManagementActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = drmModel.copies
+                        text = lcpLicense.rightsCopies().toString()
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                 }
 
-                val start = drmModel.start?.let {
+                val start = DateTime(lcpLicense.rightsStart()).toString(DateTimeFormat.shortDateTime())?.let {
                     return@let it
                 }
-                val end = drmModel.end?.let {
+                val end = DateTime(lcpLicense.rightsEnd()).toString(DateTimeFormat.shortDateTime())?.let {
                     return@let it
                 }
 
                 if ((start != null && end != null) && start != end) {
-                    drmModel.start?.let {
-                        linearLayout {
-                            orientation = LinearLayout.HORIZONTAL
-                            lparams(width = matchParent, height = wrapContent)
-                            weightSum = 2f
-                            textView {
-                                padding = dip(10)
-                                text = context.getString(R.string.drm_label_start)
-                                textSize = 18f
-                                gravity = Gravity.START
-                            }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
-                            textView {
-                                padding = dip(10)
-                                text = drmModel.start
-                                textSize = 18f
-                                gravity = Gravity.END
-                            }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
-                        }
-                    }
-                    drmModel.end?.let {
-                        linearLayout {
-                            orientation = LinearLayout.HORIZONTAL
-                            lparams(width = matchParent, height = wrapContent)
-                            weightSum = 2f
-                            textView {
-                                padding = dip(10)
-                                text = context.getString(R.string.drm_label_end)
-                                textSize = 18f
-                            }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
-                            textView {
-                                padding = dip(10)
-                                text = drmModel.end
-                                textSize = 18f
-                                gravity = Gravity.END
-                            }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
-                        }
-                    }
-
-                    drmModel.end?.let {
+                    linearLayout {
+                        orientation = LinearLayout.HORIZONTAL
+                        lparams(width = matchParent, height = wrapContent)
+                        weightSum = 2f
                         textView {
                             padding = dip(10)
-                            topPadding = dip(30)
-                            text = context.getString(R.string.drm_label_actions)
-                            textSize = 20f
-                            typeface = Typeface.DEFAULT_BOLD
-                        }
-                        button {
-                            text = context.getString(R.string.drm_label_renew)
-                            onClick {
-                                lcpLicense.renew(null)
-                            }
-                        }.lparams(width = matchParent, height = wrapContent, weight = 1f)
-                        button {
-                            text = context.getString(R.string.drm_label_return)
-                            onClick {
-                                lcpLicense.ret()
-                            }
-                        }.lparams(width = matchParent, height = wrapContent, weight = 1f)
+                            text = context.getString(R.string.drm_label_start)
+                            textSize = 18f
+                            gravity = Gravity.START
+                        }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
+                        textView {
+                            padding = dip(10)
+                            text = start
+                            textSize = 18f
+                            gravity = Gravity.END
+                        }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     }
+                    linearLayout {
+                        orientation = LinearLayout.HORIZONTAL
+                        lparams(width = matchParent, height = wrapContent)
+                        weightSum = 2f
+                        textView {
+                            padding = dip(10)
+                            text = context.getString(R.string.drm_label_end)
+                            textSize = 18f
+                        }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
+                        textView {
+                            padding = dip(10)
+                            text = end
+                            textSize = 18f
+                            gravity = Gravity.END
+                        }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
+                    }
+                    textView {
+                        padding = dip(10)
+                        topPadding = dip(30)
+                        text = context.getString(R.string.drm_label_actions)
+                        textSize = 20f
+                        typeface = Typeface.DEFAULT_BOLD
+                    }
+                    button {
+                        text = context.getString(R.string.drm_label_renew)
+                        onClick {
+                            lcpLicense.renewLicense() {renewedLicense ->
+                                val renewedLicense = renewedLicense  as LicenseDocument
+                                // TODO refresh UI
+                                // TODO update license archive
+
+                            }
+                        }
+                    }.lparams(width = matchParent, height = wrapContent, weight = 1f)
+                    button {
+                        text = context.getString(R.string.drm_label_return)
+                        onClick {
+                            lcpLicense.returnLicense() { returnedLicense ->
+                                val returnedLicense = returnedLicense  as LicenseDocument
+                                // TODO refresh UI
+                                // TODO update license archive
+
+                            }
+                        }
+                    }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                 }
-
-
             }
         }
-
     }
 }

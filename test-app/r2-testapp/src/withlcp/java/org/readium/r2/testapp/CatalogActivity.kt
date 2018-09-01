@@ -114,16 +114,9 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
 
                     val license = drm.license as LcpLicense
                     val drmModel = DRMModel(drm.brand.name,
-                            license.currentStatus(),
-                            license.provider().toString(),
-                            DateTime(license.issued()).toString(DateTimeFormat.shortDateTime()),
-                            DateTime(license.lastUpdate()).toString(DateTimeFormat.shortDateTime()),
-                            DateTime(license.rightsStart()).toString(DateTimeFormat.shortDateTime()),
-                            DateTime(license.rightsEnd()).toString(DateTimeFormat.shortDateTime()),
-                            license.rightsPrints().toString(),
-                            license.rightsCopies().toString())
+                            license.archivePath!!)
 
-                    startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "lcpURL" to license.archivePath, "drmModel" to drmModel))
+                    startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "drmModel" to drmModel))
                 } else {
                     alert(Appcompat, "The profile of this DRM is not supported.") {
                         negativeButton("Ok") { }
