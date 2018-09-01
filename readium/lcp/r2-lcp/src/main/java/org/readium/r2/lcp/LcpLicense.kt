@@ -141,28 +141,27 @@ class LcpLicense : DrmLicense {
 
     }
 
-    override fun ret() : Promise<Unit?, Exception> {
+    override fun returnLicense( callback: (Any) -> Unit) {
         Timber.i(TAG,"LCP return")
 
-        if (status == null) {
-            return task {
-                throw Exception(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
-            }
-        }
-        val deviceId = android.os.Build.ID
-        val deviceName = android.os.Build.MODEL
-        val url = status!!.link("return")?.href ?: return task {
-                throw Exception(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
-            }
-        
-        val returnUrl = URL(url.toString().replace("%7B?id,name%7D", "") + "?id=$deviceId&name=$deviceName")
+        if (status == null) return
+
+        val url = status?.link("return")?.href ?: return
+
+        val returnUrl = URL(url.toString().replace("{?id,name}", ""))
+        val params = listOf(
+                "id" to getDeviceId(),
+                "name" to getDeviceName())
+
         try {
-            lcpHttpService.returnLicense(returnUrl.toString()).get()?.let {
+            lcpHttpService.returnLicense(returnUrl.toString(), params).get()?.let {
                 database.licenses.updateState(license.id, it)
             }
         } catch (e: Exception) {
             Timber.e(TAG, "LCP return ${e.message}")
         }
+
+        callback(license)
     }
 
     // TODO : incomplete
