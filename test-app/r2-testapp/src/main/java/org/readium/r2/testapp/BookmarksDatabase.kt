@@ -67,6 +67,8 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
 
         // TODO add migration to remove progression
 
+        // TODO add migration for resource title
+
     }
 }
 
