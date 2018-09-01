@@ -9,93 +9,126 @@
 
 package org.readium.r2.shared
 
-import com.google.gson.Gson
 import org.joda.time.DateTime
 import org.json.JSONObject
 
+
+
 /**
- * Locator : That class is used to define a precise location in a Publication
+ * Locator model
  *
- * @var publicationId: String - Identifier of a Publication
- * @var spineIndex: Long - Index of a spine element
- * @var resourceHref: String? - ( Optional ) String reference to the spine element
- * @var title: String - Title of the spine element
+ * @var bookId: Long? - Book index in the database
+ * @val publicationID: String -  Publication identifier
+ * @val resourceIndex: Long - Index to the spine element of the book
+ * @val resourceHref: String -  Reference to the spine element
+ * @val resourceTitle: String - Title to the spine element of the book
+ * @val location: Location - Location in the spine element
+ * @val creationDate: Long - Datetime when the bookmark has been created
+ * @var id: Long? - ID of the bookmark in database
  *
- * @var location: Location - List of objects used to locate the target
- * @var created: DateTime - Date when the Locator has been created
- *
- * @var text: LocatorText? - ( Optional ) Describe the Locator's context
- *
+ * @fun toString(): String - Return a String description of the Locator
  */
-open class Locator(val publicationId: String,
-                   val spineIndex: Long?,
-                   open val resourceHref: String,
-                   val title: String,
-                   val location: Location? = null): JSONable {
 
-    var created = DateTime.now().toDate().time
-    var text = LocatorText(null, null, null)
+class Locator(val bookID: Long,
+              val publicationID: String,
+              val resourceIndex: Long,
+              val resourceHref: String,
+              val resourceTitle: String,
+              val location: Location,
+              var creationDate: Long = DateTime().toDate().time,
+              var id: Long? = null) {
 
-    fun toJson(): String{
-        return Gson().toJson(this)
-    }
+    //TODO update this
+//    override fun toString(): String {
+//        return "Locator id : ${this.id}, book id : ${this.bookID}, resource href selected ${this.resourceHref}, progression saved ${this.location.progression} and created the ${this.creationDate}."
+//    }
 
-    override fun getJSON(): JSONObject {
-        val json = JSONObject()
-        json.putOpt("href", resourceHref)
-        json.putOpt("title", title)
-        json.putOpt("created", created)
-        json.putOpt("location", location.toString())
-        json.putOpt("text", text)
-        return json
-    }
-
-    override fun toString(): String{
-        return """{ "href": "$resourceHref", "title": "$title", "created": "$created", "locations" : $location  "text" : "$text" """
-    }
-
-    fun setText(before: String? = null, highlight: String? = null, after: String? = null){
-        text.before = before
-        text.highlight = highlight
-        text.after = after
-    }
-
-    inner class LocatorText(var before: String?, var highlight: String?, var after: String?): JSONable{
-
-        fun toJson(): String{
-            return Gson().toJson(this)
-        }
-
-        override fun getJSON(): JSONObject {
-            val json = JSONObject()
-            json.putOpt("before", before)
-            json.putOpt("highlight", highlight)
-            json.putOpt("after", after)
-            return json
-        }
-
-        override fun toString(): String{
-            var jsonString =  """{"""
-            if (before != null) {
-                before.let { jsonString += """ "before": "$before" """ }
-                if (highlight != null) {
-                    jsonString += ""","""
-                }
-            }
-            if (highlight != null) {
-                highlight.let { jsonString += """ "highlight": "$highlight" """ }
-                if (after != null) {
-                    jsonString += ""","""
-                }
-            }
-            if (after != null) {
-                after.let { jsonString += """ "after": "$after" """ }
-            }
-            jsonString += """}"""
-            return jsonString
-        }
-    }
 }
+
+
+///**
+// * Locator : That class is used to define a precise location in a Publication
+// *
+// * @var publicationId: String - Identifier of a Publication
+// * @var spineIndex: Long - Index of a spine element
+// * @var resourceHref: String? - ( Optional ) String reference to the spine element
+// * @var title: String - Title of the spine element
+// *
+// * @var location: Location - List of objects used to locate the target
+// * @var created: DateTime - Date when the Locator has been created
+// *
+// * @var text: LocatorText? - ( Optional ) Describe the Locator's context
+// *
+// */
+//open class Locator(val publicationId: String,
+//                   val spineIndex: Long?,
+//                   open val resourceHref: String,
+//                   val title: String,
+//                   val location: Location? = null): JSONable {
+//
+//    var created = DateTime.now().toDate().time
+//    var text = LocatorText(null, null, null)
+//
+//    fun toJson(): String{
+//        return Gson().toJson(this)
+//    }
+//
+//    override fun toJSON(): JSONObject {
+//        val json = JSONObject()
+//        json.putOpt("href", resourceHref)
+//        json.putOpt("title", title)
+//        json.putOpt("created", created)
+//        json.putOpt("location", location.toString())
+//        json.putOpt("text", text)
+//        return json
+//    }
+//
+//    override fun toString(): String{
+//        return """{ "href": "$resourceHref", "title": "$title", "created": "$created", "locations" : $location  "text" : "$text" """
+//    }
+//
+//    fun setText(before: String? = null, highlight: String? = null, after: String? = null){
+//        text.before = before
+//        text.highlight = highlight
+//        text.after = after
+//    }
+//
+//    inner class LocatorText(var before: String?, var highlight: String?, var after: String?): JSONable{
+//
+//        fun toJson(): String{
+//            return Gson().toJson(this)
+//        }
+//
+//        override fun toJSON(): JSONObject {
+//            val json = JSONObject()
+//            json.putOpt("before", before)
+//            json.putOpt("highlight", highlight)
+//            json.putOpt("after", after)
+//            return json
+//        }
+//
+//        override fun toString(): String{
+//            var jsonString =  """{"""
+//            if (before != null) {
+//                before.let { jsonString += """ "before": "$before" """ }
+//                if (highlight != null) {
+//                    jsonString += ""","""
+//                }
+//            }
+//            if (highlight != null) {
+//                highlight.let { jsonString += """ "highlight": "$highlight" """ }
+//                if (after != null) {
+//                    jsonString += ""","""
+//                }
+//            }
+//            if (after != null) {
+//                after.let { jsonString += """ "after": "$after" """ }
+//            }
+//            jsonString += """}"""
+//            return jsonString
+//        }
+//    }
+//}
 
 /**
  * Location : Class that contain the different variables needed to localize a particular position
@@ -108,27 +141,62 @@ open class Locator(val publicationId: String,
  * @var position: Long - Index of a segment in the resource
  *
  */
-class Location(val id: Long?, val cfi: String?, val cssSelector: String?, val xpath: String?, val progression: Double, val position: Long): JSONable{
+class Location(var id: Long? = null,
+               var cfi: String? = null,
+               var cssSelector: String? = null,
+               var xpath: String? = null,
+               var progression: Double? = null,
+               var position: Long? = null) : JSONable {
 
+    companion object {
+        fun fromJSON(json: JSONObject): Location {
 
-    fun toJson(): String{
-        return Gson().toJson(this)
+            val location = Location()
+            if (json.has("id")) {
+                location.id = json.getLong("id")
+            }
+            if (json.has("cfi")) {
+                location.cfi = json.getString("cfi")
+            }
+            if (json.has("cssSelector")) {
+                location.cssSelector = json.getString("cssSelector")
+            }
+            if (json.has("xpath")) {
+                location.xpath = json.getString("xpath")
+            }
+            if (json.has("progression")) {
+                location.progression = json.getDouble("progression")
+            }
+            if (json.has("position")) {
+                location.position = json.getLong("position")
+            }
+
+            return location
+        }
     }
 
-    override fun getJSON(): JSONObject {
+    override fun toJSON(): JSONObject {
         val json = JSONObject()
-        json.putOpt("id", id)
-        if (cfi != null) {
+
+        id?.let {
+            json.putOpt("id", id)
+        }
+        cfi?.let {
             json.putOpt("cfi", cfi)
         }
-        if (cssSelector != null) {
+        cssSelector?.let {
             json.putOpt("cssSelector", cssSelector)
         }
-        if (xpath != null) {
+        xpath?.let {
             json.putOpt("xpath", xpath)
         }
-        json.putOpt("progression", progression)
-        json.putOpt("position", position)
+        progression?.let {
+            json.putOpt("progression", progression)
+        }
+        position?.let {
+            json.putOpt("position", position)
+        }
+
         return json
     }
 
