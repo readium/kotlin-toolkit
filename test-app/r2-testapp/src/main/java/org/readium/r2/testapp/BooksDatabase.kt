@@ -13,8 +13,6 @@ package org.readium.r2.testapp
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import nl.komponents.kovenant.task
-import nl.komponents.kovenant.then
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.readium.r2.shared.Publication
@@ -75,14 +73,21 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
         // migration = add extension column
         when (oldVersion) {
             1 -> {
-                upgradeVersion2(db)
-                upgradeVersion3(db)
+                upgradeVersion2(db) {
+                    upgradeVersion3(db) {
+                        //done
+                    }
+                }
             }
-            2 -> upgradeVersion3(db)
+            2 -> {
+                upgradeVersion3(db) {
+                    //done
+                }
+            }
         }
     }
 
-    private fun upgradeVersion2(db: SQLiteDatabase) {
+    private fun upgradeVersion2(db: SQLiteDatabase, callback: () -> Unit) {
         db.execSQL("ALTER TABLE " + BOOKSTable.NAME + " ADD COLUMN " + BOOKSTable.EXTENSION + " TEXT DEFAULT '.epub';")
         val cursor = db.query(BOOKSTable.NAME, BOOKSTable.RESULT_COLUMNS, null, null, null, null, null, null)
         if (cursor != null) {
@@ -96,8 +101,9 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
             }
             cursor.close()
         }
+        callback()
     }
-    private fun upgradeVersion3(db: SQLiteDatabase) {
+    private fun upgradeVersion3(db: SQLiteDatabase, callback: () -> Unit) {
         db.execSQL("ALTER TABLE " + BOOKSTable.NAME + " ADD COLUMN " + BOOKSTable.CREATION + " INTEGER DEFAULT ${DateTime().toDate().time};")
         val cursor = db.query(BOOKSTable.NAME, BOOKSTable.RESULT_COLUMNS, null, null, null, null, null, null)
         if (cursor != null) {
@@ -111,7 +117,7 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
             }
             cursor.close()
         }
-
+        callback()
     }
 
 }
