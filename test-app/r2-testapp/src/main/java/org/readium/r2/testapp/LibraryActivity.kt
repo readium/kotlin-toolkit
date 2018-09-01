@@ -35,7 +35,6 @@ import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import com.github.kittinunf.fuel.Fuel
 import com.mcxiaoke.koi.ext.onClick
-import net.theluckycoder.materialchooser.Chooser
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
@@ -277,7 +276,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     progress.dismiss()
                     database.books.insert(book, false)?.let {
                         book.id = it
-                        books.add(book)
+                        books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
 
                     } ?: run {
@@ -305,7 +304,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 button.setOnClickListener {
                     database.books.insert(book, true)?.let {
                         book.id = it
-                        books.add(book)
+                        books.add(0,book)
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
                     }
@@ -321,9 +320,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun showDocumentPicker() {
-        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
-        // browser.
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        // ACTION_GET_DOCUMENT allows to import a system file by creating a copy of it
+        // with access to every app that manages files
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
 
         // Filter to only show results that can be "opened", such as a
         // file (as opposed to a list of contacts or timezones)
@@ -594,7 +593,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                     database.books.insert(book, false)?.let {
                         book.id = it
-                        books.add(book)
+                        books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
                     } ?: run {
 
@@ -612,7 +611,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it), Publication.EXTENSION.CBZ)
                         database.books.insert(book, false)?.let {
                             book.id = it
-                            books.add(book)
+                            books.add(0,book)
                             booksAdapter.notifyDataSetChanged()
                         } ?: run {
 
@@ -643,7 +642,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val file = File(publicationPath)
             file.delete()
             popup.dismiss()
-            database.books.delete(book)
+            val deleted = database.books.delete(book)
+            if (deleted > 0) {
+                BookmarksDatabase(this).bookmarks.delete(deleted.toLong())
+            }
         }
     }
 
@@ -730,7 +732,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             progress.show()
 
             task {
-                val filePath = data.getStringExtra(Chooser.RESULT_PATH)
+                val filePath = data.getStringExtra("resultPath")
                 parseIntent(filePath)
             } then {
                 progress.dismiss()
