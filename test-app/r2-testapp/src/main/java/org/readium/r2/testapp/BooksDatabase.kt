@@ -13,6 +13,7 @@ package org.readium.r2.testapp
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.readium.r2.shared.Publication
@@ -73,11 +74,16 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
         // migration = add extension column
         when (oldVersion) {
             1 -> {
-                upgradeVersion2(db) {
+                try {
+                    upgradeVersion2(db) {
+                        //done
+                    }
+                } catch (e: SQLiteException) { }
+                try {
                     upgradeVersion3(db) {
                         //done
                     }
-                }
+                } catch (e: SQLiteException) { }
             }
             2 -> {
                 upgradeVersion3(db) {
