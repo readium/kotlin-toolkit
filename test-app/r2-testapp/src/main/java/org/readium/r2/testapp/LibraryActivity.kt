@@ -274,7 +274,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     progress.dismiss()
                     database.books.insert(book, false)?.let {
                         book.id = it
-                        books.add(book)
+                        books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
 
                     } ?: run {
@@ -302,7 +302,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 button.setOnClickListener {
                     database.books.insert(book, true)?.let {
                         book.id = it
-                        books.add(book)
+                        books.add(0,book)
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
                     }
@@ -591,7 +591,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                     database.books.insert(book, false)?.let {
                         book.id = it
-                        books.add(book)
+                        books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
                     } ?: run {
 
@@ -609,7 +609,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it), Publication.EXTENSION.CBZ)
                         database.books.insert(book, false)?.let {
                             book.id = it
-                            books.add(book)
+                            books.add(0,book)
                             booksAdapter.notifyDataSetChanged()
                         } ?: run {
 
