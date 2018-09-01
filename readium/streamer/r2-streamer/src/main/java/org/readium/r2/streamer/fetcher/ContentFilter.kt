@@ -135,7 +135,6 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         if (endHeadIndex == -1)
             return stream
         val includes = mutableListOf<String>()
-        includes.add("<meta name=\"viewport\" content=\"width=1024, height=768, left=50%, top=50%, bottom=auto, right=auto, transform=translate(-50%, -50%);\"/>\n")
         includes.add(getHtmlScript("/scripts/touchHandling.js"))
         includes.add(getHtmlScript("/scripts/utils.js"))
         for (element in includes) {
