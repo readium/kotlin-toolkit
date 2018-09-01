@@ -88,7 +88,8 @@ class R2OutlineActivity : AppCompatActivity() {
         bookmarkDB = BookmarksDatabase(this)
 
         val bookID = intent.getLongExtra("bookId", -1)
-        val bookmarks = bookmarkDB.bookmarks.list(bookID)
+        val bookmarks = bookmarkDB.bookmarks.list(bookID).sortedWith(compareBy({it.resourceIndex},{ it.location.progression })).toMutableList()
+
         val bookmarkskAdapter = BookMarksAdapter(this, bookmarks, allElements)
 
         bookmark_list.adapter = bookmarkskAdapter
@@ -99,7 +100,7 @@ class R2OutlineActivity : AppCompatActivity() {
             //Link to the resource in the publication
             val bmkItemUri = bookmarks[position].resourceHref
             //Progression of the selected bookmark
-            val bmkProgression = bookmarks[position].location!!.progression
+            val bmkProgression = bookmarks[position].location.progression
 
             val intent = Intent()
             intent.putExtra("toc_item_uri", bmkItemUri)
