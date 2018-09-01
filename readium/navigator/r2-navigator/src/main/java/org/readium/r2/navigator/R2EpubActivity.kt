@@ -91,15 +91,30 @@ open class R2EpubActivity : AppCompatActivity() {
         for (spine in publication.spine) {
             val uri = "$BASE_URL:$port" + "/" + epubName + spine.href
             resourcesSingle.add(Pair(resourceIndex, uri))
-            if (doublePageIndex == 0) {
-                doublePageLeft = uri
-                doublePageIndex = 1
-            }else {
+
+            // add first page to the right,
+            if (resourceIndex == 0 ) {
+                doublePageLeft = ""
                 doublePageRight = uri
-                doublePageIndex = 0
-                resourcesDouble.add(Triple(resourceIndex,doublePageLeft,doublePageRight))
+                resourcesDouble.add(Triple(resourceIndex, doublePageLeft, doublePageRight))
+                resourceIndex++
+            } else {
+                // add double pages, left & right
+                if (doublePageIndex == 0) {
+                    doublePageLeft = uri
+                    doublePageIndex = 1
+                } else {
+                    doublePageRight = uri
+                    doublePageIndex = 0
+                    resourcesDouble.add(Triple(resourceIndex, doublePageLeft, doublePageRight))
+                    resourceIndex++
+                }
             }
-            resourceIndex++
+        }
+        // add last page if there is only a left page remaining
+        if (doublePageIndex == 1) {
+            doublePageIndex = 0
+            resourcesDouble.add(Triple(resourceIndex, doublePageLeft, ""))
         }
 
 
@@ -200,6 +215,7 @@ open class R2EpubActivity : AppCompatActivity() {
                         if (single.second.endsWith(href)) {
                             resourcePager.currentItem = single.first
                             storeDocumentIndex()
+                            break
                         }
                     }
                 } else {
@@ -207,6 +223,7 @@ open class R2EpubActivity : AppCompatActivity() {
                         if (double.second.endsWith(href) || double.third.endsWith(href)) {
                             resourcePager.currentItem = double.first
                             storeDocumentIndex()
+                            break
                         }
                     }
                 }
