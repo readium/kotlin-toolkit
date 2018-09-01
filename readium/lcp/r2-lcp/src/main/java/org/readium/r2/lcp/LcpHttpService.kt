@@ -77,8 +77,8 @@ class LcpHttpService {
         }
     }
 
-    fun renewLicense(url: String): Promise<String?, Exception> {
-        return Fuel.put(url, null).promise() then {
+    fun renewLicense(url: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
+        return Fuel.put(url, params).promise() then {
             val (_, response, result) = it
             var status: String? = null
             if (response.statusCode == 200) {

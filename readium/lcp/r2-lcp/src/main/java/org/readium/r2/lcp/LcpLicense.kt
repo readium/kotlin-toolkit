@@ -11,7 +11,6 @@ package org.readium.r2.lcp
 
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
-import android.util.Log
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import org.joda.time.DateTime
@@ -163,35 +162,27 @@ class LcpLicense : DrmLicense {
         }
     }
 
-    override fun renew (endDate: Date?) : Promise<Unit?, Exception> {
+    override fun renewLicense(endDate: Date?, callback: (Any) -> Unit) {
         Timber.i(TAG,"LCP renew")
-        if (status == null) {
-            return task {
-                throw Exception(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
-            }
-        }
-        val deviceId = android.os.Build.ID
-        val deviceName = android.os.Build.MODEL
-        val url = status!!.link("return")?.href ?: return task {
-                throw Exception(LcpError().errorDescription(LcpErrorCase.noStatusDocument))
-            }
 
-        val renewUrl = URL(url.toString().replace("%7B?end,id,name%7D", "") + "?id=$deviceId&name=$deviceName")
+        if (status == null) return
+        val url = status?.link("renew")?.href ?: return
+
+        val renewUrl = URL(url.toString().replace("{?end,id,name}", ""))
+        val params = listOf(
+//                "end" to endDate?.time,
+                "id" to getDeviceId(),
+                "name" to getDeviceName())
 
         try {
-            lcpHttpService.renewLicense(renewUrl.toString()).get()?.let {
+            lcpHttpService.renewLicense(renewUrl.toString(),params).get()?.let {
                 database.licenses.updateState(license.id, it)
             }
         } catch (e:Exception) {
-            return task {
-                Timber.e(TAG, "LCP renew ${e.message}")
-            }
+            Timber.e(TAG, "LCP renew ${e.message}")
         }
 
-        return task {
-            println("License renewed")
-        }
-
+        callback(license)
     }
 
     fun getDeviceId() : String {
