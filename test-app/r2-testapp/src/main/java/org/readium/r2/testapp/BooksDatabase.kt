@@ -191,9 +191,9 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
         }
     }
 
-    fun delete(book: Book) {
-        database.use {
-            delete(BOOKSTable.NAME, "id = {id}", "id" to book.id!!)
+    fun delete(book: Book) : Int {
+        return database.use {
+            return@use delete(BOOKSTable.NAME, "id = {id}", "id" to book.id!!)
         }
     }
 

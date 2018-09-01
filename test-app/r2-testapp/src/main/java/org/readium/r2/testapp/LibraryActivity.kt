@@ -640,7 +640,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val file = File(publicationPath)
             file.delete()
             popup.dismiss()
-            database.books.delete(book)
+            val deleted = database.books.delete(book)
+            if (deleted > 0) {
+                BookmarksDatabase(this).bookmarks.delete(deleted.toLong())
+            }
         }
     }
 
