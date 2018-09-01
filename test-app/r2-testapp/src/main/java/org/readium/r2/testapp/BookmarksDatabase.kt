@@ -155,10 +155,10 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
     }
 
     fun delete(book_id: Long?) {
-        if (book_id != null) {
+        book_id?.let {
             database.use {
                 delete(BOOKMARKSTable.NAME, "${BOOKMARKSTable.BOOK_ID} = {bookID}",
-                        "bookID" to book_id!!)
+                        "bookID" to book_id)
             }
         }
     }
