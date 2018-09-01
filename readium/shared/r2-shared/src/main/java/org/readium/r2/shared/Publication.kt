@@ -26,7 +26,7 @@ fun URL.removeLastComponent(): URL {
 fun getJSONArray(list: List<JSONable>): JSONArray {
     val array = JSONArray()
     for (i in list) {
-        array.put(i.getJSON())
+        array.put(i.toJSON())
     }
     return array
 }
@@ -46,8 +46,8 @@ fun tryPut(obj: JSONObject, list: List<JSONable>, tag: String) {
 
 class TocElement(val link: Link, val children: List<TocElement>) : JSONable {
 
-    override fun getJSON(): JSONObject {
-        val json = link.getJSON()
+    override fun toJSON(): JSONObject {
+        val json = link.toJSON()
         tryPut(json, children, "children")
         return json
     }
