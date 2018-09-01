@@ -11,56 +11,64 @@ package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Color
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.TextView
-import org.readium.r2.navigator.APPEARANCE_REF
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.SCROLL_REF
+import org.readium.r2.navigator.fxl.R2FXLLayout
+import org.readium.r2.navigator.fxl.R2FXLOnDoubleTapListener
 
 
-class R2EpubPageFragment : Fragment() {
+class R2FXLPageFragment : Fragment() {
 
-    private val resourceUrl: String?
-        get() = arguments!!.getString("url")
+    private val firstResourceUrl: String?
+        get() = arguments!!.getString("firstUrl")
+
+    private val secondResourceUrl: String?
+        get() = arguments!!.getString("secondUrl")
 
     private val bookTitle: String?
         get() = arguments!!.getString("title")
 
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val v = inflater.inflate(R.layout.fragment_page_epub, container, false)
         val preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
 
-        // Set text color depending of appearance preference
-        (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor(
-                if (preferences.getInt(APPEARANCE_REF, 0) > 1) "#ffffff" else "#000000"
-        ))
+        val view: View = inflater.inflate(R.layout.fxlview_double, container, false)
+        view.setPadding(0, 0, 0, 0)
 
-        val scrollMode = preferences.getBoolean(SCROLL_REF, false)
-        when (scrollMode) {
-            true -> {
-                (v.findViewById(R.id.book_title) as TextView).visibility = View.GONE
-                v.setPadding(0, 4, 0, 4)
+        val r2FXLLayout = view.findViewById<View>(R.id.r2FXLLayout) as R2FXLLayout
+        r2FXLLayout.isAllowParentInterceptOnScaled = true
+        r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
+
+        r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
+            override fun onTap(view: R2FXLLayout, info: R2FXLLayout.TapInfo): Boolean {
+                (activity as R2EpubActivity).toggleActionBar()
+                return true
             }
-            false -> {
-                (v.findViewById(R.id.book_title) as TextView).visibility = View.VISIBLE
-                v.setPadding(0, 30, 0, 30)
-            }
-        }
+        })
 
-        (v.findViewById(R.id.book_title) as TextView).text = bookTitle
+        val left = view.findViewById<View>(R.id.firstWebView) as R2WebView
+        val right = view.findViewById<View>(R.id.secondWebView) as R2WebView
 
-        val webView: R2WebView = v!!.findViewById(R.id.webView) as R2WebView
+        setupWebView(left, preferences, firstResourceUrl, r2FXLLayout)
+        setupWebView(right, preferences, secondResourceUrl, r2FXLLayout)
 
+        return view
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun setupWebView(webView: R2WebView, preferences: SharedPreferences, resourceUrl: String?, r2FXLLayout: R2FXLLayout) {
         webView.activity = activity as R2EpubActivity
 
         webView.settings.javaScriptEnabled = true
@@ -68,20 +76,18 @@ class R2EpubPageFragment : Fragment() {
         webView.isHorizontalScrollBarEnabled = false
         webView.settings.useWideViewPort = true
         webView.settings.loadWithOverviewMode = true
-        webView.settings.setSupportZoom(true)
-        webView.settings.builtInZoomControls = true
-        webView.settings.displayZoomControls = true
+        webView.settings.setSupportZoom(false)
+        webView.settings.builtInZoomControls = false
+        webView.settings.displayZoomControls = false
+
+        webView.setInitialScale(1)
+
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 view.loadUrl(request.url.toString())
-                return false
-            }
-
-            override fun shouldOverrideKeyEvent(view: WebView, event: KeyEvent): Boolean {
-                // Do something with the event here
                 return false
             }
 
@@ -122,8 +128,7 @@ class R2EpubPageFragment : Fragment() {
                                 }
                             }
                         }
-                    }
-                    else {
+                    } else {
                         webView.activity.pagerPosition = 0
                         val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
                         webView.scrollToPosition(progression)
@@ -152,49 +157,44 @@ class R2EpubPageFragment : Fragment() {
         webView.setOnLongClickListener {
             true
         }
-        webView.setGestureDetector(GestureDetector(context, CustomGestureDetector(webView)))
+//        webView.setGestureDetector(GestureDetector(context, CustomGestureDetector(webView)))
         webView.loadUrl(resourceUrl)
-
-        return v
     }
 
-    class CustomGestureDetector(val webView: R2WebView) : GestureDetector.SimpleOnGestureListener() {
-
-        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-            val scrollMode = webView.activity.preferences.getBoolean(SCROLL_REF, false)
-            if (e1 == null || e2 == null) return false
-            if (e1.pointerCount > 1 || e2.pointerCount > 1) {
-                return false
-            }
-            else if (scrollMode) {
-                return false
-            }
-            else {
-                try { // right to left swipe .. go to next page
-                    if (e1.x - e2.x > 100) {
-                        webView.scrollRight()
-                        return true
-                    } //left to right swipe .. go to prev page
-                    else if (e2.x - e1.x > 100) {
-                        webView.scrollLeft()
-                        return true
-                    }
-                } catch (e: Exception) { // nothing
-                }
-
-                return false
-            }
-        }
-    }
+//    class CustomGestureDetector(val webView: R2WebView) : GestureDetector.SimpleOnGestureListener() {
+//
+//        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+//            if (e1 == null || e2 == null) return false
+//            if (e1.pointerCount > 1 || e2.pointerCount > 1)
+//                return false
+//            else {
+//                try { // right to left swipe .. go to next page
+//                    if (e1.x - e2.x > 100) {
+//                        webView.scrollRight()
+//                        return true
+//                    } //left to right swipe .. go to prev page
+//                    else if (e2.x - e1.x > 100) {
+//                        webView.scrollLeft()
+//                        return true
+//                    }
+//                } catch (e: Exception) { // nothing
+//                }
+//
+//                return false
+//            }
+//        }
+//    }
 
     companion object {
 
-        fun newInstance(url: String, title: String): R2EpubPageFragment {
+        fun newInstance(url: String, url2: String, title: String): R2FXLPageFragment {
 
             val args = Bundle()
-            args.putString("url", url)
+            args.putString("firstUrl", url)
+            args.putString("secondUrl", url2)
             args.putString("title", title)
-            val fragment = R2EpubPageFragment()
+
+            val fragment = R2FXLPageFragment()
             fragment.arguments = args
             return fragment
         }

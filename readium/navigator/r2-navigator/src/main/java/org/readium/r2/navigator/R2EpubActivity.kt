@@ -26,6 +26,7 @@ import org.jetbrains.anko.contentView
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
+import org.readium.r2.shared.RenditionLayout
 import org.readium.r2.shared.drm.DRMModel
 
 
@@ -33,7 +34,8 @@ open class R2EpubActivity : AppCompatActivity() {
 
     lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
-    lateinit var resources: ArrayList<String>
+    lateinit var resourcesSingle: ArrayList<Pair<Int,String>>
+    lateinit var resourcesDouble: ArrayList<Triple<Int,String,String>>
 
     protected lateinit var publicationPath: String
     protected lateinit var publication: Publication
@@ -54,7 +56,8 @@ open class R2EpubActivity : AppCompatActivity() {
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         resourcePager = findViewById(R.id.resourcePager)
-        resources = ArrayList()
+        resourcesSingle = ArrayList()
+        resourcesDouble = ArrayList()
 
         Handler().postDelayed({
             if (intent.getSerializableExtra("drmModel") != null) {
@@ -80,16 +83,52 @@ open class R2EpubActivity : AppCompatActivity() {
 
         val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
 
+        // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
+        var doublePageIndex = 0
+        var doublePageLeft:String = ""
+        var doublePageRight:String = ""
+        var resourceIndex = 0
         for (spine in publication.spine) {
             val uri = "$BASE_URL:$port" + "/" + epubName + spine.href
-            resources.add(uri)
+            resourcesSingle.add(Pair(resourceIndex, uri))
+
+            // add first page to the right,
+            if (resourceIndex == 0 ) {
+                doublePageLeft = ""
+                doublePageRight = uri
+                resourcesDouble.add(Triple(resourceIndex, doublePageLeft, doublePageRight))
+                resourceIndex++
+            } else {
+                // add double pages, left & right
+                if (doublePageIndex == 0) {
+                    doublePageLeft = uri
+                    doublePageIndex = 1
+                } else {
+                    doublePageRight = uri
+                    doublePageIndex = 0
+                    resourcesDouble.add(Triple(resourceIndex, doublePageLeft, doublePageRight))
+                    resourceIndex++
+                }
+            }
+        }
+        // add last page if there is only a left page remaining
+        if (doublePageIndex == 1) {
+            doublePageIndex = 0
+            resourcesDouble.add(Triple(resourceIndex, doublePageLeft, ""))
+        }
+
+
+        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable ) {
+            val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
+            resourcePager.adapter = adapter
+        }else {
+            val adapter = R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+            resourcePager.adapter = adapter
         }
 
         val index = preferences.getInt("$publicationIdentifier-document", 0)
 
-        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
         reloadPagerPositions = true
-        resourcePager.adapter = adapter
 
         userSettings = UserSettings(preferences, this)
         userSettings.resourcePager = resourcePager
@@ -97,7 +136,12 @@ open class R2EpubActivity : AppCompatActivity() {
         if (index == 0) {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
                 // The view has RTL layout
-                resourcePager.currentItem = resources.size - 1
+                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable ) {
+                    resourcePager.currentItem = resourcesSingle.size - 1
+                }
+                else {
+                    resourcePager.currentItem = resourcesDouble.size - 1
+                }
             } else {
                 // The view has LTR layout
             }
@@ -116,7 +160,7 @@ open class R2EpubActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        storeProgression(resourcePager.webView.progression)
+//        storeProgression(resourcePager.webView.progression)
     }
 
     /**
@@ -144,11 +188,17 @@ open class R2EpubActivity : AppCompatActivity() {
                 pagerPosition = 0
                 reloadPagerPositions = true
 
-                val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
-                resourcePager.adapter = adapter
+
+                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable ) {
+                    val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
+                    resourcePager.adapter = adapter
+                } else {
+                    val adapter = R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                    resourcePager.adapter = adapter
+                }
 
                 // href is the link to the page in the toc
-                var href: String = data.getStringExtra("toc_item_uri")
+                var href = data.getStringExtra("toc_item_uri")
 
                 // Fetching the last progression saved ( default : 0.0 )
                 val progression = data.getDoubleExtra("item_progression", 0.0)
@@ -159,13 +209,25 @@ open class R2EpubActivity : AppCompatActivity() {
                 if (href.indexOf("#") > 0) {
                     href = href.substring(0, href.indexOf("#"))
                 }
-                // Search corresponding href in the spine
-                for (i in 0 until publication.spine.size) {
-                    if (publication.spine[i].href == href) {
-                        resourcePager.currentItem = i
-                        storeDocumentIndex()
+
+                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+                    for (single in resourcesSingle) {
+                        if (single.second.endsWith(href)) {
+                            resourcePager.currentItem = single.first
+                            storeDocumentIndex()
+                            break
+                        }
+                    }
+                } else {
+                    for (double in resourcesDouble) {
+                        if (double.second.endsWith(href) || double.third.endsWith(href)) {
+                            resourcePager.currentItem = double.first
+                            storeDocumentIndex()
+                            break
+                        }
                     }
                 }
+
                 if (supportActionBar!!.isShowing) {
                     resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION

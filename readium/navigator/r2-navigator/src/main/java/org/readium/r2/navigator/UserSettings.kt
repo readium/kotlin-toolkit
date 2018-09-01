@@ -15,10 +15,12 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
 import android.widget.*
 import org.json.JSONArray
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.pager.R2WebView
+import org.readium.r2.navigator.fxl.R2FXLLayout
 import org.readium.r2.shared.*
 import java.io.File
 
@@ -162,8 +164,21 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
     fun updateViewCSS(ref: String) {
         for (i in 0 until resourcePager.childCount) {
-            val webView = resourcePager.getChildAt(i).findViewById(R.id.webView) as R2WebView
-            applyCSS(webView, ref)
+            val webView = resourcePager.getChildAt(i).findViewById(R.id.webView) as? R2WebView
+            webView?.let {
+                applyCSS(webView, ref)
+            }?: run {
+                val zoomView = resourcePager.getChildAt(i).findViewById(R.id.r2FXLLayout) as R2FXLLayout
+                val webView1 = zoomView.findViewById(R.id.firstWebView) as? R2WebView
+                val webView2 = zoomView.findViewById(R.id.secondWebView) as? R2WebView
+
+                webView1?.let{
+                    applyCSS(webView1, ref)
+                }
+                webView2?.let{
+                    applyCSS(webView2, ref)
+                }
+            }
         }
     }
 
@@ -332,16 +347,23 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         scrollModeSwitch.isChecked = scrollMode.on
         scrollModeSwitch.setOnCheckedChangeListener { _, b ->
             scrollMode.on = scrollModeSwitch.isChecked
-            when (b) {
-                true -> {
-                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.GONE
-                    resourcePager.focusedChild?.setPadding(0, 5, 0, 5)
+
+            val webView = resourcePager.focusedChild?.findViewById(R.id.webView) as? WebView
+            webView?.let {
+                when (b) {
+                    true -> {
+                        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.GONE
+                        resourcePager.focusedChild?.setPadding(0, 4, 0, 4)
+                    }
+                    false -> {
+                        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.VISIBLE
+                        resourcePager.focusedChild?.setPadding(0, 30, 0, 30)
+                    }
                 }
-                false -> {
-                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.VISIBLE
-                    resourcePager.focusedChild?.setPadding(0, 30, 0, 30)
-                }
+            }?: run {
+                resourcePager.focusedChild?.setPadding(0, 0, 0, 0)
             }
+
             updateSwitchable(scrollMode)
             updateViewCSS(SCROLL_REF)
         }

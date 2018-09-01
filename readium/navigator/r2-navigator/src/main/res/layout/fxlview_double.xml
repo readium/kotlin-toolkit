@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Module: r2-navigator-kotlin
+  ~ Developers: Aferdita Muriqi
+  ~
+  ~ Copyright (c) 2018. Readium Foundation. All rights reserved.
+  ~ Use of this source code is governed by a BSD-style license which is detailed in the
+  ~ LICENSE file present in the project repository where this source code is maintained.
+  -->
+
+<org.readium.r2.navigator.fxl.R2FXLLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/r2FXLLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <org.readium.r2.navigator.pager.R2WebView
+            android:id="@+id/firstWebView"
+            android:scaleType="centerInside"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layerType="hardware"
+            android:layout_gravity="end"/>
+
+        <org.readium.r2.navigator.pager.R2WebView
+            android:id="@+id/secondWebView"
+            android:scaleType="centerInside"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layerType="hardware"
+            android:layout_gravity="start"/>
+
+    </LinearLayout>
+
+</org.readium.r2.navigator.fxl.R2FXLLayout>
