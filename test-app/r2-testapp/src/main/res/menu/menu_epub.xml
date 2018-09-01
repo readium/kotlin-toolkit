@@ -18,21 +18,24 @@
         android:id="@+id/drm"
         android:icon="@drawable/icon_drm"
         android:title="DRM"
-        app:showAsAction="always|always">
+        app:showAsAction="always|always"
+        tools:ignore="AlwaysShowAction">
     </item>
 
     <item
         android:id="@+id/bookmark"
         android:icon="@drawable/icon_bookmark"
         android:title="Bookmark"
-        app:showAsAction="always|always">
+        app:showAsAction="always|always"
+        tools:ignore="AlwaysShowAction">
     </item>
 
     <item
         android:id="@+id/settings"
         android:icon="@drawable/icon_settings"
         android:title="Settings"
-        app:showAsAction="always|always">
+        app:showAsAction="always|always"
+        tools:ignore="AlwaysShowAction">
     </item>
 
 
@@ -40,7 +43,8 @@
         android:id="@+id/toc"
         android:icon="@drawable/icon_menu"
         android:title="TOC"
-        app:showAsAction="always|always" >
+        app:showAsAction="always|always"
+        tools:ignore="AlwaysShowAction">
     </item>
 
 </menu>

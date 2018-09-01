@@ -105,9 +105,9 @@ class OPDSListActivity : AppCompatActivity() {
                     }.build().apply {
                         setCancelable(false)
                         setCanceledOnTouchOutside(false)
-                        setOnShowListener({
+                        setOnShowListener {
                             val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                            b.setOnClickListener({
+                            b.setOnClickListener {
 
                                 if (TextUtils.isEmpty(editTextTitle!!.text)) {
                                     editTextTitle!!.error = "Please Enter A Title."
@@ -136,8 +136,8 @@ class OPDSListActivity : AppCompatActivity() {
                                         editTextHref!!.requestFocus()
                                     }
                                 }
-                            })
-                        })
+                            }
+                        }
 
                     }.show()
                 }

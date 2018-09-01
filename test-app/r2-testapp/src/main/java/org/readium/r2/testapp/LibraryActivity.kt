@@ -35,7 +35,6 @@ import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import com.github.kittinunf.fuel.Fuel
 import com.mcxiaoke.koi.ext.onClick
-import net.theluckycoder.materialchooser.Chooser
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
@@ -43,10 +42,7 @@ import nl.komponents.kovenant.ui.failUi
 import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
-import org.jetbrains.anko.design.coordinatorLayout
-import org.jetbrains.anko.design.floatingActionButton
-import org.jetbrains.anko.design.snackbar
-import org.jetbrains.anko.design.textInputLayout
+import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.json.JSONObject
 import org.readium.r2.navigator.R2CbzActivity
@@ -75,7 +71,7 @@ import java.net.ServerSocket
 import java.net.URL
 import java.util.*
 
-open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions {
+open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions {
 
     protected lateinit var server: Server
     private var localPort: Int = 0
@@ -90,8 +86,10 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     private lateinit var opdsDownloader: OPDSDownloader
     private lateinit var publication: Publication
 
-    private lateinit var catalogView: RecyclerView
+    protected lateinit var catalogView: RecyclerView
     private lateinit var alertDialog: AlertDialog
+
+    protected var listener:LibraryActivity? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -276,7 +274,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     progress.dismiss()
                     database.books.insert(book, false)?.let {
                         book.id = it
-                        books.add(book)
+                        books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
 
                     } ?: run {
@@ -304,7 +302,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 button.setOnClickListener {
                     database.books.insert(book, true)?.let {
                         book.id = it
-                        books.add(book)
+                        books.add(0,book)
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
                     }
@@ -320,9 +318,9 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun showDocumentPicker() {
-        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
-        // browser.
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        // ACTION_GET_DOCUMENT allows to import a system file by creating a copy of it
+        // with access to every app that manages files
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
 
         // Filter to only show results that can be "opened", such as a
         // file (as opposed to a list of contacts or timezones)
@@ -593,7 +591,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                     database.books.insert(book, false)?.let {
                         book.id = it
-                        books.add(book)
+                        books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
                     } ?: run {
 
@@ -611,7 +609,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it), Publication.EXTENSION.CBZ)
                         database.books.insert(book, false)?.let {
                             book.id = it
-                            books.add(book)
+                            books.add(0,book)
                             booksAdapter.notifyDataSetChanged()
                         } ?: run {
 
@@ -679,6 +677,8 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             }
         } then {
             progress.dismiss()
+        } fail {
+            progress.dismiss()
         }
     }
 
@@ -689,7 +689,6 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 "publication" to publication,
                 "bookId" to book.id))
     }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -731,7 +730,7 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             progress.show()
 
             task {
-                val filePath = data.getStringExtra(Chooser.RESULT_PATH)
+                val filePath = data.getStringExtra("resultPath")
                 parseIntent(filePath)
             } then {
                 progress.dismiss()
@@ -767,6 +766,10 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         progress.dismiss()
 
                     }
+                } else {
+                    longSnackbar(catalogView, "Unsupported file")
+                    progress.dismiss()
+                    file.delete()
                 }
             }
         } catch (e: Throwable) {
@@ -816,18 +819,15 @@ open class CatalogActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
 
     override fun parseIntentLcpl(uriString: String) {
-        // use CatalogActivityPlusLcp for LCP support
-        // update AndroidManifest <activity android:name=".CatalogActivityPlusLcp">
+        listener?.parseIntentLcpl(uriString)
     }
 
     override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication) {
-        // use CatalogActivityPlusLcp for LCP support
-        // update AndroidManifest <activity android:name=".CatalogActivityPlusLcp">
+        listener?.prepareAndStartActivityWithLCP(drm,pub,book,file,publicationPath,parser,publication)
     }
 
     override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog) {
-        // use CatalogActivityPlusLcp for LCP support
-        // update AndroidManifest <activity android:name=".CatalogActivityPlusLcp">
+        listener?.processLcpActivityResult(uri,it,progress)
     }
 
 }

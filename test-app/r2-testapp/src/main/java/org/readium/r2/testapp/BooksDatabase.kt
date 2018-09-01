@@ -10,9 +10,12 @@
 
 package org.readium.r2.testapp
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
 import org.jetbrains.anko.db.*
+import org.joda.time.DateTime
 import org.readium.r2.shared.Publication
 
 
@@ -23,7 +26,7 @@ val Context.database: BooksDatabaseOpenHelper
 val Context.appContext: Context
     get() = applicationContext
 
-class Book(val fileName: String, val title: String, val author: String?, val fileUrl: String, var id: Long?, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext: Publication.EXTENSION)
+class Book(val fileName: String, val title: String, val author: String?, val fileUrl: String, var id: Long?, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext: Publication.EXTENSION, val creation:Long = DateTime().toDate().time)
 
 class BooksDatabase(context: Context) {
 
@@ -36,9 +39,10 @@ class BooksDatabase(context: Context) {
 
 }
 
-class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "books_database", null, 1) {
+class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "books_database", null, BooksDatabaseOpenHelper.DATABASE_VERSION) {
     companion object {
         private var instance: BooksDatabaseOpenHelper? = null
+        private val DATABASE_VERSION = 3
 
         @Synchronized
         fun getInstance(ctx: Context): BooksDatabaseOpenHelper {
@@ -60,15 +64,68 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
                 BOOKSTable.IDENTIFIER to TEXT,
                 BOOKSTable.COVER to BLOB,
                 BOOKSTable.COVERURL to TEXT,
-                BOOKSTable.EXTENSION to TEXT)
+                BOOKSTable.EXTENSION to TEXT,
+                BOOKSTable.CREATION to INTEGER)
 
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         // Here you can upgrade tables, as usual
-        db.dropTable(BOOKSTable.NAME, true)
-        // TODO need to add a migration = add extension column
+        // migration = add extension column
+        when (oldVersion) {
+            1 -> {
+                try {
+                    upgradeVersion2(db) {
+                        //done
+                    }
+                } catch (e: SQLiteException) { }
+                try {
+                    upgradeVersion3(db) {
+                        //done
+                    }
+                } catch (e: SQLiteException) { }
+            }
+            2 -> {
+                upgradeVersion3(db) {
+                    //done
+                }
+            }
+        }
     }
+
+    private fun upgradeVersion2(db: SQLiteDatabase, callback: () -> Unit) {
+        db.execSQL("ALTER TABLE " + BOOKSTable.NAME + " ADD COLUMN " + BOOKSTable.EXTENSION + " TEXT DEFAULT '.epub';")
+        val cursor = db.query(BOOKSTable.NAME, BOOKSTable.RESULT_COLUMNS, null, null, null, null, null, null)
+        if (cursor != null) {
+            var hasItem = cursor.moveToFirst()
+            while (hasItem) {
+                val id = cursor.getInt(cursor.getColumnIndex(BOOKSTable.ID))
+                val values = ContentValues()
+                values.put(BOOKSTable.EXTENSION, ".epub")
+                db.update(BOOKSTable.NAME, values, "${BOOKSTable.ID}=?", arrayOf(id.toString()))
+                hasItem = cursor.moveToNext()
+            }
+            cursor.close()
+        }
+        callback()
+    }
+    private fun upgradeVersion3(db: SQLiteDatabase, callback: () -> Unit) {
+        db.execSQL("ALTER TABLE " + BOOKSTable.NAME + " ADD COLUMN " + BOOKSTable.CREATION + " INTEGER DEFAULT ${DateTime().toDate().time};")
+        val cursor = db.query(BOOKSTable.NAME, BOOKSTable.RESULT_COLUMNS, null, null, null, null, null, null)
+        if (cursor != null) {
+            var hasItem = cursor.moveToFirst()
+            while (hasItem) {
+                val id = cursor.getInt(cursor.getColumnIndex(BOOKSTable.ID))
+                val values = ContentValues()
+                values.put(BOOKSTable. CREATION, DateTime().toDate().time)
+                db.update(BOOKSTable.NAME, values, "${BOOKSTable.ID}=?", arrayOf(id.toString()))
+                hasItem = cursor.moveToNext()
+            }
+            cursor.close()
+        }
+        callback()
+    }
+
 }
 
 object BOOKSTable {
@@ -82,6 +139,9 @@ object BOOKSTable {
     const val COVER = "cover"
     const val COVERURL = "coverUrl"
     const val EXTENSION = "extension"
+    const val CREATION = "creantionDate"
+    var RESULT_COLUMNS = arrayOf(ID, IDENTIFIER, FILENAME, TITLE, AUTHOR, FILEURL, COVER, COVERURL, EXTENSION, CREATION)
+
 }
 
 class BOOKS(private var database: BooksDatabaseOpenHelper) {
@@ -104,7 +164,8 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
                         BOOKSTable.IDENTIFIER to book.identifier,
                         BOOKSTable.COVER to book.cover,
                         BOOKSTable.COVERURL to book.coverLink,
-                        BOOKSTable.EXTENSION to book.ext.value)
+                        BOOKSTable.EXTENSION to book.ext.value,
+                        BOOKSTable.CREATION to book.creation)
             }
         }
         return null
@@ -138,7 +199,9 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     fun list(): MutableList<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION)
+            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION)
+                    .orderBy(BOOKSTable.CREATION, SqlOrderDirection.DESC)
+                    .orderBy(BOOKSTable.TITLE, SqlOrderDirection.ASC)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
@@ -174,8 +237,11 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
             val ext = columns[8]?.let {
                 return@let it as String
             } ?: kotlin.run { return@run "" }
+            val creation = columns[9]?.let {
+                return@let it
+            } ?: kotlin.run { return@run 0 }
 
-            return Book(filename, title, author, fileUrl, id, coverUrl, identifier, cover, Publication.EXTENSION.fromString(ext)!!)
+            return Book(filename, title, author, fileUrl, id, coverUrl, identifier, cover, Publication.EXTENSION.fromString(ext)!!, creation as Long)
 
         }
     }

@@ -9,15 +9,15 @@
  */
 
 apply plugin: 'com.android.application'
-
 apply plugin: 'kotlin-android'
-
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.readium'
 
 
-int major = 1
+int major = 2
 int minor = 0
-int patch = 1
+int patch = 0
 int build = 3
 String type = ""
 
@@ -35,10 +35,15 @@ project.ext.versionCode = 1_000_000 * major + 10_000 * minor + 100 * patch + bui
 
 
 android {
+    flavorDimensions "testapp"
+
     compileSdkVersion 27
-    buildToolsVersion "27.0.3"
     signingConfigs {
         release {
+            keyAlias 'EDRLab'
+            keyPassword '###         '
+            storeFile file('/###')
+            storePassword '###         '
         }
     }
     defaultConfig {
@@ -60,84 +65,127 @@ android {
     packagingOptions {
         exclude 'META-INF/*'
     }
+    productFlavors {
+        intTestapp {
+            dimension "testapp"
+        }
+        intTestappWithLcp {
+            dimension "testapp"
+        }
+        devTestapp {
+            dimension "testapp"
+        }
+        devTestappWithLcp {
+            dimension "testapp"
+        }
+    }
 
+    // default build flavour
+    defaultPublishConfig "intTestappDebug"
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java']
+            res.srcDirs = ['src/main/res']
+            assets.srcDirs = ['src/main/assets']
+        }
+        intTestapp {
+            java.srcDirs = ['src/main/java', 'src/nondrm/java']
+        }
+        devTestapp {
+            java.srcDirs = ['src/main/java', 'src/nondrm/java']
+        }
+        intTestappWithLcp {
+            java.srcDirs = ['src/main/java', 'src/withlcp/java']
+        }
+        devTestappWithLcp {
+            java.srcDirs = ['src/main/java', 'src/withlcp/java']
+        }
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'com.jakewharton.timber:timber:4.7.0'
+    implementation 'com.jakewharton.timber:timber:4.7.1'
+    if (findProject(':r2-navigator')) {
+        devTestappImplementation project(':r2-navigator')
+        devTestappWithLcpImplementation project(':r2-navigator')
+    }
+    if (findProject(':r2-streamer')) {
+        devTestappImplementation project(':r2-streamer')
+        devTestappWithLcpImplementation project(':r2-streamer')
+    }
+    if (findProject(':r2-shared')) {
+        devTestappImplementation project(':r2-shared')
+        devTestappWithLcpImplementation project(':r2-shared')
+    }
+    if (findProject(':r2-opds')) {
+        devTestappImplementation project(':r2-opds')
+        devTestappWithLcpImplementation project(':r2-opds')
+    }
+    if (findProject(':r2-lcp')) {
+        devTestappWithLcpImplementation project(':r2-lcp')
+        intTestappWithLcpImplementation project(':r2-lcp')
+    }
 
-//    uncomment these 5 lines to use with GitHu submodules and Android Studio Modules
-//    implementation project(':r2-navigator')
-//    implementation project(':r2-streamer')
-//    implementation project(':r2-shared')
-//    implementation project(':r2-lcp')
-//    implementation project(':r2-opds')
+    intTestappImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+    intTestappImplementation 'com.github.readium:r2-streamer-kotlin:develop-SNAPSHOT'
+    intTestappImplementation 'com.github.readium:r2-navigator-kotlin:develop-SNAPSHOT'
+    intTestappImplementation 'com.github.readium:r2-opds-kotlin:develop-SNAPSHOT'
 
-//    uncomment these 3 lines to use with jitpack
-    implementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
-    implementation 'com.github.readium:r2-streamer-kotlin:develop-SNAPSHOT'
-    implementation 'com.github.readium:r2-navigator-kotlin:develop-SNAPSHOT'
-    implementation 'com.github.readium:r2-opds-kotlin:develop-SNAPSHOT'
-
-//    not supported yet, keep these 2 lines commented until further notice
-//    implementation 'com.github.readium:r2-lcp-kotlin:0.1.0'
-//    implementation 'com.github.readium:r2-lcp-wrapper-kotlin:0.1.0'
-
-//    implementation 'androidx.core:core-ktx:0.3'
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
-    implementation 'com.android.support:cardview-v7:27.1.1'
-    implementation 'com.android.support:design:27.1.1'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    intTestappWithLcpImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+    intTestappWithLcpImplementation 'com.github.readium:r2-streamer-kotlin:develop-SNAPSHOT'
+    intTestappWithLcpImplementation 'com.github.readium:r2-navigator-kotlin:develop-SNAPSHOT'
+    intTestappWithLcpImplementation 'com.github.readium:r2-opds-kotlin:develop-SNAPSHOT'
     implementation('com.mcxiaoke.koi:core:0.5.5') {
-//        exclude module: 'support-v4'
-//        exclude module: 'support-v7'
+        exclude module: 'support-v4'
+    }
+    implementation('com.mcxiaoke.koi:async:0.5.5') {
+        exclude module: 'support-v4'
     }
 
-    // useful extensions (only ~100k)
-    implementation('com.mcxiaoke.koi:async:0.5.5') {
-//        exclude module: 'support-v4'
-//        exclude module: 'support-v7'
-    }
-    
+    //    implementation 'androidx.core:core-ktx:0.3'
+    implementation "com.android.support:appcompat-v7:$support_version"
+    implementation "com.android.support:recyclerview-v7:$support_version"
+    implementation "com.android.support:cardview-v7:$support_version"
+    implementation "com.android.support:design:$support_version"
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     implementation 'org.nanohttpd:nanohttpd:2.3.2-SNAPSHOT'
     implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.2-SNAPSHOT'
-//    implementation 'org.nanohttpd:nanohttpd:2.3.1'
-//    implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.1'
+
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'io.reactivex.rxjava2:rxjava:2.1.8'
-    implementation 'org.jetbrains.anko:anko-design:0.10.4'
+    implementation 'org.jetbrains.anko:anko-design:0.10.5'
 
     // For SnackBars
-    implementation 'org.jetbrains.anko:anko-commons:0.10.4'
+    implementation 'org.jetbrains.anko:anko-commons:0.10.5'
 
     // Anko Layouts
-    implementation 'org.jetbrains.anko:anko-sdk25:0.10.4'
+    implementation 'org.jetbrains.anko:anko-sdk25:0.10.5'
 
     // sdk15, sdk19, sdk21, sdk23 are also available
-    implementation 'org.jetbrains.anko:anko-appcompat-v7:0.10.4'
-    implementation 'org.jetbrains.anko:anko-recyclerview-v7:0.10.4'
+    implementation 'org.jetbrains.anko:anko-appcompat-v7:0.10.5'
+    implementation 'org.jetbrains.anko:anko-recyclerview-v7:0.10.5'
 
     // Coroutine listeners for Anko Layouts
-    implementation 'org.jetbrains.anko:anko-sdk25-coroutines:0.10.4'
-    implementation 'org.jetbrains.anko:anko-appcompat-v7-coroutines:0.10.4'
+    implementation 'org.jetbrains.anko:anko-sdk25-coroutines:0.10.5'
+    implementation 'org.jetbrains.anko:anko-appcompat-v7-coroutines:0.10.5'
 
     // Anko SQLite
-    implementation 'org.jetbrains.anko:anko-sqlite:0.10.4'
-    implementation 'com.github.kittinunf.fuel:fuel:1.14.0'
+    implementation 'org.jetbrains.anko:anko-sqlite:0.10.5'
+    implementation 'com.github.kittinunf.fuel:fuel:1.15.0'
 
     //for JVM
-    implementation 'com.github.kittinunf.fuel:fuel-android:1.14.0'
+    implementation 'com.github.kittinunf.fuel:fuel-android:1.15.0'
 
     //for Android
-//    implementation 'com.github.kittinunf.fuel:fuel-livedata:1.12.1' //for LiveData support
-//    implementation 'com.github.kittinunf.fuel:fuel-rxjava:1.12.1' //for RxJava support
-//    implementation 'com.github.kittinunf.fuel:fuel-gson:1.12.1' //for Gson support
-//    implementation 'com.github.kittinunf.fuel:fuel-jackson:1.12.1' //for Jackson support
-//    implementation 'com.github.kittinunf.fuel:fuel-moshi:1.12.1' //for Moshi support
+    //    implementation 'com.github.kittinunf.fuel:fuel-livedata:1.12.1' //for LiveData support
+    //    implementation 'com.github.kittinunf.fuel:fuel-rxjava:1.12.1' //for RxJava support
+    //    implementation 'com.github.kittinunf.fuel:fuel-gson:1.12.1' //for Gson support
+    //    implementation 'com.github.kittinunf.fuel:fuel-jackson:1.12.1' //for Jackson support
+    //    implementation 'com.github.kittinunf.fuel:fuel-moshi:1.12.1' //for Moshi support
 
     // async functions (only ~70k)
     final KOVENANT_VERSION = '3.3.0'
@@ -151,12 +199,12 @@ dependencies {
     implementation 'org.zeroturnaround:zt-zip:1.12'
     implementation 'joda-time:joda-time:2.9.9'
     implementation 'org.slf4j:slf4j-nop:1.7.25'
-    implementation 'net.theluckycoder.materialchooser:materialchooser:1.1.5'
 
+    //    implementation 'net.theluckycoder.materialchooser:materialchooser:1.1.4'
     implementation 'com.duolingo.open:rtl-viewpager:1.0.3'
-
+    implementation 'com.commonsware.cwac:merge:1.1.2'
     implementation 'com.github.abacritt:sectionedmergeadapter:0.2'
-    
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

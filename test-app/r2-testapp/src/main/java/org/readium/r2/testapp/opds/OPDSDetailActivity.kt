@@ -81,19 +81,19 @@ class OPDSDetailActivity : AppCompatActivity() {
 
                                 val publicationIdentifier = publication.metadata.identifier
                                 val author = authorName(publication)
-                                Thread({
+                                Thread {
                                     val bitmap = getBitmapFromURL(publication.images.first().href!!)
                                     val stream = ByteArrayOutputStream()
                                     bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
                                     val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
                                     database.books.insert(book, false)?.let {
                                         book.id = it
-                                        books.add(book)
+                                        books.add(0,book)
                                         snackbar(this, "download completed")
                                         progress.dismiss()
                                     } ?: run {
                                         progress.dismiss()
-                                        runOnUiThread({
+                                        runOnUiThread {
 
                                             val duplicateAlert = alert(Appcompat, "Publication already exists") {
 
@@ -104,28 +104,28 @@ class OPDSDetailActivity : AppCompatActivity() {
                                             duplicateAlert.apply {
                                                 setCancelable(false)
                                                 setCanceledOnTouchOutside(false)
-                                                setOnShowListener({
+                                                setOnShowListener {
                                                     val b2 = getButton(AlertDialog.BUTTON_POSITIVE)
-                                                    b2.setOnClickListener({
+                                                    b2.setOnClickListener {
                                                         database.books.insert(book, true)?.let {
                                                             book.id = it
-                                                            books.add(book)
+                                                            books.add(0,book)
                                                             duplicateAlert.dismiss()
                                                         }
-                                                    })
+                                                    }
                                                     val bCancel = getButton(AlertDialog.BUTTON_NEGATIVE)
-                                                    bCancel.setOnClickListener({
+                                                    bCancel.setOnClickListener {
                                                         File(book.fileUrl).delete()
                                                         duplicateAlert.dismiss()
-                                                    })
-                                                })
+                                                    }
+                                                }
                                             }
                                             duplicateAlert.show()
-                                        })
+                                        }
 
                                     }
 
-                                }).start()
+                                }.start()
                             }
                         }
                     }

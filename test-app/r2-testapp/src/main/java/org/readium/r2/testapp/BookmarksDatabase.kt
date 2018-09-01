@@ -84,13 +84,13 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
 }
 
 object BOOKMARKSTable {
-    val NAME = "BOOKMARKS"
-    val ID = "id"
-    val BOOK_ID = "bookID"
-    val RESOURCE_INDEX = "resourceIndex"
-    val RESOURCE_HREF = "resourceHref"
-    val PROGRESSION = "progression"
-    val TIMESTAMP = "timestamp"
+    const val NAME = "BOOKMARKS"
+    const val ID = "id"
+    const val BOOK_ID = "bookID"
+    const val RESOURCE_INDEX = "resourceIndex"
+    const val RESOURCE_HREF = "resourceHref"
+    const val PROGRESSION = "progression"
+    const val TIMESTAMP = "timestamp"
 }
 
 class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
