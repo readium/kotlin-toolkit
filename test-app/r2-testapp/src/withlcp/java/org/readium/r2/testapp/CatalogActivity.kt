@@ -23,8 +23,6 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.textInputLayout
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.LcpHttpService
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpSession
@@ -111,16 +109,9 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                 if (supportedProfiles.contains(drm2.profile)) {
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
 
-                    val license = (drm.license as LcpLicense)
+                    val license = drm.license as LcpLicense
                     val drmModel = DRMModel(drm.brand.name,
-                            license.currentStatus(),
-                            license.provider().toString(),
-                            DateTime(license.issued()).toString(DateTimeFormat.shortDateTime()),
-                            DateTime(license.lastUpdate()).toString(DateTimeFormat.shortDateTime()),
-                            DateTime(license.rightsStart()).toString(DateTimeFormat.shortDateTime()),
-                            DateTime(license.rightsEnd()).toString(DateTimeFormat.shortDateTime()),
-                            license.rightsPrints().toString(),
-                            license.rightsCopies().toString())
+                            license.archivePath!!)
 
                     startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "drmModel" to drmModel))
                 } else {
