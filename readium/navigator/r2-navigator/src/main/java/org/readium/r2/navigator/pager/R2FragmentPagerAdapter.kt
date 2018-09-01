@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
+import android.support.v4.app.FragmentStatePagerAdapter
 import android.support.v4.app.FragmentTransaction
 import android.support.v4.util.LongSparseArray
 import android.support.v4.view.PagerAdapter
@@ -22,7 +23,7 @@ import android.view.ViewGroup
 import timber.log.Timber
 
 
-abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : PagerAdapter() {
+abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : FragmentStatePagerAdapter(mFragmentManager) {
 
     private val TAG = R2FragmentPagerAdapter::class.java.simpleName
 
@@ -31,7 +32,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
     private var mCurTransaction: FragmentTransaction? = null
     private var mCurrentPrimaryItem: Fragment? = null
 
-    abstract fun getItem(position: Int): Fragment
+    abstract override fun getItem(position: Int): Fragment
 
     override fun startUpdate(container: ViewGroup) {
         if (container.id == View.NO_ID) {
