@@ -17,8 +17,8 @@ interface DrmLicense : Serializable {
     fun decipher(data: ByteArray): ByteArray?
     fun areRightsValid()
     fun register()
-    fun renew(endDate: Date?, completion: (String) -> Void)
-    fun ret(completion: (String) -> Void)
+    fun renewLicense (endDate: Date? = null, callback: (Any) -> Unit)
+    fun returnLicense(callback: (Any) -> Unit)
     fun currentStatus(): String
     fun lastUpdate(): Date
     fun issued(): Date
