@@ -17,9 +17,7 @@ import android.view.Menu
 import android.view.MenuItem
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
-import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.navigator.R2EpubActivity
-import java.net.URL
 
 /**
  * R2EpubActivity : Extension of the R2EpubActivity() from navigator

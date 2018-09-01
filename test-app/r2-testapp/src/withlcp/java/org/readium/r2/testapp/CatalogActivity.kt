@@ -11,7 +11,6 @@ package org.readium.r2.testapp
 
 import android.app.ProgressDialog
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.EditText
@@ -24,8 +23,6 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.textInputLayout
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.LcpHttpService
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpSession
