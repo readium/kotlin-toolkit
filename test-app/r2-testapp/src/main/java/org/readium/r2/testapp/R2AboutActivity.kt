@@ -40,7 +40,7 @@ class R2AboutActivity : AppCompatActivity() {
                 textView {
                     padding = dip(10)
                     topPadding = dip(30)
-                    text = context.getString(R.string.app_version_label)
+                    text = context.getString(R.string.app_version_header)
                     textSize = 20f
                     typeface = Typeface.DEFAULT_BOLD
                 }
@@ -51,12 +51,12 @@ class R2AboutActivity : AppCompatActivity() {
                     weightSum = 2f
                     textView {
                         padding = dip(10)
-                        text = context.getString(R.string.app_version)
+                        text = context.getString(R.string.app_version_label)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = "1.0.3"
+                        text = context.getString(R.string.app_version)
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
