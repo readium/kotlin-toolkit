@@ -18,6 +18,8 @@ import android.view.MenuItem
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.shared.Location
+import org.readium.r2.shared.Locator
 
 /**
  * R2EpubActivity : Extension of the R2EpubActivity() from navigator
@@ -33,12 +35,10 @@ class R2EpubActivity : R2EpubActivity() {
 
     // Provide access to the Bookmarks Database
     private lateinit var bookmarkDB: BookmarksDatabase
-    private lateinit var locatorUtils: LocatorUtils
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bookmarkDB = BookmarksDatabase(this)
-        locatorUtils = LocatorUtils(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -73,18 +73,19 @@ class R2EpubActivity : R2EpubActivity() {
                 val bookId = intent.getLongExtra("bookId", -1)
                 val resourceIndex = resourcePager.currentItem.toLong()
                 val resourceHref = publication.spine[resourcePager.currentItem].href!!
+                val resourceTitle = publication.spine[resourcePager.currentItem].title?: ""
                 val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.toString()).toDouble()
 
-                val bookmark = Bookmark(
+                val bookmark = Locator(
                         bookId,
+                        publicationIdentifier,
                         resourceIndex,
                         resourceHref,
-                        progression
+                        resourceTitle,
+                        Location(progression = progression)
                 )
                 
-                val bookmarksList = locatorUtils.getBookmarks(bookId)
-
-                locatorUtils.addLocator(bookmark, bookmarksList)?.let {
+                bookmarkDB.bookmarks.insert(bookmark)?.let {
                     runOnUiThread {
                         toast("Bookmark added")
                     }

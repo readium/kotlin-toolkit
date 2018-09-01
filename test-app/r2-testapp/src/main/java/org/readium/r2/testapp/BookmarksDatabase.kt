@@ -13,33 +13,10 @@ package org.readium.r2.testapp
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import org.jetbrains.anko.db.*
-import org.joda.time.DateTime
+import org.json.JSONObject
 import org.readium.r2.shared.Location
 import org.readium.r2.shared.Locator
 
-/**
- * Bookmark model
- *
- * @var bookId: Long? - Book index in the database
- * @val resourceIndex: Long -  Index to the spine element
- * @val resourceHref: String -  Reference to the spine element
- * @val spine_index: Long - Index to the spine element of the book
- * @val progression: Double - Percentage of progression in the spine element
- * @val created: String - Datetime when the bookmark has been created
- * @var id: Long? - ID of the bookmark in database
- *
- * @fun toString(): String - Return a String description of the Bookmark
- */
-
-class Bookmark(val bookID: Long, val resourceIndex: Long, override val resourceHref: String, val progression: Double = 0.0, var id: Long? = null):
-        Locator(bookID.toString(), resourceIndex, resourceHref,"", Location(resourceIndex, null, null, null, progression, 0)) {
-
-    override fun toString(): String {
-        println(super.toJson())
-        return "Bookmark id : ${this.id}, book identifier : ${this.bookID}, resource href selected ${this.resourceHref}, progression saved ${this.progression} and created the ${this.created}."
-    }
-
-}
 
 class BookmarksDatabase(context: Context) {
 
@@ -70,15 +47,26 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
         db.createTable(BOOKMARKSTable.NAME, true,
                 BOOKMARKSTable.ID to INTEGER + PRIMARY_KEY + AUTOINCREMENT,
                 BOOKMARKSTable.BOOK_ID to INTEGER,
+                BOOKMARKSTable.PUBLICATION_ID to TEXT,
                 BOOKMARKSTable.RESOURCE_INDEX to INTEGER,
                 BOOKMARKSTable.RESOURCE_HREF to TEXT,
-                BOOKMARKSTable.PROGRESSION to REAL,
-                BOOKMARKSTable.CREATED to INTEGER)
+                BOOKMARKSTable.RESOURCE_TITLE to TEXT,
+                BOOKMARKSTable.LOCATION to TEXT,
+                BOOKMARKSTable.CREATION_DATE to INTEGER)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // Here you can upgrade tables, as usual
-        db.dropTable(BOOKMARKSTable.NAME, true)
+
+        // TODO add migration to rename CREATION_DATE to CREATION_DATE
+
+        // TODO add migration for publicationId
+
+        // TODO add migration for location json
+
+        // TODO add migration to convert progression into location
+
+        // TODO add migration to remove progression
+
     }
 }
 
@@ -86,10 +74,12 @@ object BOOKMARKSTable {
     const val NAME = "BOOKMARKS"
     const val ID = "id"
     const val BOOK_ID = "bookID"
+    const val PUBLICATION_ID = "publicationID"
     const val RESOURCE_INDEX = "resourceIndex"
     const val RESOURCE_HREF = "resourceHref"
-    const val PROGRESSION = "progression"
-    const val CREATED = "created"
+    const val RESOURCE_TITLE = "resourceTitle"
+    const val LOCATION = "location"
+    const val CREATION_DATE = "creationDat"
 }
 
 class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
@@ -106,50 +96,55 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
         }
     }
 
-    fun insert(bookmark: Bookmark): Long? {
-        if (bookmark.bookID < 0 ||
-                bookmark.resourceIndex < 0 ||
-                bookmark.progression < 0 || bookmark.progression > 1){
+    fun insert(locator: Locator): Long? {
+        if (locator.bookID < 0 ||
+                locator.resourceIndex < 0 ||
+                locator.location.progression!! < 0 || locator.location.progression!! > 1){
             return null
         }
-        val exists = has(bookmark)
+        val exists = has(locator)
         if (exists.isEmpty()) {
             return database.use {
                 return@use insert(BOOKMARKSTable.NAME,
-                        BOOKMARKSTable.BOOK_ID to bookmark.bookID,
-                        BOOKMARKSTable.RESOURCE_INDEX to bookmark.resourceIndex,
-                        BOOKMARKSTable.RESOURCE_HREF to bookmark.resourceHref,
-                        BOOKMARKSTable.PROGRESSION to bookmark.progression,
-                        BOOKMARKSTable.CREATED to bookmark.created)
+                        BOOKMARKSTable.BOOK_ID to locator.bookID,
+                        BOOKMARKSTable.PUBLICATION_ID to locator.publicationID,
+                        BOOKMARKSTable.RESOURCE_INDEX to locator.resourceIndex,
+                        BOOKMARKSTable.RESOURCE_HREF to locator.resourceHref,
+                        BOOKMARKSTable.RESOURCE_TITLE to locator.resourceTitle,
+                        BOOKMARKSTable.LOCATION to locator.location.toJSON().toString(),
+                        BOOKMARKSTable.CREATION_DATE to locator.creationDate)
             }
         }
         return null
     }
 
-    fun has(bookmark: Bookmark): List<Bookmark> {
+    fun has(locator: Locator): List<Locator> {
         return database.use {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.ID,
                     BOOKMARKSTable.BOOK_ID,
+                    BOOKMARKSTable.PUBLICATION_ID,
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
-                    BOOKMARKSTable.PROGRESSION,
-                    BOOKMARKSTable.CREATED)
-                    .whereArgs("(bookID = {bookID}) AND (resourceIndex = {resourceIndex}) AND (resourceHref = {resourceHref}) AND (progression = {progression})",
-                            "bookID" to bookmark.bookID,
-                            "resourceIndex" to bookmark.resourceIndex,
-                            "resourceHref" to bookmark.resourceHref,
-                            "progression" to bookmark.progression)
+                    BOOKMARKSTable.RESOURCE_TITLE,
+                    BOOKMARKSTable.LOCATION,
+                    BOOKMARKSTable.CREATION_DATE)
+                    .whereArgs("(bookID = {bookID}) AND (publicationID = {publicationID}) AND (resourceIndex = {resourceIndex}) AND (resourceHref = {resourceHref})  AND (location = {location})",
+                            "bookID" to locator.bookID,
+                            "publicationID" to locator.publicationID,
+                            "resourceIndex" to locator.resourceIndex,
+                            "resourceHref" to locator.resourceHref,
+                            "location" to locator.location.toJSON().toString())
                     .exec {
                         parseList(MyRowParser())
                     }
         }
     }
 
-    fun delete(bookmark: Bookmark) {
+    fun delete(locator: Locator) {
         database.use {
             delete(BOOKMARKSTable.NAME, "id = {id}",
-                    "id" to bookmark.id!!)
+                    "id" to locator.id!!)
         }
     }
 
@@ -162,15 +157,17 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
         }
     }
 
-    fun listAll(): MutableList<Bookmark> {
+    fun listAll(): MutableList<Locator> {
         return database.use {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.ID,
                     BOOKMARKSTable.BOOK_ID,
+                    BOOKMARKSTable.PUBLICATION_ID,
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
-                    BOOKMARKSTable.PROGRESSION,
-                    BOOKMARKSTable.CREATED)
+                    BOOKMARKSTable.RESOURCE_TITLE,
+                    BOOKMARKSTable.LOCATION,
+                    BOOKMARKSTable.CREATION_DATE)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
@@ -178,48 +175,54 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
     }
 
 
-    fun list(bookID: Long): MutableList<Bookmark> {
+    fun list(bookID: Long): MutableList<Locator> {
         return database.use {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.ID,
                     BOOKMARKSTable.BOOK_ID,
+                    BOOKMARKSTable.PUBLICATION_ID,
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
-                    BOOKMARKSTable.PROGRESSION,
-                    BOOKMARKSTable.CREATED)
+                    BOOKMARKSTable.RESOURCE_TITLE,
+                    BOOKMARKSTable.LOCATION,
+                    BOOKMARKSTable.CREATION_DATE)
                     .whereArgs("bookID = {bookID}", "bookID" to bookID as Any)
                     .orderBy(BOOKMARKSTable.RESOURCE_INDEX, SqlOrderDirection.ASC)
-                    .orderBy(BOOKMARKSTable.PROGRESSION, SqlOrderDirection.ASC)
+                    .orderBy(BOOKMARKSTable.CREATION_DATE, SqlOrderDirection.ASC)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
         }
     }
 
-    class MyRowParser : RowParser<Bookmark> {
-        override fun parseRow(columns: Array<Any?>): Bookmark {
+    class MyRowParser : RowParser<Locator> {
+        override fun parseRow(columns: Array<Any?>): Locator {
             val id = columns[0]?.let {
                 return@let it
             } ?: kotlin.run { return@run 0 }
             val bookID = columns[1]?.let {
                 return@let it
             } ?: kotlin.run { return@run 0 }
-            val resourceIndex = columns[2]?.let {
-                return@let it
-            } ?: kotlin.run { return@run 0 }
-            val resourceHref = columns[3]?.let {
+            val publicationID = columns[2]?.let {
                 return@let it
             } ?: kotlin.run { return@run "" }
-            val progression = columns[4]?.let {
+            val resourceIndex = columns[3]?.let {
                 return@let it
-            } ?: kotlin.run { return@run 0.0f }
-            val created = columns[5]?.let {
+            } ?: kotlin.run { return@run 0 }
+            val resourceHref = columns[4]?.let {
+                return@let it
+            } ?: kotlin.run { return@run "" }
+            val resourceTitle = columns[5]?.let {
+                return@let it
+            } ?: kotlin.run { return@run "" }
+            val location = columns[6]?.let {
+                return@let it
+            } ?: kotlin.run { return@run "" }
+            val created = columns[7]?.let {
                 return@let it
             } ?: kotlin.run { return@run null }
 
-            val res = Bookmark(bookID as Long, resourceIndex as Long, resourceHref as String, progression as Double, id as Long)
-            res.created = created as Long
-            return res
+            return Locator(bookID as Long, publicationID as String, resourceIndex as Long, resourceHref as String, resourceTitle as String, Location.fromJSON(JSONObject(location as String)), created as Long, id as Long)
         }
     }
 
