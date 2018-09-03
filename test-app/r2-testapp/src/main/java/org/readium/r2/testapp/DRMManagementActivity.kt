@@ -12,10 +12,12 @@ package org.readium.r2.testapp
 
 import android.graphics.Typeface
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.widget.LinearLayout
 import org.jetbrains.anko.*
+import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.joda.time.DateTime
@@ -224,23 +226,71 @@ class DRMManagementActivity : AppCompatActivity() {
                     button {
                         text = context.getString(R.string.drm_label_renew)
                         onClick {
-                            lcpLicense.renewLicense() {renewedLicense ->
-                                val renewedLicense = renewedLicense  as LicenseDocument
-                                // TODO refresh UI
-                                // TODO update license archive
+                            val renewAlert = alert(Appcompat, "The publication will be valid for one more week") {
 
+                                positiveButton("Renew") { }
+                                negativeButton("Cancel") { }
+
+                            }.build()
+                            renewAlert.apply {
+                                setCancelable(false)
+                                setCanceledOnTouchOutside(false)
+                                setOnShowListener {
+                                    val button = getButton(AlertDialog.BUTTON_POSITIVE)
+                                    button.setOnClickListener {
+                                        lcpLicense.renewLicense() {renewedLicense ->
+                                            val renewedLicense = renewedLicense as LicenseDocument
+
+                                            //TODO : correctly set new end date
+                                            lcpLicense.license = renewedLicense
+
+                                            renewAlert.dismiss()
+                                            finish()
+                                            startActivity(intent)
+                                        }
+
+                                    }
+                                    val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
+                                    cancelButton.setOnClickListener {
+                                        renewAlert.dismiss()
+                                    }
+                                }
                             }
+                            renewAlert.show()
                         }
                     }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                     button {
                         text = context.getString(R.string.drm_label_return)
                         onClick {
-                            lcpLicense.returnLicense() { returnedLicense ->
-                                val returnedLicense = returnedLicense  as LicenseDocument
-                                // TODO refresh UI
-                                // TODO update license archive
+                            val returnAlert = alert(Appcompat, "This will return the publication") {
 
+                                positiveButton("Return") { }
+                                negativeButton("Cancel") { }
+
+                            }.build()
+                            returnAlert.apply {
+                                setCancelable(false)
+                                setCanceledOnTouchOutside(false)
+                                setOnShowListener {
+                                    val button = getButton(AlertDialog.BUTTON_POSITIVE)
+                                    button.setOnClickListener {
+                                        lcpLicense.returnLicense() { returnedLicense ->
+                                            val returnedLicense = returnedLicense as LicenseDocument
+
+                                            lcpLicense.license = returnedLicense
+
+                                            setResult(1)
+                                            returnAlert.dismiss()
+                                            finish()
+                                        }
+                                    }
+                                    val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
+                                    cancelButton.setOnClickListener {
+                                        returnAlert.dismiss()
+                                    }
+                                }
                             }
+                            returnAlert.show()
                         }
                     }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                 }
