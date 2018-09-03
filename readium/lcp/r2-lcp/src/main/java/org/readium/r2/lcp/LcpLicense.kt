@@ -87,17 +87,17 @@ class LcpLicense : DrmLicense {
         }
     }
 
-    // If start is null or before now, or if END is null or before now, throw invalidRights Exception
+    // If start is null or after now, or if END is null or before now, throw invalidRights Exception
     override fun areRightsValid() {
         Timber.i(TAG,"LCP areRightsValid")
         val now = Date()
         license.rights.start.let {
-            if (it != null && it.toDate().before(now)) {
+            if (it != null && it.toDate().after(now)) {
                 throw Exception(LcpError().errorDescription(LcpErrorCase.invalidRights))
             }
         }
         license.rights.end.let {
-            if (it != null && it.toDate().after(now)) {
+            if (it != null && it.toDate().before(now)) {
                 throw Exception(LcpError().errorDescription(LcpErrorCase.invalidRights))
             }
         }
