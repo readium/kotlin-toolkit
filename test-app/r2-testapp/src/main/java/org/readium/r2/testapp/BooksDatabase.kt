@@ -173,7 +173,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     private fun has(book: Book): List<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION)
+            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION)
                     .whereArgs("identifier = {identifier}", "identifier" to book.identifier)
                     .exec {
                         parseList(MyRowParser())
@@ -183,7 +183,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     fun has(identifier: String): List<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION)
+            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION)
                     .whereArgs("identifier = {identifier}", "identifier" to identifier)
                     .exec {
                         parseList(MyRowParser())
