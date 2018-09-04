@@ -26,6 +26,9 @@ import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.model.documents.LicenseDocument
 import org.readium.r2.navigator.R
 import org.readium.r2.shared.drm.DRMModel
+import java.net.URL
+import android.content.Intent
+import android.net.Uri
 
 
 class DRMManagementActivity : AppCompatActivity() {
@@ -37,6 +40,9 @@ class DRMManagementActivity : AppCompatActivity() {
         val lcpLicense = LcpLicense(drmModel.licensePath,true , this)
         lcpLicense.fetchStatusDocument().get()
         lcpLicense.updateLicenseDocument().get()
+
+        val renewURL = lcpLicense.status?.link("renew")?.href.toString()
+        val renewURLType = lcpLicense.status?.link("renew")?.type
 
         coordinatorLayout {
             fitsSystemWindows = true
@@ -228,37 +234,43 @@ class DRMManagementActivity : AppCompatActivity() {
                     button {
                         text = context.getString(R.string.drm_label_renew)
                         onClick {
-                            val renewAlert = alert(Appcompat, "The publication will be valid for one more week") {
+                            if (renewURL != null && renewURLType == "text/html") {
+                                val intent = Intent(Intent.ACTION_VIEW)
+                                intent.data = Uri.parse(renewURL)
+                                startActivity(intent)
+                            } else {
+                                val renewAlert = alert(Appcompat, "The publication will be valid for one more week") {
 
-                                positiveButton("Renew") { }
-                                negativeButton("Cancel") { }
+                                    positiveButton("Renew") { }
+                                    negativeButton("Cancel") { }
 
-                            }.build()
-                            renewAlert.apply {
-                                setCancelable(false)
-                                setCanceledOnTouchOutside(false)
-                                setOnShowListener {
-                                    val button = getButton(AlertDialog.BUTTON_POSITIVE)
-                                    button.setOnClickListener {
-                                        lcpLicense.renewLicense() {renewedLicense ->
-                                            val renewedLicense = renewedLicense as LicenseDocument
+                                }.build()
+                                renewAlert.apply {
+                                    setCancelable(false)
+                                    setCanceledOnTouchOutside(false)
+                                    setOnShowListener {
+                                        val button = getButton(AlertDialog.BUTTON_POSITIVE)
+                                        button.setOnClickListener {
+                                            lcpLicense.renewLicense() { renewedLicense ->
+                                                val renewedLicense = renewedLicense as LicenseDocument
 
-                                            //TODO : correctly set new end date
-                                            lcpLicense.license = renewedLicense
+                                                //TODO : let user set new end date
+                                                lcpLicense.license = renewedLicense
 
-                                            renewAlert.dismiss()
-                                            finish()
-                                            startActivity(intent)
+                                                renewAlert.dismiss()
+                                                finish()
+                                                startActivity(intent)
+                                            }
+
                                         }
-
-                                    }
-                                    val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
-                                    cancelButton.setOnClickListener {
-                                        renewAlert.dismiss()
+                                        val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
+                                        cancelButton.setOnClickListener {
+                                            renewAlert.dismiss()
+                                        }
                                     }
                                 }
+                                renewAlert.show()
                             }
-                            renewAlert.show()
                         }
                     }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                     button {
