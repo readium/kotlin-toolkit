@@ -35,6 +35,8 @@ class DRMManagementActivity : AppCompatActivity() {
 
         val drmModel: DRMModel = intent.getSerializableExtra("drmModel") as DRMModel
         val lcpLicense = LcpLicense(drmModel.licensePath,true , this)
+        lcpLicense.fetchStatusDocument().get()
+        lcpLicense.updateLicenseDocument().get()
 
         coordinatorLayout {
             fitsSystemWindows = true
