@@ -234,7 +234,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     button {
                         text = context.getString(R.string.drm_label_renew)
                         onClick {
-                            if (renewURL != null && renewURLType == "text/html") {
+                            if (renewURLType == "text/html") {
                                 val intent = Intent(Intent.ACTION_VIEW)
                                 intent.data = Uri.parse(renewURL)
                                 startActivity(intent)
