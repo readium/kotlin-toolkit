@@ -10,12 +10,15 @@
 
 package org.readium.r2.testapp
 
+import android.app.Activity
 import android.graphics.Typeface
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.widget.LinearLayout
 import org.jetbrains.anko.*
+import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.joda.time.DateTime
@@ -24,6 +27,8 @@ import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.model.documents.LicenseDocument
 import org.readium.r2.navigator.R
 import org.readium.r2.shared.drm.DRMModel
+import android.content.Intent
+import android.net.Uri
 
 
 class DRMManagementActivity : AppCompatActivity() {
@@ -33,6 +38,8 @@ class DRMManagementActivity : AppCompatActivity() {
 
         val drmModel: DRMModel = intent.getSerializableExtra("drmModel") as DRMModel
         val lcpLicense = LcpLicense(drmModel.licensePath,true , this)
+        lcpLicense.fetchStatusDocument().get()
+        lcpLicense.updateLicenseDocument().get()
 
         coordinatorLayout {
             fitsSystemWindows = true
@@ -224,23 +231,70 @@ class DRMManagementActivity : AppCompatActivity() {
                     button {
                         text = context.getString(R.string.drm_label_renew)
                         onClick {
-                            lcpLicense.renewLicense() {renewedLicense ->
-                                val renewedLicense = renewedLicense  as LicenseDocument
-                                // TODO refresh UI
-                                // TODO update license archive
+                            if (lcpLicense.status?.link("renew")?.type == "text/html") {
+                                val intent = Intent(Intent.ACTION_VIEW)
+                                intent.data = Uri.parse(lcpLicense.status?.link("renew")?.href.toString())
+                                startActivity(intent)
+                            } else {
+                                val renewDialog = alert(Appcompat, "The publication will be valid for one more week") {
 
+                                    positiveButton("Renew") { }
+                                    negativeButton("Cancel") { }
+
+                                }.build()
+                                renewDialog.apply {
+                                    setCancelable(false)
+                                    setCanceledOnTouchOutside(false)
+                                    setOnShowListener {
+                                        val button = getButton(AlertDialog.BUTTON_POSITIVE)
+                                        button.setOnClickListener {
+                                            lcpLicense.renewLicense() { renewedLicense ->
+                                                val renewedLicense = renewedLicense as LicenseDocument
+
+                                                //TODO : let user set new end date
+                                                lcpLicense.license = renewedLicense
+
+                                                renewDialog.dismiss()
+                                                recreate()
+                                            }
+
+                                        }
+                                    }
+                                }
+                                renewDialog.show()
                             }
                         }
                     }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                     button {
                         text = context.getString(R.string.drm_label_return)
                         onClick {
-                            lcpLicense.returnLicense() { returnedLicense ->
-                                val returnedLicense = returnedLicense  as LicenseDocument
-                                // TODO refresh UI
-                                // TODO update license archive
+                            val returnDialog = alert(Appcompat, "This will return the publication") {
 
+                                positiveButton("Return") { }
+                                negativeButton("Cancel") { }
+
+                            }.build()
+                            returnDialog.apply {
+                                setCancelable(false)
+                                setCanceledOnTouchOutside(false)
+                                setOnShowListener {
+                                    val button = getButton(AlertDialog.BUTTON_POSITIVE)
+                                    button.setOnClickListener {
+                                        lcpLicense.returnLicense() { returnedLicense ->
+                                            val returnedLicense = returnedLicense as LicenseDocument
+
+                                            lcpLicense.license = returnedLicense
+
+                                            val intent = Intent()
+                                            intent.putExtra("returned", true)
+                                            setResult(Activity.RESULT_OK, intent)
+                                            returnDialog.dismiss()
+                                            finish()
+                                        }
+                                    }
+                                }
                             }
+                            returnDialog.show()
                         }
                     }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                 }
