@@ -10,6 +10,7 @@
 
 package org.readium.r2.testapp
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
@@ -99,8 +100,10 @@ class R2EpubActivity : R2EpubActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == 1) {
-            finish()
+        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
+            if (data != null && data.getBooleanExtra("returned", false)) {
+                finish()
+            }
         }
     }
 

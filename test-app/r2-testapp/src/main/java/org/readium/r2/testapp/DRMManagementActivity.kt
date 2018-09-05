@@ -10,6 +10,7 @@
 
 package org.readium.r2.testapp
 
+import android.app.Activity
 import android.graphics.Typeface
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
@@ -26,7 +27,6 @@ import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.model.documents.LicenseDocument
 import org.readium.r2.navigator.R
 import org.readium.r2.shared.drm.DRMModel
-import java.net.URL
 import android.content.Intent
 import android.net.Uri
 
@@ -40,9 +40,6 @@ class DRMManagementActivity : AppCompatActivity() {
         val lcpLicense = LcpLicense(drmModel.licensePath,true , this)
         lcpLicense.fetchStatusDocument().get()
         lcpLicense.updateLicenseDocument().get()
-
-        val renewURL = lcpLicense.status?.link("renew")?.href.toString()
-        val renewURLType = lcpLicense.status?.link("renew")?.type
 
         coordinatorLayout {
             fitsSystemWindows = true
@@ -234,18 +231,18 @@ class DRMManagementActivity : AppCompatActivity() {
                     button {
                         text = context.getString(R.string.drm_label_renew)
                         onClick {
-                            if (renewURLType == "text/html") {
+                            if (lcpLicense.status?.link("renew")?.type == "text/html") {
                                 val intent = Intent(Intent.ACTION_VIEW)
-                                intent.data = Uri.parse(renewURL)
+                                intent.data = Uri.parse(lcpLicense.status?.link("renew")?.href.toString())
                                 startActivity(intent)
                             } else {
-                                val renewAlert = alert(Appcompat, "The publication will be valid for one more week") {
+                                val renewDialog = alert(Appcompat, "The publication will be valid for one more week") {
 
                                     positiveButton("Renew") { }
                                     negativeButton("Cancel") { }
 
                                 }.build()
-                                renewAlert.apply {
+                                renewDialog.apply {
                                     setCancelable(false)
                                     setCanceledOnTouchOutside(false)
                                     setOnShowListener {
@@ -257,32 +254,27 @@ class DRMManagementActivity : AppCompatActivity() {
                                                 //TODO : let user set new end date
                                                 lcpLicense.license = renewedLicense
 
-                                                renewAlert.dismiss()
-                                                finish()
-                                                startActivity(intent)
+                                                renewDialog.dismiss()
+                                                recreate()
                                             }
 
                                         }
-                                        val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
-                                        cancelButton.setOnClickListener {
-                                            renewAlert.dismiss()
-                                        }
                                     }
                                 }
-                                renewAlert.show()
+                                renewDialog.show()
                             }
                         }
                     }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                     button {
                         text = context.getString(R.string.drm_label_return)
                         onClick {
-                            val returnAlert = alert(Appcompat, "This will return the publication") {
+                            val returnDialog = alert(Appcompat, "This will return the publication") {
 
                                 positiveButton("Return") { }
                                 negativeButton("Cancel") { }
 
                             }.build()
-                            returnAlert.apply {
+                            returnDialog.apply {
                                 setCancelable(false)
                                 setCanceledOnTouchOutside(false)
                                 setOnShowListener {
@@ -293,18 +285,16 @@ class DRMManagementActivity : AppCompatActivity() {
 
                                             lcpLicense.license = returnedLicense
 
-                                            setResult(1)
-                                            returnAlert.dismiss()
+                                            val intent = Intent()
+                                            intent.putExtra("returned", true)
+                                            setResult(Activity.RESULT_OK, intent)
+                                            returnDialog.dismiss()
                                             finish()
                                         }
                                     }
-                                    val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
-                                    cancelButton.setOnClickListener {
-                                        returnAlert.dismiss()
-                                    }
                                 }
                             }
-                            returnAlert.show()
+                            returnDialog.show()
                         }
                     }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                 }
