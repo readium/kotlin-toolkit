@@ -154,6 +154,15 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
         }
     }
 
+    fun delete(book_id: Long?) {
+        book_id?.let {
+            database.use {
+                delete(BOOKMARKSTable.NAME, "${BOOKMARKSTable.BOOK_ID} = {bookID}",
+                        "bookID" to book_id)
+            }
+        }
+    }
+
     fun listAll(): MutableList<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
