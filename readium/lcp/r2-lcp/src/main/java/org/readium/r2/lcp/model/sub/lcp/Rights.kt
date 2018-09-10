@@ -32,7 +32,7 @@ class Rights (json: JSONObject){
         if (json.has("end")) {
             val endDate = DateTime(json.getString("end"))
             end = endDate
-            potentialEnd = endDate.plusMonths(1)
+            potentialEnd = start?.plusDays(60)
         }
 
     }
