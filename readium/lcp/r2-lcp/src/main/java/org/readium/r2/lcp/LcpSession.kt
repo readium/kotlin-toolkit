@@ -78,8 +78,12 @@ class LcpSession {
         return lcpLicense.license.encryption.profile.toString()
     }
 
-    fun checkPassphrases(passphrases: List<String>) : String {
-        return Lcp().findOneValidPassphrase(lcpLicense.license.json.toString(), passphrases.toTypedArray())
+    fun checkPassphrases(passphrases: List<String>) : String? {
+        try {
+            return Lcp().findOneValidPassphrase(lcpLicense.license.json.toString(), passphrases.toTypedArray())
+        } catch(e: Exception) {
+            return null
+        }
     }
 
     fun passphraseFromDb() : String? {
