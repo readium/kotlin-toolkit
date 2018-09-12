@@ -186,7 +186,7 @@ class DRMManagementActivity : AppCompatActivity() {
                 val end = DateTime(lcpLicense.rightsEnd()).toString(DateTimeFormat.shortDateTime())?.let {
                     return@let it
                 }
-                val potentialRightsEnd = DateTime(lcpLicense.potentialRightsEnd()).toString(DateTimeFormat.shortDateTime())?.let {
+                val potentialRightsEnd = DateTime(lcpLicense.status?.potentialRightsEndDate()).toString(DateTimeFormat.shortDateTime())?.let {
                     return@let it
                 }
 
