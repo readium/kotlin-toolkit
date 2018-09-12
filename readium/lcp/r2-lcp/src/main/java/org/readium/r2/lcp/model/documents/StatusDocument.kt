@@ -108,6 +108,8 @@ class StatusDocument {
 
     fun dateOfLatestLicenseDocumentUpdate() = updated?.license
 
+    fun potentialRightsEndDate() = potentialRights?.end
+
     /// Returns the first link containing the given rel.
     ///
     /// - Parameter rel: The rel to look for.
