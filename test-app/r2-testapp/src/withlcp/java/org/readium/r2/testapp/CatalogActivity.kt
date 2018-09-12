@@ -252,12 +252,11 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                                     session.storePassphrase(it)
                                     callback(it)
                                     dismiss()
-                                }
-                            } fail { exception ->
-                                exception.printStackTrace()
-                                runOnUiThread {
-                                    editTextTitle!!.error = "You entered a wrong passphrase."
-                                    editTextTitle!!.requestFocus()
+                                } ?:run {
+                                    runOnUiThread {
+                                        editTextTitle!!.error = "You entered a wrong passphrase."
+                                        editTextTitle!!.requestFocus()
+                                    }
                                 }
                             }
                         }
