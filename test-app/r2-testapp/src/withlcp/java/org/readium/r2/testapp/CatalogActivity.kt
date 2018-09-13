@@ -255,16 +255,15 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                                 editTextTitle!!.text.toString()
                             } then { clearPassphrase ->
                                 val passphraseHash = HASH.sha256(clearPassphrase)
-                                session.checkPassphrases(listOf(passphraseHash))
-                            } then { validPassphraseHash ->
-                                session.storePassphrase(validPassphraseHash)
-                                callback(validPassphraseHash)
-                                dismiss()
-                            } fail { exception ->
-                                exception.printStackTrace()
-                                runOnUiThread {
-                                    editTextTitle!!.error = "You entered a wrong passphrase."
-                                    editTextTitle!!.requestFocus()
+                                session.checkPassphrases(listOf(passphraseHash))?.let {
+                                    session.storePassphrase(it)
+                                    callback(it)
+                                    dismiss()
+                                } ?:run {
+                                    runOnUiThread {
+                                        editTextTitle!!.error = "You entered a wrong passphrase."
+                                        editTextTitle!!.requestFocus()
+                                    }
                                 }
                             }
                         }
