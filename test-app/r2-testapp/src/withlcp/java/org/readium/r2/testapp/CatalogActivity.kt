@@ -198,7 +198,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         val lcpHttpService = LcpHttpService()
         val session = LcpSession(publicationPath, this)
 
-        fun validatePassphrase(passphraseHash: String): Promise<LcpLicense, Exception> {
+        fun validatePassphrase(passphraseHash: String): Promise<LcpLicense?, Exception> {
 
             val preferences = getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
@@ -211,7 +211,14 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             } then { pemCrtl ->
                 if (pemCrtl != null) {
                     preferences.edit().putString("pemCrtl", pemCrtl).apply()
-                    session.resolve(passphraseHash, pemCrtl).get()
+                    if (session.resolve(passphraseHash, pemCrtl).get() == null) {
+                        runOnUiThread {
+                                toast("Invalid license")
+                        }
+                        null
+                    } else {
+                        session.resolve(passphraseHash, pemCrtl).get()
+                    }
                 } else {
                     session.resolve(passphraseHash, preferences.getString("pemCrtl", "")).get()
                 }
