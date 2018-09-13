@@ -232,10 +232,7 @@ class LcpLicense : DrmLicense {
 
                 val lastUpdate = database.licenses.dateOfLastUpdate(license.id)
                 lastUpdate?.let {
-                    if (lastUpdate > latestUpdate)
-                    {
-                        return@let
-                    }
+                    if (lastUpdate >= latestUpdate) return@task
                 }
 
                 license = lcpHttpService.fetchUpdatedLicense(licenseLink!!.href.toString()).get()
