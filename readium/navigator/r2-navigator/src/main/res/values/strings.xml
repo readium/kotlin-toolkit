@@ -38,6 +38,7 @@
     <string name="drm_label_copies_left">Copies left</string>
     <string name="drm_label_start">Start</string>
     <string name="drm_label_end">End</string>
+    <string name="drm_label_potential_right_end">Potential right end</string>
     <string name="drm_label_actions">ACTIONS</string>
     <string name="drm_label_renew">RENEW</string>
     <string name="drm_label_return">RETURN</string>
