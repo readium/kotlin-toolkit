@@ -198,7 +198,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         val lcpHttpService = LcpHttpService()
         val session = LcpSession(publicationPath, this)
 
-        fun validatePassphrase(passphraseHash: String): Promise<LcpLicense, Exception> {
+        fun validatePassphrase(passphraseHash: String): Promise<LcpLicense?, Exception> {
 
             val preferences = getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
@@ -211,7 +211,14 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             } then { pemCrtl ->
                 if (pemCrtl != null) {
                     preferences.edit().putString("pemCrtl", pemCrtl).apply()
-                    session.resolve(passphraseHash, pemCrtl).get()
+                    if (session.resolve(passphraseHash, pemCrtl).get() == null) {
+                        runOnUiThread {
+                                toast("Invalid license")
+                        }
+                        null
+                    } else {
+                        session.resolve(passphraseHash, pemCrtl).get()
+                    }
                 } else {
                     session.resolve(passphraseHash, preferences.getString("pemCrtl", "")).get()
                 }
@@ -248,16 +255,15 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                                 editTextTitle!!.text.toString()
                             } then { clearPassphrase ->
                                 val passphraseHash = HASH.sha256(clearPassphrase)
-                                session.checkPassphrases(listOf(passphraseHash))
-                            } then { validPassphraseHash ->
-                                session.storePassphrase(validPassphraseHash)
-                                callback(validPassphraseHash)
-                                dismiss()
-                            } fail { exception ->
-                                exception.printStackTrace()
-                                runOnUiThread {
-                                    editTextTitle!!.error = "You entered a wrong passphrase."
-                                    editTextTitle!!.requestFocus()
+                                session.checkPassphrases(listOf(passphraseHash))?.let {
+                                    session.storePassphrase(it)
+                                    callback(it)
+                                    dismiss()
+                                } ?:run {
+                                    runOnUiThread {
+                                        editTextTitle!!.error = "You entered a wrong passphrase."
+                                        editTextTitle!!.requestFocus()
+                                    }
                                 }
                             }
                         }

@@ -52,7 +52,7 @@ class DRMManagementActivity : AppCompatActivity() {
 
                 textView {
                     padding = dip(10)
-                    topPadding = dip(30)
+                    topPadding = dip(15)
                     text = context.getString(R.string.drm_information_header)
                     textSize = 20f
                     typeface = Typeface.DEFAULT_BOLD
@@ -142,7 +142,7 @@ class DRMManagementActivity : AppCompatActivity() {
 
                 textView {
                     padding = dip(10)
-                    topPadding = dip(30)
+                    topPadding = dip(15)
                     text = context.getString(R.string.drm_label_rights)
                     textSize = 20f
                     typeface = Typeface.DEFAULT_BOLD
@@ -186,6 +186,9 @@ class DRMManagementActivity : AppCompatActivity() {
                 val end = DateTime(lcpLicense.rightsEnd()).toString(DateTimeFormat.shortDateTime())?.let {
                     return@let it
                 }
+                val potentialRightsEnd = DateTime(lcpLicense.status?.potentialRightsEndDate()).toString(DateTimeFormat.shortDateTime())?.let {
+                    return@let it
+                }
 
                 if ((start != null && end != null) && start != end) {
                     linearLayout {
@@ -221,9 +224,25 @@ class DRMManagementActivity : AppCompatActivity() {
                             gravity = Gravity.END
                         }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     }
+                    linearLayout {
+                        orientation = LinearLayout.HORIZONTAL
+                        lparams(width = matchParent, height = wrapContent)
+                        weightSum = 2f
+                        textView {
+                            padding = dip(10)
+                            text = context.getString(R.string.drm_label_potential_right_end)
+                            textSize = 18f
+                        }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
+                        textView {
+                            padding = dip(10)
+                            text = potentialRightsEnd
+                            textSize = 18f
+                            gravity = Gravity.END
+                        }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
+                    }
                     textView {
                         padding = dip(10)
-                        topPadding = dip(30)
+                        topPadding = dip(15)
                         text = context.getString(R.string.drm_label_actions)
                         textSize = 20f
                         typeface = Typeface.DEFAULT_BOLD
