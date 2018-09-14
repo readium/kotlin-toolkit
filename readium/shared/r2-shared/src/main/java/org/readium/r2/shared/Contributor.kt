@@ -44,6 +44,13 @@ fun parseContributors(contributors: Any): List<Contributor> {
             c.multilanguageName.singleString = contributors
             result.add(c)
         }
+        is Array<*> -> {
+            for(i in 0 until contributors.size - 1) {
+                val c = Contributor()
+                c.multilanguageName.singleString = contributors[i] as String
+                result.add(c)
+            }
+        }
         is JSONObject -> {
             val c = parseContributor(contributors)
             result.add(c)
