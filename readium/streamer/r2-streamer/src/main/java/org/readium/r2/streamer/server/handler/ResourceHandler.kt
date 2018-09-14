@@ -80,11 +80,9 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
             return serveResponse(session, fetcher.dataStream(filePath), mimeType)
         } catch (e: Exception) {
-            println(TAG + " Exception " + e.toString())
-            Log.e(TAG, e.toString())
+            Log.e(TAG, "", e)
             return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
-
     }
 
     private fun serveResponse(session: IHTTPSession, inputStream: InputStream, mimeType: String): Response {
