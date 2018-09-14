@@ -167,6 +167,7 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
                 for(i in 0 until subjectDictUntyped.size - 1) {
                     val subject = Subject()
                     subject.name = subjectDictUntyped[i] as String
+                    m.subjects.add(subject)
                 }
             }
             is JSONArray -> {
