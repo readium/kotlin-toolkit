@@ -163,7 +163,7 @@ class LcpLicense : DrmLicense {
         callback(license)
     }
 
-    override fun renewLicense(endDate: Date?, callback: (Any) -> Unit) {
+    override fun renewLicense(endDate: DateTime?, callback: (Any) -> Unit) {
         Timber.i(TAG,"LCP renew")
 
         if (status == null) return
@@ -171,7 +171,7 @@ class LcpLicense : DrmLicense {
 
         val renewUrl = URL(url.toString().replace("{?end,id,name}", ""))
         val params = listOf(
-//                "end" to endDate?.time,
+                "end" to endDate,
                 "id" to getDeviceId(),
                 "name" to getDeviceName())
 
@@ -228,11 +228,12 @@ class LcpLicense : DrmLicense {
             Timber.i(TAG,"LCP updateLicenseDocument")
             if (status != null) {
                 val licenseLink = status!!.link("license")
-                val latestUpdate = license.dateOfLastUpdate()
 
-                val lastUpdate = database.licenses.dateOfLastUpdate(license.id)
-                lastUpdate?.let {
-                    if (lastUpdate >= latestUpdate) return@task
+                val latestUpdate = license.dateOfLastUpdate()
+                val lastUpdateDB = database.licenses.dateOfLastUpdate(license.id)
+
+                lastUpdateDB?.let {
+                    if (lastUpdateDB >= latestUpdate) return@task
                 }
 
                 license = lcpHttpService.fetchUpdatedLicense(licenseLink!!.href.toString()).get()
