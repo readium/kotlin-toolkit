@@ -16,7 +16,6 @@ import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
-import android.widget.LinearLayout
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.coordinatorLayout
@@ -29,6 +28,8 @@ import org.readium.r2.navigator.R
 import org.readium.r2.shared.drm.DRMModel
 import android.content.Intent
 import android.net.Uri
+import android.view.ViewGroup
+import android.widget.*
 
 
 class DRMManagementActivity : AppCompatActivity() {
@@ -38,8 +39,18 @@ class DRMManagementActivity : AppCompatActivity() {
 
         val drmModel: DRMModel = intent.getSerializableExtra("drmModel") as DRMModel
         val lcpLicense = LcpLicense(drmModel.licensePath,true , this)
-        lcpLicense.fetchStatusDocument().get()
-        lcpLicense.updateLicenseDocument().get()
+
+
+        //TODO network check
+        val networkConnection = true
+
+        if (networkConnection) {
+            lcpLicense.fetchStatusDocument().get()
+            lcpLicense.license = lcpLicense.lcpHttpService.fetchUpdatedLicense(lcpLicense.status!!.link("license")!!.href.toString()).get()
+        } else {
+            lcpLicense.status = null
+
+        }
 
         coordinatorLayout {
             fitsSystemWindows = true
@@ -255,22 +266,32 @@ class DRMManagementActivity : AppCompatActivity() {
                                 intent.data = Uri.parse(lcpLicense.status?.link("renew")?.href.toString())
                                 startActivity(intent)
                             } else {
-                                val renewDialog = alert(Appcompat, "The publication will be valid for one more week") {
+                                val daysArray = arrayOf(1, 3, 7, 15)
+                                val adapter = ArrayAdapter(this@DRMManagementActivity, org.readium.r2.testapp.R.layout.days_spinner, daysArray)
+
+                                val daysInput = Spinner(this@DRMManagementActivity)
+                                daysInput.layoutParams = ViewGroup.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                                daysInput.adapter = adapter
+
+                                val renewDialog = alert(Appcompat, "How many days do you wish to extend your loan ?") {
+                                    this.customView = daysInput
 
                                     positiveButton("Renew") { }
                                     negativeButton("Cancel") { }
-
                                 }.build()
                                 renewDialog.apply {
                                     setCancelable(false)
                                     setCanceledOnTouchOutside(false)
                                     setOnShowListener {
-                                        val button = getButton(AlertDialog.BUTTON_POSITIVE)
-                                        button.setOnClickListener {
-                                            lcpLicense.renewLicense() { renewedLicense ->
+                                        val renewButton = getButton(AlertDialog.BUTTON_POSITIVE)
+                                        renewButton.setOnClickListener {
+                                            val addDays = daysInput.selectedItem.toString().toInt()
+                                            val newEndDate = DateTime(lcpLicense.rightsEnd()).plusDays(addDays)
+
+                                            lcpLicense.renewLicense(newEndDate) { renewedLicense ->
+
                                                 val renewedLicense = renewedLicense as LicenseDocument
 
-                                                //TODO : let user set new end date
                                                 lcpLicense.license = renewedLicense
 
                                                 renewDialog.dismiss()
