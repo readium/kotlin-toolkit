@@ -100,7 +100,7 @@ class EpubParser : PublicationParser {
         val publication = opfParser.parseOpf(xmlParser, container.rootFile.rootFilePath, epubVersion)
                 ?: return null
 
-        val drm = scanForDrm(container)
+        val drm = container.scanForDrm()
 
         parseEncryption(container, publication, drm)
 
@@ -136,13 +136,6 @@ class EpubParser : PublicationParser {
             }
         }
         return publication
-    }
-
-    private fun scanForDrm(container: EpubContainer): Drm? {
-        if (ZipUtil.containsEntry(File(container.rootFile.rootPath), lcplFilePath)) {
-            return Drm(Drm.Brand.Lcp)
-        }
-        return null
     }
 
     private fun parseEncryption(container: EpubContainer, publication: Publication, drm: Drm?) {

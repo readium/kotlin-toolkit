@@ -13,6 +13,7 @@ import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.streamer.parser.lcplFilePath
 import java.io.File
 
 class ContainerEpubDirectory : EpubContainer, DirectoryContainer {
@@ -39,5 +40,13 @@ class ContainerEpubDirectory : EpubContainer, DirectoryContainer {
         if (File(path).exists())
             successCreated = true
         rootFile = RootFile(rootPath = path, version = null)
+    }
+
+    override fun scanForDrm(): Drm? {
+
+        if (File(rootFile.rootPath + "/" + lcplFilePath).exists()) {
+            return Drm(Drm.Brand.Lcp)
+        }
+        return null
     }
 }

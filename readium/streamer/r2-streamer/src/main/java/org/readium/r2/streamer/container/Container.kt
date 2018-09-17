@@ -57,7 +57,7 @@ interface EpubContainer : Container {
 
     fun xmlDocumentForFile(relativePath: String): XmlParser
     fun xmlDocumentForResource(link: Link?): XmlParser
-
+    fun scanForDrm(): Drm?
 }
 
 /**
