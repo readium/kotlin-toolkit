@@ -283,14 +283,14 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             val passphrases = session.passphraseFromDb()
             passphrases?.let { passphraseHash ->
                 val lcpLicense = validatePassphrase(passphraseHash).get()
-                drm.license = lcpLicense
+                drm.license = lcpLicense as? LcpLicense
                 drm.profile = session.getProfile()
                 parsingCallback(drm)
                 callback(drm)
             } ?: run {
                 promptPassphrase(null) { passphraseHash ->
                     val lcpLicense = validatePassphrase(passphraseHash).get()
-                    drm.license = lcpLicense
+                    drm.license = lcpLicense as? LcpLicense
                     drm.profile = session.getProfile()
                     parsingCallback(drm)
                     callback(drm)
