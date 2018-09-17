@@ -11,6 +11,7 @@ package org.readium.r2.streamer.container
 
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
 /**
@@ -26,7 +27,7 @@ interface ZipArchiveContainer : Container {
 
     override fun data(relativePath: String): ByteArray {
 
-        val zipEntry = zipFile.getEntry(relativePath)// ?: return ByteArray(0)
+        val zipEntry = getEntry(relativePath)// ?: return ByteArray(0)
         val fis = zipFile.getInputStream(zipEntry)
         val buffer = ByteArrayOutputStream()
         var nRead: Int
@@ -46,8 +47,23 @@ interface ZipArchiveContainer : Container {
     }
 
     override fun dataInputStream(relativePath: String): InputStream {
-        return zipFile.getInputStream(zipFile.getEntry(relativePath))
+        return zipFile.getInputStream(getEntry(relativePath))
     }
 
+    fun getEntry(relativePath: String): ZipEntry? {
+
+        var zipEntry = zipFile.getEntry(relativePath)
+        if (zipEntry != null)
+            return zipEntry
+
+        val zipEntries = zipFile.entries()
+        while (zipEntries.hasMoreElements()) {
+            zipEntry = zipEntries.nextElement()
+            if (relativePath.equals(zipEntry.name, true))
+                return zipEntry
+        }
+
+        return null
+    }
 }
 
