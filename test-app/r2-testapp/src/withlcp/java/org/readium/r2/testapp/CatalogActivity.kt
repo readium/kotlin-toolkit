@@ -211,13 +211,19 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             } then { pemCrtl ->
                 if (pemCrtl != null) {
                     preferences.edit().putString("pemCrtl", pemCrtl).apply()
-                    if (session.resolve(passphraseHash, pemCrtl).get() == null) {
-                        runOnUiThread {
-                                toast("Invalid license")
+                    val status = session.resolve(passphraseHash, pemCrtl).get()
+                    if (status !is LcpLicense) {
+                        if (status == "expired") {
+                            runOnUiThread {
+                                toast("Your license $status")
+                            }
+                        } else {
+                            runOnUiThread {
+                                toast("Your license was $status")
+                            }
                         }
-                        null
                     } else {
-                        session.resolve(passphraseHash, pemCrtl).get()
+                        status
                     }
                 } else {
                     session.resolve(passphraseHash, preferences.getString("pemCrtl", "")).get()
