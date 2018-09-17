@@ -155,24 +155,44 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
         m.rights = metadataDict.getString("rights")
     }
     if (metadataDict.has("subject")) {
-        val subjDict = metadataDict.getJSONArray("subject")
-        for (i in 0..(subjDict.length() - 1)) {
-            val sub = subjDict.getJSONObject(i)
-            val subject = Subject()
-            if (sub.has("name")) {
-                subject.name = sub.getString("name")
+        val subjectDictUntyped = metadataDict.get("subject")
+
+        when(subjectDictUntyped) {
+            is String -> {
+                val subject = Subject()
+                subject.name = subjectDictUntyped
+                m.subjects.add(subject)
             }
-            if (sub.has("sort_as")) {
-                subject.sortAs = sub.getString("sort_as")
+            is Array<*> -> {
+                for(i in 0 until subjectDictUntyped.size - 1) {
+                    val subject = Subject()
+                    subject.name = subjectDictUntyped[i] as String
+                    m.subjects.add(subject)
+                }
             }
-            if (sub.has("scheme")) {
-                subject.scheme = sub.getString("scheme")
+            is JSONArray -> {
+                val subjDict = metadataDict.getJSONArray("subject")
+                for (i in 0..(subjDict.length() - 1)) {
+                    val sub = subjDict.getJSONObject(i)
+                    val subject = Subject()
+                    if (sub.has("name")) {
+                        subject.name = sub.getString("name")
+                    }
+                    if (sub.has("sort_as")) {
+                        subject.sortAs = sub.getString("sort_as")
+                    }
+                    if (sub.has("scheme")) {
+                        subject.scheme = sub.getString("scheme")
+                    }
+                    if (sub.has("code")) {
+                        subject.code = sub.getString("code")
+                    }
+                    m.subjects.add(subject)
+                }
             }
-            if (sub.has("code")) {
-                subject.code = sub.getString("code")
-            }
-            m.subjects.add(subject)
         }
+
+
     }
     if (metadataDict.has("belongs_to")) {
         val belongsDict = metadataDict.getJSONObject("belongs_to")
