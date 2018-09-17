@@ -29,18 +29,16 @@ interface ZipArchiveContainer : Container {
     override fun data(relativePath: String): ByteArray {
 
         val zipEntry = getEntry(relativePath)// ?: return ByteArray(0)
-        val fis = zipFile.getInputStream(zipEntry)
-        val buffer = ByteArrayOutputStream()
-        var nRead: Int
-        val data = ByteArray(16384)
+        val inputStream = zipFile.getInputStream(zipEntry)
+        val outputStream = ByteArrayOutputStream()
+        var readLength = 0
+        val buffer = ByteArray(16384)
 
-        nRead = fis!!.read(data, 0, data.size)
-        while (nRead != -1) {
-            buffer.write(data, 0, nRead)
-            nRead = fis.read(data, 0, data.size)
-        }
-        buffer.flush()
-        return buffer.toByteArray()
+        while (inputStream.read(buffer).let { readLength = it; it != -1 })
+            outputStream.write(buffer, 0, readLength)
+
+        inputStream.close()
+        return outputStream.toByteArray()
     }
 
     override fun dataLength(relativePath: String): Long {
