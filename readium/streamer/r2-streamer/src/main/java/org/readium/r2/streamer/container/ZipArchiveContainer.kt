@@ -11,6 +11,7 @@ package org.readium.r2.streamer.container
 
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import java.net.URI
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
@@ -52,14 +53,15 @@ interface ZipArchiveContainer : Container {
 
     fun getEntry(relativePath: String): ZipEntry? {
 
-        var zipEntry = zipFile.getEntry(relativePath)
+        val decodedRelativePath: String = URI(relativePath).path
+        var zipEntry = zipFile.getEntry(decodedRelativePath)
         if (zipEntry != null)
             return zipEntry
 
         val zipEntries = zipFile.entries()
         while (zipEntries.hasMoreElements()) {
             zipEntry = zipEntries.nextElement()
-            if (relativePath.equals(zipEntry.name, true))
+            if (decodedRelativePath.equals(zipEntry.name, true))
                 return zipEntry
         }
 
