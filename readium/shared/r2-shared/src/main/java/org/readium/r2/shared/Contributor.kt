@@ -88,7 +88,7 @@ fun parseContributor(cDict: JSONObject): Contributor {
     if (cDict.has("links")) {
         cDict.get("links")?.let {
         val links = it as? JSONArray
-                ?: throw Exception()
+                ?: JSONArray()
         for (i in 0..(links.length() - 1)) {
             val linkDict = links.getJSONObject(i)
             val link = parseLink(linkDict)
