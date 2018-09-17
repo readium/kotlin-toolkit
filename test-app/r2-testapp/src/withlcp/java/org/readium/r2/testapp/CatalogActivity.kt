@@ -198,7 +198,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         val lcpHttpService = LcpHttpService()
         val session = LcpSession(publicationPath, this)
 
-        fun validatePassphrase(passphraseHash: String): Promise<LcpLicense?, Exception> {
+        fun validatePassphrase(passphraseHash: String): Promise<Any, Exception> {
 
             val preferences = getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
