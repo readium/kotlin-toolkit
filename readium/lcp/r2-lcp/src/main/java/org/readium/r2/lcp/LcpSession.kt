@@ -29,7 +29,7 @@ class LcpSession {
         lcpLicense = LcpLicense(File(file).toURI().toURL(), true, androidContext )
     }
 
-    fun resolve(passphrase: String, pemCrl: String) : Promise<LcpLicense?, Exception> {
+    fun resolve(passphrase: String, pemCrl: String) : Promise<Any, Exception> {
         return task {
             try {
                 lcpLicense.fetchStatusDocument().get()
@@ -64,14 +64,14 @@ class LcpSession {
         }
     }
 
-    fun getLcpContext(jsonLicense: String, passphrase: String, pemCrl: String) : Promise<LcpLicense?, Exception> {
+    fun getLcpContext(jsonLicense: String, passphrase: String, pemCrl: String) : Promise<Any, Exception> {
         return task {
             if ((lcpLicense.status!!.status == StatusDocument.Status.active) || (lcpLicense.status!!.status == StatusDocument.Status.ready)) {
 
                 lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
                 lcpLicense
             } else {
-                null
+                lcpLicense.status!!.status.toString()
             }
         }
     }
