@@ -51,15 +51,20 @@ interface ZipArchiveContainer : Container {
 
     fun getEntry(relativePath: String): ZipEntry? {
 
-        val decodedRelativePath: String = URI(relativePath).path
-        var zipEntry = zipFile.getEntry(decodedRelativePath)
+        val path: String = try {
+            URI(relativePath).path
+        } catch (e: Exception) {
+            relativePath
+        }
+
+        var zipEntry = zipFile.getEntry(path)
         if (zipEntry != null)
             return zipEntry
 
         val zipEntries = zipFile.entries()
         while (zipEntries.hasMoreElements()) {
             zipEntry = zipEntries.nextElement()
-            if (decodedRelativePath.equals(zipEntry.name, true))
+            if (path.equals(zipEntry.name, true))
                 return zipEntry
         }
 
