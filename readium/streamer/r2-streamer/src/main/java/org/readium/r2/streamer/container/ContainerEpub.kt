@@ -1,18 +1,23 @@
 /*
- * Copyright 2018 Readium Foundation. All rights reserved.
+ * Module: r2-streamer-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
 package org.readium.r2.streamer.container
 
-import org.readium.r2.shared.drm.Drm
-import java.io.File
-import java.util.zip.ZipFile
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
+import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.streamer.parser.lcplFilePath
 import org.readium.r2.streamer.parser.mimetype
+import org.zeroturnaround.zip.ZipUtil
+import java.io.File
+import java.util.zip.ZipFile
 
 class ContainerEpub : EpubContainer, ZipArchiveContainer {
 
@@ -42,5 +47,13 @@ class ContainerEpub : EpubContainer, ZipArchiveContainer {
         }
         zipFile = ZipFile(path)
         rootFile = RootFile(path, mimetype)
+    }
+
+    override fun scanForDrm(): Drm? {
+
+        if (ZipUtil.containsEntry(File(rootFile.rootPath), lcplFilePath)) {
+            return Drm(Drm.Brand.Lcp)
+        }
+        return null
     }
 }

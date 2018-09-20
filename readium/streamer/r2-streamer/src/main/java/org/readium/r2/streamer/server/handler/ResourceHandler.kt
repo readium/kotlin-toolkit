@@ -1,5 +1,8 @@
 /*
- * Copyright 2018 Readium Foundation. All rights reserved.
+ * Module: r2-streamer-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -77,11 +80,9 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
             return serveResponse(session, fetcher.dataStream(filePath), mimeType)
         } catch (e: Exception) {
-            println(TAG + " Exception " + Log.getStackTraceString(e))
             Log.e(TAG, e.toString(), e)
             return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
-
     }
 
     private fun serveResponse(session: IHTTPSession, inputStream: InputStream, mimeType: String): Response {
@@ -149,7 +150,7 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             response = getResponse("Forbidden: Reading file failed")
         }
 
-        return if (response == null) getResponse("Error 404: File not found") else response
+        return response ?: getResponse("Error 404: File not found")
     }
 
     private fun createResponse(status: Status, mimeType: String, message: InputStream): Response {

@@ -1,14 +1,14 @@
 /*
- * Copyright 2018 Readium Foundation. All rights reserved.
+ * Module: r2-streamer-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
 package org.readium.r2.streamer.server.handler
 
-import com.fasterxml.jackson.core.JsonGenerationException
-import com.fasterxml.jackson.databind.JsonMappingException
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.nanohttpd.protocols.http.IHTTPSession
 import org.nanohttpd.protocols.http.response.IStatus
 import org.nanohttpd.protocols.http.response.Response
@@ -36,24 +36,12 @@ class ManifestHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     override fun get(uriResource: RouterNanoHTTPD.UriResource?, urlParams: Map<String, String>?, session: IHTTPSession?): Response {
-        try {
-
+        return try {
             val fetcher = uriResource!!.initParameter(Fetcher::class.java)
-
-            val objectMapper = ObjectMapper()
-            val json = objectMapper.writeValueAsString(fetcher.publication)
-
-            return newFixedLengthResponse(status, mimeType, json)
-
-        } catch (e: JsonGenerationException) {
-            println(TAG + " JsonGenerationException | JsonMappingException " + e.toString())
-            return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
-        } catch (e: JsonMappingException) {
-            println(TAG + " JsonGenerationException | JsonMappingException " + e.toString())
-            return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
+            newFixedLengthResponse(status, mimeType, fetcher.publication.manifest())
         } catch (e: IOException) {
             println(TAG + " IOException " + e.toString())
-            return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
+            newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
 
     }

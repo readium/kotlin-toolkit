@@ -1,5 +1,8 @@
 /*
- * Copyright 2018 Readium Foundation. All rights reserved.
+ * Module: r2-streamer-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -87,7 +90,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
             return stream
         val endIncludes = mutableListOf<String>()
         val beginIncludes = mutableListOf<String>()
-        beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;\"/>")
+        beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\" />")
 
         beginIncludes.add(getHtmlLink("/styles/before.css"))
         beginIncludes.add(getHtmlLink("/styles/default.css"))
@@ -132,7 +135,6 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         if (endHeadIndex == -1)
             return stream
         val includes = mutableListOf<String>()
-        includes.add("<meta name=\"viewport\" content=\"width=1024, height=768, left=50%, top=50%, bottom=auto, right=auto, transform=translate(-50%, -50%);\"/>\n")
         includes.add(getHtmlScript("/scripts/touchHandling.js"))
         includes.add(getHtmlScript("/scripts/utils.js"))
         for (element in includes) {

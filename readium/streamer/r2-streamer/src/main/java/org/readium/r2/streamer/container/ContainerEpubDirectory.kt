@@ -1,5 +1,8 @@
 /*
- * Copyright 2018 Readium Foundation. All rights reserved.
+ * Module: r2-streamer-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -10,6 +13,7 @@ import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.streamer.parser.lcplFilePath
 import java.io.File
 
 class ContainerEpubDirectory : EpubContainer, DirectoryContainer {
@@ -36,5 +40,13 @@ class ContainerEpubDirectory : EpubContainer, DirectoryContainer {
         if (File(path).exists())
             successCreated = true
         rootFile = RootFile(rootPath = path, version = null)
+    }
+
+    override fun scanForDrm(): Drm? {
+
+        if (File(rootFile.rootPath + "/" + lcplFilePath).exists()) {
+            return Drm(Drm.Brand.Lcp)
+        }
+        return null
     }
 }

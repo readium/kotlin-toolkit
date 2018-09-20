@@ -1,5 +1,8 @@
 /*
- * Copyright 2018 Readium Foundation. All rights reserved.
+ * Module: r2-streamer-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -97,7 +100,7 @@ class EpubParser : PublicationParser {
         val publication = opfParser.parseOpf(xmlParser, container.rootFile.rootFilePath, epubVersion)
                 ?: return null
 
-        val drm = scanForDrm(container)
+        val drm = container.scanForDrm()
 
         parseEncryption(container, publication, drm)
 
@@ -133,13 +136,6 @@ class EpubParser : PublicationParser {
             }
         }
         return publication
-    }
-
-    private fun scanForDrm(container: EpubContainer): Drm? {
-        if (ZipUtil.containsEntry(File(container.rootFile.rootPath), lcplFilePath)) {
-            return Drm(Drm.Brand.Lcp)
-        }
-        return null
     }
 
     private fun parseEncryption(container: EpubContainer, publication: Publication, drm: Drm?) {

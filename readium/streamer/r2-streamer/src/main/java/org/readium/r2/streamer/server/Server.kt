@@ -1,5 +1,8 @@
 /*
- * Copyright 2018 Readium Foundation. All rights reserved.
+ * Module: r2-streamer-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -24,6 +27,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
 
     //    private val SEARCH_QUERY_HANDLE = "/search"
     private val MANIFEST_HANDLE = "/manifest"
+    private val JSON_MANIFEST_HANDLE = "/manifest.json"
     private val MANIFEST_ITEM_HANDLE = "/(.*)"
     private val MEDIA_OVERLAY_HANDLE = "/media-overlay"
     private val CSS_HANDLE = "/styles/(.*)"
@@ -72,6 +76,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         if (containsMediaOverlay) {
             addRoute(fileName + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)
         }
+        addRoute(fileName + JSON_MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
         addRoute(fileName + MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
         addRoute(fileName + MANIFEST_ITEM_HANDLE, ResourceHandler::class.java, fetcher)
         addRoute(JS_HANDLE, JSHandler::class.java, resources)

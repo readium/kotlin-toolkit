@@ -1,5 +1,8 @@
 /*
- * Copyright 2018 Readium Foundation. All rights reserved.
+ * Module: r2-streamer-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumann
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -19,40 +22,23 @@ class MetadataParser {
             metadata.rendition.layout = RenditionLayout.Reflowable
             return
         }
-        try {
-            metas.first { it.attributes["property"] == "rendition:layout" }.text?.let {
-                metadata.rendition.layout = RenditionLayout.valueOf(it)
-            }
-        } catch (e: Exception) {
+
+        metas.firstOrNull { it.attributes["property"] == "rendition:layout" }?.text?.let {
+            metadata.rendition.layout = RenditionLayout.fromString(it)
+        }?: run {
             metadata.rendition.layout = RenditionLayout.Reflowable
         }
-        try {
-            metas.first { it.attributes["property"] == "rendition:flow" }.text?.let {
-                metadata.rendition.flow = RenditionFlow.valueOf(it)
-            }
-        } catch (e: Exception) {
-            metadata.rendition.layout = RenditionLayout.Reflowable
+        metas.firstOrNull { it.attributes["property"] == "rendition:flow" }?.text?.let {
+            metadata.rendition.flow = RenditionFlow.fromString(it)
         }
-        try {
-            metas.first { it.attributes["property"] == "rendition:orientation" }.text?.let {
-                metadata.rendition.orientation = RenditionOrientation.valueOf(it)
-            }
-        } catch (e: Exception) {
-            metadata.rendition.layout = RenditionLayout.Reflowable
+        metas.firstOrNull { it.attributes["property"] == "rendition:orientation" }?.text?.let {
+            metadata.rendition.orientation = RenditionOrientation.fromString(it)
         }
-        try {
-            metas.first { it.attributes["property"] == "rendition:spread" }.text?.let {
-                metadata.rendition.spread = RenditionSpread.valueOf(it)
-            }
-        } catch (e: Exception) {
-            metadata.rendition.layout = RenditionLayout.Reflowable
+        metas.firstOrNull { it.attributes["property"] == "rendition:spread" }?.text?.let {
+            metadata.rendition.spread = RenditionSpread.fromString(it)
         }
-        try {
-            metas.first { it.attributes["property"] == "rendition:viewport" }.text?.let {
-                metadata.rendition.viewport = it
-            }
-        } catch (e: Exception) {
-            metadata.rendition.layout = RenditionLayout.Reflowable
+        metas.firstOrNull { it.attributes["property"] == "rendition:viewport" }?.text?.let {
+            metadata.rendition.viewport = it
         }
     }
 
