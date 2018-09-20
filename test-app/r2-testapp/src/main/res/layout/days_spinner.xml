@@ -9,9 +9,10 @@
   ~ LICENSE file present in the project repository where this source code is maintained.
   -->
 
+
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/days_spinner"
-    android:layout_width="fill_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:textSize="9pt"
-    android:gravity="end"/>
+    android:paddingStart="270dp"
+    android:textSize="9pt" />
