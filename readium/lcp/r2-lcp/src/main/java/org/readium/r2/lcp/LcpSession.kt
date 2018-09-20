@@ -43,21 +43,10 @@ class LcpSession {
             } catch (e: Exception) {
                 //
             }
+            val lcpContext = getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
             lcpLicense.updateLicenseDocument().get()
-        } then {
-            // doesn't look like this is needed
-//            try {
-//                lcpLicense.areRightsValid()
-//            } catch (e: Exception) {
-//                //
-//            }
-//            try {
-//                lcpLicense.register()
-//            } catch (e: Exception) {
-//                //
-//            }
 
-            getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
+            lcpContext
 
         } fail { exception ->
             exception.printStackTrace()
@@ -66,7 +55,7 @@ class LcpSession {
 
     fun getLcpContext(jsonLicense: String, passphrase: String, pemCrl: String) : Promise<Any, Exception> {
         return task {
-            if ((lcpLicense.status!!.status == StatusDocument.Status.active) || (lcpLicense.status!!.status == StatusDocument.Status.ready)) {
+            if ((lcpLicense.status == null) || (lcpLicense.status!!.status == StatusDocument.Status.active) || (lcpLicense.status!!.status == StatusDocument.Status.ready)) {
 
                 lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
                 lcpLicense
