@@ -269,12 +269,9 @@ class DRMManagementActivity : AppCompatActivity() {
                                 val daysArray = arrayOf(1, 3, 7, 15)
 
                                 val daysInput = Spinner(this@DRMManagementActivity)
-                                daysInput.dropDownWidth = dip(10)
+                                daysInput.dropDownWidth = wrapContent
 
                                 val adapter = ArrayAdapter(this@DRMManagementActivity, org.readium.r2.testapp.R.layout.days_spinner, daysArray)
-//                                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-//                                daysInput.layoutParams = ViewGroup.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                                 daysInput.adapter = adapter
 
                                 val renewDialog = alert(Appcompat, "How many days do you wish to extend your loan ?") {
