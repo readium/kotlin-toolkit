@@ -46,10 +46,9 @@ class DRMManagementActivity : AppCompatActivity() {
 
         if (networkConnection) {
             lcpLicense.fetchStatusDocument().get()
-            lcpLicense.license = lcpLicense.lcpHttpService.fetchUpdatedLicense(lcpLicense.status!!.link("license")!!.href.toString()).get()
+            lcpLicense.updateLicenseDocument().get()
         } else {
-            lcpLicense.status = null
-
+            //TODO
         }
 
         coordinatorLayout {
@@ -261,16 +260,21 @@ class DRMManagementActivity : AppCompatActivity() {
                     button {
                         text = context.getString(R.string.drm_label_renew)
                         onClick {
+                            // if a renew URL is set in the server configuration, open the web browser
                             if (lcpLicense.status?.link("renew")?.type == "text/html") {
                                 val intent = Intent(Intent.ACTION_VIEW)
                                 intent.data = Uri.parse(lcpLicense.status?.link("renew")?.href.toString())
                                 startActivity(intent)
                             } else {
                                 val daysArray = arrayOf(1, 3, 7, 15)
-                                val adapter = ArrayAdapter(this@DRMManagementActivity, org.readium.r2.testapp.R.layout.days_spinner, daysArray)
 
                                 val daysInput = Spinner(this@DRMManagementActivity)
-                                daysInput.layoutParams = ViewGroup.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                                daysInput.dropDownWidth = dip(10)
+
+                                val adapter = ArrayAdapter(this@DRMManagementActivity, org.readium.r2.testapp.R.layout.days_spinner, daysArray)
+//                                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+//                                daysInput.layoutParams = ViewGroup.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                                 daysInput.adapter = adapter
 
                                 val renewDialog = alert(Appcompat, "How many days do you wish to extend your loan ?") {
@@ -283,19 +287,26 @@ class DRMManagementActivity : AppCompatActivity() {
                                     setCancelable(false)
                                     setCanceledOnTouchOutside(false)
                                     setOnShowListener {
+                                        daysInput.setSelection(2)
                                         val renewButton = getButton(AlertDialog.BUTTON_POSITIVE)
                                         renewButton.setOnClickListener {
                                             val addDays = daysInput.selectedItem.toString().toInt()
                                             val newEndDate = DateTime(lcpLicense.rightsEnd()).plusDays(addDays)
 
-                                            lcpLicense.renewLicense(newEndDate) { renewedLicense ->
+                                            if (newEndDate > DateTime(lcpLicense.status?.potentialRightsEndDate())) {
+                                                runOnUiThread {
+                                                    toast("New date must not exceed potential rights end date").setMargin(0f, 0.2f)
+                                                }
+                                            } else {
+                                                lcpLicense.renewLicense(newEndDate) { renewedLicense ->
 
-                                                val renewedLicense = renewedLicense as LicenseDocument
+                                                    val renewedLicense = renewedLicense as LicenseDocument
 
-                                                lcpLicense.license = renewedLicense
+                                                    lcpLicense.license = renewedLicense
 
-                                                renewDialog.dismiss()
-                                                recreate()
+                                                    renewDialog.dismiss()
+                                                    recreate()
+                                                }
                                             }
 
                                         }
