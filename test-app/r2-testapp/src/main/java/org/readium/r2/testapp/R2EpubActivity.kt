@@ -104,6 +104,8 @@ class R2EpubActivity : R2EpubActivity() {
             if (data != null && data.getBooleanExtra("returned", false)) {
                 finish()
             }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
