@@ -92,10 +92,9 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
                     LicensesTable.COPIESLEFT to license.rights.copy,
                     LicensesTable.PROVIDER to license.provider.toString(),
                     LicensesTable.ISSUED to license.issued.toString(),
-                    LicensesTable.UPDATED to license.dateOfLastUpdate().toString(),
+                    LicensesTable.UPDATED to license.issued.toString(),
                     LicensesTable.END to license.rights.end?.toString(),
                     LicensesTable.STATE to status)
-
         }
     }
 }
