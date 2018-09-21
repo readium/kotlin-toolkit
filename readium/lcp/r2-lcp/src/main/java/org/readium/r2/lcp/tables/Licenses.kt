@@ -59,6 +59,26 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
         database.use {
             update(LicensesTable.NAME, LicensesTable.STATE to state).whereArgs("${LicensesTable.ID} = {id}",
                     "id" to id)
+                    .exec()
+        }
+    }
+
+    fun getStatus(id: String): String? {
+        return database.use {
+            return@use select(LicensesTable.NAME,
+                    LicensesTable.STATE)
+                    .whereArgs("${LicensesTable.ID} = {id}", "id" to id)
+                    .limit(1)
+                    .orderBy(LicensesTable.STATE,SqlOrderDirection.DESC)
+                    .parseOpt(object : MapRowParser<String> {
+                        override fun parseRow(columns: Map<String, Any?>): String {
+                            val status = columns.getValue(LicensesTable.STATE) as String?
+                            if (status != null) {
+                                return status
+                            }
+                            return String()
+                        }
+                    })
         }
     }
 
