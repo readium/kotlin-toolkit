@@ -43,9 +43,9 @@ class LcpSession {
             } catch (e: Exception) {
                 //
             }
-            val lcpContext = getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
             lcpLicense.updateLicenseDocument().get()
-
+            val lcpContext = getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
+            
             lcpContext
 
         } fail { exception ->
@@ -55,12 +55,28 @@ class LcpSession {
 
     fun getLcpContext(jsonLicense: String, passphrase: String, pemCrl: String) : Promise<Any, Exception> {
         return task {
-            if ((lcpLicense.status == null) || (lcpLicense.status!!.status == StatusDocument.Status.active) || (lcpLicense.status!!.status == StatusDocument.Status.ready)) {
+            lcpLicense.status?.let {statusDocument ->
+                if ((statusDocument.status == StatusDocument.Status.active) || (statusDocument.status == StatusDocument.Status.ready)) {
 
-                lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
-                lcpLicense
-            } else {
-                lcpLicense.status!!.status.toString()
+                    lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
+                    lcpLicense
+                } else {
+                    statusDocument.status.toString()
+                }
+            } ?: run {
+                database.licenses.getStatus(lcpLicense.license.id)?.let {licenseStatus ->
+                    if ( (licenseStatus == StatusDocument.Status.active.toString()) || (licenseStatus == StatusDocument.Status.ready.toString()) ) {
+
+                        lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
+                        lcpLicense
+                    } else {
+                        licenseStatus
+                    }
+                } ?: run {
+                    "invalid"
+                }
+
+
             }
         }
     }
