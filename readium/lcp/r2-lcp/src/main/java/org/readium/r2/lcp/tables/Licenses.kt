@@ -35,7 +35,7 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
     fun dateOfLastUpdate(id: String): DateTime? {
         val lastUpdated = database.use {
             return@use select(LicensesTable.NAME)
-                    .whereSimple("${LicensesTable.ID} = ?", id)
+                    .whereArgs("${LicensesTable.ID} = {id}", "id" to id)
                     .limit(1)
                     .orderBy(LicensesTable.UPDATED,SqlOrderDirection.DESC)
                     .parseOpt(object : MapRowParser<String> {
