@@ -9,7 +9,6 @@
 
 package org.readium.r2.lcp.tables
 
-import android.util.Log
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpDatabaseOpenHelper
@@ -55,6 +54,29 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
         return null
     }
 
+    fun dateOfEnd(id: String): DateTime? {
+        val endDate = database.use {
+            return@use select(LicensesTable.NAME)
+                    .whereArgs("${LicensesTable.ID} = {id}", "id" to id)
+                    .limit(1)
+                    .orderBy(LicensesTable.UPDATED,SqlOrderDirection.DESC)
+                    .parseOpt(object : MapRowParser<String> {
+                        override fun parseRow(columns: Map<String, Any?>): String {
+                            val end = columns.getValue(LicensesTable.END) as String?
+                            if (end != null) {
+                                return end
+                            }
+                            return String()
+                        }
+                    })
+        }
+
+        if (!endDate.isNullOrEmpty()) {
+            return DateTime(endDate)
+        }
+        return null
+    }
+
     fun updateState(id: String, state: String) {
         database.use {
             update(LicensesTable.NAME, LicensesTable.STATE to state).whereArgs("${LicensesTable.ID} = {id}",
@@ -69,7 +91,6 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
                     LicensesTable.STATE)
                     .whereArgs("${LicensesTable.ID} = {id}", "id" to id)
                     .limit(1)
-                    .orderBy(LicensesTable.STATE,SqlOrderDirection.DESC)
                     .parseOpt(object : MapRowParser<String> {
                         override fun parseRow(columns: Map<String, Any?>): String {
                             val status = columns.getValue(LicensesTable.STATE) as String?
