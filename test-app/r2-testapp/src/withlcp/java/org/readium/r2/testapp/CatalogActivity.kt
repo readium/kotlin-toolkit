@@ -199,7 +199,6 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         val session = LcpSession(publicationPath, this)
 
         fun validatePassphrase(passphraseHash: String): Promise<Any, Exception> {
-
             val preferences = getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
             return task {
@@ -213,21 +212,21 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                     preferences.edit().putString("pemCrtl", pemCrtl).apply()
                     val status = session.resolve(passphraseHash, pemCrtl).get()
                     if (status is String) {
-                        if (status == "expired") {
-                            runOnUiThread {
-                                toast("This license $status")
-                            }
-                        } else {
-                            runOnUiThread {
-                                toast("This license was $status")
-                            }
+                        runOnUiThread {
+                            toast("This license was $status")
                         }
-
                     } else {
                         status
                     }
                 } else {
-                    session.resolve(passphraseHash, preferences.getString("pemCrtl", "")).get()
+                    val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", "")).get()
+                    if (status is String) {
+                        runOnUiThread {
+                            toast("This license was $status")
+                        }
+                    } else {
+                        status
+                    }
                 }
             } fail { exception ->
                 exception.printStackTrace()
