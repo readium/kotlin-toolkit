@@ -99,22 +99,37 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
         }
     }
 
-    /// Add a registered license to the database.
+    /// Add/update a registered license to/in the database.
     ///
     /// - Parameters:
     ///   - license: <#license description#>
     ///   - status: <#status description#>
-    fun insert(license: LicenseDocument, status: String) {
-        database.use {
-            insert(LicensesTable.NAME,
-                    LicensesTable.ID to license.id,
-                    LicensesTable.PRINTSLEFT to license.rights.print,
-                    LicensesTable.COPIESLEFT to license.rights.copy,
-                    LicensesTable.PROVIDER to license.provider.toString(),
-                    LicensesTable.ISSUED to license.issued.toString(),
-                    LicensesTable.UPDATED to license.issued.toString(),
-                    LicensesTable.END to license.rights.end?.toString(),
-                    LicensesTable.STATE to status)
+    fun updateLicense(license: LicenseDocument, status: String) {
+        if (existingLicense(license.id)) {
+            database.use {
+                update(LicensesTable.NAME,
+                        LicensesTable.PRINTSLEFT to license.rights.print,
+                        LicensesTable.COPIESLEFT to license.rights.copy,
+                        LicensesTable.PROVIDER to license.provider.toString(),
+                        LicensesTable.ISSUED to license.issued.toString(),
+                        LicensesTable.UPDATED to license.updated?.toString(),
+                        LicensesTable.END to license.rights.end?.toString(),
+                        LicensesTable.STATE to status)
+                        .whereArgs("${LicensesTable.ID} = {id}", "id" to license.id)
+                        .exec()
+            }
+        } else {
+            database.use {
+                insert(LicensesTable.NAME,
+                        LicensesTable.ID to license.id,
+                        LicensesTable.PRINTSLEFT to license.rights.print,
+                        LicensesTable.COPIESLEFT to license.rights.copy,
+                        LicensesTable.PROVIDER to license.provider.toString(),
+                        LicensesTable.ISSUED to license.issued.toString(),
+                        LicensesTable.UPDATED to license.issued.toString(),
+                        LicensesTable.END to license.rights.end?.toString(),
+                        LicensesTable.STATE to status)
+            }
         }
     }
 }
