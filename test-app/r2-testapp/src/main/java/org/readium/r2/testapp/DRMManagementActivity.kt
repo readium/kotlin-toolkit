@@ -28,7 +28,6 @@ import org.readium.r2.navigator.R
 import org.readium.r2.shared.drm.DRMModel
 import android.content.Intent
 import android.net.Uri
-import android.view.ViewGroup
 import android.widget.*
 
 
@@ -39,16 +38,13 @@ class DRMManagementActivity : AppCompatActivity() {
 
         val drmModel: DRMModel = intent.getSerializableExtra("drmModel") as DRMModel
         val lcpLicense = LcpLicense(drmModel.licensePath,true , this)
+        val licensesDB = lcpLicense.database.licenses
 
-
-        //TODO network check
-        val networkConnection = true
-
-        if (networkConnection) {
+        try {
             lcpLicense.fetchStatusDocument().get()
             lcpLicense.updateLicenseDocument().get()
-        } else {
-            //TODO
+        } catch (e: Exception) {
+            //Do something ?
         }
 
         coordinatorLayout {
@@ -96,7 +92,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = lcpLicense.currentStatus()
+                        text = lcpLicense.database.licenses.getStatus(lcpLicense.license.id)
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -144,7 +140,8 @@ class DRMManagementActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = DateTime(lcpLicense.lastUpdate()).toString(DateTimeFormat.shortDateTime())
+//                        text = DateTime(lcpLicense.lastUpdate()).toString(DateTimeFormat.shortDateTime())
+                        text = DateTime(licensesDB.dateOfLastUpdate(lcpLicense.license.id)).toString(DateTimeFormat.shortDateTime())
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -193,7 +190,7 @@ class DRMManagementActivity : AppCompatActivity() {
                 val start = DateTime(lcpLicense.rightsStart()).toString(DateTimeFormat.shortDateTime())?.let {
                     return@let it
                 }
-                val end = DateTime(lcpLicense.rightsEnd()).toString(DateTimeFormat.shortDateTime())?.let {
+                val end = licensesDB.dateOfEnd(lcpLicense.license.id)?.toString(DateTimeFormat.shortDateTime())?.let {
                     return@let it
                 }
                 val potentialRightsEnd = DateTime(lcpLicense.status?.potentialRightsEndDate()).toString(DateTimeFormat.shortDateTime())?.let {
