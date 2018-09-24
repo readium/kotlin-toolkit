@@ -193,23 +193,27 @@ class R2OutlineActivity : AppCompatActivity() {
 
 
 
-    inner class TOCAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.list_item_toc, users) {
+
+    /*
+     * Adapter for navigation links (Table of Contents, Page lists & Landmarks)
+     */
+    inner class NavigationAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.navcontent_item, users) {
         private inner class ViewHolder {
-            internal var tocTextView: TextView? = null
+            internal var navigationTextView: TextView? = null
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             var myView = convertView
 
-            val spineItem = getItem(position)
+            val item = getItem(position)
 
             val viewHolder: ViewHolder // view lookup cache stored in tag
             if (myView == null) {
 
                 viewHolder = ViewHolder()
                 val inflater = LayoutInflater.from(context)
-                myView = inflater.inflate(R.layout.list_item_toc, parent, false)
-                viewHolder.tocTextView = myView!!.toc_textView as TextView
+                myView = inflater.inflate(R.layout.navcontent_item, parent, false)
+                viewHolder.navigationTextView = myView!!.navigation_textView as TextView
 
                 myView.tag = viewHolder
 
