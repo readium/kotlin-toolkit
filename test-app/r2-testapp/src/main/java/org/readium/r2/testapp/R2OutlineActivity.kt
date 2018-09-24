@@ -168,19 +168,33 @@ class R2OutlineActivity : AppCompatActivity() {
         // Setting up tabs
 
         val tabTOC: TabHost.TabSpec = tabHost.newTabSpec("Table Of Content")
-        tabTOC.setIndicator("Table Of Content")
+        tabTOC.setIndicator(tabTOC.tag)
         tabTOC.setContent(R.id.toc_tab)
 
 
         val tabBookmarks: TabHost.TabSpec = tabHost.newTabSpec("Bookmarks")
-        tabBookmarks.setIndicator("Bookmarks")
+        tabBookmarks.setIndicator(tabBookmarks.tag)
         tabBookmarks.setContent(R.id.bookmarks_tab)
+
+
+        val tabPageList: TabHost.TabSpec = tabHost.newTabSpec("Page List")
+        tabPageList.setIndicator(tabPageList.tag)
+        tabPageList.setContent(R.id.pagelists_tab)
+
+
+        val tabLandmarks: TabHost.TabSpec = tabHost.newTabSpec("Landmarks")
+        tabLandmarks.setIndicator(tabLandmarks.tag)
+        tabLandmarks.setContent(R.id.landmarks_tab)
 
 
         tabHost.addTab(tabTOC)
         tabHost.addTab(tabBookmarks)
+        tabHost.addTab(tabPageList)
+        tabHost.addTab(tabLandmarks)
 
     }
+
+
 
     private fun childrenOf(parent: Link): MutableList<Link> {
         val children = mutableListOf<Link>()
