@@ -88,23 +88,78 @@ class R2OutlineActivity : AppCompatActivity() {
 
         val bookID = intent.getLongExtra("bookId", -1)
         val bookmarks = bookmarkDB.bookmarks.list(bookID)
-        val bookmarkskAdapter = BookMarksAdapter(this, bookmarks, allElements)
+        val bookmarksAdapter = BookMarksAdapter(this, bookmarks, allElements)
 
-        bookmark_list.adapter = bookmarkskAdapter
+        bookmark_list.adapter = bookmarksAdapter
 
 
         bookmark_list.setOnItemClickListener { _, _, position, _ ->
 
             //Link to the resource in the publication
-            val bmkItemUri = bookmarks[position].resourceHref
+            val bookmarkUri = bookmarks[position].resourceHref
             //Progression of the selected bookmark
-            val bmkProgression = bookmarks[position].progression
+            val bookmarkProgression = bookmarks[position].progression
 
             val intent = Intent()
-            intent.putExtra("toc_item_uri", bmkItemUri)
-            intent.putExtra("item_progression", bmkProgression)
+            intent.putExtra("toc_item_uri", bookmarkUri)
+            intent.putExtra("item_progression", bookmarkProgression)
             setResult(Activity.RESULT_OK, intent)
             finish()
+        }
+
+
+
+        /*
+         * Retrieve the page list
+         */
+        val pageList: MutableList<Link> = publication.pageList
+
+        val allPages = mutableListOf<Link>()
+
+        for (link in pageList) {
+            val children = childrenOf(link)
+            // Append parent.
+            allPages.add(link)
+            // Append children, and their children... recursive.
+            allPages.addAll(children)
+        }
+
+        val pageListAdapter = NavigationAdapter(this, allPages)
+        page_list.adapter = pageListAdapter
+
+        page_list.setOnItemClickListener { _, _, position, _ ->
+
+            //Link to the resource in the publication
+            val pageUri = allPages[position].href
+
+            val intent = Intent()
+            intent.putExtra("toc_item_uri", pageUri)
+            intent.putExtra("item_progression", 0.0)
+            setResult(Activity.RESULT_OK, intent)
+            finish()
+
+        }
+
+
+        /*
+         * Retrieve the landmarks
+         */
+        val landmarks: MutableList<Link> = publication.landmarks
+
+        val landmarksAdapter = NavigationAdapter(this, landmarks)
+        landmarks_list.adapter = landmarksAdapter
+
+        landmarks_list.setOnItemClickListener { _, _, position, _ ->
+
+            //Link to the resource in the publication
+            val landmarkUri = landmarks[position].href
+
+            val intent = Intent()
+            intent.putExtra("toc_item_uri", landmarkUri)
+            intent.putExtra("item_progression", 0.0)
+            setResult(Activity.RESULT_OK, intent)
+            finish()
+
         }
 
         actionBar?.setDisplayHomeAsUpEnabled(true)
