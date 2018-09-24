@@ -22,12 +22,13 @@ import android.view.ViewGroup
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_outline_container.*
 import kotlinx.android.synthetic.main.bookmark_item.view.*
-import kotlinx.android.synthetic.main.list_item_toc.view.*
+import kotlinx.android.synthetic.main.navcontent_item.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
 import kotlin.math.roundToInt
+import android.widget.TextView
 
 
 class R2OutlineActivity : AppCompatActivity() {
@@ -51,7 +52,6 @@ class R2OutlineActivity : AppCompatActivity() {
         /*
          * Retrieve the Table of Content
          */
-
         val tableOfContents: MutableList<Link> = publication.tableOfContents
         val allElements = mutableListOf<Link>()
 
@@ -63,9 +63,9 @@ class R2OutlineActivity : AppCompatActivity() {
             allElements.addAll(children)
         }
 
-        val listAdapter = TOCAdapter(this, allElements)
+        val tocAdapter = NavigationAdapter(this, allElements)
 
-        toc_list.adapter = listAdapter
+        toc_list.adapter = tocAdapter
 
         toc_list.setOnItemClickListener { _, _, position, _ ->
 
@@ -236,13 +236,18 @@ class R2OutlineActivity : AppCompatActivity() {
                 viewHolder = myView.tag as ViewHolder
             }
 
-            viewHolder.tocTextView!!.text = spineItem!!.title
+            viewHolder.navigationTextView!!.text = item!!.title
 
             return myView
         }
     }
 
 
+    
+
+    /*
+     * Adapter for bookmarks
+     */
     inner class BookMarksAdapter(val context: Context, private val bookmarks: MutableList<Bookmark>, private val elements: MutableList<Link>) : BaseAdapter() {
 
         private inner class ViewHolder {
