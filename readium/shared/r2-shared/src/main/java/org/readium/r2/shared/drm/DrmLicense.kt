@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.drm
 
+import org.joda.time.DateTime
 import java.io.Serializable
 import java.net.URL
 import java.util.*
@@ -17,7 +18,7 @@ interface DrmLicense : Serializable {
     fun decipher(data: ByteArray): ByteArray?
     fun areRightsValid()
     fun register()
-    fun renewLicense (endDate: Date? = null, callback: (Any) -> Unit)
+    fun renewLicense (endDate: DateTime? = null, callback: (Any) -> Unit)
     fun returnLicense(callback: (Any) -> Unit)
     fun currentStatus(): String
     fun lastUpdate(): Date
