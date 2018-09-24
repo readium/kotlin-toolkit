@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Module: r2-testapp-kotlin
-  ~ Developers: Aferdita Muriqi, Clément Baumann, Mostapha Idoubihi, Paul Stoica
+  ~ Developers: Aferdita Muriqi, Paul Stoica
   ~
   ~ Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
   ~ Licensed to the Readium Foundation under one or more contributor license agreements.
@@ -10,7 +10,7 @@
   -->
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/toc_textView"
+    android:id="@+id/navigation_textView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
