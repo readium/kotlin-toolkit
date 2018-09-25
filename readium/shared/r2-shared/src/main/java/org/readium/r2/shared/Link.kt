@@ -48,7 +48,7 @@ class Link : JSONable, Serializable {
         return properties.encryption != null
     }
 
-    override fun getJSON(): JSONObject {
+    override fun toJSON(): JSONObject {
         val json = JSONObject()
         json.putOpt("title", title)
         json.putOpt("type", typeLink)

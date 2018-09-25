@@ -24,7 +24,7 @@ class Contributor : JSONable, Serializable {
     var name: String? = null
         get() = multilanguageName.singleString
 
-    override fun getJSON(): JSONObject {
+    override fun toJSON(): JSONObject {
         val obj = JSONObject()
         obj.put("name", name)
         if (roles.isNotEmpty()) {

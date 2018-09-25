@@ -26,7 +26,7 @@ fun URL.removeLastComponent(): URL {
 fun getJSONArray(list: List<JSONable>): JSONArray {
     val array = JSONArray()
     for (i in list) {
-        array.put(i.getJSON())
+        array.put(i.toJSON())
     }
     return array
 }
@@ -46,15 +46,15 @@ fun tryPut(obj: JSONObject, list: List<JSONable>, tag: String) {
 
 // Try to put class which implements JSONable only if not empty
 fun tryPut(jsonObject: JSONObject, jsonable: JSONable, tag: String) {
-    val tempJsonObject = jsonable.getJSON()
+    val tempJsonObject = jsonable.toJSON()
     if (tempJsonObject.length() != 0)
         jsonObject.put(tag, tempJsonObject)
 }
 
 class TocElement(val link: Link, val children: List<TocElement>) : JSONable {
 
-    override fun getJSON(): JSONObject {
-        val json = link.getJSON()
+    override fun toJSON(): JSONObject {
+        val json = link.toJSON()
         tryPut(json, children, "children")
         return json
     }
