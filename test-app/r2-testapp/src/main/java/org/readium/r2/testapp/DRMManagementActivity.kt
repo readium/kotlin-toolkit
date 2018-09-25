@@ -16,7 +16,6 @@ import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
-import android.widget.LinearLayout
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.coordinatorLayout
@@ -29,6 +28,7 @@ import org.readium.r2.navigator.R
 import org.readium.r2.shared.drm.DRMModel
 import android.content.Intent
 import android.net.Uri
+import android.widget.*
 
 
 class DRMManagementActivity : AppCompatActivity() {
@@ -38,8 +38,14 @@ class DRMManagementActivity : AppCompatActivity() {
 
         val drmModel: DRMModel = intent.getSerializableExtra("drmModel") as DRMModel
         val lcpLicense = LcpLicense(drmModel.licensePath,true , this)
-        lcpLicense.fetchStatusDocument().get()
-        lcpLicense.updateLicenseDocument().get()
+        val licensesDB = lcpLicense.database.licenses
+
+        try {
+            lcpLicense.fetchStatusDocument().get()
+            lcpLicense.updateLicenseDocument().get()
+        } catch (e: Exception) {
+            //Do something ?
+        }
 
         coordinatorLayout {
             fitsSystemWindows = true
@@ -86,7 +92,7 @@ class DRMManagementActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = lcpLicense.currentStatus()
+                        text = lcpLicense.database.licenses.getStatus(lcpLicense.license.id)
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -134,7 +140,8 @@ class DRMManagementActivity : AppCompatActivity() {
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
                         padding = dip(10)
-                        text = DateTime(lcpLicense.lastUpdate()).toString(DateTimeFormat.shortDateTime())
+//                        text = DateTime(lcpLicense.lastUpdate()).toString(DateTimeFormat.shortDateTime())
+                        text = DateTime(licensesDB.dateOfLastUpdate(lcpLicense.license.id)).toString(DateTimeFormat.shortDateTime())
                         textSize = 18f
                         gravity = Gravity.END
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -183,7 +190,7 @@ class DRMManagementActivity : AppCompatActivity() {
                 val start = DateTime(lcpLicense.rightsStart()).toString(DateTimeFormat.shortDateTime())?.let {
                     return@let it
                 }
-                val end = DateTime(lcpLicense.rightsEnd()).toString(DateTimeFormat.shortDateTime())?.let {
+                val end = licensesDB.dateOfEnd(lcpLicense.license.id)?.toString(DateTimeFormat.shortDateTime())?.let {
                     return@let it
                 }
                 val potentialRightsEnd = DateTime(lcpLicense.status?.potentialRightsEndDate()).toString(DateTimeFormat.shortDateTime())?.let {
@@ -250,31 +257,50 @@ class DRMManagementActivity : AppCompatActivity() {
                     button {
                         text = context.getString(R.string.drm_label_renew)
                         onClick {
+                            // if a renew URL is set in the server configuration, open the web browser
                             if (lcpLicense.status?.link("renew")?.type == "text/html") {
                                 val intent = Intent(Intent.ACTION_VIEW)
                                 intent.data = Uri.parse(lcpLicense.status?.link("renew")?.href.toString())
                                 startActivity(intent)
                             } else {
-                                val renewDialog = alert(Appcompat, "The publication will be valid for one more week") {
+                                val daysArray = arrayOf(1, 3, 7, 15)
+
+                                val daysInput = Spinner(this@DRMManagementActivity)
+                                daysInput.dropDownWidth = wrapContent
+
+                                val adapter = ArrayAdapter(this@DRMManagementActivity, org.readium.r2.testapp.R.layout.days_spinner, daysArray)
+                                daysInput.adapter = adapter
+
+                                val renewDialog = alert(Appcompat, "How many days do you wish to extend your loan ?") {
+                                    this.customView = daysInput
 
                                     positiveButton("Renew") { }
                                     negativeButton("Cancel") { }
-
                                 }.build()
                                 renewDialog.apply {
                                     setCancelable(false)
                                     setCanceledOnTouchOutside(false)
                                     setOnShowListener {
-                                        val button = getButton(AlertDialog.BUTTON_POSITIVE)
-                                        button.setOnClickListener {
-                                            lcpLicense.renewLicense() { renewedLicense ->
-                                                val renewedLicense = renewedLicense as LicenseDocument
+                                        daysInput.setSelection(2)
+                                        val renewButton = getButton(AlertDialog.BUTTON_POSITIVE)
+                                        renewButton.setOnClickListener {
+                                            val addDays = daysInput.selectedItem.toString().toInt()
+                                            val newEndDate = DateTime(lcpLicense.rightsEnd()).plusDays(addDays)
 
-                                                //TODO : let user set new end date
-                                                lcpLicense.license = renewedLicense
+                                            if (newEndDate > DateTime(lcpLicense.status?.potentialRightsEndDate())) {
+                                                runOnUiThread {
+                                                    toast("New date must not exceed potential rights end date").setMargin(0f, 0.2f)
+                                                }
+                                            } else {
+                                                lcpLicense.renewLicense(newEndDate) { renewedLicense ->
 
-                                                renewDialog.dismiss()
-                                                recreate()
+                                                    val renewedLicense = renewedLicense as LicenseDocument
+
+                                                    lcpLicense.license = renewedLicense
+
+                                                    renewDialog.dismiss()
+                                                    recreate()
+                                                }
                                             }
 
                                         }
