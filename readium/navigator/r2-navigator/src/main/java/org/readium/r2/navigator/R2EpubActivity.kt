@@ -88,8 +88,8 @@ open class R2EpubActivity : AppCompatActivity() {
         var doublePageLeft:String = ""
         var doublePageRight:String = ""
         var resourceIndex = 0
-        for (spine in publication.spine) {
-            val uri = "$BASE_URL:$port" + "/" + epubName + spine.href
+        for (spineItem in publication.spine) {
+            val uri = "$BASE_URL:$port" + "/" + epubName + spineItem.href
             resourcesSingle.add(Pair(resourceIndex, uri))
 
             // add first page to the right,

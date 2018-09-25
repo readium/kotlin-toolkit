@@ -45,7 +45,6 @@ class R2FXLPageFragment : Fragment() {
         val preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
 
         val view: View = inflater.inflate(R.layout.fxlview_double, container, false)
-        view.setPadding(0, 0, 0, 0)
 
         val r2FXLLayout = view.findViewById<View>(R.id.r2FXLLayout) as R2FXLLayout
         r2FXLLayout.isAllowParentInterceptOnScaled = true
@@ -76,13 +75,9 @@ class R2FXLPageFragment : Fragment() {
         webView.isHorizontalScrollBarEnabled = false
         webView.settings.useWideViewPort = true
         webView.settings.loadWithOverviewMode = true
-        webView.settings.setSupportZoom(false)
-        webView.settings.builtInZoomControls = false
-        webView.settings.displayZoomControls = false
 
         webView.setInitialScale(1)
 
-        webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 
         webView.webViewClient = object : WebViewClient() {

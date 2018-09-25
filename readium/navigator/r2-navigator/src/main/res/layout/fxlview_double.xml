@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Module: r2-navigator-kotlin
   ~ Developers: Aferdita Muriqi
   ~
@@ -12,30 +11,39 @@
     android:id="@+id/r2FXLLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <LinearLayout
-        android:orientation="horizontal"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbars="none">
 
-        <org.readium.r2.navigator.pager.R2WebView
-            android:id="@+id/firstWebView"
-            android:scaleType="centerInside"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:layerType="hardware"
-            android:layout_gravity="end"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
 
-        <org.readium.r2.navigator.pager.R2WebView
-            android:id="@+id/secondWebView"
-            android:scaleType="centerInside"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:layerType="hardware"
-            android:layout_gravity="start"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
 
-    </LinearLayout>
+            <org.readium.r2.navigator.pager.R2WebView
+                android:id="@+id/firstWebView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_weight="1"/>
 
+            <org.readium.r2.navigator.pager.R2WebView
+                android:id="@+id/secondWebView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_weight="1"/>
+
+        </LinearLayout>
+    </RelativeLayout>
+    </ScrollView>
 </org.readium.r2.navigator.fxl.R2FXLLayout>
