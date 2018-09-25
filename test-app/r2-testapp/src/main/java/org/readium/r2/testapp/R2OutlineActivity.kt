@@ -114,23 +114,13 @@ class R2OutlineActivity : AppCompatActivity() {
          */
         val pageList: MutableList<Link> = publication.pageList
 
-        val allPages = mutableListOf<Link>()
-
-        for (link in pageList) {
-            val children = childrenOf(link)
-            // Append parent.
-            allPages.add(link)
-            // Append children, and their children... recursive.
-            allPages.addAll(children)
-        }
-
-        val pageListAdapter = NavigationAdapter(this, allPages)
+        val pageListAdapter = NavigationAdapter(this, pageList)
         page_list.adapter = pageListAdapter
 
         page_list.setOnItemClickListener { _, _, position, _ ->
 
             //Link to the resource in the publication
-            val pageUri = allPages[position].href
+            val pageUri = pageList[position].href
 
             val intent = Intent()
             intent.putExtra("toc_item_uri", pageUri)
