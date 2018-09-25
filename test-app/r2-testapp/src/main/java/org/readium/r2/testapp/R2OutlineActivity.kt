@@ -26,7 +26,6 @@ import kotlinx.android.synthetic.main.navcontent_item.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.Link
-import org.readium.r2.shared.Locator
 import org.readium.r2.shared.Publication
 import kotlin.math.roundToInt
 import android.widget.TextView
@@ -100,7 +99,7 @@ class R2OutlineActivity : AppCompatActivity() {
             //Link to the resource in the publication
             val bookmarkUri = bookmarks[position].resourceHref
             //Progression of the selected bookmark
-            val bookmarkProgression = bookmarks[position].progression
+            val bookmarkProgression = bookmarks[position].location.progression
 
             val intent = Intent()
             intent.putExtra("toc_item_uri", bookmarkUri)
@@ -235,7 +234,7 @@ class R2OutlineActivity : AppCompatActivity() {
     }
 
 
-    inner class BookMarksAdapter(val context: Context, private val locators: MutableList<Locator>, private val elements: MutableList<Link>) : BaseAdapter() {
+    inner class BookMarksAdapter(val context: Context, private val locators: MutableList<Bookmark>, private val elements: MutableList<Link>) : BaseAdapter() {
 
         private inner class ViewHolder {
             internal var bmkChapter: TextView? = null
@@ -265,7 +264,7 @@ class R2OutlineActivity : AppCompatActivity() {
                 viewHolder = bookmarkView.tag as ViewHolder
             }
 
-            val bookmark = getItem(position) as Locator
+            val bookmark = getItem(position) as Bookmark
             
             var title = getBookSpineItem(bookmark.resourceHref)
             if(title.isNullOrEmpty()){

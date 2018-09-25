@@ -13,10 +13,22 @@ package org.readium.r2.testapp
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import org.jetbrains.anko.db.*
+import org.joda.time.DateTime
 import org.json.JSONObject
-import org.readium.r2.shared.Location
+import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
+import org.readium.r2.shared.LocatorText
 
+class Bookmark(val bookID: Long,
+               val publicationID: String,
+               val resourceIndex: Long,
+               val resourceHref: String,
+               val resourceTitle: String,
+               val location: Locations,
+               val locatorText: LocatorText,
+               var creationDate: Long = DateTime().toDate().time,
+               var id: Long? = null):
+        Locator(resourceHref, creationDate, resourceTitle, location, locatorText) {}
 
 class BookmarksDatabase(context: Context) {
 
@@ -52,6 +64,7 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
                 BOOKMARKSTable.RESOURCE_HREF to TEXT,
                 BOOKMARKSTable.RESOURCE_TITLE to TEXT,
                 BOOKMARKSTable.LOCATION to TEXT,
+                BOOKMARKSTable.LOCATOR_TEXT to TEXT,
                 BOOKMARKSTable.CREATION_DATE to INTEGER)
     }
 
@@ -69,6 +82,8 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
 
         // TODO add migration for resource title
 
+        // TODO add migration for locator text
+
     }
 }
 
@@ -81,7 +96,8 @@ object BOOKMARKSTable {
     const val RESOURCE_HREF = "resourceHref"
     const val RESOURCE_TITLE = "resourceTitle"
     const val LOCATION = "location"
-    const val CREATION_DATE = "creationDat"
+    const val LOCATOR_TEXT = "locatorText"
+    const val CREATION_DATE = "creationDate"
 }
 
 class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
@@ -98,29 +114,30 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
         }
     }
 
-    fun insert(locator: Locator): Long? {
-        if (locator.bookID < 0 ||
-                locator.resourceIndex < 0 ||
-                locator.location.progression!! < 0 || locator.location.progression!! > 1){
+    fun insert(bookmark: Bookmark): Long? {
+        if (bookmark.bookID < 0 ||
+                bookmark.resourceIndex < 0 ||
+                bookmark.location.progression!! < 0 || bookmark.location.progression!! > 1){
             return null
         }
-        val exists = has(locator)
+        val exists = has(bookmark)
         if (exists.isEmpty()) {
             return database.use {
                 return@use insert(BOOKMARKSTable.NAME,
-                        BOOKMARKSTable.BOOK_ID to locator.bookID,
-                        BOOKMARKSTable.PUBLICATION_ID to locator.publicationID,
-                        BOOKMARKSTable.RESOURCE_INDEX to locator.resourceIndex,
-                        BOOKMARKSTable.RESOURCE_HREF to locator.resourceHref,
-                        BOOKMARKSTable.RESOURCE_TITLE to locator.resourceTitle,
-                        BOOKMARKSTable.LOCATION to locator.location.toJSON().toString(),
-                        BOOKMARKSTable.CREATION_DATE to locator.creationDate)
+                        BOOKMARKSTable.BOOK_ID to bookmark.bookID,
+                        BOOKMARKSTable.PUBLICATION_ID to bookmark.publicationID,
+                        BOOKMARKSTable.RESOURCE_INDEX to bookmark.resourceIndex,
+                        BOOKMARKSTable.RESOURCE_HREF to bookmark.resourceHref,
+                        BOOKMARKSTable.RESOURCE_TITLE to bookmark.resourceTitle,
+                        BOOKMARKSTable.LOCATION to bookmark.location.toJSON().toString(),
+                        BOOKMARKSTable.LOCATOR_TEXT to bookmark.locatorText.toJSON().toString(),
+                        BOOKMARKSTable.CREATION_DATE to bookmark.creationDate)
             }
         }
         return null
     }
 
-    fun has(locator: Locator): List<Locator> {
+    fun has(bookmark: Bookmark): List<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.ID,
@@ -130,20 +147,22 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                     BOOKMARKSTable.RESOURCE_HREF,
                     BOOKMARKSTable.RESOURCE_TITLE,
                     BOOKMARKSTable.LOCATION,
+                    BOOKMARKSTable.LOCATOR_TEXT,
                     BOOKMARKSTable.CREATION_DATE)
-                    .whereArgs("(bookID = {bookID}) AND (publicationID = {publicationID}) AND (resourceIndex = {resourceIndex}) AND (resourceHref = {resourceHref})  AND (location = {location})",
-                            "bookID" to locator.bookID,
-                            "publicationID" to locator.publicationID,
-                            "resourceIndex" to locator.resourceIndex,
-                            "resourceHref" to locator.resourceHref,
-                            "location" to locator.location.toJSON().toString())
+                    .whereArgs("(bookID = {bookID}) AND (publicationID = {publicationID}) AND (resourceIndex = {resourceIndex}) AND (resourceHref = {resourceHref})  AND (location = {location}) AND (locatorText = {locatorText})",
+                            "bookID" to bookmark.bookID,
+                            "publicationID" to bookmark.publicationID,
+                            "resourceIndex" to bookmark.resourceIndex,
+                            "resourceHref" to bookmark.resourceHref,
+                            "location" to bookmark.location.toJSON().toString(),
+                            "locatorText" to bookmark.locatorText.toJSON().toString())
                     .exec {
                         parseList(MyRowParser())
                     }
         }
     }
 
-    fun delete(locator: Locator) {
+    fun delete(locator: Bookmark) {
         database.use {
             delete(BOOKMARKSTable.NAME, "id = {id}",
                     "id" to locator.id!!)
@@ -159,7 +178,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
         }
     }
 
-    fun listAll(): MutableList<Locator> {
+    fun listAll(): MutableList<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.ID,
@@ -169,6 +188,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                     BOOKMARKSTable.RESOURCE_HREF,
                     BOOKMARKSTable.RESOURCE_TITLE,
                     BOOKMARKSTable.LOCATION,
+                    BOOKMARKSTable.LOCATOR_TEXT,
                     BOOKMARKSTable.CREATION_DATE)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
@@ -177,7 +197,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
     }
 
 
-    fun list(bookID: Long): MutableList<Locator> {
+    fun list(bookID: Long): MutableList<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.ID,
@@ -187,6 +207,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                     BOOKMARKSTable.RESOURCE_HREF,
                     BOOKMARKSTable.RESOURCE_TITLE,
                     BOOKMARKSTable.LOCATION,
+                    BOOKMARKSTable.LOCATOR_TEXT,
                     BOOKMARKSTable.CREATION_DATE)
                     .whereArgs("bookID = {bookID}", "bookID" to bookID as Any)
                     .orderBy(BOOKMARKSTable.RESOURCE_INDEX, SqlOrderDirection.ASC)
@@ -197,8 +218,8 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
         }
     }
 
-    class MyRowParser : RowParser<Locator> {
-        override fun parseRow(columns: Array<Any?>): Locator {
+    class MyRowParser : RowParser<Bookmark> {
+        override fun parseRow(columns: Array<Any?>): Bookmark {
             val id = columns[0]?.let {
                 return@let it
             } ?: kotlin.run { return@run 0 }
@@ -220,11 +241,14 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
             val location = columns[6]?.let {
                 return@let it
             } ?: kotlin.run { return@run "" }
-            val created = columns[7]?.let {
+            val locatorText = columns[7]?.let {
+                return@let it
+            } ?: kotlin.run { return@run "" }
+            val created = columns[8]?.let {
                 return@let it
             } ?: kotlin.run { return@run null }
 
-            return Locator(bookID as Long, publicationID as String, resourceIndex as Long, resourceHref as String, resourceTitle as String, Location.fromJSON(JSONObject(location as String)), created as Long, id as Long)
+            return Bookmark(bookID as Long, publicationID as String, resourceIndex as Long, resourceHref as String, resourceTitle as String, Locations.fromJSON(JSONObject(location as String)), LocatorText.fromJSON(JSONObject(locatorText as String)), created as Long,  id as Long)
         }
     }
 

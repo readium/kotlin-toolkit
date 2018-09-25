@@ -18,9 +18,10 @@ import android.view.Menu
 import android.view.MenuItem
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
+import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.shared.Location
-import org.readium.r2.shared.Locator
+import org.readium.r2.shared.Locations
+import org.readium.r2.shared.LocatorText
 
 /**
  * R2EpubActivity : Extension of the R2EpubActivity() from navigator
@@ -77,13 +78,14 @@ class R2EpubActivity : R2EpubActivity() {
                 val resourceTitle = publication.spine[resourcePager.currentItem].title?: ""
                 val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.toString()).toDouble()
 
-                val bookmark = Locator(
+                val bookmark = Bookmark(
                         bookId,
                         publicationIdentifier,
                         resourceIndex,
                         resourceHref,
                         resourceTitle,
-                        Location(progression = progression)
+                        Locations(progression = progression),
+                        LocatorText()
                 )
                 
                 bookmarkDB.bookmarks.insert(bookmark)?.let {
