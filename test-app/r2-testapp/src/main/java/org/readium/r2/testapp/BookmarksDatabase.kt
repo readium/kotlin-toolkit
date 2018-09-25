@@ -81,7 +81,7 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
                     db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " RENAME COLUMN 'timestamp' to " + BOOKMARKSTable.CREATION_DATE + ";")
 
                     // TODO add migration: add publicationId
-                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.PUBLICATION_ID + " TEXT;")
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.PUBLICATION_ID + " TEXT DEFAULT '';")
 
                     // TODO add migration: add location
                     db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATION + " TEXT DEFAULT '{}';")
