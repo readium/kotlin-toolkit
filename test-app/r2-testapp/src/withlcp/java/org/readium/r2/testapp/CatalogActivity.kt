@@ -198,8 +198,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         val lcpHttpService = LcpHttpService()
         val session = LcpSession(publicationPath, this)
 
-        fun validatePassphrase(passphraseHash: String): Promise<LcpLicense?, Exception> {
-
+        fun validatePassphrase(passphraseHash: String): Promise<Any, Exception> {
             val preferences = getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
             return task {
@@ -211,16 +210,23 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             } then { pemCrtl ->
                 if (pemCrtl != null) {
                     preferences.edit().putString("pemCrtl", pemCrtl).apply()
-                    if (session.resolve(passphraseHash, pemCrtl).get() == null) {
+                    val status = session.resolve(passphraseHash, pemCrtl).get()
+                    if (status is String) {
                         runOnUiThread {
-                                toast("Invalid license")
+                            toast("This license was $status")
                         }
-                        null
                     } else {
-                        session.resolve(passphraseHash, pemCrtl).get()
+                        status
                     }
                 } else {
-                    session.resolve(passphraseHash, preferences.getString("pemCrtl", "")).get()
+                    val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", "")).get()
+                    if (status is String) {
+                        runOnUiThread {
+                            toast("This license was $status")
+                        }
+                    } else {
+                        status
+                    }
                 }
             } fail { exception ->
                 exception.printStackTrace()
@@ -277,14 +283,14 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             val passphrases = session.passphraseFromDb()
             passphrases?.let { passphraseHash ->
                 val lcpLicense = validatePassphrase(passphraseHash).get()
-                drm.license = lcpLicense
+                drm.license = lcpLicense as? LcpLicense
                 drm.profile = session.getProfile()
                 parsingCallback(drm)
                 callback(drm)
             } ?: run {
                 promptPassphrase(null) { passphraseHash ->
                     val lcpLicense = validatePassphrase(passphraseHash).get()
-                    drm.license = lcpLicense
+                    drm.license = lcpLicense as? LcpLicense
                     drm.profile = session.getProfile()
                     parsingCallback(drm)
                     callback(drm)
