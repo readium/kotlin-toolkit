@@ -27,4 +27,9 @@
 
     </style>
 
+    <style name="TabWidgetTheme" parent="AppTheme">
+        <item name="android:textSize">5pt</item>
+        <item name="android:textAlignment">center</item>
+    </style>
+
 </resources>
