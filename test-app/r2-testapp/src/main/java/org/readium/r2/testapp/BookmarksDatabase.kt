@@ -14,6 +14,8 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
+import nl.komponents.kovenant.task
+import nl.komponents.kovenant.then
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.json.JSONObject
@@ -77,38 +79,40 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
             1 -> {
                 try {
 
-                    //  add migration: rename timestamp to creationDate
-                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " RENAME COLUMN 'timestamp' to " + BOOKMARKSTable.CREATION_DATE + ";")
-
-                    //  add migration: add publicationId
-                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.PUBLICATION_ID + " TEXT DEFAULT '';")
-
-                    //  add migration: add location
-                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATION + " TEXT DEFAULT '{}';")
-
-                    //  add migration: convert progression into location
-                    val cursor = db.query(BOOKMARKSTable.NAME, arrayOf(BOOKMARKSTable.ID, "progression", BOOKMARKSTable.LOCATION), null, null, null, null, null, null)
-                    if (cursor != null) {
-                        var hasItem = cursor.moveToFirst()
-                        while (hasItem) {
-                            val id = cursor.getInt(cursor.getColumnIndex(BOOKMARKSTable.ID))
-                            val progression = cursor.getDouble(cursor.getColumnIndex("progression"))
-                            val values = ContentValues()
-                            values.put(BOOKMARKSTable.LOCATION, Locations(progression = progression).toJSON().toString())
-                            db.update(BOOKMARKSTable.NAME, values, "${BOOKMARKSTable.ID}=?", arrayOf(id.toString()))
-                            hasItem = cursor.moveToNext()
+                    task {
+                        //  add migration: rename timestamp to creationDate
+                        db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " RENAME COLUMN 'timestamp' to " + BOOKMARKSTable.CREATION_DATE + ";")
+                    } then {
+                        //  add migration: add publicationId
+                        db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.PUBLICATION_ID + " TEXT DEFAULT '';")
+                    } then {
+                        // add migration: add location
+                        db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATION + " TEXT DEFAULT '{}';")
+                    } then {
+                        //  add migration: convert progression into location
+                        val cursor = db.query(BOOKMARKSTable.NAME, arrayOf(BOOKMARKSTable.ID, "progression", BOOKMARKSTable.LOCATION), null, null, null, null, null, null)
+                        if (cursor != null) {
+                            var hasItem = cursor.moveToFirst()
+                            while (hasItem) {
+                                val id = cursor.getInt(cursor.getColumnIndex(BOOKMARKSTable.ID))
+                                val progression = cursor.getDouble(cursor.getColumnIndex("progression"))
+                                val values = ContentValues()
+                                values.put(BOOKMARKSTable.LOCATION, Locations(progression = progression).toJSON().toString())
+                                db.update(BOOKMARKSTable.NAME, values, "${BOOKMARKSTable.ID}=?", arrayOf(id.toString()))
+                                hasItem = cursor.moveToNext()
+                            }
+                            cursor.close()
                         }
-                        cursor.close()
+                    } then {
+                        //  add migration: remove progression
+                        db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " DROP COLUMN 'progression';")
+                    } then {
+                        //  add migration: add resourceTitle
+                        db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.RESOURCE_TITLE + " TEXT DEFAULT '';")
+                    } then {
+                        //  add migration: add locatorText
+                        db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATOR_TEXT + " TEXT DEFAULT '{}';")
                     }
-
-                    //  add migration: remove progression
-                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " DROP COLUMN 'progression';")
-
-                    //  add migration: add resourceTitle
-                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.RESOURCE_TITLE + " TEXT DEFAULT '';")
-
-                    //  add migration: add locatorText
-                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATOR_TEXT + " TEXT DEFAULT '{}';")
 
                 } catch (e: SQLiteException) { }
             }
