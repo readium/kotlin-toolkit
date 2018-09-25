@@ -29,7 +29,7 @@ class LcpSession {
         lcpLicense = LcpLicense(File(file).toURI().toURL(), true, androidContext )
     }
 
-    fun resolve(passphrase: String, pemCrl: String) : Promise<LcpLicense?, Exception> {
+    fun resolve(passphrase: String, pemCrl: String) : Promise<Any, Exception> {
         return task {
             try {
                 lcpLicense.fetchStatusDocument().get()
@@ -44,34 +44,39 @@ class LcpSession {
                 //
             }
             lcpLicense.updateLicenseDocument().get()
-        } then {
-            // doesn't look like this is needed
-//            try {
-//                lcpLicense.areRightsValid()
-//            } catch (e: Exception) {
-//                //
-//            }
-//            try {
-//                lcpLicense.register()
-//            } catch (e: Exception) {
-//                //
-//            }
-
-            getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
+            val lcpContext = getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
+            
+            lcpContext
 
         } fail { exception ->
             exception.printStackTrace()
         }
     }
 
-    fun getLcpContext(jsonLicense: String, passphrase: String, pemCrl: String) : Promise<LcpLicense?, Exception> {
+    fun getLcpContext(jsonLicense: String, passphrase: String, pemCrl: String) : Promise<Any, Exception> {
         return task {
-            if ((lcpLicense.status!!.status == StatusDocument.Status.active) || (lcpLicense.status!!.status == StatusDocument.Status.ready)) {
+            lcpLicense.status?.let {statusDocument ->
+                if ((statusDocument.status == StatusDocument.Status.active) || (statusDocument.status == StatusDocument.Status.ready)) {
 
-                lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
-                lcpLicense
-            } else {
-                null
+                    lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
+                    lcpLicense
+                } else {
+                    statusDocument.status.toString()
+                }
+            } ?: run {
+                database.licenses.getStatus(lcpLicense.license.id)?.let {licenseStatus ->
+                    if ( (licenseStatus == StatusDocument.Status.active.toString()) || (licenseStatus == StatusDocument.Status.ready.toString()) ) {
+
+                        lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
+                        lcpLicense
+                    } else {
+                        licenseStatus
+                    }
+                } ?: run {
+                    "invalid"
+                }
+
+
             }
         }
     }

@@ -11,10 +11,8 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import android.util.Base64
-import android.util.Log
 import com.github.kittinunf.fuel.Fuel
 import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
 import org.json.JSONObject
 import org.readium.r2.lcp.model.documents.LicenseDocument

@@ -132,7 +132,7 @@ class LcpLicense : DrmLicense {
                 "name" to getDeviceName())
         try {
             lcpHttpService.register(registerUrl.toString(), params).get()?.let {
-                database.licenses.insert(license, it)
+                database.licenses.updateLicense(license, it)
             }
         }catch (e:Exception) {
             Timber.e(TAG, "LCP register ${e.message}")
@@ -163,7 +163,7 @@ class LcpLicense : DrmLicense {
         callback(license)
     }
 
-    override fun renewLicense(endDate: Date?, callback: (Any) -> Unit) {
+    override fun renewLicense(endDate: DateTime?, callback: (Any) -> Unit) {
         Timber.i(TAG,"LCP renew")
 
         if (status == null) return
@@ -171,7 +171,7 @@ class LcpLicense : DrmLicense {
 
         val renewUrl = URL(url.toString().replace("{?end,id,name}", ""))
         val params = listOf(
-//                "end" to endDate?.time,
+                "end" to endDate,
                 "id" to getDeviceId(),
                 "name" to getDeviceName())
 
@@ -228,11 +228,12 @@ class LcpLicense : DrmLicense {
             Timber.i(TAG,"LCP updateLicenseDocument")
             if (status != null) {
                 val licenseLink = status!!.link("license")
-                val latestUpdate = license.dateOfLastUpdate()
 
-                val lastUpdate = database.licenses.dateOfLastUpdate(license.id)
-                lastUpdate?.let {
-                    if (lastUpdate >= latestUpdate) return@task
+                val latestUpdate = lcpHttpService.fetchUpdatedLicense(licenseLink!!.href.toString()).get().dateOfLastUpdate()
+                val lastUpdateDB = database.licenses.dateOfLastUpdate(license.id)
+
+                lastUpdateDB?.let {
+                    if ((lastUpdateDB.isAfter(latestUpdate)) || (lastUpdateDB.isEqual(latestUpdate))) return@task
                 }
 
                 license = lcpHttpService.fetchUpdatedLicense(licenseLink!!.href.toString()).get()
@@ -240,7 +241,7 @@ class LcpLicense : DrmLicense {
 
 //                moveLicense(archivePath.path, licenseLink.href)
 
-                database.licenses.insert(license, status!!.status.toString())
+                database.licenses.updateLicense(license, status!!.status.toString())
             }
         }
     }
