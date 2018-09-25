@@ -77,16 +77,16 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
             1 -> {
                 try {
 
-                    // TODO add migration: rename timestamp to creationDate
+                    //  add migration: rename timestamp to creationDate
                     db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " RENAME COLUMN 'timestamp' to " + BOOKMARKSTable.CREATION_DATE + ";")
 
-                    // TODO add migration: add publicationId
+                    //  add migration: add publicationId
                     db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.PUBLICATION_ID + " TEXT DEFAULT '';")
 
-                    // TODO add migration: add location
+                    //  add migration: add location
                     db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATION + " TEXT DEFAULT '{}';")
 
-                    // TODO add migration: convert progression into location
+                    //  add migration: convert progression into location
                     val cursor = db.query(BOOKMARKSTable.NAME, arrayOf(BOOKMARKSTable.ID, "progression", BOOKMARKSTable.LOCATION), null, null, null, null, null, null)
                     if (cursor != null) {
                         var hasItem = cursor.moveToFirst()
@@ -101,13 +101,13 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
                         cursor.close()
                     }
 
-                    // TODO add migration: remove progression
+                    //  add migration: remove progression
                     db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " DROP COLUMN 'progression';")
 
-                    // TODO add migration: add resourceTitle
-                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.RESOURCE_TITLE + " TEXT DEFAULT NULL;")
+                    //  add migration: add resourceTitle
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.RESOURCE_TITLE + " TEXT DEFAULT '';")
 
-                    // TODO add migration: add locatorText
+                    //  add migration: add locatorText
                     db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATOR_TEXT + " TEXT DEFAULT '{}';")
 
                 } catch (e: SQLiteException) { }
