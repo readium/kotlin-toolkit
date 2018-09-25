@@ -22,13 +22,14 @@ import android.view.ViewGroup
 import android.widget.*
 import kotlinx.android.synthetic.main.activity_outline_container.*
 import kotlinx.android.synthetic.main.bookmark_item.view.*
-import kotlinx.android.synthetic.main.list_item_toc.view.*
+import kotlinx.android.synthetic.main.navcontent_item.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Locator
 import org.readium.r2.shared.Publication
 import kotlin.math.roundToInt
+import android.widget.TextView
 
 
 class R2OutlineActivity : AppCompatActivity() {
@@ -52,7 +53,6 @@ class R2OutlineActivity : AppCompatActivity() {
         /*
          * Retrieve the Table of Content
          */
-
         val tableOfContents: MutableList<Link> = publication.tableOfContents
         val allElements = mutableListOf<Link>()
 
@@ -64,9 +64,9 @@ class R2OutlineActivity : AppCompatActivity() {
             allElements.addAll(children)
         }
 
-        val listAdapter = TOCAdapter(this, allElements)
+        val tocAdapter = NavigationAdapter(this, allElements)
 
-        toc_list.adapter = listAdapter
+        toc_list.adapter = tocAdapter
 
         toc_list.setOnItemClickListener { _, _, position, _ ->
 
@@ -90,23 +90,68 @@ class R2OutlineActivity : AppCompatActivity() {
         val bookID = intent.getLongExtra("bookId", -1)
         val bookmarks = bookmarkDB.bookmarks.list(bookID).sortedWith(compareBy({it.resourceIndex},{ it.location.progression })).toMutableList()
 
-        val bookmarkskAdapter = BookMarksAdapter(this, bookmarks, allElements)
+        val bookmarksAdapter = BookMarksAdapter(this, bookmarks, allElements)
 
-        bookmark_list.adapter = bookmarkskAdapter
+        bookmark_list.adapter = bookmarksAdapter
 
 
         bookmark_list.setOnItemClickListener { _, _, position, _ ->
 
             //Link to the resource in the publication
-            val bmkItemUri = bookmarks[position].resourceHref
+            val bookmarkUri = bookmarks[position].resourceHref
             //Progression of the selected bookmark
-            val bmkProgression = bookmarks[position].location.progression
+            val bookmarkProgression = bookmarks[position].progression
 
             val intent = Intent()
-            intent.putExtra("toc_item_uri", bmkItemUri)
-            intent.putExtra("item_progression", bmkProgression)
+            intent.putExtra("toc_item_uri", bookmarkUri)
+            intent.putExtra("item_progression", bookmarkProgression)
             setResult(Activity.RESULT_OK, intent)
             finish()
+        }
+
+
+
+        /*
+         * Retrieve the page list
+         */
+        val pageList: MutableList<Link> = publication.pageList
+
+        val pageListAdapter = NavigationAdapter(this, pageList)
+        page_list.adapter = pageListAdapter
+
+        page_list.setOnItemClickListener { _, _, position, _ ->
+
+            //Link to the resource in the publication
+            val pageUri = pageList[position].href
+
+            val intent = Intent()
+            intent.putExtra("toc_item_uri", pageUri)
+            intent.putExtra("item_progression", 0.0)
+            setResult(Activity.RESULT_OK, intent)
+            finish()
+
+        }
+
+
+        /*
+         * Retrieve the landmarks
+         */
+        val landmarks: MutableList<Link> = publication.landmarks
+
+        val landmarksAdapter = NavigationAdapter(this, landmarks)
+        landmarks_list.adapter = landmarksAdapter
+
+        landmarks_list.setOnItemClickListener { _, _, position, _ ->
+
+            //Link to the resource in the publication
+            val landmarkUri = landmarks[position].href
+
+            val intent = Intent()
+            intent.putExtra("toc_item_uri", landmarkUri)
+            intent.putExtra("item_progression", 0.0)
+            setResult(Activity.RESULT_OK, intent)
+            finish()
+
         }
 
         actionBar?.setDisplayHomeAsUpEnabled(true)
@@ -114,20 +159,34 @@ class R2OutlineActivity : AppCompatActivity() {
 
         // Setting up tabs
 
-        val tabTOC: TabHost.TabSpec = tabHost.newTabSpec("Table Of Content")
-        tabTOC.setIndicator("Table Of Content")
+        val tabTOC: TabHost.TabSpec = tabHost.newTabSpec("Content")
+        tabTOC.setIndicator(tabTOC.tag)
         tabTOC.setContent(R.id.toc_tab)
 
 
         val tabBookmarks: TabHost.TabSpec = tabHost.newTabSpec("Bookmarks")
-        tabBookmarks.setIndicator("Bookmarks")
+        tabBookmarks.setIndicator(tabBookmarks.tag)
         tabBookmarks.setContent(R.id.bookmarks_tab)
+
+
+        val tabPageList: TabHost.TabSpec = tabHost.newTabSpec("Page List")
+        tabPageList.setIndicator(tabPageList.tag)
+        tabPageList.setContent(R.id.pagelists_tab)
+
+
+        val tabLandmarks: TabHost.TabSpec = tabHost.newTabSpec("Landmarks")
+        tabLandmarks.setIndicator(tabLandmarks.tag)
+        tabLandmarks.setContent(R.id.landmarks_tab)
 
 
         tabHost.addTab(tabTOC)
         tabHost.addTab(tabBookmarks)
+        tabHost.addTab(tabPageList)
+        tabHost.addTab(tabLandmarks)
 
     }
+
+
 
     private fun childrenOf(parent: Link): MutableList<Link> {
         val children = mutableListOf<Link>()
@@ -140,23 +199,27 @@ class R2OutlineActivity : AppCompatActivity() {
 
 
 
-    inner class TOCAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.list_item_toc, users) {
+
+    /*
+     * Adapter for navigation links (Table of Contents, Page lists & Landmarks)
+     */
+    inner class NavigationAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.navcontent_item, users) {
         private inner class ViewHolder {
-            internal var tocTextView: TextView? = null
+            internal var navigationTextView: TextView? = null
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             var myView = convertView
 
-            val spineItem = getItem(position)
+            val item = getItem(position)
 
             val viewHolder: ViewHolder // view lookup cache stored in tag
             if (myView == null) {
 
                 viewHolder = ViewHolder()
                 val inflater = LayoutInflater.from(context)
-                myView = inflater.inflate(R.layout.list_item_toc, parent, false)
-                viewHolder.tocTextView = myView!!.toc_textView as TextView
+                myView = inflater.inflate(R.layout.navcontent_item, parent, false)
+                viewHolder.navigationTextView = myView!!.navigation_textView as TextView
 
                 myView.tag = viewHolder
 
@@ -165,7 +228,7 @@ class R2OutlineActivity : AppCompatActivity() {
                 viewHolder = myView.tag as ViewHolder
             }
 
-            viewHolder.tocTextView!!.text = spineItem!!.title
+            viewHolder.navigationTextView!!.text = item!!.title
 
             return myView
         }
