@@ -13,11 +13,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
     <TabHost
         android:id="@+id/tabhost"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:theme="@style/TabWidgetTheme">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -27,7 +27,7 @@
             <TabWidget
                 android:id="@android:id/tabs"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
 
             <FrameLayout
                 android:id="@android:id/tabcontent"
@@ -58,8 +58,34 @@
 
                     </LinearLayout>
 
+                    <LinearLayout
+                        android:id="@+id/pagelists_tab"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ListView
+                            android:id="@+id/page_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/landmarks_tab"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ListView
+                            android:id="@+id/landmarks_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+
+                    </LinearLayout>
+
             </FrameLayout>
+
         </LinearLayout>
+
    </TabHost>
 
 </android.support.constraint.ConstraintLayout>
