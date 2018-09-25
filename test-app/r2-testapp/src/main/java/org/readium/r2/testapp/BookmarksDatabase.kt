@@ -10,8 +10,10 @@
 
 package org.readium.r2.testapp
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.json.JSONObject
@@ -41,9 +43,10 @@ class BookmarksDatabase(context: Context) {
 
 }
 
-class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "bookmarks_database", null, 1) {
+class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "bookmarks_database", null, BookmarksDatabaseOpenHelper.DATABASE_VERSION) {
     companion object {
         private var instance: BookmarksDatabaseOpenHelper? = null
+        private val DATABASE_VERSION = 2
 
         @Synchronized
         fun getInstance(ctx: Context): BookmarksDatabaseOpenHelper {
@@ -70,21 +73,50 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
 
-        // TODO add migration to rename CREATION_DATE to CREATION_DATE
+        when (oldVersion) {
+            1 -> {
+                try {
 
-        // TODO add migration for publicationId
+                    // TODO add migration: rename timestamp to creationDate
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " RENAME COLUMN 'timestamp' to " + BOOKMARKSTable.CREATION_DATE + ";")
 
-        // TODO add migration for location json
+                    // TODO add migration: add publicationId
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.PUBLICATION_ID + " TEXT DEFAULT NULL;")
 
-        // TODO add migration to convert progression into location
+                    // TODO add migration: add location
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATION + " TEXT DEFAULT '{}';")
 
-        // TODO add migration to remove progression
+                    // TODO add migration: convert progression into location
+                    val cursor = db.query(BOOKMARKSTable.NAME, arrayOf(BOOKMARKSTable.ID, "progression", BOOKMARKSTable.LOCATION), null, null, null, null, null, null)
+                    if (cursor != null) {
+                        var hasItem = cursor.moveToFirst()
+                        while (hasItem) {
+                            val id = cursor.getInt(cursor.getColumnIndex(BOOKMARKSTable.ID))
+                            val progression = cursor.getDouble(cursor.getColumnIndex("progression"))
+                            val values = ContentValues()
+                            values.put(BOOKMARKSTable.LOCATION, Locations(progression = progression).toJSON().toString())
+                            db.update(BOOKMARKSTable.NAME, values, "${BOOKMARKSTable.ID}=?", arrayOf(id.toString()))
+                            hasItem = cursor.moveToNext()
+                        }
+                        cursor.close()
+                    }
 
-        // TODO add migration for resource title
+                    // TODO add migration: remove progression
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " DROP COLUMN 'progression';")
 
-        // TODO add migration for locator text
+                    // TODO add migration: add resourceTitle
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.RESOURCE_TITLE + " TEXT DEFAULT NULL;")
+
+                    // TODO add migration: add locatorText
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATOR_TEXT + " TEXT DEFAULT '{}';")
+
+                } catch (e: SQLiteException) { }
+            }
+        }
 
     }
+
+
 }
 
 object BOOKMARKSTable {
@@ -98,6 +130,8 @@ object BOOKMARKSTable {
     const val LOCATION = "location"
     const val LOCATOR_TEXT = "locatorText"
     const val CREATION_DATE = "creationDate"
+    var RESULT_COLUMNS = arrayOf(BOOKMARKSTable.ID, BOOKMARKSTable.BOOK_ID, BOOKMARKSTable.PUBLICATION_ID, BOOKMARKSTable.RESOURCE_INDEX, BOOKMARKSTable.RESOURCE_HREF, BOOKMARKSTable.RESOURCE_TITLE, BOOKMARKSTable.LOCATION, BOOKMARKSTable.LOCATOR_TEXT, BOOKMARKSTable.CREATION_DATE)
+
 }
 
 class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
