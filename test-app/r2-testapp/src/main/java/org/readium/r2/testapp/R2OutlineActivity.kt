@@ -87,7 +87,8 @@ class R2OutlineActivity : AppCompatActivity() {
         bookmarkDB = BookmarksDatabase(this)
 
         val bookID = intent.getLongExtra("bookId", -1)
-        val bookmarks = bookmarkDB.bookmarks.list(bookID)
+        val bookmarks = bookmarkDB.bookmarks.list(bookID).sortedWith(compareBy({it.resourceIndex},{ it.location.progression })).toMutableList()
+
         val bookmarksAdapter = BookMarksAdapter(this, bookmarks, allElements)
 
         bookmark_list.adapter = bookmarksAdapter
@@ -98,7 +99,7 @@ class R2OutlineActivity : AppCompatActivity() {
             //Link to the resource in the publication
             val bookmarkUri = bookmarks[position].resourceHref
             //Progression of the selected bookmark
-            val bookmarkProgression = bookmarks[position].progression
+            val bookmarkProgression = bookmarks[position].location.progression
 
             val intent = Intent()
             intent.putExtra("toc_item_uri", bookmarkUri)
@@ -233,12 +234,7 @@ class R2OutlineActivity : AppCompatActivity() {
     }
 
 
-    
-
-    /*
-     * Adapter for bookmarks
-     */
-    inner class BookMarksAdapter(val context: Context, private val bookmarks: MutableList<Bookmark>, private val elements: MutableList<Link>) : BaseAdapter() {
+    inner class BookMarksAdapter(val context: Context, private val locators: MutableList<Bookmark>, private val elements: MutableList<Link>) : BaseAdapter() {
 
         private inner class ViewHolder {
             internal var bmkChapter: TextView? = null
@@ -274,8 +270,8 @@ class R2OutlineActivity : AppCompatActivity() {
             if(title.isNullOrEmpty()){
                 title = "*Title Missing*"
             }
-            val formattedProgression = "${((bookmark.progression * 100).roundToInt())}% through resource"
-            val formattedDate = DateTime(bookmark.timestamp).toString(DateTimeFormat.shortDateTime())
+            val formattedProgression = "${((bookmark.location.progression!! * 100).roundToInt())}% through resource"
+            val formattedDate = DateTime(bookmark.creationDate).toString(DateTimeFormat.shortDateTime())
 
             viewHolder.bmkChapter!!.text = title
             viewHolder.bmkProgression!!.text = formattedProgression
@@ -289,8 +285,8 @@ class R2OutlineActivity : AppCompatActivity() {
 
                 popupMenu.setOnMenuItemClickListener { item ->
                     if (item.itemId == R.id.delete) {
-                        bookmarkDB.bookmarks.delete(bookmarks[position])
-                        bookmarks.removeAt(position)
+                        bookmarkDB.bookmarks.delete(locators[position])
+                        locators.removeAt(position)
                         notifyDataSetChanged()
                     }
                     false
@@ -302,11 +298,11 @@ class R2OutlineActivity : AppCompatActivity() {
         }
 
         override fun getCount(): Int {
-            return bookmarks.size
+            return locators.size
         }
 
         override fun getItem(position: Int): Any {
-            return bookmarks[position]
+            return locators[position]
         }
 
         private fun getBookSpineItem(href: String): String? {

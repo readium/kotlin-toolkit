@@ -18,7 +18,10 @@ import android.view.Menu
 import android.view.MenuItem
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
+import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.shared.Locations
+import org.readium.r2.shared.LocatorText
 
 /**
  * R2EpubActivity : Extension of the R2EpubActivity() from navigator
@@ -44,7 +47,7 @@ class R2EpubActivity : R2EpubActivity() {
         menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_epub, menu)
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
-        menuBmk = menu?.findItem(R.id.bookmark_list)
+        menuBmk = menu?.findItem(R.id.bookmark)
         menuDrm?.isVisible = false
         return true
     }
@@ -72,20 +75,24 @@ class R2EpubActivity : R2EpubActivity() {
                 val bookId = intent.getLongExtra("bookId", -1)
                 val resourceIndex = resourcePager.currentItem.toLong()
                 val resourceHref = publication.spine[resourcePager.currentItem].href!!
+                val resourceTitle = publication.spine[resourcePager.currentItem].title?: ""
                 val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.toString()).toDouble()
 
                 val bookmark = Bookmark(
                         bookId,
+                        publicationIdentifier,
                         resourceIndex,
                         resourceHref,
-                        progression
+                        resourceTitle,
+                        Locations(progression = progression),
+                        LocatorText()
                 )
-
+                
                 bookmarkDB.bookmarks.insert(bookmark)?.let {
                     runOnUiThread {
                         toast("Bookmark added")
                     }
-                } ?: run {
+                } ?:run {
                     runOnUiThread {
                         toast("Bookmark already exists")
                     }

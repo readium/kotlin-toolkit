@@ -10,37 +10,27 @@
 
 package org.readium.r2.testapp
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
+import org.json.JSONObject
+import org.readium.r2.shared.Locations
+import org.readium.r2.shared.Locator
+import org.readium.r2.shared.LocatorText
 
-/**
- * Bookmark model
- *
- * @var bookId: Long? - Book index in the database
- * @val resourceIndex: Long -  Index to the spine element
- * @val resourceHref: String -  Reference to the spine element
- * @val spine_index: Long - Index to the spine element of the book
- * @val progression: Double - Percentage of progression in the spine element
- * @val timestamp: String - Datetime when the bookmark has been created
- * @var id: Long? - ID of the bookmark in database
- *
- * @fun toString(): String - Return a String description of the Bookmark
- */
 class Bookmark(val bookID: Long,
+               val publicationID: String,
                val resourceIndex: Long,
                val resourceHref: String,
-               val progression: Double = 0.0,
-               var timestamp: Long = DateTime().toDate().time,
-               var id: Long? = null
-) {
-
-    override fun toString(): String {
-        return "Bookmark id : ${this.id}, book identifier : ${this.bookID}, resource href selected ${this.resourceHref}, progression saved ${this.progression} and created the ${this.timestamp}."
-    }
-
-}
+               val resourceTitle: String,
+               val location: Locations,
+               val locatorText: LocatorText,
+               var creationDate: Long = DateTime().toDate().time,
+               var id: Long? = null):
+        Locator(resourceHref, creationDate, resourceTitle, location, locatorText) {}
 
 class BookmarksDatabase(context: Context) {
 
@@ -53,9 +43,10 @@ class BookmarksDatabase(context: Context) {
 
 }
 
-class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "bookmarks_database", null, 1) {
+class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "bookmarks_database", null, BookmarksDatabaseOpenHelper.DATABASE_VERSION) {
     companion object {
         private var instance: BookmarksDatabaseOpenHelper? = null
+        private val DATABASE_VERSION = 2
 
         @Synchronized
         fun getInstance(ctx: Context): BookmarksDatabaseOpenHelper {
@@ -71,26 +62,76 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
         db.createTable(BOOKMARKSTable.NAME, true,
                 BOOKMARKSTable.ID to INTEGER + PRIMARY_KEY + AUTOINCREMENT,
                 BOOKMARKSTable.BOOK_ID to INTEGER,
+                BOOKMARKSTable.PUBLICATION_ID to TEXT,
                 BOOKMARKSTable.RESOURCE_INDEX to INTEGER,
                 BOOKMARKSTable.RESOURCE_HREF to TEXT,
-                BOOKMARKSTable.PROGRESSION to REAL,
-                BOOKMARKSTable.TIMESTAMP to INTEGER)
+                BOOKMARKSTable.RESOURCE_TITLE to TEXT,
+                BOOKMARKSTable.LOCATION to TEXT,
+                BOOKMARKSTable.LOCATOR_TEXT to TEXT,
+                BOOKMARKSTable.CREATION_DATE to INTEGER)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // Here you can upgrade tables, as usual
-        db.dropTable(BOOKMARKSTable.NAME, true)
+
+        when (oldVersion) {
+            1 -> {
+                try {
+
+                    //  add migration: rename timestamp to creationDate
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " RENAME COLUMN 'timestamp' to " + BOOKMARKSTable.CREATION_DATE + ";")
+
+                    //  add migration: add publicationId
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.PUBLICATION_ID + " TEXT DEFAULT '';")
+
+                    //  add migration: add location
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATION + " TEXT DEFAULT '{}';")
+
+                    //  add migration: convert progression into location
+                    val cursor = db.query(BOOKMARKSTable.NAME, arrayOf(BOOKMARKSTable.ID, "progression", BOOKMARKSTable.LOCATION), null, null, null, null, null, null)
+                    if (cursor != null) {
+                        var hasItem = cursor.moveToFirst()
+                        while (hasItem) {
+                            val id = cursor.getInt(cursor.getColumnIndex(BOOKMARKSTable.ID))
+                            val progression = cursor.getDouble(cursor.getColumnIndex("progression"))
+                            val values = ContentValues()
+                            values.put(BOOKMARKSTable.LOCATION, Locations(progression = progression).toJSON().toString())
+                            db.update(BOOKMARKSTable.NAME, values, "${BOOKMARKSTable.ID}=?", arrayOf(id.toString()))
+                            hasItem = cursor.moveToNext()
+                        }
+                        cursor.close()
+                    }
+
+                    //  add migration: remove progression
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " DROP COLUMN 'progression';")
+
+                    //  add migration: add resourceTitle
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.RESOURCE_TITLE + " TEXT DEFAULT '';")
+
+                    //  add migration: add locatorText
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATOR_TEXT + " TEXT DEFAULT '{}';")
+
+                } catch (e: SQLiteException) { }
+            }
+        }
+
     }
+
+
 }
 
 object BOOKMARKSTable {
     const val NAME = "BOOKMARKS"
     const val ID = "id"
     const val BOOK_ID = "bookID"
+    const val PUBLICATION_ID = "publicationID"
     const val RESOURCE_INDEX = "resourceIndex"
     const val RESOURCE_HREF = "resourceHref"
-    const val PROGRESSION = "progression"
-    const val TIMESTAMP = "timestamp"
+    const val RESOURCE_TITLE = "resourceTitle"
+    const val LOCATION = "location"
+    const val LOCATOR_TEXT = "locatorText"
+    const val CREATION_DATE = "creationDate"
+    var RESULT_COLUMNS = arrayOf(BOOKMARKSTable.ID, BOOKMARKSTable.BOOK_ID, BOOKMARKSTable.PUBLICATION_ID, BOOKMARKSTable.RESOURCE_INDEX, BOOKMARKSTable.RESOURCE_HREF, BOOKMARKSTable.RESOURCE_TITLE, BOOKMARKSTable.LOCATION, BOOKMARKSTable.LOCATOR_TEXT, BOOKMARKSTable.CREATION_DATE)
+
 }
 
 class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
@@ -110,7 +151,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
     fun insert(bookmark: Bookmark): Long? {
         if (bookmark.bookID < 0 ||
                 bookmark.resourceIndex < 0 ||
-                bookmark.progression < 0 || bookmark.progression > 100){
+                bookmark.location.progression!! < 0 || bookmark.location.progression!! > 1){
             return null
         }
         val exists = has(bookmark)
@@ -118,10 +159,13 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
             return database.use {
                 return@use insert(BOOKMARKSTable.NAME,
                         BOOKMARKSTable.BOOK_ID to bookmark.bookID,
+                        BOOKMARKSTable.PUBLICATION_ID to bookmark.publicationID,
                         BOOKMARKSTable.RESOURCE_INDEX to bookmark.resourceIndex,
                         BOOKMARKSTable.RESOURCE_HREF to bookmark.resourceHref,
-                        BOOKMARKSTable.PROGRESSION to bookmark.progression,
-                        BOOKMARKSTable.TIMESTAMP to bookmark.timestamp)
+                        BOOKMARKSTable.RESOURCE_TITLE to bookmark.resourceTitle,
+                        BOOKMARKSTable.LOCATION to bookmark.location.toJSON().toString(),
+                        BOOKMARKSTable.LOCATOR_TEXT to bookmark.locatorText.toJSON().toString(),
+                        BOOKMARKSTable.CREATION_DATE to bookmark.creationDate)
             }
         }
         return null
@@ -132,25 +176,30 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.ID,
                     BOOKMARKSTable.BOOK_ID,
+                    BOOKMARKSTable.PUBLICATION_ID,
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
-                    BOOKMARKSTable.PROGRESSION,
-                    BOOKMARKSTable.TIMESTAMP)
-                    .whereArgs("(bookID = {bookID}) AND (resourceIndex = {resourceIndex}) AND (resourceHref = {resourceHref}) AND (progression = {progression})",
+                    BOOKMARKSTable.RESOURCE_TITLE,
+                    BOOKMARKSTable.LOCATION,
+                    BOOKMARKSTable.LOCATOR_TEXT,
+                    BOOKMARKSTable.CREATION_DATE)
+                    .whereArgs("(bookID = {bookID}) AND (publicationID = {publicationID}) AND (resourceIndex = {resourceIndex}) AND (resourceHref = {resourceHref})  AND (location = {location}) AND (locatorText = {locatorText})",
                             "bookID" to bookmark.bookID,
+                            "publicationID" to bookmark.publicationID,
                             "resourceIndex" to bookmark.resourceIndex,
                             "resourceHref" to bookmark.resourceHref,
-                            "progression" to bookmark.progression)
+                            "location" to bookmark.location.toJSON().toString(),
+                            "locatorText" to bookmark.locatorText.toJSON().toString())
                     .exec {
                         parseList(MyRowParser())
                     }
         }
     }
 
-    fun delete(bookmark: Bookmark) {
+    fun delete(locator: Bookmark) {
         database.use {
             delete(BOOKMARKSTable.NAME, "id = {id}",
-                    "id" to bookmark.id!!)
+                    "id" to locator.id!!)
         }
     }
 
@@ -168,10 +217,13 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.ID,
                     BOOKMARKSTable.BOOK_ID,
+                    BOOKMARKSTable.PUBLICATION_ID,
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
-                    BOOKMARKSTable.PROGRESSION,
-                    BOOKMARKSTable.TIMESTAMP)
+                    BOOKMARKSTable.RESOURCE_TITLE,
+                    BOOKMARKSTable.LOCATION,
+                    BOOKMARKSTable.LOCATOR_TEXT,
+                    BOOKMARKSTable.CREATION_DATE)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
@@ -184,13 +236,16 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.ID,
                     BOOKMARKSTable.BOOK_ID,
+                    BOOKMARKSTable.PUBLICATION_ID,
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
-                    BOOKMARKSTable.PROGRESSION,
-                    BOOKMARKSTable.TIMESTAMP)
+                    BOOKMARKSTable.RESOURCE_TITLE,
+                    BOOKMARKSTable.LOCATION,
+                    BOOKMARKSTable.LOCATOR_TEXT,
+                    BOOKMARKSTable.CREATION_DATE)
                     .whereArgs("bookID = {bookID}", "bookID" to bookID as Any)
                     .orderBy(BOOKMARKSTable.RESOURCE_INDEX, SqlOrderDirection.ASC)
-                    .orderBy(BOOKMARKSTable.PROGRESSION, SqlOrderDirection.ASC)
+                    .orderBy(BOOKMARKSTable.CREATION_DATE, SqlOrderDirection.ASC)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
@@ -205,20 +260,29 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
             val bookID = columns[1]?.let {
                 return@let it
             } ?: kotlin.run { return@run 0 }
-            val resourceIndex = columns[2]?.let {
-                return@let it
-            } ?: kotlin.run { return@run 0 }
-            val resourceHref = columns[3]?.let {
+            val publicationID = columns[2]?.let {
                 return@let it
             } ?: kotlin.run { return@run "" }
-            val progression = columns[4]?.let {
-                return@let it
-            } ?: kotlin.run { return@run 0.0f }
-            val timestamp = columns[5]?.let {
+            val resourceIndex = columns[3]?.let {
                 return@let it
             } ?: kotlin.run { return@run 0 }
+            val resourceHref = columns[4]?.let {
+                return@let it
+            } ?: kotlin.run { return@run "" }
+            val resourceTitle = columns[5]?.let {
+                return@let it
+            } ?: kotlin.run { return@run "" }
+            val location = columns[6]?.let {
+                return@let it
+            } ?: kotlin.run { return@run "" }
+            val locatorText = columns[7]?.let {
+                return@let it
+            } ?: kotlin.run { return@run "" }
+            val created = columns[8]?.let {
+                return@let it
+            } ?: kotlin.run { return@run null }
 
-            return Bookmark(bookID as Long, resourceIndex as Long, resourceHref as String, progression as Double, timestamp as Long, id as Long)
+            return Bookmark(bookID as Long, publicationID as String, resourceIndex as Long, resourceHref as String, resourceTitle as String, Locations.fromJSON(JSONObject(location as String)), LocatorText.fromJSON(JSONObject(locatorText as String)), created as Long,  id as Long)
         }
     }
 
