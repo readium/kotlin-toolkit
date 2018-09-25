@@ -157,7 +157,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
         // Setting up tabs
 
-        val tabTOC: TabHost.TabSpec = tabHost.newTabSpec("Table Of Content")
+        val tabTOC: TabHost.TabSpec = tabHost.newTabSpec("Content")
         tabTOC.setIndicator(tabTOC.tag)
         tabTOC.setContent(R.id.toc_tab)
 
