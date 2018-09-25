@@ -44,6 +44,13 @@ fun tryPut(obj: JSONObject, list: List<JSONable>, tag: String) {
         obj.putOpt(tag, getJSONArray(list))
 }
 
+// Try to put class which implements JSONable only if not empty
+fun tryPut(jsonObject: JSONObject, jsonable: JSONable, tag: String) {
+    val tempJsonObject = jsonable.getJSON()
+    if (tempJsonObject.length() != 0)
+        jsonObject.put(tag, tempJsonObject)
+}
+
 class TocElement(val link: Link, val children: List<TocElement>) : JSONable {
 
     override fun toJSON(): JSONObject {
@@ -142,7 +149,7 @@ class Publication : Serializable {
         return str
     }
 
-    fun resource(relativePath: String): Link? = (spine + resources).first { it.href == relativePath }
+    fun resource(relativePath: String): Link? = (spine + resources).first { (it.href == relativePath) || (it.href == "/$relativePath") }
 
     fun linkWithRel(rel: String): Link? {
         val findLinkWithRel: (Link) -> Boolean = { it.rel.contains(rel) }

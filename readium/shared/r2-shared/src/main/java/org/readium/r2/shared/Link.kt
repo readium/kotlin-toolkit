@@ -55,12 +55,14 @@ class Link : JSONable, Serializable {
         json.putOpt("href", href)
         if (rel.isNotEmpty())
             json.put("rel", getStringArray(rel))
-        json.putOpt("properties", properties)
+        tryPut(json, properties, "properties")
         if (height != 0)
             json.putOpt("height", height)
         if (width != 0)
             json.putOpt("width", width)
         json.putOpt("duration", duration)
+        if (children.isNotEmpty())
+            json.put("children", getJSONArray(children))
         return json
     }
 
