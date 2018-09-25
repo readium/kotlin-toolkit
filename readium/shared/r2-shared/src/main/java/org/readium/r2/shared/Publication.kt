@@ -46,7 +46,7 @@ fun tryPut(obj: JSONObject, list: List<JSONable>, tag: String) {
 
 // Try to put class which implements JSONable only if not empty
 fun tryPut(jsonObject: JSONObject, jsonable: JSONable, tag: String) {
-    val tempJsonObject = jsonable.getJSON()
+    val tempJsonObject = jsonable.toJSON()
     if (tempJsonObject.length() != 0)
         jsonObject.put(tag, tempJsonObject)
 }
