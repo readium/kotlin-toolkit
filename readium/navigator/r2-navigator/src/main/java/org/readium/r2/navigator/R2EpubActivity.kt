@@ -87,17 +87,20 @@ open class R2EpubActivity : AppCompatActivity() {
         var doublePageIndex = 0
         var doublePageLeft:String = ""
         var doublePageRight:String = ""
-        var resourceIndex = 0
+        var resourceIndexDouble = 0
+        var resourceIndexSingle = 0
+
         for (spineItem in publication.spine) {
             val uri = "$BASE_URL:$port" + "/" + epubName + spineItem.href
-            resourcesSingle.add(Pair(resourceIndex, uri))
+            resourcesSingle.add(Pair(resourceIndexSingle, uri))
+            resourceIndexSingle++
 
             // add first page to the right,
-            if (resourceIndex == 0 ) {
+            if (resourceIndexDouble == 0 ) {
                 doublePageLeft = ""
                 doublePageRight = uri
-                resourcesDouble.add(Triple(resourceIndex, doublePageLeft, doublePageRight))
-                resourceIndex++
+                resourcesDouble.add(Triple(resourceIndexDouble, doublePageLeft, doublePageRight))
+                resourceIndexDouble++
             } else {
                 // add double pages, left & right
                 if (doublePageIndex == 0) {
@@ -106,15 +109,15 @@ open class R2EpubActivity : AppCompatActivity() {
                 } else {
                     doublePageRight = uri
                     doublePageIndex = 0
-                    resourcesDouble.add(Triple(resourceIndex, doublePageLeft, doublePageRight))
-                    resourceIndex++
+                    resourcesDouble.add(Triple(resourceIndexDouble, doublePageLeft, doublePageRight))
+                    resourceIndexDouble++
                 }
             }
         }
         // add last page if there is only a left page remaining
         if (doublePageIndex == 1) {
             doublePageIndex = 0
-            resourcesDouble.add(Triple(resourceIndex, doublePageLeft, ""))
+            resourcesDouble.add(Triple(resourceIndexDouble, doublePageLeft, ""))
         }
 
 
