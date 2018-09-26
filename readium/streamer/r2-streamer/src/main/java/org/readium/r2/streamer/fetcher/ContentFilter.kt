@@ -89,17 +89,17 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         if (endHeadIndex == -1)
             return stream
 
-
+        val cssStyle = "ltr"
 
 
         val endIncludes = mutableListOf<String>()
         val beginIncludes = mutableListOf<String>()
         beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\" />")
 
-        beginIncludes.add(getHtmlLink("/styles/before.css"))
-        beginIncludes.add(getHtmlLink("/styles/default.css"))
+        beginIncludes.add(getHtmlLink("/styles/$cssStyle-before.css"))
+        beginIncludes.add(getHtmlLink("/styles/$cssStyle-default.css"))
 //        beginIncludes.add(getHtmlLink("/styles/transition.css"))
-        endIncludes.add(getHtmlLink("/styles/after.css"))
+        endIncludes.add(getHtmlLink("/styles/$cssStyle-after.css"))
         endIncludes.add(getHtmlScript("/scripts/touchHandling.js"))
         endIncludes.add(getHtmlScript("/scripts/utils.js"))
 
