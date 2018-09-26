@@ -37,7 +37,7 @@ class Metadata : Serializable {
     var inkers: MutableList<Contributor> = mutableListOf()
     var narrators: MutableList<Contributor> = mutableListOf()
     var imprints: MutableList<Contributor> = mutableListOf()
-    var direction: String = "default"
+    var direction: String = PageProgressionDirection.default.name
     var subjects: MutableList<Subject> = mutableListOf()
     var publishers: MutableList<Contributor> = mutableListOf()
     var contributors: MutableList<Contributor> = mutableListOf()
@@ -262,4 +262,20 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
     }
 
     return m
+}
+
+enum class LangType {
+    cjk, afh, other
+}
+
+
+enum class PageProgressionDirection {
+    default,
+    ltr,
+    rtl
+}
+
+enum class ContentLayoutStyle {
+    ltr, rtl,
+    cjkv, cjkh
 }
