@@ -12,6 +12,7 @@ package org.readium.r2.streamer.fetcher
 import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
+import org.readium.r2.shared.LangType
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.RenditionLayout
 import org.readium.r2.shared.removeLastComponent
@@ -45,7 +46,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
             if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")) {
                 decodedInputStream = if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && resourceLink.properties.layout == null
                         || resourceLink.properties.layout == "reflowable") {
-                    injectReflowableHtml(decodedInputStream)
+                    injectReflowableHtml(decodedInputStream, publication)
                 } else {
                     injectFixedLayoutHtml(decodedInputStream)
                 }
@@ -69,7 +70,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
                 decodedInputStream =
                         if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && (resourceLink.properties.layout == null
                                         || resourceLink.properties.layout == "reflowable")) {
-                            injectReflowableHtml(decodedInputStream)
+                            injectReflowableHtml(decodedInputStream, publication)
                         } else {
                             injectFixedLayoutHtml(decodedInputStream)
                         }
@@ -80,7 +81,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         }
     }
 
-    private fun injectReflowableHtml(stream: InputStream): InputStream {
+    private fun injectReflowableHtml(stream: InputStream, publication: Publication): InputStream {
         val data = stream.readBytes()
         var resourceHtml = String(data)
         // Inject links to css and js files
@@ -89,8 +90,18 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         if (endHeadIndex == -1)
             return stream
 
-        val cssStyle = "ltr"
 
+        var langType = LangType.other
+
+        for (lang in publication.metadata.languages) {
+            if (lang == "zh" || lang == "ja" || lang == "ko") langType = LangType.cjk
+            if (lang == "ar" || lang == "fa" || lang == "he") langType = LangType.afh
+        }
+
+        val pageDirection = publication.metadata.direction
+        val contentLayoutStyle = publication.metadata.contentLayoutStyle(langType, pageDirection)
+
+        val cssStyle = contentLayoutStyle.name
 
         val endIncludes = mutableListOf<String>()
         val beginIncludes = mutableListOf<String>()
