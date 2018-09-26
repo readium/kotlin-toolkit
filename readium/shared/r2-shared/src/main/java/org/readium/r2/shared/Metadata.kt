@@ -84,6 +84,26 @@ class Metadata : Serializable {
         return obj
     }
 
+
+    fun contentLayoutStyle(langType: LangType, pageDirection: String?) : ContentLayoutStyle {
+
+        when(langType) {
+            LangType.afh -> return ContentLayoutStyle.rtl
+            LangType.cjk -> {
+                if (pageDirection == ContentLayoutStyle.rtl.name)
+                    return ContentLayoutStyle.cjkv
+                else
+                    return ContentLayoutStyle.cjkh
+            }
+            else -> {
+                if (pageDirection == ContentLayoutStyle.rtl.name)
+                    return ContentLayoutStyle.rtl
+                else
+                    return ContentLayoutStyle.ltr
+            }
+        }
+    }
+
 }
 
 fun parseMetadata(metadataDict: JSONObject): Metadata {
