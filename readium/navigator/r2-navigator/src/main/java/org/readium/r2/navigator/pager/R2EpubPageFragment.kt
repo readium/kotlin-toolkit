@@ -24,7 +24,6 @@ import org.readium.r2.navigator.APPEARANCE_REF
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.SCROLL_REF
-import org.readium.r2.shared.PageProgressionDirection
 
 
 class R2EpubPageFragment : Fragment() {
@@ -100,13 +99,7 @@ class R2EpubPageFragment : Fragment() {
                                     webView.activity.pagerPosition++
                                 }
                                 else -> {
-                                    if (webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
-                                        //RTL
-                                        webView.scrollToPosition(1.0)
-                                    } else {
-                                        //LTR
-                                        webView.scrollToPosition(0.0)
-                                    }
+                                    webView.scrollToPosition(0.0)
                                     webView.activity.pagerPosition = 0
                                     webView.activity.reloadPagerPositions = false
                                 }
@@ -119,23 +112,11 @@ class R2EpubPageFragment : Fragment() {
                                     webView.activity.pagerPosition++
                                 }
                                 webView.activity.pagerPosition == 1 -> {
-                                    if (webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
-                                        //RTL
-                                        webView.scrollToPosition(0.0)
-                                    } else {
-                                        //LTR
-                                        webView.scrollToPosition(1.0)
-                                    }
+                                    webView.scrollToPosition(1.0)
                                     webView.activity.pagerPosition++
                                 }
                                 else -> {
-                                    if (webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
-                                        //RTL
-                                        webView.scrollToPosition(1.0)
-                                    } else {
-                                        //LTR
-                                        webView.scrollToPosition(0.0)
-                                    }
+                                    webView.scrollToPosition(0.0)
                                     webView.activity.pagerPosition = 0
                                     webView.activity.reloadPagerPositions = false
                                 }
