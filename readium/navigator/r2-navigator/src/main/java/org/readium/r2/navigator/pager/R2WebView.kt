@@ -86,9 +86,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
 
                 if (!this.canScrollHorizontally(1)) {
                     activity.nextResource()
-                } else {
-                    this.evaluateJavascript("scrollRight();", null)
                 }
+                this.evaluateJavascript("scrollRight();", null)
             }
         }
     }
@@ -113,9 +112,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                 // fix this for when vertical scrolling is enabled
                 if (!this.canScrollHorizontally(-1)) {
                     activity.previousResource()
-                } else {
-                    this.evaluateJavascript("scrollLeft();", null)
                 }
+                this.evaluateJavascript("scrollLeft();", null)
             }
         }
     }
