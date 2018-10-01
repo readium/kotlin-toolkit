@@ -139,15 +139,15 @@ open class R2EpubActivity : AppCompatActivity() {
 
         if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
             // The view has RTL layout
-//            resourcesSingle.reverse()
-//            resourcesDouble.reverse()
+            resourcesSingle.reverse()
+            resourcesDouble.reverse()
             if (index != 0)
                 resourcePager.currentItem = index
             else {
                 if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
-                    resourcePager.currentItem = 0//resourcesSingle.size - 1
+                    resourcePager.currentItem = resourcesSingle.size - 1
                 } else {
-                    resourcePager.currentItem = 0//resourcesDouble.size - 1
+                    resourcePager.currentItem = resourcesDouble.size - 1
                 }
             }
         } else {
@@ -255,7 +255,7 @@ open class R2EpubActivity : AppCompatActivity() {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
                 // The view has RTL layout
                 resourcePager.webView.progression = 1.0
-                resourcePager.currentItem = resourcePager.currentItem - 1
+                resourcePager.currentItem = resourcePager.currentItem + 1
 
             } else {
                 // The view has LTR layout
@@ -274,7 +274,7 @@ open class R2EpubActivity : AppCompatActivity() {
             if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
                 // The view has RTL layout
                 resourcePager.webView.progression = 0.0
-                resourcePager.currentItem = resourcePager.currentItem + 1
+                resourcePager.currentItem = resourcePager.currentItem - 1
             } else {
                 // The view has LTR layout
                 resourcePager.webView.progression = 1.0
