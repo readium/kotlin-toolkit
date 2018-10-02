@@ -28,6 +28,6 @@ A test app for the Kotlin implementation of Readium-2. Stable builds are [availa
 - [Readium CSS](https://github.com/readium/readium-css) (Handles styles, layout and user settings)
 
 ## Install and run the testapp
-
+[Get started with the testapp](https://github.com/readium/r2-workspace-kotlin/blob/master/README.md)
 
 
