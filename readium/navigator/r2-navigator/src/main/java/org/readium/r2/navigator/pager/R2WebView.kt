@@ -37,6 +37,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
      * @see android.webkit.WebView#onScrollChanged(int, int, int, int)
      */
     override fun onScrollChanged(x: Int, y: Int, oldX: Int, oldY: Int) {
+        val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+        if (!scrollMode) {
         if (Math.abs(x - oldX) > 1) {
             mIsScrolling = true
             if (x - oldX > 1) {
@@ -52,6 +54,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                 scrollLeft()
             }
         }
+    }
     }
 
     /*
