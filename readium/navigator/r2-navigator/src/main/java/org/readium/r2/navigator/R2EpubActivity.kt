@@ -137,22 +137,8 @@ open class R2EpubActivity : AppCompatActivity() {
         userSettings = UserSettings(preferences, this)
         userSettings.resourcePager = resourcePager
 
-        if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
-            // The view has RTL layout
-//            resourcesSingle.reverse()
-//            resourcesDouble.reverse()
-            if (index != 0)
-                resourcePager.currentItem = index
-            else {
-                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
-                    resourcePager.currentItem = 0//resourcesSingle.size - 1
-                } else {
-                    resourcePager.currentItem = 0//resourcesDouble.size - 1
-                }
-            }
-        } else {
-            resourcePager.currentItem = index
-        }
+        resourcePager.direction = publication.metadata.direction
+        resourcePager.currentItem = index
 
         storeDocumentIndex()
 
