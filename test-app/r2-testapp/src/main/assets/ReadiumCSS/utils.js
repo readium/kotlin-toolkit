@@ -51,8 +51,26 @@ var scrollToPosition = function(position) {
 
 };
 
+var scrollToPosition = function(position, dir) {
+    console.log("ScrollToPosition");
+    if ((position < 0) || (position > 1)) {
+        console.log("InvalidPosition");
+        return;
+    }
+    var offset = 0.0;
+    if (dir == 'rtl') {
+        offset = (-document.getElementsByTagName("body")[0].scrollWidth + maxScreenX) * (1.0-position);
+    } else {
+        offset = document.getElementsByTagName("body")[0].scrollWidth * position;
+    }
+    console.log(offset);
+    document.body.scrollLeft = snapOffset(offset);
+    update(position);
+};
+
 var scrollLeft = function() {
-    scrollToPosition(last_known_scroll_position)
+    console.log("scrollLeft");
+    scrollToPosition(last_known_scroll_position, 'ltr')
     var offset = window.scrollX - maxScreenX;
 
     if (offset >= 0) {
@@ -67,8 +85,38 @@ var scrollLeft = function() {
     }
 };
 
+var scrollLeftRTL = function() {
+    console.log("scrollLeftRTL");
+
+    var scrollWidth = document.body.scrollWidth;
+    var offset = window.scrollX - maxScreenX;
+    var edge = -scrollWidth + window.innerWidth;
+
+    if (window.innerWidth == scrollWidth) {
+        // No scroll and default zoom
+        return "edge";
+    } else {
+        // Scrolled and zoomed
+        if (offset > edge) {
+            document.body.scrollLeft = offset
+            return 0;
+        } else {
+            var oldOffset = window.scrollX;
+            document.body.scrollLeft = edge;
+            var diff = Math.abs(edge-oldOffset)/window.innerWidth;
+            // In some case the scrollX cannot reach the position respecting to innerWidth
+            if (diff > 0.01) {
+                return 0;
+            } else {
+                return "edge";
+            }
+        }
+    }
+};
+
 var scrollRight = function() {
-    scrollToPosition(last_known_scroll_position)
+    console.log("scrollRight");
+    scrollToPosition(last_known_scroll_position, 'rtl')
     var offset = window.scrollX + maxScreenX;
     var scrollWidth = document.getElementsByTagName("body")[0].scrollWidth;
 
@@ -81,6 +129,35 @@ var scrollRight = function() {
         document.body.scrollLeft = scrollWidth;
         update(0.0);
         return "edge"; // Need to nextDocument.
+    }
+};
+
+var scrollRightRTL = function() {
+   console.log("scrollRightRTL");
+
+    var scrollWidth = document.body.scrollWidth;
+    var offset = window.scrollX + window.innerWidth;
+    var edge = 0;
+
+    if (window.innerWidth == scrollWidth) {
+        // No scroll and default zoom
+        return "edge";
+    } else {
+        // Scrolled and zoomed
+        if (offset < edge) {
+            document.body.scrollLeft = offset
+            return 0;
+        } else {
+            var oldOffset = window.scrollX;
+            document.body.scrollLeft = edge;
+            var diff = Math.abs(edge-oldOffset)/window.innerWidth;
+            // In some case the scrollX cannot reach the position respecting to innerWidth
+            if (diff > 0.01) {
+                return 0;
+            } else {
+                return "edge";
+            }
+        }
     }
 };
 
