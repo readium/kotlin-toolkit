@@ -116,7 +116,7 @@ var scrollLeftRTL = function() {
 
 var scrollRight = function() {
     console.log("scrollRight");
-    scrollToPosition(last_known_scroll_position, 'rtl')
+    scrollToPosition(last_known_scroll_position, 'ltr')
     var offset = window.scrollX + maxScreenX;
     var scrollWidth = document.getElementsByTagName("body")[0].scrollWidth;
 
