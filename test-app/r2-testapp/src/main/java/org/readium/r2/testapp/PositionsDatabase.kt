@@ -10,14 +10,9 @@
 
 package org.readium.r2.testapp
 
-import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteException
 import org.jetbrains.anko.db.*
-import org.json.JSONObject
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Publication
 
 
 class PositionsDatabase(context: Context) {
