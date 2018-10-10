@@ -255,6 +255,37 @@ class R2OutlineActivity : AppCompatActivity() {
         }
     }
 
+    inner class SyntheticPageListAdapter(context: Context, pageList: MutableList<Triple<Long, String, Double>>) : ArrayAdapter<Triple<Long, String, Double>>(context, R.layout.navcontent_item, pageList) {
+        private inner class ViewHolder {
+            internal var navigationTextView: TextView? = null
+        }
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            var myView = convertView
+
+            val item = getItem(position)
+
+            val viewHolder: ViewHolder // view lookup cache stored in tag
+            if (myView == null) {
+
+                viewHolder = ViewHolder()
+                val inflater = LayoutInflater.from(context)
+                myView = inflater.inflate(R.layout.navcontent_item, parent, false)
+                viewHolder.navigationTextView = myView!!.navigation_textView as TextView
+
+                myView.tag = viewHolder
+
+            } else {
+
+                viewHolder = myView.tag as ViewHolder
+            }
+
+            viewHolder.navigationTextView!!.text = "Page ${item.first}"
+
+            return myView
+        }
+    }
+
 
     inner class BookMarksAdapter(val context: Context, private val locators: MutableList<Bookmark>, private val elements: MutableList<Link>) : BaseAdapter() {
 
