@@ -18,10 +18,12 @@ import android.view.Menu
 import android.view.MenuItem
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
-import org.json.JSONObject
+import org.readium.r2.navigator.BASE_URL
+import org.readium.r2.navigator.CreateSyntheticPageList
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.LocatorText
+import java.net.URL
 
 /**
  * R2EpubActivity : Extension of the R2EpubActivity() from navigator
@@ -35,12 +37,35 @@ class R2EpubActivity : R2EpubActivity() {
     // List of bookmarks on activity_outline_container.xml
     private var menuBmk: MenuItem? = null
 
-    // Provide access to the Bookmarks Database
-    private lateinit var bookmarkDB: BookmarksDatabase
+    // Provide access to the Bookmarks & Positions Databases
+    private lateinit var bookmarksDB: BookmarksDatabase
+    private lateinit var positionsDB: PositionsDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        bookmarkDB = BookmarksDatabase(this)
+        bookmarksDB = BookmarksDatabase(this)
+        positionsDB = PositionsDatabase(this)
+
+
+        if ( publication.pageList.isEmpty() && !(positionsDB.positions.has(publicationIdentifier)) ) {
+            val syntheticPageList = CreateSyntheticPageList()
+
+            /*
+             * Creation of the page list (retrieving resource's URLs first, then execute async task
+             * that runs through resource content to count pages of 1024 characters each)
+             */
+            val resourcesHref = mutableListOf<String>()
+
+            for (spineItem in publication.spine) {
+                resourcesHref.add(spineItem.href!!)
+            }
+            val list = syntheticPageList.execute(Triple("$BASE_URL:$port/", epubName, resourcesHref)).get()
+
+            /*
+             * Storing the generated page list in the DB
+             */
+            positionsDB.positions.storeSyntheticPageList(publicationIdentifier, list)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -77,6 +102,7 @@ class R2EpubActivity : R2EpubActivity() {
                 val resourceHref = publication.spine[resourcePager.currentItem].href!!
                 val resourceTitle = publication.spine[resourcePager.currentItem].title?: ""
                 val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.toString()).toDouble()
+                val currentPage = positionsDB.positions.getCurrentPage(publicationIdentifier, resourceHref, progression)
 
                 val bookmark = Bookmark(
                         bookId,
@@ -84,13 +110,13 @@ class R2EpubActivity : R2EpubActivity() {
                         resourceIndex,
                         resourceHref,
                         resourceTitle,
-                        Locations(progression = progression),
+                        Locations(progression = progression, position = currentPage),
                         LocatorText()
                 )
                 
-                bookmarkDB.bookmarks.insert(bookmark)?.let {
+                bookmarksDB.bookmarks.insert(bookmark)?.let {
                     runOnUiThread {
-                        toast("Bookmark added")
+                        toast("Bookmark added at page $currentPage")
                     }
                 } ?:run {
                     runOnUiThread {
