@@ -13,9 +13,11 @@ package org.readium.r2.testapp
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import org.jetbrains.anko.indeterminateProgressDialog
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.readium.r2.navigator.BASE_URL
@@ -23,7 +25,6 @@ import org.readium.r2.navigator.CreateSyntheticPageList
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.LocatorText
-import java.net.URL
 
 /**
  * R2EpubActivity : Extension of the R2EpubActivity() from navigator
@@ -45,27 +46,6 @@ class R2EpubActivity : R2EpubActivity() {
         super.onCreate(savedInstanceState)
         bookmarksDB = BookmarksDatabase(this)
         positionsDB = PositionsDatabase(this)
-
-
-        if ( publication.pageList.isEmpty() && !(positionsDB.positions.has(publicationIdentifier)) ) {
-            val syntheticPageList = CreateSyntheticPageList()
-
-            /*
-             * Creation of the page list (retrieving resource's URLs first, then execute async task
-             * that runs through resource content to count pages of 1024 characters each)
-             */
-            val resourcesHref = mutableListOf<String>()
-
-            for (spineItem in publication.spine) {
-                resourcesHref.add(spineItem.href!!)
-            }
-            val list = syntheticPageList.execute(Triple("$BASE_URL:$port/", epubName, resourcesHref)).get()
-
-            /*
-             * Storing the generated page list in the DB
-             */
-            positionsDB.positions.storeSyntheticPageList(publicationIdentifier, list)
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -140,6 +120,37 @@ class R2EpubActivity : R2EpubActivity() {
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+
+        val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_book))
+
+        Handler().postDelayed({
+            if (publication.pageList.isEmpty() && !(positionsDB.positions.has(publicationIdentifier))) {
+
+                val syntheticPageList = CreateSyntheticPageList()
+
+                /*
+                 * Creation of the page list (retrieving resource's URLs first, then execute async task
+                 * that runs through resource content to count pages of 1024 characters each)
+                 */
+                val resourcesHref = mutableListOf<String>()
+
+                for (spineItem in publication.spine) {
+                    resourcesHref.add(spineItem.href!!)
+                }
+                val list = syntheticPageList.execute(Triple("$BASE_URL:$port/", epubName, resourcesHref)).get()
+
+                /*
+                 * Storing the generated page list in the DB
+                 */
+                positionsDB.positions.storeSyntheticPageList(publicationIdentifier, list)
+            }
+            progress.dismiss()
+        }, 200)
     }
 
 
