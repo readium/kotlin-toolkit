@@ -13,6 +13,7 @@ package org.readium.r2.testapp
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import org.jetbrains.anko.db.*
+import org.json.JSONArray
 
 
 class PositionsDatabase(context: Context) {
@@ -46,10 +47,7 @@ class PositionsDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
         db.createTable(POSITIONSTable.NAME, true,
                 POSITIONSTable.ID to INTEGER + PRIMARY_KEY + AUTOINCREMENT,
                 POSITIONSTable.PUBLICATION_ID to TEXT,
-                POSITIONSTable.PAGE_NUMBER to INTEGER,
-                POSITIONSTable.RESOURCE_INDEX to INTEGER,
-                POSITIONSTable.RESOURCE_HREF to TEXT,
-                POSITIONSTable.RESOURCE_PROGRESSION to REAL)
+                POSITIONSTable.POSITIONS to TEXT)
     }
 
 
@@ -64,11 +62,8 @@ object POSITIONSTable {
     const val NAME = "POSITIONS"
     const val ID = "id"
     const val PUBLICATION_ID = "publicationID"
-    const val PAGE_NUMBER = "pageNumber"
-    const val RESOURCE_INDEX = "resourceIndex"
-    const val RESOURCE_HREF = "resourceHref"
-    const val RESOURCE_PROGRESSION = "resourceProgression"
-    var RESULT_COLUMNS = arrayOf(POSITIONSTable.ID, POSITIONSTable.PUBLICATION_ID, POSITIONSTable.PAGE_NUMBER, POSITIONSTable.RESOURCE_INDEX, POSITIONSTable.RESOURCE_HREF, POSITIONSTable.RESOURCE_PROGRESSION)
+    const val POSITIONS = "positions"
+    var RESULT_COLUMNS = arrayOf(POSITIONSTable.ID, POSITIONSTable.PUBLICATION_ID, POSITIONSTable.POSITIONS)
 
 }
 
@@ -86,28 +81,22 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
         }
     }
 
-    fun storeSyntheticPageList(publicationID: String, synthecticPageList: MutableList<Triple<Long, String, Double>>) {
+    fun storeSyntheticPageList(publicationID: String, synthecticPageList: JSONArray) {
         database.use {
-            for (page in synthecticPageList)
-                insert(POSITIONSTable.NAME,
-                        POSITIONSTable.PUBLICATION_ID to publicationID,
-                        POSITIONSTable.PAGE_NUMBER to page.first,
-                        POSITIONSTable.RESOURCE_HREF to page.second,
-                        POSITIONSTable.RESOURCE_PROGRESSION to page.third)
+            insert(POSITIONSTable.NAME,
+                    POSITIONSTable.PUBLICATION_ID to publicationID,
+                    POSITIONSTable.POSITIONS to synthecticPageList.toString())
         }
     }
 
 
-    fun getSyntheticPageList(publicationID: String): MutableList<Triple<Long, String, Double>> {
+    fun getSyntheticPageList(publicationID: String): JSONArray? {
         return database.use {
             select(POSITIONSTable.NAME,
-                    POSITIONSTable.PAGE_NUMBER,
-                    POSITIONSTable.RESOURCE_HREF,
-                    POSITIONSTable.RESOURCE_PROGRESSION)
+                    POSITIONSTable.POSITIONS)
                     .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
-                    .orderBy(POSITIONSTable.PAGE_NUMBER, SqlOrderDirection.ASC)
                     .exec {
-                        parseList(MyRowParser()).toMutableList()
+                        parseOpt(MyRowParser())
                     }
         }
     }
@@ -116,22 +105,20 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
     fun getCurrentPage(publicationID: String, href: String, progression: Double): Long {
         var currentPage: Long = 0
 
-        val resourcePages = database.use {
+        val pageList = database.use {
             return@use select(POSITIONSTable.NAME,
-                    POSITIONSTable.PAGE_NUMBER,
-                    POSITIONSTable.RESOURCE_HREF,
-                    POSITIONSTable.RESOURCE_PROGRESSION)
-                    .whereArgs("(publicationID = {publicationID}) AND (resourceHref = {resourceHref})",
-                            "publicationID" to publicationID,
-                                "resourceHref" to href)
+                    POSITIONSTable.POSITIONS)
+                    .whereArgs("(publicationID = {publicationID})","publicationID" to publicationID)
                     .exec {
-                        parseList(MyRowParser()).toMutableList()
+                        parseOpt(MyRowParser())!!
                     }
         }
 
-        for (i in 1 until resourcePages.size) {
-            if (progression >= resourcePages[i-1].third && progression <= resourcePages[i].third) {
-                currentPage = resourcePages[i-1].first
+        for (i in 1 until pageList.length()) {
+            val jsonObjectBefore = pageList.getJSONObject(i-1)
+            val jsonObjectAfter = pageList.getJSONObject(i)
+            if (jsonObjectBefore.getString("href") == href && jsonObjectBefore.getDouble("progression") <= progression && jsonObjectAfter.getDouble("progression") >= progression) {
+                currentPage = jsonObjectBefore.getLong("pageNumber")
             }
         }
 
@@ -142,37 +129,32 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
     fun has(publicationID: String): Boolean {
         var isGenerated = false
 
-        if ( (database.use {
+        val pageList = (database.use {
             select(POSITIONSTable.NAME,
-                    POSITIONSTable.PAGE_NUMBER,
-                    POSITIONSTable.RESOURCE_HREF,
-                    POSITIONSTable.RESOURCE_PROGRESSION)
+                    POSITIONSTable.POSITIONS)
                     .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
-                    .orderBy(POSITIONSTable.PAGE_NUMBER, SqlOrderDirection.ASC)
                     .exec {
-                        parseList(MyRowParser()).toMutableList()
+                        parseOpt(MyRowParser())
                     }
-        }).isNotEmpty() ) {
-            isGenerated = true
+        })
+
+        pageList?.let {
+            if (pageList.length() > 0) {
+                isGenerated = true
+            }
         }
 
         return isGenerated
     }
 
 
-    class MyRowParser : RowParser<Triple<Long, String, Double>> {
-        override fun parseRow(columns: Array<Any?>): Triple<Long, String, Double> {
-            val pageNumber = columns[0]?.let {
+    class MyRowParser : RowParser<JSONArray> {
+        override fun parseRow(columns: Array<Any?>): JSONArray {
+            val pageList = columns[0]?.let {
                 return@let it
             } ?: kotlin.run { return@run 0 }
-            val resourceHref = columns[1]?.let {
-                return@let it
-            } ?: kotlin.run { return@run "" }
-            val resourceProgression = columns[2]?.let {
-                return@let it
-            } ?: kotlin.run { return@run "" }
 
-            return Triple(pageNumber as Long, resourceHref as String, resourceProgression as Double)
+            return JSONArray(pageList as String)
         }
     }
 
