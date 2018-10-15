@@ -22,6 +22,7 @@ import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.navigator.CreateSyntheticPageList
+import org.readium.r2.navigator.Position
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.LocatorText
@@ -143,11 +144,12 @@ class R2EpubActivity : R2EpubActivity() {
                     resourcesHref.add(spineItem.href!!)
                 }
                 val list = syntheticPageList.execute(Triple("$BASE_URL:$port/", epubName, resourcesHref)).get()
+                val jsonArrayList = Position.toJSONArray(list)
 
                 /*
                  * Storing the generated page list in the DB
                  */
-                positionsDB.positions.storeSyntheticPageList(publicationIdentifier, list)
+                positionsDB.positions.storeSyntheticPageList(publicationIdentifier, jsonArrayList)
             }
             progress.dismiss()
         }, 200)

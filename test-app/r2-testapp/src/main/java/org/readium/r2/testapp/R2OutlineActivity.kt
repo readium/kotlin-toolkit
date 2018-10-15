@@ -29,6 +29,7 @@ import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
 import kotlin.math.roundToInt
 import android.widget.TextView
+import org.readium.r2.navigator.Position
 
 
 class R2OutlineActivity : AppCompatActivity() {
@@ -134,7 +135,9 @@ class R2OutlineActivity : AppCompatActivity() {
 
             }
         } else {
-            val syntheticPageList = positionsDB.positions.getSyntheticPageList(publication.metadata.identifier)
+            val pageListArray = positionsDB.positions.getSyntheticPageList(publication.metadata.identifier)
+
+            val syntheticPageList = Position.fromJSON(pageListArray!!)
 
             val syntheticPageListAdapter = SyntheticPageListAdapter(this, syntheticPageList)
             page_list.adapter = syntheticPageListAdapter
@@ -142,8 +145,8 @@ class R2OutlineActivity : AppCompatActivity() {
             page_list.setOnItemClickListener { _, _, position, _ ->
 
                 //Link to the resource in the publication
-                val pageUri = syntheticPageList[position].second
-                val pageProgression = syntheticPageList[position].third
+                val pageUri = syntheticPageList[position].href
+                val pageProgression = syntheticPageList[position].progression
 
                 val intent = Intent()
                 intent.putExtra("toc_item_uri", pageUri)
@@ -255,7 +258,7 @@ class R2OutlineActivity : AppCompatActivity() {
         }
     }
 
-    inner class SyntheticPageListAdapter(context: Context, pageList: MutableList<Triple<Long, String, Double>>) : ArrayAdapter<Triple<Long, String, Double>>(context, R.layout.navcontent_item, pageList) {
+    inner class SyntheticPageListAdapter(context: Context, pageList: MutableList<Position>) : ArrayAdapter<Position>(context, R.layout.navcontent_item, pageList) {
         private inner class ViewHolder {
             internal var navigationTextView: TextView? = null
         }
@@ -280,7 +283,7 @@ class R2OutlineActivity : AppCompatActivity() {
                 viewHolder = myView.tag as ViewHolder
             }
 
-            viewHolder.navigationTextView!!.text = "Page ${item.first}"
+            viewHolder.navigationTextView!!.text = "Page ${item.pageNumber}"
 
             return myView
         }
