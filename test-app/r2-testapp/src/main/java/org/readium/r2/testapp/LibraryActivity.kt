@@ -29,10 +29,7 @@ import android.text.TextUtils
 import android.view.*
 import android.webkit.MimeTypeMap
 import android.webkit.URLUtil
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ListPopupWindow
-import android.widget.PopupWindow
+import android.widget.*
 import com.github.kittinunf.fuel.Fuel
 import com.mcxiaoke.koi.ext.onClick
 import nl.komponents.kovenant.Promise
@@ -51,6 +48,7 @@ import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.opds.ParseData
+import org.readium.r2.shared.parsePublication
 import org.readium.r2.shared.promise
 import org.readium.r2.streamer.parser.CbzParser
 import org.readium.r2.streamer.parser.EpubParser
@@ -69,6 +67,7 @@ import java.io.*
 import java.net.HttpURLConnection
 import java.net.ServerSocket
 import java.net.URL
+import java.nio.charset.Charset
 import java.util.*
 
 open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions {
@@ -236,15 +235,17 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         editTextHref!!.error = "Please Enter A Valid URL."
                         editTextHref!!.requestFocus()
                     } else {
-                        val parseDataPromise = parseURL(URL(editTextHref!!.text.toString()))
-                        parseDataPromise.successUi { parseData ->
-                            dismiss()
-                            downloadData(parseData)
-                        }
-                        parseDataPromise.failUi {
-                            editTextHref!!.error = "Please Enter A Valid OPDS Book URL."
-                            editTextHref!!.requestFocus()
-                        }
+                        dismiss()
+                        manifestWebPublication(editTextHref!!.text.toString())
+//                        val parseDataPromise = parseURL(URL(editTextHref!!.text.toString()))
+//                        parseDataPromise.successUi { parseData ->
+//                            dismiss()
+//                            downloadData(parseData)
+//                        }
+//                        parseDataPromise.failUi {
+//                            editTextHref!!.error = "Please Enter A Valid OPDS Book URL."
+//                            editTextHref!!.requestFocus()
+//                        }
                     }
                 }
             }
@@ -258,6 +259,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         publication = parseData.publication ?: return
         val downloadUrl = getDownloadURL(publication)!!.toString()
+
+
         opdsDownloader.publicationUrl(downloadUrl).successUi { pair ->
 
             val publicationIdentifier = publication.metadata.identifier
@@ -283,6 +286,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         showDuplicateBookAlert(book)
 
                     }
+                }
+            }.fail {
+                runOnUiThread {
+                    progress.dismiss()
+                    snackbar(catalogView, "$it")
                 }
             }
         }
@@ -683,7 +691,30 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
+    private fun manifestWebPublication(externalManifest: String) {
+//        var externalManifest = "https://d2e.dita.digital/pub/L3Jvb3QvZDJlLXN0cmVhbWVyL21pc2MvZXB1YnMvY2hpbGRyZW5zLWxpdGVyYXR1cmUuZXB1Yg==/manifest.json"
+        Thread {
+            val jsondata = URL(externalManifest).openStream().readBytes()
+
+            val jsonString = jsondata.toString(Charset.defaultCharset())
+
+            val json = JSONObject(jsonString)
+
+            val externalPub = parsePublication(json)
+            val externalURI = externalManifest.substring(0, externalManifest.lastIndexOf("/") + 1)
+
+
+
+            startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to externalURI,
+                    "epubName" to externalPub.metadata.title,
+                    "publication" to externalPub,
+                    "bookId" to "0".toLong(),
+                    "isWebPub" to true))
+        }.start()
+    }
+
     private fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication) {
+//        manifestWebPublication("hello")
         prepareToServe(pub, book.fileName, file.absolutePath, false, false)
         startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to publicationPath,
                 "epubName" to book.fileName,
