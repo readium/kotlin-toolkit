@@ -88,7 +88,8 @@ class Publication : Serializable {
 
     enum class EXTENSION(var value: String) {
         EPUB(".epub"),
-        CBZ(".cbz");
+        CBZ(".cbz"),
+        JSON(".json");
         companion object : EnumCompanion<String, EXTENSION>(EXTENSION.values().associateBy(EXTENSION::value))
     }
 
@@ -199,6 +200,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
 
         }
     }
+
     if (pubDict.has("links")) {
         pubDict.get("links")?.let {
             val links = it as? JSONArray
@@ -210,6 +212,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
             }
         }
     }
+
     if (pubDict.has("images")) {
         pubDict.get("images")?.let {
             val links = it as? JSONArray
@@ -221,5 +224,96 @@ fun parsePublication(pubDict: JSONObject): Publication {
             }
         }
     }
+
+    if (pubDict.has("spine")) {
+        pubDict.get("spine")?.let {
+            val spine = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(spine.length() - 1)) {
+                val linkDict = spine.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.spine.add(link)
+            }
+        }
+    }
+
+    if (pubDict.has("readingOrder")) {
+        pubDict.get("readingOrder")?.let {
+            val readingOrder = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(readingOrder.length() - 1)) {
+                val linkDict = readingOrder.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.spine.add(link)
+            }
+        }
+    }
+
+    if (pubDict.has("resources")) {
+        pubDict.get("resources")?.let {
+            val resources = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(resources.length() - 1)) {
+                val linkDict = resources.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.resources.add(link)
+            }
+        }
+    }
+
+//    if (pubDict.has("toc")) {
+//        pubDict.get("toc")?.let {
+//            val toc = it as? JSONArray
+//                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+//            for (i in 0..(toc.length() - 1)) {
+//                val linkDict = toc.getJSONObject(i)
+//                val link = parseLink(linkDict)
+//                p.tableOfContents.add(link)
+//            }
+//        }
+//    }
+
+    if (pubDict.has("page-list")) {
+        pubDict.get("page-list")?.let {
+            val pageList = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(pageList.length() - 1)) {
+                val linkDict = pageList.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.pageList.add(link)
+            }
+        }
+    }
+
+    if (pubDict.has("landmarks")) {
+        pubDict.get("landmarks")?.let {
+            val landmarks = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(landmarks.length() - 1)) {
+                val linkDict = landmarks.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.landmarks.add(link)
+            }
+        }
+    }
+
+
+//    var coverLink: Link? = null
+
+//    /// The kind of publication it is ( Epub, Cbz, ... )
+//    var type = Publication.TYPE.EPUB
+//    /// The version of the publication, if the type needs any.
+//    var version: Double = 0.0
+
+//    var listOfAudioFiles: MutableList<Link> = mutableListOf()
+//    var listOfIllustrations: MutableList<Link> = mutableListOf()
+//    var listOfTables: MutableList<Link> = mutableListOf()
+//    var listOfVideos: MutableList<Link> = mutableListOf()
+
+//    /// Extension point for links that shouldn't show up in the manifest.
+//    var otherLinks: MutableList<Link> = mutableListOf()
+//    var internalData: MutableMap<String, String> = mutableMapOf()
+//
+
     return p
 }
