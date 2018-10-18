@@ -235,17 +235,15 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         editTextHref!!.error = "Please Enter A Valid URL."
                         editTextHref!!.requestFocus()
                     } else {
-                        dismiss()
-                        manifestWebPublication(editTextHref!!.text.toString())
-//                        val parseDataPromise = parseURL(URL(editTextHref!!.text.toString()))
-//                        parseDataPromise.successUi { parseData ->
-//                            dismiss()
-//                            downloadData(parseData)
-//                        }
-//                        parseDataPromise.failUi {
-//                            editTextHref!!.error = "Please Enter A Valid OPDS Book URL."
-//                            editTextHref!!.requestFocus()
-//                        }
+                        val parseDataPromise = parseURL(URL(editTextHref!!.text.toString()))
+                        parseDataPromise.successUi { parseData ->
+                            dismiss()
+                            downloadData(parseData)
+                        }
+                        parseDataPromise.failUi {
+                            editTextHref!!.error = "Please Enter A Valid OPDS Book URL."
+                            editTextHref!!.requestFocus()
+                        }
                     }
                 }
             }
@@ -258,40 +256,53 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         progress.show()
 
         publication = parseData.publication ?: return
-        val downloadUrl = getDownloadURL(publication)!!.toString()
+        getDownloadURL(publication)?.let { downloadUrl ->
 
+            opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
-        opdsDownloader.publicationUrl(downloadUrl).successUi { pair ->
+                val publicationIdentifier = publication.metadata.identifier
+                val author = authorName(publication)
+                task {
+                    getBitmapFromURL(publication.images.first().href!!)
+                }.then {
+                    val bitmap = it
+                    val stream = ByteArrayOutputStream()
+                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-            val publicationIdentifier = publication.metadata.identifier
-            val author = authorName(publication)
-            task {
-                getBitmapFromURL(publication.images.first().href!!)
-            }.then {
-                val bitmap = it
-                val stream = ByteArrayOutputStream()
-                bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                    val book = Book(pair.second, publication.metadata.title, author, pair.first, null, publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
 
-                val book = Book(pair.second, publication.metadata.title, author, pair.first, null, publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
+                    runOnUiThread {
+                        progress.dismiss()
+                        database.books.insert(book, false)?.let {
+                            book.id = it
+                            books.add(0,book)
+                            booksAdapter.notifyDataSetChanged()
 
-                runOnUiThread {
-                    progress.dismiss()
-                    database.books.insert(book, false)?.let {
-                        book.id = it
-                        books.add(0,book)
-                        booksAdapter.notifyDataSetChanged()
+                        } ?: run {
 
-                    } ?: run {
+                            showDuplicateBookAlert(book)
 
-                        showDuplicateBookAlert(book)
-
+                        }
+                    }
+                }.fail {
+                    runOnUiThread {
+                        progress.dismiss()
+                        snackbar(catalogView, "$it")
                     }
                 }
-            }.fail {
-                runOnUiThread {
+            }
+        } ?: run {
+            var isWebPub = false
+            for(link in parseData.publication!!.links) {
+                if(link.typeLink == "application/webpub+json") {
+                    isWebPub = true
                     progress.dismiss()
-                    snackbar(catalogView, "$it")
+                    prepareWebPublication(link.href!!, webPub = null, add = true)
                 }
+            }
+            if (!isWebPub) {
+                progress.dismiss()
+                snackbar(catalogView, "An error occurred")
             }
         }
     }
@@ -661,7 +672,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         progress.show()
         task {
             val book = books[position]
-            val publicationPath = R2DIRECTORY + book.fileName
+            val publicationPath = if(book.isWebPub) {
+                book.fileName
+            } else {
+                R2DIRECTORY + book.fileName
+            }
             val file = File(publicationPath)
             when {
                 book.ext == Publication.EXTENSION.EPUB -> {
@@ -682,6 +697,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to pub.publication))
                     }
                 }
+                book.ext == Publication.EXTENSION.JSON -> {
+                    prepareWebPublication(book.fileUrl, book, add = false)
+                }
                 else -> null
             }
         } then {
@@ -691,30 +709,39 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    private fun manifestWebPublication(externalManifest: String) {
-//        var externalManifest = "https://d2e.dita.digital/pub/L3Jvb3QvZDJlLXN0cmVhbWVyL21pc2MvZXB1YnMvY2hpbGRyZW5zLWxpdGVyYXR1cmUuZXB1Yg==/manifest.json"
+    private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean) {
         Thread {
-            val jsondata = URL(externalManifest).openStream().readBytes()
+            val jsonManifest = URL(externalManifest).openStream().readBytes()
+            val stringManifest = jsonManifest.toString(Charset.defaultCharset())
 
-            val jsonString = jsondata.toString(Charset.defaultCharset())
-
-            val json = JSONObject(jsonString)
+            val json = JSONObject(stringManifest)
 
             val externalPub = parsePublication(json)
             val externalURI = externalManifest.substring(0, externalManifest.lastIndexOf("/") + 1)
 
+            val book = webPub ?: Book(externalURI, externalPub.metadata.title, null, externalManifest, null, externalPub.coverLink.toString(), externalPub.metadata.identifier, null, Publication.EXTENSION.JSON)
 
+            if (add) {
+                runOnUiThread {
+                    database.books.insert(book, false)?.let {
+                        book.id = it
+                        books.add(0, book)
+                        booksAdapter.notifyDataSetChanged()
+                    } ?: run {
+                        showDuplicateBookAlert(book)
+                    }
+                }
+            }
 
             startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to externalURI,
                     "epubName" to externalPub.metadata.title,
                     "publication" to externalPub,
-                    "bookId" to "0".toLong(),
+                    "bookId" to book.id,
                     "isWebPub" to true))
         }.start()
     }
 
     private fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication) {
-//        manifestWebPublication("hello")
         prepareToServe(pub, book.fileName, file.absolutePath, false, false)
         startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to publicationPath,
                 "epubName" to book.fileName,
