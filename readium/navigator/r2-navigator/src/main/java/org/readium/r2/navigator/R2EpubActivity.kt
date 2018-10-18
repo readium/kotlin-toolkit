@@ -79,6 +79,8 @@ open class R2EpubActivity : AppCompatActivity() {
         epubName = intent.getStringExtra("epubName")
         publicationIdentifier = publication.metadata.identifier
 
+        val isWebPub = intent.getBooleanExtra("isWebPub", false)
+
         title = publication.metadata.title
 
         val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
@@ -91,7 +93,12 @@ open class R2EpubActivity : AppCompatActivity() {
         var resourceIndexSingle = 0
 
         for (spineItem in publication.spine) {
-            val uri = "$BASE_URL:$port" + "/" + epubName + spineItem.href
+            var uri: String
+            if (!isWebPub) {
+                uri = "$BASE_URL:$port" + "/" + epubName + spineItem.href
+            } else {
+                uri = publicationPath + spineItem.href
+            }
             resourcesSingle.add(Pair(resourceIndexSingle, uri))
             resourceIndexSingle++
 
