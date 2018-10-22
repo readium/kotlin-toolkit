@@ -196,8 +196,12 @@ fun parsePublication(pubDict: JSONObject): Publication {
             val metadataDict = it as? JSONObject
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             val metadata = parseMetadata(metadataDict)
-            p.metadata = metadata
 
+            if (metadata.rendition.isEmpty()) {
+                metadata.rendition.layout = RenditionLayout.Reflowable
+            }
+
+            p.metadata = metadata
         }
     }
 
