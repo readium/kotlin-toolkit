@@ -265,17 +265,17 @@ fun parsePublication(pubDict: JSONObject): Publication {
         }
     }
 
-//    if (pubDict.has("toc")) {
-//        pubDict.get("toc")?.let {
-//            val toc = it as? JSONArray
-//                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
-//            for (i in 0..(toc.length() - 1)) {
-//                val linkDict = toc.getJSONObject(i)
-//                val link = parseLink(linkDict)
-//                p.tableOfContents.add(link)
-//            }
-//        }
-//    }
+    if (pubDict.has("toc")) {
+        pubDict.get("toc")?.let {
+            val toc = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(toc.length() - 1)) {
+                val linkDict = toc.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.tableOfContents.add(link)
+            }
+        }
+    }
 
     if (pubDict.has("page-list")) {
         pubDict.get("page-list")?.let {
