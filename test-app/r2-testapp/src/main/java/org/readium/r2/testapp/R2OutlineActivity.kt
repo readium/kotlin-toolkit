@@ -29,6 +29,7 @@ import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
 import kotlin.math.roundToInt
 import android.widget.TextView
+import org.readium.r2.shared.Locations
 
 
 class R2OutlineActivity : AppCompatActivity() {
@@ -71,10 +72,18 @@ class R2OutlineActivity : AppCompatActivity() {
 
             //Link to the resource in the publication
             val tocItemUri = allElements[position].href
-
             val intent = Intent()
             intent.putExtra("toc_item_uri", tocItemUri)
-            intent.putExtra("item_progression", 0.0)
+
+            tocItemUri?.let {
+                if (tocItemUri.indexOf("#") > 0) {
+                    val id = tocItemUri.substring(tocItemUri.indexOf('#'))
+                    intent.putExtra("locations", Locations(id = id))
+                } else {
+                    intent.putExtra("locations", Locations(progression = 0.0))
+                }
+            }
+
             setResult(Activity.RESULT_OK, intent)
             finish()
 
@@ -103,7 +112,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
             val intent = Intent()
             intent.putExtra("toc_item_uri", bookmarkUri)
-            intent.putExtra("item_progression", bookmarkProgression)
+            intent.putExtra("locations", Locations(progression = bookmarkProgression))
             setResult(Activity.RESULT_OK, intent)
             finish()
         }
@@ -125,7 +134,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
             val intent = Intent()
             intent.putExtra("toc_item_uri", pageUri)
-            intent.putExtra("item_progression", 0.0)
+            intent.putExtra("locations", Locations(progression = 0.0))
             setResult(Activity.RESULT_OK, intent)
             finish()
 
@@ -147,7 +156,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
             val intent = Intent()
             intent.putExtra("toc_item_uri", landmarkUri)
-            intent.putExtra("item_progression", 0.0)
+            intent.putExtra("locations", Locations(progression = 0.0))
             setResult(Activity.RESULT_OK, intent)
             finish()
 
