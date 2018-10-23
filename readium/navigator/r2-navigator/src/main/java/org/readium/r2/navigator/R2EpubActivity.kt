@@ -133,10 +133,10 @@ open class R2EpubActivity : AppCompatActivity() {
     /**
      * storeProgression() : save in the preference the last progression in the spine item
      */
-    fun storeProgression(progression:Double) {
+    fun storeProgression(locations: Locations) {
         storeDocumentIndex()
         val publicationIdentifier = publication.metadata.identifier
-        preferences.edit().putString("$publicationIdentifier-documentProgression", progression.toString()).apply()
+        preferences.edit().putString("$publicationIdentifier-documentLocations", locations.toJSON().toString()).apply()
     }
 
     /**
@@ -155,6 +155,10 @@ open class R2EpubActivity : AppCompatActivity() {
                 pagerPosition = 0
                 reloadPagerPositions = true
 
+                val locations = data.getSerializableExtra("locations") as Locations
+                
+                // Set the progression fetched
+                storeProgression(locations)
 
                 if (publication.metadata.rendition.layout == RenditionLayout.Reflowable ) {
                     val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
@@ -166,12 +170,6 @@ open class R2EpubActivity : AppCompatActivity() {
 
                 // href is the link to the page in the toc
                 var href = data.getStringExtra("toc_item_uri")
-
-                // Fetching the last progression saved ( default : 0.0 )
-                val progression = data.getDoubleExtra("item_progression", 0.0)
-
-                // Set the progression fetched
-                storeProgression(progression)
 
                 if (href.indexOf("#") > 0) {
                     href = href.substring(0, href.indexOf("#"))
