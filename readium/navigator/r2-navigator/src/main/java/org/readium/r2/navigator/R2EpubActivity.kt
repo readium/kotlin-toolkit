@@ -13,22 +13,18 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
-import android.view.MenuItem
 import android.view.View
-import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_page_epub.view.*
 import org.jetbrains.anko.contentView
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.shared.Locations
 import org.readium.r2.shared.PageProgressionDirection
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.RenditionLayout
-import org.readium.r2.shared.drm.DRMModel
 
 
 open class R2EpubActivity : AppCompatActivity() {
