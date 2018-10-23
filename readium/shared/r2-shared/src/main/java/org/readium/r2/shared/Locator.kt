@@ -95,12 +95,12 @@ class LocatorText(var after: String? = null,
  * @var position: Long - Index of a segment in the resource / synthetic page number!!??
  *
  */
-class Locations(var id: Long? = null,
-                var cfi: String? = null,             // 1 = highlight, annotation etc  = priority 3
+class Locations(var cfi: String? = null,             // 1 = highlight, annotation etc
+                var id: Long? = null,                // 2 = fragment identifier (toc, page lists, landmarks)
                 var cssSelector: String? = null,     // 2 =
                 var xpath: String? = null,           // 2 =
-                var progression: Double? = null,     // 3 = bookmark         = priority 1 (done)
-                var position: Long? = null           // 4 = got page         = priority 2
+                var progression: Double? = null,     // 3 = bookmarks
+                var position: Long? = null           // 4 = goto page
 ) : JSONable, Serializable {
 
     companion object {
