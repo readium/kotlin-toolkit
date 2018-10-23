@@ -673,11 +673,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         progress.show()
         task {
             val book = books[position]
-            val publicationPath = if(book.isWebPub) {
-                book.fileName
-            } else {
-                R2DIRECTORY + book.fileName
-            }
+            val publicationPath = R2DIRECTORY + book.fileName
             val file = File(publicationPath)
             when {
                 book.ext == Publication.EXTENSION.EPUB -> {
