@@ -12,16 +12,21 @@ package org.readium.r2.testapp
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.navigator.UserSettings
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.LocatorText
+import org.readium.r2.shared.drm.DRMModel
 
 /**
  * R2EpubActivity : Extension of the R2EpubActivity() from navigator
@@ -38,9 +43,37 @@ class R2EpubActivity : R2EpubActivity() {
     // Provide access to the Bookmarks Database
     private lateinit var bookmarkDB: BookmarksDatabase
 
+    protected var drmModel: DRMModel? = null
+    protected var menuDrm: MenuItem? = null
+    protected var menuToc: MenuItem? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bookmarkDB = BookmarksDatabase(this)
+
+        Handler().postDelayed({
+            if (intent.getSerializableExtra("drmModel") != null) {
+                drmModel = intent.getSerializableExtra("drmModel") as DRMModel
+                drmModel?.let {
+                    runOnUiThread {
+                        menuDrm?.isVisible = true
+                    }
+                } ?: run {
+                    runOnUiThread {
+                        menuDrm?.isVisible = false
+                    }
+                }
+            }
+        }, 100)
+
+
+        val appearancePref = preferences.getInt("appearance", 0)
+        val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
+        val textColors = mutableListOf("#000000", "#000000", "#ffffff")
+        resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
+        (resourcePager.focusedChild?.findViewById(org.readium.r2.navigator.R.id.book_title) as? TextView)?.setTextColor(Color.parseColor(textColors[appearancePref]))
+        toggleActionBar()
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
