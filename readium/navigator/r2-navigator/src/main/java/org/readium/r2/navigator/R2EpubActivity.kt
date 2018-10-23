@@ -21,18 +21,15 @@ import kotlinx.android.synthetic.main.fragment_page_epub.view.*
 import org.jetbrains.anko.contentView
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.PageProgressionDirection
-import org.readium.r2.shared.Publication
-import org.readium.r2.shared.RenditionLayout
+import org.readium.r2.shared.*
 
 
 open class R2EpubActivity : AppCompatActivity() {
 
     lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
-    lateinit var resourcesSingle: ArrayList<Pair<Int,String>>
-    lateinit var resourcesDouble: ArrayList<Triple<Int,String,String>>
+    lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
+    lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
 
     private lateinit var publicationPath: String
     private lateinit var epubName: String
@@ -63,8 +60,8 @@ open class R2EpubActivity : AppCompatActivity() {
 
         // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
         var doublePageIndex = 0
-        var doublePageLeft:String = ""
-        var doublePageRight:String = ""
+        var doublePageLeft: String = ""
+        var doublePageRight: String = ""
         var resourceIndexDouble = 0
         var resourceIndexSingle = 0
 
@@ -74,7 +71,7 @@ open class R2EpubActivity : AppCompatActivity() {
             resourceIndexSingle++
 
             // add first page to the right,
-            if (resourceIndexDouble == 0 ) {
+            if (resourceIndexDouble == 0) {
                 doublePageLeft = ""
                 doublePageRight = uri
                 resourcesDouble.add(Triple(resourceIndexDouble, doublePageLeft, doublePageRight))
@@ -99,10 +96,10 @@ open class R2EpubActivity : AppCompatActivity() {
         }
 
 
-        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable ) {
+        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
             val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
             resourcePager.adapter = adapter
-        }else {
+        } else {
             val adapter = R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
             resourcePager.adapter = adapter
         }
@@ -151,12 +148,12 @@ open class R2EpubActivity : AppCompatActivity() {
                 pagerPosition = 0
                 reloadPagerPositions = true
 
-                val locations = data.getSerializableExtra("locations") as Locations
-                
-                // Set the progression fetched
-                storeProgression(locations)
+                val locator = data.getSerializableExtra("locator") as Locator
 
-                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable ) {
+                // Set the progression fetched
+                storeProgression(locator.locations)
+
+                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
                     val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
                     resourcePager.adapter = adapter
                 } else {
@@ -165,7 +162,7 @@ open class R2EpubActivity : AppCompatActivity() {
                 }
 
                 // href is the link to the page in the toc
-                var href = data.getStringExtra("toc_item_uri")
+                var href = locator.href
 
                 if (href.indexOf("#") > 0) {
                     href = href.substring(0, href.indexOf("#"))
