@@ -14,19 +14,21 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v4.view.ViewCompat
-import android.view.*
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
-import kotlinx.android.synthetic.main.fragment_page_epub.view.*
-import org.jetbrains.anko.contentView
+import org.json.JSONObject
 import org.readium.r2.navigator.APPEARANCE_REF
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.SCROLL_REF
+import org.readium.r2.shared.Locations
 import org.readium.r2.shared.PageProgressionDirection
 
 
@@ -74,7 +76,7 @@ class R2EpubPageFragment : Fragment() {
         webView.settings.loadWithOverviewMode = true
         webView.settings.setSupportZoom(true)
         webView.settings.builtInZoomControls = true
-        webView.settings.displayZoomControls = true
+        webView.settings.displayZoomControls = false
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 
@@ -98,8 +100,12 @@ class R2EpubPageFragment : Fragment() {
                         if (childCount == 2) {
                             when {
                                 webView.activity.pagerPosition == 0 -> {
-                                    val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
-                                    webView.scrollToPosition(progression)
+                                    val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+                                    if (locations.id == null ) {
+                                        locations.progression?.let {progression ->
+                                            webView.scrollToPosition(progression)
+                                        }
+                                    }
                                     webView.activity.pagerPosition++
                                 }
                                 else -> {
@@ -117,8 +123,12 @@ class R2EpubPageFragment : Fragment() {
                         } else {
                             when {
                                 webView.activity.pagerPosition == 0 -> {
-                                    val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
-                                    webView.scrollToPosition(progression)
+                                    val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+                                    if (locations.id == null ) {
+                                        locations.progression?.let {progression ->
+                                            webView.scrollToPosition(progression)
+                                        }
+                                    }
                                     webView.activity.pagerPosition++
                                 }
                                 webView.activity.pagerPosition == 1 -> {
@@ -144,11 +154,14 @@ class R2EpubPageFragment : Fragment() {
                                 }
                             }
                         }
-                    }
-                    else {
+                    } else {
                         webView.activity.pagerPosition = 0
-                        val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
-                        webView.scrollToPosition(progression)
+                        val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+                        if (locations.id == null ) {
+                            locations.progression?.let {progression ->
+                                webView.scrollToPosition(progression)
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     // TODO double check this error, a crash happens when scrolling to fast between resources.....
@@ -174,11 +187,20 @@ class R2EpubPageFragment : Fragment() {
         webView.setOnLongClickListener {
             true
         }
-        webView.loadUrl(resourceUrl)
+
+
+        val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+
+        locations.id?.let {
+            val href = resourceUrl +  it
+            webView.loadUrl(href)
+        }?:run {
+            webView.loadUrl(resourceUrl)
+        }
+
 
         return v
     }
-
 
     companion object {
 

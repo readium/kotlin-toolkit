@@ -21,10 +21,12 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import org.json.JSONObject
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.fxl.R2FXLLayout
 import org.readium.r2.navigator.fxl.R2FXLOnDoubleTapListener
+import org.readium.r2.shared.Locations
 
 
 class R2FXLPageFragment : Fragment() {
@@ -95,8 +97,10 @@ class R2FXLPageFragment : Fragment() {
                         if (childCount == 2) {
                             when {
                                 webView.activity.pagerPosition == 0 -> {
-                                    val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
-                                    webView.scrollToPosition(progression)
+                                    val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+                                    locations.progression?.let { progression ->
+                                        webView.scrollToPosition(progression)
+                                    }
                                     webView.activity.pagerPosition++
                                 }
                                 else -> {
@@ -108,8 +112,10 @@ class R2FXLPageFragment : Fragment() {
                         } else {
                             when {
                                 webView.activity.pagerPosition == 0 -> {
-                                    val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
-                                    webView.scrollToPosition(progression)
+                                    val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+                                    locations.progression?.let { progression ->
+                                        webView.scrollToPosition(progression)
+                                    }
                                     webView.activity.pagerPosition++
                                 }
                                 webView.activity.pagerPosition == 1 -> {
@@ -125,8 +131,10 @@ class R2FXLPageFragment : Fragment() {
                         }
                     } else {
                         webView.activity.pagerPosition = 0
-                        val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
-                        webView.scrollToPosition(progression)
+                        val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+                        locations.progression?.let { progression ->
+                            webView.scrollToPosition(progression)
+                        }
                     }
                 } catch (e: Exception) {
                     // TODO double check this error, a crash happens when scrolling to fast between resources.....
