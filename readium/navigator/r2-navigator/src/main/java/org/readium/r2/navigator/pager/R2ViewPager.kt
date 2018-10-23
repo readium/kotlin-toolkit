@@ -27,12 +27,5 @@ class R2ViewPager : R2RTLViewPager {
         super.setCurrentItem(item, false)
     }
 
-    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
-        return try {
-            super.onInterceptTouchEvent(event)
-        } catch (e: IllegalArgumentException) {
-            false
-        }
-    }
 
 }
