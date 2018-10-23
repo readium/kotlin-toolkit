@@ -292,17 +292,18 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 }
             }
         } ?: run {
-            var isWebPub = false
-            for(link in parseData.publication!!.links) {
-                if(link.typeLink == "application/webpub+json") {
-                    isWebPub = true
-                    progress.dismiss()
-                    prepareWebPublication(link.href!!, webPub = null, add = true)
-                }
-            }
-            if (!isWebPub) {
+            var isValid = false
+            val self = parseData.publication!!.linkWithRel("self")
+            val type = parseData.publication!!.metadata.rdfType
+            if(type == "http://schema.org/Audiobook" || type == "http://schema.org/Book") {
+                isValid = true
                 progress.dismiss()
-                snackbar(catalogView, "An error occurred")
+                prepareWebPublication(self!!.href!!, webPub = null, add = true)
+            }
+
+            if (!isValid) {
+                progress.dismiss()
+                snackbar(catalogView, "Invalid publication")
             }
         }
     }
