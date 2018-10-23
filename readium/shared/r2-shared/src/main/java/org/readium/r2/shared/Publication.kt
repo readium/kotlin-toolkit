@@ -79,7 +79,7 @@ class Publication : Serializable {
      *
      */
     enum class TYPE {
-        EPUB, CBZ, FXL
+        EPUB, CBZ, FXL, WEBPUB, AUDIO
     }
 
     open class EnumCompanion<T, V>(private val valueMap: Map<T, V>) {
