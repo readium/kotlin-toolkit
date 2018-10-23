@@ -37,7 +37,7 @@ class Metadata : Serializable {
     var inkers: MutableList<Contributor> = mutableListOf()
     var narrators: MutableList<Contributor> = mutableListOf()
     var imprints: MutableList<Contributor> = mutableListOf()
-    var direction: String = "default"
+    var direction: String = PageProgressionDirection.default.name
     var subjects: MutableList<Subject> = mutableListOf()
     var publishers: MutableList<Contributor> = mutableListOf()
     var contributors: MutableList<Contributor> = mutableListOf()
@@ -82,6 +82,26 @@ class Metadata : Serializable {
         tryPut(obj, publishers, "publishers")
         tryPut(obj, imprints, "imprints")
         return obj
+    }
+
+
+    fun contentLayoutStyle(langType: LangType, pageDirection: String?) : ContentLayoutStyle {
+
+        when(langType) {
+            LangType.afh -> return ContentLayoutStyle.rtl
+            LangType.cjk -> {
+                if (pageDirection == ContentLayoutStyle.rtl.name)
+                    return ContentLayoutStyle.cjkv
+                else
+                    return ContentLayoutStyle.cjkh
+            }
+            else -> {
+                if (pageDirection == ContentLayoutStyle.rtl.name)
+                    return ContentLayoutStyle.rtl
+                else
+                    return ContentLayoutStyle.ltr
+            }
+        }
     }
 
 }
@@ -242,4 +262,20 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
     }
 
     return m
+}
+
+enum class LangType {
+    cjk, afh, other
+}
+
+
+enum class PageProgressionDirection {
+    default,
+    ltr,
+    rtl
+}
+
+enum class ContentLayoutStyle {
+    ltr, rtl,
+    cjkv, cjkh
 }
