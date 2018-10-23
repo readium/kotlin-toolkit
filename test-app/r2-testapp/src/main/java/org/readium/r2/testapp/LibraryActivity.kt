@@ -66,6 +66,7 @@ import timber.log.Timber
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.ServerSocket
+import java.net.URI
 import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
@@ -708,33 +709,49 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
     private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean) {
         Thread {
-            val jsonManifest = URL(externalManifest).openStream().readBytes()
-            val stringManifest = jsonManifest.toString(Charset.defaultCharset())
+            try {
+                val jsonManifest = URL(externalManifest).openStream().readBytes()
+                val stringManifest = jsonManifest.toString(Charset.defaultCharset())
 
-            val json = JSONObject(stringManifest)
+                val json = JSONObject(stringManifest)
 
-            val externalPub = parsePublication(json)
-            val externalURI = externalManifest.substring(0, externalManifest.lastIndexOf("/") + 1)
+                val externalPub = parsePublication(json)
+                val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
 
-            val book = webPub ?: Book(externalURI, externalPub.metadata.title, null, externalManifest, null, externalPub.coverLink.toString(), externalPub.metadata.identifier, null, Publication.EXTENSION.JSON)
+                var book = webPub
 
-            if (add) {
-                runOnUiThread {
-                    database.books.insert(book, false)?.let {
-                        book.id = it
-                        books.add(0, book)
-                        booksAdapter.notifyDataSetChanged()
-                    } ?: run {
-                        showDuplicateBookAlert(book)
+                if (add) {
+                    val coverLink = externalPub.linkWithRel("cover")
+                    val bitmap = if (URI(coverLink?.href!!).isAbsolute) {
+                        getBitmapFromURL(coverLink.href!!)
+                    } else {
+                        getBitmapFromURL(externalURI + externalPub.coverLink?.href)
                     }
+                    val stream = ByteArrayOutputStream()
+                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+
+
+                    book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, externalURI + externalPub.coverLink?.href, externalPub.metadata.identifier, stream.toByteArray(), Publication.EXTENSION.JSON)
+
+                    runOnUiThread {
+                        database.books.insert(book, false)?.let {
+                            book.id = it
+                            books.add(0, book)
+                            booksAdapter.notifyDataSetChanged()
+                        } ?: run {
+                            showDuplicateBookAlert(book)
+                        }
+                    }
+                } else {
+                    startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to book!!.fileName,
+                            "epubName" to externalPub.metadata.title,
+                            "publication" to externalPub,
+                            "bookId" to book.id))
                 }
+            } catch (e: Exception) {
+                longSnackbar(catalogView, "$e")
             }
 
-            startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to externalURI,
-                    "epubName" to externalPub.metadata.title,
-                    "publication" to externalPub,
-                    "bookId" to book.id,
-                    "isWebPub" to true))
         }.start()
     }
 
