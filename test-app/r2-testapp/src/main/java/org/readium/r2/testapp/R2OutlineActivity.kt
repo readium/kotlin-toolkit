@@ -29,7 +29,9 @@ import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
 import kotlin.math.roundToInt
 import android.widget.TextView
+import com.mcxiaoke.koi.ext.timestamp
 import org.readium.r2.shared.Locations
+import org.readium.r2.shared.Locator
 
 
 class R2OutlineActivity : AppCompatActivity() {
@@ -69,24 +71,21 @@ class R2OutlineActivity : AppCompatActivity() {
         toc_list.adapter = tocAdapter
 
         toc_list.setOnItemClickListener { _, _, position, _ ->
-
             //Link to the resource in the publication
             val tocItemUri = allElements[position].href
-            val intent = Intent()
-            intent.putExtra("toc_item_uri", tocItemUri)
 
+            val intent = Intent()
             tocItemUri?.let {
                 if (tocItemUri.indexOf("#") > 0) {
                     val id = tocItemUri.substring(tocItemUri.indexOf('#'))
-                    intent.putExtra("locations", Locations(id = id))
+                    intent.putExtra("locator", Locator(tocItemUri, timestamp(), publication.metadata.title, Locations(id = id),null))
                 } else {
-                    intent.putExtra("locations", Locations(progression = 0.0))
+                    intent.putExtra("locator", Locator(tocItemUri, timestamp(), publication.metadata.title, Locations(progression = 0.0),null))
                 }
             }
 
             setResult(Activity.RESULT_OK, intent)
             finish()
-
         }
 
 
@@ -111,8 +110,7 @@ class R2OutlineActivity : AppCompatActivity() {
             val bookmarkProgression = bookmarks[position].location.progression
 
             val intent = Intent()
-            intent.putExtra("toc_item_uri", bookmarkUri)
-            intent.putExtra("locations", Locations(progression = bookmarkProgression))
+            intent.putExtra("locator", Locator(bookmarkUri, timestamp(), publication.metadata.title, Locations(progression = bookmarkProgression),null))
             setResult(Activity.RESULT_OK, intent)
             finish()
         }
@@ -133,8 +131,7 @@ class R2OutlineActivity : AppCompatActivity() {
             val pageUri = pageList[position].href
 
             val intent = Intent()
-            intent.putExtra("toc_item_uri", pageUri)
-            intent.putExtra("locations", Locations(progression = 0.0))
+            intent.putExtra("locator", Locator(pageUri!!, timestamp(), publication.metadata.title, Locations(progression = 0.0),null))
             setResult(Activity.RESULT_OK, intent)
             finish()
 
@@ -155,8 +152,7 @@ class R2OutlineActivity : AppCompatActivity() {
             val landmarkUri = landmarks[position].href
 
             val intent = Intent()
-            intent.putExtra("toc_item_uri", landmarkUri)
-            intent.putExtra("locations", Locations(progression = 0.0))
+            intent.putExtra("locator", Locator(landmarkUri!!, timestamp(), publication.metadata.title, Locations(progression = 0.0),null))
             setResult(Activity.RESULT_OK, intent)
             finish()
 
