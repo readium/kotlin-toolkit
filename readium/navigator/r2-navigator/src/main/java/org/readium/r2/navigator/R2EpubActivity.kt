@@ -38,15 +38,11 @@ open class R2EpubActivity : AppCompatActivity() {
     lateinit var resourcesSingle: ArrayList<Pair<Int,String>>
     lateinit var resourcesDouble: ArrayList<Triple<Int,String,String>>
 
-    protected lateinit var publicationPath: String
+    private lateinit var publicationPath: String
+    private lateinit var epubName: String
     lateinit var publication: Publication
-    protected lateinit var epubName: String
     lateinit var publicationIdentifier: String
-
     lateinit var userSettings: UserSettings
-    protected var drmModel: DRMModel? = null
-    protected var menuDrm: MenuItem? = null
-    protected var menuToc: MenuItem? = null
 
     var pagerPosition = 0
     var reloadPagerPositions = true
@@ -59,21 +55,6 @@ open class R2EpubActivity : AppCompatActivity() {
         resourcePager = findViewById(R.id.resourcePager)
         resourcesSingle = ArrayList()
         resourcesDouble = ArrayList()
-
-        Handler().postDelayed({
-            if (intent.getSerializableExtra("drmModel") != null) {
-                drmModel = intent.getSerializableExtra("drmModel") as DRMModel
-                drmModel?.let {
-                    runOnUiThread {
-                        menuDrm?.isVisible = true
-                    }
-                } ?: run {
-                    runOnUiThread {
-                        menuDrm?.isVisible = false
-                    }
-                }
-            }
-        }, 100)
 
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
@@ -142,12 +123,6 @@ open class R2EpubActivity : AppCompatActivity() {
 
         storeDocumentIndex()
 
-        val appearancePref = preferences.getInt("appearance", 0)
-        val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
-        val textColors = mutableListOf("#000000", "#000000", "#ffffff")
-        resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
-        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor(textColors[appearancePref]))
-        toggleActionBar()
     }
 
     override fun onPause() {
