@@ -28,6 +28,7 @@ import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.RenditionLayout
 import org.readium.r2.shared.drm.DRMModel
+import java.net.URI
 
 
 open class R2EpubActivity : AppCompatActivity() {
@@ -97,7 +98,11 @@ open class R2EpubActivity : AppCompatActivity() {
             if (!isWebPub) {
                 uri = "$BASE_URL:$port" + "/" + epubName + spineItem.href
             } else {
-                uri = publicationPath + spineItem.href
+                if (!URI(spineItem.href).isAbsolute) {
+                    uri = publicationPath + spineItem.href
+                } else {
+                    uri = spineItem.href!!
+                }
             }
             resourcesSingle.add(Pair(resourceIndexSingle, uri))
             resourceIndexSingle++
