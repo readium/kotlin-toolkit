@@ -9,89 +9,80 @@
 
 package org.readium.r2.shared
 
-import org.joda.time.DateTime
 import org.json.JSONObject
-
-
+import java.io.Serializable
 
 /**
- * Locator model
+ * Locator model - https://github.com/readium/architecture/tree/master/locators
  *
- * @var bookId: Long? - Book index in the database
- * @val publicationID: String -  Publication identifier
- * @val resourceIndex: Long - Index to the spine element of the book
- * @val resourceHref: String -  Reference to the spine element
- * @val resourceTitle: String - Title to the spine element of the book
- * @val location: Location - Location in the spine element
- * @val creationDate: Long - Datetime when the bookmark has been created
- * @var id: Long? - ID of the bookmark in database
- *
- * @fun toString(): String - Return a String description of the Locator
+ * @val href: String -  The href of the resource the locator points at.
+ * @val created: Long - The datetime of creation of the locator.
+ * @val title: String - The title of the chapter or section which is more relevant in the context of this locator.
+ * @val location: Location - One or more alternative expressions of the location.
+ * @val text: LocatorText? - Textual context of the locator.
  */
 
+open class Locator(val href: String,
+                   val created: Long,
+                   val title: String,
+                   val locations: Locations,
+                   val text: LocatorText?) : Serializable
 
-open class Locator(val href:String,
-              val created:Long,
-              val title:String,
-              val locations:Locations,
-              val text:LocatorText?) {}
+class LocatorText(var after: String? = null,
+                  var before: String? = null,
+                  var hightlight: String? = null)
+    : JSONable, Serializable {
 
-class LocatorText(var after:String? = null,
-                  var before:String? = null,
-                  var hightlight:String? = null)
-    : JSONable {
+    companion object {
+        fun fromJSON(json: JSONObject): LocatorText {
 
-        companion object {
-            fun fromJSON(json: JSONObject): LocatorText {
-
-                val location = LocatorText()
-                if (json.has("before")) {
-                    location.before = json.getString("before")
-                }
-                if (json.has("hightlight")) {
-                    location.hightlight = json.getString("hightlight")
-                }
-                if (json.has("after")) {
-                    location.after = json.getString("after")
-                }
-
-                return location
+            val location = LocatorText()
+            if (json.has("before")) {
+                location.before = json.getString("before")
             }
+            if (json.has("hightlight")) {
+                location.hightlight = json.getString("hightlight")
+            }
+            if (json.has("after")) {
+                location.after = json.getString("after")
+            }
+
+            return location
+        }
+    }
+
+    override fun toJSON(): JSONObject {
+        val json = JSONObject()
+
+        before?.let {
+            json.putOpt("before", before)
+        }
+        hightlight?.let {
+            json.putOpt("hightlight", hightlight)
+        }
+        after?.let {
+            json.putOpt("after", after)
         }
 
-        override fun toJSON(): JSONObject {
-            val json = JSONObject()
+        return json
+    }
 
-            before?.let {
-                json.putOpt("before", before)
-            }
-            hightlight?.let {
-                json.putOpt("hightlight", hightlight)
-            }
-            after?.let {
-                json.putOpt("after", after)
-            }
+    override fun toString(): String {
+        var jsonString = """{"""
 
-            return json
+        if (before != null) {
+            before.let { jsonString += """ "before": "$before" ,""" }
         }
-
-        override fun toString(): String {
-            var jsonString = """{"""
-
-            if (before != null) {
-                before.let { jsonString += """ "before": "$before" ,""" }
-            }
-            if (hightlight != null) {
-                hightlight.let { jsonString += """ "before": "$hightlight" ,""" }
-            }
-            if (after != null) {
-                after.let { jsonString += """ "after": "$after" ,""" }
-            }
-            jsonString += """}"""
-            return jsonString
+        if (hightlight != null) {
+            hightlight.let { jsonString += """ "before": "$hightlight" ,""" }
         }
+        if (after != null) {
+            after.let { jsonString += """ "after": "$after" ,""" }
+        }
+        jsonString += """}"""
+        return jsonString
+    }
 }
-
 
 /**
  * Location : Class that contain the different variables needed to localize a particular position
@@ -105,12 +96,12 @@ class LocatorText(var after:String? = null,
  *
  */
 class Locations(var id: Long? = null,
-               var cfi: String? = null,             // 1 = highlight, annotation etc  = priority 3
-               var cssSelector: String? = null,     // 2 =
-               var xpath: String? = null,           // 2 =
-               var progression: Double? = null,     // 3 = bookmark         = priority 1 (done)
-               var position: Long? = null           // 4 = got page         = priority 2
-) : JSONable {
+                var cfi: String? = null,             // 1 = highlight, annotation etc  = priority 3
+                var cssSelector: String? = null,     // 2 =
+                var xpath: String? = null,           // 2 =
+                var progression: Double? = null,     // 3 = bookmark         = priority 1 (done)
+                var position: Long? = null           // 4 = got page         = priority 2
+) : JSONable, Serializable {
 
     companion object {
         fun fromJSON(json: JSONObject): Locations {
