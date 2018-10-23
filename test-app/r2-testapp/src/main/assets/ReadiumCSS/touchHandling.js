@@ -56,7 +56,7 @@ var handleTouchEnd = function(event) {
             Android.scrollRight();
         } else {
             console.log("CenterTapped");
-            Android.CenterTapped();
+            Android.centerTapped();
         }
         event.stopPropagation();
         event.preventDefault();
