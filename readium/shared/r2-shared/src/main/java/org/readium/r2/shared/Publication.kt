@@ -301,6 +301,10 @@ fun parsePublication(pubDict: JSONObject): Publication {
         }
     }
 
+    p.linkWithRel("cover")?.let {
+        p.coverLink = it
+    }
+
 
 //    var coverLink: Link? = null
 
