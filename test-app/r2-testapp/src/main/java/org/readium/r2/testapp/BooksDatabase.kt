@@ -26,7 +26,7 @@ val Context.database: BooksDatabaseOpenHelper
 val Context.appContext: Context
     get() = applicationContext
 
-class Book(val fileName: String, val title: String, val author: String?, val fileUrl: String, var id: Long?, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext: Publication.EXTENSION, val isWebPub: Boolean = false, val creation:Long = DateTime().toDate().time)
+class Book(val fileName: String, val title: String, val author: String?, val fileUrl: String, var id: Long?, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext: Publication.EXTENSION, val creation:Long = DateTime().toDate().time)
 
 class BooksDatabase(context: Context) {
 
@@ -237,14 +237,11 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
             val ext = columns[8]?.let {
                 return@let it as String
             } ?: kotlin.run { return@run "" }
-//            val isWebPub = columns[9]?.let {
-//                return@let it as Boolean
-//            } ?: kotlin.run { return@run "" }
             val creation = columns[9]?.let {
                 return@let it
             } ?: kotlin.run { return@run 0 }
 
-            return Book(filename, title, author, fileUrl, id, coverUrl, identifier, cover, Publication.EXTENSION.fromString(ext)!!, false, creation as Long)
+            return Book(filename, title, author, fileUrl, id, coverUrl, identifier, cover, Publication.EXTENSION.fromString(ext)!!, creation as Long)
 
         }
     }
