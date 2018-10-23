@@ -12,9 +12,9 @@ package org.readium.r2.navigator.pager
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
-import com.duolingo.open.rtlviewpager.RtlViewPager
 
-class R2ViewPager : RtlViewPager {
+class R2ViewPager : R2RTLViewPager {
+
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)

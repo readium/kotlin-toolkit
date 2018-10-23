@@ -25,6 +25,7 @@ import kotlinx.android.synthetic.main.fragment_page_epub.view.*
 import org.jetbrains.anko.contentView
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.shared.PageProgressionDirection
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.RenditionLayout
 import org.readium.r2.shared.drm.DRMModel
@@ -38,7 +39,7 @@ open class R2EpubActivity : AppCompatActivity() {
     lateinit var resourcesDouble: ArrayList<Triple<Int,String,String>>
 
     protected lateinit var publicationPath: String
-    protected lateinit var publication: Publication
+    lateinit var publication: Publication
     protected lateinit var epubName: String
     lateinit var publicationIdentifier: String
 
@@ -136,21 +137,9 @@ open class R2EpubActivity : AppCompatActivity() {
         userSettings = UserSettings(preferences, this)
         userSettings.resourcePager = resourcePager
 
-        if (index == 0) {
-            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
-                // The view has RTL layout
-                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable ) {
-                    resourcePager.currentItem = resourcesSingle.size - 1
-                }
-                else {
-                    resourcePager.currentItem = resourcesDouble.size - 1
-                }
-            } else {
-                // The view has LTR layout
-            }
-        } else {
-            resourcePager.currentItem = index
-        }
+        resourcePager.direction = publication.metadata.direction
+        resourcePager.currentItem = index
+
         storeDocumentIndex()
 
         val appearancePref = preferences.getInt("appearance", 0)
@@ -247,15 +236,15 @@ open class R2EpubActivity : AppCompatActivity() {
     fun nextResource() {
         runOnUiThread {
             pagerPosition = 0
-            resourcePager.webView.progression = 0.0
 
-            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
                 // The view has RTL layout
-                resourcePager.currentItem = resourcePager.currentItem - 1
+                resourcePager.webView.progression = 1.0
             } else {
                 // The view has LTR layout
-                resourcePager.currentItem = resourcePager.currentItem + 1
+                resourcePager.webView.progression = 0.0
             }
+            resourcePager.currentItem = resourcePager.currentItem + 1
             storeDocumentIndex()
         }
     }
@@ -263,15 +252,15 @@ open class R2EpubActivity : AppCompatActivity() {
     fun previousResource() {
         runOnUiThread {
             pagerPosition = 0
-            resourcePager.webView.progression = 1.0
 
-            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
                 // The view has RTL layout
-                resourcePager.currentItem = resourcePager.currentItem + 1
+                resourcePager.webView.progression = 0.0
             } else {
                 // The view has LTR layout
-                resourcePager.currentItem = resourcePager.currentItem - 1
+                resourcePager.webView.progression = 1.0
             }
+            resourcePager.currentItem = resourcePager.currentItem - 1
             storeDocumentIndex()
         }
     }

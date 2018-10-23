@@ -52,11 +52,16 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
             }
             val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
-                if (!this.canScrollVertically(1)) {
-//                    activity.nextResource()
+                if (activity.publication.metadata.direction == "rtl") {
+                    this.evaluateJavascript("scrollRightRTL();") { result ->
+                        if (result.contains("edge")) {
+                            activity.previousResource()
+                        }
+                    }
+                } else {
+                    activity.nextResource()
                 }
             } else {
-
                 if (!this.canScrollHorizontally(1)) {
                     activity.nextResource()
                 }
@@ -78,8 +83,14 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
             }
             val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
-                if (!this.canScrollVertically(-1)) {
-//                    activity.previousResource()
+                if (activity.publication.metadata.direction == "rtl") {
+                    this.evaluateJavascript("scrollLeftRTL();") { result ->
+                        if (result.contains("edge")) {
+                            activity.nextResource()
+                        }
+                    }
+                } else {
+                    activity.previousResource()
                 }
             } else {
                 // fix this for when vertical scrolling is enabled
@@ -93,7 +104,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
 
     @android.webkit.JavascriptInterface
     fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("scrollToPosition(\"$progression\");", null)
+        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${activity.publication.metadata.direction}\");", null)
     }
 
 
