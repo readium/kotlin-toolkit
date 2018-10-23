@@ -109,7 +109,7 @@ class R2EpubActivity : R2EpubActivity() {
                 val resourceIndex = resourcePager.currentItem.toLong()
                 val resourceHref = publication.spine[resourcePager.currentItem].href!!
                 val resourceTitle = publication.spine[resourcePager.currentItem].title?: ""
-                val progression = preferences.getString("$publicationIdentifier-documentProgression", 0.toString()).toDouble()
+                val locations = Locations.fromJSON(JSONObject(preferences.getString("${publicationIdentifier}-documentLocations", "{}")))
 
                 val bookmark = Bookmark(
                         bookId,
@@ -117,7 +117,7 @@ class R2EpubActivity : R2EpubActivity() {
                         resourceIndex,
                         resourceHref,
                         resourceTitle,
-                        Locations(progression = progression),
+                        Locations(progression = locations.progression),
                         LocatorText()
                 )
                 
