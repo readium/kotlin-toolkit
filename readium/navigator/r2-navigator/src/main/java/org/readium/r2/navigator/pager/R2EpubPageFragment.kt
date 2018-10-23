@@ -14,16 +14,20 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.view.ViewCompat
 import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
+import kotlinx.android.synthetic.main.fragment_page_epub.view.*
+import org.jetbrains.anko.contentView
 import org.readium.r2.navigator.APPEARANCE_REF
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.SCROLL_REF
+import org.readium.r2.shared.PageProgressionDirection
 
 
 class R2EpubPageFragment : Fragment() {
@@ -99,7 +103,13 @@ class R2EpubPageFragment : Fragment() {
                                     webView.activity.pagerPosition++
                                 }
                                 else -> {
-                                    webView.scrollToPosition(0.0)
+                                    if (webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                                        // The view has RTL layout
+                                        webView.scrollToPosition(1.0)
+                                    } else {
+                                        // The view has LTR layout
+                                        webView.scrollToPosition(0.0)
+                                    }
                                     webView.activity.pagerPosition = 0
                                     webView.activity.reloadPagerPositions = false
                                 }
@@ -112,11 +122,23 @@ class R2EpubPageFragment : Fragment() {
                                     webView.activity.pagerPosition++
                                 }
                                 webView.activity.pagerPosition == 1 -> {
-                                    webView.scrollToPosition(1.0)
+                                    if (webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                                        // The view has RTL layout
+                                        webView.scrollToPosition(0.0)
+                                    } else {
+//                                        // The view has LTR layout
+                                        webView.scrollToPosition(1.0)
+                                    }
                                     webView.activity.pagerPosition++
                                 }
                                 else -> {
-                                    webView.scrollToPosition(0.0)
+                                    if (webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                                        // The view has RTL layout
+                                        webView.scrollToPosition(1.0)
+                                    } else {
+//                                        // The view has LTR layout
+                                        webView.scrollToPosition(0.0)
+                                    }
                                     webView.activity.pagerPosition = 0
                                     webView.activity.reloadPagerPositions = false
                                 }
