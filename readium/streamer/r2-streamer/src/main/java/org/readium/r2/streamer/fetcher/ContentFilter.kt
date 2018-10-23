@@ -128,14 +128,19 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
 
         // Inject userProperties
         getProperties()?.let { propertyPair ->
-            val html = Regex("""<html.*>""").find(resourceHtml, 0)!!
-            val match = Regex("""(style=("([^"]*)"[ >]))|(style='([^']*)'[ >])""").find(html.value, 0)
-            if (match != null) {
-                val beginStyle = match.range.start + 7
-                var newHtml = html.value
-                newHtml = StringBuilder(newHtml).insert(beginStyle, "${buildStringProperties(propertyPair)} ").toString()
-                resourceHtml = StringBuilder(resourceHtml).replace(Regex("""<html.*>"""), newHtml)
-            } else {
+            val html = Regex("""<html.*>""").find(resourceHtml, 0)
+            html?.let {
+                val match = Regex("""(style=("([^"]*)"[ >]))|(style='([^']*)'[ >])""").find(html.value, 0)
+                if (match != null) {
+                    val beginStyle = match.range.start + 7
+                    var newHtml = html.value
+                    newHtml = StringBuilder(newHtml).insert(beginStyle, "${buildStringProperties(propertyPair)} ").toString()
+                    resourceHtml = StringBuilder(resourceHtml).replace(Regex("""<html.*>"""), newHtml)
+                } else {
+                    val beginHtmlIndex = resourceHtml.indexOf("<html", 0, false) + 5
+                    resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, " style=\"${buildStringProperties(propertyPair)}\"").toString()
+                }
+            }?:run {
                 val beginHtmlIndex = resourceHtml.indexOf("<html", 0, false) + 5
                 resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, " style=\"${buildStringProperties(propertyPair)}\"").toString()
             }
