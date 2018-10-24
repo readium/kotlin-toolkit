@@ -32,7 +32,6 @@ import android.widget.TextView
 import com.mcxiaoke.koi.ext.timestamp
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
-import org.readium.r2.navigator.Position
 
 
 class R2OutlineActivity : AppCompatActivity() {
