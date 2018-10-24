@@ -21,10 +21,7 @@ import kotlinx.android.synthetic.main.fragment_page_epub.view.*
 import org.jetbrains.anko.contentView
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.PageProgressionDirection
-import org.readium.r2.shared.Publication
-import org.readium.r2.shared.RenditionLayout
-import org.readium.r2.shared.drm.DRMModel
+import org.readium.r2.shared.*
 import java.net.URI
 
 
