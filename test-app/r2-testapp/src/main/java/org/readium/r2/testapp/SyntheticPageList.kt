@@ -17,7 +17,7 @@ import org.readium.r2.shared.JSONable
 import java.net.URL
 
 
-class CreateSyntheticPageList : AsyncTask<Triple<String, String, MutableList<String>>, String, MutableList<Position>>() {
+class R2SyntheticPageList : AsyncTask<Triple<String, String, MutableList<String>>, String, MutableList<Position>>() {
 
     private val syntheticPageList = mutableListOf<Position>()
     private var pageNumber: Long = 0

@@ -162,7 +162,7 @@ class R2EpubActivity : R2EpubActivity() {
         Handler().postDelayed({
             if (publication.pageList.isEmpty() && !(positionsDB.positions.has(publicationIdentifier))) {
 
-                val syntheticPageList = CreateSyntheticPageList()
+                val syntheticPageList = R2SyntheticPageList()
 
                 /*
                  * Creation of the page list (retrieving resource's URLs first, then execute async task
