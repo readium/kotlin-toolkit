@@ -96,7 +96,7 @@ class LocatorText(var after: String? = null,
  *
  */
 class Locations(var cfi: String? = null,             // 1 = highlight, annotation etc
-                var id: Long? = null,                // 2 = fragment identifier (toc, page lists, landmarks)
+                var id: String? = null,              // 2 = fragment identifier (toc, page lists, landmarks)
                 var cssSelector: String? = null,     // 2 =
                 var xpath: String? = null,           // 2 =
                 var progression: Double? = null,     // 3 = bookmarks
@@ -108,7 +108,7 @@ class Locations(var cfi: String? = null,             // 1 = highlight, annotatio
 
             val location = Locations()
             if (json.has("id")) {
-                location.id = json.getLong("id")
+                location.id = json.getString("id")
             }
             if (json.has("cfi")) {
                 location.cfi = json.getString("cfi")
