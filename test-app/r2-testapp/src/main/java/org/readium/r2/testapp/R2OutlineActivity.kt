@@ -154,8 +154,7 @@ class R2OutlineActivity : AppCompatActivity() {
                 val pageProgression = syntheticPageList[position].progression
 
                 val intent = Intent()
-                intent.putExtra("toc_item_uri", pageUri)
-                intent.putExtra("item_progression", pageProgression)
+                intent.putExtra("locator", Locator(pageUri!!, timestamp(), publication.metadata.title, Locations(progression = pageProgression),null))
                 setResult(Activity.RESULT_OK, intent)
                 finish()
             }
