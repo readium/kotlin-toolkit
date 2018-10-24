@@ -305,11 +305,12 @@ fun parsePublication(pubDict: JSONObject): Publication {
         p.coverLink = it
     }
 
+    p.linkWithRel("self")?.let {
+        if (it.typeLink == "application/webpub+json") p.type = Publication.TYPE.WEBPUB
+        if (it.typeLink == "application/audiobook+json") p.type = Publication.TYPE.AUDIO
+    }
 
-//    var coverLink: Link? = null
 
-//    /// The kind of publication it is ( Epub, Cbz, ... )
-//    var type = Publication.TYPE.EPUB
 //    /// The version of the publication, if the type needs any.
 //    var version: Double = 0.0
 
@@ -321,7 +322,6 @@ fun parsePublication(pubDict: JSONObject): Publication {
 //    /// Extension point for links that shouldn't show up in the manifest.
 //    var otherLinks: MutableList<Link> = mutableListOf()
 //    var internalData: MutableMap<String, String> = mutableMapOf()
-//
 
     return p
 }
