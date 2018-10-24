@@ -257,7 +257,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         progress.show()
 
         publication = parseData.publication ?: return
-        getDownloadURL(publication)?.let { downloadUrl ->
+
+        if (publication.type == Publication.TYPE.EPUB) {
+
+            val downloadUrl = getDownloadURL(publication)
 
             opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
@@ -292,19 +295,22 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 }
             }
-        } ?: run {
-            var isValid = false
-            val self = parseData.publication!!.linkWithRel("self")
-            val type = parseData.publication!!.metadata.rdfType
-            if(type == "http://schema.org/Audiobook" || type == "http://schema.org/Book") {
-                isValid = true
-                progress.dismiss()
-                prepareWebPublication(self!!.href!!, webPub = null, add = true)
-            }
+        } else if (publication.type == Publication.TYPE.WEBPUB || publication.type == Publication.TYPE.AUDIO) {
+            val self = publication.linkWithRel("self")
 
-            if (!isValid) {
-                progress.dismiss()
-                snackbar(catalogView, "Invalid publication")
+            when (publication.type) {
+                Publication.TYPE.WEBPUB -> {
+                    progress.dismiss()
+                    prepareWebPublication(self?.href!!, webPub = null, add = true)
+                }
+                Publication.TYPE.AUDIO -> {
+                    progress.dismiss()
+                    prepareWebPublication(self?.href!!, webPub = null, add = true) //will be adapted later
+                }
+                else -> {
+                    progress.dismiss()
+                    snackbar(catalogView, "Invalid publication")
+                }
             }
         }
     }
@@ -718,35 +724,41 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 val externalPub = parsePublication(json)
                 val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
 
-                var book = webPub
+                var book: Book? = null
 
                 if (add) {
-                    val coverLink = externalPub.linkWithRel("cover")
-                    val bitmap = if (URI(coverLink?.href!!).isAbsolute) {
-                        getBitmapFromURL(coverLink.href!!)
-                    } else {
-                        getBitmapFromURL(externalURI + externalPub.coverLink?.href)
+
+                    externalPub.coverLink?.href?.let {
+                        val bitmap: Bitmap?
+                        if (URI(it).isAbsolute) {
+                            bitmap = getBitmapFromURL(it)
+                        } else {
+                            bitmap = getBitmapFromURL(externalURI + it)
+                        }
+                        val stream = ByteArrayOutputStream()
+                        bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
+
+                        book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, externalURI + externalPub.coverLink?.href, externalPub.metadata.identifier, stream.toByteArray(), Publication.EXTENSION.JSON)
+
+                    } ?: run {
+                        book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, externalURI + externalPub.coverLink?.href, externalPub.metadata.identifier, null, Publication.EXTENSION.JSON)
                     }
-                    val stream = ByteArrayOutputStream()
-                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
-
-
-                    book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, externalURI + externalPub.coverLink?.href, externalPub.metadata.identifier, stream.toByteArray(), Publication.EXTENSION.JSON)
 
                     runOnUiThread {
-                        database.books.insert(book, false)?.let {
-                            book.id = it
-                            books.add(0, book)
+                        database.books.insert(book!!, false)?.let {
+                            book!!.id = it
+                            books.add(0, book!!)
                             booksAdapter.notifyDataSetChanged()
                         } ?: run {
-                            showDuplicateBookAlert(book)
+                            showDuplicateBookAlert(book!!)
                         }
                     }
                 } else {
+                    book = webPub
                     startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to book!!.fileName,
                             "epubName" to externalPub.metadata.title,
                             "publication" to externalPub,
-                            "bookId" to book.id))
+                            "bookId" to book!!.id))
                 }
             } catch (e: Exception) {
                 longSnackbar(catalogView, "$e")
