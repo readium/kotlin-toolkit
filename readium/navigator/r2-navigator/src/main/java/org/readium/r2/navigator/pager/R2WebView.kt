@@ -23,6 +23,7 @@ import android.widget.EdgeEffect
 import android.widget.Scroller
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.SCROLL_REF
+import org.readium.r2.shared.Locations
 import timber.log.Timber
 
 
@@ -112,7 +113,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     fun progressionDidChange(body: String) {
         progression = body.toDouble()
         Timber.d("progression: $progression")
-        activity.storeProgression(progression)
+        activity.storeProgression(Locations(progression = progression))
     }
 
     @android.webkit.JavascriptInterface
