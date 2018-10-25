@@ -22,7 +22,12 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
     private val syntheticPageList = mutableListOf<Position>()
     private var pageNumber: Long = 0
 
+    override fun onPreExecute() {
+        positionsDB.positions.init(publicationIdentifier)
+    }
+
     override fun doInBackground(vararg p0: Triple<String, String, MutableList<String>>): MutableList<Position> {
+
         for (uri in p0) {
             for (i in 0 until uri.third.size) {
                 createSyntheticPages(uri.first, uri.second, uri.third[i])
@@ -33,8 +38,6 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
     }
 
     override fun onPostExecute(result: MutableList<Position>?) {
-        super.onPostExecute(result)
-
         val jsonArrayList = Position.toJSONArray(result!!)
         positionsDB.positions.storeSyntheticPageList(publicationIdentifier, jsonArrayList)
     }
