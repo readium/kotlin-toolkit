@@ -81,11 +81,36 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
         }
     }
 
-    fun storeSyntheticPageList(publicationID: String, synthecticPageList: JSONArray) {
+    fun init(publicationID: String) {
         database.use {
             insert(POSITIONSTable.NAME,
-                    POSITIONSTable.PUBLICATION_ID to publicationID,
+                    POSITIONSTable.PUBLICATION_ID to publicationID)
+        }
+    }
+
+    fun isInitialized(publicationID: String): Boolean {
+        var isInitialized = false
+
+        val pubIdentifier = (database.use {
+            select(POSITIONSTable.NAME,
+                    POSITIONSTable.PUBLICATION_ID)
+                    .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
+                    .exec {
+                        parseOpt(PubIDRowParser())
+                    }
+        })
+
+        if (pubIdentifier == publicationID) isInitialized = true
+
+        return isInitialized
+    }
+
+    fun storeSyntheticPageList(publicationID: String, synthecticPageList: JSONArray) {
+        database.use {
+            update(POSITIONSTable.NAME,
                     POSITIONSTable.POSITIONS to synthecticPageList.toString())
+                    .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
+                    .exec()
         }
     }
 
@@ -96,7 +121,7 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
                     POSITIONSTable.POSITIONS)
                     .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
                     .exec {
-                        parseOpt(MyRowParser())
+                        parseOpt(PageListParser())
                     }
         }
     }
@@ -110,14 +135,14 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
                     POSITIONSTable.POSITIONS)
                     .whereArgs("(publicationID = {publicationID})","publicationID" to publicationID)
                     .exec {
-                        parseOpt(MyRowParser())!!
+                        parseOpt(PageListParser())!!
                     }
         }
 
         for (i in 1 until pageList.length()) {
             val jsonObjectBefore = pageList.getJSONObject(i-1)
-            val jsonObjectAfter = pageList.getJSONObject(i)
-            if (jsonObjectBefore.getString("href") == href && jsonObjectBefore.getDouble("progression") <= progression && jsonObjectAfter.getDouble("progression") >= progression) {
+            val jsonObject = pageList.getJSONObject(i)
+            if (jsonObjectBefore.getString("href") == href && jsonObjectBefore.getDouble("progression") <= progression && jsonObject.getDouble("progression") >= progression) {
                 currentPage = jsonObjectBefore.getLong("pageNumber")
             }
         }
@@ -134,12 +159,12 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
                     POSITIONSTable.POSITIONS)
                     .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
                     .exec {
-                        parseOpt(MyRowParser())
+                        parseOpt(PageListParser())
                     }
         })
 
         pageList?.let {
-            if (pageList.length() > 0) {
+            if (it.length() > 0) {
                 isGenerated = true
             }
         }
@@ -147,14 +172,33 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
         return isGenerated
     }
 
+    fun delete(publicationID: String?) {
+        publicationID?.let {
+            database.use {
+                delete(POSITIONSTable.NAME, "${POSITIONSTable.PUBLICATION_ID} = {publicationID}",
+                        "publicationID" to publicationID)
+            }
+        }
+    }
 
-    class MyRowParser : RowParser<JSONArray> {
+
+    class PageListParser : RowParser<JSONArray> {
         override fun parseRow(columns: Array<Any?>): JSONArray {
             val pageList = columns[0]?.let {
                 return@let it
-            } ?: kotlin.run { return@run 0 }
+            } ?: kotlin.run { return@run "[]" }
 
             return JSONArray(pageList as String)
+        }
+    }
+
+    class PubIDRowParser : RowParser<String> {
+        override fun parseRow(columns: Array<Any?>): String {
+            val publicationID = columns[0]?.let {
+                return@let it
+            } ?: kotlin.run { return@run "" }
+
+            return publicationID as String
         }
     }
 

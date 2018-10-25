@@ -476,7 +476,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     fun prepareSyntheticPageList(pub: Publication, epubName: String) {
-        if (pub.pageList.isEmpty() && !(positionsDB.positions.has(pub.metadata.identifier))) {
+        if (pub.pageList.isEmpty() && !(positionsDB.positions.isInitialized(pub.metadata.identifier))) {
             val syntheticPageList = R2SyntheticPageList(positionsDB, pub.metadata.identifier)
 
             val resourcesHref = mutableListOf<String>()
@@ -638,8 +638,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 }
             }
-            prepareSyntheticPageList(publication, fileName)
         }
+        prepareSyntheticPageList(publication, fileName)
     }
 
     override fun recyclerViewListLongClicked(v: View, position: Int) {
@@ -663,6 +663,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val deleted = database.books.delete(book)
             if (deleted > 0) {
                 BookmarksDatabase(this).bookmarks.delete(deleted.toLong())
+                PositionsDatabase(this).positions.delete(book.identifier)
             }
         }
     }
