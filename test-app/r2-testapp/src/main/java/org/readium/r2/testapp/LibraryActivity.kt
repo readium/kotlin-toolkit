@@ -86,6 +86,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     private lateinit var opdsDownloader: OPDSDownloader
     private lateinit var publication: Publication
 
+    private lateinit var positionsDB: PositionsDatabase
+
     protected lateinit var catalogView: RecyclerView
     private lateinit var alertDialog: AlertDialog
 
@@ -110,6 +112,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         opdsDownloader = OPDSDownloader(this)
         database = BooksDatabase(this)
         books = database.books.list()
+
+        positionsDB = PositionsDatabase(this)
 
         booksAdapter = BooksAdapter(this, books, "$BASE_URL:$localPort", this)
         
@@ -471,6 +475,20 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
+    fun prepareSyntheticPageList(pub: Publication, epubName: String) {
+        if (pub.pageList.isEmpty() && !(positionsDB.positions.has(pub.metadata.identifier))) {
+            val syntheticPageList = R2SyntheticPageList(positionsDB, pub.metadata.identifier)
+
+            val resourcesHref = mutableListOf<String>()
+
+            for (spineItem in pub.spine) {
+                resourcesHref.add(spineItem.href!!)
+            }
+
+            syntheticPageList.execute(Triple("$BASE_URL:$localPort/", epubName, resourcesHref))
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return super.onCreateOptionsMenu(menu)
@@ -620,6 +638,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 }
             }
+            prepareSyntheticPageList(publication, fileName)
         }
     }
 
