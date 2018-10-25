@@ -17,7 +17,7 @@ import org.readium.r2.shared.JSONable
 import java.net.URL
 
 
-class R2SyntheticPageList : AsyncTask<Triple<String, String, MutableList<String>>, String, MutableList<Position>>() {
+class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private val publicationIdentifier: String) : AsyncTask<Triple<String, String, MutableList<String>>, String, MutableList<Position>>() {
 
     private val syntheticPageList = mutableListOf<Position>()
     private var pageNumber: Long = 0
@@ -32,6 +32,12 @@ class R2SyntheticPageList : AsyncTask<Triple<String, String, MutableList<String>
         return pageList()
     }
 
+    override fun onPostExecute(result: MutableList<Position>?) {
+        super.onPostExecute(result)
+
+        val jsonArrayList = Position.toJSONArray(result!!)
+        positionsDB.positions.storeSyntheticPageList(publicationIdentifier, jsonArrayList)
+    }
 
     private fun createSyntheticPages(baseURL: String, epubName: String, resourceHref: String) {
         val resourceURL: URL? = URL(baseURL + epubName + resourceHref)
