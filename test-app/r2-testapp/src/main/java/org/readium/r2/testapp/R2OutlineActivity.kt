@@ -140,23 +140,24 @@ class R2OutlineActivity : AppCompatActivity() {
 
             }
         } else {
-            val pageListArray = positionsDB.positions.getSyntheticPageList(publication.metadata.identifier)
+            positionsDB.positions.getSyntheticPageList(publication.metadata.identifier)?.let {
 
-            val syntheticPageList = Position.fromJSON(pageListArray!!)
+                val syntheticPageList = Position.fromJSON(it)
 
-            val syntheticPageListAdapter = SyntheticPageListAdapter(this, syntheticPageList)
-            page_list.adapter = syntheticPageListAdapter
+                val syntheticPageListAdapter = SyntheticPageListAdapter(this, syntheticPageList)
+                page_list.adapter = syntheticPageListAdapter
 
-            page_list.setOnItemClickListener { _, _, position, _ ->
+                page_list.setOnItemClickListener { _, _, position, _ ->
 
-                //Link to the resource in the publication
-                val pageUri = syntheticPageList[position].href
-                val pageProgression = syntheticPageList[position].progression
+                    //Link to the resource in the publication
+                    val pageUri = syntheticPageList[position].href
+                    val pageProgression = syntheticPageList[position].progression
 
-                val intent = Intent()
-                intent.putExtra("locator", Locator(pageUri!!, timestamp(), publication.metadata.title, Locations(progression = pageProgression),null))
-                setResult(Activity.RESULT_OK, intent)
-                finish()
+                    val intent = Intent()
+                    intent.putExtra("locator", Locator(pageUri!!, timestamp(), publication.metadata.title, Locations(progression = pageProgression), null))
+                    setResult(Activity.RESULT_OK, intent)
+                    finish()
+                }
             }
         }
 
