@@ -19,11 +19,9 @@ import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
-import org.jetbrains.anko.indeterminateProgressDialog
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
-import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.LocatorText
@@ -68,7 +66,6 @@ class R2EpubActivity : R2EpubActivity() {
                 }
             }
         }, 100)
-
 
         val appearancePref = preferences.getInt("appearance", 0)
         val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
@@ -152,38 +149,5 @@ class R2EpubActivity : R2EpubActivity() {
             super.onActivityResult(requestCode, resultCode, data)
         }
     }
-
-
-    override fun onResume() {
-        super.onResume()
-
-        val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_book))
-
-        Handler().postDelayed({
-            if (publication.pageList.isEmpty() && !(positionsDB.positions.has(publicationIdentifier))) {
-
-                val syntheticPageList = R2SyntheticPageList()
-
-                /*
-                 * Creation of the page list (retrieving resource's URLs first, then execute async task
-                 * that runs through resource content to count pages of 1024 characters each)
-                 */
-                val resourcesHref = mutableListOf<String>()
-
-                for (spineItem in publication.spine) {
-                    resourcesHref.add(spineItem.href!!)
-                }
-                val list = syntheticPageList.execute(Triple("$BASE_URL:$port/", epubName, resourcesHref)).get()
-                val jsonArrayList = Position.toJSONArray(list)
-
-                /*
-                 * Storing the generated page list in the DB
-                 */
-                positionsDB.positions.storeSyntheticPageList(publicationIdentifier, jsonArrayList)
-            }
-            progress.dismiss()
-        }, 200)
-    }
-
 
 }
