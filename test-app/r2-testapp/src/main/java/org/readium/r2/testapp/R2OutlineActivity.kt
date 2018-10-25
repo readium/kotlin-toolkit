@@ -140,9 +140,10 @@ class R2OutlineActivity : AppCompatActivity() {
 
             }
         } else {
-            positionsDB.positions.getSyntheticPageList(publication.metadata.identifier)?.let {
+            if (positionsDB.positions.has(publication.metadata.identifier)) {
+                val jsonPageList = positionsDB.positions.getSyntheticPageList(publication.metadata.identifier)
 
-                val syntheticPageList = Position.fromJSON(it)
+                val syntheticPageList = Position.fromJSON(jsonPageList!!)
 
                 val syntheticPageListAdapter = SyntheticPageListAdapter(this, syntheticPageList)
                 page_list.adapter = syntheticPageListAdapter
