@@ -175,7 +175,7 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
     fun delete(publicationID: String?) {
         publicationID?.let {
             database.use {
-                delete(POSITIONSTable.NAME, "${POSITIONSTable.PUBLICATION_ID} = {publicationID}",
+                delete(POSITIONSTable.NAME, "publicationID = {publicationID}",
                         "publicationID" to publicationID)
             }
         }

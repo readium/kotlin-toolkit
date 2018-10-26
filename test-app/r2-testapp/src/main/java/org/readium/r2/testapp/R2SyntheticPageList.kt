@@ -31,6 +31,10 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
         for (uri in p0) {
             for (i in 0 until uri.third.size) {
                 createSyntheticPages(uri.first, uri.second, uri.third[i])
+
+                if (isCancelled) {
+                    positionsDB.positions.delete(publicationIdentifier)
+                }
             }
         }
 
