@@ -31,6 +31,7 @@ import android.webkit.MimeTypeMap
 import android.webkit.URLUtil
 import android.widget.*
 import com.github.kittinunf.fuel.Fuel
+import com.mcxiaoke.koi.ext.close
 import com.mcxiaoke.koi.ext.onClick
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
@@ -394,6 +395,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             connection.doInput = true
             connection.connect()
             val input = connection.inputStream
+            connection.close()
             BitmapFactory.decodeStream(input)
         } catch (e: IOException) {
             e.printStackTrace()
@@ -716,10 +718,22 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean) {
         Thread {
             try {
-                val jsonManifest = URL(externalManifest).openStream().readBytes()
+                val redirectedManifest = URL(externalManifest).openConnection() as HttpURLConnection
+                redirectedManifest.instanceFollowRedirects = false
+                redirectedManifest.connect()
+
+                val jsonManifestURL = URL(redirectedManifest.getHeaderField("Location") ?: externalManifest).openConnection()
+                jsonManifestURL.connect()
+
+                val jsonManifest = jsonManifestURL.getInputStream().readBytes()
+
                 val stringManifest = jsonManifest.toString(Charset.defaultCharset())
 
                 val json = JSONObject(stringManifest)
+
+                jsonManifestURL.close()
+                redirectedManifest.disconnect()
+                redirectedManifest.close()
 
                 val externalPub = parsePublication(json)
                 val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
