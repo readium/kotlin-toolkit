@@ -47,7 +47,7 @@ class PositionsDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
         db.createTable(POSITIONSTable.NAME, true,
                 POSITIONSTable.ID to INTEGER + PRIMARY_KEY + AUTOINCREMENT,
                 POSITIONSTable.PUBLICATION_ID to TEXT,
-                POSITIONSTable.POSITIONS to TEXT)
+                POSITIONSTable.SYNTHETIC_PAGE_LIST to TEXT)
     }
 
 
@@ -62,8 +62,8 @@ object POSITIONSTable {
     const val NAME = "POSITIONS"
     const val ID = "id"
     const val PUBLICATION_ID = "publicationID"
-    const val POSITIONS = "positions"
-    var RESULT_COLUMNS = arrayOf(POSITIONSTable.ID, POSITIONSTable.PUBLICATION_ID, POSITIONSTable.POSITIONS)
+    const val SYNTHETIC_PAGE_LIST = "syntheticPageList"
+    var RESULT_COLUMNS = arrayOf(POSITIONSTable.ID, POSITIONSTable.PUBLICATION_ID, POSITIONSTable.SYNTHETIC_PAGE_LIST)
 
 }
 
@@ -105,10 +105,10 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
         return isInitialized
     }
 
-    fun storeSyntheticPageList(publicationID: String, synthecticPageList: JSONArray) {
+    fun storeSyntheticPageList(publicationID: String, syntheticPageList: JSONArray) {
         database.use {
             update(POSITIONSTable.NAME,
-                    POSITIONSTable.POSITIONS to synthecticPageList.toString())
+                    POSITIONSTable.SYNTHETIC_PAGE_LIST to syntheticPageList.toString())
                     .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
                     .exec()
         }
@@ -118,7 +118,7 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
     fun getSyntheticPageList(publicationID: String): JSONArray? {
         return database.use {
             select(POSITIONSTable.NAME,
-                    POSITIONSTable.POSITIONS)
+                    POSITIONSTable.SYNTHETIC_PAGE_LIST)
                     .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
                     .exec {
                         parseOpt(PageListParser())
@@ -132,7 +132,7 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
 
         val pageList = database.use {
             return@use select(POSITIONSTable.NAME,
-                    POSITIONSTable.POSITIONS)
+                    POSITIONSTable.SYNTHETIC_PAGE_LIST)
                     .whereArgs("(publicationID = {publicationID})","publicationID" to publicationID)
                     .exec {
                         parseOpt(PageListParser())!!
@@ -156,7 +156,7 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
 
         val pageList = (database.use {
             select(POSITIONSTable.NAME,
-                    POSITIONSTable.POSITIONS)
+                    POSITIONSTable.SYNTHETIC_PAGE_LIST)
                     .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
                     .exec {
                         parseOpt(PageListParser())
