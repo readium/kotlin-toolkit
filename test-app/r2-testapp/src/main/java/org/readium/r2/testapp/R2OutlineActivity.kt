@@ -140,8 +140,8 @@ class R2OutlineActivity : AppCompatActivity() {
 
             }
         } else {
-            if (positionsDB.positions.has(publication.metadata.identifier)) {
-                val jsonPageList = positionsDB.positions.getSyntheticPageList(publication.metadata.identifier)
+            if (positionsDB.positions.has(bookID)) {
+                val jsonPageList = positionsDB.positions.getSyntheticPageList(bookID)
 
                 val syntheticPageList = Position.fromJSON(jsonPageList!!)
 

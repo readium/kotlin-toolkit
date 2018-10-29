@@ -46,7 +46,7 @@ class PositionsDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
 
         db.createTable(POSITIONSTable.NAME, true,
                 POSITIONSTable.ID to INTEGER + PRIMARY_KEY + AUTOINCREMENT,
-                POSITIONSTable.PUBLICATION_ID to TEXT,
+                POSITIONSTable.BOOK_ID to INTEGER,
                 POSITIONSTable.SYNTHETIC_PAGE_LIST to TEXT)
     }
 
@@ -61,9 +61,9 @@ class PositionsDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
 object POSITIONSTable {
     const val NAME = "POSITIONS"
     const val ID = "id"
-    const val PUBLICATION_ID = "publicationID"
+    const val BOOK_ID = "bookID"
     const val SYNTHETIC_PAGE_LIST = "syntheticPageList"
-    var RESULT_COLUMNS = arrayOf(POSITIONSTable.ID, POSITIONSTable.PUBLICATION_ID, POSITIONSTable.SYNTHETIC_PAGE_LIST)
+    var RESULT_COLUMNS = arrayOf(POSITIONSTable.ID, POSITIONSTable.BOOK_ID, POSITIONSTable.SYNTHETIC_PAGE_LIST)
 
 }
 
@@ -81,45 +81,45 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
         }
     }
 
-    fun init(publicationID: String) {
+    fun init(bookID: Long) {
         database.use {
             insert(POSITIONSTable.NAME,
-                    POSITIONSTable.PUBLICATION_ID to publicationID)
+                    POSITIONSTable.BOOK_ID to bookID)
         }
     }
 
-    fun isInitialized(publicationID: String): Boolean {
+    fun isInitialized(bookID: Long): Boolean {
         var isInitialized = false
 
-        val pubIdentifier = (database.use {
+        val bookIDDB = (database.use {
             select(POSITIONSTable.NAME,
-                    POSITIONSTable.PUBLICATION_ID)
-                    .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
+                    POSITIONSTable.BOOK_ID)
+                    .whereArgs("bookID = {bookID}", "bookID" to bookID)
                     .exec {
                         parseOpt(PubIDRowParser())
                     }
         })
 
-        if (pubIdentifier == publicationID) isInitialized = true
+        if (bookIDDB == bookID) isInitialized = true
 
         return isInitialized
     }
 
-    fun storeSyntheticPageList(publicationID: String, syntheticPageList: JSONArray) {
+    fun storeSyntheticPageList(bookID: Long, syntheticPageList: JSONArray) {
         database.use {
             update(POSITIONSTable.NAME,
                     POSITIONSTable.SYNTHETIC_PAGE_LIST to syntheticPageList.toString())
-                    .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
+                    .whereArgs("bookID = {bookID}", "bookID" to bookID)
                     .exec()
         }
     }
 
 
-    fun getSyntheticPageList(publicationID: String): JSONArray? {
+    fun getSyntheticPageList(bookID: Long): JSONArray? {
         return database.use {
             select(POSITIONSTable.NAME,
                     POSITIONSTable.SYNTHETIC_PAGE_LIST)
-                    .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
+                    .whereArgs("bookID = {bookID}", "bookID" to bookID)
                     .exec {
                         parseOpt(PageListParser())
                     }
@@ -127,13 +127,13 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
     }
 
 
-    fun getCurrentPage(publicationID: String, href: String, progression: Double): Long {
+    fun getCurrentPage(bookID: Long, href: String, progression: Double): Long {
         var currentPage: Long = 0
 
         val pageList = database.use {
             return@use select(POSITIONSTable.NAME,
                     POSITIONSTable.SYNTHETIC_PAGE_LIST)
-                    .whereArgs("(publicationID = {publicationID})","publicationID" to publicationID)
+                    .whereArgs("(bookID = {bookID})","bookID" to bookID)
                     .exec {
                         parseOpt(PageListParser())!!
                     }
@@ -151,13 +151,13 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
     }
 
 
-    fun has(publicationID: String): Boolean {
+    fun has(bookID: Long): Boolean {
         var isGenerated = false
 
         val pageList = (database.use {
             select(POSITIONSTable.NAME,
                     POSITIONSTable.SYNTHETIC_PAGE_LIST)
-                    .whereArgs("publicationID = {publicationID}", "publicationID" to publicationID)
+                    .whereArgs("bookID = {bookID}", "bookID" to bookID)
                     .exec {
                         parseOpt(PageListParser())
                     }
@@ -172,11 +172,11 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
         return isGenerated
     }
 
-    fun delete(publicationID: String?) {
-        publicationID?.let {
+    fun delete(bookID: Long?) {
+        bookID?.let {
             database.use {
-                delete(POSITIONSTable.NAME, "publicationID = {publicationID}",
-                        "publicationID" to publicationID)
+                delete(POSITIONSTable.NAME, "bookID = {bookID}",
+                        "bookID" to bookID)
             }
         }
     }
@@ -192,13 +192,13 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
         }
     }
 
-    class PubIDRowParser : RowParser<String> {
-        override fun parseRow(columns: Array<Any?>): String {
+    class PubIDRowParser : RowParser<Long> {
+        override fun parseRow(columns: Array<Any?>): Long {
             val publicationID = columns[0]?.let {
                 return@let it
-            } ?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run 0 }
 
-            return publicationID as String
+            return publicationID as Long
         }
     }
 

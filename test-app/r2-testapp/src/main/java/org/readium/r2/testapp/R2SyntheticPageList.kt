@@ -18,13 +18,13 @@ import org.readium.r2.shared.Link
 import java.net.URL
 
 
-class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private val publicationIdentifier: String) : AsyncTask<Triple<String, String, MutableList<Link>>, String, MutableList<Position>>() {
+class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private val bookID: Long) : AsyncTask<Triple<String, String, MutableList<Link>>, String, MutableList<Position>>() {
 
     private val syntheticPageList = mutableListOf<Position>()
     private var pageNumber: Long = 0
 
     override fun onPreExecute() {
-        positionsDB.positions.init(publicationIdentifier)
+        positionsDB.positions.init(bookID)
     }
 
     override fun doInBackground(vararg p0: Triple<String, String, MutableList<Link>>): MutableList<Position> {
@@ -36,7 +36,7 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
                 }
 
                 if (isCancelled) {
-                    positionsDB.positions.delete(publicationIdentifier)
+                    positionsDB.positions.delete(bookID)
                 }
             }
         }
@@ -46,7 +46,7 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
 
     override fun onPostExecute(result: MutableList<Position>?) {
         val jsonArrayList = Position.toJSONArray(result!!)
-        positionsDB.positions.storeSyntheticPageList(publicationIdentifier, jsonArrayList)
+        positionsDB.positions.storeSyntheticPageList(bookID, jsonArrayList)
     }
 
     private fun createSyntheticPages(baseURL: String, epubName: String, resourceHref: String) {

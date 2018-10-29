@@ -475,9 +475,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    fun prepareSyntheticPageList(pub: Publication, epubName: String) {
-        if (pub.pageList.isEmpty() && !(positionsDB.positions.isInitialized(pub.metadata.identifier))) {
-            val syntheticPageList = R2SyntheticPageList(positionsDB, pub.metadata.identifier)
+    fun prepareSyntheticPageList(pub: Publication, epubName: String, book: Book) {
+        if (pub.pageList.isEmpty() && !(positionsDB.positions.isInitialized(book.id!!))) {
+            val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!)
 
             syntheticPageList.execute(Triple("$BASE_URL:$localPort/", epubName, pub.spine))
         }
@@ -611,6 +611,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         showDuplicateBookAlert(book)
 
                     }
+
+                    if(!lcp) {
+                        prepareSyntheticPageList(publication, fileName, book)
+                    }
                 }
                 if (!lcp) {
                     server.addEpub(publication, container, "/$fileName", applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
@@ -629,11 +633,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             showDuplicateBookAlert(book)
 
                         }
+                        prepareSyntheticPageList(publication, fileName, book)
                     }
                 }
             }
         }
-        prepareSyntheticPageList(publication, fileName)
     }
 
     override fun recyclerViewListLongClicked(v: View, position: Int) {
@@ -657,7 +661,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val deleted = database.books.delete(book)
             if (deleted > 0) {
                 BookmarksDatabase(this).bookmarks.delete(deleted.toLong())
-                PositionsDatabase(this).positions.delete(book.identifier)
+                PositionsDatabase(this).positions.delete(book.id)
             }
         }
     }

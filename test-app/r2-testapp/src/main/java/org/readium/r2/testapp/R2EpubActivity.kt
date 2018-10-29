@@ -110,7 +110,7 @@ class R2EpubActivity : R2EpubActivity() {
                 val resourceHref = publication.spine[resourcePager.currentItem].href!!
                 val resourceTitle = publication.spine[resourcePager.currentItem].title?: ""
                 val locations = Locations.fromJSON(JSONObject(preferences.getString("${publicationIdentifier}-documentLocations", "{}")))
-                val currentPage = positionsDB.positions.getCurrentPage(publicationIdentifier, resourceHref, locations.progression!!)
+                val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, locations.progression!!)
 
                 val bookmark = Bookmark(
                         bookId,
