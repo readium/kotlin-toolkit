@@ -479,13 +479,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         if (pub.pageList.isEmpty() && !(positionsDB.positions.isInitialized(pub.metadata.identifier))) {
             val syntheticPageList = R2SyntheticPageList(positionsDB, pub.metadata.identifier)
 
-            val resourcesHref = mutableListOf<String>()
-
-            for (spineItem in pub.spine) {
-                resourcesHref.add(spineItem.href!!)
-            }
-
-            syntheticPageList.execute(Triple("$BASE_URL:$localPort/", epubName, resourcesHref))
+            syntheticPageList.execute(Triple("$BASE_URL:$localPort/", epubName, pub.spine))
         }
     }
 

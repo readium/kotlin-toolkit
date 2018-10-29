@@ -14,10 +14,11 @@ import android.text.Html
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.Link
 import java.net.URL
 
 
-class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private val publicationIdentifier: String) : AsyncTask<Triple<String, String, MutableList<String>>, String, MutableList<Position>>() {
+class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private val publicationIdentifier: String) : AsyncTask<Triple<String, String, MutableList<Link>>, String, MutableList<Position>>() {
 
     private val syntheticPageList = mutableListOf<Position>()
     private var pageNumber: Long = 0
@@ -26,11 +27,13 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
         positionsDB.positions.init(publicationIdentifier)
     }
 
-    override fun doInBackground(vararg p0: Triple<String, String, MutableList<String>>): MutableList<Position> {
+    override fun doInBackground(vararg p0: Triple<String, String, MutableList<Link>>): MutableList<Position> {
 
         for (uri in p0) {
             for (i in 0 until uri.third.size) {
-                createSyntheticPages(uri.first, uri.second, uri.third[i])
+                uri.third[i].href?.let {
+                    createSyntheticPages(uri.first, uri.second, it)
+                }
 
                 if (isCancelled) {
                     positionsDB.positions.delete(publicationIdentifier)
