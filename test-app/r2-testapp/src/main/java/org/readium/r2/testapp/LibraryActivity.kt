@@ -85,7 +85,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
     private lateinit var database: BooksDatabase
     private lateinit var opdsDownloader: OPDSDownloader
-    private lateinit var publication: Publication
 
     private lateinit var positionsDB: PositionsDatabase
 
@@ -261,7 +260,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
         progress.show()
 
-        publication = parseData.publication ?: return
+        val publication = parseData.publication ?: return
 
         if (publication.type == Publication.TYPE.EPUB) {
 
