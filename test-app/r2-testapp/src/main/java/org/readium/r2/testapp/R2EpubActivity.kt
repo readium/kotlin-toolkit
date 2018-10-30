@@ -46,6 +46,7 @@ class R2EpubActivity : R2EpubActivity() {
     protected var drmModel: DRMModel? = null
     protected var menuDrm: MenuItem? = null
     protected var menuToc: MenuItem? = null
+    private var bookId: Long = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +54,7 @@ class R2EpubActivity : R2EpubActivity() {
         positionsDB = PositionsDatabase(this)
 
         Handler().postDelayed({
+            bookId = intent.getLongExtra("bookId", -1)
             if (intent.getSerializableExtra("drmModel") != null) {
                 drmModel = intent.getSerializableExtra("drmModel") as DRMModel
                 drmModel?.let {
@@ -89,7 +91,6 @@ class R2EpubActivity : R2EpubActivity() {
         when (item.itemId) {
 
             R.id.toc -> {
-                val bookId = intent.getLongExtra("bookId", -1)
                 val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publication", publication)
                 intent.putExtra("bookId", bookId)
@@ -105,7 +106,6 @@ class R2EpubActivity : R2EpubActivity() {
                 return true
             }
             R.id.bookmark -> {
-                val bookId = intent.getLongExtra("bookId", -1)
                 val resourceIndex = resourcePager.currentItem.toLong()
                 val resourceHref = publication.spine[resourcePager.currentItem].href!!
                 val resourceTitle = publication.spine[resourcePager.currentItem].title?: ""
