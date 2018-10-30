@@ -281,10 +281,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         book.id = it
                         books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
+                        prepareSyntheticPageList(publication, book)
 
                     } ?: run {
 
-                        showDuplicateBookAlert(book)
+                        showDuplicateBookAlert(book,publication)
 
                     }
                 }
@@ -292,7 +293,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    private fun showDuplicateBookAlert(book: Book) {
+    private fun showDuplicateBookAlert(book: Book, publication: Publication) {
         val duplicateAlert = alert(Appcompat, "Publication already exists") {
 
             positiveButton("Add anyways") { }
@@ -310,6 +311,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         books.add(0,book)
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
+                        prepareSyntheticPageList(publication, book)
                     }
                 }
                 val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
@@ -475,11 +477,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    fun prepareSyntheticPageList(pub: Publication, epubName: String, book: Book) {
+    fun prepareSyntheticPageList(pub: Publication, book: Book) {
         if (pub.pageList.isEmpty() && !(positionsDB.positions.isInitialized(book.id!!))) {
             val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!, pub.metadata.identifier)
 
-            syntheticPageList.execute(Triple("$BASE_URL:$localPort/", epubName, pub.spine))
+            syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName, pub.spine))
         }
     }
 
@@ -606,15 +608,13 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         book.id = it
                         books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
+                        prepareSyntheticPageList(publication, book)
                     } ?: run {
 
-                        showDuplicateBookAlert(book)
+                        showDuplicateBookAlert(book, publication)
 
                     }
 
-                    if(!lcp) {
-                        prepareSyntheticPageList(publication, fileName, book)
-                    }
                 }
                 if (!lcp) {
                     server.addEpub(publication, container, "/$fileName", applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
@@ -628,12 +628,12 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             book.id = it
                             books.add(0,book)
                             booksAdapter.notifyDataSetChanged()
+                            prepareSyntheticPageList(publication, book)
                         } ?: run {
 
-                            showDuplicateBookAlert(book)
+                            showDuplicateBookAlert(book, publication)
 
                         }
-                        prepareSyntheticPageList(publication, fileName, book)
                     }
                 }
             }
