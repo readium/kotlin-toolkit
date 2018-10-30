@@ -786,7 +786,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             books.add(0, book!!)
                             booksAdapter.notifyDataSetChanged()
                         } ?: run {
-                            showDuplicateBookAlert(book!!)
+                            showDuplicateBookAlert(book!!, externalPub, false)
                         }
                     }
                 } else {
