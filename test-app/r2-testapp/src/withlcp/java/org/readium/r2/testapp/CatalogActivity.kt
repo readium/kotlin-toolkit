@@ -109,12 +109,13 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             }, { drm2 ->
                 if (supportedProfiles.contains(drm2.profile)) {
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
+                    prepareSyntheticPageList(publication, book)
 
                     val license = drm.license as LcpLicense
                     val drmModel = DRMModel(drm.brand.name,
                             license.archivePath!!)
 
-                    startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "drmModel" to drmModel))
+                    startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drmModel" to drmModel))
                 } else {
                     alert(Appcompat, "The profile of this DRM is not supported.") {
                         negativeButton("Ok") { }
@@ -123,6 +124,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             }, {
                 // Do nothing
             }).get()
+
 
         }
     }
