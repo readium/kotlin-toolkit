@@ -139,13 +139,16 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
                     }
         }
 
-        val pageList = jsonPageList.getJSONArray("pageList")
+        if (jsonPageList.has("pageList")) {
+            val pageList = jsonPageList.getJSONArray("pageList")
 
-        for (i in 1 until pageList.length()) {
-            val jsonObjectBefore = pageList.getJSONObject(i-1)
-            val jsonObject = pageList.getJSONObject(i)
-            if (jsonObjectBefore.getString("href") == href && jsonObjectBefore.getDouble("progression") <= progression && jsonObject.getDouble("progression") >= progression) {
-                currentPage = jsonObjectBefore.getLong("pageNumber")
+            for (i in 1 until pageList.length()) {
+                val jsonObjectBefore = pageList.getJSONObject(i - 1)
+                val jsonObject = pageList.getJSONObject(i)
+                if (jsonObjectBefore.getString("href") == href && jsonObjectBefore.getDouble("progression") <= progression && jsonObject.getDouble("progression") >= progression) {
+                    currentPage = jsonObjectBefore.getLong("pageNumber")
+                    break
+                }
             }
         }
 
