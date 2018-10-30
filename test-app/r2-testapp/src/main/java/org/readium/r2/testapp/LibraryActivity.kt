@@ -401,8 +401,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             connection.doInput = true
             connection.connect()
             val input = connection.inputStream
+            val bitmap = BitmapFactory.decodeStream(input)
             connection.close()
-            BitmapFactory.decodeStream(input)
+            bitmap
         } catch (e: IOException) {
             e.printStackTrace()
             null
