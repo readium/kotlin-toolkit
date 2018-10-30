@@ -110,8 +110,6 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                 if (supportedProfiles.contains(drm2.profile)) {
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
 
-                    prepareSyntheticPageList(publication, book.fileName, book)
-
                     val license = drm.license as LcpLicense
                     val drmModel = DRMModel(drm.brand.name,
                             license.archivePath!!)
@@ -125,6 +123,8 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             }, {
                 // Do nothing
             }).get()
+
+            prepareSyntheticPageList(publication, book)
 
         }
     }
