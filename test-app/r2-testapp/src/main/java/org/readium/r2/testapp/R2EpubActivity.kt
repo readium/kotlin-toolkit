@@ -23,7 +23,6 @@ import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.UserSettings
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.LocatorText
 import org.readium.r2.shared.drm.DRMModel
@@ -40,18 +39,22 @@ class R2EpubActivity : R2EpubActivity() {
     // List of bookmarks on activity_outline_container.xml
     private var menuBmk: MenuItem? = null
 
-    // Provide access to the Bookmarks Database
-    private lateinit var bookmarkDB: BookmarksDatabase
+    // Provide access to the Bookmarks & Positions Databases
+    private lateinit var bookmarksDB: BookmarksDatabase
+    private lateinit var positionsDB: PositionsDatabase
 
     protected var drmModel: DRMModel? = null
     protected var menuDrm: MenuItem? = null
     protected var menuToc: MenuItem? = null
+    private var bookId: Long = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        bookmarkDB = BookmarksDatabase(this)
+        bookmarksDB = BookmarksDatabase(this)
+        positionsDB = PositionsDatabase(this)
 
         Handler().postDelayed({
+            bookId = intent.getLongExtra("bookId", -1)
             if (intent.getSerializableExtra("drmModel") != null) {
                 drmModel = intent.getSerializableExtra("drmModel") as DRMModel
                 drmModel?.let {
@@ -65,7 +68,6 @@ class R2EpubActivity : R2EpubActivity() {
                 }
             }
         }, 100)
-
 
         val appearancePref = preferences.getInt("appearance", 0)
         val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
@@ -89,7 +91,6 @@ class R2EpubActivity : R2EpubActivity() {
         when (item.itemId) {
 
             R.id.toc -> {
-                val bookId = intent.getLongExtra("bookId", -1)
                 val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publication", publication)
                 intent.putExtra("bookId", bookId)
@@ -105,11 +106,11 @@ class R2EpubActivity : R2EpubActivity() {
                 return true
             }
             R.id.bookmark -> {
-                val bookId = intent.getLongExtra("bookId", -1)
                 val resourceIndex = resourcePager.currentItem.toLong()
                 val resourceHref = publication.spine[resourcePager.currentItem].href!!
                 val resourceTitle = publication.spine[resourcePager.currentItem].title?: ""
                 val locations = Locations.fromJSON(JSONObject(preferences.getString("${publicationIdentifier}-documentLocations", "{}")))
+                val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, locations.progression!!)
 
                 val bookmark = Bookmark(
                         bookId,
@@ -117,13 +118,13 @@ class R2EpubActivity : R2EpubActivity() {
                         resourceIndex,
                         resourceHref,
                         resourceTitle,
-                        Locations(progression = locations.progression),
+                        Locations(progression = locations.progression, position = currentPage),
                         LocatorText()
                 )
                 
-                bookmarkDB.bookmarks.insert(bookmark)?.let {
+                bookmarksDB.bookmarks.insert(bookmark)?.let {
                     runOnUiThread {
-                        toast("Bookmark added")
+                        toast("Bookmark added at page $currentPage")
                     }
                 } ?:run {
                     runOnUiThread {
@@ -148,6 +149,5 @@ class R2EpubActivity : R2EpubActivity() {
             super.onActivityResult(requestCode, resultCode, data)
         }
     }
-
 
 }

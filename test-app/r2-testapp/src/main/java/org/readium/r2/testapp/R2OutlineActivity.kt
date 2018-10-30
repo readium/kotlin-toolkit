@@ -38,6 +38,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
     private lateinit var preferences:SharedPreferences
     lateinit var bookmarkDB: BookmarksDatabase
+    lateinit var positionsDB: PositionsDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,21 +121,45 @@ class R2OutlineActivity : AppCompatActivity() {
         /*
          * Retrieve the page list
          */
+        positionsDB = PositionsDatabase(this)
         val pageList: MutableList<Link> = publication.pageList
 
-        val pageListAdapter = NavigationAdapter(this, pageList)
-        page_list.adapter = pageListAdapter
+        if (pageList.isNotEmpty()) {
+            val pageListAdapter = NavigationAdapter(this, pageList)
+            page_list.adapter = pageListAdapter
 
-        page_list.setOnItemClickListener { _, _, position, _ ->
+            page_list.setOnItemClickListener { _, _, position, _ ->
 
-            //Link to the resource in the publication
-            val pageUri = pageList[position].href
+                //Link to the resource in the publication
+                val pageUri = pageList[position].href
 
-            val intent = Intent()
-            intent.putExtra("locator", Locator(pageUri!!, timestamp(), publication.metadata.title, Locations(progression = 0.0),null))
-            setResult(Activity.RESULT_OK, intent)
-            finish()
+                val intent = Intent()
+                intent.putExtra("locator", Locator(pageUri!!, timestamp(), publication.metadata.title, Locations(progression = 0.0),null))
+                setResult(Activity.RESULT_OK, intent)
+                finish()
 
+            }
+        } else {
+            if (positionsDB.positions.has(bookID)) {
+                val jsonPageList = positionsDB.positions.getSyntheticPageList(bookID)
+
+                val syntheticPageList = Position.fromJSON(jsonPageList!!)
+
+                val syntheticPageListAdapter = SyntheticPageListAdapter(this, syntheticPageList)
+                page_list.adapter = syntheticPageListAdapter
+
+                page_list.setOnItemClickListener { _, _, position, _ ->
+
+                    //Link to the resource in the publication
+                    val pageUri = syntheticPageList[position].href
+                    val pageProgression = syntheticPageList[position].progression
+
+                    val intent = Intent()
+                    intent.putExtra("locator", Locator(pageUri!!, timestamp(), publication.metadata.title, Locations(progression = pageProgression), null))
+                    setResult(Activity.RESULT_OK, intent)
+                    finish()
+                }
+            }
         }
 
 
@@ -233,6 +258,37 @@ class R2OutlineActivity : AppCompatActivity() {
             }
 
             viewHolder.navigationTextView!!.text = item!!.title
+
+            return myView
+        }
+    }
+
+    inner class SyntheticPageListAdapter(context: Context, pageList: MutableList<Position>) : ArrayAdapter<Position>(context, R.layout.navcontent_item, pageList) {
+        private inner class ViewHolder {
+            internal var navigationTextView: TextView? = null
+        }
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            var myView = convertView
+
+            val item = getItem(position)
+
+            val viewHolder: ViewHolder // view lookup cache stored in tag
+            if (myView == null) {
+
+                viewHolder = ViewHolder()
+                val inflater = LayoutInflater.from(context)
+                myView = inflater.inflate(R.layout.navcontent_item, parent, false)
+                viewHolder.navigationTextView = myView!!.navigation_textView as TextView
+
+                myView.tag = viewHolder
+
+            } else {
+
+                viewHolder = myView.tag as ViewHolder
+            }
+
+            viewHolder.navigationTextView!!.text = "Page ${item.pageNumber}"
 
             return myView
         }

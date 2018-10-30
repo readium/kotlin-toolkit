@@ -86,6 +86,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     private lateinit var opdsDownloader: OPDSDownloader
     private lateinit var publication: Publication
 
+    private lateinit var positionsDB: PositionsDatabase
+
     protected lateinit var catalogView: RecyclerView
     private lateinit var alertDialog: AlertDialog
 
@@ -110,6 +112,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         opdsDownloader = OPDSDownloader(this)
         database = BooksDatabase(this)
         books = database.books.list()
+
+        positionsDB = PositionsDatabase(this)
 
         booksAdapter = BooksAdapter(this, books, "$BASE_URL:$localPort", this)
         
@@ -281,10 +285,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             book.id = it
                             books.add(0,book)
                             booksAdapter.notifyDataSetChanged()
-
+                            prepareSyntheticPageList(publication, book)
                         } ?: run {
 
-                            showDuplicateBookAlert(book)
+                            showDuplicateBookAlert(book, publication, false)
 
                         }
                     }
@@ -315,7 +319,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    private fun showDuplicateBookAlert(book: Book) {
+    private fun showDuplicateBookAlert(book: Book, publication: Publication, lcp: Boolean) {
         val duplicateAlert = alert(Appcompat, "Publication already exists") {
 
             positiveButton("Add anyways") { }
@@ -333,6 +337,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         books.add(0,book)
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
+                        if (!lcp) {
+                            prepareSyntheticPageList(publication, book)
+                        }
                     }
                 }
                 val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
@@ -498,6 +505,14 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
+    fun prepareSyntheticPageList(pub: Publication, book: Book) {
+        if (pub.pageList.isEmpty() && !(positionsDB.positions.isInitialized(book.id!!))) {
+            val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!, pub.metadata.identifier)
+
+            syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName, pub.spine))
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return super.onCreateOptionsMenu(menu)
@@ -604,7 +619,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
                 val author = authorName(publication)
                 if (add) {
-
                     var book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, null, Publication.EXTENSION.EPUB)
                     publication.coverLink?.href?.let {
                         val blob = ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
@@ -621,11 +635,15 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         book.id = it
                         books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
+                        if (!lcp) {
+                            prepareSyntheticPageList(publication, book)
+                        }
                     } ?: run {
 
-                        showDuplicateBookAlert(book)
+                        showDuplicateBookAlert(book, publication, lcp)
 
                     }
+
                 }
                 if (!lcp) {
                     server.addEpub(publication, container, "/$fileName", applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
@@ -639,9 +657,12 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             book.id = it
                             books.add(0,book)
                             booksAdapter.notifyDataSetChanged()
+                            if (!lcp) {
+                                prepareSyntheticPageList(publication, book)
+                            }
                         } ?: run {
 
-                            showDuplicateBookAlert(book)
+                            showDuplicateBookAlert(book, publication, lcp)
 
                         }
                     }
@@ -671,6 +692,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val deleted = database.books.delete(book)
             if (deleted > 0) {
                 BookmarksDatabase(this).bookmarks.delete(deleted.toLong())
+                PositionsDatabase(this).positions.delete(deleted.toLong())
             }
         }
     }
