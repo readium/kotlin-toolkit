@@ -96,7 +96,7 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
                     POSITIONSTable.BOOK_ID)
                     .whereArgs("bookID = {bookID}", "bookID" to bookID)
                     .exec {
-                        parseOpt(PubIDRowParser())
+                        parseOpt(BookIDRowParser())
                     }
         })
 
@@ -194,13 +194,13 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
         }
     }
 
-    class PubIDRowParser : RowParser<Long> {
+    class BookIDRowParser : RowParser<Long> {
         override fun parseRow(columns: Array<Any?>): Long {
-            val publicationID = columns[0]?.let {
+            val bookID = columns[0]?.let {
                 return@let it
             } ?: kotlin.run { return@run 0 }
 
-            return publicationID as Long
+            return bookID as Long
         }
     }
 
