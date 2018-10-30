@@ -311,9 +311,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
                         if (!lcp) {
-                        prepareSyntheticPageList(publication, book)
+                            prepareSyntheticPageList(publication, book)
+                        }
                     }
-                }
                 }
                 val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
                 cancelButton.setOnClickListener {
@@ -609,7 +609,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
                         if (!lcp) {
-                        prepareSyntheticPageList(publication, book)
+                            prepareSyntheticPageList(publication, book)
                         }
                     } ?: run {
 
@@ -631,7 +631,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             books.add(0,book)
                             booksAdapter.notifyDataSetChanged()
                             if (!lcp) {
-                            prepareSyntheticPageList(publication, book)
+                                prepareSyntheticPageList(publication, book)
                             }
                         } ?: run {
 
