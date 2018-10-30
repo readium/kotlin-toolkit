@@ -13,7 +13,7 @@ package org.readium.r2.testapp
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import org.jetbrains.anko.db.*
-import org.json.JSONArray
+import org.json.JSONObject
 
 
 class PositionsDatabase(context: Context) {
@@ -105,7 +105,7 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
         return isInitialized
     }
 
-    fun storeSyntheticPageList(bookID: Long, syntheticPageList: JSONArray) {
+    fun storeSyntheticPageList(bookID: Long, syntheticPageList: JSONObject) {
         database.use {
             update(POSITIONSTable.NAME,
                     POSITIONSTable.SYNTHETIC_PAGE_LIST to syntheticPageList.toString())
@@ -115,7 +115,7 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
     }
 
 
-    fun getSyntheticPageList(bookID: Long): JSONArray? {
+    fun getSyntheticPageList(bookID: Long): JSONObject? {
         return database.use {
             select(POSITIONSTable.NAME,
                     POSITIONSTable.SYNTHETIC_PAGE_LIST)
@@ -130,7 +130,7 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
     fun getCurrentPage(bookID: Long, href: String, progression: Double): Long {
         var currentPage: Long = 0
 
-        val pageList = database.use {
+        val jsonPageList = database.use {
             return@use select(POSITIONSTable.NAME,
                     POSITIONSTable.SYNTHETIC_PAGE_LIST)
                     .whereArgs("(bookID = {bookID})","bookID" to bookID)
@@ -138,6 +138,8 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
                         parseOpt(PageListParser())!!
                     }
         }
+
+        val pageList = jsonPageList.getJSONArray("pageList")
 
         for (i in 1 until pageList.length()) {
             val jsonObjectBefore = pageList.getJSONObject(i-1)
@@ -182,13 +184,13 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
     }
 
 
-    class PageListParser : RowParser<JSONArray> {
-        override fun parseRow(columns: Array<Any?>): JSONArray {
+    class PageListParser : RowParser<JSONObject> {
+        override fun parseRow(columns: Array<Any?>): JSONObject {
             val pageList = columns[0]?.let {
                 return@let it
-            } ?: kotlin.run { return@run "[]" }
+            } ?: kotlin.run { return@run "{}" }
 
-            return JSONArray(pageList as String)
+            return JSONObject(pageList as String)
         }
     }
 

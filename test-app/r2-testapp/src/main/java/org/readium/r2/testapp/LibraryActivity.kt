@@ -477,7 +477,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
     fun prepareSyntheticPageList(pub: Publication, epubName: String, book: Book) {
         if (pub.pageList.isEmpty() && !(positionsDB.positions.isInitialized(book.id!!))) {
-            val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!)
+            val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!, pub.metadata.identifier)
 
             syntheticPageList.execute(Triple("$BASE_URL:$localPort/", epubName, pub.spine))
         }

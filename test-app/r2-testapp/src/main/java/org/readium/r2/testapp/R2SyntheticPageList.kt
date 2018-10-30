@@ -18,7 +18,7 @@ import org.readium.r2.shared.Link
 import java.net.URL
 
 
-class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private val bookID: Long) : AsyncTask<Triple<String, String, MutableList<Link>>, String, MutableList<Position>>() {
+class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private val bookID: Long, private val publicationIdentifier: String) : AsyncTask<Triple<String, String, MutableList<Link>>, String, MutableList<Position>>() {
 
     private val syntheticPageList = mutableListOf<Position>()
     private var pageNumber: Long = 0
@@ -45,8 +45,8 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
     }
 
     override fun onPostExecute(result: MutableList<Position>?) {
-        val jsonArrayList = Position.toJSONArray(result!!)
-        positionsDB.positions.storeSyntheticPageList(bookID, jsonArrayList)
+        val jsonPageList = Position.toJSON(publicationIdentifier, result!!)
+        positionsDB.positions.storeSyntheticPageList(bookID, jsonPageList)
     }
 
     private fun createSyntheticPages(baseURL: String, epubName: String, resourceHref: String) {
@@ -84,11 +84,13 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
 class Position(var pageNumber: Long? = null, var href: String? = null, var progression: Double? = null) : JSONable {
 
     companion object {
-        fun fromJSON(jsonArray: JSONArray): MutableList<Position> {
+        fun fromJSON(jsonObject: JSONObject): MutableList<Position> {
             val pageList = mutableListOf<Position>()
 
-            for(i in 0 until jsonArray.length()) {
-                val json = jsonArray.getJSONObject(i)
+            val pageListArray = jsonObject.getJSONArray("pageList")
+
+            for(i in 0 until pageListArray.length()) {
+                val json = pageListArray.getJSONObject(i)
                 val position = Position()
                 if (json.has("pageNumber")) {
                     position.pageNumber = json.getLong("pageNumber")
@@ -106,14 +108,20 @@ class Position(var pageNumber: Long? = null, var href: String? = null, var progr
             return pageList
         }
 
-        fun toJSONArray(syntheticPageList : MutableList<Position>) : JSONArray {
+        fun toJSON(publicationIdentifier: String, syntheticPageList : MutableList<Position>) : JSONObject {
+            val json = JSONObject()
+
             val jsonArray = JSONArray()
 
             for (page in syntheticPageList) {
                 jsonArray.put(page.toJSON())
             }
 
-            return jsonArray
+            json.putOpt("publicationIdentifier", publicationIdentifier)
+
+            json.putOpt("pageList", jsonArray)
+
+            return json
         }
     }
 
