@@ -665,7 +665,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val deleted = database.books.delete(book)
             if (deleted > 0) {
                 BookmarksDatabase(this).bookmarks.delete(deleted.toLong())
-                PositionsDatabase(this).positions.delete(book.id)
+                PositionsDatabase(this).positions.delete(deleted.toLong())
             }
         }
     }
