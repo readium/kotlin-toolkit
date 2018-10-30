@@ -284,7 +284,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         prepareSyntheticPageList(publication, book)
                     } ?: run {
 
-                        showDuplicateBookAlert(book,publication)
+                        showDuplicateBookAlert(book, publication, false)
 
                     }
                 }
@@ -292,7 +292,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    private fun showDuplicateBookAlert(book: Book, publication: Publication) {
+    private fun showDuplicateBookAlert(book: Book, publication: Publication, lcp: Boolean) {
         val duplicateAlert = alert(Appcompat, "Publication already exists") {
 
             positiveButton("Add anyways") { }
@@ -310,8 +310,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         books.add(0,book)
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
+                        if (!lcp) {
                         prepareSyntheticPageList(publication, book)
                     }
+                }
                 }
                 val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
                 cancelButton.setOnClickListener {
@@ -606,10 +608,12 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         book.id = it
                         books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
+                        if (!lcp) {
                         prepareSyntheticPageList(publication, book)
+                        }
                     } ?: run {
 
-                        showDuplicateBookAlert(book, publication)
+                        showDuplicateBookAlert(book, publication, lcp)
 
                     }
 
@@ -626,10 +630,12 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             book.id = it
                             books.add(0,book)
                             booksAdapter.notifyDataSetChanged()
+                            if (!lcp) {
                             prepareSyntheticPageList(publication, book)
+                            }
                         } ?: run {
 
-                            showDuplicateBookAlert(book, publication)
+                            showDuplicateBookAlert(book, publication, lcp)
 
                         }
                     }
