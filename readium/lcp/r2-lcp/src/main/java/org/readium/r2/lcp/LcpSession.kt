@@ -98,7 +98,7 @@ class LcpSession {
     }
 
     fun passphraseFromDb() : String? {
-        val passphrases: List<String> = database.transactions.possiblePasshprases(lcpLicense.license.id, lcpLicense.license.user.id)
+        val passphrases: List<String> = database.transactions.possiblePasshprases(lcpLicense.license.id, lcpLicense.license.user?.id)
         if (passphrases.isEmpty())
             return null
         return checkPassphrases(passphrases)

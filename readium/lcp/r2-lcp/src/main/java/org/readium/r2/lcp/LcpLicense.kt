@@ -91,12 +91,12 @@ class LcpLicense : DrmLicense {
     override fun areRightsValid() {
         Timber.i(TAG,"LCP areRightsValid")
         val now = Date()
-        license.rights.start.let {
+        license.rights?.start.let {
             if (it != null && it.toDate().after(now)) {
                 throw Exception(LcpError().errorDescription(LcpErrorCase.invalidRights))
             }
         }
-        license.rights.end.let {
+        license.rights?.end.let {
             if (it != null && it.toDate().before(now)) {
                 throw Exception(LcpError().errorDescription(LcpErrorCase.invalidRights))
             }
@@ -313,27 +313,27 @@ class LcpLicense : DrmLicense {
 
     override fun rightsEnd(): Date? {
         Timber.i(TAG,"LCP rightsEnd")
-        return license.rights.end?.toDate()
+        return license.rights?.end?.toDate()
     }
 
     override fun potentialRightsEnd(): Date? {
         Timber.i(TAG,"LCP potentialRightsEnd")
-        return license.rights.potentialEnd?.toDate()
+        return license.rights?.potentialEnd?.toDate()
     }
 
     override fun rightsStart(): Date? {
         Timber.i(TAG,"LCP rightsStart")
-        return license.rights.start?.toDate()
+        return license.rights?.start?.toDate()
     }
 
     override fun rightsPrints(): Int? {
         Timber.i(TAG,"LCP rightsPrints")
-        return license.rights.print
+        return license.rights?.print
     }
 
     override fun rightsCopies(): Int? {
         Timber.i(TAG,"LCP rightsCopies")
-        return license.rights.copy
+        return license.rights?.copy
     }
 
 }
