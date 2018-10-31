@@ -79,7 +79,7 @@ class Publication : Serializable {
      *
      */
     enum class TYPE {
-        EPUB, CBZ, FXL
+        EPUB, CBZ, FXL, WEBPUB, AUDIO
     }
 
     open class EnumCompanion<T, V>(private val valueMap: Map<T, V>) {
@@ -88,7 +88,8 @@ class Publication : Serializable {
 
     enum class EXTENSION(var value: String) {
         EPUB(".epub"),
-        CBZ(".cbz");
+        CBZ(".cbz"),
+        JSON(".json");
         companion object : EnumCompanion<String, EXTENSION>(EXTENSION.values().associateBy(EXTENSION::value))
     }
 
@@ -195,10 +196,15 @@ fun parsePublication(pubDict: JSONObject): Publication {
             val metadataDict = it as? JSONObject
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             val metadata = parseMetadata(metadataDict)
-            p.metadata = metadata
 
+            if (metadata.rendition.isEmpty()) {
+                metadata.rendition.layout = RenditionLayout.Reflowable
+            }
+
+            p.metadata = metadata
         }
     }
+
     if (pubDict.has("links")) {
         pubDict.get("links")?.let {
             val links = it as? JSONArray
@@ -210,6 +216,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
             }
         }
     }
+
     if (pubDict.has("images")) {
         pubDict.get("images")?.let {
             val links = it as? JSONArray
@@ -221,5 +228,100 @@ fun parsePublication(pubDict: JSONObject): Publication {
             }
         }
     }
+
+    if (pubDict.has("spine")) {
+        pubDict.get("spine")?.let {
+            val spine = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(spine.length() - 1)) {
+                val linkDict = spine.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.spine.add(link)
+            }
+        }
+    }
+
+    if (pubDict.has("readingOrder")) {
+        pubDict.get("readingOrder")?.let {
+            val readingOrder = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(readingOrder.length() - 1)) {
+                val linkDict = readingOrder.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.spine.add(link)
+            }
+        }
+    }
+
+    if (pubDict.has("resources")) {
+        pubDict.get("resources")?.let {
+            val resources = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(resources.length() - 1)) {
+                val linkDict = resources.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.resources.add(link)
+            }
+        }
+    }
+
+    if (pubDict.has("toc")) {
+        pubDict.get("toc")?.let {
+            val toc = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(toc.length() - 1)) {
+                val linkDict = toc.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.tableOfContents.add(link)
+            }
+        }
+    }
+
+    if (pubDict.has("page-list")) {
+        pubDict.get("page-list")?.let {
+            val pageList = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(pageList.length() - 1)) {
+                val linkDict = pageList.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.pageList.add(link)
+            }
+        }
+    }
+
+    if (pubDict.has("landmarks")) {
+        pubDict.get("landmarks")?.let {
+            val landmarks = it as? JSONArray
+                    ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
+            for (i in 0..(landmarks.length() - 1)) {
+                val linkDict = landmarks.getJSONObject(i)
+                val link = parseLink(linkDict)
+                p.landmarks.add(link)
+            }
+        }
+    }
+
+    p.linkWithRel("cover")?.let {
+        p.coverLink = it
+    }
+
+    p.linkWithRel("self")?.let {
+        if (it.typeLink == "application/webpub+json") p.type = Publication.TYPE.WEBPUB
+        if (it.typeLink == "application/audiobook+json") p.type = Publication.TYPE.AUDIO
+    }
+
+
+//    /// The version of the publication, if the type needs any.
+//    var version: Double = 0.0
+
+//    var listOfAudioFiles: MutableList<Link> = mutableListOf()
+//    var listOfIllustrations: MutableList<Link> = mutableListOf()
+//    var listOfTables: MutableList<Link> = mutableListOf()
+//    var listOfVideos: MutableList<Link> = mutableListOf()
+
+//    /// Extension point for links that shouldn't show up in the manifest.
+//    var otherLinks: MutableList<Link> = mutableListOf()
+//    var internalData: MutableMap<String, String> = mutableMapOf()
+
     return p
 }
