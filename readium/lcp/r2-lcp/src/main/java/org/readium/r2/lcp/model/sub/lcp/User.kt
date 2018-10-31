@@ -18,9 +18,11 @@ class User(json: JSONObject) {
     private var encrypted = mutableListOf<String>()
 
     init {
-        val encryptedArray = json.getJSONArray("encrypted")
-        for (i in 0 until encryptedArray.length()){
-            encrypted.add(encryptedArray.getString(i))
+        if (json.has("encrypted")) {
+            val encryptedArray = json.getJSONArray("encrypted")
+            for (i in 0 until encryptedArray.length()){
+                encrypted.add(encryptedArray.getString(i))
+            }
         }
     }
 }

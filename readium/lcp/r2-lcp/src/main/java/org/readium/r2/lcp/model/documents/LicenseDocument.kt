@@ -40,9 +40,9 @@ class LicenseDocument {
     /// Used to associate the License Document with resources that are not
     /// locally available.
     var links = listOf<Link>()
-    var rights: Rights
+    var rights: Rights? = null
     /// The user owning the License.
-    var user: User
+    var user: User? = null
     /// Used to validate the license integrity.
     var signature: Signature
     var json: JSONObject
@@ -69,20 +69,32 @@ class LicenseDocument {
         } catch (e: Exception) {
             throw Exception("Lcp parsing error")
         }
+
         encryption = Encryption(JSONObject(json.getString("encryption")))
         links = parseLinks(json["links"] as JSONArray)
-        rights = Rights(json.getJSONObject("rights"))
-        if (json.has("potential_rights")) {
-            rights.potentialEnd = DateTime(json.getJSONObject("potential_rights").getString("end"))
+
+        if (json.has("rights")) {
+            rights = Rights(json.getJSONObject("rights"))
         }
-        user = User(json.getJSONObject("user"))
+
+        if (json.has("potential_rights")) {
+            rights?.potentialEnd = DateTime(json.getJSONObject("potential_rights").getString("end"))
+        }
+
+        if (json.has("user")) {
+            user = User(json.getJSONObject("user"))
+        }
+
         signature = Signature(json.getJSONObject("signature"))
+
         if (json.has("updated")) {
             updated = DateTime(json.getString("updated"))
         }
+
         if (link("hint") == null){
             throw Exception(LcpError().errorDescription(LcpErrorCase.hintLinkNotFound))
         }
+
         if (link("publication") == null){
             throw Exception(LcpError().errorDescription(LcpErrorCase.publicationLinkNotFound))
         }

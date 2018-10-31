@@ -31,7 +31,7 @@ class Transactions(var database: LcpDatabaseOpenHelper) {
             insert(TransactionsTable.NAME,
                     TransactionsTable.ID to license.license.id ,
                     TransactionsTable.ORIGIN to license.license.provider.toString(),
-                    TransactionsTable.USERID to license.license.user.id,
+                    TransactionsTable.USERID to license.license.user?.id,
                     TransactionsTable.PASSPHRASE to passphraseHash)
         }
 
@@ -43,13 +43,16 @@ class Transactions(var database: LcpDatabaseOpenHelper) {
     ///   - licenseId: <#licenseId description#>
     ///   - provider: <#provider description#>
     /// - Returns: <#return value description#>
-    fun possiblePasshprases(licenseId: String, userId: String): List<String> {
+    fun possiblePasshprases(licenseId: String, userId: String?): List<String> {
 
         val possiblePassphrases = mutableListOf<String>()
         val licensePassphrase: String? = passphrase(licenseId)
-        val userIdPassphrases: List<String> = passphrases(userId)
 
-        possiblePassphrases.addAll(userIdPassphrases)
+        userId?.let {
+            val userIdPassphrases: List<String> = passphrases(userId)
+            possiblePassphrases.addAll(userIdPassphrases)
+        }
+
 
         licensePassphrase?.let { pass ->
             possiblePassphrases.add(pass)
