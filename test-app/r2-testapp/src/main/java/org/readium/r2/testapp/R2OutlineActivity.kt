@@ -82,10 +82,9 @@ class R2OutlineActivity : AppCompatActivity() {
                 } else {
                     intent.putExtra("locator", Locator(tocItemUri, timestamp(), publication.metadata.title, Locations(progression = 0.0),null))
                 }
+                setResult(Activity.RESULT_OK, intent)
+                finish()
             }
-
-            setResult(Activity.RESULT_OK, intent)
-            finish()
         }
 
 
