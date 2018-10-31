@@ -137,11 +137,6 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link {
         }
     }
     if (linkDict.has("children")) {
-//        val childLinkDict = linkDict.getJSONObject("children")
-//                ?: throw Exception(LinkError.InvalidLink.name)
-//        val childLink = parseLink(childLinkDict)
-//        link.children.add(childLink)
-
         linkDict.get("children")?.let {
             val children = it as? JSONArray
                     ?: throw Exception(LinkError.InvalidLink.name)
