@@ -511,7 +511,13 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         if (pub.pageList.isEmpty() && !(positionsDB.positions.isInitialized(book.id!!))) {
             val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!, pub.metadata.identifier)
 
-            syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName, pub.spine))
+            when (pub.type) {
+                Publication.TYPE.EPUB -> syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName, pub.spine))
+                Publication.TYPE.WEBPUB -> syntheticPageList.execute(Triple("", book.fileName, pub.spine))
+                else -> {
+                    //no page list
+                }
+            }
         }
     }
 
@@ -777,7 +783,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, externalURI + externalPub.coverLink?.href, externalPub.metadata.identifier, stream.toByteArray(), Publication.EXTENSION.JSON)
 
                     } ?: run {
-                        book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, externalURI + externalPub.coverLink?.href, externalPub.metadata.identifier, null, Publication.EXTENSION.JSON)
+                        book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, null, externalPub.metadata.identifier, null, Publication.EXTENSION.JSON)
                     }
 
                     runOnUiThread {
@@ -785,6 +791,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             book!!.id = it
                             books.add(0, book!!)
                             booksAdapter.notifyDataSetChanged()
+                            prepareSyntheticPageList(externalPub, book!!)
                         } ?: run {
                             showDuplicateBookAlert(book!!, externalPub, false)
                         }
