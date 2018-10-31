@@ -29,11 +29,9 @@ import android.text.TextUtils
 import android.view.*
 import android.webkit.MimeTypeMap
 import android.webkit.URLUtil
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ListPopupWindow
-import android.widget.PopupWindow
+import android.widget.*
 import com.github.kittinunf.fuel.Fuel
+import com.mcxiaoke.koi.ext.close
 import com.mcxiaoke.koi.ext.onClick
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
@@ -51,6 +49,7 @@ import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.opds.ParseData
+import org.readium.r2.shared.parsePublication
 import org.readium.r2.shared.promise
 import org.readium.r2.streamer.parser.CbzParser
 import org.readium.r2.streamer.parser.EpubParser
@@ -68,7 +67,9 @@ import timber.log.Timber
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.ServerSocket
+import java.net.URI
 import java.net.URL
+import java.nio.charset.Charset
 import java.util.*
 
 open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions {
@@ -84,7 +85,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
     private lateinit var database: BooksDatabase
     private lateinit var opdsDownloader: OPDSDownloader
-    private lateinit var publication: Publication
 
     private lateinit var positionsDB: PositionsDatabase
 
@@ -260,33 +260,60 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
         progress.show()
 
-        publication = parseData.publication ?: return
-        val downloadUrl = getDownloadURL(publication)!!.toString()
-        opdsDownloader.publicationUrl(downloadUrl).successUi { pair ->
+        val publication = parseData.publication ?: return
 
-            val publicationIdentifier = publication.metadata.identifier
-            val author = authorName(publication)
-            task {
-                getBitmapFromURL(publication.images.first().href!!)
-            }.then {
-                val bitmap = it
-                val stream = ByteArrayOutputStream()
-                bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+        if (publication.type == Publication.TYPE.EPUB) {
 
-                val book = Book(pair.second, publication.metadata.title, author, pair.first, null, publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
+            val downloadUrl = getDownloadURL(publication)
 
-                runOnUiThread {
-                    progress.dismiss()
-                    database.books.insert(book, false)?.let {
-                        book.id = it
-                        books.add(0,book)
-                        booksAdapter.notifyDataSetChanged()
-                        prepareSyntheticPageList(publication, book)
-                    } ?: run {
+            opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
-                        showDuplicateBookAlert(book, publication, false)
+                val publicationIdentifier = publication.metadata.identifier
+                val author = authorName(publication)
+                task {
+                    getBitmapFromURL(publication.images.first().href!!)
+                }.then {
+                    val bitmap = it
+                    val stream = ByteArrayOutputStream()
+                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
+                    val book = Book(pair.second, publication.metadata.title, author, pair.first, null, publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
+
+                    runOnUiThread {
+                        progress.dismiss()
+                        database.books.insert(book, false)?.let {
+                            book.id = it
+                            books.add(0,book)
+                            booksAdapter.notifyDataSetChanged()
+                            prepareSyntheticPageList(publication, book)
+                        } ?: run {
+
+                            showDuplicateBookAlert(book, publication, false)
+
+                        }
                     }
+                }.fail {
+                    runOnUiThread {
+                        progress.dismiss()
+                        snackbar(catalogView, "$it")
+                    }
+                }
+            }
+        } else if (publication.type == Publication.TYPE.WEBPUB || publication.type == Publication.TYPE.AUDIO) {
+            val self = publication.linkWithRel("self")
+
+            when (publication.type) {
+                Publication.TYPE.WEBPUB -> {
+                    progress.dismiss()
+                    prepareWebPublication(self?.href!!, webPub = null, add = true)
+                }
+                Publication.TYPE.AUDIO -> {
+                    progress.dismiss()
+                    prepareWebPublication(self?.href!!, webPub = null, add = true) //will be adapted later
+                }
+                else -> {
+                    progress.dismiss()
+                    snackbar(catalogView, "Invalid publication")
                 }
             }
         }
@@ -374,7 +401,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             connection.doInput = true
             connection.connect()
             val input = connection.inputStream
-            BitmapFactory.decodeStream(input)
+            val bitmap = BitmapFactory.decodeStream(input)
+            connection.close()
+            bitmap
         } catch (e: IOException) {
             e.printStackTrace()
             null
@@ -482,7 +511,13 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         if (pub.pageList.isEmpty() && !(positionsDB.positions.isInitialized(book.id!!))) {
             val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!, pub.metadata.identifier)
 
-            syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName, pub.spine))
+            when (pub.type) {
+                Publication.TYPE.EPUB -> syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName, pub.spine))
+                Publication.TYPE.WEBPUB -> syntheticPageList.execute(Triple("", book.fileName, pub.spine))
+                else -> {
+                    //no page list
+                }
+            }
         }
     }
 
@@ -696,6 +731,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to pub.publication))
                     }
                 }
+                book.ext == Publication.EXTENSION.JSON -> {
+                    prepareWebPublication(book.fileUrl, book, add = false)
+                }
                 else -> null
             }
         } then {
@@ -703,6 +741,73 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         } fail {
             progress.dismiss()
         }
+    }
+
+    private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean) {
+        Thread {
+            try {
+                val redirectedManifest = URL(externalManifest).openConnection() as HttpURLConnection
+                redirectedManifest.instanceFollowRedirects = false
+                redirectedManifest.connect()
+
+                val jsonManifestURL = URL(redirectedManifest.getHeaderField("Location") ?: externalManifest).openConnection()
+                jsonManifestURL.connect()
+
+                val jsonManifest = jsonManifestURL.getInputStream().readBytes()
+
+                val stringManifest = jsonManifest.toString(Charset.defaultCharset())
+
+                val json = JSONObject(stringManifest)
+
+                jsonManifestURL.close()
+                redirectedManifest.disconnect()
+                redirectedManifest.close()
+
+                val externalPub = parsePublication(json)
+                val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
+
+                var book: Book? = null
+
+                if (add) {
+
+                    externalPub.coverLink?.href?.let {
+                        val bitmap: Bitmap?
+                        if (URI(it).isAbsolute) {
+                            bitmap = getBitmapFromURL(it)
+                        } else {
+                            bitmap = getBitmapFromURL(externalURI + it)
+                        }
+                        val stream = ByteArrayOutputStream()
+                        bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
+
+                        book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, externalURI + externalPub.coverLink?.href, externalPub.metadata.identifier, stream.toByteArray(), Publication.EXTENSION.JSON)
+
+                    } ?: run {
+                        book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, null, externalPub.metadata.identifier, null, Publication.EXTENSION.JSON)
+                    }
+
+                    runOnUiThread {
+                        database.books.insert(book!!, false)?.let {
+                            book!!.id = it
+                            books.add(0, book!!)
+                            booksAdapter.notifyDataSetChanged()
+                            prepareSyntheticPageList(externalPub, book!!)
+                        } ?: run {
+                            showDuplicateBookAlert(book!!, externalPub, false)
+                        }
+                    }
+                } else {
+                    book = webPub
+                    startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to book!!.fileName,
+                            "epubName" to externalPub.metadata.title,
+                            "publication" to externalPub,
+                            "bookId" to book!!.id))
+                }
+            } catch (e: Exception) {
+                longSnackbar(catalogView, "$e")
+            }
+
+        }.start()
     }
 
     private fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication) {

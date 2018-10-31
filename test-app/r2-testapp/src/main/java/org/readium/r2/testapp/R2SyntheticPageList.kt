@@ -15,6 +15,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.Link
+import java.net.URI
 import java.net.URL
 
 
@@ -50,12 +51,19 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
     }
 
     private fun createSyntheticPages(baseURL: String, epubName: String, resourceHref: String) {
-        val resourceURL: URL? = URL(baseURL + epubName + resourceHref)
+        val resourceURL: URL
+
+        if (URI(resourceHref).isAbsolute) {
+            resourceURL = URL(resourceHref)
+        } else {
+            resourceURL = URL(baseURL + epubName + resourceHref)
+        }
+
         val text: String?
 
         val resourcePageList = mutableListOf<Position>()
 
-        text = resourceURL?.readText()
+        text = resourceURL.readText()
         var plainTextFromHTML = Html.fromHtml(text).toString().replace("\n".toRegex(), "").trim { it <= ' ' }
         plainTextFromHTML = plainTextFromHTML.substring(plainTextFromHTML.indexOf('}') + 1)
 
