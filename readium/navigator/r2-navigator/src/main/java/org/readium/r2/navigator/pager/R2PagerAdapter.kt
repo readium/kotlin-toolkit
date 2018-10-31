@@ -18,7 +18,7 @@ class R2PagerAdapter(fm: FragmentManager, private val resources: List<Any>, priv
 
     override fun getItem(position: Int): Fragment =
             when (type) {
-                Publication.TYPE.EPUB -> {
+                Publication.TYPE.EPUB, Publication.TYPE.WEBPUB, Publication.TYPE.AUDIO -> {
                     val single = resources[position] as Pair<Int, String>
                     R2EpubPageFragment.newInstance(single.second, title)
                 }

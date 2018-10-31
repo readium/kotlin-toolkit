@@ -22,6 +22,7 @@ import org.jetbrains.anko.contentView
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.*
+import java.net.URI
 
 
 open class R2EpubActivity : AppCompatActivity() {
@@ -66,7 +67,16 @@ open class R2EpubActivity : AppCompatActivity() {
         var resourceIndexSingle = 0
 
         for (spineItem in publication.spine) {
-            val uri = "$BASE_URL:$port" + "/" + epubName + spineItem.href
+            var uri: String
+            if (URI(publicationPath).isAbsolute) {
+                if (URI(spineItem.href).isAbsolute) {
+                    uri = spineItem.href!!
+                } else {
+                    uri = publicationPath + spineItem.href
+                }
+            } else {
+                uri = "$BASE_URL:$port" + "/" + epubName + spineItem.href
+            }
             resourcesSingle.add(Pair(resourceIndexSingle, uri))
             resourceIndexSingle++
 
