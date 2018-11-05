@@ -62,8 +62,8 @@ class EpubParser : PublicationParser {
 
         fillEncryptionProfile(publication, drm)
 //            parseMediaOverlay(fetcher, publication)
-        parseNavigationDocument(container as EpubContainer, publication)
-        parseNcxDocument(container, publication)
+//        parseNavigationDocument(container as EpubContainer, publication)
+//        parseNcxDocument(container, publication)
 
         return Pair(container, publication)
     }
