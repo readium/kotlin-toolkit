@@ -22,7 +22,6 @@ import org.readium.r2.streamer.parser.epub.EncryptionParser
 import org.readium.r2.streamer.parser.epub.NCXParser
 import org.readium.r2.streamer.parser.epub.NavigationDocumentParser
 import org.readium.r2.streamer.parser.epub.OPFParser
-import org.zeroturnaround.zip.ZipUtil
 import java.io.File
 
 // Some constants useful to parse an Epub document
@@ -56,14 +55,9 @@ class EpubParser : PublicationParser {
         return container
     }
 
-    fun parseRemainingResource(container: Container, publication: Publication, drm: Drm?): Pair<Container, Publication> {
-
+    fun parseEncryption(container: Container, publication: Publication, drm: Drm?): Pair<Container, Publication> {
         container.drm = drm
-
         fillEncryptionProfile(publication, drm)
-//            parseMediaOverlay(fetcher, publication)
-//        parseNavigationDocument(container as EpubContainer, publication)
-//        parseNcxDocument(container, publication)
 
         return Pair(container, publication)
     }
