@@ -35,10 +35,12 @@ class NavigationDocumentParser {
         for (i in 0 until nodes.length) {
             val link = Link()
 
-            link.href = nodes.item(i).attributes.getNamedItem("href")?.nodeValue
-            link.title = nodes.item(i).textContent
+            nodes.item(i).attributes.getNamedItem("href")?.let {
+                link.href = it.nodeValue
+                link.title = nodes.item(i).textContent
+                tableOfContents.add(link)
+            }
 
-            tableOfContents.add(link)
         }
 
         return tableOfContents
