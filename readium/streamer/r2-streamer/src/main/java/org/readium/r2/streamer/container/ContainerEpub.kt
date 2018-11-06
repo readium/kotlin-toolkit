@@ -28,6 +28,14 @@ class ContainerEpub : EpubContainer, ZipArchiveContainer {
         return document
     }
 
+    override fun xmlAsByteArray(link: Link?): ByteArray {
+        var pathFile = link?.href ?: throw Exception("Missing Link : ${link?.title}")
+        if (pathFile.first() == '/')
+            pathFile = pathFile.substring(1)
+
+        return data(pathFile)
+    }
+
     override fun xmlDocumentForResource(link: Link?): XmlParser {
         var pathFile = link?.href ?: throw Exception("Missing Link : ${link?.title}")
         if (pathFile.first() == '/')

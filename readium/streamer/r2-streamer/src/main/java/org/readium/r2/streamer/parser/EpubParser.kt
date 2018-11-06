@@ -155,14 +155,23 @@ class EpubParser : PublicationParser {
 
     private fun parseNavigationDocument(container: EpubContainer, publication: Publication) {
         val navLink = publication.linkWithRel("contents") ?: return
+
         val navDocument = try {
             container.xmlDocumentForResource(navLink)
         } catch (e: Exception) {
             Log.e("Error", "Navigation parsing", e)
             return
         }
+
+        val navByteArray = try {
+            container.xmlAsByteArray(navLink)
+        } catch (e: Exception) {
+            Log.e("Error", "Navigation parsing", e)
+            return
+        }
+
         ndp.navigationDocumentPath = navLink.href ?: return
-        publication.tableOfContents.plusAssign(ndp.tableOfContent(navDocument))
+        publication.tableOfContents = ndp.tableOfContent(navByteArray)
         publication.landmarks.plusAssign(ndp.landmarks(navDocument))
         publication.listOfAudioFiles.plusAssign(ndp.listOfAudiofiles(navDocument))
         publication.listOfIllustrations.plusAssign(ndp.listOfIllustrations(navDocument))
