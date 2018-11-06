@@ -57,10 +57,9 @@ class DrmDecoder {
                         Log.e("output.close", e.message)
                     }
                     data = output.toByteArray()
-                    return ByteArrayInputStream(data)
-
+                    
                 }
-                return input
+                return ByteArrayInputStream(data)
             }
             return input
 
