@@ -185,9 +185,9 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
     private fun getProperties(): MutableList<Pair<String, String>>? {
 
         // userProperties is a JSON string containing the css userProperties
-        var userPropertiesString: String? = null
+        var userPropertiesString: String? = "[]"
         userPropertiesPath?.let {
-            userPropertiesString = String()
+            userPropertiesString = "[]"
             val file = File(it)
             if (file.isFile && file.canRead()) {
                 for (i in file.readLines()) {
