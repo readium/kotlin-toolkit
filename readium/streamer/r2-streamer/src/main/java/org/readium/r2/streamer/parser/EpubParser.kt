@@ -150,7 +150,6 @@ class EpubParser : PublicationParser {
             encp.parseEncryptionProperties(encryptedDataElement, encryption)
             encp.add(encryption, publication, encryptedDataElement)
         }
-
     }
 
     private fun parseNavigationDocument(container: EpubContainer, publication: Publication) {
@@ -171,7 +170,7 @@ class EpubParser : PublicationParser {
         }
 
         ndp.navigationDocumentPath = navLink.href ?: return
-        publication.tableOfContents = ndp.tableOfContent(navByteArray)
+        publication.tableOfContents.plusAssign(ndp.tableOfContent(navByteArray))
         publication.landmarks.plusAssign(ndp.landmarks(navDocument))
         publication.listOfAudioFiles.plusAssign(ndp.listOfAudiofiles(navDocument))
         publication.listOfIllustrations.plusAssign(ndp.listOfIllustrations(navDocument))
