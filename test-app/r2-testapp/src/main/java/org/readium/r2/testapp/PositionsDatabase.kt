@@ -135,19 +135,21 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
                     POSITIONSTable.SYNTHETIC_PAGE_LIST)
                     .whereArgs("(bookID = {bookID})","bookID" to bookID)
                     .exec {
-                        parseOpt(PageListParser())!!
+                        parseOpt(PageListParser())
                     }
         }
 
-        if (jsonPageList.has("pageList")) {
-            val pageList = jsonPageList.getJSONArray("pageList")
+        jsonPageList?.let {
+            if (jsonPageList.has("pageList")) {
+                val pageList = jsonPageList.getJSONArray("pageList")
 
-            for (i in 1 until pageList.length()) {
-                val jsonObjectBefore = pageList.getJSONObject(i - 1)
-                val jsonObject = pageList.getJSONObject(i)
-                if (jsonObjectBefore.getString("href") == href && jsonObjectBefore.getDouble("progression") <= progression && jsonObject.getDouble("progression") >= progression) {
-                    currentPage = jsonObjectBefore.getLong("pageNumber")
-                    break
+                for (i in 1 until pageList.length()) {
+                    val jsonObjectBefore = pageList.getJSONObject(i - 1)
+                    val jsonObject = pageList.getJSONObject(i)
+                    if (jsonObjectBefore.getString("href") == href && jsonObjectBefore.getDouble("progression") <= progression && jsonObject.getDouble("progression") >= progression) {
+                        currentPage = jsonObjectBefore.getLong("pageNumber")
+                        break
+                    }
                 }
             }
         }
