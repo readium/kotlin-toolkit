@@ -103,7 +103,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             prepareToServe(pub, book.fileName, file.absolutePath, false, true)
 
             handleLcpPassphrase(publicationPath, drm, { drm1 ->
-                val pair = parser.parseRemainingResource(pub.container, publication, drm1)
+                val pair = parser.parseEncryption(pub.container, publication, drm1)
                 pub.container = pair.first
                 pub.publication = pair.second
             }, { drm2 ->
@@ -169,7 +169,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                     val parser = EpubParser()
                     val pub = parser.parse(path)
                     if (pub != null) {
-                        val pair = parser.parseRemainingResource(pub.container, pub.publication, pub.container.drm)
+                        val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
                         pub.container = pair.first
                         pub.publication = pair.second
                         prepareToServe(pub, file.name, file.absolutePath, true, true)

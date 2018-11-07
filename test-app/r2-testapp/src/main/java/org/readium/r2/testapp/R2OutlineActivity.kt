@@ -75,18 +75,19 @@ class R2OutlineActivity : AppCompatActivity() {
             //Link to the resource in the publication
             val tocItemUri = allElements[position].href
 
-            val intent = Intent()
             tocItemUri?.let {
+                val intent = Intent()
+                
                 if (tocItemUri.indexOf("#") > 0) {
                     val id = tocItemUri.substring(tocItemUri.indexOf('#'))
                     intent.putExtra("locator", Locator(tocItemUri, timestamp(), publication.metadata.title, Locations(id = id),null))
                 } else {
                     intent.putExtra("locator", Locator(tocItemUri, timestamp(), publication.metadata.title, Locations(progression = 0.0),null))
                 }
-            }
 
-            setResult(Activity.RESULT_OK, intent)
-            finish()
+                setResult(Activity.RESULT_OK, intent)
+                finish()
+            }
         }
 
 
