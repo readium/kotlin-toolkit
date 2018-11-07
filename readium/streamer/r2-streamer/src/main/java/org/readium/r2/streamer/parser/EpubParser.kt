@@ -22,7 +22,6 @@ import org.readium.r2.streamer.parser.epub.EncryptionParser
 import org.readium.r2.streamer.parser.epub.NCXParser
 import org.readium.r2.streamer.parser.epub.NavigationDocumentParser
 import org.readium.r2.streamer.parser.epub.OPFParser
-import org.zeroturnaround.zip.ZipUtil
 import java.io.File
 
 // Some constants useful to parse an Epub document
@@ -56,14 +55,9 @@ class EpubParser : PublicationParser {
         return container
     }
 
-    fun parseRemainingResource(container: Container, publication: Publication, drm: Drm?): Pair<Container, Publication> {
-
+    fun parseEncryption(container: Container, publication: Publication, drm: Drm?): Pair<Container, Publication> {
         container.drm = drm
-
         fillEncryptionProfile(publication, drm)
-//            parseMediaOverlay(fetcher, publication)
-        parseNavigationDocument(container as EpubContainer, publication)
-        parseNcxDocument(container, publication)
 
         return Pair(container, publication)
     }
@@ -156,19 +150,27 @@ class EpubParser : PublicationParser {
             encp.parseEncryptionProperties(encryptedDataElement, encryption)
             encp.add(encryption, publication, encryptedDataElement)
         }
-
     }
 
     private fun parseNavigationDocument(container: EpubContainer, publication: Publication) {
         val navLink = publication.linkWithRel("contents") ?: return
+
         val navDocument = try {
             container.xmlDocumentForResource(navLink)
         } catch (e: Exception) {
             Log.e("Error", "Navigation parsing", e)
             return
         }
+
+        val navByteArray = try {
+            container.xmlAsByteArray(navLink)
+        } catch (e: Exception) {
+            Log.e("Error", "Navigation parsing", e)
+            return
+        }
+
         ndp.navigationDocumentPath = navLink.href ?: return
-        publication.tableOfContents.plusAssign(ndp.tableOfContent(navDocument))
+        publication.tableOfContents.plusAssign(ndp.tableOfContent(navByteArray))
         publication.landmarks.plusAssign(ndp.landmarks(navDocument))
         publication.listOfAudioFiles.plusAssign(ndp.listOfAudiofiles(navDocument))
         publication.listOfIllustrations.plusAssign(ndp.listOfIllustrations(navDocument))
