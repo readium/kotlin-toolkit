@@ -33,14 +33,12 @@ class NavigationDocumentParser {
         val nodes = evaluateXpath(xpath, document)
 
         for (i in 0 until nodes.length) {
-            val link = Link()
-
             nodes.item(i).attributes.getNamedItem("href")?.let {
+                val link = Link()
                 link.href = it.nodeValue
                 link.title = nodes.item(i).textContent
                 tableOfContents.add(link)
             }
-
         }
 
         return tableOfContents
