@@ -86,11 +86,11 @@ class NavigationDocumentParser {
         return newLiNode
     }
 
-
     private fun evaluateXpath(expression: String, doc: InputStream): NodeList {
 
         val dbFactory = DocumentBuilderFactory.newInstance()
         dbFactory.isNamespaceAware = true
+        
         val docBuilder  = dbFactory.newDocumentBuilder()
 
         val document = docBuilder.parse(doc)
@@ -100,7 +100,6 @@ class NavigationDocumentParser {
 
         return xPath.evaluate(expression, document, XPathConstants.NODESET) as NodeList
     }
-
 }
 
 class NameSpaceResolver : NamespaceContext {
