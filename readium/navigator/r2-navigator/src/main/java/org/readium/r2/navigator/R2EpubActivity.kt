@@ -110,8 +110,22 @@ open class R2EpubActivity : AppCompatActivity() {
             val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
             resourcePager.adapter = adapter
         } else {
-            val adapter = R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
-            resourcePager.adapter = adapter
+            when (preferences.getInt("colCount", 0)) {
+                1 -> {
+                    val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                    resourcePager.adapter = adapter
+                }
+                2 -> {
+                    val adapter = R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                    resourcePager.adapter = adapter
+                }
+                else -> {
+                    // TODO based on device
+                    // TODO decide if 1 page or 2 page
+                    val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                    resourcePager.adapter = adapter
+                }
+            }
         }
 
         val index = preferences.getInt("$publicationIdentifier-document", 0)
@@ -167,8 +181,22 @@ open class R2EpubActivity : AppCompatActivity() {
                     val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
                     resourcePager.adapter = adapter
                 } else {
-                    val adapter = R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
-                    resourcePager.adapter = adapter
+                    when (preferences.getInt("colCount", 0)) {
+                        1 -> {
+                            val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                            resourcePager.adapter = adapter
+                        }
+                        2 -> {
+                            val adapter = R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                            resourcePager.adapter = adapter
+                        }
+                        else -> {
+                            // TODO based on device
+                            // TODO decide if 1 page or 2 page
+                            val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                            resourcePager.adapter = adapter
+                        }
+                    }
                 }
 
                 // href is the link to the page in the toc
@@ -178,20 +206,41 @@ open class R2EpubActivity : AppCompatActivity() {
                     href = href.substring(0, href.indexOf("#"))
                 }
 
-                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
-                    for (single in resourcesSingle) {
-                        if (single.second.endsWith(href)) {
-                            resourcePager.currentItem = single.first
-                            storeDocumentIndex()
-                            break
+                fun setCurrent(resources:ArrayList<*>) {
+                    for (resource in resources) {
+                        if (resource is Pair<*, *>) {
+                            resource as Pair<Int,String>
+                            if (resource.second.endsWith(href)) {
+                                resourcePager.currentItem = resource.first
+                                storeDocumentIndex()
+                                break
+                            }
+                        } else {
+                            resource as Triple<Int,String, String>
+                            if (resource.second.endsWith(href) || resource.third.endsWith(href)) {
+                                resourcePager.currentItem = resource.first
+                                storeDocumentIndex()
+                                break
+                            }
                         }
                     }
+                }
+
+                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+                    setCurrent(resourcesSingle)
                 } else {
-                    for (double in resourcesDouble) {
-                        if (double.second.endsWith(href) || double.third.endsWith(href)) {
-                            resourcePager.currentItem = double.first
-                            storeDocumentIndex()
-                            break
+
+                    when (preferences.getInt("colCount", 0)) {
+                        1 -> {
+                            setCurrent(resourcesSingle)
+                        }
+                        2 -> {
+                            setCurrent(resourcesDouble)
+                        }
+                        else -> {
+                            // TODO based on device
+                            // TODO decide if 1 page or 2 page
+                            setCurrent(resourcesSingle)
                         }
                     }
                 }
