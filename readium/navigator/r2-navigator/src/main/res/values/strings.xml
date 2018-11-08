@@ -27,6 +27,20 @@
     <string name="usersettings_label_word_spacing">Word Spacing</string>
     <string name="usersettings_label_letter_spacing">Letter Spacing</string>
     <string name="usersettings_label_line_height">Line Height</string>
+
+    <!-- Accessibility -->
+    <string name="usersettings_description_brightness">Set Brightness</string>
+    <string name="usersettings_description_font_increase">Increase Font Size</string>
+    <string name="usersettings_description_font_decrease">Decrease Font Size</string>
+    <string name="usersettings_description_pm_increase">Increase Page Margins Size</string>
+    <string name="usersettings_description_pm_decrease">Decrease Page Margins Size</string>
+    <string name="usersettings_description_ws_increase">Increase Word Spacing</string>
+    <string name="usersettings_description_ws_decrease">Decrease Word Spacing</string>
+    <string name="usersettings_description_ls_increase">Increase Letter Spacing</string>
+    <string name="usersettings_description_ls_decrease">Decrease Letter Spacing</string>
+    <string name="usersettings_description_lh_increase">Increase Line Height</string>
+    <string name="usersettings_description_lh_decrease">Decrease Line Height</string>
+
     <string name="drm_information_header">INFORMATION</string>
     <string name="drm_label_license_type">License Type</string>
     <string name="drm_label_state">State</string>
