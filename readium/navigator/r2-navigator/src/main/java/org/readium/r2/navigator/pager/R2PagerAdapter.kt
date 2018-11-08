@@ -51,11 +51,11 @@ class R2PagerAdapter(fm: FragmentManager, private val resources: List<Any>, priv
                 Publication.TYPE.FXL -> {
                     if (resources[position] is Triple<*, *, *>) {
                         val double = resources[position] as Triple<Int, String, String>
-                        R2FXLPageFragment.newInstance(title, double.second, double.third)
+                        R2FXLPageFragment.newInstance(double.second, double.third, title)
                     }
                     else {
                         val single = resources[position] as Pair<Int, String>
-                        R2FXLPageFragment.newInstance(title, single.second)
+                        R2EpubPageFragment.newInstance(single.second, title)
                     }
                 }
                 Publication.TYPE.CBZ -> R2CbzPageFragment.newInstance(publicationPath, resources[position] as String)
