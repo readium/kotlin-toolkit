@@ -56,6 +56,8 @@ class R2FXLLayout : FrameLayout {
             field = if (zoomDuration < 0) DEF_ZOOM_DURATION else zoomDuration
         }
 
+    var isScrollingAllowed = false
+
     // allow parent views to intercept any touch events that we do not consume
     var isAllowParentInterceptOnEdge = true
     // allow parent views to intercept any touch events that we do not consume even if we are in a scaled state
