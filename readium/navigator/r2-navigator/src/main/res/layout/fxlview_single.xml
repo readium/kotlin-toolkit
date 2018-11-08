@@ -13,10 +13,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <org.readium.r2.navigator.pager.R2WebView
+    <org.readium.r2.navigator.pager.R2BasicWebView
         android:id="@+id/webViewSingle"
         android:layerType="hardware"
-        android:scaleType="centerInside"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

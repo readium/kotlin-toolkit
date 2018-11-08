@@ -18,139 +18,19 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.*
 import android.view.animation.Interpolator
-import android.webkit.WebView
 import android.widget.EdgeEffect
 import android.widget.Scroller
-import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.SCROLL_REF
-import org.readium.r2.shared.Locations
-import timber.log.Timber
 
 
 /**
  * Created by Aferdita Muriqi on 12/2/17.
  */
 
-class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
-
-    lateinit var activity: R2EpubActivity
-    var progression: Double = 0.0
+class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context, attrs) {
 
     init {
-        initViewPager()
-    }
-
-    @android.webkit.JavascriptInterface
-    fun scrollRight() {
-        activity.runOnUiThread {
-            if (activity.supportActionBar!!.isShowing) {
-                activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE)
-            }
-            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
-            if (scrollMode) {
-                if (activity.publication.metadata.direction == "rtl") {
-                    this.evaluateJavascript("scrollRightRTL();") { result ->
-                        if (result.contains("edge")) {
-                            activity.previousResource()
-                        }
-                    }
-                } else {
-                    activity.nextResource()
-                }
-            } else {
-                if (!this.canScrollHorizontally(1)) {
-                    activity.nextResource()
-                }
-                this.evaluateJavascript("scrollRight();", null)
-            }
-        }
-    }
-
-    @android.webkit.JavascriptInterface
-    fun scrollLeft() {
-        activity.runOnUiThread {
-            if (activity.supportActionBar!!.isShowing) {
-                activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE)
-            }
-            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
-            if (scrollMode) {
-                if (activity.publication.metadata.direction == "rtl") {
-                    this.evaluateJavascript("scrollLeftRTL();") { result ->
-                        if (result.contains("edge")) {
-                            activity.nextResource()
-                        }
-                    }
-                } else {
-                    activity.previousResource()
-                }
-            } else {
-                // fix this for when vertical scrolling is enabled
-                if (!this.canScrollHorizontally(-1)) {
-                    activity.previousResource()
-                }
-                this.evaluateJavascript("scrollLeft();", null)
-            }
-        }
-    }
-
-    @android.webkit.JavascriptInterface
-    fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${activity.publication.metadata.direction}\");", null)
-    }
-
-
-    @android.webkit.JavascriptInterface
-    fun progressionDidChange(body: String) {
-        progression = body.toDouble()
-        Timber.d("progression: $progression")
-        activity.storeProgression(Locations(progression = progression))
-    }
-
-    @android.webkit.JavascriptInterface
-    fun centerTapped() {
-        activity.toggleActionBar()
-    }
-
-    fun hide() {
-        activity.runOnUiThread {
-            activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE)
-        }
-    }
-
-    fun show() {
-        activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-
-    }
-
-    @android.webkit.JavascriptInterface
-    fun setProperty(key: String, value: String) {
-        activity.runOnUiThread {
-            this.evaluateJavascript("setProperty(\"$key\", \"$value\");", null)
-        }
-    }
-
-    @android.webkit.JavascriptInterface
-    fun removeProperty(key: String) {
-        activity.runOnUiThread {
-            this.evaluateJavascript("removeProperty(\"$key\");", null)
-        }
+        initWebPager()
     }
 
     private val TAG = "R2WebView"
@@ -276,7 +156,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
 
     private var mScrollState = SCROLL_STATE_IDLE
 
-    internal fun initViewPager() {
+    internal fun initWebPager() {
         setWillNotDraw(false)
         descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
         isFocusable = true
@@ -368,7 +248,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
 
 
     private fun getClientWidth(): Int {
-        return (measuredWidth - paddingLeft - paddingRight)
+        return (measuredWidth - paddingLeft - paddingRight) + 2
     }
 
     /**
@@ -398,14 +278,14 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
             mCurItem = item
             requestLayout()
         } else {
-            scrollToItem(item, smoothScroll, velocity)
+            scrollToItem(item, smoothScroll, velocity,true)
         }
     }
 
-    private fun scrollToItem(item: Int, smoothScroll: Boolean, velocity: Int) {
+    private fun scrollToItem(item: Int, smoothScroll: Boolean, velocity: Int, swipe: Boolean) {
 
         // todo double check why +2 is needed here
-        val destX = ((getClientWidth() + 2) * item)
+        val destX = (getClientWidth() * item)
         if (smoothScroll) {
             smoothScrollTo(destX, 0, velocity)
         } else {
@@ -488,7 +368,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     }
 
     private fun infoForPosition(position: Int): ItemInfo {
-        val numPages = getContentWidth() / getClientWidth()
 
         val ii = ItemInfo()
         ii.position = position
@@ -509,7 +388,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     private fun recomputeScrollPosition(width: Int, oldWidth: Int, margin: Int, oldMargin: Int) {
         if (oldWidth > 0 /*&& !mItems.isEmpty()*/) {
             if (!mScroller!!.isFinished) {
-                val numPages = getContentWidth() / getClientWidth()
                 val currentPage = scrollX / getClientWidth()
 
                 mScroller!!.finalX = currentPage * getClientWidth()
@@ -596,7 +474,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
         mDecorChildCount = decorCount
 
         if (mFirstLayout) {
-            scrollToItem(mCurItem, false, 0)
+            scrollToItem(mCurItem, false, 0, false)
         }
         mFirstLayout = false
     }
@@ -928,8 +806,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                 setCurrentItemInternal(nextPage, true, true, initialVelocity)
             } else {
                 val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+                val position = (ev.x % getClientWidth()) / getClientWidth()
                 if (!scrollMode) {
-                    val position = (ev.x % getClientWidth()) / getClientWidth()
                     when {
                         position <= 0.2 -> scrollLeft()
                         position >= 0.8 -> scrollRight()
@@ -938,7 +816,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
                 }
             }
             MotionEvent.ACTION_CANCEL -> if (mIsBeingDragged) {
-                scrollToItem(mCurItem, true, 0)
+                scrollToItem(mCurItem, true, 0, false)
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
                 val index = ev.actionIndex
@@ -973,8 +851,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
         var rightBound = width * mLastOffset
         var leftAbsolute = true
         var rightAbsolute = true
-
-        val numPages = getContentWidth() / getClientWidth()
 
         val firstItem = ItemInfo()
         firstItem.position = 0
@@ -1029,7 +905,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
         var first = true
 
         var lastItem: ItemInfo? = null
-        val numPages = getContentWidth() / getClientWidth()
         var i = 0
         while (i < numPages/*mItems.size()*/) {
             //            ItemInfo ii = mItems.get(i);
@@ -1296,13 +1171,21 @@ class R2WebView(context: Context, attrs: AttributeSet) : WebView(context, attrs)
     }
 
     internal fun pageRight(): Boolean {
-        val numPages = getContentWidth() / getClientWidth()
         if (mCurItem < numPages - 1) {
             setCurrentItem(mCurItem + 1, true)
             return true
         }
         return false
     }
+
+    internal val numPages: Int
+        get() {
+            var numPages = getContentWidth() / getClientWidth()
+            if (numPages == 0) {
+                numPages = 1
+            }
+            return numPages
+        }
 
 
     /**
