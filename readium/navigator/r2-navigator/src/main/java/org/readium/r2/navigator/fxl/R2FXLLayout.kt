@@ -233,7 +233,9 @@ class R2FXLLayout : FrameLayout {
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        return isAllowZoom
+        return if (isScrollingAllowed) {
+            super.onInterceptTouchEvent(ev)
+        } else isAllowZoom
     }
 
     @SuppressLint("ClickableViewAccessibility")
