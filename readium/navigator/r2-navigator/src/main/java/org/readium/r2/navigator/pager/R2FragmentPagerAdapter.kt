@@ -27,7 +27,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
 
     private val TAG = R2FragmentPagerAdapter::class.java.simpleName
 
-    private val mFragments = LongSparseArray<Fragment>()
+    val mFragments = LongSparseArray<Fragment>()
     private val mSavedStates = LongSparseArray<Fragment.SavedState>()
     private var mCurTransaction: FragmentTransaction? = null
     private var mCurrentPrimaryItem: Fragment? = null
@@ -173,7 +173,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
     }
 
 
-    private fun getItemId(position: Int): Long {
+    fun getItemId(position: Int): Long {
         return position.toLong()
     }
 
