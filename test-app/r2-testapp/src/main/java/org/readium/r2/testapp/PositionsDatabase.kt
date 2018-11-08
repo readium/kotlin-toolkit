@@ -127,8 +127,8 @@ class POSITIONS(private var database: PositionsDatabaseOpenHelper) {
     }
 
 
-    fun getCurrentPage(bookID: Long, href: String, progression: Double): Long {
-        var currentPage: Long = 0
+    fun getCurrentPage(bookID: Long, href: String, progression: Double): Long? {
+        var currentPage: Long? = null
 
         val jsonPageList = database.use {
             return@use select(POSITIONSTable.NAME,
