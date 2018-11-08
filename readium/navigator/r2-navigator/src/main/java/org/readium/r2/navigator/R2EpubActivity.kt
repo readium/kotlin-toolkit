@@ -17,8 +17,8 @@ import android.os.Bundle
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import kotlinx.android.synthetic.main.fragment_page_epub.view.*
 import org.jetbrains.anko.contentView
+import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.*
@@ -258,35 +258,53 @@ open class R2EpubActivity : AppCompatActivity() {
     }
 
 
-    fun nextResource() {
+    fun nextResource(smoothScroll: Boolean) {
         runOnUiThread {
             pagerPosition = 0
+            if (resourcePager.currentItem < resourcePager.adapter!!.count - 1 ) {
 
-            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
-                // The view has RTL layout
-                resourcePager.webView.progression = 1.0
-            } else {
-                // The view has LTR layout
-                resourcePager.webView.progression = 0.0
+                resourcePager.setCurrentItem(resourcePager.currentItem + 1, smoothScroll)
+
+                val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
+
+                if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                    // The view has RTL layout
+                    currentFragent?.webView?.let {
+                        currentFragent.webView.progression = 1.0
+                    }
+                } else {
+                    // The view has LTR layout
+                    currentFragent?.webView?.let {
+                        currentFragent.webView.progression = 0.0
+                    }
+                }
+                storeDocumentIndex()
             }
-            resourcePager.currentItem = resourcePager.currentItem + 1
-            storeDocumentIndex()
         }
     }
 
-    fun previousResource() {
+    fun previousResource(smoothScroll: Boolean) {
         runOnUiThread {
             pagerPosition = 0
+            if (resourcePager.currentItem > 0) {
 
-            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
-                // The view has RTL layout
-                resourcePager.webView.progression = 0.0
-            } else {
-                // The view has LTR layout
-                resourcePager.webView.progression = 1.0
+                resourcePager.setCurrentItem(resourcePager.currentItem - 1, smoothScroll)
+
+                val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
+
+                if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                    // The view has RTL layout
+                    currentFragent?.webView?.let {
+                        currentFragent.webView.progression = 0.0
+                    }
+                } else {
+                    // The view has LTR layout
+                    currentFragent?.webView?.let {
+                        currentFragent.webView.progression = 1.0
+                    }
+                }
+                storeDocumentIndex()
             }
-            resourcePager.currentItem = resourcePager.currentItem - 1
-            storeDocumentIndex()
         }
     }
 
