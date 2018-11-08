@@ -40,6 +40,8 @@ class R2EpubPageFragment : Fragment() {
     private val bookTitle: String?
         get() = arguments!!.getString("title")
 
+    lateinit var webView: R2WebView
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -65,7 +67,7 @@ class R2EpubPageFragment : Fragment() {
 
         (v.findViewById(R.id.book_title) as TextView).text = bookTitle
 
-        val webView: R2WebView = v!!.findViewById(R.id.webView) as R2WebView
+        webView = v!!.findViewById(R.id.webView) as R2WebView
 
         webView.activity = activity as R2EpubActivity
 
@@ -93,79 +95,42 @@ class R2EpubPageFragment : Fragment() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                try {
-                    val childCount = webView.activity.resourcePager.childCount
 
-                    if (webView.activity.reloadPagerPositions) {
-                        if (childCount == 2) {
-                            when {
-                                webView.activity.pagerPosition == 0 -> {
-                                    val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
-                                    if (locations.id == null ) {
-                                        locations.progression?.let {progression ->
-                                            webView.scrollToPosition(progression)
-                                        }
-                                    }
-                                    webView.activity.pagerPosition++
-                                }
-                                else -> {
-                                    if (webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
-                                        // The view has RTL layout
-                                        webView.scrollToPosition(1.0)
-                                    } else {
-                                        // The view has LTR layout
-                                        webView.scrollToPosition(0.0)
-                                    }
-                                    webView.activity.pagerPosition = 0
-                                    webView.activity.reloadPagerPositions = false
-                                }
-                            }
-                        } else {
-                            when {
-                                webView.activity.pagerPosition == 0 -> {
-                                    val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
-                                    if (locations.id == null ) {
-                                        locations.progression?.let {progression ->
-                                            webView.scrollToPosition(progression)
-                                        }
-                                    }
-                                    webView.activity.pagerPosition++
-                                }
-                                webView.activity.pagerPosition == 1 -> {
-                                    if (webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
-                                        // The view has RTL layout
-                                        webView.scrollToPosition(0.0)
-                                    } else {
-//                                        // The view has LTR layout
-                                        webView.scrollToPosition(1.0)
-                                    }
-                                    webView.activity.pagerPosition++
-                                }
-                                else -> {
-                                    if (webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
-                                        // The view has RTL layout
-                                        webView.scrollToPosition(1.0)
-                                    } else {
-//                                        // The view has LTR layout
-                                        webView.scrollToPosition(0.0)
-                                    }
-                                    webView.activity.pagerPosition = 0
-                                    webView.activity.reloadPagerPositions = false
-                                }
-                            }
-                        }
-                    } else {
-                        webView.activity.pagerPosition = 0
-                        val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
-                        if (locations.id == null ) {
-                            locations.progression?.let {progression ->
-                                webView.scrollToPosition(progression)
-                            }
+                val currentFragment:R2EpubPageFragment = (webView.activity.resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
+                val previousFragment:R2EpubPageFragment? = (webView.activity.resourcePager.adapter as R2PagerAdapter).getPreviousFragment() as? R2EpubPageFragment
+                val nextFragment:R2EpubPageFragment? = (webView.activity.resourcePager.adapter as R2PagerAdapter).getNextFragment() as? R2EpubPageFragment
+
+                if (this@R2EpubPageFragment.tag == currentFragment.tag) {
+                    val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+                    if (locations.id == null) {
+                        locations.progression?.let { progression ->
+                            currentFragment.webView.scrollToPosition(progression)
                         }
                     }
-                } catch (e: Exception) {
-                    // TODO double check this error, a crash happens when scrolling to fast between resources.....
-                    // kotlin.TypeCastException: null cannot be cast to non-null type org.readium.r2.navigator.R2EpubActivity
+                }
+
+                nextFragment?.let {
+                    if (this@R2EpubPageFragment.tag == nextFragment.tag){
+                        if (nextFragment.webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                            // The view has RTL layout
+                            nextFragment.webView.scrollToPosition(1.0)
+                        } else {
+                            // The view has LTR layout
+                            nextFragment.webView.scrollToPosition(0.0)
+                        }
+                    }
+                }
+
+                previousFragment?.let {
+                    if (this@R2EpubPageFragment.tag == previousFragment.tag){
+                        if (previousFragment.webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                            // The view has RTL layout
+                            previousFragment.webView.scrollToPosition(0.0)
+                        } else {
+                            // The view has LTR layout
+                            previousFragment.webView.scrollToPosition(1.0)
+                        }
+                    }
                 }
 
             }
@@ -188,11 +153,15 @@ class R2EpubPageFragment : Fragment() {
             true
         }
 
-
         val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
 
         locations.id?.let {
-            val href = resourceUrl +  it
+            var anchor = it
+            if (anchor.startsWith("#")) {
+            } else {
+                anchor = "#" + anchor
+            }
+            val href = resourceUrl +  anchor
             webView.loadUrl(href)
         }?:run {
             webView.loadUrl(resourceUrl)
