@@ -55,7 +55,7 @@ class R2PagerAdapter(fm: FragmentManager, private val resources: List<Any>, priv
                     }
                     else {
                         val single = resources[position] as Pair<Int, String>
-                        R2EpubPageFragment.newInstance(title, single.second)
+                        R2FXLPageFragment.newInstance(title, single.second)
                     }
                 }
                 Publication.TYPE.CBZ -> R2CbzPageFragment.newInstance(publicationPath, resources[position] as String)
