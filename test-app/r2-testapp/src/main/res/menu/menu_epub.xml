@@ -17,7 +17,7 @@
     <item
         android:id="@+id/drm"
         android:icon="@drawable/icon_drm"
-        android:title="DRM"
+        android:title="@string/epubactivity_drm_info"
         app:showAsAction="always|always"
         tools:ignore="AlwaysShowAction">
     </item>
@@ -25,7 +25,7 @@
     <item
         android:id="@+id/bookmark"
         android:icon="@drawable/icon_bookmark"
-        android:title="Bookmark"
+        android:title="@string/epubactivity_set_bookmark"
         app:showAsAction="always|always"
         tools:ignore="AlwaysShowAction">
     </item>
@@ -33,7 +33,7 @@
     <item
         android:id="@+id/settings"
         android:icon="@drawable/icon_settings"
-        android:title="Settings"
+        android:title="@string/epubactivity_settings"
         app:showAsAction="always|always"
         tools:ignore="AlwaysShowAction">
     </item>
@@ -42,7 +42,7 @@
     <item
         android:id="@+id/toc"
         android:icon="@drawable/icon_menu"
-        android:title="TOC"
+        android:title="@string/epubactivity_book_nav_options"
         app:showAsAction="always|always"
         tools:ignore="AlwaysShowAction">
     </item>
