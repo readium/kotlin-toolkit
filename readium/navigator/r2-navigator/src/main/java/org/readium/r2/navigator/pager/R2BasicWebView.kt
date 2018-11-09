@@ -29,7 +29,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     var progression: Double = 0.0
 
     @android.webkit.JavascriptInterface
-    fun scrollRight() {
+    open fun scrollRight() {
         activity.runOnUiThread {
             if (activity.supportActionBar!!.isShowing) {
                 activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -60,7 +60,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @android.webkit.JavascriptInterface
-    fun scrollLeft() {
+    open fun scrollLeft() {
         activity.runOnUiThread {
             if (activity.supportActionBar!!.isShowing) {
                 activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -98,8 +98,8 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
 
     @android.webkit.JavascriptInterface
-    fun progressionDidChange(body: String) {
-        progression = body.toDouble()
+    fun progressionDidChange(positionString: String) {
+        progression = positionString.toDouble()
         Timber.d("progression: $progression")
         activity.storeProgression(Locations(progression = progression))
     }

@@ -15,9 +15,11 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.support.v4.view.ViewCompat
+import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import org.jetbrains.anko.contentView
+import org.readium.r2.navigator.pager.PageCallback
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -25,7 +27,7 @@ import org.readium.r2.shared.*
 import java.net.URI
 
 
-open class R2EpubActivity : AppCompatActivity() {
+open class R2EpubActivity : AppCompatActivity(),PageCallback {
 
     lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
@@ -40,6 +42,8 @@ open class R2EpubActivity : AppCompatActivity() {
 
     var pagerPosition = 0
     var reloadPagerPositions = true
+
+    private var currentPagerPosition: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,25 +131,55 @@ open class R2EpubActivity : AppCompatActivity() {
                 }
             }
         }
-
-        val index = preferences.getInt("$publicationIdentifier-document", 0)
-
+        
         reloadPagerPositions = true
 
         userSettings = UserSettings(preferences, this)
         userSettings.resourcePager = resourcePager
 
         resourcePager.direction = publication.metadata.direction
+
+        val index = preferences.getInt("$publicationIdentifier-document", 0)
         resourcePager.currentItem = index
+        currentPagerPosition = index
+
+
+        resourcePager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+
+            override fun onPageScrollStateChanged(state: Int) {
+                // Do nothing
+            }
+
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+                // Do nothing
+            }
+
+            override fun onPageSelected(position: Int) {
+                pagerPosition = 0
+                val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
+                if (currentPagerPosition < position) {
+                    // handle swipe LEFT
+                    currentFragment?.webView?.setCurrentItem(0,false)
+
+                } else if (currentPagerPosition > position) {
+                    // handle swipe RIGHT
+                    currentFragment?.webView?.setCurrentItem(currentFragment.webView.numPages - 1,false)
+                }
+                storeDocumentIndex()
+                currentPagerPosition = position; // Update current position
+            }
+
+        });
 
         storeDocumentIndex()
 
     }
 
-    override fun onPause() {
-        super.onPause()
-//        storeProgression(resourcePager.webView.progression)
-    }
+//    override fun onPause() {
+//        super.onPause()
+//        val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
+//        storeProgression( Locations(progression = currentFragment?.webView?.progression))
+//    }
 
     /**
      * storeProgression() : save in the preference the last progression in the spine item
@@ -271,11 +305,13 @@ open class R2EpubActivity : AppCompatActivity() {
                     // The view has RTL layout
                     currentFragent?.webView?.let {
                         currentFragent.webView.progression = 1.0
+                        currentFragent.webView.setCurrentItem(currentFragent.webView.numPages - 1,false)
                     }
                 } else {
                     // The view has LTR layout
                     currentFragent?.webView?.let {
                         currentFragent.webView.progression = 0.0
+                        currentFragent.webView.setCurrentItem(0,false)
                     }
                 }
                 storeDocumentIndex()
@@ -296,11 +332,13 @@ open class R2EpubActivity : AppCompatActivity() {
                     // The view has RTL layout
                     currentFragent?.webView?.let {
                         currentFragent.webView.progression = 0.0
+                        currentFragent.webView.setCurrentItem(0,false)
                     }
                 } else {
                     // The view has LTR layout
                     currentFragent?.webView?.let {
                         currentFragent.webView.progression = 1.0
+                        currentFragent.webView.setCurrentItem(currentFragent.webView.numPages - 1,false)
                     }
                 }
                 storeDocumentIndex()
@@ -325,5 +363,10 @@ open class R2EpubActivity : AppCompatActivity() {
             }
         }
     }
+
+    override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
+        //optional
+    }
+
 }
 

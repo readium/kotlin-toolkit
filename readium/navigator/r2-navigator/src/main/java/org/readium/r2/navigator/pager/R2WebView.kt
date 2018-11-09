@@ -33,6 +33,22 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         initWebPager()
     }
 
+    override fun scrollRight() {
+        super.scrollRight()
+        if (mCurItem < numPages-1) {
+            mCurItem++
+            activity.onPageChanged(mCurItem + 1, numPages, url)
+        }
+    }
+
+    override fun scrollLeft() {
+        super.scrollLeft()
+        if (mCurItem > 0) {
+            mCurItem--
+            activity.onPageChanged(mCurItem + 1, numPages, url)
+        }
+    }
+
     private val TAG = "R2WebView"
     private val DEBUG = false
 
@@ -42,19 +58,13 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     private val MIN_DISTANCE_FOR_FLING = 25 // dips
     private val MIN_FLING_VELOCITY = 400 // dips
 
-    var rawContentWidth = 0                         //unneeded
-    var rawContentHeight = 0                         //unneeded
 
-    private fun getContentWidth(): Int {
-        val ret = super.computeHorizontalScrollRange()//working after load of page
-        rawContentWidth = ret
-        return ret
+    internal fun getContentWidth(): Int {
+        return this.computeHorizontalScrollRange()//working after load of page
     }
 
     override fun getContentHeight(): Int {
-        val ret = super.computeVerticalScrollRange() //working after load of page
-        rawContentHeight = ret
-        return ret
+        return this.computeVerticalScrollRange() //working after load of page
     }
 
     internal class ItemInfo {
@@ -257,32 +267,32 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
      * @param item Item index to select
      * @param smoothScroll True to smoothly scroll to the new item, false to transition immediately
      */
-    fun setCurrentItem(item: Int, smoothScroll: Boolean) {
-        setCurrentItemInternal(item, smoothScroll, false)
+    fun setCurrentItem(item: Int, smoothScroll: Boolean ) {
+       setCurrentItemInternal(item, smoothScroll, false)
+    }
+
+    fun calculateCurrentItem() {
+        val currentPage = numPages * progression
+        mCurItem = currentPage.toInt()
     }
 
     internal fun setCurrentItemInternal(item: Int, smoothScroll: Boolean, always: Boolean) {
-        setCurrentItemInternal(item, smoothScroll, always, 0)
+        setCurrentItemInternal(item, smoothScroll, 0)
     }
 
-    internal fun setCurrentItemInternal(item: Int, smoothScroll: Boolean, always: Boolean, velocity: Int) {
-
-        if (!always && mCurItem == item /*&& mItems.size() != 0*/) {
-            setScrollingCacheEnabled(false)
-            return
-        }
-
+    internal fun setCurrentItemInternal(item: Int, smoothScroll: Boolean, velocity: Int) {
         if (mFirstLayout) {
             // We don't have any idea how big we are yet and shouldn't have any pages either.
             // Just set things up and let the pending layout handle things.
             mCurItem = item
             requestLayout()
         } else {
+            mCurItem = item
             scrollToItem(item, smoothScroll, velocity,true)
         }
     }
 
-    private fun scrollToItem(item: Int, smoothScroll: Boolean, velocity: Int, swipe: Boolean) {
+    private fun scrollToItem(item: Int, smoothScroll: Boolean, velocity: Int, post: Boolean) {
 
         // todo double check why +2 is needed here
         val destX = (getClientWidth() * item)
@@ -293,7 +303,11 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             scrollTo(destX, 0)
             pageScrolled(destX)
         }
-        activity.storeDocumentIndex()
+
+        if (post) {
+            activity.onPageChanged(item + 1, numPages, url)
+        }
+
 
     }
 
@@ -803,7 +817,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 val totalDelta = (x - mInitialMotionX).toInt()
                 val nextPage = determineTargetPage(currentPage, 0f, initialVelocity, totalDelta)
 
-                setCurrentItemInternal(nextPage, true, true, initialVelocity)
+                setCurrentItemInternal(nextPage, true, initialVelocity)
             } else {
                 val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
                 val position = (ev.x % getClientWidth()) / getClientWidth()
@@ -1171,7 +1185,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     }
 
     internal fun pageRight(): Boolean {
-        if (mCurItem < numPages - 1) {
+        if (mCurItem < numPages) {
             setCurrentItem(mCurItem + 1, true)
             return true
         }
@@ -1180,9 +1194,13 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
     internal val numPages: Int
         get() {
-            var numPages = getContentWidth() / getClientWidth()
-            if (numPages == 0) {
-                numPages = 1
+            var numPages: Int = 0
+            try {
+                numPages = getContentWidth() / (getClientWidth() - 2)
+            } finally {
+                if (numPages == 0) {
+                    numPages = 1
+                }
             }
             return numPages
         }
@@ -1238,5 +1256,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             a.recycle()
         }
     }
+}
 
+interface PageCallback {
+    fun onPageChanged(pageIndex: Int, totalPages: Int, url: String)
 }

@@ -13,6 +13,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.support.v4.app.Fragment
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -104,7 +105,15 @@ class R2EpubPageFragment : Fragment() {
                     val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
                     if (locations.id == null) {
                         locations.progression?.let { progression ->
+                            currentFragment.webView.progression = progression
                             currentFragment.webView.scrollToPosition(progression)
+                            (object : CountDownTimer(100, 1) {
+                                override fun onTick(millisUntilFinished: Long) {}
+                                override fun onFinish() {
+                                    currentFragment.webView.calculateCurrentItem()
+                                    currentFragment.webView.setCurrentItem(currentFragment.webView.mCurItem,false)
+                                }
+                            }).start()
                         }
                     }
                 }
