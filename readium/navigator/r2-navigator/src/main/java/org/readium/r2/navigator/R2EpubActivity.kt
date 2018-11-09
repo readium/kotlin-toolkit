@@ -33,7 +33,7 @@ open class R2EpubActivity : AppCompatActivity() {
     lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
 
     private lateinit var publicationPath: String
-    private lateinit var epubName: String
+    protected lateinit var epubName: String
     lateinit var publication: Publication
     lateinit var publicationIdentifier: String
     lateinit var userSettings: UserSettings
