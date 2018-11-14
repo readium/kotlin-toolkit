@@ -170,13 +170,7 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
         storeDocumentIndex()
 
     }
-
-//    override fun onPause() {
-//        super.onPause()
-//        val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-//        storeProgression( Locations(progression = currentFragment?.webView?.progression))
-//    }
-
+    
     /**
      * storeProgression() : save in the preference the last progression in the spine item
      */
