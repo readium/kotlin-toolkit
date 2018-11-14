@@ -21,6 +21,7 @@ import org.json.JSONArray
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.pager.R2WebView
 import org.readium.r2.navigator.fxl.R2FXLLayout
+import org.readium.r2.navigator.pager.R2BasicWebView
 import org.readium.r2.shared.*
 import java.io.File
 
@@ -169,8 +170,8 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
                 applyCSS(webView, ref)
             }?: run {
                 val zoomView = resourcePager.getChildAt(i).findViewById(R.id.r2FXLLayout) as R2FXLLayout
-                val webView1 = zoomView.findViewById(R.id.firstWebView) as? R2WebView
-                val webView2 = zoomView.findViewById(R.id.secondWebView) as? R2WebView
+                val webView1 = zoomView.findViewById(R.id.firstWebView) as? R2BasicWebView
+                val webView2 = zoomView.findViewById(R.id.secondWebView) as? R2BasicWebView
 
                 webView1?.let{
                     applyCSS(webView1, ref)
@@ -182,7 +183,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         }
     }
 
-    private fun applyCSS(view: R2WebView, ref: String) {
+    private fun applyCSS(view: R2BasicWebView, ref: String) {
         val userSetting = userProperties.getByRef<UserProperty>(ref)
         view.setProperty(userSetting.name, userSetting.toString())
     }

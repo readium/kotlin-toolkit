@@ -29,15 +29,17 @@
             android:gravity="center_horizontal"
             android:orientation="horizontal">
 
-            <org.readium.r2.navigator.pager.R2WebView
+            <org.readium.r2.navigator.pager.R2BasicWebView
                 android:id="@+id/firstWebView"
+                android:layerType="hardware"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:layout_weight="1"/>
 
-            <org.readium.r2.navigator.pager.R2WebView
+            <org.readium.r2.navigator.pager.R2BasicWebView
                 android:id="@+id/secondWebView"
+                android:layerType="hardware"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
