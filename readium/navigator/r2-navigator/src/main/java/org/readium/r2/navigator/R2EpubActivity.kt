@@ -14,11 +14,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.support.v4.view.ViewCompat
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import org.jetbrains.anko.contentView
+import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.PageCallback
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -240,17 +239,17 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
                     href = href.substring(0, href.indexOf("#"))
                 }
 
-                fun setCurrent(resources:ArrayList<*>) {
+                fun setCurrent(resources: ArrayList<*>) {
                     for (resource in resources) {
                         if (resource is Pair<*, *>) {
-                            resource as Pair<Int,String>
+                            resource as Pair<Int, String>
                             if (resource.second.endsWith(href)) {
                                 resourcePager.currentItem = resource.first
                                 storeDocumentIndex()
                                 break
                             }
                         } else {
-                            resource as Triple<Int,String, String>
+                            resource as Triple<Int, String, String>
                             if (resource.second.endsWith(href) || resource.third.endsWith(href)) {
                                 resourcePager.currentItem = resource.first
                                 storeDocumentIndex()
@@ -301,7 +300,7 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
 
                 val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
 
-                if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                if (layoutDirectionIsRTL() || publication.metadata.direction == PageProgressionDirection.rtl.name) {
                     // The view has RTL layout
                     currentFragent?.webView?.let {
                         currentFragent.webView.progression = 1.0
@@ -328,7 +327,7 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
 
                 val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
 
-                if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL || publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                if (layoutDirectionIsRTL() || publication.metadata.direction == PageProgressionDirection.rtl.name) {
                     // The view has RTL layout
                     currentFragent?.webView?.let {
                         currentFragent.webView.progression = 0.0
