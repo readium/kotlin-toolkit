@@ -20,14 +20,13 @@ import android.support.v4.util.LongSparseArray
 import android.support.v4.view.PagerAdapter
 import android.view.View
 import android.view.ViewGroup
-import timber.log.Timber
 
 
 abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : FragmentStatePagerAdapter(mFragmentManager) {
 
     private val TAG = R2FragmentPagerAdapter::class.java.simpleName
 
-    private val mFragments = LongSparseArray<Fragment>()
+    val mFragments = LongSparseArray<Fragment>()
     private val mSavedStates = LongSparseArray<Fragment.SavedState>()
     private var mCurTransaction: FragmentTransaction? = null
     private var mCurrentPrimaryItem: Fragment? = null
@@ -164,8 +163,6 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
                     if (f != null) {
                         f.setMenuVisibility(false)
                         mFragments.put(java.lang.Long.parseLong(key.substring(1)), f)
-                    } else {
-                        Timber.w(TAG, "Bad fragment at key $key")
                     }
                 }
             }
@@ -173,7 +170,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
     }
 
 
-    private fun getItemId(position: Int): Long {
+    fun getItemId(position: Int): Long {
         return position.toLong()
     }
 
