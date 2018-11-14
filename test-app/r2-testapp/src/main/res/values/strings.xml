@@ -22,8 +22,8 @@
 
     <string name="epubactivity_drm_info">DRM Info</string>
     <string name="epubactivity_set_bookmark">Add a bookmark</string>
-    <string name="epubactivity_settings">Settings</string>
-    <string name="epubactivity_book_nav_options">Book navigation options</string>
+    <string name="epubactivity_settings">User Settings</string>
+    <string name="epubactivity_book_nav_options">Book navigation menu</string>
 
     <string name="permission_read_ext_explanation">The app needs to read your storage so it can read and write books.</string>
     <string name="permission_external_new_explanation">Can\'t read or write books without permission</string>
@@ -41,6 +41,7 @@
     <string name="title_activity_outline">Outline</string>
     <string name="title_activity_epub">Detail</string>
     <string name="floating_button_add_book">Add a Book</string>
+    <string name="floating_button_add_feed">Add a OPDS Feed</string>
     <string name="about_r2_reader">About R2 Reader</string>
     <string name="more_options">More Options</string>
     <string name="opds_feeds">OPDS Feeds</string>
