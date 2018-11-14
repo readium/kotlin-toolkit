@@ -40,7 +40,6 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
     lateinit var userSettings: UserSettings
 
     var pagerPosition = 0
-    var reloadPagerPositions = true
 
     private var currentPagerPosition: Int = 0
 
@@ -130,8 +129,6 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
                 }
             }
         }
-        
-        reloadPagerPositions = true
 
         userSettings = UserSettings(preferences, this)
         userSettings.resourcePager = resourcePager
@@ -203,34 +200,11 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
             if (data != null) {
 
                 pagerPosition = 0
-                reloadPagerPositions = true
 
                 val locator = data.getSerializableExtra("locator") as Locator
 
                 // Set the progression fetched
                 storeProgression(locator.locations)
-
-                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
-                    val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
-                    resourcePager.adapter = adapter
-                } else {
-                    when (preferences.getInt("colCount", 0)) {
-                        1 -> {
-                            val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
-                            resourcePager.adapter = adapter
-                        }
-                        2 -> {
-                            val adapter = R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
-                            resourcePager.adapter = adapter
-                        }
-                        else -> {
-                            // TODO based on device
-                            // TODO decide if 1 page or 2 page
-                            val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
-                            resourcePager.adapter = adapter
-                        }
-                    }
-                }
 
                 // href is the link to the page in the toc
                 var href = locator.href
