@@ -16,7 +16,6 @@ import android.webkit.WebView
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.SCROLL_REF
 import org.readium.r2.shared.Locations
-import timber.log.Timber
 
 
 /**
@@ -100,7 +99,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun progressionDidChange(positionString: String) {
         progression = positionString.toDouble()
-        Timber.d("progression: $progression")
         activity.storeProgression(Locations(progression = progression))
     }
 
