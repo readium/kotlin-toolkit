@@ -30,6 +30,7 @@
 
     <!-- Accessibility -->
     <string name="usersettings_description_brightness">Set Brightness</string>
+    <string name="usersettings_publisher_default_label">Original Settings</string>
     <string name="usersettings_description_font_increase">Increase Font Size</string>
     <string name="usersettings_description_font_decrease">Decrease Font Size</string>
     <string name="usersettings_description_pm_increase">Increase Page Margins Size</string>
