@@ -35,7 +35,7 @@ class NavigationDocumentParser {
         for (i in 0 until nodes.length) {
             nodes.item(i).attributes.getNamedItem("href")?.let {
                 val link = Link()
-                link.href = it.nodeValue
+                link.href = normalize(navigationDocumentPath, it.nodeValue)
                 link.title = nodes.item(i).textContent
                 tableOfContents.add(link)
             }
