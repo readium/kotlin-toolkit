@@ -51,7 +51,7 @@ const val LETTER_SPACING_NAME = "--USER__$LETTER_SPACING_REF"
 const val PAGE_MARGINS_NAME = "--USER__$PAGE_MARGINS_REF"
 const val LINE_HEIGHT_NAME = "--USER__$LINE_HEIGHT_REF"
 
-class UserSettings(var preferences: SharedPreferences, val context: Context) {
+class UserSettings(var preferences: SharedPreferences, val context: Context, val UIPreset: MutableMap<ReadiumCSSName, Boolean>) {
 
     lateinit var resourcePager: R2ViewPager
 
@@ -145,6 +145,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         file.printWriter().use { out ->
             out.println(json)
         }
+        println(json)
     }
 
     private fun updateEnumerable(enumerable: Enumerable) {
@@ -293,43 +294,56 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         appearanceRadios.add(layout.findViewById(R.id.appearance_sepia) as RadioButton)
         appearanceRadios.add(layout.findViewById(R.id.appearance_night) as RadioButton)
 
-        appearanceRadios[appearance.index].isChecked = true
-
-        appearanceGroup.setOnCheckedChangeListener { _, id ->
-            val i = findIndexOfId(id, list = appearanceRadios)
-            appearance.index = i
-            when (i) {
-                0 -> {
-                    resourcePager.setBackgroundColor(Color.parseColor("#ffffff"))
-                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
-                }
-                1 -> {
-                    resourcePager.setBackgroundColor(Color.parseColor("#faf4e8"))
-                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
-                }
-                2 -> {
-                    resourcePager.setBackgroundColor(Color.parseColor("#000000"))
-                    (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#ffffff"))
-                }
+        UIPreset[ReadiumCSSName.appearance]?.let {
+            appearanceGroup.isEnabled = false
+            for(appearanceRadio in appearanceRadios) {
+                appearanceRadio.isEnabled = false
             }
-            updateEnumerable(appearance)
-            updateViewCSS(APPEARANCE_REF)
+        } ?: run {
+            appearanceRadios[appearance.index].isChecked = true
+
+            appearanceGroup.setOnCheckedChangeListener { _, id ->
+                val i = findIndexOfId(id, list = appearanceRadios)
+                appearance.index = i
+                when (i) {
+                    0 -> {
+                        resourcePager.setBackgroundColor(Color.parseColor("#ffffff"))
+                        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
+                    }
+                    1 -> {
+                        resourcePager.setBackgroundColor(Color.parseColor("#faf4e8"))
+                        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
+                    }
+                    2 -> {
+                        resourcePager.setBackgroundColor(Color.parseColor("#000000"))
+                        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#ffffff"))
+                    }
+                }
+                updateEnumerable(appearance)
+                updateViewCSS(APPEARANCE_REF)
+            }
         }
 
 
         // Font size
         val fontDecreaseButton = layout.findViewById(R.id.font_decrease) as ImageButton
         val fontIncreaseButton = layout.findViewById(R.id.font_increase) as ImageButton
-        fontDecreaseButton.setOnClickListener {
-            fontSize.decrement()
-            updateIncremental(fontSize)
-            updateViewCSS(FONT_SIZE_REF)
-        }
 
-        fontIncreaseButton.setOnClickListener {
-            fontSize.increment()
-            updateIncremental(fontSize)
-            updateViewCSS(FONT_SIZE_REF)
+        UIPreset[ReadiumCSSName.fontSize]?.let {
+            fontDecreaseButton.isEnabled = false
+            fontIncreaseButton.isEnabled = false
+        } ?: run {
+            fontDecreaseButton.setOnClickListener {
+                fontSize.decrement()
+                updateIncremental(fontSize)
+                updateViewCSS(FONT_SIZE_REF)
+            }
+
+            fontIncreaseButton.setOnClickListener {
+                fontSize.increment()
+                updateIncremental(fontSize)
+                updateViewCSS(FONT_SIZE_REF)
+            }
         }
 
 
@@ -345,28 +359,33 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
 
         // Vertical scroll
         val scrollModeSwitch = layout.findViewById(R.id.scroll_mode) as Switch
-        scrollModeSwitch.isChecked = scrollMode.on
-        scrollModeSwitch.setOnCheckedChangeListener { _, b ->
-            scrollMode.on = scrollModeSwitch.isChecked
+        UIPreset[ReadiumCSSName.scroll]?.let { isSet ->
+            scrollModeSwitch.isChecked = isSet
+            scrollModeSwitch.isEnabled = false
+        } ?: run {
+            scrollModeSwitch.isChecked = scrollMode.on
+            scrollModeSwitch.setOnCheckedChangeListener { _, b ->
+                scrollMode.on = scrollModeSwitch.isChecked
 
-            val webView = resourcePager.focusedChild?.findViewById(R.id.webView) as? WebView
-            webView?.let {
-                when (b) {
-                    true -> {
-                        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.GONE
-                        resourcePager.focusedChild?.setPadding(0, 4, 0, 4)
+                val webView = resourcePager.focusedChild?.findViewById(R.id.webView) as? WebView
+                webView?.let {
+                    when (b) {
+                        true -> {
+                            (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.GONE
+                            resourcePager.focusedChild?.setPadding(0, 4, 0, 4)
+                        }
+                        false -> {
+                            (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.VISIBLE
+                            resourcePager.focusedChild?.setPadding(0, 30, 0, 30)
+                        }
                     }
-                    false -> {
-                        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.VISIBLE
-                        resourcePager.focusedChild?.setPadding(0, 30, 0, 30)
-                    }
+                } ?: run {
+                    resourcePager.focusedChild?.setPadding(0, 0, 0, 0)
                 }
-            }?: run {
-                resourcePager.focusedChild?.setPadding(0, 0, 0, 0)
-            }
 
-            updateSwitchable(scrollMode)
-            updateViewCSS(SCROLL_REF)
+                updateSwitchable(scrollMode)
+                updateViewCSS(SCROLL_REF)
+            }
         }
 
 
@@ -376,25 +395,33 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         alignmentRadios.add(layout.findViewById(R.id.alignment_left))
         alignmentRadios.add(layout.findViewById(R.id.alignment_justify))
 
-        alignmentRadios[alignment.index].isChecked = true
-        alignmentRadios[0].setCompoundDrawablesWithIntrinsicBounds(null,
-                (if (alignment.index == 0) context.getDrawable(R.drawable.icon_justify_white) else context.getDrawable(R.drawable.icon_justify)),
-                null, null)
-        alignmentRadios[1].setCompoundDrawablesWithIntrinsicBounds(null,
-                (if (alignment.index == 0) context.getDrawable(R.drawable.icon_left) else context.getDrawable(R.drawable.icon_left_white)),
-                null, null)
-
-        alignmentGroup.setOnCheckedChangeListener { _, i ->
-            alignment.index = findIndexOfId(i, alignmentRadios)
+        UIPreset[ReadiumCSSName.textAlignment]?.let {
+            alignmentGroup.isEnabled = false
+            alignmentGroup.isActivated = false
+            for(alignmentRadio in alignmentRadios) {
+                alignmentRadio.isEnabled = false
+            }
+        } ?: run {
+            alignmentRadios[alignment.index].isChecked = true
             alignmentRadios[0].setCompoundDrawablesWithIntrinsicBounds(null,
                     (if (alignment.index == 0) context.getDrawable(R.drawable.icon_justify_white) else context.getDrawable(R.drawable.icon_justify)),
                     null, null)
             alignmentRadios[1].setCompoundDrawablesWithIntrinsicBounds(null,
                     (if (alignment.index == 0) context.getDrawable(R.drawable.icon_left) else context.getDrawable(R.drawable.icon_left_white)),
                     null, null)
-            publisherDefaultSwitch.isChecked = false
-            updateEnumerable(alignment)
-            updateViewCSS(TEXT_ALIGNMENT_REF)
+
+            alignmentGroup.setOnCheckedChangeListener { _, i ->
+                alignment.index = findIndexOfId(i, alignmentRadios)
+                alignmentRadios[0].setCompoundDrawablesWithIntrinsicBounds(null,
+                        (if (alignment.index == 0) context.getDrawable(R.drawable.icon_justify_white) else context.getDrawable(R.drawable.icon_justify)),
+                        null, null)
+                alignmentRadios[1].setCompoundDrawablesWithIntrinsicBounds(null,
+                        (if (alignment.index == 0) context.getDrawable(R.drawable.icon_left) else context.getDrawable(R.drawable.icon_left_white)),
+                        null, null)
+                publisherDefaultSwitch.isChecked = false
+                updateEnumerable(alignment)
+                updateViewCSS(TEXT_ALIGNMENT_REF)
+            }
         }
 
 
@@ -404,13 +431,22 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         columnsRadios.add(layout.findViewById(R.id.column_auto))
         columnsRadios.add(layout.findViewById(R.id.column_one))
         columnsRadios.add(layout.findViewById(R.id.column_two))
-        columnsRadios[columnsCount.index].isChecked = true
-        columnsCountGroup.setOnCheckedChangeListener { _, id ->
-            val i = findIndexOfId(id, columnsRadios)
-            columnsCount.index = i
-            publisherDefaultSwitch.isChecked = false
-            updateEnumerable(columnsCount)
-            updateViewCSS(COLUMN_COUNT_REF)
+
+        UIPreset[ReadiumCSSName.columnCount]?.let {
+            columnsCountGroup.isEnabled = false
+            columnsCountGroup.isActivated = false
+            for(columnRadio in columnsRadios) {
+                columnRadio.isEnabled = false
+            }
+        } ?: run {
+            columnsRadios[columnsCount.index].isChecked = true
+            columnsCountGroup.setOnCheckedChangeListener { _, id ->
+                val i = findIndexOfId(id, columnsRadios)
+                columnsCount.index = i
+                publisherDefaultSwitch.isChecked = false
+                updateEnumerable(columnsCount)
+                updateViewCSS(COLUMN_COUNT_REF)
+            }
         }
 
 
@@ -420,20 +456,25 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         val pageMarginsDisplay = layout.findViewById(R.id.pm_display) as TextView
         pageMarginsDisplay.text = pageMargins.value.toString()
 
-        pageMarginsDecreaseButton.setOnClickListener {
-            pageMargins.decrement()
-            pageMarginsDisplay.text = pageMargins.value.toString()
-            publisherDefaultSwitch.isChecked = false
-            updateIncremental(pageMargins)
-            updateViewCSS(PAGE_MARGINS_REF)
-        }
+        UIPreset[ReadiumCSSName.pageMargins]?.let {
+            pageMarginsDecreaseButton.isEnabled = false
+            pageMarginsIncreaseButton.isEnabled = false
+        } ?: run {
+            pageMarginsDecreaseButton.setOnClickListener {
+                pageMargins.decrement()
+                pageMarginsDisplay.text = pageMargins.value.toString()
+                publisherDefaultSwitch.isChecked = false
+                updateIncremental(pageMargins)
+                updateViewCSS(PAGE_MARGINS_REF)
+            }
 
-        pageMarginsIncreaseButton.setOnClickListener {
-            pageMargins.increment()
-            pageMarginsDisplay.text = pageMargins.value.toString()
-            publisherDefaultSwitch.isChecked = false
-            updateIncremental(pageMargins)
-            updateViewCSS(PAGE_MARGINS_REF)
+            pageMarginsIncreaseButton.setOnClickListener {
+                pageMargins.increment()
+                pageMarginsDisplay.text = pageMargins.value.toString()
+                publisherDefaultSwitch.isChecked = false
+                updateIncremental(pageMargins)
+                updateViewCSS(PAGE_MARGINS_REF)
+            }
         }
 
 
@@ -441,46 +482,54 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         val wordSpacingDecreaseButton = layout.findViewById(R.id.ws_decrease) as ImageButton
         val wordSpacingIncreaseButton = layout.findViewById(R.id.ws_increase) as ImageButton
         val wordSpacingDisplay = layout.findViewById(R.id.ws_display) as TextView
-
         wordSpacingDisplay.text = (if (wordSpacing.value == wordSpacing.min) "auto" else wordSpacing.value.toString())
-        wordSpacingDecreaseButton.setOnClickListener {
-            wordSpacing.decrement()
-            wordSpacingDisplay.text = (if (wordSpacing.value == wordSpacing.min) "auto" else wordSpacing.value.toString())
-            publisherDefaultSwitch.isChecked = false
-            updateIncremental(wordSpacing)
-            updateViewCSS(WORD_SPACING_REF)
-        }
 
-        wordSpacingIncreaseButton.setOnClickListener {
-            wordSpacing.increment()
-            wordSpacingDisplay.text = wordSpacing.value.toString()
-            publisherDefaultSwitch.isChecked = false
-            updateIncremental(wordSpacing)
-            updateViewCSS(WORD_SPACING_REF)
-        }
+        UIPreset[ReadiumCSSName.wordSpacing]?.let {
+            wordSpacingDecreaseButton.isEnabled = false
+            wordSpacingIncreaseButton.isEnabled = false
+        } ?: run {
+            wordSpacingDecreaseButton.setOnClickListener {
+                wordSpacing.decrement()
+                wordSpacingDisplay.text = (if (wordSpacing.value == wordSpacing.min) "auto" else wordSpacing.value.toString())
+                publisherDefaultSwitch.isChecked = false
+                updateIncremental(wordSpacing)
+                updateViewCSS(WORD_SPACING_REF)
+            }
 
+            wordSpacingIncreaseButton.setOnClickListener {
+                wordSpacing.increment()
+                wordSpacingDisplay.text = wordSpacing.value.toString()
+                publisherDefaultSwitch.isChecked = false
+                updateIncremental(wordSpacing)
+                updateViewCSS(WORD_SPACING_REF)
+            }
+        }
 
         // Letter spacing
         val letterSpacingDecreaseButton = layout.findViewById(R.id.ls_decrease) as ImageButton
         val letterSpacingIncreaseButton = layout.findViewById(R.id.ls_increase) as ImageButton
         val letterSpacingDisplay = layout.findViewById(R.id.ls_display) as TextView
-
         letterSpacingDisplay.text = (if (letterSpacing.value == letterSpacing.min) "auto" else letterSpacing.value.toString())
 
-        letterSpacingDecreaseButton.setOnClickListener {
-            letterSpacing.decrement()
-            letterSpacingDisplay.text = (if (letterSpacing.value == letterSpacing.min) "auto" else letterSpacing.value.toString())
-            publisherDefaultSwitch.isChecked = false
-            updateIncremental(letterSpacing)
-            updateViewCSS(LETTER_SPACING_REF)
-        }
+        UIPreset[ReadiumCSSName.letterSpacing]?.let {
+            letterSpacingDecreaseButton.isEnabled = false
+            letterSpacingIncreaseButton.isEnabled = false
+        } ?: run {
+            letterSpacingDecreaseButton.setOnClickListener {
+                letterSpacing.decrement()
+                letterSpacingDisplay.text = (if (letterSpacing.value == letterSpacing.min) "auto" else letterSpacing.value.toString())
+                publisherDefaultSwitch.isChecked = false
+                updateIncremental(letterSpacing)
+                updateViewCSS(LETTER_SPACING_REF)
+            }
 
-        letterSpacingIncreaseButton.setOnClickListener {
-            letterSpacing.increment()
-            letterSpacingDisplay.text = (if (letterSpacing.value == letterSpacing.min) "auto" else letterSpacing.value.toString())
-            publisherDefaultSwitch.isChecked = false
-            updateIncremental(letterSpacing)
-            updateViewCSS(LETTER_SPACING_REF)
+            letterSpacingIncreaseButton.setOnClickListener {
+                letterSpacing.increment()
+                letterSpacingDisplay.text = (if (letterSpacing.value == letterSpacing.min) "auto" else letterSpacing.value.toString())
+                publisherDefaultSwitch.isChecked = false
+                updateIncremental(letterSpacing)
+                updateViewCSS(LETTER_SPACING_REF)
+            }
         }
 
 
@@ -488,21 +537,26 @@ class UserSettings(var preferences: SharedPreferences, val context: Context) {
         val lineHeightDecreaseButton = layout.findViewById(R.id.lh_decrease) as ImageButton
         val lineHeightIncreaseButton = layout.findViewById(R.id.lh_increase) as ImageButton
         val lineHeightDisplay = layout.findViewById(R.id.lh_display) as TextView
-
         lineHeightDisplay.text = (if (lineHeight.value == lineHeight.min) "auto" else lineHeight.value.toString())
-        lineHeightDecreaseButton.setOnClickListener {
-            lineHeight.decrement()
-            lineHeightDisplay.text = (if (lineHeight.value == lineHeight.min) "auto" else lineHeight.value.toString())
-            publisherDefaultSwitch.isChecked = false
-            updateIncremental(lineHeight)
-            updateViewCSS(LINE_HEIGHT_REF)
-        }
-        lineHeightIncreaseButton.setOnClickListener {
-            lineHeight.increment()
-            lineHeightDisplay.text = (if (lineHeight.value == lineHeight.min) "auto" else lineHeight.value.toString())
-            publisherDefaultSwitch.isChecked = false
-            updateIncremental(lineHeight)
-            updateViewCSS(LINE_HEIGHT_REF)
+
+        UIPreset[ReadiumCSSName.lineHeight]?.let {
+            lineHeightDecreaseButton.isEnabled = false
+            lineHeightIncreaseButton.isEnabled = false
+        } ?: run {
+            lineHeightDecreaseButton.setOnClickListener {
+                lineHeight.decrement()
+                lineHeightDisplay.text = (if (lineHeight.value == lineHeight.min) "auto" else lineHeight.value.toString())
+                publisherDefaultSwitch.isChecked = false
+                updateIncremental(lineHeight)
+                updateViewCSS(LINE_HEIGHT_REF)
+            }
+            lineHeightIncreaseButton.setOnClickListener {
+                lineHeight.increment()
+                lineHeightDisplay.text = (if (lineHeight.value == lineHeight.min) "auto" else lineHeight.value.toString())
+                publisherDefaultSwitch.isChecked = false
+                updateIncremental(lineHeight)
+                updateViewCSS(LINE_HEIGHT_REF)
+            }
         }
 
         // Brightness

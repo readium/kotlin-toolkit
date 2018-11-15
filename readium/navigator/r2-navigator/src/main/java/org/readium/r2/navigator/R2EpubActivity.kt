@@ -14,6 +14,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.View
@@ -26,7 +27,7 @@ import org.readium.r2.shared.*
 import java.net.URI
 
 
-open class R2EpubActivity : AppCompatActivity(),PageCallback {
+open class R2EpubActivity : AppCompatActivity(), PageCallback {
 
     lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
@@ -130,7 +131,7 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
             }
         }
 
-        userSettings = UserSettings(preferences, this)
+        userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
         userSettings.resourcePager = resourcePager
 
         resourcePager.direction = publication.metadata.direction
