@@ -10,14 +10,18 @@
 package org.readium.r2.streamer.parser
 
 import android.util.Log
+import org.readium.r2.shared.ContentLayoutStyle
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Encryption
+import org.readium.r2.shared.LangType
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerEpub
 import org.readium.r2.streamer.container.ContainerEpubDirectory
 import org.readium.r2.streamer.container.EpubContainer
+import org.readium.r2.streamer.fetcher.forceScrollPreset
+import org.readium.r2.streamer.fetcher.userSettingsUIPreset
 import org.readium.r2.streamer.parser.epub.EncryptionParser
 import org.readium.r2.streamer.parser.epub.NCXParser
 import org.readium.r2.streamer.parser.epub.NavigationDocumentParser
@@ -101,6 +105,27 @@ class EpubParser : PublicationParser {
 //        val fetcher = Fetcher(publication, container)
         parseNavigationDocument(container, publication)
         parseNcxDocument(container, publication)
+
+
+        var langType = LangType.other
+
+        for (lang in publication.metadata.languages) {
+            if (lang == "zh" || lang == "ja" || lang == "ko") langType = LangType.cjk
+            if (lang == "ar" || lang == "fa" || lang == "he") langType = LangType.afh
+        }
+
+        val pageDirection = publication.metadata.direction
+        val contentLayoutStyle = publication.metadata.contentLayoutStyle(langType, pageDirection)
+
+        val cssStyle = contentLayoutStyle.name
+
+        userSettingsUIPreset.get(ContentLayoutStyle.layout(cssStyle))?.let {
+            if (publication.type == Publication.TYPE.WEBPUB) {
+                publication.userSettingsUIPreset = forceScrollPreset
+            } else {
+                publication.userSettingsUIPreset = it
+            }
+        }
 
         container.drm = drm
         return PubBox(publication, container)
