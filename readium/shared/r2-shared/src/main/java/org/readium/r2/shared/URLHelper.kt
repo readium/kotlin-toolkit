@@ -16,3 +16,29 @@ fun getAbsolute(href: String, base: String): String {
     val relative = baseURI.resolve(href)
     return relative.toString()
 }
+
+
+internal fun normalize(base: String, in_href: String?) : String {
+    val href = in_href
+    if (href == null || href.isEmpty()) {
+        return ""
+    }
+    val hrefComponents = href.split( "/").filter({ !it.isEmpty() })
+    var baseComponents = base.split( "/").filter({ !it.isEmpty() })
+    baseComponents.dropLast(1)
+
+    val replacementsNumber = hrefComponents.filter({ it == ".." }).count()
+    var normalizedComponents = hrefComponents.filter({ it != ".." })
+    for (e in 0 until replacementsNumber) {
+        baseComponents.dropLast(1)
+    }
+    normalizedComponents = baseComponents + normalizedComponents
+    var normalizedString = ""
+    for (component in normalizedComponents) {
+        normalizedString += "/${component}"
+    }
+    return normalizedString
+}
+
+
+
