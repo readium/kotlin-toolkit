@@ -276,6 +276,12 @@ enum class PageProgressionDirection {
 }
 
 enum class ContentLayoutStyle {
-    ltr, rtl,
-    cjkv, cjkh
+    ltr,
+    rtl,
+    cjkv,
+    cjkh;
+
+    companion object {
+        fun layout(name: String): ContentLayoutStyle = ContentLayoutStyle.valueOf(name)
+    }
 }
