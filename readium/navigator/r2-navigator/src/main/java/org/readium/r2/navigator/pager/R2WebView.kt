@@ -1197,7 +1197,10 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             var numPages: Int = 0
             try {
                 numPages = getContentWidth() / (getClientWidth() - 2)
-            } finally {
+            }
+            catch (e:Exception) {
+            }
+            finally {
                 if (numPages == 0) {
                     numPages = 1
                 }
