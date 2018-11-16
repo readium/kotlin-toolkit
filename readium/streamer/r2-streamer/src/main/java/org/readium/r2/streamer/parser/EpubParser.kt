@@ -107,25 +107,11 @@ class EpubParser : PublicationParser {
         parseNcxDocument(container, publication)
 
 
-        var langType = LangType.other
-
-        for (lang in publication.metadata.languages) {
-            if (lang == "zh" || lang == "ja" || lang == "ko") langType = LangType.cjk
-            if (lang == "ar" || lang == "fa" || lang == "he") langType = LangType.afh
-        }
-
-        val pageDirection = publication.metadata.direction
-        val contentLayoutStyle = publication.metadata.contentLayoutStyle(langType, pageDirection)
-
-        val cssStyle = contentLayoutStyle.name
-
-        userSettingsUIPreset.get(ContentLayoutStyle.layout(cssStyle))?.let {
-            if (publication.type == Publication.TYPE.WEBPUB) {
-                publication.userSettingsUIPreset = forceScrollPreset
-            } else {
-                publication.userSettingsUIPreset = it
-            }
-        }
+        /*
+         * This might need to be moved as it's not really about parsing the Epub
+         * but it sets values needed (in UserSettings & ContentFilter)
+         */
+        setLayoutStyle(publication)
 
         container.drm = drm
         return PubBox(publication, container)
@@ -139,6 +125,36 @@ class EpubParser : PublicationParser {
                 ?.getFirst("rootfile")
                 ?.attributes?.get("full-path")
                 ?: "content.opf"
+    }
+
+    private fun setLayoutStyle(publication: Publication) {
+        var langType = LangType.other
+
+        langTypeLoop@ for (lang in publication.metadata.languages) {
+            when (lang) {
+                "zh", "ja", "ko" -> {
+                    langType = LangType.cjk
+                    break@langTypeLoop
+                }
+                "ar", "fa", "he" -> {
+                    langType = LangType.afh
+                    break@langTypeLoop
+                }
+            }
+        }
+
+        val pageDirection = publication.metadata.direction
+        val contentLayoutStyle = publication.metadata.contentLayoutStyle(langType, pageDirection)
+
+        publication.cssStyle = contentLayoutStyle.name
+
+        userSettingsUIPreset.get(ContentLayoutStyle.layout(publication.cssStyle as String))?.let {
+            if (publication.type == Publication.TYPE.WEBPUB) {
+                publication.userSettingsUIPreset = forceScrollPreset
+            } else {
+                publication.userSettingsUIPreset = it
+            }
+        }
     }
 
     private fun fillEncryptionProfile(publication: Publication, drm: Drm?): Publication {
