@@ -123,6 +123,8 @@ class Publication : Serializable {
 
     var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf()
 
+    var cssStyle: String? = null
+
     var coverLink: Link? = null
         get() = linkWithRel("cover")
 
