@@ -38,7 +38,6 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
     lateinit var epubName: String
     lateinit var publication: Publication
     lateinit var publicationIdentifier: String
-    lateinit var userSettings: UserSettings
 
     var pagerPosition = 0
 
@@ -130,9 +129,6 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
                 }
             }
         }
-
-        userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
-        userSettings.resourcePager = resourcePager
 
         resourcePager.direction = publication.metadata.direction
 

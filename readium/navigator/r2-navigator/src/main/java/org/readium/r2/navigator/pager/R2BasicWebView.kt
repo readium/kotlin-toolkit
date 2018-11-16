@@ -14,7 +14,6 @@ import android.util.AttributeSet
 import android.view.*
 import android.webkit.WebView
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.SCROLL_REF
 import org.readium.r2.shared.Locations
 
 
@@ -38,7 +37,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+            val scrollMode = activity.preferences.getBoolean("scroll", false)
             if (scrollMode) {
                 if (activity.publication.metadata.direction == "rtl") {
                     this.evaluateJavascript("scrollRightRTL();") { result ->
@@ -69,7 +68,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+            val scrollMode = activity.preferences.getBoolean("scroll", false)
             if (scrollMode) {
                 if (activity.publication.metadata.direction == "rtl") {
                     this.evaluateJavascript("scrollLeftRTL();") { result ->

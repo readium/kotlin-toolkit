@@ -25,10 +25,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
 import org.json.JSONObject
-import org.readium.r2.navigator.APPEARANCE_REF
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.SCROLL_REF
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.PageProgressionDirection
 
@@ -51,10 +49,10 @@ class R2EpubPageFragment : Fragment() {
 
         // Set text color depending of appearance preference
         (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor(
-                if (preferences.getInt(APPEARANCE_REF, 0) > 1) "#ffffff" else "#000000"
+                if (preferences.getInt("appearance", 0) > 1) "#ffffff" else "#000000"
         ))
 
-        val scrollMode = preferences.getBoolean(SCROLL_REF, false)
+        val scrollMode = preferences.getBoolean("scroll", false)
         when (scrollMode) {
             true -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.GONE
