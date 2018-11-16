@@ -87,26 +87,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         if (endHeadIndex == -1)
             return stream
 
-
-        var langType = LangType.other
-
-        for (lang in publication.metadata.languages) {
-            if (lang == "zh" || lang == "ja" || lang == "ko") langType = LangType.cjk
-            if (lang == "ar" || lang == "fa" || lang == "he") langType = LangType.afh
-        }
-
-        val pageDirection = publication.metadata.direction
-        val contentLayoutStyle = publication.metadata.contentLayoutStyle(langType, pageDirection)
-
-        val cssStyle = contentLayoutStyle.name
-
-        userSettingsUIPreset.get(ContentLayoutStyle.layout(cssStyle))?.let {
-            if (publication.type == Publication.TYPE.WEBPUB) {
-                publication.userSettingsUIPreset = forceScrollPreset
-            } else {
-                publication.userSettingsUIPreset = it
-            }
-        }
+        val cssStyle = publication.cssStyle
 
         val endIncludes = mutableListOf<String>()
         val beginIncludes = mutableListOf<String>()
@@ -219,13 +200,12 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
                             properties.put(presetValue.getString("name"), presetValue.getString("value"))
                         }
                     }
-                    
+
                     if (!isInPreset) {
                         properties.put(value.getString("name"), value.getString("value"))
                     }
 
                 }
-                println("user settings : $properties")
                 properties
             } catch (e: Exception) {
                 Log.e("ContentFilter", "Error parsing json : $e")
