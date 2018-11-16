@@ -218,69 +218,55 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
     private fun applyPreset(preset: Pair<ReadiumCSSName, Boolean?>): JSONObject {
         val readiumCSSProperty = JSONObject()
 
+        readiumCSSProperty.put("name", preset.first.ref)
+
         when(preset.first) {
             ReadiumCSSName.hyphens -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.hyphens.ref)
                 readiumCSSProperty.put("value", "")
             }
             ReadiumCSSName.fontOverride -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.fontOverride.ref)
                 readiumCSSProperty.put("value", "readium-font-off")
             }
             ReadiumCSSName.appearance -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.appearance.ref)
                 readiumCSSProperty.put("value", "readium-default-on")
             }
             ReadiumCSSName.publisherDefault -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.publisherDefault.ref)
                 readiumCSSProperty.put("value", "")
             }
             ReadiumCSSName.columnCount -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.columnCount.ref)
                 readiumCSSProperty.put("value", "auto")
             }
             ReadiumCSSName.pageMargins -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.pageMargins.ref)
                 readiumCSSProperty.put("value", "0.5")
             }
             ReadiumCSSName.lineHeight -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.lineHeight.ref)
                 readiumCSSProperty.put("value", "1.0")
             }
             ReadiumCSSName.ligatures -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.ligatures.ref)
                 readiumCSSProperty.put("value", "")
             }
             ReadiumCSSName.fontFamily -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.fontFamily.ref)
                 readiumCSSProperty.put("value", "Original")
             }
             ReadiumCSSName.fontSize -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.fontSize.ref)
                 readiumCSSProperty.put("value", "100%")
             }
             ReadiumCSSName.wordSpacing -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.wordSpacing.ref)
                 readiumCSSProperty.put("value", "0.0rem")
             }
             ReadiumCSSName.letterSpacing -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.letterSpacing.ref)
                 readiumCSSProperty.put("value", "0.0em")
             }
             ReadiumCSSName.textAlignment -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.textAlignment.ref)
                 readiumCSSProperty.put("value", "justify")
             }
             ReadiumCSSName.paraIndent -> {
-                readiumCSSProperty.put("name", ReadiumCSSName.paraIndent.ref)
                 readiumCSSProperty.put("value", "")
             }
             ReadiumCSSName.scroll -> {
                 if (preset.second!!) {
-                    readiumCSSProperty.put("name", ReadiumCSSName.scroll.ref)
                     readiumCSSProperty.put("value", "readium-scroll-on")
                 } else {
-                    readiumCSSProperty.put("name", ReadiumCSSName.scroll.ref)
                     readiumCSSProperty.put("value", "readium-scroll-off")
                 }
             }
@@ -331,7 +317,6 @@ val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
 )
 
 val forceScrollPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("hyphens") to false,
         ReadiumCSSName.ref("scroll") to true
 )
 
