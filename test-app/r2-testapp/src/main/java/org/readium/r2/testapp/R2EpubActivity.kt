@@ -23,8 +23,6 @@ import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.pager.R2EpubPageFragment
-import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.LocatorText
 import org.readium.r2.shared.drm.DRMModel
@@ -155,15 +153,6 @@ class R2EpubActivity : R2EpubActivity() {
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
-
-    override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
-        super.onPageChanged(pageIndex, totalPages, url)
-        val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-        if (url.equals(currentFragment?.webView?.url)) {
-            toast("Page $pageIndex of $totalPages")
         }
     }
 
