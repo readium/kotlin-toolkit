@@ -78,13 +78,20 @@ class R2EpubPageFragment : Fragment() {
         webView.settings.setSupportZoom(true)
         webView.settings.builtInZoomControls = true
         webView.settings.displayZoomControls = false
+        webView.overrideUrlLoading = true
+        webView.resourceUrl = resourceUrl
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                view.loadUrl(request.url.toString())
-                return false
+                if (webView.overrideUrlLoading) {
+                    view.loadUrl(request.url.toString())
+                    return false
+                } else {
+                    webView.overrideUrlLoading = true
+                    return true
+                }
             }
 
             override fun shouldOverrideKeyEvent(view: WebView, event: KeyEvent): Boolean {
