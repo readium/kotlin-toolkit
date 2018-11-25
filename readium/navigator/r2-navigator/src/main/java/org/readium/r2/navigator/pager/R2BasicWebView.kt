@@ -104,12 +104,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @android.webkit.JavascriptInterface
-    fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${activity.publication.metadata.direction}\");", null)
-    }
-
-
-    @android.webkit.JavascriptInterface
     fun progressionDidChange(positionString: String) {
         progression = positionString.toDouble()
         activity.storeProgression(Locations(progression = progression))
@@ -118,38 +112,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun centerTapped() {
         activity.toggleActionBar()
-    }
-
-    fun hide() {
-        activity.runOnUiThread {
-            activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE)
-        }
-    }
-
-    fun show() {
-        activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-
-    }
-
-    @android.webkit.JavascriptInterface
-    fun setProperty(key: String, value: String) {
-        activity.runOnUiThread {
-            this.evaluateJavascript("setProperty(\"$key\", \"$value\");", null)
-        }
-    }
-
-    @android.webkit.JavascriptInterface
-    fun removeProperty(key: String) {
-        activity.runOnUiThread {
-            this.evaluateJavascript("removeProperty(\"$key\");", null)
-        }
     }
 
     @android.webkit.JavascriptInterface
@@ -213,5 +175,30 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 }
             }
         }
+    }
+
+    fun Boolean.toInt() = if (this) 1 else 0
+
+    fun scrollToStart() {
+        val scrollMode:Int = activity.preferences.getBoolean(SCROLL_REF, false).toInt()
+        this.evaluateJavascript("scrollToStart(\"$scrollMode\");", null)
+    }
+
+    fun scrollToEnd() {
+        val scrollMode:Int = activity.preferences.getBoolean(SCROLL_REF, false).toInt()
+        this.evaluateJavascript("scrollToEnd(\"$scrollMode\");", null)
+    }
+
+    fun scrollToPosition(progression: Double) {
+        val scrollMode:Int = activity.preferences.getBoolean(SCROLL_REF, false).toInt()
+        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${activity.publication.metadata.direction}\", \"$scrollMode\");", null)
+    }
+
+    fun setProperty(key: String, value: String) {
+        this.evaluateJavascript("setProperty(\"$key\", \"$value\");", null)
+    }
+
+    fun removeProperty(key: String) {
+        this.evaluateJavascript("removeProperty(\"$key\");", null)
     }
 }
