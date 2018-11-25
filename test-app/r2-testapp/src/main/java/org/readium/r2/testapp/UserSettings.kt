@@ -21,10 +21,8 @@ import org.json.JSONArray
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.color
-import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.navigator.pager.R2WebView
 import org.readium.r2.navigator.fxl.R2FXLLayout
-import org.readium.r2.navigator.pager.R2BasicWebView
+import org.readium.r2.navigator.pager.*
 import org.readium.r2.shared.*
 import java.io.File
 
@@ -362,6 +360,10 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
                 updateSwitchable(scrollMode)
                 updateViewCSS(SCROLL_REF)
+
+                val currentFragment: R2EpubPageFragment = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
+                currentFragment.webView.scrollToPosition(currentFragment.webView.progression)
+
             }
         }
 
