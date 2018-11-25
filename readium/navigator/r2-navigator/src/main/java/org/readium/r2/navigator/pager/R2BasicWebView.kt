@@ -26,6 +26,7 @@ import org.jsoup.safety.Whitelist
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.Locations
+import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.getAbsolute
 
 
