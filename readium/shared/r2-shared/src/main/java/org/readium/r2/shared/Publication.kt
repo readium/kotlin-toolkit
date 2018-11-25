@@ -121,6 +121,10 @@ class Publication : Serializable {
     var otherLinks: MutableList<Link> = mutableListOf()
     var internalData: MutableMap<String, String> = mutableMapOf()
 
+    var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf()
+
+    var cssStyle: String? = null
+
     var coverLink: Link? = null
         get() = linkWithRel("cover")
 
@@ -183,6 +187,32 @@ class Publication : Serializable {
     }
 
 }
+
+// List of strings that can identify the name of a CSS custom property
+// Also used for storing UserSettings in UserDefaults
+enum class ReadiumCSSName(val ref: String) {
+    fontSize("--USER__fontSize"),
+    fontFamily("--USER__fontFamily"),
+    fontOverride("--USER__fontOverride"),
+    appearance("--USER__appearance"),
+    scroll("--USER__scroll"),
+    publisherDefault("--USER__advancedSettings"),
+    textAlignment("--USER__textAlign"),
+    columnCount("--USER__colCount"),
+    wordSpacing("--USER__wordSpacing"),
+    letterSpacing("--USER__letterSpacing"),
+    pageMargins("--USER__pageMargins"),
+    lineHeight("--USER__lineHeight"),
+    paraIndent("--USER__paraIndent"),
+    hyphens("--USER__bodyHyphens"),
+    ligatures("--USER__ligatures");
+
+    companion object {
+        fun ref(name: String): ReadiumCSSName = ReadiumCSSName.valueOf(name)
+    }
+
+}
+
 
 /**
  * Parse a JSON dictionary of extra information into a publication
