@@ -48,24 +48,45 @@ var scrollToPosition = function(position) {
     console.log("ScrollToOffset " + offset);
     document.body.scrollLeft = snapOffset(offset);
     update(position);
-
 };
 
-var scrollToPosition = function(position, dir) {
+var scrollToEnd = function(scrollMode) {
+    if(scrollMode == 0) {
+        console.log("scrollToEnd " + document.getElementsByTagName("body")[0].scrollWidth);
+        document.body.scrollLeft = document.getElementsByTagName("body")[0].scrollWidth;
+    } else {
+        // TODO
+    }
+};
+
+var scrollToStart = function(scrollMode) {
+    if(scrollMode == 0) {
+        console.log("scrollToStart " + 0);
+        document.body.scrollLeft = 0;
+    } else {
+        // TODO
+    }
+};
+
+var scrollToPosition = function(position, dir, scrollMode) {
     console.log("ScrollToPosition");
     if ((position < 0) || (position > 1)) {
         console.log("InvalidPosition");
         return;
     }
-    var offset = 0.0;
-    if (dir == 'rtl') {
-        offset = (-document.getElementsByTagName("body")[0].scrollWidth + maxScreenX) * (1.0-position);
+    if(scrollMode == 0) {
+        var offset = 0.0;
+        if (dir == 'rtl') {
+            offset = (-document.getElementsByTagName("body")[0].scrollWidth + maxScreenX) * (1.0-position);
+        } else {
+            offset = document.getElementsByTagName("body")[0].scrollWidth * position;
+        }
+        console.log(offset);
+        document.body.scrollLeft = snapOffset(offset);
+        update(position);
     } else {
-        offset = document.getElementsByTagName("body")[0].scrollWidth * position;
+        // TODO
     }
-    console.log(offset);
-    document.body.scrollLeft = snapOffset(offset);
-    update(position);
 };
 
 var scrollLeft = function() {
