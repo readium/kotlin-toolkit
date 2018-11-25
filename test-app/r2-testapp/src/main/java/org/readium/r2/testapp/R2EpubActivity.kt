@@ -36,6 +36,9 @@ import org.readium.r2.shared.drm.DRMModel
  */
 class R2EpubActivity : R2EpubActivity() {
 
+    //UserSettings
+    lateinit var userSettings: UserSettings
+
     // List of bookmarks on activity_outline_container.xml
     private var menuBmk: MenuItem? = null
 
@@ -69,7 +72,11 @@ class R2EpubActivity : R2EpubActivity() {
             }
         }, 100)
 
-        val appearancePref = preferences.getInt("appearance", 0)
+
+        userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
+        userSettings.resourcePager = resourcePager
+
+        val appearancePref = preferences.getInt(APPEARANCE_REF, 0)
         val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
         val textColors = mutableListOf("#000000", "#000000", "#ffffff")
         resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
