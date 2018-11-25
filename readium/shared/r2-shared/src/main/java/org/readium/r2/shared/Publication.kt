@@ -78,6 +78,8 @@ class Publication : Serializable {
      *      use it to check the type on your implementation
      *
      */
+
+    // Navigator Type
     enum class TYPE {
         EPUB, CBZ, FXL, WEBPUB, AUDIO
     }
@@ -86,6 +88,7 @@ class Publication : Serializable {
         fun fromString(type: T) = valueMap[type]
     }
 
+    // Parser Type
     enum class EXTENSION(var value: String) {
         EPUB(".epub"),
         CBZ(".cbz"),
