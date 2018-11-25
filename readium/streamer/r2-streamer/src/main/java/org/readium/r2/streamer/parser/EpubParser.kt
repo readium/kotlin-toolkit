@@ -10,14 +10,18 @@
 package org.readium.r2.streamer.parser
 
 import android.util.Log
+import org.readium.r2.shared.ContentLayoutStyle
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Encryption
+import org.readium.r2.shared.LangType
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerEpub
 import org.readium.r2.streamer.container.ContainerEpubDirectory
 import org.readium.r2.streamer.container.EpubContainer
+import org.readium.r2.streamer.fetcher.forceScrollPreset
+import org.readium.r2.streamer.fetcher.userSettingsUIPreset
 import org.readium.r2.streamer.parser.epub.EncryptionParser
 import org.readium.r2.streamer.parser.epub.NCXParser
 import org.readium.r2.streamer.parser.epub.NavigationDocumentParser
@@ -102,6 +106,13 @@ class EpubParser : PublicationParser {
         parseNavigationDocument(container, publication)
         parseNcxDocument(container, publication)
 
+
+        /*
+         * This might need to be moved as it's not really about parsing the Epub
+         * but it sets values needed (in UserSettings & ContentFilter)
+         */
+        setLayoutStyle(publication)
+
         container.drm = drm
         return PubBox(publication, container)
     }
@@ -114,6 +125,36 @@ class EpubParser : PublicationParser {
                 ?.getFirst("rootfile")
                 ?.attributes?.get("full-path")
                 ?: "content.opf"
+    }
+
+    private fun setLayoutStyle(publication: Publication) {
+        var langType = LangType.other
+
+        langTypeLoop@ for (lang in publication.metadata.languages) {
+            when (lang) {
+                "zh", "ja", "ko" -> {
+                    langType = LangType.cjk
+                    break@langTypeLoop
+                }
+                "ar", "fa", "he" -> {
+                    langType = LangType.afh
+                    break@langTypeLoop
+                }
+            }
+        }
+
+        val pageDirection = publication.metadata.direction
+        val contentLayoutStyle = publication.metadata.contentLayoutStyle(langType, pageDirection)
+
+        publication.cssStyle = contentLayoutStyle.name
+
+        userSettingsUIPreset.get(ContentLayoutStyle.layout(publication.cssStyle as String))?.let {
+            if (publication.type == Publication.TYPE.WEBPUB) {
+                publication.userSettingsUIPreset = forceScrollPreset
+            } else {
+                publication.userSettingsUIPreset = it
+            }
+        }
     }
 
     private fun fillEncryptionProfile(publication: Publication, drm: Drm?): Publication {
