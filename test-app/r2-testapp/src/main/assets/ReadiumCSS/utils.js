@@ -100,7 +100,9 @@ var scrollLeft = function() {
         update(last_known_scroll_position);
         return "";
     } else {
-        // TODO
+        document.body.scrollLeft = 0;
+        update(1.0);
+        return "edge"; // Need to previousDocument.
     }
 };
 
@@ -145,7 +147,9 @@ var scrollRight = function() {
         update(last_known_scroll_position);
         return "";
     } else {
-        // TODO
+        document.body.scrollLeft = scrollWidth;
+        update(0.0);
+        return "edge"; // Need to nextDocument.
     }
 };
 
