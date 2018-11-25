@@ -23,6 +23,7 @@ import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.LocatorText
 import org.readium.r2.shared.drm.DRMModel
