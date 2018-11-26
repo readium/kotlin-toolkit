@@ -5,7 +5,9 @@ window.addEventListener("load", function(){ // on page load
                         }, false);
 
 var last_known_scroll_position = 0;
+var last_known_scrollY_position = 0;
 var ticking = false;
+var scrolling = false;
 
 // Position in range [0 - 1].
 var update = function(position) {
@@ -15,17 +17,42 @@ var update = function(position) {
 //    console.log("update progression position : " + positionString);
 };
 
+
+
+
 window.addEventListener('scroll', function(e) {
-                       last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
-                       if (!ticking) {
-                       window.requestAnimationFrame(function() {
-                                                    update(last_known_scroll_position);
-                                                    ticking = false;
-                                                    });
-                       }
-                       ticking = true;
-                       return false;
-                       });
+
+    last_known_scrollY_position = window.scrollY / document.getElementsByTagName("body")[0].scrollHeight;
+    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
+
+    var scroll = document.documentElement.style.getPropertyValue("--USER__scroll").toString().trim();
+    var scroll_on = 'readium-scroll-on'.toString().trim();
+
+    console.log("scroll " + scroll);
+    console.log("scroll_on " + scroll_on);
+    console.log("(scroll == scroll_on) " + (scroll === scroll_on) );
+
+    if(scroll == scroll_on) {
+        scrolling = true;
+    } else {
+        scrolling = false;
+    }
+
+    if (!ticking) {
+        window.requestAnimationFrame(function() {
+            if(scrolling) {
+                update(last_known_scrollY_position);
+                console.log("last_known_scrollY_position " + last_known_scrollY_position);
+            } else {
+                update(last_known_scroll_position);
+                console.log("last_known_scroll_position " + last_known_scroll_position);
+            }
+            ticking = false;
+        });
+    }
+    ticking = true;
+    return false;
+});
 
 // Scroll to the given TagId in document and snap.
 var scrollToId = function(id) {
@@ -48,24 +75,56 @@ var scrollToPosition = function(position) {
     console.log("ScrollToOffset " + offset);
     document.body.scrollLeft = snapOffset(offset);
     update(position);
-
 };
 
-var scrollToPosition = function(position, dir) {
+var scrollToEnd = function(scrollMode) {
+    if(scrollMode == 0) {
+        console.log("scrollToEnd " + document.getElementsByTagName("body")[0].scrollWidth);
+        document.body.scrollLeft = document.getElementsByTagName("body")[0].scrollWidth;
+    } else {
+        console.log("scrollToBottom " + document.getElementsByTagName("body")[0].scrollHeight);
+        var body = (document.documentElement || document.body.parentNode || document.body)
+        body.scrollTop = document.body.scrollHeight;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+};
+
+var scrollToStart = function(scrollMode) {
+    if(scrollMode == 0) {
+        console.log("scrollToStart " + 0);
+        document.body.scrollLeft = 0;
+    } else {
+        console.log("scrollToTop " + 0);
+        var body = (document.documentElement || document.body.parentNode || document.body)
+        body.scrollTop = 0;
+        window.scrollTo(0, 0);
+    }
+};
+
+var scrollToPosition = function(position, dir, scrollMode) {
     console.log("ScrollToPosition");
     if ((position < 0) || (position > 1)) {
         console.log("InvalidPosition");
         return;
     }
-    var offset = 0.0;
-    if (dir == 'rtl') {
-        offset = (-document.getElementsByTagName("body")[0].scrollWidth + maxScreenX) * (1.0-position);
+    if(scrollMode == 0) {
+        var offset = 0.0;
+        if (dir == 'rtl') {
+            offset = (-document.getElementsByTagName("body")[0].scrollWidth + maxScreenX) * (1.0-position);
+        } else {
+            offset = document.getElementsByTagName("body")[0].scrollWidth * position;
+        }
+        console.log(offset);
+        document.body.scrollLeft = snapOffset(offset);
+        update(position);
     } else {
-        offset = document.getElementsByTagName("body")[0].scrollWidth * position;
+        var offset = document.getElementsByTagName("body")[0].scrollHeight * position;
+        console.log(offset);
+        var body = (document.documentElement || document.body.parentNode || document.body)
+        body.scrollTop = offset;
+        window.scrollTo(0, offset);
+        update(position);
     }
-    console.log(offset);
-    document.body.scrollLeft = snapOffset(offset);
-    update(position);
 };
 
 var scrollLeft = function() {

@@ -10,8 +10,15 @@ window.addEventListener("load", function(){ // on page load
                         // Events listeners for the touches.
                         window.document.addEventListener("touchstart", handleTouchStart, false);
                         window.document.addEventListener("touchend", handleTouchEnd, false);
+                        window.document.addEventListener("click",handleClick,true);
                         // When device orientation changes, screen X and Y sizes are recalculated.
                         }, false);
+
+
+var handleClick = function(event) {
+    Android.handleClick(event.target.outerHTML)
+};
+
 
 // When a touch is detected records its starting coordinates and if it's a singleTouchGesture.
 var handleTouchStart = function(event) {
