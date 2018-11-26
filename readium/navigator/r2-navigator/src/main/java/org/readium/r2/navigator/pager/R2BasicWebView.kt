@@ -181,18 +181,15 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     fun Boolean.toInt() = if (this) 1 else 0
 
     fun scrollToStart() {
-        val scrollMode:Int = activity.preferences.getBoolean(SCROLL_REF, false).toInt()
-        this.evaluateJavascript("scrollToStart(\"$scrollMode\");", null)
+        this.evaluateJavascript("scrollToStart();", null)
     }
 
     fun scrollToEnd() {
-        val scrollMode:Int = activity.preferences.getBoolean(SCROLL_REF, false).toInt()
-        this.evaluateJavascript("scrollToEnd(\"$scrollMode\");", null)
+        this.evaluateJavascript("scrollToEnd();", null)
     }
 
     fun scrollToPosition(progression: Double) {
-        val scrollMode:Int = activity.preferences.getBoolean(SCROLL_REF, false).toInt()
-        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${activity.publication.metadata.direction}\", \"$scrollMode\");", null)
+        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${activity.publication.metadata.direction}\");", null)
     }
 
     fun setProperty(key: String, value: String) {
