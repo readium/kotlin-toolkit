@@ -15,17 +15,20 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
+import android.speech.tts.TextToSpeech
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
+import android.widget.Toast
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRMModel
+import java.util.*
 
 
 /**
@@ -42,6 +45,8 @@ class R2EpubActivity : R2EpubActivity() {
 
     //Accessibility
     private var isExploreByTouchEnabled = false
+    private var pageEnded = false
+    private lateinit var tts: TextToSpeech
 
     // List of bookmarks on activity_outline_container.xml
     private var menuBmk: MenuItem? = null
@@ -174,8 +179,22 @@ class R2EpubActivity : R2EpubActivity() {
         isExploreByTouchEnabled = am.isTouchExplorationEnabled
 
         if (isExploreByTouchEnabled) {
-            publication.userSettingsUIPreset.put(ReadiumCSSName.ref("scroll"), true)
 
+            //Initialization of TTS
+//            tts = TextToSpeech(this.applicationContext, object : TextToSpeech.OnInitListener {
+//                override fun onInit(p0: Int) {
+//                    if (p0 != TextToSpeech.ERROR) {
+//                        val language = tts.setLanguage(Locale(publication.metadata.languages.firstOrNull()))
+//
+//                        if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
+//                            tts.language = Locale.UK
+//                        }
+//                    }
+//                }
+//            })
+
+            //Preset & preferences adapted
+            publication.userSettingsUIPreset.put(ReadiumCSSName.ref("scroll"), true)
             preferences.edit().putBoolean(SCROLL_REF, true).apply() //overriding user preferences
 
             userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
@@ -193,7 +212,25 @@ class R2EpubActivity : R2EpubActivity() {
             userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
             userSettings.resourcePager = resourcePager
         }
+    }
 
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+//        tts.shutdown()
+    }
+
+
+    override fun onPageEnded(end: Boolean) {
+        if (isExploreByTouchEnabled) {
+            if (!pageEnded == end && end) {
+                toast("End of chapter")
+//                tts.speak("End of chapter", TextToSpeech.QUEUE_ADD, null, "1")
+            }
+
+            pageEnded = end
+        }
     }
 
 }
