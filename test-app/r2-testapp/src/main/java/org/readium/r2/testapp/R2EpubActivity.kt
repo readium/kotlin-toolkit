@@ -18,15 +18,15 @@ import android.os.Handler
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.shared.APPEARANCE_REF
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.LocatorText
+import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRMModel
+
 
 /**
  * R2EpubActivity : Extension of the R2EpubActivity() from navigator
@@ -39,6 +39,9 @@ class R2EpubActivity : R2EpubActivity() {
 
     //UserSettings
     lateinit var userSettings: UserSettings
+
+    //Accessibility
+    private var isExploreByTouchEnabled = false
 
     // List of bookmarks on activity_outline_container.xml
     private var menuBmk: MenuItem? = null
@@ -72,10 +75,6 @@ class R2EpubActivity : R2EpubActivity() {
                 }
             }
         }, 100)
-
-
-        userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
-        userSettings.resourcePager = resourcePager
 
         val appearancePref = preferences.getInt(APPEARANCE_REF, 0)
         val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
@@ -162,6 +161,39 @@ class R2EpubActivity : R2EpubActivity() {
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        /*
+         * If TalkBack or any touch exploration service is activated
+         * we force scroll mode (and override user preferences)
+         */
+        val am = getSystemService(ACCESSIBILITY_SERVICE) as AccessibilityManager
+        isExploreByTouchEnabled = am.isTouchExplorationEnabled
+
+        if (isExploreByTouchEnabled) {
+            publication.userSettingsUIPreset.put(ReadiumCSSName.ref("scroll"), true)
+
+            preferences.edit().putBoolean(SCROLL_REF, true).apply() //overriding user preferences
+
+            userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
+            userSettings.saveChanges()
+
+            Handler().postDelayed({
+                userSettings.resourcePager = resourcePager
+                userSettings.updateViewCSS(SCROLL_REF)
+            }, 500)
+        } else {
+            if (publication.cssStyle != ContentLayoutStyle.cjkv.name) {
+                publication.userSettingsUIPreset.remove(ReadiumCSSName.ref("scroll"))
+            }
+
+            userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
+            userSettings.resourcePager = resourcePager
+        }
+
     }
 
 }

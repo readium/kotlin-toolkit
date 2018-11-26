@@ -2,7 +2,8 @@
  * Module: r2-navigator-kotlin
  * Developers: Aferdita Muriqi, Clément Baumann, Mostapha Idoubihi, Paul Stoica
  *
- * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+ * Licensed to the Readium Foundation under one or more contributor license agreements.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -112,7 +113,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
     }
 
 
-    private fun saveChanges() {
+    fun saveChanges() {
         val json = makeJson()
         val dir = File(context.getExternalFilesDir(null).path + "/styles/")
         dir.mkdirs()
@@ -120,7 +121,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         file.printWriter().use { out ->
             out.println(json)
         }
-        println(json)
     }
 
     private fun updateEnumerable(enumerable: Enumerable) {
