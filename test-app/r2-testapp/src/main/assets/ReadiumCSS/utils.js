@@ -2,6 +2,7 @@
 window.addEventListener("load", function(){ // on page load
                         // Notify native code that the page is loaded.
                         //webkit.messageHandlers.didLoad.postMessage("");
+                            checkScrollMode();
                         }, false);
 
 var last_known_scroll_position = 0;
@@ -17,7 +18,22 @@ var update = function(position) {
 //    console.log("update progression position : " + positionString);
 };
 
+var checkScrollMode = function() {
 
+    var scrollMode = document.documentElement.style.getPropertyValue("--USER__scroll").toString().trim();
+    var scroll_on = 'readium-scroll-on'.toString().trim();
+
+    console.log("scrollMode " + scrollMode);
+    console.log("scroll_on " + scroll_on);
+    console.log("(scrollMode == scroll_on) " + (scrollMode === scroll_on) );
+
+    if(scrollMode == scroll_on) {
+        scrolling = true;
+    } else {
+        scrolling = false;
+    }
+
+};
 
 
 window.addEventListener('scroll', function(e) {
@@ -25,18 +41,7 @@ window.addEventListener('scroll', function(e) {
     last_known_scrollY_position = window.scrollY / document.getElementsByTagName("body")[0].scrollHeight;
     last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
 
-    var scroll = document.documentElement.style.getPropertyValue("--USER__scroll").toString().trim();
-    var scroll_on = 'readium-scroll-on'.toString().trim();
-
-    console.log("scroll " + scroll);
-    console.log("scroll_on " + scroll_on);
-    console.log("(scroll == scroll_on) " + (scroll === scroll_on) );
-
-    if(scroll == scroll_on) {
-        scrolling = true;
-    } else {
-        scrolling = false;
-    }
+    checkScrollMode();
 
     if (!ticking) {
         window.requestAnimationFrame(function() {
@@ -77,8 +82,11 @@ var scrollToPosition = function(position) {
     update(position);
 };
 
-var scrollToEnd = function(scrollMode) {
-    if(scrollMode == 0) {
+var scrollToEnd = function() {
+
+    checkScrollMode();
+
+    if(!scrolling) {
         console.log("scrollToEnd " + document.getElementsByTagName("body")[0].scrollWidth);
         document.body.scrollLeft = document.getElementsByTagName("body")[0].scrollWidth;
     } else {
@@ -89,8 +97,11 @@ var scrollToEnd = function(scrollMode) {
     }
 };
 
-var scrollToStart = function(scrollMode) {
-    if(scrollMode == 0) {
+var scrollToStart = function() {
+
+    checkScrollMode();
+
+    if(!scrolling) {
         console.log("scrollToStart " + 0);
         document.body.scrollLeft = 0;
     } else {
@@ -101,13 +112,16 @@ var scrollToStart = function(scrollMode) {
     }
 };
 
-var scrollToPosition = function(position, dir, scrollMode) {
+var scrollToPosition = function(position, dir) {
     console.log("ScrollToPosition");
     if ((position < 0) || (position > 1)) {
         console.log("InvalidPosition");
         return;
     }
-    if(scrollMode == 0) {
+
+    checkScrollMode();
+
+    if(!scrolling) {
         var offset = 0.0;
         if (dir == 'rtl') {
             offset = (-document.getElementsByTagName("body")[0].scrollWidth + maxScreenX) * (1.0-position);
