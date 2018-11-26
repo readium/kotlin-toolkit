@@ -77,8 +77,8 @@ var scrollToPosition = function(position) {
     update(position);
 };
 
-var scrollToEnd = function(scrollMode) {
-    if(scrollMode == 0) {
+var scrollToEnd = function() {
+    if(!scrolling) {
         console.log("scrollToEnd " + document.getElementsByTagName("body")[0].scrollWidth);
         document.body.scrollLeft = document.getElementsByTagName("body")[0].scrollWidth;
     } else {
@@ -89,8 +89,8 @@ var scrollToEnd = function(scrollMode) {
     }
 };
 
-var scrollToStart = function(scrollMode) {
-    if(scrollMode == 0) {
+var scrollToStart = function() {
+    if(!scrolling) {
         console.log("scrollToStart " + 0);
         document.body.scrollLeft = 0;
     } else {
@@ -101,13 +101,13 @@ var scrollToStart = function(scrollMode) {
     }
 };
 
-var scrollToPosition = function(position, dir, scrollMode) {
+var scrollToPosition = function(position, dir) {
     console.log("ScrollToPosition");
     if ((position < 0) || (position > 1)) {
         console.log("InvalidPosition");
         return;
     }
-    if(scrollMode == 0) {
+    if(!scrolling) {
         var offset = 0.0;
         if (dir == 'rtl') {
             offset = (-document.getElementsByTagName("body")[0].scrollWidth + maxScreenX) * (1.0-position);
