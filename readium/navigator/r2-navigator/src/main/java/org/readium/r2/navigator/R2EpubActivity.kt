@@ -14,9 +14,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import org.json.JSONObject
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.PageCallback
 import org.readium.r2.navigator.pager.R2EpubPageFragment
@@ -26,7 +28,7 @@ import org.readium.r2.shared.*
 import java.net.URI
 
 
-open class R2EpubActivity : AppCompatActivity(),PageCallback {
+open class R2EpubActivity : AppCompatActivity(), PageCallback {
 
     lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
@@ -37,11 +39,11 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
     protected lateinit var epubName: String
     lateinit var publication: Publication
     lateinit var publicationIdentifier: String
-    lateinit var userSettings: UserSettings
 
     var pagerPosition = 0
 
     private var currentPagerPosition: Int = 0
+    lateinit var adapter:R2PagerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,29 +111,23 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
 
 
         if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
-            val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
-            resourcePager.adapter = adapter
+            adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
         } else {
             when (preferences.getInt("colCount", 0)) {
                 1 -> {
-                    val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
-                    resourcePager.adapter = adapter
+                    adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
                 }
                 2 -> {
-                    val adapter = R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
-                    resourcePager.adapter = adapter
+                    adapter = R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
                 }
                 else -> {
                     // TODO based on device
                     // TODO decide if 1 page or 2 page
-                    val adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
-                    resourcePager.adapter = adapter
+                    adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
                 }
             }
         }
-
-        userSettings = UserSettings(preferences, this)
-        userSettings.resourcePager = resourcePager
+        resourcePager.adapter = adapter
 
         resourcePager.direction = publication.metadata.direction
 
@@ -153,13 +149,22 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
             override fun onPageSelected(position: Int) {
                 pagerPosition = 0
                 val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-                if (currentPagerPosition < position) {
-                    // handle swipe LEFT
-                    currentFragment?.webView?.setCurrentItem(0,false)
-
-                } else if (currentPagerPosition > position) {
-                    // handle swipe RIGHT
-                    currentFragment?.webView?.setCurrentItem(currentFragment.webView.numPages - 1,false)
+                if (preferences.getBoolean(SCROLL_REF, false)) {
+                    if (currentPagerPosition < position) {
+                        // handle swipe LEFT
+                        currentFragment?.webView?.scrollToStart()
+                    } else if (currentPagerPosition > position) {
+                        // handle swipe RIGHT
+                        currentFragment?.webView?.scrollToEnd()
+                    }
+                } else {
+                    if (currentPagerPosition < position) {
+                        // handle swipe LEFT
+                        currentFragment?.webView?.setCurrentItem(0, false)
+                    } else if (currentPagerPosition > position) {
+                        // handle swipe RIGHT
+                        currentFragment?.webView?.setCurrentItem(currentFragment.webView.numPages - 1, false)
+                    }
                 }
                 storeDocumentIndex()
                 currentPagerPosition = position; // Update current position
@@ -212,7 +217,23 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
                         if (resource is Pair<*, *>) {
                             resource as Pair<Int, String>
                             if (resource.second.endsWith(href)) {
-                                resourcePager.currentItem = resource.first
+                                if (resourcePager.currentItem == resource.first) {
+                                    // reload webview if it has an anchor
+                                    val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
+                                    locator.locations.id?.let {
+                                        var anchor = it
+                                        if (anchor.startsWith("#")) {
+                                        } else {
+                                            anchor = "#" + anchor
+                                        }
+                                        val goto = resource.second +  anchor
+                                        currentFragent?.webView?.loadUrl(goto)
+                                    }?:run {
+                                        currentFragent?.webView?.loadUrl(resource.second)
+                                    }
+                                } else {
+                                    resourcePager.currentItem = resource.first
+                                }
                                 storeDocumentIndex()
                                 break
                             }
@@ -226,6 +247,8 @@ open class R2EpubActivity : AppCompatActivity(),PageCallback {
                         }
                     }
                 }
+
+                resourcePager.adapter = adapter
 
                 if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
                     setCurrent(resourcesSingle)

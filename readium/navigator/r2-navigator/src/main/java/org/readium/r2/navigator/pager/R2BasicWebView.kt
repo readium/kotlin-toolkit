@@ -10,12 +10,24 @@
 package org.readium.r2.navigator.pager
 
 import android.content.Context
+import android.os.Build
+import android.text.Html
 import android.util.AttributeSet
-import android.view.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
 import android.webkit.WebView
+import android.widget.ImageButton
+import android.widget.ListPopupWindow
+import android.widget.PopupWindow
+import android.widget.TextView
+import org.jsoup.Jsoup
+import org.jsoup.safety.Whitelist
+import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.SCROLL_REF
 import org.readium.r2.shared.Locations
+import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.getAbsolute
 
 
 /**
@@ -26,6 +38,8 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     lateinit var activity: R2EpubActivity
     var progression: Double = 0.0
+    var overrideUrlLoading = true
+    var resourceUrl: String? = null
 
     @android.webkit.JavascriptInterface
     open fun scrollRight() {
@@ -38,7 +52,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+            val scrollMode = activity.preferences.getBoolean("scroll", false)
             if (scrollMode) {
                 if (activity.publication.metadata.direction == "rtl") {
                     this.evaluateJavascript("scrollRightRTL();") { result ->
@@ -69,7 +83,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+            val scrollMode = activity.preferences.getBoolean("scroll", false)
             if (scrollMode) {
                 if (activity.publication.metadata.direction == "rtl") {
                     this.evaluateJavascript("scrollLeftRTL();") { result ->
@@ -91,12 +105,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @android.webkit.JavascriptInterface
-    fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${activity.publication.metadata.direction}\");", null)
-    }
-
-
-    @android.webkit.JavascriptInterface
     fun progressionDidChange(positionString: String) {
         progression = positionString.toDouble()
         activity.storeProgression(Locations(progression = progression))
@@ -107,36 +115,91 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         activity.toggleActionBar()
     }
 
-    fun hide() {
-        activity.runOnUiThread {
-            activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE)
+    @android.webkit.JavascriptInterface
+    fun handleClick(html: String) {
+        val doc = Jsoup.parse(html)
+        val link = doc.select("a[epub:type=noteref]")?.first()
+        link?.let { noteref ->
+            val href = noteref.attr("href")
+            if (href.indexOf("#") > 0) {
+                val id = href.substring(href.indexOf('#')+1)
+                var absolute = getAbsolute(href, resourceUrl!!)
+                absolute = absolute.substring(0, absolute.indexOf("#"))
+                val document = Jsoup.connect(absolute).get()
+                val aside = document.select("aside#$id").first()?.html()
+                aside?.let {
+                    val safe = Jsoup.clean(aside, Whitelist.relaxed())
+
+                    // Initialize a new instance of LayoutInflater service
+                    val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
+                    // Inflate the custom layout/view
+                    val customView = inflater.inflate(R.layout.popup_footnote, null)
+
+                    // Initialize a new instance of popup window
+                    val mPopupWindow = PopupWindow(
+                            customView,
+                            ListPopupWindow.WRAP_CONTENT,
+                            ListPopupWindow.WRAP_CONTENT
+                    )
+                    mPopupWindow.isOutsideTouchable = true
+                    mPopupWindow.isFocusable = true
+
+                    // Set an elevation value for popup window
+                    // Call requires API level 21
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        mPopupWindow.elevation = 5.0f
+                    }
+
+                    val textView = customView.findViewById(R.id.footnote) as TextView
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        textView.text = Html.fromHtml(safe, Html.FROM_HTML_MODE_COMPACT)
+                    } else {
+                        textView.text = Html.fromHtml(safe)
+                    }
+
+                    // Get a reference for the custom view close button
+                    val closeButton = customView.findViewById(R.id.ib_close) as ImageButton
+
+                    // Set a click listener for the popup window close button
+                    closeButton.setOnClickListener(object : View.OnClickListener {
+                        override fun onClick(view: View) {
+                            // Dismiss the popup window
+                            mPopupWindow.dismiss()
+                        }
+                    })
+
+                    // Finally, show the popup window at the center location of root relative layout
+                    mPopupWindow.showAtLocation(this, Gravity.CENTER, 0, 0)
+
+                    overrideUrlLoading = false
+                }
+            }
         }
     }
 
-    fun show() {
-        activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+    fun Boolean.toInt() = if (this) 1 else 0
 
+    fun scrollToStart() {
+        val scrollMode:Int = activity.preferences.getBoolean(SCROLL_REF, false).toInt()
+        this.evaluateJavascript("scrollToStart(\"$scrollMode\");", null)
     }
 
-    @android.webkit.JavascriptInterface
+    fun scrollToEnd() {
+        val scrollMode:Int = activity.preferences.getBoolean(SCROLL_REF, false).toInt()
+        this.evaluateJavascript("scrollToEnd(\"$scrollMode\");", null)
+    }
+
+    fun scrollToPosition(progression: Double) {
+        val scrollMode:Int = activity.preferences.getBoolean(SCROLL_REF, false).toInt()
+        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${activity.publication.metadata.direction}\", \"$scrollMode\");", null)
+    }
+
     fun setProperty(key: String, value: String) {
-        activity.runOnUiThread {
-            this.evaluateJavascript("setProperty(\"$key\", \"$value\");", null)
-        }
+        this.evaluateJavascript("setProperty(\"$key\", \"$value\");", null)
     }
 
-    @android.webkit.JavascriptInterface
     fun removeProperty(key: String) {
-        activity.runOnUiThread {
-            this.evaluateJavascript("removeProperty(\"$key\");", null)
-        }
+        this.evaluateJavascript("removeProperty(\"$key\");", null)
     }
-
 }

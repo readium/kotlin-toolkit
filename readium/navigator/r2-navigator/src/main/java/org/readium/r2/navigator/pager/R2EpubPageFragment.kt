@@ -25,12 +25,10 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
 import org.json.JSONObject
-import org.readium.r2.navigator.APPEARANCE_REF
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.SCROLL_REF
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.PageProgressionDirection
+import android.text.method.Touch.scrollTo
+import org.readium.r2.shared.*
 
 
 class R2EpubPageFragment : Fragment() {
@@ -51,10 +49,10 @@ class R2EpubPageFragment : Fragment() {
 
         // Set text color depending of appearance preference
         (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor(
-                if (preferences.getInt(APPEARANCE_REF, 0) > 1) "#ffffff" else "#000000"
+                if (preferences.getInt("appearance", 0) > 1) "#ffffff" else "#000000"
         ))
 
-        val scrollMode = preferences.getBoolean(SCROLL_REF, false)
+        val scrollMode = preferences.getBoolean("scroll", false)
         when (scrollMode) {
             true -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.GONE
@@ -80,13 +78,20 @@ class R2EpubPageFragment : Fragment() {
         webView.settings.setSupportZoom(true)
         webView.settings.builtInZoomControls = true
         webView.settings.displayZoomControls = false
+        webView.overrideUrlLoading = true
+        webView.resourceUrl = resourceUrl
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                view.loadUrl(request.url.toString())
-                return false
+                if (webView.overrideUrlLoading) {
+                    view.loadUrl(request.url.toString())
+                    return false
+                } else {
+                    webView.overrideUrlLoading = true
+                    return true
+                }
             }
 
             override fun shouldOverrideKeyEvent(view: WebView, event: KeyEvent): Boolean {
@@ -102,18 +107,32 @@ class R2EpubPageFragment : Fragment() {
                 val nextFragment:R2EpubPageFragment? = (webView.activity.resourcePager.adapter as R2PagerAdapter).getNextFragment() as? R2EpubPageFragment
 
                 if (this@R2EpubPageFragment.tag == currentFragment.tag) {
-                    val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+                    var locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+
+                    // TODO this seems to be needed, will need to test more
+                    if (url!!.indexOf("#") > 0) {
+                        val id = url.substring(url.indexOf('#'))
+                        webView.loadUrl("javascript:scrollAnchor(" + id + ");");
+                        locations = Locations(id = id)
+                    }
+
                     if (locations.id == null) {
                         locations.progression?.let { progression ->
                             currentFragment.webView.progression = progression
+
+                            if (webView.activity.preferences.getBoolean(SCROLL_REF, false)) {
+
                             currentFragment.webView.scrollToPosition(progression)
-                            (object : CountDownTimer(100, 1) {
-                                override fun onTick(millisUntilFinished: Long) {}
-                                override fun onFinish() {
-                                    currentFragment.webView.calculateCurrentItem()
-                                    currentFragment.webView.setCurrentItem(currentFragment.webView.mCurItem,false)
-                                }
-                            }).start()
+
+                            } else {
+                                (object : CountDownTimer(100, 1) {
+                                    override fun onTick(millisUntilFinished: Long) {}
+                                    override fun onFinish() {
+                                        currentFragment.webView.calculateCurrentItem()
+                                        currentFragment.webView.setCurrentItem(currentFragment.webView.mCurItem, false)
+                                    }
+                                }).start()
+                            }
                         }
                     }
                 }
@@ -122,10 +141,10 @@ class R2EpubPageFragment : Fragment() {
                     if (this@R2EpubPageFragment.tag == nextFragment.tag){
                         if (nextFragment.webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
                             // The view has RTL layout
-                            nextFragment.webView.scrollToPosition(1.0)
+                            nextFragment.webView.scrollToEnd()
                         } else {
                             // The view has LTR layout
-                            nextFragment.webView.scrollToPosition(0.0)
+                            nextFragment.webView.scrollToStart()
                         }
                     }
                 }
@@ -134,10 +153,10 @@ class R2EpubPageFragment : Fragment() {
                     if (this@R2EpubPageFragment.tag == previousFragment.tag){
                         if (previousFragment.webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
                             // The view has RTL layout
-                            previousFragment.webView.scrollToPosition(0.0)
+                            previousFragment.webView.scrollToStart()
                         } else {
                             // The view has LTR layout
-                            previousFragment.webView.scrollToPosition(1.0)
+                            previousFragment.webView.scrollToEnd()
                         }
                     }
                 }
