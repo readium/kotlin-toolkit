@@ -1262,4 +1262,5 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
 interface PageCallback {
     fun onPageChanged(pageIndex: Int, totalPages: Int, url: String)
+    fun onPageEnded(end: Boolean)
 }

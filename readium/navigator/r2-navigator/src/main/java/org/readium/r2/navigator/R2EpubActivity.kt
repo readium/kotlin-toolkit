@@ -358,5 +358,9 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
         //optional
     }
 
+    override fun onPageEnded(end: Boolean) {
+        //optional
+    }
+
 }
 
