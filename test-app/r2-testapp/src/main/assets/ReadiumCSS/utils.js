@@ -25,14 +25,14 @@ window.addEventListener('scroll', function(e) {
     last_known_scrollY_position = window.scrollY / document.getElementsByTagName("body")[0].scrollHeight;
     last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
 
-    var scroll = document.documentElement.style.getPropertyValue("--USER__scroll").toString().trim();
+    var scrollMode = document.documentElement.style.getPropertyValue("--USER__scroll").toString().trim();
     var scroll_on = 'readium-scroll-on'.toString().trim();
 
-    console.log("scroll " + scroll);
+    console.log("scrollMode " + scrollMode);
     console.log("scroll_on " + scroll_on);
-    console.log("(scroll == scroll_on) " + (scroll === scroll_on) );
+    console.log("(scrollMode == scroll_on) " + (scrollMode === scroll_on) );
 
-    if(scroll == scroll_on) {
+    if(scrollMode == scroll_on) {
         scrolling = true;
     } else {
         scrolling = false;
