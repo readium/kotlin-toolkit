@@ -2,6 +2,7 @@
 window.addEventListener("load", function(){ // on page load
                         // Notify native code that the page is loaded.
                         //webkit.messageHandlers.didLoad.postMessage("");
+                            checkScrollMode();
                         }, false);
 
 var last_known_scroll_position = 0;
@@ -17,13 +18,7 @@ var update = function(position) {
 //    console.log("update progression position : " + positionString);
 };
 
-
-
-
-window.addEventListener('scroll', function(e) {
-
-    last_known_scrollY_position = window.scrollY / document.getElementsByTagName("body")[0].scrollHeight;
-    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
+var checkScrollMode = function() {
 
     var scrollMode = document.documentElement.style.getPropertyValue("--USER__scroll").toString().trim();
     var scroll_on = 'readium-scroll-on'.toString().trim();
@@ -37,6 +32,16 @@ window.addEventListener('scroll', function(e) {
     } else {
         scrolling = false;
     }
+
+};
+
+
+window.addEventListener('scroll', function(e) {
+
+    last_known_scrollY_position = window.scrollY / document.getElementsByTagName("body")[0].scrollHeight;
+    last_known_scroll_position = window.scrollX / document.getElementsByTagName("body")[0].scrollWidth;
+
+    checkScrollMode();
 
     if (!ticking) {
         window.requestAnimationFrame(function() {
@@ -78,6 +83,9 @@ var scrollToPosition = function(position) {
 };
 
 var scrollToEnd = function() {
+
+    checkScrollMode();
+
     if(!scrolling) {
         console.log("scrollToEnd " + document.getElementsByTagName("body")[0].scrollWidth);
         document.body.scrollLeft = document.getElementsByTagName("body")[0].scrollWidth;
@@ -90,6 +98,9 @@ var scrollToEnd = function() {
 };
 
 var scrollToStart = function() {
+
+    checkScrollMode();
+
     if(!scrolling) {
         console.log("scrollToStart " + 0);
         document.body.scrollLeft = 0;
@@ -107,6 +118,9 @@ var scrollToPosition = function(position, dir) {
         console.log("InvalidPosition");
         return;
     }
+
+    checkScrollMode();
+
     if(!scrolling) {
         var offset = 0.0;
         if (dir == 'rtl') {
