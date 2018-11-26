@@ -66,4 +66,62 @@
     <string name="opds_detail_download_button">Download</string>
 
 
+    <string name="menu_label_drm">DRM</string>
+    <string name="menu_label_settings">Settings</string>
+    <string name="menu_label_toc">TOC</string>
+    <string name="usersettings_label_font">Font</string>
+    <string name="usersettings_appearance_default">Default</string>
+    <string name="usersettings_appearance_sepia">Sepia</string>
+    <string name="usersettings_appearance_night">Night</string>
+    <string name="usersettings_label_scroll_mode">Scroll mode</string>
+    <string name="usersettings_publisher_default">Original</string>
+    <string name="usersettings_label_columns">Columns</string>
+    <string name="usersettings_auto">Auto</string>
+    <string name="usersettings_column_one">1</string>
+    <string name="usersettings_column_two">2</string>
+    <string name="usersettings_label_page_margins">Page Margins</string>
+    <string name="usersettings_page_margin_default">0.75</string>
+    <string name="usersettings_label_word_spacing">Word Spacing</string>
+    <string name="usersettings_label_letter_spacing">Letter Spacing</string>
+    <string name="usersettings_label_line_height">Line Height</string>
+
+    <!-- Accessibility -->
+    <string name="usersettings_description_brightness">Set Brightness</string>
+    <string name="usersettings_publisher_default_label">Original Settings</string>
+    <string name="usersettings_description_font_increase">Increase Font Size</string>
+    <string name="usersettings_description_font_decrease">Decrease Font Size</string>
+    <string name="usersettings_description_pm_increase">Increase Page Margins Size</string>
+    <string name="usersettings_description_pm_decrease">Decrease Page Margins Size</string>
+    <string name="usersettings_description_ws_increase">Increase Word Spacing</string>
+    <string name="usersettings_description_ws_decrease">Decrease Word Spacing</string>
+    <string name="usersettings_description_ls_increase">Increase Letter Spacing</string>
+    <string name="usersettings_description_ls_decrease">Decrease Letter Spacing</string>
+    <string name="usersettings_description_lh_increase">Increase Line Height</string>
+    <string name="usersettings_description_lh_decrease">Decrease Line Height</string>
+
+    <string name="drm_information_header">INFORMATION</string>
+    <string name="drm_label_license_type">License Type</string>
+    <string name="drm_label_state">State</string>
+    <string name="drm_label_provider">Provider</string>
+    <string name="drm_label_issued">Issued</string>
+    <string name="drm_label_updated">Updated</string>
+    <string name="drm_label_rights">RIGHTS</string>
+    <string name="drm_label_prints_left">Prints left</string>
+    <string name="drm_label_copies_left">Copies left</string>
+    <string name="drm_label_start">Start</string>
+    <string name="drm_label_end">End</string>
+    <string name="drm_label_potential_right_end">Potential right end</string>
+    <string name="drm_label_actions">ACTIONS</string>
+    <string name="drm_label_renew">RENEW</string>
+    <string name="drm_label_return">RETURN</string>
+
+    <string-array name="font_list">
+        <item>Original</item>
+        <item>PT Serif</item>
+        <item>Roboto</item>
+        <item>Source Sans Pro</item>
+        <item>Vollkorn</item>
+        <item>OpenDyslexic</item>
+    </string-array>
+
 </resources>
