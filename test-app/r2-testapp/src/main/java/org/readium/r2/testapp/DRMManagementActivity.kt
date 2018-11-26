@@ -24,7 +24,6 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.model.documents.LicenseDocument
-import org.readium.r2.navigator.R
 import org.readium.r2.shared.drm.DRMModel
 import android.content.Intent
 import android.net.Uri

@@ -19,7 +19,6 @@ import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.*
 import org.json.JSONArray
-import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.color
 import org.readium.r2.navigator.fxl.R2FXLLayout
