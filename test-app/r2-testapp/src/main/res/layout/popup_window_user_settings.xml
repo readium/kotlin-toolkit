@@ -4,7 +4,8 @@
   ~ Module: r2-navigator-kotlin
   ~ Developers: Aferdita Muriqi, Clément Baumann
   ~
-  ~ Copyright (c) 2018. Readium Foundation. All rights reserved.
+  ~ Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+  ~ Licensed to the Readium Foundation under one or more contributor license agreements.
   ~ Use of this source code is governed by a BSD-style license which is detailed in the
   ~ LICENSE file present in the project repository where this source code is maintained.
   -->
@@ -31,7 +32,7 @@
             <TabWidget
                 android:id="@android:id/tabs"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"/>
 
             <FrameLayout
                 android:id="@android:id/tabcontent"
@@ -39,7 +40,7 @@
                 android:layout_height="match_parent">
 
                 <LinearLayout
-                    android:id="@+id/Settings"
+                    android:id="@+id/SettingsTab"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -76,7 +77,6 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
                         android:orientation="horizontal">
 
                         <ImageButton
@@ -115,14 +115,15 @@
                             android:layout_gravity="center_vertical"
                             android:layout_marginEnd="20dp"
                             android:gravity="center_horizontal"
-                            android:text="@string/usersettings_label_font" />
+                            android:text="@string/usersettings_label_font"
+                            android:textSize="16sp"/>
 
 
                         <Spinner
                             android:id="@+id/spinner_action_settings_intervall_values"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
-                            android:spinnerMode="dialog" />
+                            android:spinnerMode="dialog"/>
                     </LinearLayout>
 
                     <RadioGroup
@@ -144,6 +145,7 @@
                             android:gravity="center"
                             android:padding="5dp"
                             android:text="@string/usersettings_appearance_default"
+                            android:textSize="16sp"
                             android:textColor="@drawable/rbtn_textcolor_selector" />
 
                         <RadioButton
@@ -156,6 +158,7 @@
                             android:gravity="center"
                             android:padding="5dp"
                             android:text="@string/usersettings_appearance_sepia"
+                            android:textSize="16sp"
                             android:textColor="@drawable/rbtn_textcolor_selector" />
 
                         <RadioButton
@@ -168,6 +171,7 @@
                             android:gravity="center"
                             android:padding="5dp"
                             android:text="@string/usersettings_appearance_night"
+                            android:textSize="16sp"
                             android:textColor="@drawable/rbtn_textcolor_selector" />
 
                     </RadioGroup>
@@ -176,7 +180,8 @@
                         android:id="@+id/scroll_mode"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
-                        android:text="@string/usersettings_label_scroll_mode" />
+                        android:text="@string/usersettings_label_scroll_mode"
+                        android:textSize="16sp"/>
 
 
                 </LinearLayout>
@@ -194,6 +199,7 @@
                         android:layout_height="48dp"
                         android:layout_marginTop="10dp"
                         android:text="@string/usersettings_publisher_default"
+                        android:textSize="16sp"
                         android:contentDescription="@string/usersettings_publisher_default_label" />
 
                     <RadioGroup
@@ -208,26 +214,26 @@
                         <RadioButton
                             android:id="@+id/alignment_justify"
                             android:layout_width="wrap_content"
-                            android:layout_height="48dp"
+                            android:layout_height="36dp"
                             android:layout_weight="1"
                             android:background="@drawable/rbtn_selector"
                             android:button="@null"
                             android:checked="true"
                             android:drawableTop="@drawable/icon_justify_white"
                             android:gravity="center"
-                            android:padding="15dp"
+                            android:padding="10dp"
                             android:textColor="@drawable/rbtn_textcolor_selector" />
 
                         <RadioButton
                             android:id="@+id/alignment_left"
                             android:layout_width="wrap_content"
-                            android:layout_height="48dp"
+                            android:layout_height="36dp"
                             android:layout_weight="1"
                             android:background="@drawable/rbtn_selector"
                             android:button="@null"
                             android:drawableTop="@drawable/icon_left"
                             android:gravity="center"
-                            android:padding="15dp"
+                            android:padding="10dp"
                             android:textColor="@drawable/rbtn_textcolor_selector" />
 
                     </RadioGroup>
@@ -313,6 +319,7 @@
                             android:layout_weight="1"
                             android:backgroundTint="@android:color/white"
                             android:scaleType="fitCenter"
+                            android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_pm_decrease"
                             android:src="@drawable/icon_minus" />
 
@@ -343,6 +350,7 @@
                             android:layout_weight="1"
                             android:backgroundTint="@android:color/white"
                             android:scaleType="fitCenter"
+                            android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_pm_increase"
                             android:src="@drawable/icon_plus" />
 
@@ -362,6 +370,7 @@
                             android:layout_weight="1"
                             android:backgroundTint="@android:color/white"
                             android:scaleType="fitCenter"
+                            android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_ws_decrease"
                             android:src="@drawable/icon_minus" />
 
@@ -376,13 +385,13 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/usersettings_label_word_spacing" />
+                                android:text="@string/usersettings_label_word_spacing"/>
 
                             <TextView
                                 android:id="@+id/ws_display"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/usersettings_auto" />
+                                android:text="@string/usersettings_auto"/>
                         </LinearLayout>
 
                         <ImageButton
@@ -392,6 +401,7 @@
                             android:layout_weight="1"
                             android:backgroundTint="@android:color/white"
                             android:scaleType="fitCenter"
+                            android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_ws_increase"
                             android:src="@drawable/icon_plus" />
 
@@ -412,6 +422,7 @@
                             android:layout_weight="1"
                             android:backgroundTint="@android:color/white"
                             android:scaleType="fitCenter"
+                            android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_ls_decrease"
                             android:src="@drawable/icon_minus" />
 
@@ -445,6 +456,7 @@
                             android:layout_weight="1"
                             android:backgroundTint="@android:color/white"
                             android:scaleType="fitCenter"
+                            android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_ls_increase"
                             android:src="@drawable/icon_plus" />
 
@@ -454,7 +466,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:layout_marginBottom="10dp"
                         android:orientation="horizontal">
 
                         <ImageButton
@@ -464,6 +475,7 @@
                             android:layout_weight="1"
                             android:backgroundTint="@android:color/white"
                             android:scaleType="fitCenter"
+                            android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_lh_decrease"
                             android:src="@drawable/icon_minus" />
 
@@ -484,16 +496,16 @@
                                 android:id="@+id/lh_display"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/usersettings_auto" />
+                                android:text="@string/usersettings_auto"/>
                         </LinearLayout>
 
                         <ImageButton
                             android:id="@+id/lh_increase"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:layout_weight="1"
                             android:backgroundTint="@android:color/white"
                             android:scaleType="fitCenter"
+                            android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_lh_increase"
                             android:src="@drawable/icon_plus" />
 

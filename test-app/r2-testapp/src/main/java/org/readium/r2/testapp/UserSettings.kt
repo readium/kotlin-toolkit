@@ -180,7 +180,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
         //Tab 1
         var spec: TabHost.TabSpec = host.newTabSpec("Settings")
-        spec.setContent(R.id.Settings)
+        spec.setContent(R.id.SettingsTab)
         spec.setIndicator("Settings")
         host.addTab(spec)
 

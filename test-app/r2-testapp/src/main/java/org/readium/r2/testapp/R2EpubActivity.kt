@@ -21,14 +21,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
-import android.widget.Toast
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRMModel
-import java.util.*
 
 
 /**
