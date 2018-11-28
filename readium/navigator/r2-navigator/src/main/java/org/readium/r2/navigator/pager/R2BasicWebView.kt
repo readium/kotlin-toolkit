@@ -71,7 +71,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            val scrollMode = activity.preferences.getBoolean("scroll", false)
+            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
                 if (activity.publication.metadata.direction == "rtl") {
                     this.evaluateJavascript("scrollRightRTL();") { result ->
@@ -102,7 +102,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            val scrollMode = activity.preferences.getBoolean("scroll", false)
+            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
                 if (activity.publication.metadata.direction == "rtl") {
                     this.evaluateJavascript("scrollLeftRTL();") { result ->

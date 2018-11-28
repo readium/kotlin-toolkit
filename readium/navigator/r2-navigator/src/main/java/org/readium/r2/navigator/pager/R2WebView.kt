@@ -20,6 +20,7 @@ import android.view.*
 import android.view.animation.Interpolator
 import android.widget.EdgeEffect
 import android.widget.Scroller
+import org.readium.r2.shared.SCROLL_REF
 
 
 /**
@@ -818,7 +819,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
                 setCurrentItemInternal(nextPage, true, initialVelocity)
             } else {
-                val scrollMode = activity.preferences.getBoolean("scroll", false)
+                val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
                 val position = (ev.x % getClientWidth()) / getClientWidth()
                 if (!scrollMode) {
                     when {
@@ -842,7 +843,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 mLastMotionX = ev.getX(ev.findPointerIndex(mActivePointerId))
             }
         }
-        val scrollMode = activity.preferences.getBoolean("scroll", false)
+        val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
         if (scrollMode) {
             return super.onTouchEvent(ev)
         }

@@ -49,10 +49,10 @@ class R2EpubPageFragment : Fragment() {
 
         // Set text color depending of appearance preference
         (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor(
-                if (preferences.getInt("appearance", 0) > 1) "#ffffff" else "#000000"
+                if (preferences.getInt(APPEARANCE_REF, 0) > 1) "#ffffff" else "#000000"
         ))
 
-        val scrollMode = preferences.getBoolean("scroll", false)
+        val scrollMode = preferences.getBoolean(SCROLL_REF, false)
         when (scrollMode) {
             true -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.GONE

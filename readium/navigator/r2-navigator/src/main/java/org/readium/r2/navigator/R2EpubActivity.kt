@@ -113,7 +113,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
         if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
             adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
         } else {
-            when (preferences.getInt("colCount", 0)) {
+            when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
                 1 -> {
                     adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
                 }
@@ -254,7 +254,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
                     setCurrent(resourcesSingle)
                 } else {
 
-                    when (preferences.getInt("colCount", 0)) {
+                    when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
                         1 -> {
                             setCurrent(resourcesSingle)
                         }
