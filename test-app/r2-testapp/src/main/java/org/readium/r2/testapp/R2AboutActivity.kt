@@ -149,7 +149,7 @@ class R2AboutActivity : AppCompatActivity() {
                     imageView {
                         image = resources.getDrawable(R.drawable.repfr, theme)
                         scaleType = ImageView.ScaleType.FIT_CENTER
-                    }.lparams(width = wrapContent, height = 200)
+                    }.lparams(width = wrapContent, height = 200, weight = 1f)
                 }
 
 

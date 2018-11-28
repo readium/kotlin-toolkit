@@ -144,6 +144,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
             floatingActionButton {
                 imageResource = R.drawable.icon_plus_white
+                contentDescription = context.getString(R.string.floating_button_add_book)
+
                 onClick {
 
                     alertDialog = alert(Appcompat, "Add an ePub to your library") {
@@ -169,7 +171,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             }
                         }
                     }.show()
-
                 }
             }.lparams {
                 gravity = Gravity.END or Gravity.BOTTOM
@@ -220,6 +221,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         padding = dip(10)
                         editTextHref = editText {
                             hint = "URL"
+                            contentDescription = "Enter A URL"
                         }
                     }
                 }
