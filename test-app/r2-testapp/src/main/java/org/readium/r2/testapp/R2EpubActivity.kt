@@ -44,7 +44,6 @@ class R2EpubActivity : R2EpubActivity() {
     //Accessibility
     private var isExploreByTouchEnabled = false
     private var pageEnded = false
-    private lateinit var tts: TextToSpeech
 
     // List of bookmarks on activity_outline_container.xml
     private var menuBmk: MenuItem? = null
@@ -178,21 +177,8 @@ class R2EpubActivity : R2EpubActivity() {
 
         if (isExploreByTouchEnabled) {
 
-            //Initialization of TTS
-//            tts = TextToSpeech(this.applicationContext, object : TextToSpeech.OnInitListener {
-//                override fun onInit(p0: Int) {
-//                    if (p0 != TextToSpeech.ERROR) {
-//                        val language = tts.setLanguage(Locale(publication.metadata.languages.firstOrNull()))
-//
-//                        if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
-//                            tts.language = Locale.UK
-//                        }
-//                    }
-//                }
-//            })
-
             //Preset & preferences adapted
-            publication.userSettingsUIPreset.put(ReadiumCSSName.ref("scroll"), true)
+            publication.userSettingsUIPreset.put(ReadiumCSSName.ref(SCROLL_REF), true)
             preferences.edit().putBoolean(SCROLL_REF, true).apply() //overriding user preferences
 
             userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
@@ -204,7 +190,7 @@ class R2EpubActivity : R2EpubActivity() {
             }, 500)
         } else {
             if (publication.cssStyle != ContentLayoutStyle.cjkv.name) {
-                publication.userSettingsUIPreset.remove(ReadiumCSSName.ref("scroll"))
+                publication.userSettingsUIPreset.remove(ReadiumCSSName.ref(SCROLL_REF))
             }
 
             userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
@@ -216,7 +202,6 @@ class R2EpubActivity : R2EpubActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-//        tts.shutdown()
     }
 
 
@@ -224,7 +209,6 @@ class R2EpubActivity : R2EpubActivity() {
         if (isExploreByTouchEnabled) {
             if (!pageEnded == end && end) {
                 toast("End of chapter")
-//                tts.speak("End of chapter", TextToSpeech.QUEUE_ADD, null, "1")
             }
 
             pageEnded = end
