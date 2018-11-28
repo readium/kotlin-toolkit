@@ -15,6 +15,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.support.v4.app.Fragment
+import android.util.DisplayMetrics
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -27,7 +28,6 @@ import android.widget.TextView
 import org.json.JSONObject
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
-import android.text.method.Touch.scrollTo
 import org.readium.r2.shared.*
 
 
@@ -49,10 +49,10 @@ class R2EpubPageFragment : Fragment() {
 
         // Set text color depending of appearance preference
         (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor(
-                if (preferences.getInt("appearance", 0) > 1) "#ffffff" else "#000000"
+                if (preferences.getInt(APPEARANCE_REF, 0) > 1) "#ffffff" else "#000000"
         ))
 
-        val scrollMode = preferences.getBoolean("scroll", false)
+        val scrollMode = preferences.getBoolean(SCROLL_REF, false)
         when (scrollMode) {
             true -> {
                 (v.findViewById(R.id.book_title) as TextView).visibility = View.GONE
@@ -82,6 +82,33 @@ class R2EpubPageFragment : Fragment() {
         webView.resourceUrl = resourceUrl
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
+
+        var endReached = false
+        webView.setOnOverScrolledCallback(object : R2BasicWebView.OnOverScrolledCallback {
+             override fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean) {
+                val metrics = DisplayMetrics()
+                webView.activity.windowManager.defaultDisplay.getMetrics(metrics)
+
+
+                val topDecile = webView.contentHeight - 1.25*metrics.heightPixels
+                val bottomDecile = (webView.contentHeight - metrics.heightPixels).toDouble()
+
+                when (scrollY) {
+                    in topDecile..bottomDecile -> {
+                        if (!endReached) {
+                            endReached = true
+                            webView.activity.onPageEnded(endReached)
+                        }
+                    }
+                    else -> {
+                        if (endReached) {
+                            endReached = false
+                            webView.activity.onPageEnded(endReached)
+                        }
+                    }
+                }
+            }
+        })
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {

@@ -41,6 +41,25 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     var overrideUrlLoading = true
     var resourceUrl: String? = null
 
+    var callback: OnOverScrolledCallback? = null
+
+
+    interface OnOverScrolledCallback {
+        fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean)
+    }
+
+    fun setOnOverScrolledCallback(callback: OnOverScrolledCallback) {
+        this.callback = callback
+    }
+
+    override fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean) {
+        if (callback != null) {
+            callback?.onOverScrolled(scrollX, scrollY, clampedX, clampedY)
+        }
+        super.onOverScrolled(scrollX, scrollY, clampedX, clampedY)
+    }
+
+
     @android.webkit.JavascriptInterface
     open fun scrollRight() {
         activity.runOnUiThread {
@@ -52,7 +71,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            val scrollMode = activity.preferences.getBoolean("scroll", false)
+            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
                 if (activity.publication.metadata.direction == "rtl") {
                     this.evaluateJavascript("scrollRightRTL();") { result ->
@@ -83,7 +102,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            val scrollMode = activity.preferences.getBoolean("scroll", false)
+            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
                 if (activity.publication.metadata.direction == "rtl") {
                     this.evaluateJavascript("scrollLeftRTL();") { result ->
