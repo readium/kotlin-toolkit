@@ -204,6 +204,7 @@ dependencies {
     implementation 'com.duolingo.open:rtl-viewpager:1.0.3'
     implementation 'com.commonsware.cwac:merge:1.1.2'
     implementation 'com.github.abacritt:sectionedmergeadapter:0.2'
+    implementation 'org.jsoup:jsoup:1.11.2'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
