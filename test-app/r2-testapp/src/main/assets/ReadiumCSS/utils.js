@@ -253,3 +253,71 @@ var removeProperty = function(key) {
 
     root.style.removeProperty(key);
 };
+
+
+
+
+//Highlighting related
+var setHighlight = function() {
+        var paragraphs = document.getElementsByClassName("highlighted");
+	for (var i=0 ; i<paragraphs.length ; i++) {
+		if (paragraphs[i].style.backgroundColor != "yellow") {
+			paragraphs[i].style.backgroundColor = "yellow";
+		} else {
+			var parentNode = paragraphs[i].parentNode;
+
+			var frag = (function() {
+				var wrap = document.createElement('div'),
+				    fragm = document.createDocumentFragment();
+				wrap.innerHTML = paragraphs[i].textContent;
+				while (wrap.firstChild) {
+				    fragm.appendChild(wrap.firstChild);
+				}
+				return fragm;
+			    })();
+
+			parentNode.insertBefore(frag, paragraphs[i]);
+			parentNode.removeChild(paragraphs[i]);
+		}
+	}
+};
+
+var findUtterance = function(searchText, searchNode) {
+    var regex = typeof searchText === 'string' ? new RegExp(searchText, 'g') : searchText,
+        childNodes = (searchNode || document.body).childNodes,
+        cnLength = childNodes.length,
+        excludes = 'html,head,style,title,link,meta,script,object,iframe';
+
+    while (cnLength--) {
+        var currentNode = childNodes[cnLength];
+
+        if (currentNode.nodeType === 1 && (excludes + ',').indexOf(currentNode.nodeName.toLowerCase() + ',') === -1) {
+            arguments.callee(searchText, currentNode);
+        }
+
+        if (currentNode.nodeType !== 3 || !currentNode.data.includes(searchText)) {
+	        //console.log("(Node " + cnLength + ", " + currentNode.nodeType + ", " + currentNode.data + ") isn't what I'm looking for");
+            continue;
+        }
+	    //console.log("data : " + typeof currentNode.data);
+
+        var parent = currentNode.parentNode;
+	    var frag = (function() {
+		var spanBegin = "<span class=\"highlighted\">",
+                    spanEnd = "</span>";
+                var readByTTS = spanBegin + searchText + spanEnd;
+                var html = currentNode.nodeValue.replace(regex, readByTTS),
+                    wrap = document.createElement('div'),
+                    fragm = document.createDocumentFragment();
+                wrap.innerHTML = html;
+                while (wrap.firstChild) {
+                    fragm.appendChild(wrap.firstChild);
+                }
+                return fragm;
+            })();
+
+	    parent.insertBefore(frag, currentNode);
+	    parent.removeChild(currentNode);
+	    setHighlight();
+    }
+};
