@@ -23,6 +23,30 @@
     </item>
 
     <item
+        android:id="@+id/accessibility"
+        android:icon="@drawable/icon_audio"
+        android:title="@string/epubactivity_accessibility"
+        app:showAsAction="always|always"
+        tools:ignore="AlwaysShowAction">
+
+        <menu xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools">
+
+            <item
+                android:id="@+id/screen_reader"
+                android:title="@string/epubactivity_accessibility_screen_reader_start">
+            </item>
+
+            <item
+                android:id="@+id/screen_reader_pause"
+                android:title="@string/epubactivity_accessibility_screen_reader_pause"
+                android:visible="false">
+            </item>
+        </menu>
+    </item>
+
+    <item
         android:id="@+id/bookmark"
         android:icon="@drawable/icon_bookmark"
         android:title="@string/epubactivity_set_bookmark"
