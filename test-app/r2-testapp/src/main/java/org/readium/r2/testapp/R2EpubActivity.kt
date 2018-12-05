@@ -15,7 +15,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
-import android.speech.tts.TextToSpeech
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
@@ -44,9 +43,6 @@ class R2EpubActivity : R2EpubActivity() {
     //Accessibility
     private var isExploreByTouchEnabled = false
     private var pageEnded = false
-
-    // List of bookmarks on activity_outline_container.xml
-    private var menuBmk: MenuItem? = null
 
     // Provide access to the Bookmarks & Positions Databases
     private lateinit var bookmarksDB: BookmarksDatabase
@@ -108,6 +104,49 @@ class R2EpubActivity : R2EpubActivity() {
             }
             R.id.settings -> {
                 userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.toc), 0, 0, Gravity.END)
+                return true
+            }
+            R.id.accessibility -> {
+                if (!screenReader.isTTSSpeaking() && !screenReader.isPaused()) {
+                    menuScreenReaderPause?.isVisible = false
+                    menuAccessibility?.findItem(R.id.screen_reader)?.title = resources.getString(R.string.epubactivity_accessibility_screen_reader_start)
+                }
+                return true
+            }
+            R.id.screen_reader -> {
+                val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
+                val resourceHref = publication.spine[resourcePager.currentItem].href!!
+
+                if (!screenReader.isTTSSpeaking() && !screenReader.isPaused()) {
+                    ttsOn = true
+                    menuScreenReaderPause?.isVisible = true
+
+                    screenReader.configureTTS("$BASE_URL:$port/$epubName$resourceHref")
+                    screenReader.startReading()
+
+                    item.title = resources.getString(R.string.epubactivity_accessibility_screen_reader_stop)
+
+                } else {
+                    ttsOn = false
+                    menuScreenReaderPause?.isVisible = false
+
+                    screenReader.stopReading()
+                    item.title = resources.getString(R.string.epubactivity_accessibility_screen_reader_start)
+                }
+
+                return true
+            }
+            R.id.screen_reader_pause -> {
+                if (!ttsOn) {
+                    ttsOn = true
+                    screenReader.resumeReading()
+                    item.title = resources.getString(R.string.epubactivity_accessibility_screen_reader_pause)
+                } else {
+                    ttsOn = false
+                    screenReader.pauseReading()
+                    item.title = resources.getString(R.string.epubactivity_accessibility_screen_reader_resume)
+                }
+
                 return true
             }
             R.id.drm -> {
@@ -196,12 +235,22 @@ class R2EpubActivity : R2EpubActivity() {
             userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
             userSettings.resourcePager = resourcePager
         }
+
+
+        /*
+         * Initialisation of the screen reader
+         */
+        Handler().postDelayed({
+            screenReader = R2ScreenReader(this, publication)
+        }, 500)
+
     }
 
 
     override fun onDestroy() {
         super.onDestroy()
 
+        screenReader.shutdown()
     }
 
 
