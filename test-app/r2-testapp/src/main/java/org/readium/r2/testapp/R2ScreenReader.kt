@@ -223,6 +223,45 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
 //        utterances.clear()
     }
 
+    fun next(): Boolean {
+        var index = utterancesCurrentIndex + 1
+        var first = true
+
+        for (i in index until utterances.size) {
+
+            val toSpeak = utterances.get(i)
+            if (first) {
+                textToSpeech?.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null, index.toString())
+                first = false
+            } else {
+                textToSpeech?.speak(toSpeak, TextToSpeech.QUEUE_ADD, null, index.toString())
+            }
+            index++
+            return true
+        }
+        return false
+    }
+
+    fun prev(): Boolean {
+        var index = utterancesCurrentIndex - 1
+        if (index < 0) {
+            index = 0
+            return false
+        }
+        var first = true
+        for (i in index until utterances.size) {
+            val toSpeak = utterances.get(i)
+            if (first) {
+                textToSpeech?.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null, index.toString())
+                first = false
+            } else {
+                textToSpeech?.speak(toSpeak, TextToSpeech.QUEUE_ADD, null, index.toString())
+            }
+            index++
+            return true
+        }
+        return false
+    }
     private fun flushUtterancesQueue() {
         textToSpeech?.speak("", TextToSpeech.QUEUE_FLUSH, null, null)
     }
