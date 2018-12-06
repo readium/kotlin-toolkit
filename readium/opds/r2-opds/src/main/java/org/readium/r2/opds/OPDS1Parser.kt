@@ -279,11 +279,13 @@ class OPDS1Parser {
             rights?.let {
                 metadata.rights = rights.map { it.text }.joinToString(" ")
             }
-            val publisher = entry.get("dcterms:publisher")
-            publisher?.let {
-                val contributor = Contributor()
-                contributor.multilanguageName.singleString = publisher.text.toString()
-                metadata.publishers.add(contributor)
+            val publishers = entry.get("dcterms:publisher")
+            publishers?.let {
+                for(publisher in publishers) {
+                    val contributor = Contributor()
+                    contributor.multilanguageName.singleString = publisher.text
+                    metadata.publishers.add(contributor)
+                }
             }
             val categories = entry.get("category")
             categories?.let {
@@ -305,7 +307,7 @@ class OPDS1Parser {
                         link.href = uri.toString()
                         contributor.links.add(link)
                     }
-                    contributor.multilanguageName.singleString = author.get("name").text.toString()
+                    contributor.multilanguageName.singleString = author.getFirst("name")?.text
                     metadata.authors.add(contributor)
                 }
             }
