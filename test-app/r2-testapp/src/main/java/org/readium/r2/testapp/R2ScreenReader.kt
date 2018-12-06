@@ -13,8 +13,12 @@ package org.readium.r2.testapp
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.support.v4.widget.TextViewCompat
+import android.util.TypedValue
 import android.webkit.WebView
+import android.widget.TextView
 import android.widget.Toast
+import kotlinx.android.synthetic.main.activity_r2_epub.*
 import org.jsoup.Jsoup
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -113,6 +117,14 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
                     (webView as WebView).post {
                         (webView as WebView).evaluateJavascript("findUtterance(\"$toHighlight\");", null)
                     }
+                    activityReference.get()?.findViewById<TextView>(R.id.tts_textView)?.text = toHighlight
+
+                    activityReference.get()?.play?.setImageResource(android.R.drawable.ic_media_pause)
+
+                    activityReference.get()?.ttsOn = true
+
+                    TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(activityReference.get()?.tts_textView!!, 1, 30, 1,
+                            TypedValue.COMPLEX_UNIT_DIP);
                 }
 
                 /**
@@ -127,6 +139,8 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
                         (webView as WebView).post {
                             (webView as WebView).evaluateJavascript("setHighlight();", null)
                         }
+                        activityReference.get()?.play?.setImageResource(android.R.drawable.ic_media_play)
+                        activityReference.get()?.ttsOn = false
                     }
                 }
 
@@ -143,6 +157,8 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
                     (webView as WebView).post {
                         (webView as WebView).evaluateJavascript("setHighlight();", null)
                     }
+                    activityReference.get()?.play?.setImageResource(android.R.drawable.ic_media_play)
+                    activityReference.get()?.ttsOn = false
                 }
 
                 /**
