@@ -24,6 +24,14 @@
     <string name="epubactivity_set_bookmark">Add a bookmark</string>
     <string name="epubactivity_settings">User Settings</string>
     <string name="epubactivity_book_nav_options">Book navigation menu</string>
+    <string name="epubactivity_read_aloud_start">Read Aloud</string>
+    <string name="epubactivity_read_aloud_stop">Stop Read Aloud</string>
+
+    <string name="epubactivity_accessibility">Accessibility</string>
+    <string name="epubactivity_accessibility_screen_reader_start">Start Screen Reader</string>
+    <string name="epubactivity_accessibility_screen_reader_pause">Pause Screen Reader</string>
+    <string name="epubactivity_accessibility_screen_reader_resume">Resume Screen Reader</string>
+    <string name="epubactivity_accessibility_screen_reader_stop">Stop Screen Reader</string>
 
     <string name="permission_read_ext_explanation">The app needs to read your storage so it can read and write books.</string>
     <string name="permission_external_new_explanation">Can\'t read or write books without permission</string>
