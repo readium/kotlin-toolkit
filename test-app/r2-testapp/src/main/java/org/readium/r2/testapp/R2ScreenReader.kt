@@ -285,7 +285,8 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
                          * (sentences by sentences)
                          * These sentences will be passed onto TTS
                          */
-                        val sentences = element.text().split(Regex("(?<=\\. |(,{1}))"))
+//                        val sentences = element.text().split(Regex("(?<=\\. |(,{1}))"))
+                        val sentences = element.text().split(Regex("(?<=\\.)"))
 
                         for (sentence in sentences) {
                             var sentenceCleaned = sentence
