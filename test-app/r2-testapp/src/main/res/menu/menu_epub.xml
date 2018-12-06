@@ -18,33 +18,41 @@
         android:id="@+id/drm"
         android:icon="@drawable/icon_drm"
         android:title="@string/epubactivity_drm_info"
-        app:showAsAction="always|always"
+        app:showAsAction="collapseActionView"
         tools:ignore="AlwaysShowAction">
     </item>
+
 
     <item
-        android:id="@+id/accessibility"
-        android:icon="@drawable/icon_audio"
-        android:title="@string/epubactivity_accessibility"
-        app:showAsAction="always|always"
-        tools:ignore="AlwaysShowAction">
-
-        <menu xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools">
-
-            <item
-                android:id="@+id/screen_reader"
-                android:title="@string/epubactivity_accessibility_screen_reader_start">
-            </item>
-
-            <item
-                android:id="@+id/screen_reader_pause"
-                android:title="@string/epubactivity_accessibility_screen_reader_pause"
-                android:visible="false">
-            </item>
-        </menu>
+        android:id="@+id/screen_reader"
+        app:showAsAction="collapseActionView"
+        android:title="@string/epubactivity_read_aloud_start">
     </item>
+
+
+    <!--<item-->
+        <!--android:id="@+id/accessibility"-->
+        <!--android:icon="@drawable/icon_audio"-->
+        <!--android:title="@string/epubactivity_accessibility"-->
+        <!--app:showAsAction="collapseActionView"-->
+        <!--tools:ignore="AlwaysShowAction">-->
+
+        <!--<menu xmlns:app="http://schemas.android.com/apk/res-auto"-->
+            <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+            <!--xmlns:tools="http://schemas.android.com/tools">-->
+
+            <!--<item-->
+                <!--android:id="@+id/screen_reader"-->
+                <!--android:title="@string/epubactivity_accessibility_screen_reader_start">-->
+            <!--</item>-->
+
+            <!--<item-->
+                <!--android:id="@+id/screen_reader_pause"-->
+                <!--android:title="@string/epubactivity_accessibility_screen_reader_pause"-->
+                <!--android:visible="false">-->
+            <!--</item>-->
+        <!--</menu>-->
+    <!--</item>-->
 
     <item
         android:id="@+id/bookmark"
@@ -67,7 +75,7 @@
         android:id="@+id/toc"
         android:icon="@drawable/icon_menu"
         android:title="@string/epubactivity_book_nav_options"
-        app:showAsAction="always|always"
+        app:showAsAction="collapseActionView"
         tools:ignore="AlwaysShowAction">
     </item>
 
