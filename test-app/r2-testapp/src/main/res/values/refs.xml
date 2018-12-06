@@ -1,2 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <item type="layout" name="activity_r2_viewpager">@layout/activity_r2_epub</item>
+</resources>
