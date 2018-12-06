@@ -80,7 +80,52 @@ class R2EpubActivity : R2EpubActivity() {
         resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
         (resourcePager.focusedChild?.findViewById(org.readium.r2.navigator.R.id.book_title) as? TextView)?.setTextColor(Color.parseColor(textColors[appearancePref]))
         toggleActionBar()
+        play.setOnClickListener {
+            if (!ttsOn) {
+                ttsOn = true
+                screenReader.resumeReading()
+                play.setImageResource(android.R.drawable.ic_media_pause)
+            } else {
+                ttsOn = false
+                screenReader.pauseReading()
+                play.setImageResource(android.R.drawable.ic_media_play)
+            }
+        }
+        next.setOnClickListener {
+            if (screenReader.next()) {
+                ttsOn = true
+                play.setImageResource(android.R.drawable.ic_media_pause)
+            } else {
+                nextResource(false)
 
+                val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
+                val resourceHref = publication.spine[resourcePager.currentItem].href!!
+
+                ttsOn = true
+
+                screenReader.configureTTS("$BASE_URL:$port/$epubName$resourceHref")
+                screenReader.startReading()
+
+                play.setImageResource(android.R.drawable.ic_media_pause)
+            }
+        }
+        previous.setOnClickListener {
+            if (screenReader.prev()) {
+                ttsOn = true
+                play.setImageResource(android.R.drawable.ic_media_pause)
+            } else {
+                previousResource(false)
+                val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
+                val resourceHref = publication.spine[resourcePager.currentItem].href!!
+
+                ttsOn = true
+
+                screenReader.configureTTS("$BASE_URL:$port/$epubName$resourceHref")
+                screenReader.startReading()
+
+                play.setImageResource(android.R.drawable.ic_media_pause)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
