@@ -9,11 +9,11 @@
 
 package org.readium.r2.lcp.tables
 
-import android.util.Log
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpDatabaseOpenHelper
 import org.readium.r2.lcp.model.documents.LicenseDocument
+import timber.log.Timber
 
 object LicensesTable {
     const val NAME = "Licenses"
@@ -21,7 +21,7 @@ object LicensesTable {
     const val PRINTSLEFT = "printsLeft"
     const val COPIESLEFT = "copiesLeft"
     const val PROVIDER = "provider"
-    const  val ISSUED = "issued"
+    const val ISSUED = "issued"
     const val UPDATED = "updated"
     const val END = "end"
     const val STATE = "state"
@@ -29,10 +29,12 @@ object LicensesTable {
 
 class Licenses(var database: LcpDatabaseOpenHelper) {
 
+    private val TAG = this::class.java.simpleName
+
     fun dateOfLastUpdate(id: String): DateTime? {
         val lastUpdated = database.use {
             return@use select(LicensesTable.NAME)
-                    .whereSimple("${LicensesTable.ID} = ?", id)
+                    .whereArgs("${LicensesTable.ID} = {id}", "id" to id)
                     .limit(1)
                     .orderBy(LicensesTable.UPDATED,SqlOrderDirection.DESC)
                     .parseOpt(object : MapRowParser<String> {
@@ -52,10 +54,52 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
         return null
     }
 
+    fun dateOfEnd(id: String): DateTime? {
+        val endDate = database.use {
+            return@use select(LicensesTable.NAME)
+                    .whereArgs("${LicensesTable.ID} = {id}", "id" to id)
+                    .limit(1)
+                    .orderBy(LicensesTable.UPDATED,SqlOrderDirection.DESC)
+                    .parseOpt(object : MapRowParser<String> {
+                        override fun parseRow(columns: Map<String, Any?>): String {
+                            val end = columns.getValue(LicensesTable.END) as String?
+                            if (end != null) {
+                                return end
+                            }
+                            return String()
+                        }
+                    })
+        }
+
+        if (!endDate.isNullOrEmpty()) {
+            return DateTime(endDate)
+        }
+        return null
+    }
+
     fun updateState(id: String, state: String) {
         database.use {
             update(LicensesTable.NAME, LicensesTable.STATE to state).whereArgs("${LicensesTable.ID} = {id}",
                     "id" to id)
+                    .exec()
+        }
+    }
+
+    fun getStatus(id: String): String? {
+        return database.use {
+            return@use select(LicensesTable.NAME,
+                    LicensesTable.STATE)
+                    .whereArgs("${LicensesTable.ID} = {id}", "id" to id)
+                    .limit(1)
+                    .parseOpt(object : MapRowParser<String> {
+                        override fun parseRow(columns: Map<String, Any?>): String {
+                            val status = columns.getValue(LicensesTable.STATE) as String?
+                            if (status != null) {
+                                return status
+                            }
+                            return String()
+                        }
+                    })
         }
     }
 
@@ -68,7 +112,7 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
             select(LicensesTable.NAME, "count(${LicensesTable.ID})").whereArgs("(${LicensesTable.ID} = {id})",
                     "id" to id).exec {
                 val parser = rowParser { count: Int ->
-                    Log.i("count", count.toString())
+                    Timber.i(TAG,"count", count.toString())
                     return@rowParser count == 1
                 }
                 parseList(parser)[0]
@@ -76,23 +120,37 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
         }
     }
 
-    /// Add a registered license to the database.
+    /// Add/update a registered license to/in the database.
     ///
     /// - Parameters:
     ///   - license: <#license description#>
     ///   - status: <#status description#>
-    fun insert(license: LicenseDocument, status: String) {
-        database.use {
-            insert(LicensesTable.NAME,
-                    LicensesTable.ID to license.id,
-                    LicensesTable.PRINTSLEFT to license.rights.print,
-                    LicensesTable.COPIESLEFT to license.rights.copy,
-                    LicensesTable.PROVIDER to license.provider.toString(),
-                    LicensesTable.ISSUED to license.issued.toString(),
-                    LicensesTable.UPDATED to license.updated?.toString(),
-                    LicensesTable.END to license.rights.end?.toString(),
-                    LicensesTable.STATE to status)
-
+    fun updateLicense(license: LicenseDocument, status: String) {
+        if (existingLicense(license.id)) {
+            database.use {
+                update(LicensesTable.NAME,
+                        LicensesTable.PRINTSLEFT to license.rights?.print,
+                        LicensesTable.COPIESLEFT to license.rights?.copy,
+                        LicensesTable.PROVIDER to license.provider.toString(),
+                        LicensesTable.ISSUED to license.issued.toString(),
+                        LicensesTable.UPDATED to license.updated?.toString(),
+                        LicensesTable.END to license.rights?.end?.toString(),
+                        LicensesTable.STATE to status)
+                        .whereArgs("${LicensesTable.ID} = {id}", "id" to license.id)
+                        .exec()
+            }
+        } else {
+            database.use {
+                insert(LicensesTable.NAME,
+                        LicensesTable.ID to license.id,
+                        LicensesTable.PRINTSLEFT to license.rights?.print,
+                        LicensesTable.COPIESLEFT to license.rights?.copy,
+                        LicensesTable.PROVIDER to license.provider.toString(),
+                        LicensesTable.ISSUED to license.issued.toString(),
+                        LicensesTable.UPDATED to license.issued.toString(),
+                        LicensesTable.END to license.rights?.end?.toString(),
+                        LicensesTable.STATE to status)
+            }
         }
     }
 }

@@ -11,21 +11,22 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import android.util.Base64
-import android.util.Log
 import com.github.kittinunf.fuel.Fuel
 import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
 import org.json.JSONObject
 import org.readium.r2.lcp.model.documents.LicenseDocument
 import org.readium.r2.lcp.model.documents.StatusDocument
 import org.readium.r2.shared.contentTypeEncoding
 import org.readium.r2.shared.promise
+import timber.log.Timber
 import java.io.File
 import java.nio.charset.Charset
 import java.util.*
 
 class LcpHttpService {
+
+    private val TAG = this::class.java.simpleName
 
     fun statusDocument(url: String): Promise<StatusDocument, Exception> {
         return Fuel.get(url,null).promise() then {
@@ -44,12 +45,12 @@ class LcpHttpService {
         val rootDir:String = context.getExternalFilesDir(null).path + "/"
         val fileName = UUID.randomUUID().toString()
         return Fuel.download(url).destination { _, _ ->
-            Log.i("LCP  destination ", rootDir + fileName)
+            Timber.i(TAG,"LCP  destination ", rootDir + fileName)
             File(rootDir, fileName)
         }.promise() then {
             val (_, response, _) = it
-            Log.i("LCP destination ", rootDir + fileName)
-            Log.i("LCP then ", response.url.toString())
+            Timber.i(TAG, "LCP destination ", rootDir + fileName)
+            Timber.i(TAG,"LCP then ", response.url.toString())
             rootDir + fileName
         }
     }
@@ -74,12 +75,28 @@ class LcpHttpService {
         }
     }
 
-    fun renewLicense(url: String): Promise<String?, Exception> {
-        return task { null }
+    fun renewLicense(url: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
+        return Fuel.put(url, params).promise() then {
+            val (_, response, result) = it
+            var status: String? = null
+            if (response.statusCode == 200) {
+                val jsonObject = JSONObject(String(result, Charset.forName(response.contentTypeEncoding)))
+                status = jsonObject["status"] as String
+            }
+            status
+        }
     }
 
-    fun returnLicense(url: String): Promise<String?, Exception> {
-        return task { null }
+    fun returnLicense(url: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
+        return Fuel.put(url, params).promise() then {
+            val (_, response, result) = it
+            var status: String? = null
+            if (response.statusCode == 200) {
+                val jsonObject = JSONObject(String(result, Charset.forName(response.contentTypeEncoding)))
+                status = jsonObject["status"] as String
+            }
+            status
+        }
     }
 
 }
