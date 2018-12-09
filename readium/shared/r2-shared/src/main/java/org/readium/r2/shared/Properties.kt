@@ -42,7 +42,7 @@ class Properties : JSONable, Serializable {
     ///
     var indirectAcquisition: MutableList<IndirectAcquisition> = mutableListOf()
 
-    override fun getJSON(): JSONObject {
+    override fun toJSON(): JSONObject {
         val json = JSONObject()
         if (contains.isNotEmpty()) json.put("contains", getStringArray(contains))
         json.putOpt("mediaOverlay", mediaOverlay)

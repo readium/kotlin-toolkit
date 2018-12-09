@@ -13,6 +13,6 @@ import org.json.JSONObject
 
 interface JSONable {
 
-    fun getJSON(): JSONObject
+    fun toJSON(): JSONObject
 
 }

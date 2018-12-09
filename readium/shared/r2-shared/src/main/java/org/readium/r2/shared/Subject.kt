@@ -22,7 +22,7 @@ class Subject : JSONable, Serializable {
     //  Epub 3.1 "code" (opf:term)
     var code: String? = null
 
-    override fun getJSON(): JSONObject {
+    override fun toJSON(): JSONObject {
         val json = JSONObject()
         json.putOpt("name", name)
         json.putOpt("sortAs", sortAs)

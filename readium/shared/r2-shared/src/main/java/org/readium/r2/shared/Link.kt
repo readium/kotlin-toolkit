@@ -48,19 +48,21 @@ class Link : JSONable, Serializable {
         return properties.encryption != null
     }
 
-    override fun getJSON(): JSONObject {
+    override fun toJSON(): JSONObject {
         val json = JSONObject()
         json.putOpt("title", title)
         json.putOpt("type", typeLink)
         json.putOpt("href", href)
         if (rel.isNotEmpty())
             json.put("rel", getStringArray(rel))
-        json.putOpt("properties", properties)
+        tryPut(json, properties, "properties")
         if (height != 0)
             json.putOpt("height", height)
         if (width != 0)
             json.putOpt("width", width)
         json.putOpt("duration", duration)
+        if (children.isNotEmpty())
+            json.put("children", getJSONArray(children))
         return json
     }
 
@@ -135,10 +137,15 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link {
         }
     }
     if (linkDict.has("children")) {
-        val childLinkDict = linkDict.getJSONObject("children")
-                ?: throw Exception(LinkError.InvalidLink.name)
-        val childLink = parseLink(childLinkDict)
-        link.children.add(childLink)
+        linkDict.get("children")?.let {
+            val children = it as? JSONArray
+                    ?: throw Exception(LinkError.InvalidLink.name)
+            for (i in 0..(children.length() - 1)) {
+                val childLinkDict = children.getJSONObject(i)
+                val childLink = parseLink(childLinkDict)
+                link.children.add(childLink)
+            }
+        }
     }
     return link
 }
