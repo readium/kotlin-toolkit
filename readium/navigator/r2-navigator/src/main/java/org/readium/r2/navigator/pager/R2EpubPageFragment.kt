@@ -13,17 +13,22 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.support.v4.app.Fragment
-import android.view.*
+import android.util.DisplayMetrics
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.TextView
-import org.readium.r2.navigator.APPEARANCE_REF
+import org.json.JSONObject
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.SCROLL_REF
+import org.readium.r2.shared.*
 
 
 class R2EpubPageFragment : Fragment() {
@@ -33,6 +38,8 @@ class R2EpubPageFragment : Fragment() {
 
     private val bookTitle: String?
         get() = arguments!!.getString("title")
+
+    lateinit var webView: R2WebView
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -59,7 +66,7 @@ class R2EpubPageFragment : Fragment() {
 
         (v.findViewById(R.id.book_title) as TextView).text = bookTitle
 
-        val webView: R2WebView = v!!.findViewById(R.id.webView) as R2WebView
+        webView = v!!.findViewById(R.id.webView) as R2WebView
 
         webView.activity = activity as R2EpubActivity
 
@@ -70,62 +77,115 @@ class R2EpubPageFragment : Fragment() {
         webView.settings.loadWithOverviewMode = true
         webView.settings.setSupportZoom(true)
         webView.settings.builtInZoomControls = true
-        webView.settings.displayZoomControls = true
+        webView.settings.displayZoomControls = false
+        webView.overrideUrlLoading = true
+        webView.resourceUrl = resourceUrl
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 
+        var endReached = false
+        webView.setOnOverScrolledCallback(object : R2BasicWebView.OnOverScrolledCallback {
+             override fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean) {
+                val metrics = DisplayMetrics()
+                webView.activity.windowManager.defaultDisplay.getMetrics(metrics)
+
+
+                val topDecile = webView.contentHeight - 1.25*metrics.heightPixels
+                val bottomDecile = (webView.contentHeight - metrics.heightPixels).toDouble()
+
+                when (scrollY) {
+                    in topDecile..bottomDecile -> {
+                        if (!endReached) {
+                            endReached = true
+                            webView.activity.onPageEnded(endReached)
+                        }
+                    }
+                    else -> {
+                        if (endReached) {
+                            endReached = false
+                            webView.activity.onPageEnded(endReached)
+                        }
+                    }
+                }
+            }
+        })
+
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                view.loadUrl(request.url.toString())
+                if (webView.overrideUrlLoading) {
+                    view.loadUrl(request.url.toString())
+                    return false
+                } else {
+                    webView.overrideUrlLoading = true
+                    return true
+                }
+            }
+
+            override fun shouldOverrideKeyEvent(view: WebView, event: KeyEvent): Boolean {
+                // Do something with the event here
                 return false
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                try {
-                    val childCount = webView.activity.resourcePager.childCount
 
-                    if (webView.activity.reloadPagerPositions) {
-                        if (childCount == 2) {
-                            when {
-                                webView.activity.pagerPosition == 0 -> {
-                                    val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
-                                    webView.scrollToPosition(progression)
-                                    webView.activity.pagerPosition++
-                                }
-                                else -> {
-                                    webView.scrollToPosition(0.0)
-                                    webView.activity.pagerPosition = 0
-                                    webView.activity.reloadPagerPositions = false
-                                }
-                            }
-                        } else {
-                            when {
-                                webView.activity.pagerPosition == 0 -> {
-                                    val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
-                                    webView.scrollToPosition(progression)
-                                    webView.activity.pagerPosition++
-                                }
-                                webView.activity.pagerPosition == 1 -> {
-                                    webView.scrollToPosition(1.0)
-                                    webView.activity.pagerPosition++
-                                }
-                                else -> {
-                                    webView.scrollToPosition(0.0)
-                                    webView.activity.pagerPosition = 0
-                                    webView.activity.reloadPagerPositions = false
-                                }
+                val currentFragment:R2EpubPageFragment = (webView.activity.resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
+                val previousFragment:R2EpubPageFragment? = (webView.activity.resourcePager.adapter as R2PagerAdapter).getPreviousFragment() as? R2EpubPageFragment
+                val nextFragment:R2EpubPageFragment? = (webView.activity.resourcePager.adapter as R2PagerAdapter).getNextFragment() as? R2EpubPageFragment
+
+                if (this@R2EpubPageFragment.tag == currentFragment.tag) {
+                    var locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+
+                    // TODO this seems to be needed, will need to test more
+                    if (url!!.indexOf("#") > 0) {
+                        val id = url.substring(url.indexOf('#'))
+                        webView.loadUrl("javascript:scrollAnchor(" + id + ");");
+                        locations = Locations(id = id)
+                    }
+
+                    if (locations.id == null) {
+                        locations.progression?.let { progression ->
+                            currentFragment.webView.progression = progression
+
+                            if (webView.activity.preferences.getBoolean(SCROLL_REF, false)) {
+
+                            currentFragment.webView.scrollToPosition(progression)
+
+                            } else {
+                                (object : CountDownTimer(100, 1) {
+                                    override fun onTick(millisUntilFinished: Long) {}
+                                    override fun onFinish() {
+                                        currentFragment.webView.calculateCurrentItem()
+                                        currentFragment.webView.setCurrentItem(currentFragment.webView.mCurItem, false)
+                                    }
+                                }).start()
                             }
                         }
                     }
-                    else {
-                        webView.activity.pagerPosition = 0
-                        val progression = preferences.getString("${webView.activity.publicationIdentifier}-documentProgression", 0.0.toString()).toDouble()
-                        webView.scrollToPosition(progression)
+                }
+
+                nextFragment?.let {
+                    if (this@R2EpubPageFragment.tag == nextFragment.tag){
+                        if (nextFragment.webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                            // The view has RTL layout
+                            nextFragment.webView.scrollToEnd()
+                        } else {
+                            // The view has LTR layout
+                            nextFragment.webView.scrollToStart()
+                        }
                     }
-                } catch (e: Exception) {
-                    // TODO double check this error, a crash happens when scrolling to fast between resources.....
-                    // kotlin.TypeCastException: null cannot be cast to non-null type org.readium.r2.navigator.R2EpubActivity
+                }
+
+                previousFragment?.let {
+                    if (this@R2EpubPageFragment.tag == previousFragment.tag){
+                        if (previousFragment.webView.activity.publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                            // The view has RTL layout
+                            previousFragment.webView.scrollToStart()
+                        } else {
+                            // The view has LTR layout
+                            previousFragment.webView.scrollToEnd()
+                        }
+                    }
                 }
 
             }
@@ -147,39 +207,23 @@ class R2EpubPageFragment : Fragment() {
         webView.setOnLongClickListener {
             true
         }
-        webView.setGestureDetector(GestureDetector(context, CustomGestureDetector(webView)))
-        webView.loadUrl(resourceUrl)
+
+        val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
+
+        locations.id?.let {
+            var anchor = it
+            if (anchor.startsWith("#")) {
+            } else {
+                anchor = "#" + anchor
+            }
+            val href = resourceUrl +  anchor
+            webView.loadUrl(href)
+        }?:run {
+            webView.loadUrl(resourceUrl)
+        }
+
 
         return v
-    }
-
-    class CustomGestureDetector(val webView: R2WebView) : GestureDetector.SimpleOnGestureListener() {
-
-        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-            val scrollMode = webView.activity.preferences.getBoolean(SCROLL_REF, false)
-            if (e1 == null || e2 == null) return false
-            if (e1.pointerCount > 1 || e2.pointerCount > 1) {
-                return false
-            }
-            else if (scrollMode) {
-                return false
-            }
-            else {
-                try { // right to left swipe .. go to next page
-                    if (e1.x - e2.x > 100) {
-                        webView.scrollRight()
-                        return true
-                    } //left to right swipe .. go to prev page
-                    else if (e2.x - e1.x > 100) {
-                        webView.scrollLeft()
-                        return true
-                    }
-                } catch (e: Exception) { // nothing
-                }
-
-                return false
-            }
-        }
     }
 
     companion object {

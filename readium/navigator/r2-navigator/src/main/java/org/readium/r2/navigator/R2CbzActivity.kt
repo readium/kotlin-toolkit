@@ -12,10 +12,9 @@ package org.readium.r2.navigator
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import org.jetbrains.anko.contentView
+import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
@@ -56,7 +55,7 @@ class R2CbzActivity : AppCompatActivity() {
         resourcePager.adapter = adapter
 
         if (index == 0) {
-            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+            if (layoutDirectionIsRTL()) {
                 // The view has RTL layout
                 resourcePager.currentItem = resources.size - 1
             } else {
@@ -88,7 +87,7 @@ class R2CbzActivity : AppCompatActivity() {
 
     fun nextResource(v: View? = null) {
         runOnUiThread {
-            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+            if (layoutDirectionIsRTL()) {
                 // The view has RTL layout
                 resourcePager.currentItem = resourcePager.currentItem - 1
             } else {
@@ -100,7 +99,7 @@ class R2CbzActivity : AppCompatActivity() {
 
     fun previousResource(v: View? = null) {
         runOnUiThread {
-            if (ViewCompat.getLayoutDirection(this.contentView) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+            if (layoutDirectionIsRTL()) {
                 // The view has RTL layout
                 resourcePager.currentItem = resourcePager.currentItem + 1
             } else {
