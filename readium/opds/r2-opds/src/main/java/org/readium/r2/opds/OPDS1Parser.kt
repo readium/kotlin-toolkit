@@ -282,7 +282,7 @@ class OPDS1Parser {
             val publisher = entry.get("dcterms:publisher")
             publisher?.let {
                 val contributor = Contributor()
-                contributor.multilanguageName.singleString = publisher.toString()
+                contributor.multilanguageName.singleString = publisher.text.toString()
                 metadata.publishers.add(contributor)
             }
             val categories = entry.get("category")
@@ -305,7 +305,7 @@ class OPDS1Parser {
                         link.href = uri.toString()
                         contributor.links.add(link)
                     }
-                    contributor.multilanguageName.singleString = author.get("name").toString()
+                    contributor.multilanguageName.singleString = author.get("name").text.toString()
                     metadata.authors.add(contributor)
                 }
             }
