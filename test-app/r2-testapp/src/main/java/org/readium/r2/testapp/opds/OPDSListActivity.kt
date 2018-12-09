@@ -78,6 +78,7 @@ class OPDSListActivity : AppCompatActivity() {
             }
             floatingActionButton {
                 imageResource = R.drawable.icon_plus_white
+                contentDescription = context.getString(R.string.floating_button_add_feed)
                 onClick {
                     var editTextTitle: EditText? = null
                     var editTextHref: EditText? = null

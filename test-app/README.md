@@ -8,14 +8,14 @@ A test app for the Kotlin implementation of Readium-2. Stable builds are [availa
 
 - [x] EPUB 2.x and 3.x support
 - [x] Readium LCP support
-- [ ] CBZ support
+- [x] CBZ support
 - [x] Custom styles
 - [x] Night & sepia modes
 - [x] Pagination and scrolling
 - [x] Table of contents
 - [x] OPDS 1.x and 2.0 support
-- [ ] FXL support
-- [ ] RTL support
+- [x] FXL support
+- [x] RTL support
 
 ## Demo
 
@@ -28,6 +28,6 @@ A test app for the Kotlin implementation of Readium-2. Stable builds are [availa
 - [Readium CSS](https://github.com/readium/readium-css) (Handles styles, layout and user settings)
 
 ## Install and run the testapp
-
+[Get started with the testapp](https://github.com/readium/r2-workspace-kotlin/blob/master/README.md)
 
 

@@ -88,7 +88,7 @@ class OPDSDetailActivity : AppCompatActivity() {
                                     val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
                                     database.books.insert(book, false)?.let {
                                         book.id = it
-                                        books.add(book)
+                                        books.add(0,book)
                                         snackbar(this, "download completed")
                                         progress.dismiss()
                                     } ?: run {
@@ -109,7 +109,7 @@ class OPDSDetailActivity : AppCompatActivity() {
                                                     b2.setOnClickListener {
                                                         database.books.insert(book, true)?.let {
                                                             book.id = it
-                                                            books.add(book)
+                                                            books.add(0,book)
                                                             duplicateAlert.dismiss()
                                                         }
                                                     }
