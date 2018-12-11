@@ -10,9 +10,10 @@
 package org.readium.r2.shared.metadata
 
 import org.readium.r2.shared.Collection
+import java.io.Serializable
 
 
-class BelongsTo {
+class BelongsTo: Serializable {
 
     var series: MutableList<Collection> = mutableListOf()
     var collection: MutableList<Collection> = mutableListOf()
