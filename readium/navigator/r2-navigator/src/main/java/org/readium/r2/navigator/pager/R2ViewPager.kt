@@ -28,7 +28,7 @@ class R2ViewPager : R2RTLViewPager {
     }
 
 
-    private var disable: Boolean = true
+    private var disable: Boolean = false
 
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
         return if (disable) false else super.onInterceptTouchEvent(event)
