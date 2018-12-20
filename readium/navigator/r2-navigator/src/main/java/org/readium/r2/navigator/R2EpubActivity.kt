@@ -147,6 +147,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
             }
 
             override fun onPageSelected(position: Int) {
+                resourcePager.disableScroll(true)
                 pagerPosition = 0
                 val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
                 if (preferences.getBoolean(SCROLL_REF, false)) {

@@ -61,7 +61,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
 
     @android.webkit.JavascriptInterface
-    open fun scrollRight() {
+    open fun scrollRight(smoothScroll:Boolean) {
         activity.runOnUiThread {
             if (activity.supportActionBar!!.isShowing) {
                 activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -76,15 +76,15 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 if (activity.publication.metadata.direction == "rtl") {
                     this.evaluateJavascript("scrollRightRTL();") { result ->
                         if (result.contains("edge")) {
-                            activity.previousResource(false)
+                            activity.previousResource(smoothScroll)
                         }
                     }
                 } else {
-                    activity.nextResource(false)
+                    activity.nextResource(smoothScroll)
                 }
             } else {
                 if (!this.canScrollHorizontally(1)) {
-                    activity.nextResource(false)
+                    activity.nextResource(smoothScroll)
                 }
                 this.evaluateJavascript("scrollRight();", null)
             }
@@ -92,7 +92,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @android.webkit.JavascriptInterface
-    open fun scrollLeft() {
+    open fun scrollLeft(smoothScroll: Boolean) {
         activity.runOnUiThread {
             if (activity.supportActionBar!!.isShowing) {
                 activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -107,16 +107,16 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 if (activity.publication.metadata.direction == "rtl") {
                     this.evaluateJavascript("scrollLeftRTL();") { result ->
                         if (result.contains("edge")) {
-                            activity.nextResource(false)
+                            activity.nextResource(smoothScroll)
                         }
                     }
                 } else {
-                    activity.previousResource(false)
+                    activity.previousResource(smoothScroll)
                 }
             } else {
                 // fix this for when vertical scrolling is enabled
                 if (!this.canScrollHorizontally(-1)) {
-                    activity.previousResource(false)
+                    activity.previousResource(smoothScroll)
                 }
                 this.evaluateJavascript("scrollLeft();", null)
             }

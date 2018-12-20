@@ -33,16 +33,16 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         initWebPager()
     }
 
-    override fun scrollRight() {
-        super.scrollRight()
+    override fun scrollRight(smoothScroll:Boolean) {
+        super.scrollRight(smoothScroll)
         if (mCurItem < numPages-1) {
             mCurItem++
             activity.onPageChanged(mCurItem + 1, numPages, url)
         }
     }
 
-    override fun scrollLeft() {
-        super.scrollLeft()
+    override fun scrollLeft(smoothScroll:Boolean) {
+        super.scrollLeft(smoothScroll)
         if (mCurItem > 0) {
             mCurItem--
             activity.onPageChanged(mCurItem + 1, numPages, url)
@@ -817,14 +817,21 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 val totalDelta = (x - mInitialMotionX).toInt()
                 val nextPage = determineTargetPage(currentPage, 0f, initialVelocity, totalDelta)
 
-                setCurrentItemInternal(nextPage, true, initialVelocity)
+                // TODO check if the start or end and switch resources instead
+                if (currentPage == 0 && nextPage == 0) {
+                    scrollLeft(true)
+                } else if(numPages == nextPage) {
+                    scrollRight(true)
+                } else {
+                    setCurrentItemInternal(nextPage, true, initialVelocity)
+                }
             } else {
                 val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
                 val position = (ev.x % getClientWidth()) / getClientWidth()
                 if (!scrollMode) {
                     when {
-                        position <= 0.2 -> scrollLeft()
-                        position >= 0.8 -> scrollRight()
+                        position <= 0.2 -> scrollLeft(false)
+                        position >= 0.8 -> scrollRight(false)
                         else -> centerTapped()
                     }
                 }
