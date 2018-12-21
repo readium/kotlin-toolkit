@@ -14,11 +14,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import org.json.JSONObject
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.PageCallback
 import org.readium.r2.navigator.pager.R2EpubPageFragment
@@ -59,7 +57,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
         epubName = intent.getStringExtra("epubName")
         publicationIdentifier = publication.metadata.identifier
 
-        title = publication.metadata.title
+        title = null
 
         val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
 
