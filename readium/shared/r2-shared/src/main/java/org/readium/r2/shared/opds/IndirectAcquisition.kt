@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.opds
 
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.Serializable
 
