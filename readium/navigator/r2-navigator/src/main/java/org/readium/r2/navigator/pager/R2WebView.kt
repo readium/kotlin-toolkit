@@ -795,7 +795,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                         setScrollState(SCROLL_STATE_DRAGGING)
                         setScrollingCacheEnabled(true)
 
-                        activity.resourcePager.disableScroll(true)
+                        activity.resourcePager.disableTouchEvents = true
 
                     }
                 }
@@ -820,9 +820,9 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
                 // TODO check if the start or end and switch resources instead
                 if (currentPage == 0 && nextPage == 0) {
-                    activity.resourcePager.disableScroll(false)
+                    activity.resourcePager.disableTouchEvents = false
                 } else if(numPages == nextPage) {
-                    activity.resourcePager.disableScroll(false)
+                    activity.resourcePager.disableTouchEvents = false
                 }
 
                 setCurrentItemInternal(nextPage, true, initialVelocity)
