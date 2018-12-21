@@ -683,7 +683,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 if (xDiff > mTouchSlop && xDiff * 0.5f > yDiff) {
                     if (DEBUG) Log.v(TAG, "Starting drag!")
                     mIsBeingDragged = true
-                    //                    requestParentDisallowInterceptTouchEvent(false);
                     setScrollState(SCROLL_STATE_DRAGGING)
                     mLastMotionX = if (dx > 0)
                         mInitialMotionX + mTouchSlop
@@ -788,7 +787,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     if (xDiff > mTouchSlop && xDiff > yDiff) {
                         if (DEBUG) Log.v(TAG, "Starting drag!")
                         mIsBeingDragged = true
-                        //                        requestParentDisallowInterceptTouchEvent(false);
                         mLastMotionX = if (x - mInitialMotionX > 0)
                             mInitialMotionX + mTouchSlop
                         else
@@ -796,6 +794,9 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                         mLastMotionY = y
                         setScrollState(SCROLL_STATE_DRAGGING)
                         setScrollingCacheEnabled(true)
+
+                        activity.resourcePager.disableTouchEvents = true
+
                     }
                 }
                 // Not else! Note that mIsBeingDragged can be set above.
@@ -817,7 +818,15 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 val totalDelta = (x - mInitialMotionX).toInt()
                 val nextPage = determineTargetPage(currentPage, 0f, initialVelocity, totalDelta)
 
+                // TODO check if the start or end and switch resources instead
+                if (currentPage == 0 && nextPage == 0) {
+                    activity.resourcePager.disableTouchEvents = false
+                } else if(numPages == nextPage) {
+                    activity.resourcePager.disableTouchEvents = false
+                }
+
                 setCurrentItemInternal(nextPage, true, initialVelocity)
+
             } else {
                 val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
                 val position = (ev.x % getClientWidth()) / getClientWidth()
