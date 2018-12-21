@@ -37,8 +37,21 @@ fun parseIndirectAcquisition(indirectAcquisitionDict: JSONObject): IndirectAcqui
     val indirectAcquisitionType = indirectAcquisitionDict["type"] as? String
             ?: throw Exception(IndirectAcquisitionError.InvalidIndirectAcquisition.name)
     val indirectAcquisition = IndirectAcquisition(typeAcquisition = indirectAcquisitionType)
-    val childDict = indirectAcquisitionDict.getJSONObject("child")
-    val child = parseIndirectAcquisition(indirectAcquisitionDict = childDict)
-    indirectAcquisition.child.add(child)
+    if (indirectAcquisitionDict.has("child")){
+        val childDictAny = indirectAcquisitionDict.get("child")
+        when (childDictAny) {
+            is JSONObject -> {
+                val child = parseIndirectAcquisition(indirectAcquisitionDict = childDictAny)
+                indirectAcquisition.child.add(child)
+            }
+            is JSONArray -> {
+                for (i in 0..(childDictAny.length() - 1)) {
+                    val childDict = childDictAny.getJSONObject(i)
+                    val child = parseIndirectAcquisition(indirectAcquisitionDict = childDict)
+                    indirectAcquisition.child.add(child)
+                }
+            }
+        }
+    }
     return indirectAcquisition
 }

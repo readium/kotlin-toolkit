@@ -135,6 +135,7 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link {
             val price = Price(currency = currency, value = value)
             properties.price = price
         }
+        link.properties = properties
     }
     if (linkDict.has("children")) {
         linkDict.get("children")?.let {
