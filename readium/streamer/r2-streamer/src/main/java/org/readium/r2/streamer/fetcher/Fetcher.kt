@@ -30,7 +30,6 @@ class Fetcher(var publication: Publication, var container: Container, private va
     }
 
     fun data(path: String): ByteArray? {
-        publication.resource(path) ?: throw Exception("Missing file")
         var data: ByteArray? = container.data(path)
         if (data != null)
             data = contentFilters?.apply(data, publication, container, path)
@@ -38,7 +37,6 @@ class Fetcher(var publication: Publication, var container: Container, private va
     }
 
     fun dataStream(path: String): InputStream {
-        publication.resource(path) ?: throw Exception("Missing file")
         var inputStream = container.dataInputStream(path)
         inputStream = contentFilters?.apply(inputStream, publication, container, path) ?: inputStream
         return inputStream
