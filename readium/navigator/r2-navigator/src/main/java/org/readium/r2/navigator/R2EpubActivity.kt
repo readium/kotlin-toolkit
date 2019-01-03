@@ -70,7 +70,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
         var resourceIndexDouble = 0
         var resourceIndexSingle = 0
 
-        for (spineItem in publication.spine) {
+        for (spineItem in publication.readingOrder) {
             var uri: String
             if (URI(publicationPath).isAbsolute) {
                 if (URI(spineItem.href).isAbsolute) {
