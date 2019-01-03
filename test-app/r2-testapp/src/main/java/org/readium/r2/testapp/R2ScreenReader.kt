@@ -15,13 +15,11 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.support.v4.widget.TextViewCompat
 import android.util.TypedValue
-import android.webkit.WebView
 import android.widget.TextView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_r2_epub.*
 import org.jsoup.Jsoup
-import org.readium.r2.navigator.pager.R2EpubPageFragment
-import org.readium.r2.navigator.pager.R2PagerAdapter
+import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.shared.Publication
 import java.io.IOException
 import java.lang.ref.WeakReference
@@ -36,15 +34,13 @@ import java.util.*
  *
  */
 
-
-class R2ScreenReader(private val context: Context, private val publication: Publication) {
+class R2ScreenReader(var context: Context, var publication: Publication, var port: Int, var epubName:String) {
 
     private var initialized = false
-    private var paused = false
 
     private var utterances = mutableListOf<String>()
     private var utterancesCurrentIndex: Int = 0
-    private var currentResourceHref: String? = null
+    private var items = publication.readingOrder
 
     /*
      * May prove useful
@@ -53,13 +49,23 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
     private var progression: Double = 0.0
     */
 
-    private var textToSpeech: TextToSpeech? = null
+    private var textToSpeech: TextToSpeech
 
     private val activityReference: WeakReference<R2EpubActivity>
-    private var webView: WebView? = null
+//    private var webView: WebView? = null
 
+    var isPaused:Boolean
+
+    val isSpeaking: Boolean
+        get() = textToSpeech.isSpeaking
+
+    private var resourceIndex:Int
 
     init {
+
+        isPaused = false
+        resourceIndex = 0
+
         //Initialize reference
         activityReference = WeakReference(context as R2EpubActivity)
 
@@ -69,38 +75,101 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
                     initialized = (status != TextToSpeech.ERROR)
                 })
 
-
         //Create webview reference
-        val adapter = activityReference.get()?.resourcePager?.adapter as R2PagerAdapter
-        val fragment = (adapter.mFragments.get((adapter).getItemId(activityReference.get()?.resourcePager!!.currentItem))) as? R2EpubPageFragment
-        webView = fragment?.webView
+//        val adapter = activityReference.get()?.resourcePager?.adapter as R2PagerAdapter
+//        val fragment = (adapter.mFragments.get((adapter).getItemId(activityReference.get()?.resourcePager!!.currentItem))) as? R2EpubPageFragment
+//        webView = fragment?.webView
     }
 
 
-    fun isInitialized(): Boolean {
-        return initialized
+//    fun startPlayer() {
+//        mediaPlayer.setOnPreparedListener(this)
+//        mediaPlayer.reset()
+//        try {
+//            mediaPlayer.setDataSource(mediaActivity, Uri.parse(items[resourceIndex].href))
+//            mediaPlayer.prepareAsync()
+//            toggleProgress(true)
+//        } catch (e: IllegalArgumentException) {
+//            e.printStackTrace()
+//        } catch (e: IllegalStateException) {
+//            e.printStackTrace()
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//        }
+//    }
+
+    fun seekTo(progression: Any) {
+//        when (progression) {
+//            is Double -> mediaPlayer.seekTo(progression.toInt())
+//            is Int -> mediaPlayer.seekTo(progression)
+//            else -> mediaPlayer.seekTo(progression.toString().toInt())
+//        }
+    }
+
+    fun stop() {
+        stopReading()
+    }
+
+    fun pause() {
+        pauseReading()
+    }
+
+    fun release() {
+        shutdown()
+    }
+
+    fun start() {
+        startReading()
+    }
+
+    fun resume() {
+        resumeReading()
+    }
+
+    fun goTo(index: Int) {
+        this.resourceIndex = index
+        isPaused = false
+        if (textToSpeech.isSpeaking) {
+            textToSpeech.stop()
+        }
+    }
+
+    fun previousResource() {
+        resourceIndex -= 1
+        isPaused = false
+        if (textToSpeech.isSpeaking) {
+            textToSpeech.stop()
+        }
+    }
+
+    fun nextResource() {
+        resourceIndex += 1
+        isPaused = false
+        if (textToSpeech.isSpeaking) {
+            textToSpeech.stop()
+        }
     }
 
 
-    fun configureTTS(resourceHref: String) {
-        if (isInitialized()) {
-            val language = textToSpeech?.setLanguage(Locale(publication.metadata.languages.firstOrNull()))
+    fun configure() {
+        if (initialized) {
+            val language = textToSpeech.setLanguage(Locale(publication.metadata.languages.firstOrNull()))
 
             if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Toast.makeText(context.applicationContext, "There was an error with the TTS language, switching to EN-US", Toast.LENGTH_LONG).show()
-                textToSpeech?.language = Locale.US
+                textToSpeech.language = Locale.US
             }
 
             //Load resource as sentences
             utterances = mutableListOf()
-            currentResourceHref = resourceHref
-            getUtterances(currentResourceHref)
+
+            getUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
 
             //emptying TTS' queue
             flushUtterancesQueue()
 
             //checking progression
-            textToSpeech?.setOnUtteranceProgressListener(object: UtteranceProgressListener() {
+            textToSpeech.setOnUtteranceProgressListener(object: UtteranceProgressListener() {
                 /**
                  * Called when an utterance "starts" as perceived by the caller. This will
                  * be soon before audio is played back in the case of a [TextToSpeech.speak]
@@ -114,14 +183,15 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
 
                     val toHighlight = utterances[utterancesCurrentIndex]
 
-                    (webView as WebView).post {
-                        (webView as WebView).evaluateJavascript("findUtterance(\"$toHighlight\");", null)
-                    }
+//                    (webView as WebView).post {
+//                        (webView as WebView).evaluateJavascript("findUtterance(\"$toHighlight\");", null)
+//                    }
+
                     activityReference.get()?.findViewById<TextView>(R.id.tts_textView)?.text = toHighlight
 
-                    activityReference.get()?.play?.setImageResource(android.R.drawable.ic_media_pause)
 
-                    activityReference.get()?.ttsOn = true
+                    activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_pause)
+
 
                     TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(activityReference.get()?.tts_textView!!, 1, 30, 1,
                             TypedValue.COMPLEX_UNIT_DIP);
@@ -136,11 +206,10 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
 
                 override fun onStop(utteranceId: String?, interrupted: Boolean) {
                     if (interrupted) {
-                        (webView as WebView).post {
-                            (webView as WebView).evaluateJavascript("setHighlight();", null)
-                        }
-                        activityReference.get()?.play?.setImageResource(android.R.drawable.ic_media_play)
-                        activityReference.get()?.ttsOn = false
+//                        (webView as WebView).post {
+//                            (webView as WebView).evaluateJavascript("setHighlight();", null)
+//                        }
+                        activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
                     }
                 }
 
@@ -154,11 +223,17 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
                  * @param utteranceId The utterance ID of the utterance.
                  */
                 override fun onDone(utteranceId: String?) {
-                    (webView as WebView).post {
-                        (webView as WebView).evaluateJavascript("setHighlight();", null)
+//                    (webView as WebView).post {
+//                        (webView as WebView).evaluateJavascript("setHighlight();", null)
+//                    }
+                    activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
+
+                    if (utteranceId.equals((utterances.size-1).toString())) {
+                        activityReference.get()?.nextResource(false)
+                        nextResource()
+                        startReading()
                     }
-                    activityReference.get()?.play?.setImageResource(android.R.drawable.ic_media_play)
-                    activityReference.get()?.ttsOn = false
+
                 }
 
                 /**
@@ -179,95 +254,81 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
         }
     }
 
-    fun shutdown() {
+    private fun shutdown() {
         initialized = false
-
         stopReading()
-
-        textToSpeech?.shutdown()
+        textToSpeech.shutdown()
     }
 
 
-    fun startReading() {
-        var index = 0
-        for (sentences in utterances) {
-            textToSpeech?.speak(sentences, TextToSpeech.QUEUE_ADD, null, index.toString())
-            index++
-        }
-    }
-
-    fun pauseReading() {
-        paused = true
-        textToSpeech?.stop()
-    }
-
-    fun resumeReading() {
-        var index = utterancesCurrentIndex
-        var first = true
-
+    private fun startReading() {
+        isPaused = false
+        configure()
+        val index = 0
         for (i in index until utterances.size) {
-
-            if (first) {
-                textToSpeech?.speak(utterances[i], TextToSpeech.QUEUE_FLUSH, null, index.toString())
-                first = false
-            } else {
-                textToSpeech?.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, index.toString())
-            }
-            index++
+            textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString())
         }
     }
 
-    fun stopReading() {
-        paused = false
-        textToSpeech?.stop()
-//        utterances.clear()
+    private fun pauseReading() {
+        isPaused = true
+        textToSpeech.stop()
     }
 
-    fun next(): Boolean {
-        var index = utterancesCurrentIndex + 1
-        var first = true
-
+    private fun resumeReading() {
+        isPaused = false
+        val index = utterancesCurrentIndex
         for (i in index until utterances.size) {
-
-            val toSpeak = utterances.get(i)
-            if (first) {
-                textToSpeech?.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null, index.toString())
-                first = false
+            if (i == index) {
+                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_FLUSH, null, i.toString())
             } else {
-                textToSpeech?.speak(toSpeak, TextToSpeech.QUEUE_ADD, null, index.toString())
+                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString())
             }
-            index++
-            return true
         }
-        return false
     }
 
-    fun prev(): Boolean {
-        var index = utterancesCurrentIndex - 1
-        if (index < 0) {
-            index = 0
+    private fun stopReading() {
+        isPaused = false
+        textToSpeech.stop()
+    }
+
+    fun nextSentence(): Boolean {
+        isPaused = false
+        val index = utterancesCurrentIndex + 1
+        if (utterancesCurrentIndex < 0) {
             return false
         }
-        var first = true
         for (i in index until utterances.size) {
-            val toSpeak = utterances.get(i)
-            if (first) {
-                textToSpeech?.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null, index.toString())
-                first = false
+            if (i == index) {
+                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_FLUSH, null, i.toString())
             } else {
-                textToSpeech?.speak(toSpeak, TextToSpeech.QUEUE_ADD, null, index.toString())
+                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString())
             }
-            index++
-            return true
         }
-        return false
+        return true
     }
+
+    fun previousSentence(): Boolean {
+        isPaused = false
+        val index = utterancesCurrentIndex - 1
+        if (utterancesCurrentIndex > utterances.size) {
+            return false
+        }
+        for (i in index until utterances.size) {
+            if (i == index) {
+                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_FLUSH, null, i.toString())
+            } else {
+                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString())
+            }
+        }
+        return true
+    }
+
     private fun flushUtterancesQueue() {
-        textToSpeech?.speak("", TextToSpeech.QUEUE_FLUSH, null, null)
+        textToSpeech.speak("", TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
-
-    fun getUtterances(resourceUrl: String?) {
+    private fun getUtterances(resourceUrl: String?) {
         val thread = Thread(Runnable {
             try {
                 val document = Jsoup.connect(resourceUrl).get()
@@ -309,15 +370,4 @@ class R2ScreenReader(private val context: Context, private val publication: Publ
         thread.start()
         thread.join()
     }
-
-
-
-    fun isTTSSpeaking(): Boolean {
-        return textToSpeech?.isSpeaking!!
-    }
-
-    fun isPaused(): Boolean {
-        return paused
-    }
-
 }

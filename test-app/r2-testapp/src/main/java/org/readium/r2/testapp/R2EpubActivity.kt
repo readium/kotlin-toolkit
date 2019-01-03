@@ -52,7 +52,6 @@ class R2EpubActivity : R2EpubActivity() {
     private lateinit var positionsDB: PositionsDatabase
 
     private lateinit var screenReader: R2ScreenReader
-    internal var ttsOn = false
 
     protected var drmModel: DRMModel? = null
     protected var menuDrm: MenuItem? = null
@@ -90,51 +89,43 @@ class R2EpubActivity : R2EpubActivity() {
         resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
         (resourcePager.focusedChild?.findViewById(org.readium.r2.navigator.R.id.book_title) as? TextView)?.setTextColor(Color.parseColor(textColors[appearancePref]))
         toggleActionBar()
-        play.setOnClickListener {
-            if (!ttsOn) {
-                ttsOn = true
-                screenReader.resumeReading()
-                play.setImageResource(android.R.drawable.ic_media_pause)
+
+        titleView.text = publication.metadata.title
+
+        play_pause.setOnClickListener {
+            if (screenReader.isPaused) {
+                screenReader.resume()
+                play_pause.setImageResource(android.R.drawable.ic_media_pause)
             } else {
-                ttsOn = false
-                screenReader.pauseReading()
-                play.setImageResource(android.R.drawable.ic_media_play)
+                screenReader.pause()
+                play_pause.setImageResource(android.R.drawable.ic_media_play)
             }
         }
-        next.setOnClickListener {
-            if (screenReader.next()) {
-                ttsOn = true
-                play.setImageResource(android.R.drawable.ic_media_pause)
+        fast_forward.setOnClickListener {
+            if (screenReader.nextSentence()) {
+                play_pause.setImageResource(android.R.drawable.ic_media_pause)
             } else {
-                nextResource(false)
-
-                val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
-                val resourceHref = publication.spine[resourcePager.currentItem].href!!
-
-                ttsOn = true
-
-                screenReader.configureTTS("$BASE_URL:$port/$epubName$resourceHref")
-                screenReader.startReading()
-
-                play.setImageResource(android.R.drawable.ic_media_pause)
+                next_chapter.callOnClick()
             }
         }
-        previous.setOnClickListener {
-            if (screenReader.prev()) {
-                ttsOn = true
-                play.setImageResource(android.R.drawable.ic_media_pause)
+        next_chapter.setOnClickListener {
+            nextResource(false)
+            screenReader.nextResource()
+            screenReader.start()
+            play_pause.setImageResource(android.R.drawable.ic_media_pause)
+        }
+        fast_back.setOnClickListener {
+            if (screenReader.previousSentence()) {
+                play_pause.setImageResource(android.R.drawable.ic_media_pause)
             } else {
-                previousResource(false)
-                val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
-                val resourceHref = publication.spine[resourcePager.currentItem].href!!
-
-                ttsOn = true
-
-                screenReader.configureTTS("$BASE_URL:$port/$epubName$resourceHref")
-                screenReader.startReading()
-
-                play.setImageResource(android.R.drawable.ic_media_pause)
+                prev_chapter.callOnClick()
             }
+        }
+        prev_chapter.setOnClickListener {
+            previousResource(false)
+            screenReader.previousResource()
+            screenReader.start()
+            play_pause.setImageResource(android.R.drawable.ic_media_pause)
         }
     }
 
@@ -154,10 +145,8 @@ class R2EpubActivity : R2EpubActivity() {
         when (item.itemId) {
 
             R.id.toc -> {
-                if (screenReader.isTTSSpeaking()) {
-                    ttsOn = false
-                    screenReader.stopReading()
-                    item.title = resources.getString(R.string.epubactivity_read_aloud_start)
+                if (screenReader.isSpeaking) {
+                    dismissScreenReader(menuScreenReader!!)
                 }
                 val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publication", publication)
@@ -166,55 +155,43 @@ class R2EpubActivity : R2EpubActivity() {
                 return true
             }
             R.id.settings -> {
-                if (screenReader.isTTSSpeaking()) {
-                    ttsOn = false
-                    screenReader.stopReading()
-                    item.title = resources.getString(R.string.epubactivity_read_aloud_start)
+                if (screenReader.isSpeaking) {
+                    dismissScreenReader(menuScreenReader!!)
                 }
                 userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.settings), 0, 0, Gravity.END)
                 return true
             }
             R.id.screen_reader -> {
-                val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
-                val resourceHref = publication.spine[resourcePager.currentItem].href!!
+                if (!screenReader.isSpeaking && !screenReader.isPaused && item.title == resources.getString(R.string.epubactivity_read_aloud_start)) {
 
-                if (!screenReader.isTTSSpeaking() && !screenReader.isPaused() && item.title == resources.getString(R.string.epubactivity_read_aloud_start)) {
-                    ttsOn = true
-
-                    screenReader.configureTTS("$BASE_URL:$port/$epubName$resourceHref")
-                    screenReader.startReading()
+                    screenReader.goTo(resourcePager.currentItem)
+                    screenReader.start()
 
                     item.title = resources.getString(R.string.epubactivity_read_aloud_stop)
 
                     tts_overlay.visibility = View.VISIBLE
-                    play.setImageResource(android.R.drawable.ic_media_pause)
+                    play_pause.setImageResource(android.R.drawable.ic_media_pause)
+                    allowToggleActionBar = false
 
                 } else {
-                    ttsOn = false
 
-                    screenReader.stopReading()
-                    item.title = resources.getString(R.string.epubactivity_read_aloud_start)
-                    tts_overlay.visibility = View.INVISIBLE
-                    play.setImageResource(android.R.drawable.ic_media_play)
-
+                    dismissScreenReader(item)
 
                 }
 
                 return true
             }
             R.id.drm -> {
-                if (screenReader.isTTSSpeaking()) {
-                    ttsOn = false
-                    screenReader.stopReading()
-                    item.title = resources.getString(R.string.epubactivity_read_aloud_start)
+                if (screenReader.isSpeaking) {
+                    dismissScreenReader(menuScreenReader!!)
                 }
                 startActivityForResult(intentFor<DRMManagementActivity>("drmModel" to drmModel), 1)
                 return true
             }
             R.id.bookmark -> {
                 val resourceIndex = resourcePager.currentItem.toLong()
-                val resourceHref = publication.spine[resourcePager.currentItem].href!!
-                val resourceTitle = publication.spine[resourcePager.currentItem].title?: ""
+                val resourceHref = publication.readingOrder[resourcePager.currentItem].href!!
+                val resourceTitle = publication.readingOrder[resourcePager.currentItem].title?: ""
                 val locations = Locations.fromJSON(JSONObject(preferences.getString("${publicationIdentifier}-documentLocations", "{}")))
                 val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, locations.progression!!)?.let {
                     it
@@ -250,6 +227,15 @@ class R2EpubActivity : R2EpubActivity() {
             else -> return false
         }
 
+    }
+
+    fun dismissScreenReader(item: MenuItem) {
+        screenReader.stop()
+        item.title = resources.getString(R.string.epubactivity_read_aloud_start)
+        tts_overlay.visibility = View.INVISIBLE
+        play_pause.setImageResource(android.R.drawable.ic_media_play)
+
+        allowToggleActionBar = true
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -299,16 +285,22 @@ class R2EpubActivity : R2EpubActivity() {
          * Initialisation of the screen reader
          */
         Handler().postDelayed({
-            screenReader = R2ScreenReader(this, publication)
+            val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
+            screenReader = R2ScreenReader(this, publication, port, epubName)
         }, 500)
 
     }
 
+    override fun toggleActionBar() {
+        if (tts_overlay.visibility == View.INVISIBLE) {
+            super.toggleActionBar()
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        screenReader.shutdown()
+        screenReader.release()
     }
 
 
