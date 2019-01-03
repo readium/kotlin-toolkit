@@ -32,6 +32,7 @@ import android.widget.TextView
 import com.mcxiaoke.koi.ext.timestamp
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
+import java.util.concurrent.TimeUnit
 
 
 class R2OutlineActivity : AppCompatActivity() {
@@ -57,23 +58,35 @@ class R2OutlineActivity : AppCompatActivity() {
          * Retrieve the Table of Content
          */
         val tableOfContents: MutableList<Link> = publication.tableOfContents
-        val allElements = mutableListOf<Link>()
+        val allElements = mutableListOf<Pair<Int,Link>>()
 
         for (link in tableOfContents) {
-            val children = childrenOf(link)
+            val children = childrenOf(Pair(0,link))
             // Append parent.
-            allElements.add(link)
+            allElements.add(Pair(0,link))
             // Append children, and their children... recursive.
             allElements.addAll(children)
         }
 
-        val tocAdapter = NavigationAdapter(this, allElements)
+        if (allElements.isEmpty()) {
+
+            for (link in publication.readingOrder) {
+                val children = childrenOf(Pair(0,link))
+                // Append parent.
+                allElements.add(Pair(0,link))
+                // Append children, and their children... recursive.
+                allElements.addAll(children)
+            }
+
+        }
+
+        val tocAdapter = NavigationAdapter(this, allElements.toMutableList())
 
         toc_list.adapter = tocAdapter
 
         toc_list.setOnItemClickListener { _, _, position, _ ->
             //Link to the resource in the publication
-            val tocItemUri = allElements[position].href
+            val tocItemUri = allElements[position].second.href
 
             tocItemUri?.let {
                 val intent = Intent()
@@ -99,7 +112,7 @@ class R2OutlineActivity : AppCompatActivity() {
         val bookID = intent.getLongExtra("bookId", -1)
         val bookmarks = bookmarkDB.bookmarks.list(bookID).sortedWith(compareBy({it.resourceIndex},{ it.location.progression })).toMutableList()
 
-        val bookmarksAdapter = BookMarksAdapter(this, bookmarks, allElements)
+        val bookmarksAdapter = BookMarksAdapter(this, bookmarks, publication)
 
         bookmark_list.adapter = bookmarksAdapter
 
@@ -123,10 +136,11 @@ class R2OutlineActivity : AppCompatActivity() {
          * Retrieve the page list
          */
         positionsDB = PositionsDatabase(this)
-        val pageList: MutableList<Link> = publication.pageList
+
+        val pageList = publication.pageList
 
         if (pageList.isNotEmpty()) {
-            val pageListAdapter = NavigationAdapter(this, pageList)
+            val pageListAdapter = NavigationAdapter(this, pageList.toMutableList())
             page_list.adapter = pageListAdapter
 
             page_list.setOnItemClickListener { _, _, position, _ ->
@@ -167,9 +181,9 @@ class R2OutlineActivity : AppCompatActivity() {
         /*
          * Retrieve the landmarks
          */
-        val landmarks: MutableList<Link> = publication.landmarks
+        val landmarks = publication.landmarks
 
-        val landmarksAdapter = NavigationAdapter(this, landmarks)
+        val landmarksAdapter = NavigationAdapter(this, landmarks.toMutableList())
         landmarks_list.adapter = landmarksAdapter
 
         landmarks_list.setOnItemClickListener { _, _, position, _ ->
@@ -211,119 +225,208 @@ class R2OutlineActivity : AppCompatActivity() {
 
         tabHost.addTab(tabTOC)
         tabHost.addTab(tabBookmarks)
-        tabHost.addTab(tabPageList)
-        tabHost.addTab(tabLandmarks)
-
+        if (publication.type != Publication.TYPE.AUDIO) {
+            tabHost.addTab(tabPageList)
+            tabHost.addTab(tabLandmarks)
+        }
     }
 
 
 
-    private fun childrenOf(parent: Link): MutableList<Link> {
-        val children = mutableListOf<Link>()
-        for (link in parent.children) {
-            children.add(link)
-            children.addAll(childrenOf(link))
+    private fun childrenOf(parent: Pair<Int,Link>): MutableList<Pair<Int,Link>> {
+        val indentation = parent.first + 1
+        val children = mutableListOf<Pair<Int,Link>>()
+        for (link in parent.second.children) {
+            children.add(Pair(indentation,link))
+            children.addAll(childrenOf(Pair(indentation,link)))
         }
         return children
     }
 
 
 
-
     /*
      * Adapter for navigation links (Table of Contents, Page lists & Landmarks)
      */
-    inner class NavigationAdapter(context: Context, users: MutableList<Link>) : ArrayAdapter<Link>(context, R.layout.navcontent_item, users) {
-        private inner class ViewHolder {
-            internal var navigationTextView: TextView? = null
+    inner class NavigationAdapter(var activity: Activity, var items: MutableList<Any>) : BaseAdapter() {
+
+        private inner class ViewHolder(row: View?) {
+            var navigationTextView: TextView? = null
+            var indentationView: ImageView? = null
+
+            init {
+                this.navigationTextView = row?.navigation_textView
+                this.indentationView = row?.indentation
+            }
         }
 
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            var myView = convertView
+        /**
+         * Get the data item associated with the specified position in the data set.
+         *
+         * @param position Position of the item whose data we want within the adapter's
+         * data set.
+         * @return The data at the specified position.
+         */
+        override fun getItem(position: Int): Any {
+            return items[position]
+        }
 
-            val item = getItem(position)
+        /**
+         * Get the row id associated with the specified position in the list.
+         *
+         * @param position The position of the item within the adapter's data set whose row id we want.
+         * @return The id of the item at the specified position.
+         */
+        override fun getItemId(position: Int): Long {
+            return position.toLong()
+        }
 
-            val viewHolder: ViewHolder // view lookup cache stored in tag
-            if (myView == null) {
+        /**
+         * How many items are in the data set represented by this Adapter.
+         *
+         * @return Count of items.
+         */
+        override fun getCount(): Int {
+            return items.size
+        }
 
-                viewHolder = ViewHolder()
-                val inflater = LayoutInflater.from(context)
-                myView = inflater.inflate(R.layout.navcontent_item, parent, false)
-                viewHolder.navigationTextView = myView!!.navigation_textView as TextView
 
-                myView.tag = viewHolder
-
+        /**
+         * Get a View that displays the data at the specified position in the data set. You can either
+         * create a View manually or inflate it from an XML layout file. When the View is inflated, the
+         * parent View (GridView, ListView...) will apply default layout parameters unless you use
+         * [android.view.LayoutInflater.inflate]
+         * to specify a root view and to prevent attachment to the root.
+         *
+         * @param position The position of the item within the adapter's data set of the item whose view
+         * we want.
+         * @param convertView The old view to reuse, if possible. Note: You should check that this view
+         * is non-null and of an appropriate type before using. If it is not possible to convert
+         * this view to display the correct data, this method can create a new view.
+         * Heterogeneous lists can specify their number of view types, so that this View is
+         * always of the right type (see [.getViewTypeCount] and
+         * [.getItemViewType]).
+         * @param parent The parent that this view will eventually be attached to
+         * @return A View corresponding to the data at the specified position.
+         */
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+            val view: View?
+            val viewHolder: ViewHolder
+            if (convertView == null) {
+                val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                view = inflater.inflate(R.layout.navcontent_item, null)
+                viewHolder = ViewHolder(view)
+                view?.tag = viewHolder
             } else {
-
-                viewHolder = myView.tag as ViewHolder
+                view = convertView
+                viewHolder = view.tag as ViewHolder
             }
-
-            viewHolder.navigationTextView!!.text = item!!.title
-
-            return myView
+            val item = getItem(position)
+            if (item is Pair<*, *>) {
+                item as Pair<Int, Link>
+                viewHolder.navigationTextView?.text = item.second.title
+                val parameter = viewHolder.indentationView?.getLayoutParams()
+                parameter?.width = item.first * 50
+            } else {
+                item as Link
+                viewHolder.navigationTextView?.text = item.title
+            }
+            return view as View
         }
     }
 
-    inner class SyntheticPageListAdapter(context: Context, pageList: MutableList<Position>) : ArrayAdapter<Position>(context, R.layout.navcontent_item, pageList) {
-        private inner class ViewHolder {
-            internal var navigationTextView: TextView? = null
+    inner class SyntheticPageListAdapter(var activity: Activity, var items: MutableList<Position>) : BaseAdapter() {
+        /**
+         * Get the data item associated with the specified position in the data set.
+         *
+         * @param position Position of the item whose data we want within the adapter's
+         * data set.
+         * @return The data at the specified position.
+         */
+        override fun getItem(position: Int): Any {
+            return items[position]
+        }
+
+        /**
+         * Get the row id associated with the specified position in the list.
+         *
+         * @param position The position of the item within the adapter's data set whose row id we want.
+         * @return The id of the item at the specified position.
+         */
+        override fun getItemId(position: Int): Long {
+            return position.toLong()
+        }
+
+        /**
+         * How many items are in the data set represented by this Adapter.
+         *
+         * @return Count of items.
+         */
+        override fun getCount(): Int {
+            return items.size
+        }
+
+        private inner class ViewHolder(row: View?) {
+            var navigationTextView: TextView? = null
+
+            init {
+                this.navigationTextView = row?.navigation_textView
+            }
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            var myView = convertView
 
-            val item = getItem(position)
-
-            val viewHolder: ViewHolder // view lookup cache stored in tag
-            if (myView == null) {
-
-                viewHolder = ViewHolder()
-                val inflater = LayoutInflater.from(context)
-                myView = inflater.inflate(R.layout.navcontent_item, parent, false)
-                viewHolder.navigationTextView = myView!!.navigation_textView as TextView
-
-                myView.tag = viewHolder
-
+            val view: View?
+            val viewHolder: ViewHolder
+            if (convertView == null) {
+                val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                view = inflater.inflate(R.layout.navcontent_item, null)
+                viewHolder = ViewHolder(view)
+                view?.tag = viewHolder
             } else {
-
-                viewHolder = myView.tag as ViewHolder
+                view = convertView
+                viewHolder = view.tag as ViewHolder
             }
+
+            val item = getItem(position) as Position
 
             viewHolder.navigationTextView!!.text = "Page ${item.pageNumber}"
 
-            return myView
+            return view as View
         }
     }
 
 
-    inner class BookMarksAdapter(val context: Context, private val locators: MutableList<Bookmark>, private val elements: MutableList<Link>) : BaseAdapter() {
+    inner class BookMarksAdapter(val activity: Activity, private val items: MutableList<Bookmark>, private val publication: Publication) : BaseAdapter() {
 
-        private inner class ViewHolder {
-            internal var bmkChapter: TextView? = null
-            internal var bmkProgression: TextView? = null
-            internal var bmkTimestamp: TextView? = null
-            internal var bmkOverflow: ImageView? = null
+        private inner class ViewHolder(row: View?) {
+            internal var bookmarkChapter: TextView? = null
+            internal var bookmarkProgression: TextView? = null
+            internal var bookmarkTimestamp: TextView? = null
+            internal var bookmarkOverflow: ImageView? = null
+
+            init {
+                this.bookmarkChapter = row?.bookmark_chapter as TextView
+                this.bookmarkProgression = row.bookmark_progression as TextView
+                this.bookmarkTimestamp = row.bookmark_timestamp as TextView
+                this.bookmarkOverflow = row.overflow as ImageView
+
+            }
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-            var bookmarkView = convertView
+
+
+            val view: View?
             val viewHolder: ViewHolder
-
-            if(bookmarkView == null) {
-                viewHolder = ViewHolder()
-
-                val inflater = LayoutInflater.from(context)
-                bookmarkView = inflater.inflate(R.layout.bookmark_item, parent, false)
-
-                viewHolder.bmkChapter = bookmarkView!!.bmk_chapter as TextView
-                viewHolder.bmkProgression = bookmarkView.bmk_progression as TextView
-                viewHolder.bmkTimestamp = bookmarkView.bmk_timestamp as TextView
-                viewHolder.bmkOverflow = bookmarkView.overflow as ImageView
-
-                bookmarkView.tag = viewHolder
-
+            if (convertView == null) {
+                val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                view = inflater.inflate(R.layout.bookmark_item, null)
+                viewHolder = ViewHolder(view)
+                view?.tag = viewHolder
             } else {
-                viewHolder = bookmarkView.tag as ViewHolder
+                view = convertView
+                viewHolder = view.tag as ViewHolder
             }
 
             val bookmark = getItem(position) as Bookmark
@@ -335,20 +438,28 @@ class R2OutlineActivity : AppCompatActivity() {
             val formattedProgression = "${((bookmark.location.progression!! * 100).roundToInt())}% through resource"
             val formattedDate = DateTime(bookmark.creationDate).toString(DateTimeFormat.shortDateTime())
 
-            viewHolder.bmkChapter!!.text = title
-            viewHolder.bmkProgression!!.text = formattedProgression
-            viewHolder.bmkTimestamp!!.text = formattedDate
+            viewHolder.bookmarkChapter!!.text = title
+            if (bookmark.location.progression!! > 1) {
 
-            viewHolder.bmkOverflow?.setOnClickListener {
+                viewHolder.bookmarkProgression!!.text   = String.format("%d:%d",
+                        TimeUnit.MILLISECONDS.toMinutes(bookmark.location.progression!!.toLong()),
+                        TimeUnit.MILLISECONDS.toSeconds(bookmark.location.progression!!.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(bookmark.location.progression!!.toLong())))
 
-                val popupMenu = PopupMenu(parent?.context, viewHolder.bmkChapter)
+            } else {
+                viewHolder.bookmarkProgression!!.text = formattedProgression
+            }
+            viewHolder.bookmarkTimestamp!!.text = formattedDate
+
+            viewHolder.bookmarkOverflow?.setOnClickListener {
+
+                val popupMenu = PopupMenu(parent?.context, viewHolder.bookmarkChapter)
                 popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
                 popupMenu.show()
 
                 popupMenu.setOnMenuItemClickListener { item ->
                     if (item.itemId == R.id.delete) {
-                        bookmarkDB.bookmarks.delete(locators[position])
-                        locators.removeAt(position)
+                        bookmarkDB.bookmarks.delete(items[position])
+                        items.removeAt(position)
                         notifyDataSetChanged()
                     }
                     false
@@ -356,19 +467,24 @@ class R2OutlineActivity : AppCompatActivity() {
             }
 
 
-            return bookmarkView
+            return view as View
         }
 
         override fun getCount(): Int {
-            return locators.size
+            return items.size
         }
 
         override fun getItem(position: Int): Any {
-            return locators[position]
+            return items[position]
         }
 
         private fun getBookSpineItem(href: String): String? {
-            for (link in elements) {
+            for (link in publication.tableOfContents) {
+                if (link.href == href) {
+                    return link.title
+                }
+            }
+            for (link in publication.readingOrder) {
                 if (link.href == href) {
                     return link.title
                 }
