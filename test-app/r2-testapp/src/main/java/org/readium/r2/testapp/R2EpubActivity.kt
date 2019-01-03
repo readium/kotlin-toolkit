@@ -15,15 +15,17 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
-import android.speech.tts.TextToSpeech
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
+import kotlinx.android.synthetic.main.activity_r2_epub.*
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
+import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRMModel
@@ -45,16 +47,19 @@ class R2EpubActivity : R2EpubActivity() {
     private var isExploreByTouchEnabled = false
     private var pageEnded = false
 
-    // List of bookmarks on activity_outline_container.xml
-    private var menuBmk: MenuItem? = null
-
     // Provide access to the Bookmarks & Positions Databases
     private lateinit var bookmarksDB: BookmarksDatabase
     private lateinit var positionsDB: PositionsDatabase
 
+    private lateinit var screenReader: R2ScreenReader
+
     protected var drmModel: DRMModel? = null
     protected var menuDrm: MenuItem? = null
     protected var menuToc: MenuItem? = null
+    protected var menuBmk: MenuItem? = null
+
+    protected var menuScreenReader: MenuItem? = null
+
     private var bookId: Long = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +90,43 @@ class R2EpubActivity : R2EpubActivity() {
         (resourcePager.focusedChild?.findViewById(org.readium.r2.navigator.R.id.book_title) as? TextView)?.setTextColor(Color.parseColor(textColors[appearancePref]))
         toggleActionBar()
 
+        titleView.text = publication.metadata.title
+
+        play_pause.setOnClickListener {
+            if (screenReader.isPaused) {
+                screenReader.resume()
+                play_pause.setImageResource(android.R.drawable.ic_media_pause)
+            } else {
+                screenReader.pause()
+                play_pause.setImageResource(android.R.drawable.ic_media_play)
+            }
+        }
+        fast_forward.setOnClickListener {
+            if (screenReader.nextSentence()) {
+                play_pause.setImageResource(android.R.drawable.ic_media_pause)
+            } else {
+                next_chapter.callOnClick()
+            }
+        }
+        next_chapter.setOnClickListener {
+            nextResource(false)
+            screenReader.nextResource()
+            screenReader.start()
+            play_pause.setImageResource(android.R.drawable.ic_media_pause)
+        }
+        fast_back.setOnClickListener {
+            if (screenReader.previousSentence()) {
+                play_pause.setImageResource(android.R.drawable.ic_media_pause)
+            } else {
+                prev_chapter.callOnClick()
+            }
+        }
+        prev_chapter.setOnClickListener {
+            previousResource(false)
+            screenReader.previousResource()
+            screenReader.start()
+            play_pause.setImageResource(android.R.drawable.ic_media_pause)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -92,6 +134,9 @@ class R2EpubActivity : R2EpubActivity() {
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
         menuBmk = menu?.findItem(R.id.bookmark)
+
+        menuScreenReader = menu?.findItem(R.id.screen_reader)
+
         menuDrm?.isVisible = false
         return true
     }
@@ -100,6 +145,9 @@ class R2EpubActivity : R2EpubActivity() {
         when (item.itemId) {
 
             R.id.toc -> {
+                if (screenReader.isSpeaking) {
+                    dismissScreenReader(menuScreenReader!!)
+                }
                 val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publication", publication)
                 intent.putExtra("bookId", bookId)
@@ -107,17 +155,43 @@ class R2EpubActivity : R2EpubActivity() {
                 return true
             }
             R.id.settings -> {
-                userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.toc), 0, 0, Gravity.END)
+                if (screenReader.isSpeaking) {
+                    dismissScreenReader(menuScreenReader!!)
+                }
+                userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.settings), 0, 0, Gravity.END)
+                return true
+            }
+            R.id.screen_reader -> {
+                if (!screenReader.isSpeaking && !screenReader.isPaused && item.title == resources.getString(R.string.epubactivity_read_aloud_start)) {
+
+                    screenReader.goTo(resourcePager.currentItem)
+                    screenReader.start()
+
+                    item.title = resources.getString(R.string.epubactivity_read_aloud_stop)
+
+                    tts_overlay.visibility = View.VISIBLE
+                    play_pause.setImageResource(android.R.drawable.ic_media_pause)
+                    allowToggleActionBar = false
+
+                } else {
+
+                    dismissScreenReader(item)
+
+                }
+
                 return true
             }
             R.id.drm -> {
+                if (screenReader.isSpeaking) {
+                    dismissScreenReader(menuScreenReader!!)
+                }
                 startActivityForResult(intentFor<DRMManagementActivity>("drmModel" to drmModel), 1)
                 return true
             }
             R.id.bookmark -> {
                 val resourceIndex = resourcePager.currentItem.toLong()
-                val resourceHref = publication.spine[resourcePager.currentItem].href!!
-                val resourceTitle = publication.spine[resourcePager.currentItem].title?: ""
+                val resourceHref = publication.readingOrder[resourcePager.currentItem].href!!
+                val resourceTitle = publication.readingOrder[resourcePager.currentItem].title?: ""
                 val locations = Locations.fromJSON(JSONObject(preferences.getString("${publicationIdentifier}-documentLocations", "{}")))
                 val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, locations.progression!!)?.let {
                     it
@@ -153,6 +227,15 @@ class R2EpubActivity : R2EpubActivity() {
             else -> return false
         }
 
+    }
+
+    fun dismissScreenReader(item: MenuItem) {
+        screenReader.stop()
+        item.title = resources.getString(R.string.epubactivity_read_aloud_start)
+        tts_overlay.visibility = View.INVISIBLE
+        play_pause.setImageResource(android.R.drawable.ic_media_play)
+
+        allowToggleActionBar = true
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -196,12 +279,28 @@ class R2EpubActivity : R2EpubActivity() {
             userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
             userSettings.resourcePager = resourcePager
         }
+
+
+        /*
+         * Initialisation of the screen reader
+         */
+        Handler().postDelayed({
+            val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
+            screenReader = R2ScreenReader(this, publication, port, epubName)
+        }, 500)
+
     }
 
+    override fun toggleActionBar() {
+        if (tts_overlay.visibility == View.INVISIBLE) {
+            super.toggleActionBar()
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
 
+        screenReader.release()
     }
 
 

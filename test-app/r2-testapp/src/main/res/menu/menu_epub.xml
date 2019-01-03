@@ -23,6 +23,14 @@
     </item>
 
     <item
+        android:id="@+id/screen_reader"
+        android:icon="@drawable/icon_audio"
+        android:title="@string/epubactivity_read_aloud_start"
+        app:showAsAction="always|always"
+        tools:ignore="AlwaysShowAction">
+    </item>
+
+    <item
         android:id="@+id/bookmark"
         android:icon="@drawable/icon_bookmark"
         android:title="@string/epubactivity_set_bookmark"
@@ -37,7 +45,6 @@
         app:showAsAction="always|always"
         tools:ignore="AlwaysShowAction">
     </item>
-
 
     <item
         android:id="@+id/toc"
