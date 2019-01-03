@@ -56,6 +56,7 @@ import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
+import org.readium.r2.testapp.audiobook.AudiobookActivity
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSDownloader
 import org.readium.r2.testapp.opds.OPDSListActivity
@@ -302,22 +303,24 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 }
             }
         } else if (publication.type == Publication.TYPE.WEBPUB || publication.type == Publication.TYPE.AUDIO) {
-            val self = publication.linkWithRel("self")
 
-            when (publication.type) {
-                Publication.TYPE.WEBPUB -> {
-                    progress.dismiss()
-                    prepareWebPublication(self?.href!!, webPub = null, add = true)
+                val self = publication.linkWithRel("self")
+
+                when (publication.type) {
+                    Publication.TYPE.WEBPUB -> {
+                        progress.dismiss()
+                        prepareWebPublication(self?.href!!, webPub = null, add = true)
+                    }
+                    Publication.TYPE.AUDIO -> {
+                        progress.dismiss()
+                        prepareWebPublication(self?.href!!, webPub = null, add = true) //will be adapted later
+                    }
+                    else -> {
+                        progress.dismiss()
+                        snackbar(catalogView, "Invalid publication")
+                    }
                 }
-                Publication.TYPE.AUDIO -> {
-                    progress.dismiss()
-                    prepareWebPublication(self?.href!!, webPub = null, add = true) //will be adapted later
-                }
-                else -> {
-                    progress.dismiss()
-                    snackbar(catalogView, "Invalid publication")
-                }
-            }
+
         }
     }
 
@@ -396,6 +399,32 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
+    private fun getPublicationURL(src: String): JSONObject? {
+        return try {
+            val url = URL(src)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.instanceFollowRedirects = false
+            connection.doInput = true
+            connection.connect()
+
+            val jsonManifestURL = URL(connection.getHeaderField("Location") ?: src).openConnection()
+            jsonManifestURL.connect()
+
+            val jsonManifest = jsonManifestURL.getInputStream().readBytes()
+            val stringManifest = jsonManifest.toString(Charset.defaultCharset())
+            val json = JSONObject(stringManifest)
+
+            jsonManifestURL.close()
+            connection.disconnect()
+            connection.close()
+
+            json
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+    
     private fun getBitmapFromURL(src: String): Bitmap? {
         return try {
             val url = URL(src)
@@ -514,8 +543,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!, pub.metadata.identifier)
 
             when (pub.type) {
-                Publication.TYPE.EPUB -> syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName, pub.spine))
-                Publication.TYPE.WEBPUB -> syntheticPageList.execute(Triple("", book.fileName, pub.spine))
+                Publication.TYPE.EPUB -> syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName, pub.readingOrder))
+                Publication.TYPE.WEBPUB -> syntheticPageList.execute(Triple("", book.fileName, pub.readingOrder))
                 else -> {
                     //no page list
                 }
@@ -746,25 +775,15 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean) {
-        Thread {
-            try {
-                val redirectedManifest = URL(externalManifest).openConnection() as HttpURLConnection
-                redirectedManifest.instanceFollowRedirects = false
-                redirectedManifest.connect()
 
-                val jsonManifestURL = URL(redirectedManifest.getHeaderField("Location") ?: externalManifest).openConnection()
-                jsonManifestURL.connect()
 
-                val jsonManifest = jsonManifestURL.getInputStream().readBytes()
+        task {
 
-                val stringManifest = jsonManifest.toString(Charset.defaultCharset())
+            getPublicationURL(externalManifest)
 
-                val json = JSONObject(stringManifest)
+        } then { json ->
 
-                jsonManifestURL.close()
-                redirectedManifest.disconnect()
-                redirectedManifest.close()
-
+            json?.let {
                 val externalPub = parsePublication(json)
                 val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
 
@@ -772,10 +791,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                 if (add) {
 
-                    externalPub.coverLink?.href?.let {
+                    externalPub.coverLink?.href?.let { href ->
                         val bitmap: Bitmap?
-                        if (URI(it).isAbsolute) {
-                            bitmap = getBitmapFromURL(it)
+                        if (URI(href).isAbsolute) {
+                            bitmap = getBitmapFromURL(href)
                         } else {
                             bitmap = getBitmapFromURL(externalURI + it)
                         }
@@ -789,8 +808,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
 
                     runOnUiThread {
-                        database.books.insert(book!!, false)?.let {
-                            book!!.id = it
+                        database.books.insert(book!!, false)?.let { id ->
+                            book!!.id = id
                             books.add(0, book!!)
                             booksAdapter.notifyDataSetChanged()
                             prepareSyntheticPageList(externalPub, book!!)
@@ -800,24 +819,31 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 } else {
                     book = webPub
-                    startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to book!!.fileName,
-                            "epubName" to externalPub.metadata.title,
-                            "publication" to externalPub,
-                            "bookId" to book!!.id))
+                    startActivity(book!!.fileName, book!!, externalPub)
                 }
-            } catch (e: Exception) {
-                longSnackbar(catalogView, "$e")
             }
-
-        }.start()
+        }
     }
 
     private fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication) {
         prepareToServe(pub, book.fileName, file.absolutePath, false, false)
-        startActivity(intentFor<org.readium.r2.testapp.R2EpubActivity>("publicationPath" to publicationPath,
-                "epubName" to book.fileName,
-                "publication" to publication,
-                "bookId" to book.id))
+        startActivity(publicationPath, book, publication)
+    }
+
+    fun startActivity(publicationPath: String, book: Book, publication: Publication) {
+        if(publication.type == Publication.TYPE.AUDIO) {
+
+            startActivity(intentFor<AudiobookActivity>("publicationPath" to publicationPath,
+                    "epubName" to book.fileName,
+                    "publication" to publication,
+                    "bookId" to book.id))
+
+        } else {
+            startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath,
+                    "epubName" to book.fileName,
+                    "publication" to publication,
+                    "bookId" to book.id))
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
