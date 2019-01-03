@@ -18,15 +18,17 @@
         android:id="@+id/drm"
         android:icon="@drawable/icon_drm"
         android:title="@string/epubactivity_drm_info"
-        app:showAsAction="collapseActionView"
+        app:showAsAction="always|always"
         tools:ignore="AlwaysShowAction">
     </item>
 
 
     <item
         android:id="@+id/screen_reader"
-        app:showAsAction="collapseActionView"
-        android:title="@string/epubactivity_read_aloud_start">
+        android:icon="@drawable/icon_audio"
+        android:title="@string/epubactivity_read_aloud_start"
+        app:showAsAction="always|always"
+        tools:ignore="AlwaysShowAction">
     </item>
 
 
@@ -75,7 +77,7 @@
         android:id="@+id/toc"
         android:icon="@drawable/icon_menu"
         android:title="@string/epubactivity_book_nav_options"
-        app:showAsAction="collapseActionView"
+        app:showAsAction="always|always"
         tools:ignore="AlwaysShowAction">
     </item>
 
