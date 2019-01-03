@@ -99,6 +99,7 @@
         <activity
             android:name=".opds.OPDSDetailActivity"
             android:label="@string/title_activity_opds_detail" />
+        <activity android:name=".audiobook.AudiobookActivity" />
 
     </application>
 
