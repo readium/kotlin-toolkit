@@ -82,28 +82,8 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     }
 
 
-//    fun startPlayer() {
-//        mediaPlayer.setOnPreparedListener(this)
-//        mediaPlayer.reset()
-//        try {
-//            mediaPlayer.setDataSource(mediaActivity, Uri.parse(items[resourceIndex].href))
-//            mediaPlayer.prepareAsync()
-//            toggleProgress(true)
-//        } catch (e: IllegalArgumentException) {
-//            e.printStackTrace()
-//        } catch (e: IllegalStateException) {
-//            e.printStackTrace()
-//        } catch (e: IOException) {
-//            e.printStackTrace()
-//        }
-//    }
-
     fun seekTo(progression: Any) {
-//        when (progression) {
-//            is Double -> mediaPlayer.seekTo(progression.toInt())
-//            is Int -> mediaPlayer.seekTo(progression)
-//            else -> mediaPlayer.seekTo(progression.toString().toInt())
-//        }
+        // TODO
     }
 
     fun stop() {
