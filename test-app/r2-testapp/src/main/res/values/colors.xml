@@ -10,10 +10,10 @@
   -->
 
 <resources>
-    <color name="colorPrimary">#1f21b5</color>
-    <color name="colorPrimaryDark">#17188c</color>
+    <color name="colorPrimary">#222325</color>
+    <color name="colorPrimaryDark">#070707</color>
     <color name="colorAccent">#eceaeb</color>
-    <color name="colorAccentPrefs">#17188c</color>
+    <color name="colorAccentPrefs">#070707</color>
 
 
     <color name="snackbar_background_color">@color/colorPrimaryDark</color>
