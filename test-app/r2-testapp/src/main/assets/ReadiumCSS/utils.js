@@ -255,7 +255,7 @@ var removeProperty = function(key) {
 };
 
 
-
+// TODO Work In Progress
 
 //Highlighting related
 var setHighlight = function() {
