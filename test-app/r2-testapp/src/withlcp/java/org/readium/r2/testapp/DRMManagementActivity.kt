@@ -28,6 +28,8 @@ import org.readium.r2.shared.drm.DRMModel
 import android.content.Intent
 import android.net.Uri
 import android.widget.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 
 class DRMManagementActivity : AppCompatActivity() {
@@ -40,8 +42,12 @@ class DRMManagementActivity : AppCompatActivity() {
         val licensesDB = lcpLicense.database.licenses
 
         try {
-            lcpLicense.fetchStatusDocument().get()
-            lcpLicense.updateLicenseDocument().get()
+            runBlocking {
+                launch {
+                    lcpLicense.fetchStatusDocument()
+                }.join()
+                lcpLicense.updateLicenseDocument()
+            }
         } catch (e: Exception) {
             //Do something ?
         }
