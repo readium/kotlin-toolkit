@@ -62,8 +62,8 @@ dependencies {
     implementation "com.android.support:appcompat-v7:$support_version"
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
     implementation 'joda-time:joda-time:2.9.9'
-    implementation 'com.github.kittinunf.fuel:fuel:1.15.0'
-    implementation 'com.github.kittinunf.fuel:fuel-android:1.15.0'
+    implementation 'com.github.kittinunf.fuel:fuel:1.16.0'
+    implementation 'com.github.kittinunf.fuel:fuel-android:1.16.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
