@@ -79,6 +79,6 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     companion object {
-        val TAG: String = this::class.java.simpleName
+        val TAG: String = FontHandler::class.java.simpleName
     }
 }

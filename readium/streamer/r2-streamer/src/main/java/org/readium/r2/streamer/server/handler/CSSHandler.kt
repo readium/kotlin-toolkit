@@ -60,6 +60,6 @@ class CSSHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     companion object {
-        private val TAG: String = this::class.java.simpleName
+        private val TAG: String = CSSHandler::class.java.simpleName
     }
 }

@@ -48,6 +48,6 @@ class ManifestHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     companion object {
-        private val TAG: String = this::class.java.simpleName
+        private val TAG: String = ManifestHandler::class.java.simpleName
     }
 }

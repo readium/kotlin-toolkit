@@ -26,7 +26,7 @@ import java.io.InputStream
 class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
     companion object {
-        val TAG: String = this::class.java.simpleName
+        val TAG: String = ResourceHandler::class.java.simpleName
     }
 
     override fun getMimeType(): String? {
