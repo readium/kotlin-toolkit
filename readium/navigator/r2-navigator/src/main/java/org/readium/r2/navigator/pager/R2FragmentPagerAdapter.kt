@@ -24,8 +24,6 @@ import android.view.ViewGroup
 
 abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : FragmentStatePagerAdapter(mFragmentManager) {
 
-    private val TAG = R2FragmentPagerAdapter::class.java.simpleName
-
     val mFragments = LongSparseArray<Fragment>()
     private val mSavedStates = LongSparseArray<Fragment.SavedState>()
     private var mCurTransaction: FragmentTransaction? = null
