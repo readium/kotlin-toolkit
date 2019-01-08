@@ -20,6 +20,7 @@ import android.view.*
 import android.view.animation.Interpolator
 import android.widget.EdgeEffect
 import android.widget.Scroller
+import org.readium.r2.shared.RenditionLayout
 import org.readium.r2.shared.SCROLL_REF
 import timber.log.Timber
 
@@ -794,9 +795,9 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                         mLastMotionY = y
                         setScrollState(SCROLL_STATE_DRAGGING)
                         setScrollingCacheEnabled(true)
-
-                        activity.resourcePager.disableTouchEvents = true
-
+                        if (activity.publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+                            activity.resourcePager.disableTouchEvents = true
+                        }
                     }
                 }
                 // Not else! Note that mIsBeingDragged can be set above.
