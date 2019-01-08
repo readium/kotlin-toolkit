@@ -16,6 +16,7 @@ import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.streamer.server.Ressources
+import timber.log.Timber
 
 
 class CSSHandler : RouterNanoHTTPD.DefaultHandler() {
@@ -37,7 +38,7 @@ class CSSHandler : RouterNanoHTTPD.DefaultHandler() {
         val method = session!!.method
         var uri = session.uri
 
-        println("$TAG Method: $method, Url: $uri")
+        Timber.e("Method: $method, Url: $uri")
 
         return try {
             val lastSlashIndex = uri.lastIndexOf('/')
@@ -46,7 +47,7 @@ class CSSHandler : RouterNanoHTTPD.DefaultHandler() {
             val x = createResponse(Status.OK, "text/css", resources.get(uri))
             x
         } catch (e: Exception) {
-            println(TAG + " Exception " + e.toString())
+            Timber.e( " Exception " + e.toString())
             newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
 
@@ -58,7 +59,4 @@ class CSSHandler : RouterNanoHTTPD.DefaultHandler() {
         return response
     }
 
-    companion object {
-        private const val TAG = "ResourceHandler"
-    }
 }
