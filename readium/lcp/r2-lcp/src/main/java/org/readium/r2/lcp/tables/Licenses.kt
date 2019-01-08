@@ -29,8 +29,6 @@ object LicensesTable {
 
 class Licenses(var database: LcpDatabaseOpenHelper) {
 
-    private val TAG = this::class.java.simpleName
-
     fun dateOfLastUpdate(id: String): DateTime? {
         val lastUpdated = database.use {
             return@use select(LicensesTable.NAME)
@@ -112,7 +110,7 @@ class Licenses(var database: LcpDatabaseOpenHelper) {
             select(LicensesTable.NAME, "count(${LicensesTable.ID})").whereArgs("(${LicensesTable.ID} = {id})",
                     "id" to id).exec {
                 val parser = rowParser { count: Int ->
-                    Timber.i(TAG,"count", count.toString())
+                    Timber.i("count %s", count.toString())
                     return@rowParser count == 1
                 }
                 parseList(parser)[0]

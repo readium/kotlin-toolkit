@@ -28,8 +28,6 @@ import java.util.*
 
 class LcpHttpService {
 
-    private val TAG = this::class.java.simpleName
-
     fun statusDocument(url: String): Promise<StatusDocument, Exception> {
         return Fuel.get(url,null).promise() then {
             val (_, _, result) = it
@@ -47,12 +45,12 @@ class LcpHttpService {
         val rootDir:String = context.getExternalFilesDir(null).path + "/"
         val fileName = UUID.randomUUID().toString()
         return Fuel.download(url).destination { _, _ ->
-            Timber.i(TAG,"LCP  destination ", rootDir + fileName)
+            Timber.i("LCP  destination %s%s", rootDir, fileName)
             File(rootDir, fileName)
         }.promise() then {
             val (_, response, _) = it
-            Timber.i(TAG, "LCP destination ", rootDir + fileName)
-            Timber.i(TAG,"LCP then ", response.url.toString())
+            Timber.i( "LCP destination %s %s", rootDir , fileName)
+            Timber.i("LCP then  %s", response.url.toString())
             rootDir + fileName
         }
     }
