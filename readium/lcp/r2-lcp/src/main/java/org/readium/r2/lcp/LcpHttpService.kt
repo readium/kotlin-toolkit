@@ -10,8 +10,10 @@
 package org.readium.r2.lcp
 
 import android.content.Context
-import android.util.Base64
+import android.os.Build
+import awaitByteArrayResponse
 import com.github.kittinunf.fuel.Fuel
+import kotlinx.coroutines.runBlocking
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import org.json.JSONObject
