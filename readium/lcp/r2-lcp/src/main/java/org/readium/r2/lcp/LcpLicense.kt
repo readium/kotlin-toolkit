@@ -11,8 +11,8 @@ package org.readium.r2.lcp
 
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.task
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.readium.lcp.sdk.DRMContext
 import org.readium.lcp.sdk.Lcp
@@ -68,20 +68,67 @@ class LcpLicense : DrmLicense {
 
     }
 
+    fun evaluate(bytes: ByteArray):String? = runBlocking {
+        launch {
+            Timber.i("evaluate: 1. fetchStatusDocument")
+            fetchStatusDocument()
+        }.join()
+        launch {
+            Timber.i("evaluate: 2. checkStatus")
+            checkStatus()
+        }.join()
+        launch {
+            Timber.i("evaluate: 3. updateLicenseDocument")
+            updateLicenseDocument()
+        }.join()
+        launch {
+            Timber.i("evaluate: 4. areRightsValid")
+            areRightsValid()
+        }.join()
+        launch {
+            Timber.i("evaluate: 5. register")
+            register()
+        }.join()
+        var path:String? = null
+        launch {
+            Timber.i("evaluate: 6. fetchPublication")
+            fetchPublication()?.let {
+                Timber.i("evaluate: 7. moveLicense")
+                moveLicense(it, bytes)
+                path = it
+            }
+        }.join()
+        Timber.i("evaluate: 8. return path $path")
+        return@runBlocking path
+    }.toString()
+
+    fun resolve() = runBlocking {
+        launch {
+            Timber.i("resolve: 1. fetchStatusDocument")
+            fetchStatusDocument()
+        }.join()
+        launch {
+            Timber.i("resolve: 2. checkStatus")
+            checkStatus()
+        }.join()
+        launch {
+            Timber.i("resolve: 3. updateLicenseDocument")
+            updateLicenseDocument()
+        }.join()
+    }
+
     override fun decipher(data: ByteArray) : ByteArray? {
         if (context == null)
             throw Exception(LcpError().errorDescription(LcpErrorCase.invalidContext))
         return Lcp().decrypt(context!!, data)
     }
 
-    fun fetchStatusDocument() : Promise<Unit?, Exception> {
-        return task{
-            Timber.i(TAG,"LCP fetchStatusDocument")
-            val statusLink = license.link("status")
-            statusLink?.let {
-                val document = lcpHttpService.statusDocument(it.href.toString()).get()
-                status = document
-            }
+    fun fetchStatusDocument() {
+        Timber.i("LCP fetchStatusDocument")
+        val statusLink = license.link("status")
+        statusLink?.let {
+            val document = lcpHttpService.statusDocument(it.href.toString()).get()
+            status = document as StatusDocument
         }
     }
 
@@ -109,7 +156,7 @@ class LcpLicense : DrmLicense {
             StatusDocument.Status.expired -> throw Exception(LcpError().errorDescription(LcpErrorCase.licenseStatusExpired))
             StatusDocument.Status.revoked -> throw Exception(LcpError().errorDescription(LcpErrorCase.licenseStatusRevoked))
             StatusDocument.Status.cancelled -> throw Exception(LcpError().errorDescription(LcpErrorCase.licenseStatusCancelled))
-            else -> return
+            else -> {}
         }
     }
 
@@ -219,28 +266,22 @@ class LcpLicense : DrmLicense {
         return null
     }
 
+    fun updateLicenseDocument() {
+        Timber.i("LCP updateLicenseDocument")
+        if (status != null) {
+            val licenseLink = status!!.link("license")
 
-    // TODO : double check his.
-    fun updateLicenseDocument() : Promise<Unit?, java.lang.Exception> {
-        return task {
-            Timber.i(TAG,"LCP updateLicenseDocument")
-            if (status != null) {
-                val licenseLink = status!!.link("license")
+            val latestUpdate = (lcpHttpService.fetchUpdatedLicense(licenseLink!!.href.toString()).get()as LicenseDocument).dateOfLastUpdate()
+            val lastUpdateDB = database.licenses.dateOfLastUpdate(license.id)
 
-                val latestUpdate = lcpHttpService.fetchUpdatedLicense(licenseLink!!.href.toString()).get().dateOfLastUpdate()
-                val lastUpdateDB = database.licenses.dateOfLastUpdate(license.id)
-
-                lastUpdateDB?.let {
-                    if ((lastUpdateDB.isAfter(latestUpdate)) || (lastUpdateDB.isEqual(latestUpdate))) return@task
-                }
-
-                license = lcpHttpService.fetchUpdatedLicense(licenseLink!!.href.toString()).get()
-                Timber.i(TAG, "LCP  ${license.json}")
-
-//                moveLicense(archivePath.path, licenseLink.href)
-
-                database.licenses.updateLicense(license, status!!.status.toString())
+            lastUpdateDB?.let {
+                if ((lastUpdateDB.isAfter(latestUpdate)) || (lastUpdateDB.isEqual(latestUpdate))) return
             }
+
+            license = lcpHttpService.fetchUpdatedLicense(licenseLink.href.toString()).get() as LicenseDocument
+            Timber.i( "LCP  ${license.json}")
+
+            database.licenses.updateLicense(license, status!!.status.toString())
         }
     }
 

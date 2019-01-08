@@ -28,17 +28,30 @@ import java.util.*
 
 class LcpHttpService {
 
-    fun statusDocument(url: String): Promise<StatusDocument, Exception> {
-        return Fuel.get(url,null).promise() then {
-            val (_, _, result) = it
-            StatusDocument(result)
+    fun statusDocument(url: String): Promise<Any, Exception> {
+        return Promise.of(runBlocking {
+            val (request, response, result) = Fuel.get(url).awaitByteArrayResponse()
+            return@runBlocking result.fold(
+                    { data ->
+                        return@fold StatusDocument(response.data)
+                    },
+                    { error -> Timber.e("An error of type ${error.exception} happened: ${error.message}") }
+            )
         }
+        )
     }
-    fun fetchUpdatedLicense(url: String): Promise<LicenseDocument, Exception> {
-        return Fuel.get(url,null).promise() then {
-            val (_, _, result) = it
-            LicenseDocument(result)
+
+    fun fetchUpdatedLicense(url: String): Promise<Any, java.lang.Exception> {
+        return Promise.of(runBlocking {
+            val (request, response, result) = Fuel.get(url).awaitByteArrayResponse()
+            return@runBlocking result.fold(
+                    { data ->
+                        return@fold LicenseDocument(response.data)
+                    },
+                    { error -> Timber.e("An error of type ${error.exception} happened: ${error.message}") }
+            )
         }
+        )
     }
 
     fun publicationUrl(context:Context, url: String, parameters: List<Pair<String, Any?>>? = null): Promise<String, Exception> {
@@ -56,11 +69,26 @@ class LcpHttpService {
     }
 
     fun certificateRevocationList(url: String): Promise<String?, Exception> {
-        return Fuel.get(url,null).promise() then {
-            val (_, _, result) = it
-            "-----BEGIN X509 CRL-----${ Base64.encodeToString(result, Base64.DEFAULT)}-----END X509 CRL-----"
-//            "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(result)}-----END X509 CRL-----";
-        }
+        Timber.i("certificateRevocationList %s", url)
+        return Promise.of(runBlocking {
+            val (request, response, result) = Fuel.get(url).awaitByteArrayResponse()
+            return@runBlocking result.fold(
+                    { data ->
+                        Timber.i("certificateRevocationList %s", response.statusCode)
+                        var status:String? = null
+                        if (response.statusCode == 200) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                status = "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(data)}-----END X509 CRL-----"
+                            } else {
+                                status = "-----BEGIN X509 CRL-----${android.util.Base64.encodeToString(data, android.util.Base64.DEFAULT)}-----END X509 CRL-----"
+                            };
+                        }
+                        return@fold status
+                    },
+                    { error -> println("An error of type ${error.exception} happened: ${error.message}") }
+            )
+        }.toString()
+        )
     }
     
     fun register(registerUrl: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
