@@ -109,7 +109,7 @@ class Publication : Serializable {
     /// org.readium.r2shared.Publication.org.readium.r2shared.Link to special resources which are added to the publication.
     var links: MutableList<Link> = mutableListOf()
     /// Links of the spine items of the publication.
-    var spine: MutableList<Link> = mutableListOf()
+    var readingOrder: MutableList<Link> = mutableListOf()
     /// Link to the resources of the publication.
     var resources: MutableList<Link> = mutableListOf()
     /// Table of content of the publication.
@@ -148,7 +148,7 @@ class Publication : Serializable {
         val json = JSONObject()
         json.put("metadata", metadata.writeJSON())
         tryPut(json, links, "links")
-        tryPut(json, spine, "spine")
+        tryPut(json, readingOrder, "readingOrder")
         tryPut(json, resources, "resources")
         tryPut(json, tableOfContents, "toc")
         tryPut(json, pageList, "page-list")
@@ -161,7 +161,7 @@ class Publication : Serializable {
     }
 
     fun resource(href: String): Link? =
-            (spine + resources).firstOrNull {
+            (readingOrder + resources).firstOrNull {
                 isLinkWithHref(href, it) ||
                         isLinkWithHrefURIDecoded(href, it) ||
                         isLinkWithLinkHrefURLDecoded(href, it)
@@ -204,7 +204,7 @@ class Publication : Serializable {
     }
 
     private fun findLinkInPublicationLinks(closure: (Link) -> Boolean) =
-            resources.firstOrNull(closure) ?: spine.firstOrNull(closure)
+            resources.firstOrNull(closure) ?: readingOrder.firstOrNull(closure)
             ?: links.firstOrNull(closure) ?: pageList.firstOrNull(closure)
 
     fun addSelfLink(endPoint: String, baseURL: URL) {
@@ -277,7 +277,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
             for (i in 0..(spine.length() - 1)) {
                 val linkDict = spine.getJSONObject(i)
                 val link = parseLink(linkDict)
-                p.spine.add(link)
+                p.readingOrder.add(link)
             }
         }
     }
@@ -289,7 +289,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
             for (i in 0..(readingOrder.length() - 1)) {
                 val linkDict = readingOrder.getJSONObject(i)
                 val link = parseLink(linkDict)
-                p.spine.add(link)
+                p.readingOrder.add(link)
             }
         }
     }
