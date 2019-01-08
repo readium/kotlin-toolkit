@@ -19,6 +19,7 @@ import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.streamer.fetcher.Fetcher
+import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
 import java.net.URI
@@ -26,8 +27,6 @@ import java.net.URISyntaxException
 
 
 class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
-
-    private val TAG = this::class.java.simpleName
 
     override fun getMimeType(): String? {
         return null
@@ -57,7 +56,7 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             encodedUri = session.uri.replace("//", "/")
         }
 
-        println("$TAG Method: $method, Url: $encodedUri")
+        Timber.e("Method: $method, Url: $encodedUri")
 
         try {
             val fetcher = uriResource!!.initParameter(Fetcher::class.java)
@@ -80,7 +79,7 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
             return serveResponse(session, fetcher.dataStream(filePath), mimeType)
         } catch (e: Exception) {
-            Log.e(TAG, e.toString(), e)
+            Timber.e(e)
             return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
     }
