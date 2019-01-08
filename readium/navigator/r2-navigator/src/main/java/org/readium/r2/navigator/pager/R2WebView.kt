@@ -21,6 +21,7 @@ import android.view.animation.Interpolator
 import android.widget.EdgeEffect
 import android.widget.Scroller
 import org.readium.r2.shared.SCROLL_REF
+import timber.log.Timber
 
 
 /**
@@ -49,7 +50,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         }
     }
 
-    private val TAG = "R2WebView"
     private val DEBUG = false
 
     private val USE_CACHE = false
@@ -635,7 +635,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         // Always take care of the touch gesture being complete.
         if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
             // Release the drag.
-            if (DEBUG) Log.v(TAG, "Intercept done!")
+            if (DEBUG) Timber.v( "Intercept done!")
             return false
         }
 
@@ -643,11 +643,11 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         // are dragging.
         if (action != MotionEvent.ACTION_DOWN) {
             if (mIsBeingDragged) {
-                if (DEBUG) Log.v(TAG, "Intercept returning true!")
+                if (DEBUG) Timber.v( "Intercept returning true!")
                 return true
             }
             if (mIsUnableToDrag) {
-                if (DEBUG) Log.v(TAG, "Intercept returning false!")
+                if (DEBUG) Timber.v( "Intercept returning false!")
                 return false
             }
         }
@@ -670,7 +670,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 val xDiff = Math.abs(dx)
                 val y = ev.getY(pointerIndex)
                 val yDiff = Math.abs(y - mInitialMotionY)
-                if (DEBUG) Log.v(TAG, "Moved x to $x,$y diff=$xDiff,$yDiff")
+                if (DEBUG) Timber.v( "Moved x to $x,$y diff=$xDiff,$yDiff")
 
                 if (dx != 0f && !isGutterDrag(mLastMotionX, dx)
                         && canScroll(this, false, dx.toInt(), x.toInt(), y.toInt())) {
@@ -681,7 +681,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     return false
                 }
                 if (xDiff > mTouchSlop && xDiff * 0.5f > yDiff) {
-                    if (DEBUG) Log.v(TAG, "Starting drag!")
+                    if (DEBUG) Timber.v( "Starting drag!")
                     mIsBeingDragged = true
                     setScrollState(SCROLL_STATE_DRAGGING)
                     mLastMotionX = if (dx > 0)
@@ -695,7 +695,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     // direction to be counted as a drag...  abort
                     // any attempt to drag horizontally, to work correctly
                     // with children that have scrolling containers.
-                    if (DEBUG) Log.v(TAG, "Starting unable to drag!")
+                    if (DEBUG) Timber.v( "Starting unable to drag!")
                     mIsUnableToDrag = true
                 }
                 if (mIsBeingDragged) {
@@ -731,7 +731,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 }
 
                 if (DEBUG) {
-                    Log.v(TAG, "Down at " + mLastMotionX + "," + mLastMotionY
+                    Timber.v( "Down at " + mLastMotionX + "," + mLastMotionY
                             + " mIsBeingDragged=" + mIsBeingDragged
                             + "mIsUnableToDrag=" + mIsUnableToDrag)
                 }
@@ -782,10 +782,10 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     val y = ev.getY(pointerIndex)
                     val yDiff = Math.abs(y - mLastMotionY)
                     if (DEBUG) {
-                        Log.v(TAG, "Moved x to $x,$y diff=$xDiff,$yDiff")
+                        Timber.v( "Moved x to $x,$y diff=$xDiff,$yDiff")
                     }
                     if (xDiff > mTouchSlop && xDiff > yDiff) {
-                        if (DEBUG) Log.v(TAG, "Starting drag!")
+                        if (DEBUG) Timber.v( "Starting drag!")
                         mIsBeingDragged = true
                         mLastMotionX = if (x - mInitialMotionX > 0)
                             mInitialMotionX + mTouchSlop
@@ -1113,7 +1113,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     sb.append(" => ").append(parent.javaClass.simpleName)
                     parent = parent.parent
                 }
-                Log.e(TAG, "arrowScroll tried to find focus based on non-child "
+                Timber.e( "arrowScroll tried to find focus based on non-child "
                         + "current focused view " + sb.toString())
                 currentFocused = null
             }
