@@ -19,7 +19,6 @@ import com.mcxiaoke.koi.HASH
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
-import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.longSnackbar
@@ -32,6 +31,7 @@ import org.readium.r2.shared.drm.DRMModel
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
+import timber.log.Timber
 import java.io.File
 import java.net.URL
 
@@ -201,6 +201,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         val session = LcpSession(publicationPath, this)
 
         fun validatePassphrase(passphraseHash: String): Promise<Any, Exception> {
+            Timber.i("LCP validatePassphrase")
             val preferences = getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
             return task {
@@ -237,7 +238,6 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
 
         fun promptPassphrase(reason: String? = null, callback: (pass: String) -> Unit) {
             runOnUiThread {
-//                var hint = session.getHint()
                 var editTextTitle: EditText? = null
 
                 alert(Appcompat, "Hint: " + session.getHint(), reason ?: "LCP Passphrase") {
