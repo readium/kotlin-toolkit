@@ -10,9 +10,9 @@
 package org.readium.r2.lcp
 
 import android.content.Context
+import kotlinx.coroutines.runBlocking
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
-import nl.komponents.kovenant.then
 import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.model.documents.StatusDocument
 import java.io.File
@@ -30,31 +30,15 @@ class LcpSession {
     }
 
     fun resolve(passphrase: String, pemCrl: String) : Promise<Any, Exception> {
-        return task {
-            try {
-                lcpLicense.fetchStatusDocument().get()
-            } catch (e: Exception) {
-                //
-            }
-
-        } then {
-            try {
-                lcpLicense.checkStatus()
-            } catch (e: Exception) {
-                //
-            }
-            lcpLicense.updateLicenseDocument().get()
-            val lcpContext = getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
-            
-            lcpContext
-
-        } fail { exception ->
-            exception.printStackTrace()
-        }
+         return runBlocking {
+             lcpLicense.resolve()
+             val lcpContext = getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
+              Promise.of(lcpContext)
+         }
     }
 
     fun getLcpContext(jsonLicense: String, passphrase: String, pemCrl: String) : Promise<Any, Exception> {
-        return task {
+        return Promise.of(
             lcpLicense.status?.let {statusDocument ->
                 if ((statusDocument.status == StatusDocument.Status.active) || (statusDocument.status == StatusDocument.Status.ready)) {
 
@@ -75,10 +59,8 @@ class LcpSession {
                 } ?: run {
                     "invalid"
                 }
-
-
             }
-        }
+        )
     }
 
     fun getHint() : String {
@@ -108,8 +90,7 @@ class LcpSession {
         database.transactions.add(lcpLicense, passphraseHash)
     }
 
-    fun validateLicense() :Promise<Unit, Exception> {
+    fun validateLicense() {
         //TODO JSON Schema or something
-        return task {}
     }
 }
