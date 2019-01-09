@@ -164,7 +164,7 @@ class EpubParser : PublicationParser {
                     link.properties.encryption?.profile = it.profile
                 }
             }
-            for (link in publication.spine) {
+            for (link in publication.readingOrder) {
                 if (link.properties.encryption?.scheme == it.scheme) {
                     link.properties.encryption?.profile = it.profile
                 }

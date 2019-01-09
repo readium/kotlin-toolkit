@@ -81,7 +81,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-annotations:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION"
-    implementation 'org.jsoup:jsoup:1.10.2'
+    implementation 'org.jsoup:jsoup:1.11.2'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

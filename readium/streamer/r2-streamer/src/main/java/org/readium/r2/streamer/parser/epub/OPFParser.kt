@@ -109,7 +109,7 @@ class OPFParser {
             if (item.attributes["linear"]?.toLowerCase() == "no")
                 continue
             publication.resources[index].title = null
-            publication.spine.add(publication.resources[index])
+            publication.readingOrder.add(publication.resources[index])
             publication.resources.removeAt(index)
         }
     }
