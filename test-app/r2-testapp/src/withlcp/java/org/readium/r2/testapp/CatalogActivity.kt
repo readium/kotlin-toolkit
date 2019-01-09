@@ -188,15 +188,13 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
 
             return task {
                 Timber.i("LCP task lcpHttpService.certificateRevocationList")
-//                lcpHttpService.certificateRevocationList(this, "http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl").get()
-                lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/Readium_LCP_Root_CA.crl").get()
+                lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl").get()
             } then { pemCrtl ->
                 Timber.i("LCP then lcpHttpService.certificateRevocationList  %s", pemCrtl)
 
                 if (pemCrtl != null) {
                     preferences.edit().putString("pemCrtl", pemCrtl).apply()
                     val status = session.resolve(passphraseHash, pemCrtl).get()
-//                    val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", "")).get()
                     if (status is String) {
                         runOnUiThread {
                             toast("This license was $status")

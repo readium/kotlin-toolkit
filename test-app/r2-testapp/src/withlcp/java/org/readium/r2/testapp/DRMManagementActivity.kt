@@ -46,7 +46,9 @@ class DRMManagementActivity : AppCompatActivity() {
                 launch {
                     lcpLicense.fetchStatusDocument()
                 }.join()
-                lcpLicense.updateLicenseDocument()
+                launch {
+                    lcpLicense.updateLicenseDocument()
+                }.join()
             }
         } catch (e: Exception) {
             //Do something ?
