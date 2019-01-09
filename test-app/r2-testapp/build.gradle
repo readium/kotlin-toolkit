@@ -150,7 +150,7 @@ dependencies {
     implementation "com.android.support:recyclerview-v7:$support_version"
     implementation "com.android.support:cardview-v7:$support_version"
     implementation "com.android.support:design:$support_version"
-    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation 'org.nanohttpd:nanohttpd:2.3.2-SNAPSHOT'
     implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.2-SNAPSHOT'
 
@@ -160,7 +160,7 @@ dependencies {
     implementation 'org.jetbrains.anko:anko-design:0.10.5'
 
     // For SnackBars
-    implementation 'org.jetbrains.anko:anko-commons:0.10.5'
+    implementation 'org.jetbrains.anko:anko-commons:0.10.8'
 
     // Anko Layouts
     implementation 'org.jetbrains.anko:anko-sdk25:0.10.5'
@@ -170,15 +170,15 @@ dependencies {
     implementation 'org.jetbrains.anko:anko-recyclerview-v7:0.10.5'
 
     // Coroutine listeners for Anko Layouts
-    implementation 'org.jetbrains.anko:anko-sdk25-coroutines:0.10.5'
-    implementation 'org.jetbrains.anko:anko-appcompat-v7-coroutines:0.10.5'
+    implementation 'org.jetbrains.anko:anko-sdk25-coroutines:0.10.8'
+    implementation 'org.jetbrains.anko:anko-appcompat-v7-coroutines:0.10.8'
 
     // Anko SQLite
-    implementation 'org.jetbrains.anko:anko-sqlite:0.10.5'
-    implementation 'com.github.kittinunf.fuel:fuel:1.15.0'
+    implementation 'org.jetbrains.anko:anko-sqlite:0.10.8'
+    implementation 'com.github.kittinunf.fuel:fuel:1.16.0'
 
     //for JVM
-    implementation 'com.github.kittinunf.fuel:fuel-android:1.15.0'
+    implementation 'com.github.kittinunf.fuel:fuel-android:1.16.0'
 
     //for Android
     //    implementation 'com.github.kittinunf.fuel:fuel-livedata:1.12.1' //for LiveData support
