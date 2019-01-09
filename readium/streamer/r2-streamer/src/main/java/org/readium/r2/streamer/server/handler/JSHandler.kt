@@ -9,7 +9,6 @@
 
 package org.readium.r2.streamer.server.handler
 
-import android.util.Log
 import org.nanohttpd.protocols.http.IHTTPSession
 import org.nanohttpd.protocols.http.response.IStatus
 import org.nanohttpd.protocols.http.response.Response
