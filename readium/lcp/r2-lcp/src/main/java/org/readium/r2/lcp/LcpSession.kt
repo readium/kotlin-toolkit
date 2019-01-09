@@ -90,8 +90,7 @@ class LcpSession {
         database.transactions.add(lcpLicense, passphraseHash)
     }
 
-    fun validateLicense() :Promise<Unit, Exception> {
+    fun validateLicense() {
         //TODO JSON Schema or something
-        return task {}
     }
 }

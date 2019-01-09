@@ -41,7 +41,7 @@ class LcpHttpService {
         )
     }
 
-    fun fetchUpdatedLicense(url: String): Promise<Any, java.lang.Exception> {
+    fun fetchUpdatedLicense(url: String): Promise<Any, Exception> {
         return Promise.of(runBlocking {
             val (request, response, result) = Fuel.get(url).awaitByteArrayResponse()
             return@runBlocking result.fold(
@@ -85,46 +85,70 @@ class LcpHttpService {
                         }
                         return@fold status
                     },
-                    { error -> println("An error of type ${error.exception} happened: ${error.message}") }
+                    { error -> Timber.e("An error of type ${error.exception} happened: ${error.message}") }
             )
         }.toString()
         )
     }
     
-    fun register(registerUrl: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
-        return Fuel.post(registerUrl, params).promise() then {
-            val (_, response, result) = it
-            var status:String? = null
-                if (response.statusCode == 200) {
-                val jsonObject = JSONObject(String(result, Charset.forName(response.contentTypeEncoding)))
-                status = jsonObject["status"] as String
-            }
-            status
-        }
+    fun register(url: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
+        Timber.i("register %s", url)
+        return Promise.of(runBlocking {
+            val (request, response, result) = Fuel.post(url,params).awaitByteArrayResponse()
+            return@runBlocking result.fold(
+                    { data ->
+                        Timber.i("register %s", response.statusCode)
+                        var status:String? = null
+                        if (response.statusCode == 200) {
+                            val jsonObject = JSONObject(String(data, Charset.forName(response.contentTypeEncoding)))
+                            status = jsonObject["status"] as String
+                        }
+                        return@fold status
+                    },
+                    { error -> Timber.e("An error of type ${error.exception} happened: ${error.message}") }
+            )
+        }.toString()
+        )
     }
 
     fun renewLicense(url: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
-        return Fuel.put(url, params).promise() then {
-            val (_, response, result) = it
-            var status: String? = null
-            if (response.statusCode == 200) {
-                val jsonObject = JSONObject(String(result, Charset.forName(response.contentTypeEncoding)))
-                status = jsonObject["status"] as String
-            }
-            status
-        }
+        Timber.i("renewLicense %s", url)
+        return Promise.of(runBlocking {
+            val (request, response, result) = Fuel.post(url,params).awaitByteArrayResponse()
+            return@runBlocking result.fold(
+                    { data ->
+                        Timber.i("renewLicense %s", response.statusCode)
+                        var status:String? = null
+                        if (response.statusCode == 200) {
+                            val jsonObject = JSONObject(String(data, Charset.forName(response.contentTypeEncoding)))
+                            status = jsonObject["status"] as String
+                        }
+                        return@fold status
+                    },
+                    { error -> Timber.e("An error of type ${error.exception} happened: ${error.message}") }
+            )
+        }.toString()
+        )
     }
 
     fun returnLicense(url: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
-        return Fuel.put(url, params).promise() then {
-            val (_, response, result) = it
-            var status: String? = null
-            if (response.statusCode == 200) {
-                val jsonObject = JSONObject(String(result, Charset.forName(response.contentTypeEncoding)))
-                status = jsonObject["status"] as String
-            }
-            status
-        }
+        Timber.i("returnLicense %s", url)
+        return Promise.of(runBlocking {
+            val (request, response, result) = Fuel.post(url,params).awaitByteArrayResponse()
+            return@runBlocking result.fold(
+                    { data ->
+                        Timber.i("returnLicense %s", response.statusCode)
+                        var status:String? = null
+                        if (response.statusCode == 200) {
+                            val jsonObject = JSONObject(String(data, Charset.forName(response.contentTypeEncoding)))
+                            status = jsonObject["status"] as String
+                        }
+                        return@fold status
+                    },
+                    { error -> Timber.e("An error of type ${error.exception} happened: ${error.message}") }
+            )
+        }.toString()
+        )
     }
 
 }
