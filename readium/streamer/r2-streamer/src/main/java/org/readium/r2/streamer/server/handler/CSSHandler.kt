@@ -38,7 +38,7 @@ class CSSHandler : RouterNanoHTTPD.DefaultHandler() {
         val method = session!!.method
         var uri = session.uri
 
-        Timber.e("Method: $method, Url: $uri")
+        Timber.v("Method: $method, Url: $uri")
 
         return try {
             val lastSlashIndex = uri.lastIndexOf('/')
@@ -58,5 +58,4 @@ class CSSHandler : RouterNanoHTTPD.DefaultHandler() {
         response.addHeader("Accept-Ranges", "bytes")
         return response
     }
-
 }

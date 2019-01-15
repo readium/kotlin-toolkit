@@ -22,8 +22,6 @@ import org.readium.r2.streamer.fetcher.Fetcher
 import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
-import java.net.URI
-import java.net.URISyntaxException
 
 
 class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
@@ -40,29 +38,13 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         return Status.OK
     }
 
-    override fun get(uriResource: RouterNanoHTTPD.UriResource?, urlParams: Map<String, String>?, session: IHTTPSession?): Response? {
-        val method = session!!.method
-        val uri: URI
+    override fun get(uriResource: RouterNanoHTTPD.UriResource?, urlParams: Map<String, String>?,
+                     session: IHTTPSession?): Response? {
         try {
-            uri = URI(null, null, session.uri, null)
-        } catch (e: URISyntaxException) {
-            e.printStackTrace()
-            return null
-        }
-
-        var encodedUri = uri.toString()
-
-        if (encodedUri.contains("//")) {
-            encodedUri = session.uri.replace("//", "/")
-        }
-
-        Timber.e("Method: $method, Url: $encodedUri")
-
-        try {
+            Timber.v("Method: ${session!!.method}, Uri: ${session.uri}")
             val fetcher = uriResource!!.initParameter(Fetcher::class.java)
-            val offset = encodedUri.indexOf("/", 0)
-            val startIndex = encodedUri.indexOf("/", offset + 1)
-            val filePath = encodedUri.substring(startIndex + 1)
+
+            val filePath = getHref(session.uri)
             val link = fetcher.publication.linkWithHref(filePath)!!
             val mimeType = link.typeLink!!
 
@@ -75,7 +57,6 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             // ********************
             //  FONT DEOBFUSCATION
             // ********************
-
 
             return serveResponse(session, fetcher.dataStream(filePath), mimeType)
         } catch (e: Exception) {
@@ -168,4 +149,9 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         return createResponse(Status.OK, "text/plain", message)
     }
 
+    private fun getHref(path: String): String {
+        val offset = path.indexOf("/", 0)
+        val startIndex = path.indexOf("/", offset + 1)
+        return path.substring(startIndex + 1)
+    }
 }
