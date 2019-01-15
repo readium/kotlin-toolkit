@@ -12,7 +12,9 @@ package org.readium.r2.shared
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.Serializable
+import java.net.URI
 import java.net.URL
+import java.net.URLDecoder
 
 
 fun URL.removeLastComponent(): URL {
@@ -93,6 +95,7 @@ class Publication : Serializable {
         EPUB(".epub"),
         CBZ(".cbz"),
         JSON(".json");
+
         companion object : EnumCompanion<String, EXTENSION>(EXTENSION.values().associateBy(EXTENSION::value))
     }
 
@@ -157,7 +160,12 @@ class Publication : Serializable {
         return str
     }
 
-    fun resource(relativePath: String): Link? = (readingOrder + resources).first { (it.href == relativePath) || (it.href == "/$relativePath") }
+    fun resource(href: String): Link? =
+            (readingOrder + resources).firstOrNull {
+                isLinkWithHref(href, it) ||
+                        isLinkWithHrefURIDecoded(href, it) ||
+                        isLinkWithLinkHrefURLDecoded(href, it)
+            }
 
     fun linkWithRel(rel: String): Link? {
         val findLinkWithRel: (Link) -> Boolean = { it.rel.contains(rel) }
@@ -165,9 +173,39 @@ class Publication : Serializable {
     }
 
     fun linkWithHref(href: String): Link? {
-        val findLinkWithHref: (Link) -> Boolean = { (href == it.href) || ("/$href" == it.href) }
+        val findLinkWithHref: (Link) -> Boolean = {
+            isLinkWithHref(href, it) ||
+                    isLinkWithHrefURIDecoded(href, it) ||
+                    isLinkWithLinkHrefURLDecoded(href, it)
+        }
         return findLinkInPublicationLinks(findLinkWithHref)
     }
+
+    private fun isLinkWithHref(href: String, link: Link): Boolean {
+        return href == link.href || "/$href" == link.href
+    }
+
+    private fun isLinkWithHrefURIDecoded(href: String, link: Link): Boolean {
+        return try {
+            val decodedHref = URI(null, null, href, null).toString()
+            decodedHref == link.href || "/$decodedHref" == link.href
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun isLinkWithLinkHrefURLDecoded(href: String, link: Link): Boolean {
+        return try {
+            val decodedLinkHref = URLDecoder.decode(link.href, "UTF-8")
+            href == decodedLinkHref || "/$href" == decodedLinkHref
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun findLinkInPublicationLinks(closure: (Link) -> Boolean) =
+            resources.firstOrNull(closure) ?: readingOrder.firstOrNull(closure)
+            ?: links.firstOrNull(closure) ?: pageList.firstOrNull(closure)
 
     fun addSelfLink(endPoint: String, baseURL: URL) {
         val publicationUrl: URL
@@ -181,14 +219,9 @@ class Publication : Serializable {
         links.add(link)
     }
 
-    private fun findLinkInPublicationLinks(closure: (Link) -> Boolean) =
-            resources.firstOrNull(closure) ?: readingOrder.firstOrNull(closure)
-            ?: links.firstOrNull(closure) ?: pageList.firstOrNull(closure)
-
     enum class PublicationError(var v: String) {
         InvalidPublication("Invalid publication")
     }
-
 }
 
 
