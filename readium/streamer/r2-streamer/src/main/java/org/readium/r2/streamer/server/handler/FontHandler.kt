@@ -18,6 +18,7 @@ import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.streamer.server.Fonts
+import timber.log.Timber
 import java.io.InputStream
 
 
@@ -40,7 +41,7 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
         val method = session!!.method
         var uri = session.uri
 
-        println("$TAG Method: $method, Url: $uri")
+        Timber.v("Method: $method, Url: $uri")
 
         return try {
             val lastSlashIndex = uri.lastIndexOf('/')
@@ -49,7 +50,7 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
             val x = createResponse(Status.OK, getMimeType(uri), resources.get(uri).inputStream())
             x
         } catch (e: Exception) {
-            println(TAG + " Exception " + e.toString())
+            Timber.e( " Exception " + e.toString())
             newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
     }
@@ -77,7 +78,4 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
         return response
     }
 
-    companion object {
-        private const val TAG = "FontHandler"
-    }
 }
