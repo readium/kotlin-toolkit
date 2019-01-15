@@ -53,14 +53,12 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.shopgun.android:utils:1.0.9'
-    intTestappImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
-    intTestappWithLcpImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
+    intTestappImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
+    intTestappWithLcpImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
     if (findProject(':r2-shared')) {
         devTestappImplementation project(':r2-shared')
         devTestappWithLcpImplementation project(':r2-shared')
     }
-    intTestappImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
-    intTestappWithLcpImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
     implementation "com.android.support:appcompat-v7:$support_version"
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation "com.android.support:support-v4:$support_version"
