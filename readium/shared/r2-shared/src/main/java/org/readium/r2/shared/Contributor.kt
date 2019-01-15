@@ -56,9 +56,18 @@ fun parseContributors(contributors: Any): List<Contributor> {
             result.add(c)
         }
         is JSONArray -> for (i in 0..(contributors.length() - 1)) {
-            val obj = contributors.getJSONObject(i)
-            val c = parseContributor(obj)
-            result.add(c)
+            when (contributors.get(i)) {
+                is String -> {
+                    val c = Contributor()
+                    c.multilanguageName.singleString = contributors.getString(i)
+                    result.add(c)
+                }
+                is JSONObject -> {
+                    val obj = contributors.getJSONObject(i)
+                    val c = parseContributor(obj)
+                    result.add(c)
+                }
+            }
         }
     }
     return result

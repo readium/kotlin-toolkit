@@ -9,12 +9,22 @@
 
 package org.readium.r2.shared
 
+import android.net.Uri
 import java.net.URI
 
 fun getAbsolute(href: String, base: String): String {
-    val baseURI = URI.create(base)
-    val relative = baseURI.resolve(href)
-    return relative.toString()
+    try {
+        val baseURI = URI.create(base)
+        val relative = baseURI.resolve(href)
+        return relative.toString()
+    }catch (e:IllegalArgumentException){
+        val hrefUri = Uri.parse(href)
+        if (hrefUri.isAbsolute){
+            return href
+        }else{
+            return base+href
+        }
+    }
 }
 
 
