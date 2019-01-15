@@ -19,7 +19,6 @@ import com.mcxiaoke.koi.HASH
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
-import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.longSnackbar
@@ -32,6 +31,7 @@ import org.readium.r2.shared.drm.DRMModel
 import org.readium.r2.shared.drm.Drm
 import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
+import timber.log.Timber
 import java.io.File
 import java.net.URL
 
@@ -83,7 +83,28 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                 Thread {
                     try {
                         val bytes = URL(uri.toString()).openStream().readBytes()
-                        lcpThread(bytes, progress)
+                        val lcpLicense = LcpLicense(bytes, this)
+                        lcpLicense.evaluate(bytes)?.let { path ->
+                            val file = File(path)
+                            runOnUiThread {
+                                val parser = EpubParser()
+                                val pub = parser.parse(path)
+                                if (pub != null) {
+                                    val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
+                                    pub.container = pair.first
+                                    pub.publication = pair.second
+                                    prepareToServe(pub, file.name, file.absolutePath, true, true)
+                                    progress.dismiss()
+                                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), {
+                                        // Do nothing
+                                    }, {
+                                        // Do nothing
+                                    }, {
+                                        // Do nothing
+                                    }).get()
+                                }
+                            }
+                        }
                     } catch (e: Exception) {
                         e.localizedMessage?.let {
                             longSnackbar(catalogView, it)
@@ -130,70 +151,31 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
     }
 
     override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog) {
-        Thread {
-            val bytes = contentResolver.openInputStream(uri).readBytes()
-            lcpThread(bytes, progress)
-        }.start()
-    }
-
-    private fun lcpThread(bytes: ByteArray, progress: ProgressDialog) {
-        val lcpLicense = LcpLicense(bytes, this)
-        task {
-            lcpLicense.fetchStatusDocument().get()
-        } then {
-            try {
-                lcpLicense.checkStatus()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            lcpLicense.updateLicenseDocument().get()
-        } then {
-            try {
-                lcpLicense.areRightsValid()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            lcpLicense.register()
-            lcpLicense.fetchPublication()
-        } then {publcationPath ->
-            publcationPath?.let { path ->
-                lcpLicense.moveLicense(path, bytes)
-                publcationPath
-            }?: run {
-                null
-            }
-        } successUi { publcationPath ->
-            publcationPath?.let {path ->
-                val file = File(path)
-                runOnUiThread {
-                    val parser = EpubParser()
-                    val pub = parser.parse(path)
-                    if (pub != null) {
-                        val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
-                        pub.container = pair.first
-                        pub.publication = pair.second
-                        prepareToServe(pub, file.name, file.absolutePath, true, true)
-                        progress.dismiss()
-                        handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), {
-                            // Do nothing
-                        }, {
-                            // Do nothing
-                        }, {
-                            // Do nothing
-                        }).get()
-                    }
+        val bytes = contentResolver.openInputStream(uri).readBytes()
+        val lcpLicense = LcpLicense(bytes, this@CatalogActivity)
+        lcpLicense.evaluate(bytes)?.let { path ->
+            val file = File(path)
+            runOnUiThread {
+                val parser = EpubParser()
+                val pub = parser.parse(path)
+                if (pub != null) {
+                    val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
+                    pub.container = pair.first
+                    pub.publication = pair.second
+                    prepareToServe(pub, file.name, file.absolutePath, true, true)
+                    progress.dismiss()
+                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), {
+                        // Do nothing
+                    }, {
+                        // Do nothing
+                    }, {
+                        // Do nothing
+                    }).get()
                 }
             }
-            progress.dismiss()
-        } fail { exception ->
-            exception.printStackTrace()
-            exception.localizedMessage?.let { message ->
-                longSnackbar(catalogView, message)
-            } ?: run {
-                longSnackbar(catalogView, "An error occurred")
-            }
-            progress.dismiss()
+
         }
+
     }
 
     private fun handleLcpPassphrase(publicationPath: String, drm: Drm, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception> {
@@ -201,15 +183,15 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         val session = LcpSession(publicationPath, this)
 
         fun validatePassphrase(passphraseHash: String): Promise<Any, Exception> {
+            Timber.i("LCP validatePassphrase")
             val preferences = getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
             return task {
-                try {
-                    lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl").get()
-                } catch (e: Exception) {
-                    null
-                }
+                Timber.i("LCP task lcpHttpService.certificateRevocationList")
+                lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl").get()
             } then { pemCrtl ->
+                Timber.i("LCP then lcpHttpService.certificateRevocationList  %s", pemCrtl)
+
                 if (pemCrtl != null) {
                     preferences.edit().putString("pemCrtl", pemCrtl).apply()
                     val status = session.resolve(passphraseHash, pemCrtl).get()
@@ -237,7 +219,6 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
 
         fun promptPassphrase(reason: String? = null, callback: (pass: String) -> Unit) {
             runOnUiThread {
-//                var hint = session.getHint()
                 var editTextTitle: EditText? = null
 
                 alert(Appcompat, "Hint: " + session.getHint(), reason ?: "LCP Passphrase") {
@@ -258,14 +239,14 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                     setCanceledOnTouchOutside(false)
                     setOnShowListener {
                         val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                        b.setOnClickListener {
+                        b.setOnClickListener { _ ->
                             task {
                                 editTextTitle!!.text.toString()
                             } then { clearPassphrase ->
                                 val passphraseHash = HASH.sha256(clearPassphrase)
-                                session.checkPassphrases(listOf(passphraseHash))?.let {
-                                    session.storePassphrase(it)
-                                    callback(it)
+                                session.checkPassphrases(listOf(passphraseHash))?.let {pass ->
+                                    session.storePassphrase(pass)
+                                    callback(pass)
                                     dismiss()
                                 } ?:run {
                                     runOnUiThread {

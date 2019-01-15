@@ -154,8 +154,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
 
     fun insert(bookmark: Bookmark): Long? {
         if (bookmark.bookID < 0 ||
-                bookmark.resourceIndex < 0 ||
-                bookmark.location.progression!! < 0 || bookmark.location.progression!! > 1){
+                bookmark.resourceIndex < 0){
             return null
         }
         val exists = has(bookmark)

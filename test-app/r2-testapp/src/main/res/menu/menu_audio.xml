@@ -12,7 +12,7 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context='org.readium.r2.testapp.R2EpubActivity'>
+    tools:context='org.readium.r2.testapp.audiobook.AudiobookActivity'>
 
     <item
         android:id="@+id/drm"
@@ -22,13 +22,6 @@
         tools:ignore="AlwaysShowAction">
     </item>
 
-    <item
-        android:id="@+id/screen_reader"
-        android:icon="@drawable/icon_audio"
-        android:title="@string/epubactivity_read_aloud_start"
-        app:showAsAction="always|always"
-        tools:ignore="AlwaysShowAction">
-    </item>
 
     <item
         android:id="@+id/bookmark"
@@ -45,6 +38,7 @@
         app:showAsAction="always|always"
         tools:ignore="AlwaysShowAction">
     </item>
+
 
     <item
         android:id="@+id/toc"
