@@ -23,7 +23,7 @@ import android.support.v4.content.ContextCompat
  * Global Parameters
  */
 //val PORT_NUMBER = 3333
-const val BASE_URL = "http://localhost"
+const val BASE_URL = "http://127.0.0.1"
 //val SERVER_URL = "$BASE_URL:$PORT_NUMBER"
 //val MANIFEST = "/manifest"
 
