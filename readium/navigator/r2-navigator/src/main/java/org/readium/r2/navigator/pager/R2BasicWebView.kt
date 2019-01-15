@@ -23,6 +23,7 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
+import org.readium.r2.navigator.BuildConfig
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.Locations
@@ -43,6 +44,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     var callback: OnOverScrolledCallback? = null
 
+    init {
+      WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+    }
 
     interface OnOverScrolledCallback {
         fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean)
