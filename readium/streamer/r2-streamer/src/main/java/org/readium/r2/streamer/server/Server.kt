@@ -23,7 +23,7 @@ import java.util.*
 
 class Server(port: Int) : AbstractServer(port)
 
-abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
+abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.1", port) {
 
     //    private val SEARCH_QUERY_HANDLE = "/search"
     private val MANIFEST_HANDLE = "/manifest"
