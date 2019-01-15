@@ -15,5 +15,5 @@ package org.readium.r2.streamer.server
 
 
 //val PORT_NUMBER = 3333
-const val BASE_URL = "http://localhost"
+const val BASE_URL = "http://127.0.0.1"
 //val URL = "${BASE_URL}:${PORT_NUMBER}"
