@@ -3,6 +3,7 @@
 buildscript {
     ext.kotlin_version = '1.3.11'
     ext.support_version = '27.1.1'
+    ext.r2branch = 'develop'
 
     repositories {
         google()
