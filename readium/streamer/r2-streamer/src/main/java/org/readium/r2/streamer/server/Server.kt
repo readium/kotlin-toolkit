@@ -107,7 +107,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD(port) {
         for (link in publication.otherLinks) {
             if (link.rel.contains("media-overlay")) {
                 containsMediaOverlay = true
-                link.href = link.href?.replace("port", "localhost:$listeningPort$filePath")
+                link.href = link.href?.replace("port", "127.0.0.1:$listeningPort$filePath")
             }
         }
     }
