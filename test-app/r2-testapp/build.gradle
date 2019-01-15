@@ -129,15 +129,16 @@ dependencies {
         intTestappWithLcpImplementation project(':r2-lcp')
     }
 
-    intTestappImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
-    intTestappImplementation 'com.github.readium:r2-streamer-kotlin:develop-SNAPSHOT'
-    intTestappImplementation 'com.github.readium:r2-navigator-kotlin:develop-SNAPSHOT'
-    intTestappImplementation 'com.github.readium:r2-opds-kotlin:develop-SNAPSHOT'
+    intTestappImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
+    intTestappImplementation "com.github.readium:r2-streamer-kotlin:$r2branch-SNAPSHOT"
+    intTestappImplementation "com.github.readium:r2-navigator-kotlin:$r2branch-SNAPSHOT"
+    intTestappImplementation "com.github.readium:r2-opds-kotlin:$r2branch-SNAPSHOT"
 
-    intTestappWithLcpImplementation 'com.github.readium:r2-shared-kotlin:develop-SNAPSHOT'
-    intTestappWithLcpImplementation 'com.github.readium:r2-streamer-kotlin:develop-SNAPSHOT'
-    intTestappWithLcpImplementation 'com.github.readium:r2-navigator-kotlin:develop-SNAPSHOT'
-    intTestappWithLcpImplementation 'com.github.readium:r2-opds-kotlin:develop-SNAPSHOT'
+    intTestappWithLcpImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
+    intTestappWithLcpImplementation "com.github.readium:r2-streamer-kotlin:$r2branch-SNAPSHOT"
+    intTestappWithLcpImplementation "com.github.readium:r2-navigator-kotlin:$r2branch-SNAPSHOT"
+    intTestappWithLcpImplementation "com.github.readium:r2-opds-kotlin:$r2branch-SNAPSHOT"
+
     implementation('com.mcxiaoke.koi:core:0.5.5') {
         exclude module: 'support-v4'
     }
