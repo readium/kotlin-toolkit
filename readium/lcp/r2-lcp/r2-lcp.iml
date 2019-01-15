@@ -27,7 +27,7 @@
         <compilerSettings />
         <compilerArguments>
           <option name="destination" value="$MODULE_DIR$/build/tmp/kotlin-classes/devTestappWithLcpDebug" />
-          <option name="classpath" value="$MODULE_DIR$/../../r2-shared-kotlin/r2-shared/build/intermediates/intermediate-jars/devTestappWithLcp/debug/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.3.11/dd9bff00d6cfca58b6c1fe89be8e0678e35cf35f/kotlin-stdlib-jdk8-1.3.11.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/timber-4.7.1.aar/55fe38912c6389c5a414f5071cb07aca/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/liblcp.aar/c20599e8e3374de1ce0aa485be7b46f2/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/joda-time/joda-time/2.9.9/f7b520c458572890807d143670c9b24f4de90897/joda-time-2.9.9.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/anko-sqlite-0.10.8.aar/bf0635ca728fa8ac8e7dfcc3dc38be35/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/fuel-android-1.16.0.aar/e7c10f2325c64887eb515584f4ce2f15/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.fuel/fuel-coroutines/1.16.0/7c5bbed13b1ee402a12fd7c24f5a0169430db343/fuel-coroutines-1.16.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.fuel/fuel/1.16.0/1e20fc873530422a2a1e66c955441a88b8744b6e/fuel-1.16.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-android/3.3.0/ac4138c42e3298bf7356ca1a8e5eb0d0c483a5dd/kovenant-android-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-combine/3.3.0/1bdff49646fed34078073162d790a394808fccf4/kovenant-combine-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-jvm/3.3.0/4f606e11c79adf7586d63a853fccc17a3dbf4676/kovenant-jvm-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-functional/3.3.0/685c048fd5d5b9befe3428223746302b893894be/kovenant-functional-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-ui/3.3.0/50caab4a5d4333db850a9e4aa389567638b92c33/kovenant-ui-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-core/3.3.0/2256fde027fa1716269bad6c6adfebe97920bec9/kovenant-core-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.zeroturnaround/zt-zip/1.12/465ca9c6c8a035f57e56395ca28cecc883da730d/zt-zip-1.12.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.3.11/4839661cf6ce3c14b65ed7dcf5b9249b44ecca16/kotlin-stdlib-jdk7-1.3.11.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/anko-commons-0.10.8.aar/00771972c7b15a2139f6c7346505681d/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/sqlite-base-0.10.8.aar/e94ac0fc5197bcc1d572cec6381a2d41/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.result/result/1.6.0/203f6b1e4fa2481d8bdf068568b5360059be7baf/result-1.6.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-core/0.30.1-eap13/8b65f61f56979edcd46cb1a6ef26f3209b33a171/kotlinx-coroutines-core-0.30.1-eap13.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/commons-base-0.10.8.aar/73b988aebd282b6cec3681087df08de3/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.11/4cbc5922a54376018307a731162ccaf3ef851a39/kotlin-stdlib-1.3.11.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/16.0.1/c1a6655cebcac68e63e4c24d23f573035032eb2a/annotations-16.0.1.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.6.6/ce53b0a0e2cfbb27e8a59d38f79a18a5c6a8d2b0/slf4j-api-1.6.6.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-core-common/0.30.1-eap13/39c5d355c4c69d81fe0e910b1162ce2f632d2bba/kotlinx-coroutines-core-common-0.30.1-eap13.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.android.support/support-annotations/27.1.1/39ded76b5e1ce1c5b2688e1d25cdc20ecee32007/support-annotations-27.1.1.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/atomicfu-common/0.11.10-eap13/47bda3184d78ed1aac1becad1f72d5237d16770b/atomicfu-common-0.11.10-eap13.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.11/d8b8e746e279f1c4f5e08bc14a96b82e6bb1de02/kotlin-stdlib-common-1.3.11.jar:/Users/aferditamuriqi/Library/Android/sdk/platforms/android-27/android.jar" />
+          <option name="classpath" value="$MODULE_DIR$/../../r2-shared-kotlin/r2-shared/build/intermediates/intermediate-jars/devTestappWithLcp/debug/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.3.11/dd9bff00d6cfca58b6c1fe89be8e0678e35cf35f/kotlin-stdlib-jdk8-1.3.11.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/timber-4.7.1.aar/6750b4ed7038f5f67445c32e32de418a/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/liblcp.aar/a3b43d18f603bfeebde1578eb978d22c/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/joda-time/joda-time/2.9.9/f7b520c458572890807d143670c9b24f4de90897/joda-time-2.9.9.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/anko-sqlite-0.10.8.aar/b747768962fd6d13e7e398d2705ad810/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/fuel-android-1.16.0.aar/7be818bd1c1f137379e510a7a4f4e212/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.fuel/fuel-coroutines/1.16.0/7c5bbed13b1ee402a12fd7c24f5a0169430db343/fuel-coroutines-1.16.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.fuel/fuel/1.16.0/1e20fc873530422a2a1e66c955441a88b8744b6e/fuel-1.16.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-android/3.3.0/ac4138c42e3298bf7356ca1a8e5eb0d0c483a5dd/kovenant-android-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-combine/3.3.0/1bdff49646fed34078073162d790a394808fccf4/kovenant-combine-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-jvm/3.3.0/4f606e11c79adf7586d63a853fccc17a3dbf4676/kovenant-jvm-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-functional/3.3.0/685c048fd5d5b9befe3428223746302b893894be/kovenant-functional-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-ui/3.3.0/50caab4a5d4333db850a9e4aa389567638b92c33/kovenant-ui-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-core/3.3.0/2256fde027fa1716269bad6c6adfebe97920bec9/kovenant-core-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.zeroturnaround/zt-zip/1.12/465ca9c6c8a035f57e56395ca28cecc883da730d/zt-zip-1.12.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.3.11/4839661cf6ce3c14b65ed7dcf5b9249b44ecca16/kotlin-stdlib-jdk7-1.3.11.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/anko-commons-0.10.8.aar/f06959b147e3d78a9edf602a7ccfa72b/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/sqlite-base-0.10.8.aar/209787149398ce93e40e5454d80741b6/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.result/result/1.6.0/203f6b1e4fa2481d8bdf068568b5360059be7baf/result-1.6.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-core/0.30.1-eap13/8b65f61f56979edcd46cb1a6ef26f3209b33a171/kotlinx-coroutines-core-0.30.1-eap13.jar:/Users/aferditamuriqi/.gradle/caches/transforms-1/files-1.1/commons-base-0.10.8.aar/ebd53553bfcbe8a32e5a6abf3502fce9/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.11/4cbc5922a54376018307a731162ccaf3ef851a39/kotlin-stdlib-1.3.11.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/16.0.1/c1a6655cebcac68e63e4c24d23f573035032eb2a/annotations-16.0.1.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.6.6/ce53b0a0e2cfbb27e8a59d38f79a18a5c6a8d2b0/slf4j-api-1.6.6.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-core-common/0.30.1-eap13/39c5d355c4c69d81fe0e910b1162ce2f632d2bba/kotlinx-coroutines-core-common-0.30.1-eap13.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/atomicfu-common/0.11.10-eap13/47bda3184d78ed1aac1becad1f72d5237d16770b/atomicfu-common-0.11.10-eap13.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.11/d8b8e746e279f1c4f5e08bc14a96b82e6bb1de02/kotlin-stdlib-common-1.3.11.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.android.support/support-annotations/27.1.1/39ded76b5e1ce1c5b2688e1d25cdc20ecee32007/support-annotations-27.1.1.jar:/Volumes/Data/EDRLab/new workspace/r2-workspace-kotlin/r2-lcp-kotlin/r2-lcp/build/intermediates/compile_only_not_namespaced_r_class_jar/devTestappWithLcpDebug/generateDevTestappWithLcpDebugRFile/R.jar:/Users/aferditamuriqi/Library/Android/sdk/platforms/android-27/android.jar" />
           <option name="noStdlib" value="true" />
           <option name="noReflect" value="true" />
           <option name="moduleName" value="r2-lcp_devTestappWithLcpDebug" />
@@ -57,10 +57,9 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/build/generated/source/apt/devTestappWithLcp/debug" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/not_namespaced_r_class_sources/devTestappWithLcpDebug/generateDevTestappWithLcpDebugRFile/out" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/aidl/devTestappWithLcp/debug" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/build/generated/aidl_source_output_dir/devTestappWithLcpDebug/compileDevTestappWithLcpDebugAidl/out" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/build/generated/source/buildConfig/devTestappWithLcp/debug" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/rs/devTestappWithLcp/debug" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/build/generated/renderscript_source_output_dir/devTestappWithLcpDebug/compileDevTestappWithLcpDebugRenderscript/out" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/build/generated/res/rs/devTestappWithLcp/debug" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/build/generated/res/resValues/devTestappWithLcp/debug" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/devTestappWithLcpDebug/res" type="java-resource" />
@@ -71,10 +70,9 @@
       <sourceFolder url="file://$MODULE_DIR$/src/devTestappWithLcpDebug/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/devTestappWithLcpDebug/shaders" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/build/generated/source/apt/androidTest/devTestappWithLcp/debug" isTestSource="true" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/not_namespaced_r_class_sources/devTestappWithLcpDebugAndroidTest/processDevTestappWithLcpDebugAndroidTestResources/r" isTestSource="true" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/aidl/androidTest/devTestappWithLcp/debug" isTestSource="true" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/build/generated/aidl_source_output_dir/devTestappWithLcpDebugAndroidTest/compileDevTestappWithLcpDebugAndroidTestAidl/out" isTestSource="true" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/build/generated/source/buildConfig/androidTest/devTestappWithLcp/debug" isTestSource="true" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/rs/androidTest/devTestappWithLcp/debug" isTestSource="true" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/build/generated/renderscript_source_output_dir/devTestappWithLcpDebugAndroidTest/compileDevTestappWithLcpDebugAndroidTestRenderscript/out" isTestSource="true" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/build/generated/res/rs/androidTest/devTestappWithLcp/debug" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/build/generated/res/resValues/androidTest/devTestappWithLcp/debug" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTestDevTestappWithLcpDebug/res" type="java-test-resource" />
@@ -155,6 +153,8 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/rs" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/shaders" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/build/generated/not_namespaced_r_class_sources" />
+      <excludeFolder url="file://$MODULE_DIR$/build/generated/source/r" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/aapt_friendly_merged_manifests" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/annotation_processor_list" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/annotations" />
@@ -163,7 +163,9 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/attr" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/blame" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/check-manifest" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/check_manifest_result" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/compile_only_not_namespaced_r_class_jar" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/consumer_proguard_file" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/extractedTypedefs" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/incremental" />
@@ -173,6 +175,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/jniLibs" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/library_and_local_jars_jni" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/library_assets" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/library_manifest" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/lint_jar" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/manifests" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/merged_manifests" />
@@ -197,45 +200,45 @@
     <orderEntry type="library" name="Gradle: org.zeroturnaround:zt-zip:1.12@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:atomicfu-common:0.11.10-eap13@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.slf4j:slf4j-api:1.6.6@jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:runner-1.0.2" level="project" />
     <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-functional:3.3.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-annotations:27.1.1@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.jakewharton.timber:timber-4.7.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test.espresso:espresso-idling-resource:3.0.2@aar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:kotlinx-coroutines-core:0.30.1-eap13@jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:runner:1.0.2@aar" level="project" />
+    <orderEntry type="library" name="Gradle: artifacts:liblcp:unspecified@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.3.11@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.11@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.3.11@jar" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.anko:anko-sqlite-0.10.8" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.kittinunf.fuel:fuel-android:1.16.0@aar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.squareup:javawriter:2.1.1@jar" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.anko:anko-commons-0.10.8" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.anko:commons-base:0.10.8@aar" level="project" />
+    <orderEntry type="library" name="Gradle: com.jakewharton.timber:timber:4.7.1@aar" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test.espresso:espresso-core:3.0.2@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.github.kittinunf.fuel:fuel:1.16.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: joda-time:joda-time:2.9.9@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-common:1.3.11@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.github.kittinunf.fuel:fuel-android-1.16.0" level="project" />
     <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-ui:3.3.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-android:3.3.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains:annotations:16.0.1@jar" level="project" />
-    <orderEntry type="library" name="Gradle: artifacts:liblcp" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.code.findbugs:jsr305:2.0.1@jar" level="project" />
     <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-jvm:3.3.0@jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test.espresso:espresso-core-3.0.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: javax.inject:javax.inject:1@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-junit:1.3.11@jar" level="project" />
     <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-core:3.3.0@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: junit:junit:4.12@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-core:1.3@jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:monitor-1.0.2" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test.espresso:espresso-idling-resource-3.0.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.anko:anko-sqlite:0.10.8@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.github.kittinunf.result:result:1.6.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: nl.komponents.kovenant:kovenant-combine:3.3.0@jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:monitor:1.0.2@aar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-library:1.3@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-integration:1.3@jar" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.anko:sqlite-base-0.10.8" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.anko:commons-base-0.10.8" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test:1.3.11@jar" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.anko:anko-commons:0.10.8@aar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-annotations-common:1.3.11@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.github.kittinunf.fuel:fuel-coroutines:1.16.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:kotlinx-coroutines-core-common:0.30.1-eap13@jar" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.anko:sqlite-base:0.10.8@aar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: net.sf.kxml:kxml2:2.3.0@jar" level="project" />
     <orderEntry type="module" module-name="r2-shared" />
   </component>
