@@ -74,7 +74,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
 //    8/ Open the publication
 
 
-    override fun parseIntentLcpl(uriString: String) {
+    override fun parseIntentLcpl(uriString: String, networkAvailable: Boolean) {
         val uri: Uri? = Uri.parse(uriString)
         if (uri != null) {
             try {
@@ -119,7 +119,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         }
     }
 
-    override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication) {
+    override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean) {
         if (drm.brand == Drm.Brand.Lcp) {
             prepareToServe(pub, book.fileName, file.absolutePath, false, true)
 
@@ -150,7 +150,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         }
     }
 
-    override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog) {
+    override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
         val bytes = contentResolver.openInputStream(uri).readBytes()
         val lcpLicense = LcpLicense(bytes, this@CatalogActivity)
         lcpLicense.evaluate(bytes)?.let { path ->

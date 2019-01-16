@@ -483,7 +483,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val lcp: Boolean = intent.getBooleanExtra(R2IntentHelper.LCP, false)
             uriString?.let {
                 when {
-                    lcp -> parseIntentLcpl(uriString)
+                    lcp -> parseIntentLcpl(uriString, isNetworkAvailable)
                     else -> parseIntentEpub(uriString)
                 }
             }
@@ -761,7 +761,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val pub = parser.parse(publicationPath)
                     pub?.let {
                         pub.container.drm?.let { drm: Drm ->
-                            prepareAndStartActivityWithLCP(drm, pub, book, file, publicationPath, parser, pub.publication)
+                            prepareAndStartActivityWithLCP(drm, pub, book, file, publicationPath, parser, pub.publication, isNetworkAvailable)
                         } ?: run {
                             prepareAndStartActivity(pub, book, file, publicationPath, pub.publication)
                         }
@@ -884,7 +884,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val name = fileType.second
 
                     if (name.endsWith(".lcpl")) {
-                        processLcpActivityResult(uri, it, progress)
+                        processLcpActivityResult(uri, it, progress, isNetworkAvailable)
                     } else {
                         processEpubResult(uri, mime, progress, name)
                     }
@@ -986,23 +986,23 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
 
-    override fun parseIntentLcpl(uriString: String) {
-        listener?.parseIntentLcpl(uriString)
+    override fun parseIntentLcpl(uriString: String, networkAvailable: Boolean) {
+        listener?.parseIntentLcpl(uriString, networkAvailable)
     }
 
-    override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication) {
-        listener?.prepareAndStartActivityWithLCP(drm,pub,book,file,publicationPath,parser,publication)
+    override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean) {
+        listener?.prepareAndStartActivityWithLCP(drm, pub, book, file, publicationPath, parser, publication, networkAvailable)
     }
 
-    override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog) {
-        listener?.processLcpActivityResult(uri,it,progress)
+    override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
+        listener?.processLcpActivityResult(uri,it,progress, networkAvailable)
     }
 
 }
 
 interface LcpFunctions {
-    fun parseIntentLcpl(uriString: String)
-    fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication)
-    fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog)
+    fun parseIntentLcpl(uriString: String, networkAvailable: Boolean)
+    fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean)
+    fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean)
 }
 
