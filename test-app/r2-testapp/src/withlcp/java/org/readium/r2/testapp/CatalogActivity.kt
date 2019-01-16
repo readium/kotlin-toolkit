@@ -95,7 +95,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                                     pub.publication = pair.second
                                     prepareToServe(pub, file.name, file.absolutePath, true, true)
                                     progress.dismiss()
-                                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), {
+                                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), networkAvailable, {
                                         // Do nothing
                                     }, {
                                         // Do nothing
@@ -123,7 +123,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         if (drm.brand == Drm.Brand.Lcp) {
             prepareToServe(pub, book.fileName, file.absolutePath, false, true)
 
-            handleLcpPassphrase(publicationPath, drm, { drm1 ->
+            handleLcpPassphrase(publicationPath, drm, networkAvailable, { drm1 ->
                 val pair = parser.parseEncryption(pub.container, publication, drm1)
                 pub.container = pair.first
                 pub.publication = pair.second
@@ -164,7 +164,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                     pub.publication = pair.second
                     prepareToServe(pub, file.name, file.absolutePath, true, true)
                     progress.dismiss()
-                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), {
+                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), networkAvailable, {
                         // Do nothing
                     }, {
                         // Do nothing
@@ -178,7 +178,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
 
     }
 
-    private fun handleLcpPassphrase(publicationPath: String, drm: Drm, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception> {
+    private fun handleLcpPassphrase(publicationPath: String, drm: Drm, networkAvailable: Boolean, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception> {
         val lcpHttpService = LcpHttpService()
         val session = LcpSession(publicationPath, this)
 
@@ -186,24 +186,39 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             Timber.i("LCP validatePassphrase")
             val preferences = getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
-            return task {
-                Timber.i("LCP task lcpHttpService.certificateRevocationList")
-                lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl").get()
-            } then { pemCrtl ->
-                Timber.i("LCP then lcpHttpService.certificateRevocationList  %s", pemCrtl)
+            if (networkAvailable) {
+                return task {
+                    Timber.i("LCP task lcpHttpService.certificateRevocationList")
+                    lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl").get()
+                } then { pemCrtl ->
+                    Timber.i("LCP then lcpHttpService.certificateRevocationList  %s", pemCrtl)
 
-                if (pemCrtl != null) {
-                    preferences.edit().putString("pemCrtl", pemCrtl).apply()
-                    val status = session.resolve(passphraseHash, pemCrtl).get()
-                    if (status is String) {
-                        runOnUiThread {
-                            toast("This license was $status")
+                    if (pemCrtl != null) {
+                        preferences.edit().putString("pemCrtl", pemCrtl).apply()
+                        val status = session.resolve(networkAvailable,passphraseHash, pemCrtl).get()
+                        if (status is String) {
+                            runOnUiThread {
+                                toast("This license was $status")
+                            }
+                        } else {
+                            status
                         }
                     } else {
-                        status
+                        val status = session.resolve(networkAvailable, passphraseHash, preferences.getString("pemCrtl", "")).get()
+                        if (status is String) {
+                            runOnUiThread {
+                                toast("This license was $status")
+                            }
+                        } else {
+                            status
+                        }
                     }
-                } else {
-                    val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", "")).get()
+                } fail { exception ->
+                    exception.printStackTrace()
+                }
+            } else {
+                return task {
+                    val status = session.resolve(networkAvailable, passphraseHash, preferences.getString("pemCrtl", "")).get()
                     if (status is String) {
                         runOnUiThread {
                             toast("This license was $status")
@@ -212,8 +227,6 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                         status
                     }
                 }
-            } fail { exception ->
-                exception.printStackTrace()
             }
         }
 
