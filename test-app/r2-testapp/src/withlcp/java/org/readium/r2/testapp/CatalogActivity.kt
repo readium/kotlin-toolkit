@@ -195,7 +195,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
 
                     if (pemCrtl != null) {
                         preferences.edit().putString("pemCrtl", pemCrtl).apply()
-                        val status = session.resolve(networkAvailable,passphraseHash, pemCrtl).get()
+                        val status = session.resolve(passphraseHash, pemCrtl, networkAvailable).get()
                         if (status is String) {
                             runOnUiThread {
                                 toast("This license was $status")
@@ -204,7 +204,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                             status
                         }
                     } else {
-                        val status = session.resolve(networkAvailable, passphraseHash, preferences.getString("pemCrtl", "")).get()
+                        val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", ""), networkAvailable).get()
                         if (status is String) {
                             runOnUiThread {
                                 toast("This license was $status")
@@ -218,7 +218,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                 }
             } else {
                 return task {
-                    val status = session.resolve(networkAvailable, passphraseHash, preferences.getString("pemCrtl", "")).get()
+                    val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", ""), networkAvailable).get()
                     if (status is String) {
                         runOnUiThread {
                             toast("This license was $status")
