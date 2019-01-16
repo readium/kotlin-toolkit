@@ -19,6 +19,8 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Rect
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -29,7 +31,10 @@ import android.text.TextUtils
 import android.view.*
 import android.webkit.MimeTypeMap
 import android.webkit.URLUtil
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ListPopupWindow
+import android.widget.PopupWindow
 import com.github.kittinunf.fuel.Fuel
 import com.mcxiaoke.koi.ext.close
 import com.mcxiaoke.koi.ext.onClick
