@@ -736,6 +736,13 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
+    private var isNetworkAvailable: Boolean = false
+        get() {
+            val connectivityManager: ConnectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager;
+            val activeNetworkInfo: NetworkInfo? = connectivityManager.activeNetworkInfo;
+            return activeNetworkInfo != null && activeNetworkInfo.isConnected;
+        }
+
     override fun recyclerViewListClicked(v: View, position: Int) {
         val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_book))
         progress.show()
