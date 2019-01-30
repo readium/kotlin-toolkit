@@ -340,17 +340,16 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
             scrollModeSwitch.isChecked = scrollMode.on
             scrollModeSwitch.setOnCheckedChangeListener { _, b ->
                 scrollMode.on = scrollModeSwitch.isChecked
+                (resourcePager.focusedChild?.findViewById(R.id.resource_end) as? TextView)?.visibility = View.GONE
 
                 val webView = resourcePager.focusedChild?.findViewById(R.id.webView) as? WebView
                 webView?.let {
                     when (b) {
                         true -> {
-                            (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.GONE
-                            resourcePager.focusedChild?.setPadding(0, 4, 0, 4)
+                            resourcePager.focusedChild?.setPadding(0, 0, 0, 0)
                         }
                         false -> {
-                            (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.visibility = View.VISIBLE
-                            resourcePager.focusedChild?.setPadding(0, 30, 0, 30)
+                            resourcePager.focusedChild?.setPadding(0, 60, 0, 40)
                         }
                     }
                 } ?: run {
