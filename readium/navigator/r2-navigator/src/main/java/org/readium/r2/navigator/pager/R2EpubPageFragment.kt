@@ -55,16 +55,15 @@ class R2EpubPageFragment : Fragment() {
         val scrollMode = preferences.getBoolean(SCROLL_REF, false)
         when (scrollMode) {
             true -> {
-                (v.findViewById(R.id.book_title) as TextView).visibility = View.GONE
-                v.setPadding(0, 4, 0, 4)
+                v.setPadding(0, 0, 0, 0)
             }
             false -> {
-                (v.findViewById(R.id.book_title) as TextView).visibility = View.VISIBLE
-                v.setPadding(0, 30, 0, 30)
+                v.setPadding(0, 60, 0, 40)
             }
         }
 
-        (v.findViewById(R.id.book_title) as TextView).text = bookTitle
+        (v.findViewById(R.id.resource_end) as TextView).visibility = View.GONE
+        (v.findViewById(R.id.book_title) as TextView).text = null
 
         webView = v!!.findViewById(R.id.webView) as R2WebView
 
@@ -90,7 +89,7 @@ class R2EpubPageFragment : Fragment() {
                 webView.activity.windowManager.defaultDisplay.getMetrics(metrics)
 
 
-                val topDecile = webView.contentHeight - 1.25*metrics.heightPixels
+                val topDecile = webView.contentHeight - 1.15*metrics.heightPixels
                 val bottomDecile = (webView.contentHeight - metrics.heightPixels).toDouble()
 
                 when (scrollY) {
@@ -98,12 +97,22 @@ class R2EpubPageFragment : Fragment() {
                         if (!endReached) {
                             endReached = true
                             webView.activity.onPageEnded(endReached)
+                            when (scrollMode) {
+                                true -> {
+                                    (v.findViewById(R.id.resource_end) as TextView).visibility = View.VISIBLE
+                                }
+                            }
                         }
                     }
                     else -> {
                         if (endReached) {
                             endReached = false
                             webView.activity.onPageEnded(endReached)
+                            when (scrollMode) {
+                                true -> {
+                                    (v.findViewById(R.id.resource_end) as TextView).visibility = View.GONE
+                                }
+                            }
                         }
                     }
                 }
