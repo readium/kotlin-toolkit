@@ -189,7 +189,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             if (networkAvailable) {
                 return task {
                     Timber.i("LCP task lcpHttpService.certificateRevocationList")
-                    lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl").get()
+                    lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl", session).get()
                 } then { pemCrtl ->
                     Timber.i("LCP then lcpHttpService.certificateRevocationList  %s", pemCrtl)
 
@@ -215,6 +215,11 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                     }
                 } fail { exception ->
                     exception.printStackTrace()
+                    exception.localizedMessage?.let { message ->
+                        longSnackbar(catalogView, message)
+                    } ?: run {
+                        longSnackbar(catalogView, "An error occurred")
+                    }
                 }
             } else {
                 return task {
