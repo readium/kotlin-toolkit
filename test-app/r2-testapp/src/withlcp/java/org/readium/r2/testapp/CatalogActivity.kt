@@ -151,29 +151,38 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
     }
 
     override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
-        val bytes = contentResolver.openInputStream(uri).readBytes()
-        val lcpLicense = LcpLicense(bytes, this@CatalogActivity)
-        lcpLicense.evaluate(bytes)?.let { path ->
-            val file = File(path)
-            runOnUiThread {
-                val parser = EpubParser()
-                val pub = parser.parse(path)
-                if (pub != null) {
-                    val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
-                    pub.container = pair.first
-                    pub.publication = pair.second
-                    prepareToServe(pub, file.name, file.absolutePath, true, true)
-                    progress.dismiss()
-                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), networkAvailable, {
-                        // Do nothing
-                    }, {
-                        // Do nothing
-                    }, {
-                        // Do nothing
-                    }).get()
+        try {
+            val bytes = contentResolver.openInputStream(uri).readBytes()
+            val lcpLicense = LcpLicense(bytes, this@CatalogActivity)
+            lcpLicense.evaluate(bytes)?.let { path ->
+                val file = File(path)
+                runOnUiThread {
+                    val parser = EpubParser()
+                    val pub = parser.parse(path)
+                    if (pub != null) {
+                        val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
+                        pub.container = pair.first
+                        pub.publication = pair.second
+                        prepareToServe(pub, file.name, file.absolutePath, true, true)
+                        progress.dismiss()
+                        handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), networkAvailable, {
+                            // Do nothing
+                        }, {
+                            // Do nothing
+                        }, {
+                            // Do nothing
+                        }).get()
+                    }
                 }
-            }
 
+            }
+        } catch (e: Exception) {
+            e.localizedMessage?.let {
+                longSnackbar(catalogView, it)
+            } ?: run {
+                longSnackbar(catalogView, "An error occurred")
+            }
+            progress.dismiss()
         }
 
     }
