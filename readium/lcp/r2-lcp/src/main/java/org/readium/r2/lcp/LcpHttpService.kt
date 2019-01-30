@@ -90,9 +90,7 @@ class LcpHttpService {
 
             certificate = cf.generateCertificate(cert) as X509Certificate
 
-            val connection =  URL(url).openConnection()
-
-            DataInputStream(connection.getInputStream()).use { inStream ->
+            DataInputStream(ByteArrayInputStream(response.data)).use { inStream ->
                 crl = cf.generateCRL(inStream) as X509CRL
             }
 
