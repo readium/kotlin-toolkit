@@ -47,7 +47,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
     private var columnCount = 0
     private var wordSpacing = 0f
     private var letterSpacing = 0f
-    private var pageMargins = 0.5f
+    private var pageMargins = 2f
     private var lineHeight = 1f
 
     private var userProperties: UserProperties
@@ -84,7 +84,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         // Appearance
         userProperties.addEnumerable(appearance, appearanceValues, APPEARANCE_REF, APPEARANCE_NAME)
         // Page margins
-        userProperties.addIncremental(pageMargins, 0.5f, 2f, 0.25f, "", PAGE_MARGINS_REF, PAGE_MARGINS_NAME)
+        userProperties.addIncremental(pageMargins, 0.5f, 4f, 0.25f, "", PAGE_MARGINS_REF, PAGE_MARGINS_NAME)
         // Text alignment
         userProperties.addEnumerable(textAlignment, textAlignmentValues, TEXT_ALIGNMENT_REF, TEXT_ALIGNMENT_NAME)
         // Font family
