@@ -36,6 +36,9 @@ class MetadataParser {
         }
         metas.firstOrNull { it.attributes["property"] == "rendition:spread" }?.text?.let {
             metadata.rendition.spread = RenditionSpread.fromString(it)
+            if (it == "portrait") {
+                metadata.rendition.spread = RenditionSpread.Both
+            }
         }
         metas.firstOrNull { it.attributes["property"] == "rendition:viewport" }?.text?.let {
             metadata.rendition.viewport = it

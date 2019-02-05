@@ -143,7 +143,7 @@ class OPFParser {
                 "rendition:spread-node" -> "none"
                 "rendition:spread-auto" -> "auto"
                 "rendition:spread-landscape" -> "landscape"
-                "rendition:spread-portrait" -> "portrait"
+                "rendition:spread-portrait" -> "both"
                 "rendition:spread-both" -> "both"
                 else -> null
             }?.let { properties.spread = it }
