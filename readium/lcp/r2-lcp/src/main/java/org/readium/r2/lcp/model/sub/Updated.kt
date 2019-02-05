@@ -17,13 +17,13 @@ import java.util.*
 
 class Updated (json: JSONObject){
 
-    var license: Date
-    var status: Date
+    var license: DateTime
+    var status: DateTime
 
     init {
         try {
-            license = DateTime(json.getString("license")).toDate()
-            status = DateTime(json.getString("status")).toDate()
+            license = DateTime(json.getString("license"))
+            status = DateTime(json.getString("status"))
         } catch (e: Exception){
             throw Exception(LcpParsingError().errorDescription(LcpParsingErrors.updated))
         }

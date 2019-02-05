@@ -271,14 +271,14 @@ class LcpLicense : DrmLicense {
         if (status != null) {
             val licenseLink = status!!.link("license")
 
-            val latestUpdate = (lcpHttpService.fetchUpdatedLicense(licenseLink!!.href.toString()).get()as LicenseDocument).dateOfLastUpdate()
+            val latestUpdate = status?.updated?.license
             val lastUpdateDB = database.licenses.dateOfLastUpdate(license.id)
 
             lastUpdateDB?.let {
                 if ((lastUpdateDB.isAfter(latestUpdate)) || (lastUpdateDB.isEqual(latestUpdate))) return
             }
 
-            license = lcpHttpService.fetchUpdatedLicense(licenseLink.href.toString()).get() as LicenseDocument
+            license = lcpHttpService.fetchUpdatedLicense(licenseLink?.href.toString()).get() as LicenseDocument
             Timber.i( "LCP  ${license.json}")
 
             database.licenses.updateLicense(license, status!!.status.toString())
