@@ -133,7 +133,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                     prepareSyntheticPageList(publication, book)
 
                     val license = drm.license as LcpLicense
-                    val drmModel = DRMModel(drm.brand.name,
+                    val drmModel = DRMModel(drm.brand.value,
                             license.archivePath!!)
 
                     startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drmModel" to drmModel))
