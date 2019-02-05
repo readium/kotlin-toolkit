@@ -146,7 +146,7 @@ class LcpHttpService {
     fun renewLicense(url: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
         Timber.i("renewLicense %s", url)
         return Promise.of(runBlocking {
-            val (request, response, result) = Fuel.post(url,params).awaitByteArrayResponse()
+            val (request, response, result) = Fuel.put(url,params).awaitByteArrayResponse()
             return@runBlocking result.fold(
                     { data ->
                         Timber.i("renewLicense %s", response.statusCode)
@@ -166,7 +166,7 @@ class LcpHttpService {
     fun returnLicense(url: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
         Timber.i("returnLicense %s", url)
         return Promise.of(runBlocking {
-            val (request, response, result) = Fuel.post(url,params).awaitByteArrayResponse()
+            val (request, response, result) = Fuel.put(url,params).awaitByteArrayResponse()
             return@runBlocking result.fold(
                     { data ->
                         Timber.i("returnLicense %s", response.statusCode)
