@@ -17,7 +17,7 @@ import java.net.URL
 class Signature (json: JSONObject) {
 
     private var algorithm: URL
-    private var certificate: String
+    var certificate: String
     private var value: String
 
     init {

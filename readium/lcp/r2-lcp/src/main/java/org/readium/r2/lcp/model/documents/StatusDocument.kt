@@ -33,7 +33,7 @@ class StatusDocument {
     /// Must contain at least a link to the LicenseDocument associated to this.
     /// Status Document.
     var links: List<Link>?  = null
-    private var updated: Updated? = null
+    var updated: Updated? = null
     /// Dictionary of potential rights associated with Dates.
     private var potentialRights: PotentialRights? = null
     /// Ordered list of events related to the change in status of a License
