@@ -145,6 +145,11 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
             getUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
 
+            if (utterances.size == 0 ){
+                nextResource()
+                startReading()
+            }
+
             //emptying TTS' queue
             flushUtterancesQueue()
 

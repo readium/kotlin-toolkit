@@ -74,7 +74,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
 //    8/ Open the publication
 
 
-    override fun parseIntentLcpl(uriString: String) {
+    override fun parseIntentLcpl(uriString: String, networkAvailable: Boolean) {
         val uri: Uri? = Uri.parse(uriString)
         if (uri != null) {
             try {
@@ -95,7 +95,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                                     pub.publication = pair.second
                                     prepareToServe(pub, file.name, file.absolutePath, true, true)
                                     progress.dismiss()
-                                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), {
+                                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), networkAvailable, {
                                         // Do nothing
                                     }, {
                                         // Do nothing
@@ -119,11 +119,11 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         }
     }
 
-    override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication) {
+    override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean) {
         if (drm.brand == Drm.Brand.Lcp) {
             prepareToServe(pub, book.fileName, file.absolutePath, false, true)
 
-            handleLcpPassphrase(publicationPath, drm, { drm1 ->
+            handleLcpPassphrase(publicationPath, drm, networkAvailable, { drm1 ->
                 val pair = parser.parseEncryption(pub.container, publication, drm1)
                 pub.container = pair.first
                 pub.publication = pair.second
@@ -133,7 +133,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                     prepareSyntheticPageList(publication, book)
 
                     val license = drm.license as LcpLicense
-                    val drmModel = DRMModel(drm.brand.name,
+                    val drmModel = DRMModel(drm.brand.value,
                             license.archivePath!!)
 
                     startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drmModel" to drmModel))
@@ -150,35 +150,44 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         }
     }
 
-    override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog) {
-        val bytes = contentResolver.openInputStream(uri).readBytes()
-        val lcpLicense = LcpLicense(bytes, this@CatalogActivity)
-        lcpLicense.evaluate(bytes)?.let { path ->
-            val file = File(path)
-            runOnUiThread {
-                val parser = EpubParser()
-                val pub = parser.parse(path)
-                if (pub != null) {
-                    val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
-                    pub.container = pair.first
-                    pub.publication = pair.second
-                    prepareToServe(pub, file.name, file.absolutePath, true, true)
-                    progress.dismiss()
-                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), {
-                        // Do nothing
-                    }, {
-                        // Do nothing
-                    }, {
-                        // Do nothing
-                    }).get()
+    override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
+        try {
+            val bytes = contentResolver.openInputStream(uri).readBytes()
+            val lcpLicense = LcpLicense(bytes, this@CatalogActivity)
+            lcpLicense.evaluate(bytes)?.let { path ->
+                val file = File(path)
+                runOnUiThread {
+                    val parser = EpubParser()
+                    val pub = parser.parse(path)
+                    if (pub != null) {
+                        val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
+                        pub.container = pair.first
+                        pub.publication = pair.second
+                        prepareToServe(pub, file.name, file.absolutePath, true, true)
+                        progress.dismiss()
+                        handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), networkAvailable, {
+                            // Do nothing
+                        }, {
+                            // Do nothing
+                        }, {
+                            // Do nothing
+                        }).get()
+                    }
                 }
-            }
 
+            }
+        } catch (e: Exception) {
+            e.localizedMessage?.let {
+                longSnackbar(catalogView, it)
+            } ?: run {
+                longSnackbar(catalogView, "An error occurred")
+            }
+            progress.dismiss()
         }
 
     }
 
-    private fun handleLcpPassphrase(publicationPath: String, drm: Drm, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception> {
+    private fun handleLcpPassphrase(publicationPath: String, drm: Drm, networkAvailable: Boolean, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception> {
         val lcpHttpService = LcpHttpService()
         val session = LcpSession(publicationPath, this)
 
@@ -186,24 +195,44 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             Timber.i("LCP validatePassphrase")
             val preferences = getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
-            return task {
-                Timber.i("LCP task lcpHttpService.certificateRevocationList")
-                lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl").get()
-            } then { pemCrtl ->
-                Timber.i("LCP then lcpHttpService.certificateRevocationList  %s", pemCrtl)
+            if (networkAvailable) {
+                return task {
+                    Timber.i("LCP task lcpHttpService.certificateRevocationList")
+                    lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl", session).get()
+                } then { pemCrtl ->
+                    Timber.i("LCP then lcpHttpService.certificateRevocationList  %s", pemCrtl)
 
-                if (pemCrtl != null) {
-                    preferences.edit().putString("pemCrtl", pemCrtl).apply()
-                    val status = session.resolve(passphraseHash, pemCrtl).get()
-                    if (status is String) {
-                        runOnUiThread {
-                            toast("This license was $status")
+                    if (pemCrtl != null) {
+                        preferences.edit().putString("pemCrtl", pemCrtl).apply()
+                        val status = session.resolve(passphraseHash, pemCrtl, networkAvailable).get()
+                        if (status is String) {
+                            runOnUiThread {
+                                toast("This license was $status")
+                            }
+                        } else {
+                            status
                         }
                     } else {
-                        status
+                        val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", ""), networkAvailable).get()
+                        if (status is String) {
+                            runOnUiThread {
+                                toast("This license was $status")
+                            }
+                        } else {
+                            status
+                        }
                     }
-                } else {
-                    val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", "")).get()
+                } fail { exception ->
+                    exception.printStackTrace()
+                    exception.localizedMessage?.let { message ->
+                        longSnackbar(catalogView, message)
+                    } ?: run {
+                        longSnackbar(catalogView, "An error occurred")
+                    }
+                }
+            } else {
+                return task {
+                    val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", ""), networkAvailable).get()
                     if (status is String) {
                         runOnUiThread {
                             toast("This license was $status")
@@ -212,8 +241,6 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                         status
                     }
                 }
-            } fail { exception ->
-                exception.printStackTrace()
             }
         }
 
