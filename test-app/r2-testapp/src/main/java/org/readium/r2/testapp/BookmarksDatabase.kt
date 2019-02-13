@@ -27,12 +27,13 @@ class Bookmark(val bookID: Long,
                val publicationID: String,
                val resourceIndex: Long,
                val resourceHref: String,
+               val resourceType: String,
                val resourceTitle: String,
                val location: Locations,
                val locatorText: LocatorText,
                var creationDate: Long = DateTime().toDate().time,
                var id: Long? = null):
-        Locator(resourceHref, creationDate, resourceTitle, location, locatorText) {}
+        Locator(resourceHref, resourceType, resourceTitle, location, locatorText) {}
 
 class BookmarksDatabase(context: Context) {
 
@@ -48,7 +49,7 @@ class BookmarksDatabase(context: Context) {
 class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "bookmarks_database", null, BookmarksDatabaseOpenHelper.DATABASE_VERSION) {
     companion object {
         private var instance: BookmarksDatabaseOpenHelper? = null
-        private val DATABASE_VERSION = 2
+        private val DATABASE_VERSION = 3
 
         @Synchronized
         fun getInstance(ctx: Context): BookmarksDatabaseOpenHelper {
@@ -116,6 +117,13 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
 
                 } catch (e: SQLiteException) { }
             }
+            2 -> {
+                try {
+
+                    db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.RESOURCE_TYPE + " TEXT DEFAULT '';")
+
+                } catch (e: SQLiteException) { }
+            }
         }
 
     }
@@ -130,11 +138,12 @@ object BOOKMARKSTable {
     const val PUBLICATION_ID = "publicationID"
     const val RESOURCE_INDEX = "resourceIndex"
     const val RESOURCE_HREF = "resourceHref"
+    const val RESOURCE_TYPE = "resourceType"
     const val RESOURCE_TITLE = "resourceTitle"
     const val LOCATION = "location"
     const val LOCATOR_TEXT = "locatorText"
     const val CREATION_DATE = "creationDate"
-    var RESULT_COLUMNS = arrayOf(BOOKMARKSTable.ID, BOOKMARKSTable.BOOK_ID, BOOKMARKSTable.PUBLICATION_ID, BOOKMARKSTable.RESOURCE_INDEX, BOOKMARKSTable.RESOURCE_HREF, BOOKMARKSTable.RESOURCE_TITLE, BOOKMARKSTable.LOCATION, BOOKMARKSTable.LOCATOR_TEXT, BOOKMARKSTable.CREATION_DATE)
+    var RESULT_COLUMNS = arrayOf(BOOKMARKSTable.ID, BOOKMARKSTable.BOOK_ID, BOOKMARKSTable.PUBLICATION_ID, BOOKMARKSTable.RESOURCE_INDEX, BOOKMARKSTable.RESOURCE_HREF, BOOKMARKSTable.RESOURCE_TYPE, BOOKMARKSTable.RESOURCE_TITLE, BOOKMARKSTable.LOCATION, BOOKMARKSTable.LOCATOR_TEXT, BOOKMARKSTable.CREATION_DATE)
 
 }
 
@@ -165,6 +174,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                         BOOKMARKSTable.PUBLICATION_ID to bookmark.publicationID,
                         BOOKMARKSTable.RESOURCE_INDEX to bookmark.resourceIndex,
                         BOOKMARKSTable.RESOURCE_HREF to bookmark.resourceHref,
+                        BOOKMARKSTable.RESOURCE_TYPE to bookmark.resourceType,
                         BOOKMARKSTable.RESOURCE_TITLE to bookmark.resourceTitle,
                         BOOKMARKSTable.LOCATION to bookmark.location.toJSON().toString(),
                         BOOKMARKSTable.LOCATOR_TEXT to bookmark.locatorText.toJSON().toString(),
@@ -182,15 +192,17 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                     BOOKMARKSTable.PUBLICATION_ID,
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
+                    BOOKMARKSTable.RESOURCE_TYPE,
                     BOOKMARKSTable.RESOURCE_TITLE,
                     BOOKMARKSTable.LOCATION,
                     BOOKMARKSTable.LOCATOR_TEXT,
                     BOOKMARKSTable.CREATION_DATE)
-                    .whereArgs("(bookID = {bookID}) AND (publicationID = {publicationID}) AND (resourceIndex = {resourceIndex}) AND (resourceHref = {resourceHref})  AND (location = {location}) AND (locatorText = {locatorText})",
+                    .whereArgs("(bookID = {bookID}) AND (publicationID = {publicationID}) AND (resourceIndex = {resourceIndex}) AND (resourceHref = {resourceHref})  AND (resourceHref = {resourceHref}) AND (location = {location}) AND (locatorText = {locatorText})",
                             "bookID" to bookmark.bookID,
                             "publicationID" to bookmark.publicationID,
                             "resourceIndex" to bookmark.resourceIndex,
                             "resourceHref" to bookmark.resourceHref,
+                            "resourceType" to bookmark.resourceType,
                             "location" to bookmark.location.toJSON().toString(),
                             "locatorText" to bookmark.locatorText.toJSON().toString())
                     .exec {
@@ -223,6 +235,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                     BOOKMARKSTable.PUBLICATION_ID,
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
+                    BOOKMARKSTable.RESOURCE_TYPE,
                     BOOKMARKSTable.RESOURCE_TITLE,
                     BOOKMARKSTable.LOCATION,
                     BOOKMARKSTable.LOCATOR_TEXT,
@@ -242,6 +255,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                     BOOKMARKSTable.PUBLICATION_ID,
                     BOOKMARKSTable.RESOURCE_INDEX,
                     BOOKMARKSTable.RESOURCE_HREF,
+                    BOOKMARKSTable.RESOURCE_TYPE,
                     BOOKMARKSTable.RESOURCE_TITLE,
                     BOOKMARKSTable.LOCATION,
                     BOOKMARKSTable.LOCATOR_TEXT,
@@ -272,20 +286,23 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
             val resourceHref = columns[4]?.let {
                 return@let it
             } ?: kotlin.run { return@run "" }
-            val resourceTitle = columns[5]?.let {
+            val resourceType = columns[5]?.let {
                 return@let it
             } ?: kotlin.run { return@run "" }
-            val location = columns[6]?.let {
+            val resourceTitle = columns[6]?.let {
                 return@let it
             } ?: kotlin.run { return@run "" }
-            val locatorText = columns[7]?.let {
+            val location = columns[7]?.let {
                 return@let it
             } ?: kotlin.run { return@run "" }
-            val created = columns[8]?.let {
+            val locatorText = columns[8]?.let {
+                return@let it
+            } ?: kotlin.run { return@run "" }
+            val created = columns[9]?.let {
                 return@let it
             } ?: kotlin.run { return@run null }
 
-            return Bookmark(bookID as Long, publicationID as String, resourceIndex as Long, resourceHref as String, resourceTitle as String, Locations.fromJSON(JSONObject(location as String)), LocatorText.fromJSON(JSONObject(locatorText as String)), created as Long,  id as Long)
+            return Bookmark(bookID as Long, publicationID as String, resourceIndex as Long, resourceHref as String, resourceType as String, resourceTitle as String, Locations.fromJSON(JSONObject(location as String)), LocatorText.fromJSON(JSONObject(locatorText as String)), created as Long,  id as Long)
         }
     }
 
