@@ -46,6 +46,13 @@ class OPDS1Parser {
             }
         }
 
+        fun parseURL(headers: MutableMap<String,String>,url: URL): Promise<ParseData, Exception> {
+            return Fuel.get(url.toString(), null).header(headers).promise() then {
+                val (_, _, result) = it
+                this.parse(xmlData = result, url = url)
+            }
+        }
+
         fun parse(xmlData: ByteArray, url: URL): ParseData {
             val document = XmlParser()
             document.parseXml(xmlData.inputStream())
