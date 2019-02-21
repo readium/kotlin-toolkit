@@ -47,6 +47,13 @@ class OPDS2Parser {
             }
         }
 
+        fun parseURL(headers:MutableMap<String,String>,url: URL): Promise<ParseData, Exception> {
+            return Fuel.get(url.toString(), null).header(headers).promise() then {
+                val (_, _, result) = it
+                this.parse(result, url)
+            }
+        }
+
         fun parse(jsonData: ByteArray, url: URL): ParseData {
             return if (isFeed(jsonData)) {
                 ParseData(parseFeed(jsonData, url), null, 2)
