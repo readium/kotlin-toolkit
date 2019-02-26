@@ -68,6 +68,7 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
                 BOOKMARKSTable.PUBLICATION_ID to TEXT,
                 BOOKMARKSTable.RESOURCE_INDEX to INTEGER,
                 BOOKMARKSTable.RESOURCE_HREF to TEXT,
+                BOOKMARKSTable.RESOURCE_TYPE to TEXT,
                 BOOKMARKSTable.RESOURCE_TITLE to TEXT,
                 BOOKMARKSTable.LOCATION to TEXT,
                 BOOKMARKSTable.LOCATOR_TEXT to TEXT,
@@ -113,6 +114,9 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
                     } then {
                         //  add migration: add locatorText
                         db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.LOCATOR_TEXT + " TEXT DEFAULT '{}';")
+                    } then {
+                        //  add migration: add resourceType
+                        db.execSQL("ALTER TABLE " + BOOKMARKSTable.NAME + " ADD COLUMN " + BOOKMARKSTable.RESOURCE_TYPE + " TEXT DEFAULT '';")
                     }
 
                 } catch (e: SQLiteException) { }
