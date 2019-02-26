@@ -182,10 +182,10 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
     /**
      * storeProgression() : save in the preference the last progression in the spine item
      */
-    fun storeProgression(locations: Locations) {
+    fun storeProgression(locations: Locations?) {
         storeDocumentIndex()
         val publicationIdentifier = publication.metadata.identifier
-        preferences.edit().putString("$publicationIdentifier-documentLocations", locations.toJSON().toString()).apply()
+        preferences.edit().putString("$publicationIdentifier-documentLocations", locations?.toJSON().toString()).apply()
     }
 
     /**
@@ -223,7 +223,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
                                 if (resourcePager.currentItem == resource.first) {
                                     // reload webview if it has an anchor
                                     val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-                                    locator.locations.id?.let {
+                                    locator.locations?.fragment?.let {
                                         var anchor = it
                                         if (anchor.startsWith("#")) {
                                         } else {

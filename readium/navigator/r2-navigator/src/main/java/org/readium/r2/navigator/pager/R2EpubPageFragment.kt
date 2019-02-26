@@ -149,10 +149,10 @@ class R2EpubPageFragment : Fragment() {
                     if (url!!.indexOf("#") > 0) {
                         val id = url.substring(url.indexOf('#'))
                         webView.loadUrl("javascript:scrollAnchor(" + id + ");");
-                        locations = Locations(id = id)
+                        locations = Locations(fragment = id)
                     }
 
-                    if (locations.id == null) {
+                    if (locations.fragment == null) {
                         locations.progression?.let { progression ->
                             currentFragment.webView.progression = progression
 
@@ -219,7 +219,7 @@ class R2EpubPageFragment : Fragment() {
 
         val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
 
-        locations.id?.let {
+        locations.fragment?.let {
             var anchor = it
             if (anchor.startsWith("#")) {
             } else {
