@@ -178,9 +178,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
                     val page = syntheticPageList[position]
                     val resourceHref = page.href?: ""
-                    // TODO:
-//                    val resourceType = page.typeLink?: ""
-                    val resourceType = ""
+                    val resourceType = page.type?: ""
 
                     val pageProgression = syntheticPageList[position].progression
 
