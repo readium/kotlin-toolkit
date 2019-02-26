@@ -86,16 +86,19 @@ class R2OutlineActivity : AppCompatActivity() {
 
         toc_list.setOnItemClickListener { _, _, position, _ ->
             //Link to the resource in the publication
-            val tocItemUri = allElements[position].second.href
 
-            tocItemUri?.let {
+            val resource = allElements[position].second
+            val resourceHref = resource.href
+            val resourceType = resource.typeLink?: ""
+
+            resourceHref?.let {
                 val intent = Intent()
                 
-                if (tocItemUri.indexOf("#") > 0) {
-                    val id = tocItemUri.substring(tocItemUri.indexOf('#'))
-                    intent.putExtra("locator", Locator(tocItemUri, timestamp(), publication.metadata.title, Locations(id = id),null))
+                if (resourceHref.indexOf("#") > 0) {
+                    val id = resourceHref.substring(resourceHref.indexOf('#'))
+                    intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(fragment = id),null))
                 } else {
-                    intent.putExtra("locator", Locator(tocItemUri, timestamp(), publication.metadata.title, Locations(progression = 0.0),null))
+                    intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0),null))
                 }
 
                 setResult(Activity.RESULT_OK, intent)
@@ -120,12 +123,15 @@ class R2OutlineActivity : AppCompatActivity() {
         bookmark_list.setOnItemClickListener { _, _, position, _ ->
 
             //Link to the resource in the publication
-            val bookmarkUri = bookmarks[position].resourceHref
+            val bookmark = bookmarks[position]
+            val resourceHref = bookmark.resourceHref
+            val resourceType = bookmark.resourceType
+
             //Progression of the selected bookmark
             val bookmarkProgression = bookmarks[position].location.progression
 
             val intent = Intent()
-            intent.putExtra("locator", Locator(bookmarkUri, timestamp(), publication.metadata.title, Locations(progression = bookmarkProgression),null))
+            intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = bookmarkProgression),null))
             setResult(Activity.RESULT_OK, intent)
             finish()
         }
@@ -146,10 +152,13 @@ class R2OutlineActivity : AppCompatActivity() {
             page_list.setOnItemClickListener { _, _, position, _ ->
 
                 //Link to the resource in the publication
-                val pageUri = pageList[position].href
+                val link = pageList[position]
+                val resourceHref = link.href?: ""
+                val resourceType = link.typeLink?: ""
+
 
                 val intent = Intent()
-                intent.putExtra("locator", Locator(pageUri!!, timestamp(), publication.metadata.title, Locations(progression = 0.0),null))
+                intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0),null))
                 setResult(Activity.RESULT_OK, intent)
                 finish()
 
@@ -166,11 +175,15 @@ class R2OutlineActivity : AppCompatActivity() {
                 page_list.setOnItemClickListener { _, _, position, _ ->
 
                     //Link to the resource in the publication
-                    val pageUri = syntheticPageList[position].href
+
+                    val page = syntheticPageList[position]
+                    val resourceHref = page.href?: ""
+                    val resourceType = page.type?: ""
+
                     val pageProgression = syntheticPageList[position].progression
 
                     val intent = Intent()
-                    intent.putExtra("locator", Locator(pageUri!!, timestamp(), publication.metadata.title, Locations(progression = pageProgression), null))
+                    intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = pageProgression), null))
                     setResult(Activity.RESULT_OK, intent)
                     finish()
                 }
@@ -189,10 +202,12 @@ class R2OutlineActivity : AppCompatActivity() {
         landmarks_list.setOnItemClickListener { _, _, position, _ ->
 
             //Link to the resource in the publication
-            val landmarkUri = landmarks[position].href
+            val link = landmarks[position]
+            val resourceHref = link.href?: ""
+            val resourceType = link.typeLink?: ""
 
             val intent = Intent()
-            intent.putExtra("locator", Locator(landmarkUri!!, timestamp(), publication.metadata.title, Locations(progression = 0.0),null))
+            intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0),null))
             setResult(Activity.RESULT_OK, intent)
             finish()
 

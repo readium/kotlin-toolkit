@@ -255,7 +255,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
     var isSeekNeeded = false
     fun seekIfNeeded() {
         if (isSeekNeeded) {
-            val time = seekLocation?.id?.let {
+            val time = seekLocation?.fragment?.let {
                 var time = it
                 if (time.startsWith("#t=")) {
                     time = time.substring(time.indexOf('=') + 1)
@@ -312,14 +312,18 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
             }
             R.id.bookmark -> {
                 val resourceIndex = currentResource.toLong()
-                val resourceHref = publication.readingOrder[currentResource].href!!
-                val resourceTitle = publication.readingOrder[currentResource].title ?: ""
 
+                val resource = publication.readingOrder[currentResource]
+                val resourceHref = resource.href?: ""
+                val resourceType = resource.typeLink?: ""
+                val resourceTitle = resource.title?: ""
+                
                 val bookmark = Bookmark(
                         bookId,
                         publicationIdentifier,
                         resourceIndex,
                         resourceHref,
+                        resourceType,
                         resourceTitle,
                         Locations(progression = seekBar!!.progress.toDouble()),
                         LocatorText()
@@ -343,10 +347,10 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
 
     }
 
-    private fun storeProgression(locations: Locations) {
+    private fun storeProgression(locations: Locations?) {
         storeDocumentIndex()
         val publicationIdentifier = publication.metadata.identifier
-        preferences.edit().putString("$publicationIdentifier-documentLocations", locations.toJSON().toString()).apply()
+        preferences.edit().putString("$publicationIdentifier-documentLocations", locations?.toJSON().toString()).apply()
     }
 
     private fun storeDocumentIndex() {

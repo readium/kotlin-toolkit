@@ -33,7 +33,7 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
         for (uri in p0) {
             for (i in 0 until uri.third.size) {
                 uri.third[i].href?.let {
-                    createSyntheticPages(uri.first, uri.second, it)
+                    createSyntheticPages(uri.first, uri.second, uri.third[i])
                 }
 
                 if (isCancelled) {
@@ -50,8 +50,11 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
         positionsDB.positions.storeSyntheticPageList(bookID, jsonPageList)
     }
 
-    private fun createSyntheticPages(baseURL: String, epubName: String, resourceHref: String) {
+    private fun createSyntheticPages(baseURL: String, epubName: String, link: Link) {
         val resourceURL: URL
+
+        val resourceHref = link.href
+        val resourceType = link.typeLink
 
         if (URI(resourceHref).isAbsolute) {
             resourceURL = URL(resourceHref)
@@ -70,7 +73,7 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
 
         for (char in 0 until plainTextFromHTML.length-1) {
             if (char%1024 == 0) {
-                resourcePageList.add(Position(pageNumber++, resourceHref, char.toDouble() / plainTextFromHTML.length.toDouble()))
+                resourcePageList.add(Position(pageNumber++, resourceHref, resourceType, char.toDouble() / plainTextFromHTML.length.toDouble()))
             }
         }
 
@@ -79,7 +82,7 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
 
     private fun addPages(resourcePageList: MutableList<Position>) {
         for (i in 0 until resourcePageList.size) {
-            syntheticPageList.add(Position(resourcePageList[i].pageNumber, resourcePageList[i].href, resourcePageList[i].progression))
+            syntheticPageList.add(Position(resourcePageList[i].pageNumber, resourcePageList[i].href, resourcePageList[i].type, resourcePageList[i].progression))
         }
     }
 
@@ -89,7 +92,7 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
 }
 
 
-class Position(var pageNumber: Long? = null, var href: String? = null, var progression: Double? = null) : JSONable {
+class Position(var pageNumber: Long? = null, var href: String? = null,  var type: String? = null, var progression: Double? = null) : JSONable {
 
     companion object {
         fun fromJSON(jsonObject: JSONObject): MutableList<Position> {
@@ -105,6 +108,9 @@ class Position(var pageNumber: Long? = null, var href: String? = null, var progr
                 }
                 if (json.has("href")) {
                     position.href = json.getString("href")
+                }
+                if (json.has("type")) {
+                    position.type = json.getString("type")
                 }
                 if (json.has("progression")) {
                     position.progression = json.getDouble("progression")
@@ -137,6 +143,7 @@ class Position(var pageNumber: Long? = null, var href: String? = null, var progr
         val json = JSONObject()
         json.putOpt("pageNumber", pageNumber)
         json.putOpt("href", href)
+        json.putOpt("type", type)
         json.putOpt("progression", progression)
 
         return json
@@ -149,6 +156,9 @@ class Position(var pageNumber: Long? = null, var href: String? = null, var progr
         }
         if (href != null) {
             href.let { jsonString += """ "href": "$href" ,""" }
+        }
+        if (type != null) {
+            type.let { jsonString += """ "type": "$type" ,""" }
         }
         if (progression != null) {
             progression.let { jsonString += """ "progression": "$progression" ,""" }

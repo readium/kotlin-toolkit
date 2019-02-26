@@ -190,8 +190,10 @@ class R2EpubActivity : R2EpubActivity() {
             }
             R.id.bookmark -> {
                 val resourceIndex = resourcePager.currentItem.toLong()
-                val resourceHref = publication.readingOrder[resourcePager.currentItem].href!!
-                val resourceTitle = publication.readingOrder[resourcePager.currentItem].title?: ""
+                val resource = publication.readingOrder[resourcePager.currentItem]
+                val resourceHref = resource.href?: ""
+                val resourceType = resource.typeLink?: ""
+                val resourceTitle = resource.title?: ""
                 val locations = Locations.fromJSON(JSONObject(preferences.getString("${publicationIdentifier}-documentLocations", "{}")))
                 val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, locations.progression!!)?.let {
                     it
@@ -202,6 +204,7 @@ class R2EpubActivity : R2EpubActivity() {
                         publicationIdentifier,
                         resourceIndex,
                         resourceHref,
+                        resourceType,
                         resourceTitle,
                         Locations(progression = locations.progression, position = currentPage),
                         LocatorText()
