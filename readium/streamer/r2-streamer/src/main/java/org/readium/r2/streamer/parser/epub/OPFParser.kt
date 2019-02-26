@@ -48,7 +48,11 @@ class OPFParser {
                 document.getFirst("package")!!.attributes) ?: return false
         metadata.description = metadataElement.getFirst("dc:description")?.text
         metadata.publicationDate = metadataElement.getFirst("dc:date")?.text
-        metadata.modified = DateTime(metadataParser.modifiedDate(metadataElement)).toDate()
+        metadata.modified = try {
+            DateTime(metadataParser.modifiedDate(metadataElement)).toDate()
+        } catch (e: Exception) {
+            null
+        }
         metadata.source = metadataElement.getFirst("dc:sources")?.text
         metadataParser.subject(metadataElement)?.let { metadata.subjects.add(it) }
         metadata.languages = metadataElement.get("dc:language")?.map { it.text!! }?.toMutableList()
