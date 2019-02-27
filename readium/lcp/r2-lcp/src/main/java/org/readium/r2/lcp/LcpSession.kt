@@ -11,7 +11,8 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import kotlinx.coroutines.runBlocking
-import nl.komponents.kovenant.Promise
+import org.readium.lcp.sdk.DRMError
+import org.readium.lcp.sdk.DRMException
 import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.model.documents.StatusDocument
 import java.io.File
@@ -28,38 +29,52 @@ class LcpSession {
         lcpLicense = LcpLicense(File(file).toURI().toURL(), true, androidContext )
     }
 
-    fun resolve(passphrase: String, pemCrl: String, networkAvailable: Boolean? = true) : Promise<Any, Exception> {
+    fun resolve(passphrase: String, pemCrl: String, networkAvailable: Boolean? = true) : Any {
          return runBlocking {
              if (networkAvailable!!) {
                  lcpLicense.resolve()
              }
-             val lcpContext = getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
-              Promise.of(lcpContext)
+             getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl)
          }
     }
 
-    fun getLcpContext(jsonLicense: String, passphrase: String, pemCrl: String) : Promise<Any, Exception> {
-        return Promise.of(
-            lcpLicense.status?.let {statusDocument ->
-                if ((statusDocument.status == StatusDocument.Status.active) || (statusDocument.status == StatusDocument.Status.ready)) {
+    fun getLcpContext(jsonLicense: String, passphrase: String, pemCrl: String) : Any {
+       return lcpLicense.status?.let {statusDocument ->
+            if ((statusDocument.status == StatusDocument.Status.active) || (statusDocument.status == StatusDocument.Status.ready)) {
+                try {
+                    lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
+                } catch (e: DRMException) {
+                    if (e.drmError == DRMError.CERTIFICATE_REVOKED) {
+                        throw Exception("LCP Revoked Provider Certificate")
+                    } else {
+                        throw e
+                    }
+                }
+                lcpLicense
+            } else {
+                statusDocument.status.toString()
+            }
+        } ?: run {
+            database.licenses.getStatus(lcpLicense.license.id)?.let {licenseStatus ->
+                if ( (licenseStatus == StatusDocument.Status.active.toString()) || (licenseStatus == StatusDocument.Status.ready.toString()) ) {
+                    try {
                     lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
                     lcpLicense
+                    } catch (e: DRMException) {
+                        if (e.drmError == DRMError.CERTIFICATE_REVOKED) {
+                            throw Exception("LCP Revoked Provider Certificate")
+                        } else {
+                            throw e
+                        }
+                    }
                 } else {
-                    statusDocument.status.toString()
+                    licenseStatus
                 }
             } ?: run {
-                database.licenses.getStatus(lcpLicense.license.id)?.let {licenseStatus ->
-                    if ( (licenseStatus == StatusDocument.Status.active.toString()) || (licenseStatus == StatusDocument.Status.ready.toString()) ) {
-                        lcpLicense.context = Lcp().createContext(jsonLicense, passphrase, pemCrl)
-                        lcpLicense
-                    } else {
-                        licenseStatus
-                    }
-                } ?: run {
-                    "invalid"
-                }
+                "invalid"
             }
-        )
+        }
+
     }
 
     fun getHint() : String {

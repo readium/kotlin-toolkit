@@ -127,7 +127,7 @@ class LcpLicense : DrmLicense {
         Timber.i("LCP fetchStatusDocument")
         val statusLink = license.link("status")
         statusLink?.let {
-            val document = lcpHttpService.statusDocument(it.href.toString()).get()
+            val document = lcpHttpService.statusDocument(it.href.toString())
             status = document as StatusDocument
         }
     }
@@ -176,7 +176,7 @@ class LcpLicense : DrmLicense {
                 "id" to getDeviceId(),
                 "name" to getDeviceName())
         try {
-            lcpHttpService.register(registerUrl.toString(), params).get()?.let {
+            lcpHttpService.register(registerUrl.toString(), params)?.let {
                 database.licenses.updateLicense(license, it)
             }
         }catch (e:Exception) {
@@ -198,7 +198,7 @@ class LcpLicense : DrmLicense {
                 "name" to getDeviceName())
 
         try {
-            lcpHttpService.returnLicense(returnUrl.toString(), params).get()?.let {
+            lcpHttpService.returnLicense(returnUrl.toString(), params)?.let {
                 database.licenses.updateState(license.id, it)
             }
         } catch (e: Exception) {
@@ -221,7 +221,7 @@ class LcpLicense : DrmLicense {
                 "name" to getDeviceName())
 
         try {
-            lcpHttpService.renewLicense(renewUrl.toString(),params).get()?.let {
+            lcpHttpService.renewLicense(renewUrl.toString(),params)?.let {
                 database.licenses.updateState(license.id, it)
             }
         } catch (e:Exception) {
@@ -278,7 +278,7 @@ class LcpLicense : DrmLicense {
                 if ((lastUpdateDB.isAfter(latestUpdate)) || (lastUpdateDB.isEqual(latestUpdate))) return
             }
 
-            license = lcpHttpService.fetchUpdatedLicense(licenseLink?.href.toString()).get() as LicenseDocument
+            license = lcpHttpService.fetchUpdatedLicense(licenseLink?.href.toString()) as LicenseDocument
             Timber.i( "LCP  ${license.json}")
 
             database.licenses.updateLicense(license, status!!.status.toString())
