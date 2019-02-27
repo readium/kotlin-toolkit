@@ -11,7 +11,7 @@ package org.readium.r2.navigator.pager
 
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +22,7 @@ import java.io.ByteArrayInputStream
 import java.io.File
 
 
-class R2CbzPageFragment : Fragment() {
+class R2CbzPageFragment : androidx.fragment.app.Fragment() {
 
     private val zipFile: String?
         get() = arguments!!.getString("zipFile")

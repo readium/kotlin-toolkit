@@ -14,9 +14,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.support.v4.view.ViewPager
-import android.support.v7.app.AppCompatActivity
+import androidx.viewpager.widget.ViewPager
+import androidx.appcompat.app.AppCompatActivity
 import android.view.View
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.PageCallback
 import org.readium.r2.navigator.pager.R2EpubPageFragment
@@ -24,9 +28,16 @@ import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.*
 import java.net.URI
+import kotlin.coroutines.CoroutineContext
 
 
-open class R2EpubActivity : AppCompatActivity(), PageCallback {
+open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
+
 
     lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
@@ -79,6 +90,8 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
                     uri = publicationPath + spineItem.href
                 }
             } else {
+
+//                uri = applicationContext.getExternalFilesDir(null).path + "/" + epubName + spineItem.href
                 uri = "$BASE_URL:$port" + "/" + epubName + spineItem.href
             }
             resourcesSingle.add(Pair(resourceIndexSingle, uri))
@@ -136,7 +149,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
         currentPagerPosition = index
 
 
-        resourcePager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+        resourcePager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
 
             override fun onPageScrollStateChanged(state: Int) {
                 // Do nothing
@@ -178,7 +191,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
         storeDocumentIndex()
 
     }
-    
+
     /**
      * storeProgression() : save in the preference the last progression in the spine item
      */
@@ -286,7 +299,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
 
 
     fun nextResource(smoothScroll: Boolean) {
-        runOnUiThread {
+        launch {
             pagerPosition = 0
             if (resourcePager.currentItem < resourcePager.adapter!!.count - 1 ) {
 
@@ -313,7 +326,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
     }
 
     fun previousResource(smoothScroll: Boolean) {
-        runOnUiThread {
+        launch {
             pagerPosition = 0
             if (resourcePager.currentItem > 0) {
 
@@ -342,7 +355,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback {
 
     open fun toggleActionBar() {
         if (allowToggleActionBar) {
-            runOnUiThread {
+            launch {
                 if (supportActionBar!!.isShowing) {
                     resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION

@@ -21,6 +21,9 @@ import android.widget.ImageButton
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
 import org.readium.r2.navigator.BuildConfig
@@ -44,6 +47,8 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     var callback: OnOverScrolledCallback? = null
 
+    private val uiScope = CoroutineScope(Dispatchers.Main)
+
     init {
       WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
     }
@@ -66,7 +71,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     @android.webkit.JavascriptInterface
     open fun scrollRight() {
-        activity.runOnUiThread {
+        uiScope.launch {
             if (activity.supportActionBar!!.isShowing && activity.allowToggleActionBar) {
                 activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -78,7 +83,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
                 if (activity.publication.metadata.direction == "rtl") {
-                    this.evaluateJavascript("scrollRightRTL();") { result ->
+                    this@R2BasicWebView.evaluateJavascript("scrollRightRTL();") { result ->
                         if (result.contains("edge")) {
                             activity.previousResource(false)
                         }
@@ -87,17 +92,17 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                     activity.nextResource(false)
                 }
             } else {
-                if (!this.canScrollHorizontally(1)) {
+                if (!this@R2BasicWebView.canScrollHorizontally(1)) {
                     activity.nextResource(false)
                 }
-                this.evaluateJavascript("scrollRight();", null)
+                this@R2BasicWebView.evaluateJavascript("scrollRight();", null)
             }
         }
     }
 
     @android.webkit.JavascriptInterface
     open fun scrollLeft() {
-        activity.runOnUiThread {
+        uiScope.launch {
             if (activity.supportActionBar!!.isShowing && activity.allowToggleActionBar) {
                 activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -109,7 +114,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
                 if (activity.publication.metadata.direction == "rtl") {
-                    this.evaluateJavascript("scrollLeftRTL();") { result ->
+                    this@R2BasicWebView.evaluateJavascript("scrollLeftRTL();") { result ->
                         if (result.contains("edge")) {
                             activity.nextResource(false)
                         }
@@ -119,10 +124,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 }
             } else {
                 // fix this for when vertical scrolling is enabled
-                if (!this.canScrollHorizontally(-1)) {
+                if (!this@R2BasicWebView.canScrollHorizontally(-1)) {
                     activity.previousResource(false)
                 }
-                this.evaluateJavascript("scrollLeft();", null)
+                this@R2BasicWebView.evaluateJavascript("scrollLeft();", null)
             }
         }
     }

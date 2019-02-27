@@ -12,15 +12,24 @@ package org.readium.r2.navigator
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.view.View
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Publication
+import kotlin.coroutines.CoroutineContext
 
 
-class R2CbzActivity : AppCompatActivity() {
+class R2CbzActivity : AppCompatActivity(), CoroutineScope {
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     private lateinit var preferences: SharedPreferences
     lateinit var resourcePager: R2ViewPager
@@ -86,7 +95,7 @@ class R2CbzActivity : AppCompatActivity() {
     }
 
     fun nextResource(v: View? = null) {
-        runOnUiThread {
+        launch {
             if (layoutDirectionIsRTL()) {
                 // The view has RTL layout
                 resourcePager.currentItem = resourcePager.currentItem - 1
@@ -98,7 +107,7 @@ class R2CbzActivity : AppCompatActivity() {
     }
 
     fun previousResource(v: View? = null) {
-        runOnUiThread {
+        launch {
             if (layoutDirectionIsRTL()) {
                 // The view has RTL layout
                 resourcePager.currentItem = resourcePager.currentItem + 1
@@ -111,7 +120,7 @@ class R2CbzActivity : AppCompatActivity() {
     }
 
     fun toggleActionBar(v: View? = null) {
-        runOnUiThread {
+        launch {
             if (supportActionBar!!.isShowing) {
                 resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
