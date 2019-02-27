@@ -229,7 +229,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
                         }
                     }
                 } catch (exception: Exception) {
-                                        exception.printStackTrace()
+                    exception.printStackTrace()
                     exception.localizedMessage?.let { message ->
                         launch {
                             catalogView.longSnackbar(message)
