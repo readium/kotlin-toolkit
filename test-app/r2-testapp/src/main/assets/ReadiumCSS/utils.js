@@ -37,8 +37,8 @@ var checkScrollMode = function() {
 
 
 window.addEventListener('scroll', function(e) {
-    last_known_scrollY_position = window.scrollY / document.body.scrollHeight;
-    last_known_scroll_position = window.scrollX / document.body.scrollWidth;
+    last_known_scrollY_position = window.scrollY / document.scrollingElement.scrollHeight;
+    last_known_scroll_position = window.scrollX / document.scrollingElement.scrollWidth;
 
     checkScrollMode();
 
@@ -64,7 +64,7 @@ var scrollToId = function(id) {
     var elementOffset = element.scrollLeft // element.getBoundingClientRect().left works for Gutenbergs books
     var offset = window.scrollX + elementOffset;
 
-    document.body.scrollLeft = snapOffset(offset);
+    document.scrollingElement.scrollLeft = snapOffset(offset);
 };
 
 // Position must be in the range [0 - 1], 0-100%.
@@ -74,10 +74,10 @@ var scrollToPosition = function(position) {
         console.log("InvalidPosition");
         return;
     }
-    var offset = document.body.scrollWidth * position;
+    var offset = document.scrollingElement.scrollWidth * position;
 
     console.log("ScrollToOffset " + offset);
-    document.body.scrollLeft = snapOffset(offset);
+    document.scrollingElement.scrollLeft = snapOffset(offset);
     update(position);
 };
 
@@ -86,8 +86,8 @@ var scrollToEnd = function() {
     checkScrollMode();
 
     if(!scrolling) {
-        console.log("scrollToEnd " + document.body.scrollWidth);
-        document.body.scrollLeft = document.body.scrollWidth;
+        console.log("scrollToEnd " + document.scrollingElement.scrollWidth);
+        document.scrollingElement.scrollLeft = document.scrollingElement.scrollWidth;
     } else {
         console.log("scrollToBottom " + document.body.scrollHeight);
         document.scrollingElement.scrollTop = document.body.scrollHeight;
@@ -101,7 +101,7 @@ var scrollToStart = function() {
 
     if(!scrolling) {
         console.log("scrollToStart " + 0);
-        document.body.scrollLeft = 0;
+        document.scrollingElement.scrollLeft = 0;
     } else {
         console.log("scrollToTop " + 0);
         document.scrollingElement.scrollTop = 0;
@@ -121,12 +121,12 @@ var scrollToPosition = function(position, dir) {
     if(!scrolling) {
         var offset = 0.0;
         if (dir == 'rtl') {
-            offset = (-document.body.scrollWidth + maxScreenX) * (1.0-position);
+            offset = (-document.scrollingElement.scrollWidth + document.body.scrollWidth) * (1.0-position);
         } else {
-            offset = document.body.scrollWidth * position;
+            offset = document.scrollingElement.scrollWidth * position;
         }
         console.log("offset " + offset);
-        document.body.scrollLeft = snapOffset(offset);
+        document.scrollingElement.scrollLeft = snapOffset(offset);
         update(position);
     } else {
         var offset = document.body.scrollHeight * position;
@@ -140,15 +140,15 @@ var scrollToPosition = function(position, dir) {
 var scrollLeft = function() {
     console.log("scrollLeft");
     scrollToPosition(last_known_scroll_position, 'ltr')
-    var offset = window.scrollX - maxScreenX;
+    var offset = window.scrollX - document.body.scrollWidth;
 
     if (offset >= 0) {
-        document.body.scrollLeft = offset;
-        last_known_scroll_position = window.scrollX / document.body.scrollWidth;
+        document.scrollingElement.scrollLeft = offset;
+        last_known_scroll_position = window.scrollX / document.scrollingElement.scrollWidth;
         update(last_known_scroll_position);
         return "";
     } else {
-        document.body.scrollLeft = 0;
+        document.scrollingElement.scrollLeft = 0;
         update(1.0);
         return "edge"; // Need to previousDocument.
     }
@@ -157,8 +157,8 @@ var scrollLeft = function() {
 var scrollLeftRTL = function() {
     console.log("scrollLeftRTL");
 
-    var scrollWidth = document.body.scrollWidth;
-    var offset = window.scrollX - maxScreenX;
+    var scrollWidth = document.scrollingElement.scrollWidth;
+    var offset = window.scrollX - document.body.scrollWidth;
     var edge = -scrollWidth + window.innerWidth;
 
     if (window.innerWidth == scrollWidth) {
@@ -186,13 +186,12 @@ var scrollLeftRTL = function() {
 var scrollRight = function() {
     console.log("scrollRight");
     scrollToPosition(last_known_scroll_position, 'ltr')
-    var offset = window.scrollX + maxScreenX;
-    var scrollWidth = document.body.scrollWidth;
+    var offset = window.scrollX + document.body.scrollWidth;
+    var scrollWidth = document.scrollingElement.scrollWidth;
 
     if (offset < scrollWidth) {
         document.scrollingElement.scrollLeft = offset;
-        last_known_scroll_position = window.scrollX / document.body.scrollWidth;
-        console.log("last_known_scroll_position " + last_known_scroll_position);
+        last_known_scroll_position = sum / document.scrollingElement.scrollWidth;
         update(last_known_scroll_position);
         return "";
     } else {
@@ -205,7 +204,7 @@ var scrollRight = function() {
 var scrollRightRTL = function() {
    console.log("scrollRightRTL");
 
-    var scrollWidth = document.body.scrollWidth;
+    var scrollWidth = document.scrollingElement.scrollWidth;
     var offset = window.scrollX + window.innerWidth;
     var edge = 0;
 
@@ -235,7 +234,7 @@ var scrollRightRTL = function() {
 var snapOffset = function(offset) {
     let value = offset + 1;
 
-    return value - (value % maxScreenX);
+    return value - (value % document.body.scrollWidth);
 };
 
 /// User Settings.
