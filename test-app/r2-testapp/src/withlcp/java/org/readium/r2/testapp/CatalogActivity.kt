@@ -107,7 +107,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
                                         // Do nothing
                                     }, {
                                         // Do nothing
-                                    }).get()
+                                    })
                                 }
                             }
                         }
@@ -150,7 +150,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
                 }
             }, {
                 // Do nothing
-            }).get()
+            })
 
 
         }
@@ -177,7 +177,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
                             // Do nothing
                         }, {
                             // Do nothing
-                        }).get()
+                        })
                     }
                 }
 
@@ -193,61 +193,65 @@ class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
 
     }
 
-    private fun handleLcpPassphrase(publicationPath: String, drm: Drm, networkAvailable: Boolean, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit): Promise<Unit, Exception> {
+    private fun handleLcpPassphrase(publicationPath: String, drm: Drm, networkAvailable: Boolean, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit) {
         val lcpHttpService = LcpHttpService()
         val session = LcpSession(publicationPath, this)
 
-        fun validatePassphrase(passphraseHash: String): Promise<Any, Exception> {
+        fun validatePassphrase(passphraseHash: String):Any? {
             Timber.i("LCP validatePassphrase")
             val preferences = getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
             if (networkAvailable) {
-                return task {
-                    Timber.i("LCP task lcpHttpService.certificateRevocationList")
-                    lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl", session).get()
-                } then { pemCrtl ->
-                    Timber.i("LCP then lcpHttpService.certificateRevocationList  %s", pemCrtl)
 
-                    if (pemCrtl != null) {
+                try {
+                    Timber.i("LCP lcpHttpService.certificateRevocationList")
+                    val pemCrtl = lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl", session)
+
+                    Timber.i("LCP lcpHttpService.certificateRevocationList  %s", pemCrtl)
+                    return pemCrtl?.let {
                         preferences.edit().putString("pemCrtl", pemCrtl).apply()
-                        val status = session.resolve(passphraseHash, pemCrtl, networkAvailable).get()
+                        val status = session.resolve(passphraseHash, pemCrtl, networkAvailable)
                         if (status is String) {
-                            runOnUiThread {
+                            launch {
                                 toast("This license was $status")
                             }
                         } else {
-                            status
+                            return@let status
                         }
-                    } else {
-                        val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", ""), networkAvailable).get()
-                        if (status is String) {
-                            runOnUiThread {
-                                toast("This license was $status")
-                            }
-                        } else {
-                            status
-                        }
-                    }
-                } fail { exception ->
-                    exception.printStackTrace()
-                    exception.localizedMessage?.let { message ->
-                        longSnackbar(catalogView, message)
                     } ?: run {
-                        longSnackbar(catalogView, "An error occurred")
+                        val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", ""), networkAvailable)
+                        if (status is String) {
+                            launch {
+                                toast("This license was $status")
+                            }
+                        } else {
+                            status
+                        }
                     }
+                } catch (exception: Exception) {
+                                        exception.printStackTrace()
+                    exception.localizedMessage?.let { message ->
+                        launch {
+                            catalogView.longSnackbar(message)
+                        }
+                    } ?: run {
+                        launch {
+                            catalogView.longSnackbar("An error occurred")
+                        }
+                    }
+
                 }
             } else {
-                return task {
-                    val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", ""), networkAvailable).get()
-                    if (status is String) {
-                        runOnUiThread {
-                            toast("This license was $status")
-                        }
-                    } else {
-                        status
+                val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", ""), networkAvailable)
+                if (status is String) {
+                    launch {
+                        toast("This license was $status")
                     }
+                } else {
+                    return status
                 }
             }
+            return null
         }
 
         fun promptPassphrase(reason: String? = null, callback: (pass: String) -> Unit) {
@@ -273,19 +277,15 @@ class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
                     setOnShowListener {
                         val b = getButton(AlertDialog.BUTTON_POSITIVE)
                         b.setOnClickListener { _ ->
-                            task {
-                                editTextTitle!!.text.toString()
-                            } then { clearPassphrase ->
-                                val passphraseHash = HASH.sha256(clearPassphrase)
-                                session.checkPassphrases(listOf(passphraseHash))?.let {pass ->
-                                    session.storePassphrase(pass)
-                                    callback(pass)
-                                    dismiss()
-                                } ?:run {
-                                    runOnUiThread {
-                                        editTextTitle!!.error = "You entered a wrong passphrase."
-                                        editTextTitle!!.requestFocus()
-                                    }
+                            val passphraseHash = HASH.sha256(editTextTitle!!.text.toString())
+                            session.checkPassphrases(listOf(passphraseHash))?.let {pass ->
+                                session.storePassphrase(pass)
+                                callback(pass)
+                                dismiss()
+                            } ?:run {
+                                launch {
+                                    editTextTitle!!.error = "You entered a wrong passphrase."
+                                    editTextTitle!!.requestFocus()
                                 }
                             }
                         }
@@ -295,23 +295,21 @@ class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
             }
         }
 
-        return task {
-            val passphrases = session.passphraseFromDb()
-            passphrases?.let { passphraseHash ->
-                val lcpLicense = validatePassphrase(passphraseHash).get()
+        val passphrases = session.passphraseFromDb()
+        passphrases?.let { passphraseHash ->
+            val lcpLicense = validatePassphrase(passphraseHash)
+            drm.license = lcpLicense as? LcpLicense
+            drm.profile = session.getProfile()
+            parsingCallback(drm)
+            callback(drm)
+        } ?: run {
+            promptPassphrase(null) { passphraseHash ->
+                val lcpLicense = validatePassphrase(passphraseHash)
                 drm.license = lcpLicense as? LcpLicense
                 drm.profile = session.getProfile()
                 parsingCallback(drm)
                 callback(drm)
-            } ?: run {
-                promptPassphrase(null) { passphraseHash ->
-                    val lcpLicense = validatePassphrase(passphraseHash).get()
-                    drm.license = lcpLicense as? LcpLicense
-                    drm.profile = session.getProfile()
-                    parsingCallback(drm)
-                    callback(drm)
-                    callbackUI()
-                }
+                callbackUI()
             }
         }
     }
