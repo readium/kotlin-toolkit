@@ -24,9 +24,8 @@ import android.net.NetworkInfo
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.RecyclerView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import android.text.TextUtils
 import android.view.*
 import android.webkit.MimeTypeMap
@@ -38,6 +37,9 @@ import android.widget.PopupWindow
 import com.github.kittinunf.fuel.Fuel
 import com.mcxiaoke.koi.ext.close
 import com.mcxiaoke.koi.ext.onClick
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
@@ -77,8 +79,15 @@ import java.net.URI
 import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 
-open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions {
+open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions, CoroutineScope {
+
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     protected lateinit var server: Server
     private var localPort: Int = 0
@@ -94,7 +103,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
     private lateinit var positionsDB: PositionsDatabase
 
-    protected lateinit var catalogView: RecyclerView
+    protected lateinit var catalogView: androidx.recyclerview.widget.RecyclerView
     private lateinit var alertDialog: AlertDialog
 
     protected var listener:LibraryActivity? = null
@@ -287,7 +296,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                     val book = Book(pair.second, publication.metadata.title, author, pair.first, null, publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
 
-                    runOnUiThread {
+                    launch {
                         progress.dismiss()
                         database.books.insert(book, false)?.let {
                             book.id = it
@@ -301,7 +310,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         }
                     }
                 }.fail {
-                    runOnUiThread {
+                    launch {
                         progress.dismiss()
                         snackbar(catalogView, "$it")
                     }
@@ -519,7 +528,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val file = File(publicationPath)
 
         try {
-            runOnUiThread {
+            launch {
 
                 if (uriString.endsWith(".epub")) {
                     val parser = EpubParser()
@@ -657,7 +666,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val publication = pub.publication
         val container = pub.container
 
-        runOnUiThread {
+        launch {
             if (publication.type == Publication.TYPE.EPUB) {
                 val publicationIdentifier = publication.metadata.identifier
                 preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
@@ -819,7 +828,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, null, externalPub.metadata.identifier, null, Publication.EXTENSION.JSON)
                     }
 
-                    runOnUiThread {
+                    launch {
                         database.books.insert(book!!, false)?.let { id ->
                             book!!.id = id
                             books.add(0, book!!)
@@ -917,7 +926,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val file = File(publicationPath)
 
         try {
-            runOnUiThread {
+            launch {
                 if (mime == "application/epub+zip") {
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
@@ -977,10 +986,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) : RecyclerView.ItemDecoration() {
+    class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
 
-        override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView,
-                                    state: RecyclerView.State) {
+        override fun getItemOffsets(outRect: Rect, view: View, parent: androidx.recyclerview.widget.RecyclerView,
+                                    state: androidx.recyclerview.widget.RecyclerView.State) {
             outRect.bottom = verticalSpaceHeight
         }
     }

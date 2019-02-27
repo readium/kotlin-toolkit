@@ -13,12 +13,12 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.widget.EditText
 import com.mcxiaoke.koi.HASH
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.task
-import nl.komponents.kovenant.then
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.longSnackbar
@@ -34,8 +34,14 @@ import org.readium.r2.streamer.parser.PubBox
 import timber.log.Timber
 import java.io.File
 import java.net.URL
+import kotlin.coroutines.CoroutineContext
 
-class CatalogActivity : LibraryActivity(), LcpFunctions {
+class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,7 +92,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                         val lcpLicense = LcpLicense(bytes, this)
                         lcpLicense.evaluate(bytes)?.let { path ->
                             val file = File(path)
-                            runOnUiThread {
+                            launch {
                                 val parser = EpubParser()
                                 val pub = parser.parse(path)
                                 if (pub != null) {
@@ -107,9 +113,9 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
                         }
                     } catch (e: Exception) {
                         e.localizedMessage?.let {
-                            longSnackbar(catalogView, it)
+                            catalogView.longSnackbar(it)
                         } ?: run {
-                            longSnackbar(catalogView, "An error occurred")
+                            catalogView.longSnackbar("An error occurred")
                         }
                         progress.dismiss()
                     }
@@ -156,7 +162,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             val lcpLicense = LcpLicense(bytes, this@CatalogActivity)
             lcpLicense.evaluate(bytes)?.let { path ->
                 val file = File(path)
-                runOnUiThread {
+                launch {
                     val parser = EpubParser()
                     val pub = parser.parse(path)
                     if (pub != null) {
@@ -178,9 +184,9 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
             }
         } catch (e: Exception) {
             e.localizedMessage?.let {
-                longSnackbar(catalogView, it)
+                catalogView.longSnackbar(it)
             } ?: run {
-                longSnackbar(catalogView, "An error occurred")
+                catalogView.longSnackbar("An error occurred")
             }
             progress.dismiss()
         }
@@ -245,7 +251,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions {
         }
 
         fun promptPassphrase(reason: String? = null, callback: (pass: String) -> Unit) {
-            runOnUiThread {
+            launch {
                 var editTextTitle: EditText? = null
 
                 alert(Appcompat, "Hint: " + session.getHint(), reason ?: "LCP Passphrase") {

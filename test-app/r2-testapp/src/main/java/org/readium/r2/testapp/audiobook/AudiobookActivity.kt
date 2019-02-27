@@ -8,13 +8,16 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.SeekBar
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_audiobook.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.indeterminateProgressDialog
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
@@ -26,9 +29,15 @@ import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRMModel
 import org.readium.r2.testapp.*
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.CoroutineContext
 
 
-class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
+class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineScope {
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     private var mediaPlayer: R2MediaPlayer? = null
 
@@ -64,11 +73,11 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
         if (intent.getSerializableExtra("drmModel") != null) {
             drmModel = intent.getSerializableExtra("drmModel") as DRMModel
             drmModel?.let {
-                runOnUiThread {
+                launch {
                     menuDrm?.isVisible = true
                 }
             } ?: run {
-                runOnUiThread {
+                launch {
                     menuDrm?.isVisible = false
                 }
             }
@@ -330,11 +339,11 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
                 )
 
                 bookmarksDB.bookmarks.insert(bookmark)?.let {
-                    runOnUiThread {
+                    launch {
                         toast("Bookmark added")
                     }
                 } ?: run {
-                    runOnUiThread {
+                    launch {
                         toast("Bookmark already exists")
                     }
                 }

@@ -13,7 +13,7 @@ package org.readium.r2.testapp
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
-import android.support.v4.widget.TextViewCompat
+import androidx.core.widget.TextViewCompat
 import android.util.TypedValue
 import android.widget.TextView
 import android.widget.Toast

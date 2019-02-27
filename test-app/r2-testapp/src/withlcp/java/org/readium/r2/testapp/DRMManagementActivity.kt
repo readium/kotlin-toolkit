@@ -13,8 +13,8 @@ package org.readium.r2.testapp
 import android.app.Activity
 import android.graphics.Typeface
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import android.view.Gravity
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
@@ -28,11 +28,19 @@ import org.readium.r2.shared.drm.DRMModel
 import android.content.Intent
 import android.net.Uri
 import android.widget.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.CoroutineContext
 
 
-class DRMManagementActivity : AppCompatActivity() {
+class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -278,7 +286,7 @@ class DRMManagementActivity : AppCompatActivity() {
                                     val daysInput = Spinner(this@DRMManagementActivity)
                                     daysInput.dropDownWidth = wrapContent
 
-                                    val adapter = ArrayAdapter(this@DRMManagementActivity, org.readium.r2.testapp.R.layout.days_spinner, daysArray)
+                                    val adapter:SpinnerAdapter = ArrayAdapter(this@DRMManagementActivity, org.readium.r2.testapp.R.layout.days_spinner, daysArray)
                                     daysInput.adapter = adapter
 
                                     val renewDialog = alert(Appcompat, "How many days do you wish to extend your loan ?") {
@@ -298,7 +306,7 @@ class DRMManagementActivity : AppCompatActivity() {
                                                 val newEndDate = DateTime(lcpLicense.rightsEnd()).plusDays(addDays)
 
                                                 if (newEndDate > DateTime(lcpLicense.status?.potentialRightsEndDate())) {
-                                                    runOnUiThread {
+                                                    launch {
                                                         toast("New date must not exceed potential rights end date").setMargin(0f, 0.2f)
                                                     }
                                                 } else {

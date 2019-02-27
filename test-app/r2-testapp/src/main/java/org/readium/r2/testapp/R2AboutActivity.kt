@@ -12,7 +12,7 @@ package org.readium.r2.testapp
 
 import android.graphics.Typeface
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.view.Gravity
 import android.widget.ImageView
 import android.widget.LinearLayout
