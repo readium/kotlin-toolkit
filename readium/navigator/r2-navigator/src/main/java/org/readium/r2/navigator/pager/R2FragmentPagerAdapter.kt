@@ -12,24 +12,24 @@ package org.readium.r2.navigator.pager
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Parcelable
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentStatePagerAdapter
-import android.support.v4.app.FragmentTransaction
-import android.support.v4.util.LongSparseArray
-import android.support.v4.view.PagerAdapter
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.fragment.app.FragmentTransaction
+import androidx.collection.LongSparseArray
+import androidx.viewpager.widget.PagerAdapter
 import android.view.View
 import android.view.ViewGroup
 
 
-abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : FragmentStatePagerAdapter(mFragmentManager) {
+abstract class R2FragmentPagerAdapter(private val mFragmentManager: androidx.fragment.app.FragmentManager) : androidx.fragment.app.FragmentStatePagerAdapter(mFragmentManager) {
 
-    val mFragments = LongSparseArray<Fragment>()
-    private val mSavedStates = LongSparseArray<Fragment.SavedState>()
-    private var mCurTransaction: FragmentTransaction? = null
-    private var mCurrentPrimaryItem: Fragment? = null
+    val mFragments = androidx.collection.LongSparseArray<androidx.fragment.app.Fragment>()
+    private val mSavedStates = androidx.collection.LongSparseArray<androidx.fragment.app.Fragment.SavedState>()
+    private var mCurTransaction: androidx.fragment.app.FragmentTransaction? = null
+    private var mCurrentPrimaryItem: androidx.fragment.app.Fragment? = null
 
-    abstract override fun getItem(position: Int): Fragment
+    abstract override fun getItem(position: Int): androidx.fragment.app.Fragment
 
     override fun startUpdate(container: ViewGroup) {
         if (container.id == View.NO_ID) {
@@ -40,7 +40,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
     @SuppressLint("CommitTransaction")
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val tag = getItemId(position)
-        var fragment: Fragment? = mFragments.get(tag)
+        var fragment: androidx.fragment.app.Fragment? = mFragments.get(tag)
 
         if (fragment != null) {
             return fragment
@@ -66,7 +66,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
 
     @SuppressLint("CommitTransaction")
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-        val fragment = `object` as Fragment
+        val fragment = `object` as androidx.fragment.app.Fragment
         val currentPosition = getItemPosition(fragment)
 
         val index = mFragments.indexOfValue(fragment)
@@ -77,7 +77,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
         }
 
 
-        if (fragment.isAdded && currentPosition != PagerAdapter.POSITION_NONE) {
+        if (fragment.isAdded && currentPosition != androidx.viewpager.widget.PagerAdapter.POSITION_NONE) {
             mSavedStates.put(fragmentKey, mFragmentManager.saveFragmentInstanceState(fragment))
         } else {
             mSavedStates.remove(fragmentKey)
@@ -91,7 +91,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
     }
 
     override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any) {
-        val fragment = `object` as Fragment?
+        val fragment = `object` as androidx.fragment.app.Fragment?
         if (fragment !== mCurrentPrimaryItem) {
             if (mCurrentPrimaryItem != null) {
                 mCurrentPrimaryItem!!.setMenuVisibility(false)
@@ -113,7 +113,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
     }
 
     override fun isViewFromObject(view: View, `object`: Any): Boolean {
-        return (`object` as Fragment).view === view
+        return (`object` as androidx.fragment.app.Fragment).view === view
     }
 
     override fun saveState(): Parcelable? {
@@ -151,7 +151,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
             mFragments.clear()
             if (fss != null) {
                 for (fs in fss) {
-                    mSavedStates.put(fs, bundle.getParcelable<Parcelable>(java.lang.Long.toString(fs)) as Fragment.SavedState)
+                    mSavedStates.put(fs, bundle.getParcelable<Parcelable>(java.lang.Long.toString(fs)) as androidx.fragment.app.Fragment.SavedState)
                 }
             }
             val keys = bundle.keySet()

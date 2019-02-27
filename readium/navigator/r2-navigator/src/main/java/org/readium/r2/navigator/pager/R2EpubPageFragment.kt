@@ -14,7 +14,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.util.DisplayMetrics
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -23,12 +23,13 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import android.webkit.WebViewClient
+import androidx.webkit.WebViewClientCompat
 import android.widget.TextView
 import org.json.JSONObject
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.*
+import java.io.File
 
 
 class R2EpubPageFragment : Fragment() {
@@ -119,8 +120,9 @@ class R2EpubPageFragment : Fragment() {
             }
         })
 
-        webView.webViewClient = object : WebViewClient() {
+        webView.webViewClient = object : WebViewClientCompat() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                if (!request.hasGesture()) return false
                 if (webView.overrideUrlLoading) {
                     view.loadUrl(request.url.toString())
                     return false

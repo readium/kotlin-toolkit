@@ -10,16 +10,15 @@
 package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import android.webkit.WebViewClient
+import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.fxl.R2FXLLayout
@@ -106,8 +105,9 @@ class R2FXLPageFragment : Fragment() {
         webView.addJavascriptInterface(webView, "Android")
 
 
-        webView.webViewClient = object : WebViewClient() {
+        webView.webViewClient = object : WebViewClientCompat() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                if (!request.hasGesture()) return false
                 view.loadUrl(request.url.toString())
                 return false
             }

@@ -11,9 +11,9 @@ package org.readium.r2.navigator.pager
 
 import android.content.Context
 import android.graphics.Rect
-import android.support.annotation.CallSuper
-import android.support.v4.view.ViewCompat
-import android.support.v4.view.WindowInsetsCompat
+import androidx.annotation.CallSuper
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
@@ -191,7 +191,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(this,
-                object : android.support.v4.view.OnApplyWindowInsetsListener {
+                object : androidx.core.view.OnApplyWindowInsetsListener {
                     private val mTempRect = Rect()
 
                     override fun onApplyWindowInsets(v: View,
