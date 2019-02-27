@@ -12,10 +12,10 @@ package org.readium.r2.testapp.opds
 
 import android.app.Activity
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
@@ -70,8 +70,8 @@ class OPDSListActivity : AppCompatActivity() {
                 linearLayout {
                     orientation = LinearLayout.VERTICAL
                     recyclerView {
-                        layoutManager = LinearLayoutManager(act)
-                        (layoutManager as LinearLayoutManager).orientation = LinearLayoutManager.VERTICAL
+                        layoutManager = androidx.recyclerview.widget.LinearLayoutManager(act)
+                        (layoutManager as androidx.recyclerview.widget.LinearLayoutManager).orientation = androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
                         adapter = opdsAdapter
                     }
                 }
@@ -170,7 +170,7 @@ class OPDSListActivity : AppCompatActivity() {
     }
 }
 
-private class OPDSViewAdapter(private val activity: Activity, private val list: MutableList<OPDSModel>) : RecyclerView.Adapter<OPDSViewAdapter.ViewHolder>() {
+private class OPDSViewAdapter(private val activity: Activity, private val list: MutableList<OPDSModel>) : androidx.recyclerview.widget.RecyclerView.Adapter<OPDSViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = activity.layoutInflater
@@ -203,7 +203,7 @@ private class OPDSViewAdapter(private val activity: Activity, private val list: 
         return list.size
     }
 
-    internal inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    internal inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
         val button: Button = view.findViewById<View>(R.id.button) as Button
 
     }

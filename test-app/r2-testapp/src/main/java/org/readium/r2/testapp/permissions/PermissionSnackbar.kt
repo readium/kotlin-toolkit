@@ -10,10 +10,10 @@
 
 package org.readium.r2.testapp.permissions
 
-import android.support.design.widget.Snackbar
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import com.google.android.material.snackbar.Snackbar
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.color
 
@@ -56,11 +56,11 @@ object PermissionSnackbar {
         bar.view.setBackgroundColor(root.context.color(R.color.snackbar_background_color))
 
         // theme text color
-        val textView = bar.view.findViewById<TextView>(android.support.design.R.id.snackbar_text)
+        val textView = bar.view.findViewById<TextView>(R.id.snackbar_text)
         textView.setTextColor(root.context.color(R.color.snackbar_text_color))
 
         // theme action color
-        val actionView = bar.view.findViewById<Button>(android.support.design.R.id.snackbar_action)
+        val actionView = bar.view.findViewById<Button>(R.id.snackbar_action)
         actionView.setTextColor(root.context.color(R.color.snackbar_text_color))
 
         bar.show()

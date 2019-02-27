@@ -11,7 +11,7 @@
 package org.readium.r2.testapp.opds
 
 import android.app.Activity
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -22,7 +22,7 @@ import org.jetbrains.anko.intentFor
 import org.readium.r2.shared.Publication
 import org.readium.r2.testapp.R
 
-class RecyclerViewAdapter(private val activity: Activity, private val strings: MutableList<Publication>) : RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>() {
+class RecyclerViewAdapter(private val activity: Activity, private val strings: MutableList<Publication>) : androidx.recyclerview.widget.RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = activity.layoutInflater
@@ -54,7 +54,7 @@ class RecyclerViewAdapter(private val activity: Activity, private val strings: M
         return strings.size
     }
 
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
         val textView: TextView = view.findViewById<View>(R.id.titleTextView) as TextView
         val imageView: ImageView = view.findViewById(R.id.coverImageView) as ImageView
 

@@ -22,6 +22,9 @@ import android.view.View
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_r2_epub.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
@@ -29,6 +32,7 @@ import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRMModel
+import kotlin.coroutines.CoroutineContext
 
 
 /**
@@ -38,7 +42,13 @@ import org.readium.r2.shared.drm.DRMModel
  *      ( Table of content, User Settings, Drm, Bookmarks )
  *
  */
-class R2EpubActivity : R2EpubActivity() {
+class R2EpubActivity : R2EpubActivity(), CoroutineScope {
+
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     //UserSettings
     lateinit var userSettings: UserSettings
@@ -72,11 +82,11 @@ class R2EpubActivity : R2EpubActivity() {
             if (intent.getSerializableExtra("drmModel") != null) {
                 drmModel = intent.getSerializableExtra("drmModel") as DRMModel
                 drmModel?.let {
-                    runOnUiThread {
+                    launch {
                         menuDrm?.isVisible = true
                     }
                 } ?: run {
-                    runOnUiThread {
+                    launch {
                         menuDrm?.isVisible = false
                     }
                 }
@@ -211,7 +221,7 @@ class R2EpubActivity : R2EpubActivity() {
                 )
                 
                 bookmarksDB.bookmarks.insert(bookmark)?.let {
-                    runOnUiThread {
+                    launch {
                         currentPage?.let {
                             toast("Bookmark added at page $currentPage")
                         } ?:run {
@@ -219,7 +229,7 @@ class R2EpubActivity : R2EpubActivity() {
                         }
                     }
                 } ?:run {
-                    runOnUiThread {
+                    launch {
                         toast("Bookmark already exists")
                     }
                 }

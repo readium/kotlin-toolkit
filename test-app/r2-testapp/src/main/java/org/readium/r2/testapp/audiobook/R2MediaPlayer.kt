@@ -5,12 +5,17 @@ import android.media.MediaPlayer
 import android.media.MediaPlayer.OnPreparedListener
 import android.net.Uri
 import android.os.Handler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.pager.PageCallback
 import org.readium.r2.shared.Link
 
 import java.io.IOException
 
 class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList<Link>, var progress: ProgressDialog, var callback: MediaPlayerCallback) : OnPreparedListener {
+
+    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     var mediaPlayer: MediaPlayer = MediaPlayer()
 
@@ -67,7 +72,7 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
     }
 
     fun toggleProgress(show: Boolean) {
-        mediaActivity.runOnUiThread {
+        uiScope.launch {
             if (show) progress.show();
             else progress.hide();
         }

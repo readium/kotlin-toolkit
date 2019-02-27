@@ -8,7 +8,7 @@
   ~ LICENSE file present in the project repository where this source code is maintained.
   -->
 
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_view"
     android:layout_width="120dp"
@@ -48,12 +48,11 @@
                     android:layout_height="wrap_content"
                     android:padding="16dp"
                     android:textColor="#FFFFFF"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:textSize="12sp"/>
             </LinearLayout>
 
         </FrameLayout>
 
     </LinearLayout>
 
-</android.support.v7.widget.CardView>
+</androidx.cardview.widget.CardView>

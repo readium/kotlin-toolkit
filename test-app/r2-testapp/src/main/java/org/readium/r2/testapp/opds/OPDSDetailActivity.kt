@@ -13,12 +13,15 @@ package org.readium.r2.testapp.opds
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import android.view.Gravity
 import android.widget.LinearLayout
 import com.mcxiaoke.koi.ext.onClick
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
@@ -34,8 +37,14 @@ import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.coroutines.CoroutineContext
 
-class OPDSDetailActivity : AppCompatActivity() {
+class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,7 +102,7 @@ class OPDSDetailActivity : AppCompatActivity() {
                                         progress.dismiss()
                                     } ?: run {
                                         progress.dismiss()
-                                        runOnUiThread {
+                                        launch {
 
                                             val duplicateAlert = alert(Appcompat, "Publication already exists") {
 

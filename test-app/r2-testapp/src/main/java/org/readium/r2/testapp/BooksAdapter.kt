@@ -12,7 +12,7 @@ package org.readium.r2.testapp
 
 import android.app.Activity
 import android.graphics.BitmapFactory
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -21,7 +21,7 @@ import com.squareup.picasso.Picasso
 import java.io.ByteArrayInputStream
 
 
-open class BooksAdapter(private val activity: Activity, private var books: MutableList<Book>, private val server: String, private var itemListener: RecyclerViewClickListener) : RecyclerView.Adapter<BooksAdapter.ViewHolder>() {
+open class BooksAdapter(private val activity: Activity, private var books: MutableList<Book>, private val server: String, private var itemListener: RecyclerViewClickListener) : androidx.recyclerview.widget.RecyclerView.Adapter<BooksAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BooksAdapter.ViewHolder {
         val inflater = activity.layoutInflater
@@ -68,7 +68,7 @@ open class BooksAdapter(private val activity: Activity, private var books: Mutab
     }
 
 
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
         val textView: TextView = view.findViewById<View>(R.id.titleTextView) as TextView
         val imageView: ImageView = view.findViewById(R.id.coverImageView) as ImageView
 
