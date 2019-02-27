@@ -35,8 +35,8 @@ import java.util.*
 
 class LcpHttpService {
 
-    fun statusDocument(url: String): Promise<Any, Exception> {
-        return Promise.of(runBlocking {
+    fun statusDocument(url: String): Any {
+        return runBlocking {
             Fuel.get(url).awaitByteArrayResult().fold({ data ->
                 StatusDocument(data)
             }, { error ->
@@ -44,12 +44,10 @@ class LcpHttpService {
                 error.exception
             })
         }
-        )
     }
 
-    fun fetchUpdatedLicense(url: String): Promise<Any, Exception> {
-        return Promise.of(runBlocking {
-
+    fun fetchUpdatedLicense(url: String): Any {
+        return runBlocking {
             Fuel.get(url).awaitByteArrayResult().fold({ data ->
                 LicenseDocument(data)
             }, { error ->
@@ -57,7 +55,6 @@ class LcpHttpService {
                 error.exception
             })
         }
-        )
     }
 
     fun publicationUrl(context:Context, url: String, parameters: List<Pair<String, Any?>>? = null): Promise<String, Exception> {
@@ -74,9 +71,9 @@ class LcpHttpService {
         }
     }
 
-    fun certificateRevocationList(url: String, session:LcpSession): Promise<String?, Exception> {
+    fun certificateRevocationList(url: String, session:LcpSession): String? {
         Timber.i("certificateRevocationList %s", url)
-        return Promise.of(runBlocking {
+        return runBlocking {
             val (request, response, result) = Fuel.get(url).awaitByteArrayResponse()
 
             val cf = CertificateFactory.getInstance("X509")
@@ -120,12 +117,11 @@ class LcpHttpService {
                 )
             }
         }.toString()
-        )
     }
     
-    fun register(url: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
+    fun register(url: String, params: List<Pair<String, Any?>>): String? {
         Timber.i("register %s", url)
-        return Promise.of(runBlocking {
+        return runBlocking {
             val (request, response, result) = Fuel.post(url,params).awaitByteArrayResponse()
             return@runBlocking result.fold(
                     { data ->
@@ -140,12 +136,11 @@ class LcpHttpService {
                     { error -> Timber.e("An error of type ${error.exception} happened: ${error.message}") }
             )
         }.toString()
-        )
     }
 
-    fun renewLicense(url: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
+    fun renewLicense(url: String, params: List<Pair<String, Any?>>): String? {
         Timber.i("renewLicense %s", url)
-        return Promise.of(runBlocking {
+        return runBlocking {
             val (request, response, result) = Fuel.put(url,params).awaitByteArrayResponse()
             return@runBlocking result.fold(
                     { data ->
@@ -160,12 +155,11 @@ class LcpHttpService {
                     { error -> Timber.e("An error of type ${error.exception} happened: ${error.message}") }
             )
         }.toString()
-        )
     }
 
-    fun returnLicense(url: String, params: List<Pair<String, Any?>>): Promise<String?, Exception> {
+    fun returnLicense(url: String, params: List<Pair<String, Any?>>): String? {
         Timber.i("returnLicense %s", url)
-        return Promise.of(runBlocking {
+        return runBlocking {
             val (request, response, result) = Fuel.put(url,params).awaitByteArrayResponse()
             return@runBlocking result.fold(
                     { data ->
@@ -180,7 +174,6 @@ class LcpHttpService {
                     { error -> Timber.e("An error of type ${error.exception} happened: ${error.message}") }
             )
         }.toString()
-        )
     }
 
 }

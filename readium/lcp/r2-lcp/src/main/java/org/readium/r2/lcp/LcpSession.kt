@@ -11,7 +11,6 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import kotlinx.coroutines.runBlocking
-import nl.komponents.kovenant.Promise
 import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.model.documents.StatusDocument
 import java.io.File
@@ -28,13 +27,12 @@ class LcpSession {
         lcpLicense = LcpLicense(File(file).toURI().toURL(), true, androidContext )
     }
 
-    fun resolve(passphrase: String, pemCrl: String, networkAvailable: Boolean? = true) : Promise<Any, Exception> {
+    fun resolve(passphrase: String, pemCrl: String, networkAvailable: Boolean? = true) : Any {
          return runBlocking {
              if (networkAvailable!!) {
                  lcpLicense.resolve()
              }
-             val lcpContext = getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl).get()
-              Promise.of(lcpContext)
+             getLcpContext(lcpLicense.license.json.toString(), passphrase, pemCrl)
          }
     }
 
