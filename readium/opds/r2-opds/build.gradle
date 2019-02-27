@@ -16,12 +16,12 @@ group='com.github.readium'
 android {
     flavorDimensions "testapp"
 
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 27
+        targetSdkVersion 28
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -59,13 +59,13 @@ dependencies {
     }
     intTestappImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
     intTestappWithLcpImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
-    implementation "com.android.support:appcompat-v7:$support_version"
+    implementation "androidx.appcompat:appcompat:1.1.0-alpha02"
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
     implementation 'joda-time:joda-time:2.9.9'
     implementation 'com.github.kittinunf.fuel:fuel:1.16.0'
     implementation 'com.github.kittinunf.fuel:fuel-android:1.16.0'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'androidx.test:runner:1.1.2-alpha01'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.2-alpha01'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 }
