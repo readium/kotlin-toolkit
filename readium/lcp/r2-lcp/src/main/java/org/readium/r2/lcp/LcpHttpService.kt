@@ -23,14 +23,8 @@ import org.readium.r2.lcp.model.documents.StatusDocument
 import org.readium.r2.shared.contentTypeEncoding
 import org.readium.r2.shared.promise
 import timber.log.Timber
-import java.io.ByteArrayInputStream
-import java.io.DataInputStream
 import java.io.File
 import java.nio.charset.Charset
-import java.security.cert.CertificateFactory
-import java.security.cert.X509CRL
-import java.security.cert.X509CRLEntry
-import java.security.cert.X509Certificate
 import java.util.*
 
 class LcpHttpService {
@@ -75,47 +69,24 @@ class LcpHttpService {
         Timber.i("certificateRevocationList %s", url)
         return runBlocking {
             val (request, response, result) = Fuel.get(url).awaitByteArrayResponse()
-
-            val cf = CertificateFactory.getInstance("X509")
-
-            var certificate: X509Certificate? = null
-            var revokedCertificate: X509CRLEntry? = null
-            var crl: X509CRL? = null
-
-            val cert = ByteArrayInputStream(android.util.Base64.decode(session.lcpLicense.license.signature.certificate, android.util.Base64.DEFAULT))
-
-            certificate = cf.generateCertificate(cert) as X509Certificate
-
-            DataInputStream(ByteArrayInputStream(response.data)).use { inStream ->
-                crl = cf.generateCRL(inStream) as X509CRL
-            }
-
-            revokedCertificate = crl!!.getRevokedCertificate(certificate.getSerialNumber())
-
-            if (revokedCertificate != null) {
-                Timber.i("LCP Revoked Provider Certificate")
-                throw Exception("LCP Revoked Provider Certificate")
-            } else {
-                Timber.i("LCP Valid Provider Certificate")
-                return@runBlocking result.fold(
-                        { data ->
-                            Timber.i("certificateRevocationList %s", response.statusCode)
-                            var status:String? = null
-                            if (response.statusCode == 200) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    status = "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(data)}-----END X509 CRL-----"
-                                } else {
-                                    status = "-----BEGIN X509 CRL-----${android.util.Base64.encodeToString(data, android.util.Base64.DEFAULT)}-----END X509 CRL-----"
-                                };
-                            }
-                            status
-                        },
-                        { error ->
-                            Timber.e("An error of type ${error.exception} happened: ${error.message}")
-                            error.exception
+            return@runBlocking result.fold(
+                    { data ->
+                        Timber.i("certificateRevocationList %s", response.statusCode)
+                        var status:String? = null
+                        if (response.statusCode == 200) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                status = "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(data)}-----END X509 CRL-----"
+                            } else {
+                                status = "-----BEGIN X509 CRL-----${android.util.Base64.encodeToString(data, android.util.Base64.DEFAULT)}-----END X509 CRL-----"
+                            };
                         }
-                )
-            }
+                        status
+                    },
+                    { error ->
+                        Timber.e("An error of type ${error.exception} happened: ${error.message}")
+                        error.exception
+                    }
+            )
         }.toString()
     }
     
