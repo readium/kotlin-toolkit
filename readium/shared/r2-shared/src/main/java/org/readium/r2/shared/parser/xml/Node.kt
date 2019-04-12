@@ -16,13 +16,13 @@ class Node(val name: String) {
     var text: String? = ""
 
     fun get(name: String) = try {
-        children.filter { it.name == name }
+        children.filter { it.name.equals(name,true)}
     } catch (e: Exception) {
         null
     }
 
     fun getFirst(name: String) = try {
-        children.first { it.name == name }
+        children.first { it.name.equals(name,true) }
     } catch (e: Exception) {
         null
     }
