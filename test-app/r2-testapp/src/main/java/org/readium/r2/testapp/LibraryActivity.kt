@@ -59,6 +59,7 @@ import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.parsePublication
 import org.readium.r2.shared.promise
 import org.readium.r2.streamer.parser.CbzParser
+import org.readium.r2.streamer.parser.DiViNaParser
 import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.server.BASE_URL
@@ -710,14 +711,26 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             book.id = it
                             books.add(0,book)
                             booksAdapter.notifyDataSetChanged()
-                            if (!lcp) {
-                                prepareSyntheticPageList(publication, book)
-                            }
+
                         } ?: run {
 
                             showDuplicateBookAlert(book, publication, lcp)
 
                         }
+                    }
+                }
+            } else if (publication.type == Publication.TYPE.DiViNa) {
+                if (add) {
+                    val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), null, Publication.EXTENSION.ZIP)
+                    database.books.insert(book, false)?.let {
+                        book.id = it
+                        books.add(0,book)
+                        booksAdapter.notifyDataSetChanged()
+
+                    } ?: run {
+
+                        showDuplicateBookAlert(book, publication, lcp)
+
                     }
                 }
             }
@@ -781,6 +794,13 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val pub = parser.parse(publicationPath)
                     pub?.let {
                         startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to pub.publication))
+                    }
+                }
+                book.ext == Publication.EXTENSION.ZIP -> {
+                    val parser = DiViNaParser()
+                    val pub = parser.parse(publicationPath)
+                    pub?.let {
+                        startActivity(intentFor<R2DiViNaActivity>("publicationPath" to publicationPath, "zipName" to book.fileName, "publication" to pub.publication))
                     }
                 }
                 book.ext == Publication.EXTENSION.JSON -> {
@@ -942,6 +962,13 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         prepareToServe(pub, fileName, file.absolutePath, true, false)
                         progress.dismiss()
 
+                    }
+                } else if (name.endsWith(".zip")) {
+                    val parser = DiViNaParser()
+                    val pub = parser.parse(publicationPath)
+                    if (pub != null) {
+                        prepareToServe(pub, fileName, file.absolutePath, true, false)
+                        progress.dismiss()
                     }
                 } else {
                     longSnackbar(catalogView, "Unsupported file")

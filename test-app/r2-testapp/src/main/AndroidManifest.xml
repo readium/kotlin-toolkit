@@ -89,6 +89,9 @@
             android:name=".R2EpubActivity"
             android:label="@string/title_activity_epub" />
         <activity
+            android:name=".R2DiViNaActivity"
+            android:label="@string/title_activity_epub" />
+        <activity
             android:name=".DRMManagementActivity"
             android:label="DRM Management"
             android:theme="@style/AppTheme"/>
