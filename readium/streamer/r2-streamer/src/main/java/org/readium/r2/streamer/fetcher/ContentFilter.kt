@@ -131,7 +131,29 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
                 resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, " style=\"${buildStringProperties(propertyPair)}\"").toString()
             }
         }
+
+        resourceHtml = applyDirectionAttribute(resourceHtml, publication)
+
         return resourceHtml.toByteArray().inputStream()
+    }
+
+    private fun applyDirectionAttribute(resourceHtml: String, publication: Publication): String {
+        var resourceHtml1 = resourceHtml
+        fun addRTLDir(tagName: String, html: String): String {
+            return Regex("""<$tagName.*>""").find(html, 0)?.let { result ->
+                Regex("""dir=""").find(result.value, 0)?.let {
+                    html
+                } ?: run {
+                    val beginHtmlIndex = html.indexOf("<$tagName", 0, false) + 5
+                    StringBuilder(html).insert(beginHtmlIndex, " dir=\"rtl\"").toString()
+                }
+            } as String? ?: run {
+                html
+            }
+        }
+        resourceHtml1 = addRTLDir("html", resourceHtml1)
+        resourceHtml1 = addRTLDir("body", resourceHtml1)
+        return resourceHtml1
     }
 
     private fun injectFixedLayoutHtml(stream: InputStream): InputStream {
