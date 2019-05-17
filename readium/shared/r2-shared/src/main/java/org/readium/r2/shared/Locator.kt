@@ -30,7 +30,7 @@ open class Locator(val href: String,
 
 class LocatorText(var after: String? = null,
                   var before: String? = null,
-                  var hightlight: String? = null)
+                  var highlight: String? = null)
     : JSONable, Serializable {
 
     companion object {
@@ -40,8 +40,8 @@ class LocatorText(var after: String? = null,
             if (json.has("before")) {
                 location.before = json.getString("before")
             }
-            if (json.has("hightlight")) {
-                location.hightlight = json.getString("hightlight")
+            if (json.has("highlight")) {
+                location.highlight = json.getString("highlight")
             }
             if (json.has("after")) {
                 location.after = json.getString("after")
@@ -57,8 +57,8 @@ class LocatorText(var after: String? = null,
         before?.let {
             json.putOpt("before", before)
         }
-        hightlight?.let {
-            json.putOpt("hightlight", hightlight)
+        highlight?.let {
+            json.putOpt("highlight", highlight)
         }
         after?.let {
             json.putOpt("after", after)
@@ -70,7 +70,7 @@ class LocatorText(var after: String? = null,
     override fun toString(): String {
         var jsonString = """{"""
         before.let { jsonString += """ "before": "$before" ,""" }
-        hightlight.let { jsonString += """ "before": "$hightlight" ,""" }
+        highlight.let { jsonString += """ "before": "$highlight" ,""" }
         after.let { jsonString += """ "after": "$after" ,""" }
         jsonString += """}"""
         return jsonString
