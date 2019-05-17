@@ -68,7 +68,6 @@ class R2FXLPageFragment : Fragment() {
 
             val r2FXLLayout = view.findViewById<View>(R.id.r2FXLLayout) as R2FXLLayout
             r2FXLLayout.isAllowParentInterceptOnScaled = true
-            r2FXLLayout.isScrollingAllowed = true
             r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
 
             r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
