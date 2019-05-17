@@ -14,6 +14,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.*
 import org.readium.r2.streamer.container.Container
+import timber.log.Timber
 import java.io.File
 import java.io.InputStream
 
@@ -208,7 +209,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
                 }
                 properties
             } catch (e: Exception) {
-                Log.e("ContentFilter", "Error parsing json : $e")
+                Timber.e(e)
                 null
             }
         }
