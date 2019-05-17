@@ -13,7 +13,7 @@ import java.io.Serializable
 
 sealed class UserProperty(var ref: String, var name: String) {
 
-    private var value: String = ""
+    private val value: String
         get() = this.toString()
 
     abstract override fun toString(): String
