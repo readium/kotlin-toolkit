@@ -136,7 +136,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
             }, { drm2 ->
                 if (supportedProfiles.contains(drm2.profile)) {
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
-                    prepareSyntheticPageList(publication, book)
+                    //prepareSyntheticPageList(publication, book)
 
                     val license = drm.license as LcpLicense
                     val drmModel = DRMModel(drm.brand.value,
