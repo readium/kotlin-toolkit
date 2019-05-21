@@ -3,6 +3,13 @@ window.addEventListener("load", function(){ // on page load
                         // Notify native code that the page is loaded.
                         //webkit.messageHandlers.didLoad.postMessage("");
                             checkScrollMode();
+                            if(scrolling) {
+                                update(last_known_scrollY_position);
+                                console.log("last_known_scrollY_position " + last_known_scrollY_position);
+                            } else {
+                                update(last_known_scroll_position);
+                                console.log("last_known_scroll_position " + last_known_scroll_position);
+                            }
                         }, false);
 
 var last_known_scroll_position = 0;
