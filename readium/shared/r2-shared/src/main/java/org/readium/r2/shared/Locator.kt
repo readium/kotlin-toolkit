@@ -106,6 +106,14 @@ class Locations(var fragment: String? = null,        // 1 = fragment identifier 
 
             return location
         }
+
+        fun isEmpty(locations: Locations):Boolean {
+            if (locations.fragment == null && locations.position == null && locations.progression == null) {
+                return true
+            }
+            return false
+        }
+
     }
 
     override fun toJSON(): JSONObject {
