@@ -152,8 +152,12 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
                 html
             }
         }
-        resourceHtml1 = addRTLDir("html", resourceHtml1)
-        resourceHtml1 = addRTLDir("body", resourceHtml1)
+
+        if (publication.cssStyle == PageProgressionDirection.rtl.name) {
+            resourceHtml1 = addRTLDir("html", resourceHtml1)
+            resourceHtml1 = addRTLDir("body", resourceHtml1)
+        }
+
         return resourceHtml1
     }
 
