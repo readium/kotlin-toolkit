@@ -11,11 +11,10 @@
 package org.readium.r2.testapp.opds
 
 import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
@@ -54,8 +53,24 @@ class OPDSListActivity : AppCompatActivity() {
 
         val database = OPDSDatabase(this)
 
-        database.opds.insert(OPDSModel("Feedbooks", "http://www.feedbooks.com/catalog.atom", 1))
-        database.opds.insert(OPDSModel("Open Textbooks", "http://open.minitex.org/", 1))
+        val preferences = getSharedPreferences("org.readium.r2.testapp", Context.MODE_PRIVATE)
+
+        val version = 1
+        val VERSION_KEY = "OPDS_CATALOG_VERSION"
+
+        if (preferences.getInt(VERSION_KEY, 0) < version) {
+            preferences.edit().putInt(VERSION_KEY, version).apply()
+
+            database.opds.emptyTable()
+
+            val R2TestCatalog = OPDSModel( "R2 Reader Test Catalog",  "https://d2g.dita.digital/opds/collections/10040", 1)
+            val OPDS2Catalog = OPDSModel( "OPDS 2.0 Test Catalog",  "https://test.opds.io/2.0/home.json", 2)
+
+            database.opds.insert(R2TestCatalog)
+            database.opds.insert(OPDS2Catalog)
+        }
+
+
 
         val list = database.opds.list().toMutableList()
         val opdsAdapter = OPDSViewAdapter(act, list)
