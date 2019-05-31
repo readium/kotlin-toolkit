@@ -63,7 +63,9 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
 
                 imageView {
                     this@linearLayout.gravity = Gravity.CENTER
-                    Picasso.with(act).load(publication.images.first().href).into(this)
+                    if (publication.images.isNotEmpty()) {
+                        Picasso.with(act).load(publication.images.first().href).into(this)
+                    }
                 }.lparams {
                     height = 800
                 }
@@ -91,9 +93,12 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
                                 val publicationIdentifier = publication.metadata.identifier
                                 val author = authorName(publication)
                                 Thread {
-                                    val bitmap = getBitmapFromURL(publication.images.first().href!!)
                                     val stream = ByteArrayOutputStream()
-                                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                    if (publication.images.isNotEmpty()) {
+                                        val bitmap = getBitmapFromURL(publication.images.first().href!!)
+                                        bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                    }
+
                                     val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
                                     database.books.insert(book, false)?.let {
                                         book.id = it
