@@ -112,6 +112,12 @@ class OPDS(private var database: OPDSDatabaseOpenHelper) {
         }
     }
 
+    fun emptyTable() {
+        database.use {
+            delete(OPDSTable.NAME, "")
+        }
+    }
+
     class MyRowParser : RowParser<OPDSModel> {
         override fun parseRow(columns: Array<Any?>): OPDSModel {
             return OPDSModel(columns[0] as String, columns[1] as String, (columns[2] as Long).toInt())
