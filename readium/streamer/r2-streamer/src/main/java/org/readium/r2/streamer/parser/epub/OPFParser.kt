@@ -112,7 +112,6 @@ class OPFParser {
             }
             if (item.attributes["linear"]?.toLowerCase() == "no")
                 continue
-            publication.resources[index].title = null
             publication.readingOrder.add(publication.resources[index])
             publication.resources.removeAt(index)
         }
