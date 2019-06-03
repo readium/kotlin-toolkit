@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>DiViNa Player v1</title>
+	<style type="text/css">
+		body, html {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+		}
+	</style>
+	<script type="text/javascript" src="./pixi-legacy.min.js"></script>
+	<script type="text/javascript" src="./hammer.js"></script>
+	<script type="text/javascript" src="./divinaPlayer.js"></script>
+</head>
+<body>
+	<script type="text/javascript">
+		var player = null
+		window.onload = function() {
+			const Player = window.divinaPlayer
+			player = new Player(window.document.body)
+			window.onresize = function() {
+				player.resize()
+			}
+		}
+	</script>
+</body>
+</html> 
