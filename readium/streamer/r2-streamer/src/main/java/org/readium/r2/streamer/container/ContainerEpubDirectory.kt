@@ -11,7 +11,7 @@ package org.readium.r2.streamer.container
 
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
-import org.readium.r2.shared.drm.Drm
+import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.parser.lcplFilePath
 import java.io.File
@@ -20,7 +20,7 @@ class ContainerEpubDirectory : EpubContainer, DirectoryContainer {
 
     override var successCreated: Boolean = false
     override var rootFile: RootFile
-    override var drm: Drm? = null
+    override var drm: DRM? = null
 
     override fun xmlDocumentForFile(relativePath: String): XmlParser {
         val containerData = data(relativePath)
@@ -50,10 +50,10 @@ class ContainerEpubDirectory : EpubContainer, DirectoryContainer {
         rootFile = RootFile(rootPath = path, version = null)
     }
 
-    override fun scanForDrm(): Drm? {
+    override fun scanForDrm(): DRM? {
 
         if (File(rootFile.rootPath + "/" + lcplFilePath).exists()) {
-            return Drm(Drm.Brand.Lcp)
+            return DRM(DRM.Brand.lcp)
         }
         return null
     }
