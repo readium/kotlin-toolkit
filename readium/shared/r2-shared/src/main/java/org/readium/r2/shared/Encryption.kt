@@ -9,7 +9,7 @@
 
 package org.readium.r2.shared
 
-import org.readium.r2.shared.drm.Drm
+import org.readium.r2.shared.drm.DRM
 import java.io.Serializable
 
 //  Contains metadata parsed from Encryption.xml
@@ -23,5 +23,5 @@ class Encryption : Serializable {
     //  Identifies the encryption profile used to encrypt the resource
     var profile: String? = null
     //  Identifies the encryption scheme used to encrypt the resource
-    var scheme: Drm.Scheme? = null
+    var scheme: DRM.Scheme? = null
 }
