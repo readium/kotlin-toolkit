@@ -2,12 +2,12 @@
  * Module: r2-lcp-kotlin
  * Developers: Aferdita Muriqi, Clément Baumann
  *
- * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Copyright (c) 2019. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.lcp
+package org.readium.r2.lcp.persistence
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
@@ -15,10 +15,6 @@ import org.jetbrains.anko.db.INTEGER
 import org.jetbrains.anko.db.ManagedSQLiteOpenHelper
 import org.jetbrains.anko.db.TEXT
 import org.jetbrains.anko.db.createTable
-import org.readium.r2.lcp.tables.Licenses
-import org.readium.r2.lcp.tables.LicensesTable
-import org.readium.r2.lcp.tables.Transactions
-import org.readium.r2.lcp.tables.TransactionsTable
 
 
 // Access property for Context
@@ -29,13 +25,13 @@ val Context.appContext: Context
     get() = applicationContext
 
 
-class LcpDatabase {
+class Database(context: Context) {
 
-    val shared:LcpDatabaseOpenHelper
+    val shared: LcpDatabaseOpenHelper
     var licenses: Licenses
     var transactions: Transactions
 
-    constructor(context: Context) {
+    init {
         shared = LcpDatabaseOpenHelper(context)
         licenses = Licenses(shared)
         transactions = Transactions(shared)
@@ -63,11 +59,7 @@ class LcpDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "lcpdat
                 LicensesTable.ID to TEXT,
                 LicensesTable.PRINTSLEFT to INTEGER,
                 LicensesTable.COPIESLEFT to INTEGER,
-                LicensesTable.PROVIDER to TEXT,
-                LicensesTable.ISSUED to TEXT,
-                LicensesTable.UPDATED to TEXT,
-                LicensesTable.END to TEXT,
-                LicensesTable.STATE to TEXT)
+                LicensesTable.REGISTERED to INTEGER)
 
         db.createTable(TransactionsTable.NAME, true,
                 TransactionsTable.ID to TEXT,
