@@ -38,8 +38,8 @@ class DeviceService(private val repository: DeviceRepository, private val networ
             }
         }.toString()
 
-    val asQueryParameters: List<Pair<String, Any?>>
-        get() = listOf("id" to id, "name" to name)
+    val asQueryParameters: MutableList<Pair<String, Any?>>
+        get() = mutableListOf("id" to id, "name" to name)
 
 
     fun registerLicense(license: LicenseDocument, link: Link, completion: (ByteArray?) -> Unit) {

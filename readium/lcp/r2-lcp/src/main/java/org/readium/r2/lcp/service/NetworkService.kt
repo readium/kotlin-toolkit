@@ -23,7 +23,7 @@ class NetworkService {
         }
     }
 
-    fun fetch(url: String, timeout: Int?, method: Method? = Method.get, params: List<Pair<String, Any?>>? = null, completion: (status: Int, data: ByteArray) -> Unit) = runBlocking {
+    fun fetch(url: String, timeout: Int? = null, method: Method? = Method.get, params: List<Pair<String, Any?>>? = null, completion: (status: Int, data: ByteArray) -> Unit) = runBlocking {
         val (request, response, result) =
 
                 when (method) {
