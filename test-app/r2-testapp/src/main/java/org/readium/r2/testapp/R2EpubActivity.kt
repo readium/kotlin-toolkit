@@ -28,7 +28,6 @@ import kotlinx.coroutines.launch
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
-import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.*
 import kotlin.coroutines.CoroutineContext
@@ -139,7 +138,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_epub, menu)
+        menuInflater.inflate(R.menu.menu_epub, menu)
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
         menuBmk = menu?.findItem(R.id.bookmark)
@@ -203,7 +202,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                 val resourceHref = resource.href?: ""
                 val resourceType = resource.typeLink?: ""
                 val resourceTitle = resource.title?: ""
-                val locations = Locations.fromJSON(JSONObject(preferences.getString("${publicationIdentifier}-documentLocations", "{}")))
+                val locations = Locations.fromJSON(JSONObject(preferences.getString("$publicationIdentifier-documentLocations", "{}")))
                 val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, locations.progression!!)?.let {
                     it
                 }
@@ -273,7 +272,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
         if (isExploreByTouchEnabled) {
 
             //Preset & preferences adapted
-            publication.userSettingsUIPreset.put(ReadiumCSSName.ref(SCROLL_REF), true)
+            publication.userSettingsUIPreset[ReadiumCSSName.ref(SCROLL_REF)] = true
             preferences.edit().putBoolean(SCROLL_REF, true).apply() //overriding user preferences
 
             userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
@@ -304,9 +303,13 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
     }
 
     override fun toggleActionBar() {
-        if (tts_overlay.visibility == View.INVISIBLE) {
+        val am = getSystemService(ACCESSIBILITY_SERVICE) as AccessibilityManager
+        isExploreByTouchEnabled = am.isTouchExplorationEnabled
+
+        if (!isExploreByTouchEnabled && tts_overlay.visibility == View.INVISIBLE) {
             super.toggleActionBar()
         }
+
     }
 
     override fun onDestroy() {

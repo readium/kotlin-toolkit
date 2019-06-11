@@ -13,10 +13,10 @@ package org.readium.r2.testapp
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
-import androidx.core.widget.TextViewCompat
 import android.util.TypedValue
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.activity_r2_epub.*
 import org.jsoup.Jsoup
 import org.readium.r2.navigator.BASE_URL
@@ -179,7 +179,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
 
                     TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(activityReference.get()?.tts_textView!!, 1, 30, 1,
-                            TypedValue.COMPLEX_UNIT_DIP);
+                            TypedValue.COMPLEX_UNIT_DIP)
                 }
 
                 /**

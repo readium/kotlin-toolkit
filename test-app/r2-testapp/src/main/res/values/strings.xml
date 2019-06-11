@@ -123,6 +123,11 @@
     <string name="drm_label_actions">ACTIONS</string>
     <string name="drm_label_renew">RENEW</string>
     <string name="drm_label_return">RETURN</string>
+    <string name="zero">00:00</string>
+    <string name="chapter">Chapter</string>
+    <string name="chapter_page">Chapter / Page</string>
+    <string name="progression">Progression</string>
+    <string name="timestamp">Timestamp</string>
 
     <string-array name="font_list">
         <item>Original</item>

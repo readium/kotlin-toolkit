@@ -11,12 +11,12 @@
 package org.readium.r2.testapp.opds
 
 import android.content.Context
+import android.util.TypedValue
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.util.TypedValue
 
-class GridAutoFitLayoutManager : androidx.recyclerview.widget.GridLayoutManager {
+class GridAutoFitLayoutManager : GridLayoutManager {
     private var mColumnWidth: Int = 0
     private var mColumnWidthChanged = true
     private var mWidthChanged = true
@@ -49,7 +49,7 @@ class GridAutoFitLayoutManager : androidx.recyclerview.widget.GridLayoutManager 
         }
     }
 
-    override fun onLayoutChildren(recycler: androidx.recyclerview.widget.RecyclerView.Recycler?, state: androidx.recyclerview.widget.RecyclerView.State) {
+    override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State) {
         val width = width
         val height = height
 
@@ -59,7 +59,7 @@ class GridAutoFitLayoutManager : androidx.recyclerview.widget.GridLayoutManager 
         }
 
         if (mColumnWidthChanged && mColumnWidth > 0 && width > 0 && height > 0 || mWidthChanged) {
-            val totalSpace: Int = if (orientation == androidx.recyclerview.widget.LinearLayoutManager.VERTICAL) {
+            val totalSpace: Int = if (orientation == LinearLayoutManager.VERTICAL) {
                 width - paddingRight - paddingLeft
             } else {
                 height - paddingTop - paddingBottom

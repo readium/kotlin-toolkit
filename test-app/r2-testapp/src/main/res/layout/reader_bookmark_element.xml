@@ -9,8 +9,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:padding="8dp"
-    android:textAppearance="?android:attr/textAppearanceMedium"
-    android:text="Text" />
+    android:textAppearance="?android:attr/textAppearanceMedium" />
   <TextView
     android:id="@+id/reader_bookmark_element_detail"
     android:layout_width="match_parent"
@@ -18,7 +17,6 @@
     android:padding="8dp"
     android:textAppearance="?android:attr/textAppearanceSmall"
     android:layout_below="@id/reader_bookmark_element_text"
-    android:text="Text"
     android:gravity="end"/>
 
 </RelativeLayout>
