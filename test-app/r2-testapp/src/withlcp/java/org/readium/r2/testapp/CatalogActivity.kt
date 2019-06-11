@@ -31,13 +31,13 @@ import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.testapp.drm.DRMFulfilledPublication
 import org.readium.r2.testapp.drm.DRMLibraryService
-import org.readium.r2.testapp.drm.LcpFunctions
+import org.readium.r2.testapp.drm.LCPLibraryActivityService
 import timber.log.Timber
 import java.io.File
 import java.net.URL
 import kotlin.coroutines.CoroutineContext
 
-class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope, DRMLibraryService, LCPAuthenticating, LCPAuthenticationDelegate {
+class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineScope, DRMLibraryService, LCPAuthenticating, LCPAuthenticationDelegate {
 
 
     /**
