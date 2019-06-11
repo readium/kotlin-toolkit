@@ -27,6 +27,7 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 
 import org.zeroturnaround.zip.ZipUtil
+import timber.log.Timber
 import java.io.File
 import java.nio.charset.Charset
 
@@ -70,17 +71,16 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope {
             // Send JS's console.log to Android's Log
             override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
                 consoleMessage?.apply {
-                    Log.i("DiViNaPlayer", "${message()} -- From line ${lineNumber()} of ${sourceId()}")
+                    Timber.i("DiViNaPlayer  ${message()} -- From line ${lineNumber()} of ${sourceId()}")
                 }
                 return true
             }
             // Wait until the HTML and its JS scripts are fully loaded before calling the divinaPlayer library
             override fun onProgressChanged(view: WebView, newProgress: Int) {
-                if (newProgress === 100) {
-                    val path = "/storage/sdcard/Android/data/org.readium.r2reader/files/TEST"
-                    ZipUtil.unpack(File(publicationPath), File(path))
+                if (newProgress == 100) {
+
                     // In the below, writing ${path} directly triggers an "Invalid flags supplied to RegExp constructor 'sdcard'" error...
-                    divinaWebView.evaluateJavascript("player.openDiViNaFromPath(\"/storage/sdcard/Android/data/org.readium.r2reader/files/TEST\");", null)
+                    divinaWebView.evaluateJavascript("player.openDiViNaFromPath('${publicationPath}');", null)
                 }
             }
         }
