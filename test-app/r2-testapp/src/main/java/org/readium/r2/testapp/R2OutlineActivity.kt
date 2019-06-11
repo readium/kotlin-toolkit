@@ -15,24 +15,22 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_outline_container.*
 import kotlinx.android.synthetic.main.bookmark_item.view.*
 import kotlinx.android.synthetic.main.navcontent_item.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.Link
-import org.readium.r2.shared.Publication
-import kotlin.math.roundToInt
-import android.widget.TextView
-import com.mcxiaoke.koi.ext.timestamp
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
+import org.readium.r2.shared.Publication
 import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
 
 class R2OutlineActivity : AppCompatActivity() {
@@ -340,7 +338,7 @@ class R2OutlineActivity : AppCompatActivity() {
             if (item is Pair<*, *>) {
                 item as Pair<Int, Link>
                 viewHolder.navigationTextView?.text = item.second.title
-                val parameter = viewHolder.indentationView?.getLayoutParams()
+                val parameter = viewHolder.indentationView?.layoutParams
                 parameter?.width = item.first * 50
             } else {
                 item as Link

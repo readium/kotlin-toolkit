@@ -14,9 +14,10 @@
     <ImageView
         android:id="@+id/indentation"
         android:layout_width="0dp"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:contentDescription="TODO" />
 
-    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    <TextView
         android:id="@+id/navigation_textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
