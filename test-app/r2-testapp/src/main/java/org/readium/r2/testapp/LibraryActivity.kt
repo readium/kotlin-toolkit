@@ -945,11 +945,24 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val publicationPath = R2DIRECTORY + fileName
 
         val input = contentResolver.openInputStream(uri)
-        input.toFile(publicationPath)
-        val file = File(publicationPath)
 
-        try {
-            launch {
+        launch {
+
+            if (name.endsWith(".zip")) {
+                val output = File(publicationPath);
+                if (!output.exists()) {
+                    if (!output.mkdir()) {
+                        throw RuntimeException("Cannot create directory");
+                    }
+                }
+                ZipUtil.unpack(input, output)
+            } else {
+                input?.toFile(publicationPath)
+            }
+
+            val file = File(publicationPath)
+
+            try {
                 if (mime == "application/epub+zip") {
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
@@ -978,9 +991,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     progress.dismiss()
                     file.delete()
                 }
+            } catch (e: Throwable) {
+                e.printStackTrace()
             }
-        } catch (e: Throwable) {
-            e.printStackTrace()
         }
     }
 
