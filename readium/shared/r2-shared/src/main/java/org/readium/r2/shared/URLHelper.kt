@@ -13,39 +13,38 @@ import android.net.Uri
 import java.net.URI
 
 fun getAbsolute(href: String, base: String): String {
-    try {
+    return try {
         val baseURI = URI.create(base)
         val relative = baseURI.resolve(href)
-        return relative.toString()
+        relative.toString()
     }catch (e:IllegalArgumentException){
         val hrefUri = Uri.parse(href)
         if (hrefUri.isAbsolute){
-            return href
+            href
         }else{
-            return base+href
+            base+href
         }
     }
 }
 
 
 internal fun normalize(base: String, in_href: String?) : String {
-    val href = in_href
-    if (href == null || href.isEmpty()) {
+    if (in_href == null || in_href.isEmpty()) {
         return ""
     }
-    val hrefComponents = href.split( "/").filter({ !it.isEmpty() })
-    var baseComponents = base.split( "/").filter({ !it.isEmpty() })
+    val hrefComponents = in_href.split( "/").filter { it.isNotEmpty() }
+    val baseComponents = base.split( "/").filter { it.isNotEmpty() }
     baseComponents.dropLast(1)
 
-    val replacementsNumber = hrefComponents.filter({ it == ".." }).count()
-    var normalizedComponents = hrefComponents.filter({ it != ".." })
+    val replacementsNumber = hrefComponents.filter { it == ".." }.count()
+    var normalizedComponents = hrefComponents.filter { it != ".." }
     for (e in 0 until replacementsNumber) {
         baseComponents.dropLast(1)
     }
     normalizedComponents = baseComponents + normalizedComponents
     var normalizedString = ""
     for (component in normalizedComponents) {
-        normalizedString += "/${component}"
+        normalizedString += "/$component"
     }
     return normalizedString
 }

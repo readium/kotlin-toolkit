@@ -97,7 +97,7 @@ class Publication : Serializable {
         JSON(".json"),
         ZIP(".zip");
 
-        companion object : EnumCompanion<String, EXTENSION>(EXTENSION.values().associateBy(EXTENSION::value))
+        companion object : EnumCompanion<String, EXTENSION>(values().associateBy(EXTENSION::value))
     }
 
 
@@ -138,7 +138,7 @@ class Publication : Serializable {
     fun baseUrl(): URL? {
         val selfLink = linkWithRel("self")
         if (selfLink != null) {
-            val url = selfLink.let { URL(selfLink.href) }
+            val url = URL(selfLink.href)
             val index = url.toString().lastIndexOf('/')
             return URL(url.toString().substring(0, index))
         }
@@ -251,7 +251,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
         pubDict.get("links")?.let {
             val links = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
-            for (i in 0..(links.length() - 1)) {
+            for (i in 0 until links.length()) {
                 val linkDict = links.getJSONObject(i)
                 val link = parseLink(linkDict)
                 p.links.add(link)
@@ -263,7 +263,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
         pubDict.get("images")?.let {
             val links = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
-            for (i in 0..(links.length() - 1)) {
+            for (i in 0 until links.length()) {
                 val linkDict = links.getJSONObject(i)
                 val link = parseLink(linkDict)
                 p.images.add(link)
@@ -275,7 +275,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
         pubDict.get("spine")?.let {
             val spine = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
-            for (i in 0..(spine.length() - 1)) {
+            for (i in 0 until spine.length()) {
                 val linkDict = spine.getJSONObject(i)
                 val link = parseLink(linkDict)
                 p.readingOrder.add(link)
@@ -287,7 +287,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
         pubDict.get("readingOrder")?.let {
             val readingOrder = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
-            for (i in 0..(readingOrder.length() - 1)) {
+            for (i in 0 until readingOrder.length()) {
                 val linkDict = readingOrder.getJSONObject(i)
                 val link = parseLink(linkDict)
                 p.readingOrder.add(link)
@@ -299,7 +299,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
         pubDict.get("resources")?.let {
             val resources = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
-            for (i in 0..(resources.length() - 1)) {
+            for (i in 0 until resources.length()) {
                 val linkDict = resources.getJSONObject(i)
                 val link = parseLink(linkDict)
                 p.resources.add(link)
@@ -311,7 +311,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
         pubDict.get("toc")?.let {
             val toc = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
-            for (i in 0..(toc.length() - 1)) {
+            for (i in 0 until toc.length()) {
                 val linkDict = toc.getJSONObject(i)
                 val link = parseLink(linkDict)
                 p.tableOfContents.add(link)
@@ -323,7 +323,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
         pubDict.get("page-list")?.let {
             val pageList = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
-            for (i in 0..(pageList.length() - 1)) {
+            for (i in 0 until pageList.length()) {
                 val linkDict = pageList.getJSONObject(i)
                 val link = parseLink(linkDict)
                 p.pageList.add(link)
@@ -335,7 +335,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
         pubDict.get("landmarks")?.let {
             val landmarks = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
-            for (i in 0..(landmarks.length() - 1)) {
+            for (i in 0 until landmarks.length()) {
                 val linkDict = landmarks.getJSONObject(i)
                 val link = parseLink(linkDict)
                 p.landmarks.add(link)

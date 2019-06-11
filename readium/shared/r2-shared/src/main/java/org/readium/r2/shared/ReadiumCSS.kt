@@ -50,7 +50,7 @@ enum class ReadiumCSSName(val ref: String) {
     ligatures("--USER__ligatures");
 
     companion object {
-        fun ref(name: String): ReadiumCSSName = ReadiumCSSName.valueOf(name)
+        fun ref(name: String): ReadiumCSSName = valueOf(name)
     }
 
 }

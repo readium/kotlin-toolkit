@@ -92,7 +92,7 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link {
             link.rel.add(linkDict.getString("rel"))
         } else if (linkDict.get("rel") is JSONArray) {
             val array = linkDict.getJSONArray("rel")
-            for (i in 0..(array.length() - 1)) {
+            for (i in 0 until array.length()) {
                 val string = array.getString(i)
                 link.rel.add(string)
             }
@@ -119,7 +119,7 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link {
         if (propertiesDict.has("indirectAcquisition")) {
             val acquisitions = propertiesDict.getJSONArray("indirectAcquisition")
                     ?: throw Exception(LinkError.InvalidLink.name)
-            for (i in 0..(acquisitions.length() - 1)) {
+            for (i in 0 until acquisitions.length()) {
                 val acquisition = acquisitions.getJSONObject(i)
                 val indirectAcquisition = parseIndirectAcquisition(indirectAcquisitionDict = acquisition)
                 properties.indirectAcquisition.add(indirectAcquisition)
@@ -141,7 +141,7 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link {
         linkDict.get("children")?.let {
             val children = it as? JSONArray
                     ?: throw Exception(LinkError.InvalidLink.name)
-            for (i in 0..(children.length() - 1)) {
+            for (i in 0 until children.length()) {
                 val childLinkDict = children.getJSONObject(i)
                 val childLink = parseLink(childLinkDict)
                 link.children.add(childLink)
