@@ -13,7 +13,6 @@ import org.joda.time.DateTime
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpParsingError
 import org.readium.r2.lcp.LcpParsingErrors
-import java.util.*
 
 class Updated (json: JSONObject){
 

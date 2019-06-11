@@ -86,10 +86,10 @@ class LcpSession {
     }
 
     fun checkPassphrases(passphrases: List<String>) : String? {
-        try {
-            return Lcp().findOneValidPassphrase(lcpLicense.license.json.toString(), passphrases.toTypedArray())
+        return try {
+            Lcp().findOneValidPassphrase(lcpLicense.license.json.toString(), passphrases.toTypedArray())
         } catch(e: Exception) {
-            return null
+            null
         }
     }
 

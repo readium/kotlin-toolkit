@@ -74,10 +74,10 @@ class LcpHttpService {
                         Timber.i("certificateRevocationList %s", response.statusCode)
                         var status:String? = null
                         if (response.statusCode == 200) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                status = "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(data)}-----END X509 CRL-----"
+                            status = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(data)}-----END X509 CRL-----"
                             } else {
-                                status = "-----BEGIN X509 CRL-----${android.util.Base64.encodeToString(data, android.util.Base64.DEFAULT)}-----END X509 CRL-----"
+                                "-----BEGIN X509 CRL-----${android.util.Base64.encodeToString(data, android.util.Base64.DEFAULT)}-----END X509 CRL-----"
                             };
                         }
                         status
