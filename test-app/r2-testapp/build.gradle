@@ -41,9 +41,9 @@ android {
     signingConfigs {
         release {
             keyAlias 'EDRLab'
-            keyPassword 'EdrlabRocks'
-            storeFile file('/Volumes/Data/EDRLab/Kotlin/r2.jks')
-            storePassword 'EdrlabRocks'
+            keyPassword '###         '
+            storeFile file('/###')
+            storePassword '###         '
         }
     }
     defaultConfig {
