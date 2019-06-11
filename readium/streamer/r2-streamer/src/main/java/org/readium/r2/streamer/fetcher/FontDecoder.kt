@@ -9,10 +9,10 @@
 
 package org.readium.r2.streamer.fetcher
 
-import android.util.Log
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
 import org.readium.r2.shared.Publication
+import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import kotlin.experimental.xor
@@ -39,7 +39,7 @@ class FontDecoder {
         val algorithm = encryption.algorithm ?: return input
         val type = decoders[link.properties.encryption?.algorithm] ?: return input
         if (!decodableAlgorithms.values.contains(algorithm)) {
-            Log.e("Error", "$path is encrypted, but can't handle it")
+            Timber.e("Error $path is encrypted, but can't handle it")
             return input
         }
         return decodingFont(input, publicationIdentifier, type)
@@ -56,7 +56,7 @@ class FontDecoder {
     private fun deobfuscate(input: InputStream, publicationKey: ByteArray, obfuscationLength: Int): ByteArray {
         val buffer = input.readBytes()
         val count = if (buffer.size > obfuscationLength) obfuscationLength else buffer.size
-        for (i in 0..(count - 1))
+        for (i in 0 until count)
             buffer[i] = buffer[i].xor(publicationKey[i % publicationKey.size])
         return buffer
     }

@@ -9,12 +9,11 @@
 
 package org.readium.r2.streamer.parser
 
-import android.util.Log
 import org.readium.r2.shared.ContentLayoutStyle
-import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Encryption
 import org.readium.r2.shared.LangType
 import org.readium.r2.shared.Publication
+import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerEpub
@@ -26,6 +25,7 @@ import org.readium.r2.streamer.parser.epub.EncryptionParser
 import org.readium.r2.streamer.parser.epub.NCXParser
 import org.readium.r2.streamer.parser.epub.NavigationDocumentParser
 import org.readium.r2.streamer.parser.epub.OPFParser
+import timber.log.Timber
 import java.io.File
 
 // Some constants useful to parse an Epub document
@@ -70,13 +70,13 @@ class EpubParser : PublicationParser {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
-            Log.e("Error", "Could not generate container", e)
+            Timber.e(e, "Could not generate container")
             return null
         }
         val data = try {
             container.data(containerDotXmlPath)
         } catch (e: Exception) {
-            Log.e("Error", "Missing File : META-INF/container.xml", e)
+            Timber.e(e, "Missing File : META-INF/container.xml")
             return null
         }
 
@@ -88,7 +88,7 @@ class EpubParser : PublicationParser {
         val documentData = try {
             container.data(container.rootFile.rootFilePath)
         } catch (e: Exception) {
-            Log.e("Error", "Missing File : ${container.rootFile.rootFilePath}", e)
+            Timber.e(e, "Missing File : ${container.rootFile.rootFilePath}")
             return null
         }
 
@@ -148,7 +148,7 @@ class EpubParser : PublicationParser {
 
         publication.cssStyle = contentLayoutStyle.name
 
-        userSettingsUIPreset.get(ContentLayoutStyle.layout(publication.cssStyle as String))?.let {
+        userSettingsUIPreset[ContentLayoutStyle.layout(publication.cssStyle as String)]?.let {
             if (publication.type == Publication.TYPE.WEBPUB) {
                 publication.userSettingsUIPreset = forceScrollPreset
             } else {
@@ -199,14 +199,14 @@ class EpubParser : PublicationParser {
         val navDocument = try {
             container.xmlDocumentForResource(navLink)
         } catch (e: Exception) {
-            Log.e("Error", "Navigation parsing", e)
+            Timber.e(e)
             return
         }
 
         val navByteArray = try {
             container.xmlAsByteArray(navLink)
         } catch (e: Exception) {
-            Log.e("Error", "Navigation parsing", e)
+            Timber.e(e)
             return
         }
 
@@ -226,7 +226,7 @@ class EpubParser : PublicationParser {
         val ncxDocument = try {
             container.xmlDocumentForResource(ncxLink)
         } catch (e: Exception) {
-            Log.e("Error", "Ncx parsing", e)
+            Timber.e(e)
             return
         }
         ncxp.ncxDocumentPath = ncxLink.href ?: return

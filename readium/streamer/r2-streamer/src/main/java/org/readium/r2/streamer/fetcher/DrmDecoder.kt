@@ -9,9 +9,9 @@
 
 package org.readium.r2.streamer.fetcher
 
-import android.util.Log
-import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Link
+import org.readium.r2.shared.drm.Drm
+import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -48,13 +48,13 @@ class DrmDecoder {
                             val count = inflater.inflate(buf)
                             output.write(buf, 0, count)
                         } catch (e: Exception) {
-                            Log.e("output.write", e.message)
+                            Timber.e(e)
                         }
                     }
                     try {
                         output.close()
                     } catch (e: Exception) {
-                        Log.e("output.close", e.message)
+                        Timber.e(e)
                     }
                     data = output.toByteArray()
                     
