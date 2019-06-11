@@ -124,8 +124,8 @@ class OPDS1Parser {
                                 newLink.rel.add(rel)
                             }
                             val facetElementCountStr = link.attributes["thr:count"]
-                            facetElementCountStr?.let {
-                                val facetElementCount = it.toInt()
+                            facetElementCountStr?.let { s ->
+                                val facetElementCount = s.toInt()
                                 newLink.properties.numberOfItems = facetElementCount
                             }
                             newLink.typeLink = link.attributes["type"]
@@ -157,8 +157,8 @@ class OPDS1Parser {
                     val facetGroupName = link.attributes["opds:facetGroup"]
                     if (facetGroupName != null && newLink.rel.contains("http://opds-spec.org/facet")) {
                         val facetElementCountStr = link.attributes["thr:count"]
-                        facetElementCountStr?.let {
-                            val facetElementCount = it.toInt()
+                        facetElementCountStr?.let { s ->
+                            val facetElementCount = s.toInt()
                             newLink.properties.numberOfItems = facetElementCount
                         }
                         addFacet(feed, newLink, facetGroupName)
@@ -221,9 +221,9 @@ class OPDS1Parser {
                 var typeAndProfileMatch: Node? = null
                 var typeMatch: Node? = null
 
-                selfMimeType?.let {
+                selfMimeType?.let { s ->
 
-                    val selfMimeParams = parseMimeType(mimeTypeString = it)
+                    val selfMimeParams = parseMimeType(mimeTypeString = s)
                     urls?.let {
                         for (url in urls) {
                             val urlMimeType = url.attributes["type"] ?: continue
@@ -340,7 +340,7 @@ class OPDS1Parser {
                     }
                     val indirectAcquisitions = link.get("opds:indirectAcquisition")
                     indirectAcquisitions?.let {
-                        if (!indirectAcquisitions.isEmpty()) {
+                        if (indirectAcquisitions.isNotEmpty()) {
                             newLink.properties.indirectAcquisition = parseIndirectAcquisition(indirectAcquisitions.toMutableList())
                         }
                     }
