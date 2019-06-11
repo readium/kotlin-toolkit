@@ -26,7 +26,6 @@ import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
 import org.readium.r2.shared.LocatorText
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.drm.DRMModel
 import org.readium.r2.testapp.*
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
@@ -71,7 +70,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
         publicationIdentifier = publication.metadata.identifier
 
         if (intent.getSerializableExtra("drmModel") != null) {
-            drmModel = intent.getSerializableExtra("drmModel") as DRMModel
+            drmModel = intent.getSerializableExtra("drmModel") as DRMViewModel
             drmModel?.let {
                 launch {
                     menuDrm?.isVisible = true
@@ -287,7 +286,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
     private var menuToc: MenuItem? = null
     private var menuBmk: MenuItem? = null
     private var menuSettings: MenuItem? = null
-    private var drmModel: DRMModel? = null
+    private var drmModel: DRMViewModel? = null
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_audio, menu)

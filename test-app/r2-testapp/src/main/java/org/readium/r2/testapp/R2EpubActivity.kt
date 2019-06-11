@@ -31,7 +31,6 @@ import org.json.JSONObject
 import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.*
-import org.readium.r2.shared.drm.DRMModel
 import kotlin.coroutines.CoroutineContext
 
 
@@ -39,7 +38,7 @@ import kotlin.coroutines.CoroutineContext
  * R2EpubActivity : Extension of the R2EpubActivity() from navigator
  *
  * That Activity manage everything related to the menu
- *      ( Table of content, User Settings, Drm, Bookmarks )
+ *      ( Table of content, User Settings, DRM, Bookmarks )
  *
  */
 class R2EpubActivity : R2EpubActivity(), CoroutineScope {
@@ -63,7 +62,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
 
     private lateinit var screenReader: R2ScreenReader
 
-    protected var drmModel: DRMModel? = null
+    protected var drmModel: DRMViewModel? = null
     protected var menuDrm: MenuItem? = null
     protected var menuToc: MenuItem? = null
     protected var menuBmk: MenuItem? = null
@@ -80,7 +79,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
         Handler().postDelayed({
             bookId = intent.getLongExtra("bookId", -1)
             if (intent.getSerializableExtra("drmModel") != null) {
-                drmModel = intent.getSerializableExtra("drmModel") as DRMModel
+                drmModel = intent.getSerializableExtra("drmModel") as DRMViewModel
                 drmModel?.let {
                     launch {
                         menuDrm?.isVisible = true
