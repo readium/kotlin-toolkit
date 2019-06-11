@@ -20,7 +20,7 @@ class Metadata : Serializable {
     /// The structure used for the serialisation.
     var multilanguageTitle: MultilanguageString? = null
     /// The title of the publication.
-    var title: String = ""
+    val title: String
         get() = multilanguageTitle?.singleString ?: ""
 
     var languages: MutableList<String> = mutableListOf()
@@ -87,19 +87,19 @@ class Metadata : Serializable {
 
     fun contentLayoutStyle(langType: LangType, pageDirection: String?) : ContentLayoutStyle {
 
-        when(langType) {
-            LangType.afh -> return ContentLayoutStyle.rtl
+        return when(langType) {
+            LangType.afh -> ContentLayoutStyle.rtl
             LangType.cjk -> {
                 if (pageDirection == ContentLayoutStyle.rtl.name)
-                    return ContentLayoutStyle.cjkv
+                    ContentLayoutStyle.cjkv
                 else
-                    return ContentLayoutStyle.cjkh
+                    ContentLayoutStyle.cjkh
             }
             else -> {
                 if (pageDirection == ContentLayoutStyle.rtl.name)
-                    return ContentLayoutStyle.rtl
+                    ContentLayoutStyle.rtl
                 else
-                    return ContentLayoutStyle.ltr
+                    ContentLayoutStyle.ltr
             }
         }
     }
@@ -175,9 +175,8 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
         m.rights = metadataDict.getString("rights")
     }
     if (metadataDict.has("subject")) {
-        val subjectDictUntyped = metadataDict.get("subject")
 
-        when(subjectDictUntyped) {
+        when(val subjectDictUntyped = metadataDict.get("subject")) {
             is String -> {
                 val subject = Subject()
                 subject.name = subjectDictUntyped
@@ -192,9 +191,8 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
             }
             is JSONArray -> {
                 val subjDict = metadataDict.getJSONArray("subject")
-                for (i in 0..(subjDict.length() - 1)) {
-                    val subObject = subjDict.get(i)
-                    when(subObject){
+                for (i in 0 until subjDict.length()) {
+                    when(val subObject = subjDict.get(i)){
                         is String -> {
                             val subject = Subject()
                             subject.name = subObject
@@ -233,7 +231,7 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
                 m.belongsTo?.series?.add(Collection(belongsDict.getString("series")))
             } else if (belongsDict.get("series") is JSONArray) {
                 val array = belongsDict.getJSONArray("series")
-                for (i in 0..(array.length() - 1)) {
+                for (i in 0 until array.length()) {
                     val string = array.getString(i)
                     m.belongsTo?.series?.add(Collection(string))
                 }
@@ -246,7 +244,7 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
                 belongsDict.get("collection") is JSONObject -> belongs.series.add(parseCollection(belongsDict.getJSONObject("collection")))
                 belongsDict.get("collection") is JSONArray -> {
                     val array = belongsDict.getJSONArray("collection")
-                    for (i in 0..(array.length() - 1)) {
+                    for (i in 0 until array.length()) {
                         val obj = array.getJSONObject(i)
                         belongs.series.add(parseCollection(obj))
                     }
@@ -264,7 +262,7 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
             m.languages.add(metadataDict.getString("language"))
         } else if (metadataDict.get("language") is JSONArray) {
             val array = metadataDict.getJSONArray("language")
-            for (i in 0..(array.length() - 1)) {
+            for (i in 0 until array.length()) {
                 val string = array.getString(i)
                 m.languages.add(string)
             }
@@ -292,6 +290,6 @@ enum class ContentLayoutStyle {
     cjkh;
 
     companion object {
-        fun layout(name: String): ContentLayoutStyle = ContentLayoutStyle.valueOf(name)
+        fun layout(name: String): ContentLayoutStyle = valueOf(name)
     }
 }

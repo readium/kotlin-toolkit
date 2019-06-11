@@ -61,7 +61,7 @@ class MediaOverlays(private var nodes: MutableList<MediaOverlayNode> = mutableLi
             }
             //  If the node text refer to filename or that filename is null, return node
             if (fragment == null || (node.text?.contains(fragment) == false)) {
-                prevNodeFoundFlag = (fragment == null || (node.text?.contains(fragment)!! == false))
+                prevNodeFoundFlag = (fragment == null || !node.text?.contains(fragment)!!)
             }
         }
         //  If nothing found, return null
