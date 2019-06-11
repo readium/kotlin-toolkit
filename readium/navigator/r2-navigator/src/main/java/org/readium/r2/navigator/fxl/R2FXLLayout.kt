@@ -15,12 +15,12 @@ import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.PointF
 import android.graphics.RectF
-import androidx.core.view.ViewCompat
 import android.util.AttributeSet
 import android.view.*
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import android.widget.FrameLayout
+import androidx.core.view.ViewCompat
 import com.shopgun.android.utils.NumberUtils
 import java.util.*
 
@@ -189,7 +189,7 @@ class R2FXLLayout : FrameLayout {
     }
 
     override fun onDetachedFromWindow() {
-        R2FXLLayout.removeGlobal(this, simpleOnGlobalLayoutChangedListener)
+        removeGlobal(this, simpleOnGlobalLayoutChangedListener)
         super.onDetachedFromWindow()
     }
 
@@ -781,11 +781,11 @@ class R2FXLLayout : FrameLayout {
         fun onLongTap(view: R2FXLLayout, info: TapInfo)
     }
 
-    override fun setOnClickListener(l: View.OnClickListener?) {
+    override fun setOnClickListener(l: OnClickListener?) {
         throw IllegalStateException("Cannot set OnClickListener, please use OnTapListener.")
     }
 
-    override fun setOnLongClickListener(l: View.OnLongClickListener?) {
+    override fun setOnLongClickListener(l: OnLongClickListener?) {
         throw IllegalStateException("Cannot set OnLongClickListener, please use OnLongTabListener.")
     }
 
