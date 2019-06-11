@@ -13,10 +13,10 @@ package org.readium.r2.testapp.opds
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.view.Gravity
 import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.mcxiaoke.koi.ext.onClick
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
@@ -63,7 +63,9 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
 
                 imageView {
                     this@linearLayout.gravity = Gravity.CENTER
-                    Picasso.with(act).load(publication.images.first().href).into(this)
+                    if (publication.images.isNotEmpty()) {
+                        Picasso.with(this@OPDSDetailActivity).load(publication.images.first().href).into(this)
+                    }
                 }.lparams {
                     height = 800
                 }
@@ -91,14 +93,17 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
                                 val publicationIdentifier = publication.metadata.identifier
                                 val author = authorName(publication)
                                 Thread {
-                                    val bitmap = getBitmapFromURL(publication.images.first().href!!)
                                     val stream = ByteArrayOutputStream()
-                                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                    if (publication.images.isNotEmpty()) {
+                                        val bitmap = getBitmapFromURL(publication.images.first().href!!)
+                                        bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                    }
+
                                     val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
                                     database.books.insert(book, false)?.let {
                                         book.id = it
                                         books.add(0,book)
-                                        snackbar(this, "download completed")
+                                        this.snackbar("download completed")
                                         progress.dismiss()
                                     } ?: run {
                                         progress.dismiss()
