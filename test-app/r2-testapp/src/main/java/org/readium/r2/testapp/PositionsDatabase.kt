@@ -28,10 +28,10 @@ class PositionsDatabase(context: Context) {
 }
 
 
-class PositionsDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "positions_database", null, PositionsDatabaseOpenHelper.DATABASE_VERSION) {
+class PositionsDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "positions_database", null, DATABASE_VERSION) {
     companion object {
         private var instance: PositionsDatabaseOpenHelper? = null
-        private val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 1
 
         @Synchronized
         fun getInstance(ctx: Context): PositionsDatabaseOpenHelper {
@@ -63,7 +63,7 @@ object POSITIONSTable {
     const val ID = "id"
     const val BOOK_ID = "bookID"
     const val SYNTHETIC_PAGE_LIST = "syntheticPageList"
-    var RESULT_COLUMNS = arrayOf(POSITIONSTable.ID, POSITIONSTable.BOOK_ID, POSITIONSTable.SYNTHETIC_PAGE_LIST)
+    var RESULT_COLUMNS = arrayOf(ID, BOOK_ID, SYNTHETIC_PAGE_LIST)
 
 }
 

@@ -15,13 +15,13 @@ package org.readium.r2.testapp.opds
 import android.app.ProgressDialog
 import android.content.Context
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.*
 import android.widget.LinearLayout
 import android.widget.ListPopupWindow
 import android.widget.ListView
 import android.widget.PopupWindow
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.commonsware.cwac.merge.MergeAdapter
 import com.mcxiaoke.koi.ext.onClick
 import kotlinx.android.synthetic.main.filter_row.view.*
@@ -144,8 +144,8 @@ class OPDSCatalogActivity : AppCompatActivity(), CoroutineScope {
                                 }
 
                                 recyclerView {
-                                    layoutManager = androidx.recyclerview.widget.LinearLayoutManager(act)
-                                    (layoutManager as androidx.recyclerview.widget.LinearLayoutManager).orientation = androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
+                                    layoutManager = LinearLayoutManager(act)
+                                    (layoutManager as LinearLayoutManager).orientation = LinearLayoutManager.HORIZONTAL
                                     adapter = RecyclerViewAdapter(act, group.publications)
                                 }
                             }
@@ -172,7 +172,7 @@ class OPDSCatalogActivity : AppCompatActivity(), CoroutineScope {
                 progress.dismiss()
 //                snackbar(act.coordinatorLayout(), it.message!!)
             }
-            Timber.e(it.message)
+            Timber.e(it)
         }
 
     }

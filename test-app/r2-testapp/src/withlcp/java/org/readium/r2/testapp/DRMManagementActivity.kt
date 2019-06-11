@@ -11,11 +11,21 @@
 package org.readium.r2.testapp
 
 import android.app.Activity
+import android.content.Intent
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Bundle
+import android.view.Gravity
+import android.widget.ArrayAdapter
+import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.SpinnerAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import android.view.Gravity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.coordinatorLayout
@@ -25,13 +35,6 @@ import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.model.documents.LicenseDocument
 import org.readium.r2.shared.drm.DRMModel
-import android.content.Intent
-import android.net.Uri
-import android.widget.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.CoroutineContext
 
 
@@ -286,7 +289,7 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                                     val daysInput = Spinner(this@DRMManagementActivity)
                                     daysInput.dropDownWidth = wrapContent
 
-                                    val adapter:SpinnerAdapter = ArrayAdapter(this@DRMManagementActivity, org.readium.r2.testapp.R.layout.days_spinner, daysArray)
+                                    val adapter: SpinnerAdapter = ArrayAdapter(this@DRMManagementActivity, R.layout.days_spinner, daysArray)
                                     daysInput.adapter = adapter
 
                                     val renewDialog = alert(Appcompat, "How many days do you wish to extend your loan ?") {
@@ -343,7 +346,7 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                                     setOnShowListener {
                                         val button = getButton(AlertDialog.BUTTON_POSITIVE)
                                         button.setOnClickListener {
-                                            lcpLicense.returnLicense() { returnedLicense ->
+                                            lcpLicense.returnLicense { returnedLicense ->
                                                 val returnedLicense = returnedLicense as LicenseDocument
 
                                                 lcpLicense.license = returnedLicense

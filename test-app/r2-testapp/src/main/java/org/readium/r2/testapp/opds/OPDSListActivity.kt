@@ -13,8 +13,6 @@ package org.readium.r2.testapp.opds
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
@@ -23,6 +21,9 @@ import android.webkit.URLUtil
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.RecyclerView
 import com.github.kittinunf.fuel.Fuel
 import com.mcxiaoke.koi.ext.onClick
 import com.mcxiaoke.koi.ext.onLongClick
@@ -73,7 +74,7 @@ class OPDSListActivity : AppCompatActivity() {
 
 
         val list = database.opds.list().toMutableList()
-        val opdsAdapter = OPDSViewAdapter(act, list)
+        val opdsAdapter = OPDSViewAdapter(this, list)
 
         coordinatorLayout {
             fitsSystemWindows = true
@@ -85,8 +86,8 @@ class OPDSListActivity : AppCompatActivity() {
                 linearLayout {
                     orientation = LinearLayout.VERTICAL
                     recyclerView {
-                        layoutManager = androidx.recyclerview.widget.LinearLayoutManager(act)
-                        (layoutManager as androidx.recyclerview.widget.LinearLayoutManager).orientation = androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
+                        layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this@OPDSListActivity)
+                        (layoutManager as androidx.recyclerview.widget.LinearLayoutManager).orientation = RecyclerView.VERTICAL
                         adapter = opdsAdapter
                     }
                 }

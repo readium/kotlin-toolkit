@@ -56,10 +56,10 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
         val resourceHref = link.href
         val resourceType = link.typeLink
 
-        if (URI(resourceHref).isAbsolute) {
-            resourceURL = URL(resourceHref)
+        resourceURL = if (URI(resourceHref).isAbsolute) {
+            URL(resourceHref)
         } else {
-            resourceURL = URL(baseURL + epubName + resourceHref)
+            URL(baseURL + epubName + resourceHref)
         }
 
         val text: String?

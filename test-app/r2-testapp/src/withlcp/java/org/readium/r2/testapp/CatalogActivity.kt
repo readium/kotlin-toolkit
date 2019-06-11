@@ -13,8 +13,8 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import com.mcxiaoke.koi.HASH
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -99,7 +99,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
                                     val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
                                     pub.container = pair.first
                                     pub.publication = pair.second
-                                    prepareToServe(pub, file.name, file.absolutePath, true, true)
+                                    prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
                                     progress.dismiss()
                                     handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), networkAvailable, {
                                         // Do nothing
@@ -127,7 +127,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
 
     override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean) {
         if (drm.brand == Drm.Brand.Lcp) {
-            prepareToServe(pub, book.fileName, file.absolutePath, false, true)
+            prepareToServe(pub, book.fileName, file.absolutePath, add = false, lcp = true)
 
             handleLcpPassphrase(publicationPath, drm, networkAvailable, { drm1 ->
                 val pair = parser.parseEncryption(pub.container, publication, drm1)
@@ -169,7 +169,7 @@ class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
                         val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
                         pub.container = pair.first
                         pub.publication = pair.second
-                        prepareToServe(pub, file.name, file.absolutePath, true, true)
+                        prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
                         progress.dismiss()
                         handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), networkAvailable, {
                             // Do nothing

@@ -33,7 +33,7 @@ class Bookmark(val bookID: Long,
                val locatorText: LocatorText,
                var creationDate: Long = DateTime().toDate().time,
                var id: Long? = null):
-        Locator(resourceHref, resourceType, resourceTitle, location, locatorText) {}
+        Locator(resourceHref, resourceType, resourceTitle, location, locatorText)
 
 class BookmarksDatabase(context: Context) {
 
@@ -46,10 +46,10 @@ class BookmarksDatabase(context: Context) {
 
 }
 
-class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "bookmarks_database", null, BookmarksDatabaseOpenHelper.DATABASE_VERSION) {
+class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "bookmarks_database", null, DATABASE_VERSION) {
     companion object {
         private var instance: BookmarksDatabaseOpenHelper? = null
-        private val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 3
 
         @Synchronized
         fun getInstance(ctx: Context): BookmarksDatabaseOpenHelper {
@@ -147,7 +147,7 @@ object BOOKMARKSTable {
     const val LOCATION = "location"
     const val LOCATOR_TEXT = "locatorText"
     const val CREATION_DATE = "creationDate"
-    var RESULT_COLUMNS = arrayOf(BOOKMARKSTable.ID, BOOKMARKSTable.BOOK_ID, BOOKMARKSTable.PUBLICATION_ID, BOOKMARKSTable.RESOURCE_INDEX, BOOKMARKSTable.RESOURCE_HREF, BOOKMARKSTable.RESOURCE_TYPE, BOOKMARKSTable.RESOURCE_TITLE, BOOKMARKSTable.LOCATION, BOOKMARKSTable.LOCATOR_TEXT, BOOKMARKSTable.CREATION_DATE)
+    var RESULT_COLUMNS = arrayOf(ID, BOOK_ID, PUBLICATION_ID, RESOURCE_INDEX, RESOURCE_HREF, RESOURCE_TYPE, RESOURCE_TITLE, LOCATION, LOCATOR_TEXT, CREATION_DATE)
 
 }
 
