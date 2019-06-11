@@ -57,7 +57,7 @@ class Switchable(onValue: String, offValue: String, var on: Boolean, ref: String
         on = !on
     }
 
-    override fun toString() = values[on]!!
+    override fun toString() = values[on] ?: error("")
 }
 
 

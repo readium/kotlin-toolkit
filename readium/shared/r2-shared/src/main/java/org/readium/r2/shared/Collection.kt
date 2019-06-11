@@ -40,7 +40,7 @@ fun parseCollection(collectionDict: JSONObject): Collection {
     if (collectionDict.has("links")) {
         val links = collectionDict.getJSONArray("links")
                 ?: throw Exception(CollectionError.InvalidCollection.name)
-        for (i in 0..(links.length() - 1)) {
+        for (i in 0 until links.length()) {
             val link = links.getJSONObject(i)
             c.links.add(parseLink(link))
         }
