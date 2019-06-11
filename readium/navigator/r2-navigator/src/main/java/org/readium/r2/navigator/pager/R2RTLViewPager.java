@@ -19,15 +19,16 @@ package org.readium.r2.navigator.pager;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
-import androidx.annotation.NonNull;
-import androidx.core.os.ParcelableCompat;
-import androidx.core.os.ParcelableCompatCreatorCallbacks;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.core.view.ViewCompat;
-import androidx.viewpager.widget.ViewPager;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.core.os.ParcelableCompat;
+import androidx.core.os.ParcelableCompatCreatorCallbacks;
+import androidx.core.view.ViewCompat;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import com.duolingo.open.rtlviewpager.DelegatingPagerAdapter;
 

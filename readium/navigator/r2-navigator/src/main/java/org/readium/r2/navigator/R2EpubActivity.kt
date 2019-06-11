@@ -14,12 +14,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.viewpager.widget.ViewPager
-import androidx.appcompat.app.AppCompatActivity
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.PageCallback
@@ -72,30 +71,27 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
 
         title = null
 
-        val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
+        val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
 
         // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
         var doublePageIndex = 0
-        var doublePageLeft: String = ""
+        var doublePageLeft = ""
         var doublePageRight: String = ""
         var resourceIndexDouble = 0
-        var resourceIndexSingle = 0
 
-        for (spineItem in publication.readingOrder) {
-            var uri: String
-            if (URI(publicationPath).isAbsolute) {
+        for ((resourceIndexSingle, spineItem) in publication.readingOrder.withIndex()) {
+            val uri: String = if (URI(publicationPath).isAbsolute) {
                 if (URI(spineItem.href).isAbsolute) {
-                    uri = spineItem.href!!
+                    spineItem.href!!
                 } else {
-                    uri = publicationPath + spineItem.href
+                    publicationPath + spineItem.href
                 }
             } else {
 
-//                uri = applicationContext.getExternalFilesDir(null).path + "/" + epubName + spineItem.href
-                uri = "$BASE_URL:$port" + "/" + epubName + spineItem.href
+    //                uri = applicationContext.getExternalFilesDir(null).path + "/" + epubName + spineItem.href
+                "$BASE_URL:$port" + "/" + epubName + spineItem.href
             }
             resourcesSingle.add(Pair(resourceIndexSingle, uri))
-            resourceIndexSingle++
 
             // add first page to the right,
             if (resourceIndexDouble == 0) {
@@ -126,17 +122,17 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
         if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
             adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
         } else {
-            when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
+            adapter = when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
                 1 -> {
-                    adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                    R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
                 }
                 2 -> {
-                    adapter = R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                    R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
                 }
                 else -> {
                     // TODO based on device
                     // TODO decide if 1 page or 2 page
-                    adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                    R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
                 }
             }
         }
@@ -144,12 +140,16 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
 
         resourcePager.direction = publication.metadata.direction
 
+        if (publication.cssStyle == PageProgressionDirection.rtl.name) {
+            resourcePager.direction = PageProgressionDirection.rtl.name
+        }
+
         val index = preferences.getInt("$publicationIdentifier-document", 0)
         resourcePager.currentItem = index
         currentPagerPosition = index
 
 
-        resourcePager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.OnPageChangeListener {
+        resourcePager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
 
             override fun onPageScrollStateChanged(state: Int) {
                 // Do nothing
@@ -183,10 +183,10 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
                     }
                 }
                 storeDocumentIndex()
-                currentPagerPosition = position; // Update current position
+                currentPagerPosition = position // Update current position
             }
 
-        });
+        })
 
         storeDocumentIndex()
 
@@ -240,7 +240,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
                                         var anchor = it
                                         if (anchor.startsWith("#")) {
                                         } else {
-                                            anchor = "#" + anchor
+                                            anchor = "#$anchor"
                                         }
                                         val goto = resource.second +  anchor
                                         currentFragent?.webView?.loadUrl(goto)
@@ -295,6 +295,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
                 }
             }
         }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
 

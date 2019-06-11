@@ -11,13 +11,13 @@ package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
+import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
@@ -68,7 +68,6 @@ class R2FXLPageFragment : Fragment() {
 
             val r2FXLLayout = view.findViewById<View>(R.id.r2FXLLayout) as R2FXLLayout
             r2FXLLayout.isAllowParentInterceptOnScaled = true
-            r2FXLLayout.isScrollingAllowed = true
             r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
 
             r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
