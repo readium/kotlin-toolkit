@@ -69,3 +69,9 @@ interface EpubContainer : Container {
 interface CbzContainer : Container {
     fun getFilesList(): List<String>
 }
+
+
+// TODO WIP
+interface DiViNaContainer : Container {
+
+}
