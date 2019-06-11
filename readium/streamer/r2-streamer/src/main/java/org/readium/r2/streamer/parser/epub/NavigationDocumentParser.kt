@@ -10,8 +10,8 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.Link
-import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.parser.xml.Node
+import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.parser.normalize
 import org.w3c.dom.NodeList
 import java.io.InputStream
@@ -64,7 +64,7 @@ class NavigationDocumentParser {
         val liElements = element.get("li") ?: return newOlNode
         for (li in liElements) {
             val spanText = li.getFirst("span")?.name
-            if (spanText != null && !spanText.isEmpty()) {
+            if (spanText != null && spanText.isNotEmpty()) {
                 li.getFirst("ol")?.let {
                     newOlNode.children.add(nodeOl(it))
                 }
@@ -104,11 +104,11 @@ class NavigationDocumentParser {
 
 class NameSpaceResolver : NamespaceContext {
     override fun getNamespaceURI(p0: String?): String {
-        when (p0) {
+        return when (p0) {
             null -> throw IllegalArgumentException("No prefix provided!")
-            "epub" -> return "http://www.idpf.org/2007/ops"
-            "xhtml" -> return "http://www.w3.org/1999/xhtml"
-            else -> return XMLConstants.DEFAULT_NS_PREFIX
+            "epub" -> "http://www.idpf.org/2007/ops"
+            "xhtml" -> "http://www.w3.org/1999/xhtml"
+            else -> XMLConstants.DEFAULT_NS_PREFIX
         }
     }
 

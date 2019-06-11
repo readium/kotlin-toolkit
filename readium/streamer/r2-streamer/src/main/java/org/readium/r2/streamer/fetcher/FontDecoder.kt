@@ -9,7 +9,6 @@
 
 package org.readium.r2.streamer.fetcher
 
-import android.util.Log
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
 import org.readium.r2.shared.Publication
@@ -57,7 +56,7 @@ class FontDecoder {
     private fun deobfuscate(input: InputStream, publicationKey: ByteArray, obfuscationLength: Int): ByteArray {
         val buffer = input.readBytes()
         val count = if (buffer.size > obfuscationLength) obfuscationLength else buffer.size
-        for (i in 0..(count - 1))
+        for (i in 0 until count)
             buffer[i] = buffer[i].xor(publicationKey[i % publicationKey.size])
         return buffer
     }
