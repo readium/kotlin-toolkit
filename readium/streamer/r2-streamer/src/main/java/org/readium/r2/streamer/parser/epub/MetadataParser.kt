@@ -85,7 +85,7 @@ class MetadataParser {
         val uniqueId = documentProperties["unique-identifier"]
         if (identifiers.size > 1 && uniqueId != null) {
             val uniqueIdentifiers = identifiers.filter { it.attributes["id"] == uniqueId }
-            if (!uniqueIdentifiers.isEmpty())
+            if (uniqueIdentifiers.isNotEmpty())
                 return uniqueIdentifiers.firstOrNull()?.text ?: throw Exception("No identifier")
         }
         return identifiers[0].text
@@ -210,7 +210,7 @@ class MetadataParser {
     }
 
     private fun findContributorsMetaXmlElements(metadata: Node) =
-            metadata.get("meta")!!.filter { it.attributes["property"] == "dcterms:publisher" }.toMutableList()
+            metadata.get("meta")!!.asSequence().filter { it.attributes["property"] == "dcterms:publisher" }.toMutableList()
                     .plus(metadata.get("meta")!!.filter { it.attributes["property"] == "dcterms:creator" }).toMutableList()
                     .plus(metadata.get("meta")!!.filter { it.attributes["property"] == "dcterms:contributor" }).toMutableList()
 
@@ -235,7 +235,7 @@ class MetadataParser {
             if (title != null && lang != null)
                 multiString[lang] = title
         }
-        if (!multiString.isEmpty()) {
+        if (multiString.isNotEmpty()) {
             val publicationDefaultLanguage = metadata.get("dc:language")?.first()?.text
                     ?: throw Exception("No language")
             val lang = element.attributes["xml:lang"] ?: publicationDefaultLanguage

@@ -9,12 +9,12 @@
 
 package org.readium.r2.streamer.parser
 
-import android.util.Log
 import android.webkit.MimeTypeMap
-import org.readium.r2.shared.*
-import java.io.File
+import org.readium.r2.shared.Link
+import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.container.ContainerCbz
 import timber.log.Timber
+import java.io.File
 
 // Some constants useful to parse an Cbz document
 const val mimetypeCBZ = "application/vnd.comicbook+zip"

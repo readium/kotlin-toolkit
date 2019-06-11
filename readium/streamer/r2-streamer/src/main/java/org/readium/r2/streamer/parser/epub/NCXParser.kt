@@ -10,8 +10,8 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.Link
-import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.parser.xml.Node
+import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.parser.normalize
 
 class NCXParser {

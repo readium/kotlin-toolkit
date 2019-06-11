@@ -41,7 +41,7 @@ class ManifestHandler : RouterNanoHTTPD.DefaultHandler() {
             val fetcher = uriResource!!.initParameter(Fetcher::class.java)
             newFixedLengthResponse(status, mimeType, fetcher.publication.manifest())
         } catch (e: IOException) {
-            Timber.v(" IOException " + e.toString())
+            Timber.v(" IOException %s", e.toString())
             newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
 
