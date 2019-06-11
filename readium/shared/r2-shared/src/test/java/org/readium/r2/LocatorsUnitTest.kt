@@ -9,8 +9,6 @@
 
 package org.readium.r2
 
-import java.net.URI
-
 /*
 class LocatorsUnitTest {
 

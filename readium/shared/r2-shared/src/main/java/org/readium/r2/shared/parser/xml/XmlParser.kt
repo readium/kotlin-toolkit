@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.parser.xml
 
-import android.util.Xml
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.InputStream
@@ -41,7 +40,7 @@ class XmlParser {
                     val node = Node(parser.name)
                     for (i in 0 until parser.attributeCount)
                         node.attributes[parser.getAttributeName(i)] = parser.getAttributeValue(i)
-                    if (!(nodes.isEmpty()))
+                    if (nodes.isNotEmpty())
                         nodes.last().children.add(node)
                     nodes.add(node)
                 }
