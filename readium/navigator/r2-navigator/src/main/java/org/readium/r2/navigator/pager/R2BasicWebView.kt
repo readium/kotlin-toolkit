@@ -50,7 +50,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     private val uiScope = CoroutineScope(Dispatchers.Main)
 
     init {
-      WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+      setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
     }
 
     interface OnOverScrolledCallback {
@@ -190,12 +190,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                     val closeButton = customView.findViewById(R.id.ib_close) as ImageButton
 
                     // Set a click listener for the popup window close button
-                    closeButton.setOnClickListener(object : View.OnClickListener {
-                        override fun onClick(view: View) {
-                            // Dismiss the popup window
-                            mPopupWindow.dismiss()
-                        }
-                    })
+                    closeButton.setOnClickListener {
+                        // Dismiss the popup window
+                        mPopupWindow.dismiss()
+                    }
 
                     // Finally, show the popup window at the center location of root relative layout
                     mPopupWindow.showAtLocation(this, Gravity.CENTER, 0, 0)

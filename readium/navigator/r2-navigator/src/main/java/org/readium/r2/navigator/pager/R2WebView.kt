@@ -11,15 +11,14 @@ package org.readium.r2.navigator.pager
 
 import android.content.Context
 import android.graphics.Rect
-import androidx.annotation.CallSuper
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import android.util.AttributeSet
-import android.util.Log
 import android.view.*
 import android.view.animation.Interpolator
 import android.widget.EdgeEffect
 import android.widget.Scroller
+import androidx.annotation.CallSuper
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import org.readium.r2.shared.RenditionLayout
 import org.readium.r2.shared.SCROLL_REF
 import timber.log.Timber
@@ -732,9 +731,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 }
 
                 if (DEBUG) {
-                    Timber.v( "Down at " + mLastMotionX + "," + mLastMotionY
-                            + " mIsBeingDragged=" + mIsBeingDragged
-                            + "mIsUnableToDrag=" + mIsUnableToDrag)
+                    Timber.v( "Down at " + mLastMotionX + "," + mLastMotionY + " mIsBeingDragged=" + mIsBeingDragged + "mIsUnableToDrag=" + mIsUnableToDrag)
                 }
             }
 
@@ -1114,8 +1111,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     sb.append(" => ").append(parent.javaClass.simpleName)
                     parent = parent.parent
                 }
-                Timber.e( "arrowScroll tried to find focus based on non-child "
-                        + "current focused view " + sb.toString())
+                Timber.e( "arrowScroll tried to find focus based on non-child current focused view %s", sb.toString())
                 currentFocused = null
             }
         }
@@ -1260,7 +1256,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
          */
         internal var childIndex: Int = 0
 
-        constructor() : super(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT) {}
+        constructor() : super(MATCH_PARENT, MATCH_PARENT)
 
         constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
 
