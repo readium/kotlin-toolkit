@@ -9,12 +9,11 @@
 
 package org.readium.r2.streamer.parser
 
-import android.util.Log
 import org.readium.r2.shared.ContentLayoutStyle
-import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Encryption
 import org.readium.r2.shared.LangType
 import org.readium.r2.shared.Publication
+import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerEpub
@@ -149,7 +148,7 @@ class EpubParser : PublicationParser {
 
         publication.cssStyle = contentLayoutStyle.name
 
-        userSettingsUIPreset.get(ContentLayoutStyle.layout(publication.cssStyle as String))?.let {
+        userSettingsUIPreset[ContentLayoutStyle.layout(publication.cssStyle as String)]?.let {
             if (publication.type == Publication.TYPE.WEBPUB) {
                 publication.userSettingsUIPreset = forceScrollPreset
             } else {

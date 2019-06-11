@@ -36,7 +36,7 @@ class ContainerCbz : CbzContainer, ZipArchiveContainer {
         val filesList = mutableListOf<String>()
         zipFile.let {
             val listEntries = it.entries()
-            listEntries.toList().forEach { filesList.add(it.toString()) }
+            listEntries.toList().forEach { entry -> filesList.add(entry.toString()) }
         }
         return filesList
     }

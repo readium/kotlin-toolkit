@@ -9,9 +9,8 @@
 
 package org.readium.r2.streamer.fetcher
 
-import android.util.Log
-import org.readium.r2.shared.drm.Drm
 import org.readium.r2.shared.Link
+import org.readium.r2.shared.drm.Drm
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
