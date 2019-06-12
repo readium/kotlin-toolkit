@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
+import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.design.textInputLayout
 import org.readium.r2.lcp.public.*
 import org.readium.r2.shared.Publication
@@ -76,12 +77,16 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
         }
     }
 
-    override fun loadPublication(publication: String, drm: DRM, completion: (DRM?) -> Unit) {
+    override fun loadPublication(publication: String, drm: DRM, completion:  (Any?) -> Unit) {
         lcpService.retrieveLicense(publication, this) { license, error  ->
             license?.let{
                 drm.license = license
+                completion(drm)
+            } ?: run {
+                error?.let {
+                    completion(error)
+                }
             }
-            completion(drm)
         }
     }
 
@@ -173,13 +178,21 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
     override fun prepareAndStartActivityWithLCP(drm: DRM, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean) {
         loadPublication(file.absolutePath, drm) {
             launch {
-                prepareToServe(pub, book.fileName, file.absolutePath, false, true)
-                server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null)?.path + "/styles/UserProperties.json")
+
+                if(it is Exception) {
+
+                    catalogView.snackbar("${(it as LCPError).errorDescription}")
+
+                } else {
+
+                    prepareToServe(pub, book.fileName, file.absolutePath, false, true)
+                    server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null)?.path + "/styles/UserProperties.json")
 
 //                val drmModel = DRMViewModel(drm)
-                val drmModel = null
+                    val drmModel = null
 
-                this@CatalogActivity.startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drmModel" to drmModel))
+                    this@CatalogActivity.startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drmModel" to drmModel))
+                }
             }
         }
     }

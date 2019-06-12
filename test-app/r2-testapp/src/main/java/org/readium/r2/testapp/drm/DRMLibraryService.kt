@@ -18,7 +18,7 @@ interface DRMLibraryService {
     val brand: DRM.Brand
     fun canFulfill(file: String) : Boolean
     fun fulfill(byteArray: ByteArray, completion: (DRMFulfilledPublication) -> Unit)
-    fun loadPublication(publication: String, drm: DRM, completion: (DRM?) -> Unit)
+    fun loadPublication(publication: String, drm: DRM, completion: (Any?) -> Unit)
 }
 
 interface LCPLibraryActivityService {
