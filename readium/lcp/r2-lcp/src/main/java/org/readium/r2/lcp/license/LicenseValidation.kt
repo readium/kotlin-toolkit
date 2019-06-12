@@ -1,4 +1,3 @@
-// TODO is production
 /*
  * Module: r2-lcp-kotlin
  * Developers: Aferdita Muriqi

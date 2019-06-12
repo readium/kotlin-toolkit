@@ -87,7 +87,7 @@ data class StatusDocument(val data: ByteArray) {
         }
 
     }
-    // TODO()
+
     fun link(rel: Rel): Link? =
             links[rel.rawValue].firstOrNull()
 

@@ -1,4 +1,3 @@
-// TODO download
 /*
  * Module: r2-lcp-kotlin
  * Developers: Aferdita Muriqi
