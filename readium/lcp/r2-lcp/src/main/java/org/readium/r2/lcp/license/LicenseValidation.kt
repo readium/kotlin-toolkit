@@ -34,7 +34,7 @@ private val supportedProfiles = listOf("http://readium.org/lcp/basic-profile", "
 
 typealias Context = Either<DRMContext, StatusError>
 
-typealias Observer = (ValidatedDocuments?, Error?) -> Unit
+typealias Observer = (ValidatedDocuments?, Exception?) -> Unit
 
 private var observers: MutableList<Pair<Observer, ObserverPolicy>> = mutableListOf()
 
@@ -63,7 +63,7 @@ sealed class State {
     data class validateIntegrity(val license: LicenseDocument, val status: StatusDocument?, val passphrase: String) : State()
     data class registerDevice(val documents: ValidatedDocuments, val link: Link) : State()
     data class valid(val documents: ValidatedDocuments) : State()
-    data class failure(val error: Error) : State()
+    data class failure(val error: Exception) : State()
 }
 
 
@@ -76,7 +76,7 @@ sealed class Event {
     data class retrievedPassphrase(val passphrase: String) : Event()
     data class validatedIntegrity(val context: DRMContext) : Event()
     data class registeredDevice(val statusData: ByteArray?) : Event()
-    data class failed(val error: Error) : Event()
+    data class failed(val error: Exception) : Event()
     object cancelled : Event()
 }
 
@@ -85,6 +85,7 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
                         val device: DeviceService,
                         val network: NetworkService,
                         val passphrases: PassphrasesService,
+                        val context: android.content.Context,
                         val onLicenseValidated: (LicenseDocument) -> Unit) {
 
 
@@ -110,30 +111,30 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
     }
 
     val isProduction: Boolean = {
-        //        val prodLicenseURL =  Bundle(for = LicenseValidation.self).url(forResource = "prod-license", withExtension = "lcpl")
-//        val prodLicense = try { String(contentsOf = prodLicenseURL, encoding = .utf8) } catch (e: Throwable) { null }
-//        if (prodLicenseURL == null || prodLicense == null) {
-//            return false
-//        }
-//        val passphrase = "7B7602FEF5DEDA10F768818FFACBC60B173DB223B7E66D8B2221EBE2C635EFAD"
-//        Lcp().findOneValidPassphrase(prodLicense, hashedPassphrases = listOf<passphrase>) == passphrase
-        false
+        val prodLicenseInput = context.assets.open("prod-license.lcpl")
+        val prodLicense = LicenseDocument(data = prodLicenseInput.readBytes())
+        val passphrase = "7B7602FEF5DEDA10F768818FFACBC60B173DB223B7E66D8B2221EBE2C635EFAD"
+        try {
+            Lcp().findOneValidPassphrase(prodLicense.json.toString(), listOf(passphrase).toTypedArray()) == passphrase
+        } catch (e: Exception) {
+            false
+        }
     }()
 
     val stateMachine = StateMachine.create<State, Event> {
         initialState(State.start)
         state<State.start> {
             on<Event.retrievedLicenseData> {
+                Timber.d("State.validateLicense(it.data, null)")
                 transitionTo(State.validateLicense(it.data, null))
             }
         }
         state<State.validateLicense> {
             on<Event.validatedLicense> {
-                val status = status
-                if (status != null) {
+                status?.let { status ->
                     Timber.d("State.checkLicenseStatus(it.license, status)")
                     transitionTo(State.checkLicenseStatus(it.license, status))
-                } else {
+                } ?: run {
                     Timber.d("State.fetchStatus(it.license)")
                     transitionTo(State.fetchStatus(it.license))
                 }
@@ -149,8 +150,8 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
                 transitionTo(State.validateStatus(license, it.data))
             }
             on<Event.failed> {
-                Timber.d("State.failure(it.error)")
-                transitionTo(State.failure(it.error))
+                Timber.d("State.checkLicenseStatus(license, null)")
+                transitionTo(State.checkLicenseStatus(license, null))
             }
         }
         state<State.validateStatus> {
@@ -180,7 +181,6 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
         }
         state<State.checkLicenseStatus> {
             on<Event.checkedLicenseStatus> {
-
                 it.error?.let{ error ->
                     Timber.d("State.valid(ValidatedDocuments(license, Either.Right(error), status))")
                     transitionTo(State.valid(ValidatedDocuments(license, Either.Right(error), status)))
@@ -243,9 +243,9 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
             }
         }
         state<State.failure> {
-            onExit {
+            onEnter {
                 Timber.d("throw error")
-                throw error
+//                throw error
             }
         }
         onTransition {
@@ -275,7 +275,8 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
                 is State.valid -> notifyObservers(state.documents, null)
                 is State.failure -> notifyObservers(null, state.error)
             }
-        } catch (error: Error) {
+        } catch (error: Exception) {
+            Timber.e(error)
             raise(Event.failed(error))
         }
     }
@@ -285,7 +286,7 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
         Companion.observe(this, ObserverPolicy.once, observer)
     }
 
-    private fun notifyObservers(documents: ValidatedDocuments?, error: Error?) {
+    private fun notifyObservers(documents: ValidatedDocuments?, error: Exception?) {
         for (observer in observers) {
             Timber.d("observers $observers")
             observer.first(documents, error)
@@ -306,11 +307,11 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
 
     private fun fetchStatus(license: LicenseDocument) {
         val url = license.url(LicenseDocument.Rel.status).toString()
-        network.fetch(url, timeout = 5) { status, data ->
+        network.fetch(url) { status, data ->
             if (status != 200) {
                 throw LCPError.network(null)
             }
-            raise(Event.retrievedStatusData(data))
+            raise(Event.retrievedStatusData(data!!))
         }
     }
 
@@ -321,22 +322,22 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
 
     private fun fetchLicense(status: StatusDocument) {
         val url = status.url(StatusDocument.Rel.license).toString()
-        network.fetch(url, timeout = 5) { statusCode, data ->
+        network.fetch(url) { statusCode, data ->
             if (statusCode != 200) {
                 throw LCPError.network(null)
             }
-            raise(Event.retrievedLicenseData(data))
+            raise(Event.retrievedLicenseData(data!!))
         }
     }
 
     private fun checkLicenseStatus(license: LicenseDocument, status: StatusDocument?) {
         var error: StatusError? = null
         val now = DateTime()
-        val start = license.rights?.start ?: now
-        val end = license.rights?.end ?: now
+        val start = license.rights.start ?: now
+        val end = license.rights.end ?: now
         if (start > now || now > end) {
             if (status != null) {
-                val date = status.updated
+                val date = status.statusUpdated
                 when (status.status) {
                     StatusDocument.Status.ready, StatusDocument.Status.active, StatusDocument.Status.expired -> error = StatusError.expired(start = start, end = end)
                     StatusDocument.Status.returned -> error = StatusError.returned(date)

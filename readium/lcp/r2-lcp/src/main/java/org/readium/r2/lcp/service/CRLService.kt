@@ -35,10 +35,9 @@ class CRLService(val network: NetworkService, val context: Context) {
                 completion(localCRL.first)
             }
         }
-        val timeout: Int? = if ((localCRL == null)) null else 8
 
         try {
-            fetch(timeout) { received ->
+            fetch() { received ->
                 received?.let {
                     saveLocal(received)
                     completion(received)
@@ -52,10 +51,10 @@ class CRLService(val network: NetworkService, val context: Context) {
 
     }
 
-    private fun fetch(timeout: Int? = null, completion: (String?) -> Unit) = runBlocking {
+    private fun fetch(completion: (String?) -> Unit) = runBlocking {
 
         val url = "http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl"
-        network.fetch(url, timeout, NetworkService.Method.get) { status, data ->
+        network.fetch(url, NetworkService.Method.get) { status, data ->
 
             Timber.d("Status $status")
             if (status != 200) {

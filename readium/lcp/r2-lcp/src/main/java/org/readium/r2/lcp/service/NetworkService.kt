@@ -23,43 +23,27 @@ class NetworkService {
         }
     }
 
-    fun fetch(url: String, timeout: Int? = null, method: Method? = Method.get, params: List<Pair<String, Any?>>? = null, completion: (status: Int, data: ByteArray) -> Unit) = runBlocking {
+    fun fetch(url: String, method: Method? = Method.get, params: List<Pair<String, Any?>>? = null, completion: (status: Int, data: ByteArray?) -> Unit) = runBlocking {
+
         val (request, response, result) =
 
-                when (method) {
-                    Method.get -> Fuel.get(url).awaitByteArrayResponse()
-                    Method.post -> Fuel.post(url, params).awaitByteArrayResponse()
-                    Method.put -> Fuel.put(url, params).awaitByteArrayResponse()
-                    null -> Fuel.get(url).awaitByteArrayResponse()
-                }
-        timeout?.let {
-            request.timeout(timeout)
-        }
-        result.fold(
+            when (method) {
+                Method.get -> Fuel.get(url).awaitByteArrayResponse()
+                Method.post -> Fuel.post(url, params).awaitByteArrayResponse()
+                Method.put -> Fuel.put(url, params).awaitByteArrayResponse()
+                null -> Fuel.get(url).awaitByteArrayResponse()
+            }
+
+            result.fold(
                 { data ->
                     completion(response.statusCode, data)
                 },
                 { error ->
                     Timber.e("An error of type ${error.exception} happened: ${error.message}")
-                    error.exception
+                    completion(response.statusCode, null)
                 }
         )
 
     }
 
-// TODO download??
-
-//    fun download(url: URL, title: String? = null, completion: ((val file: URL, val task: URLSessionDownloadTask?)?, Error?) -> Unit) : Observable<DownloadProgress> {
-//        this.log(.info, "download ${url}")
-//        val request = URLRequest(url = url)
-//        return DownloadSession.shared.launch(request = request, description = title) { tmpLocalURL, response, error, downloadTask  ->
-//            val file = tmpLocalURL
-//            if (file == null || error != null) {
-//                completion(null, LCPError.network(error))
-//                return@launch false
-//            }
-//            completion((file, downloadTask), null)
-//            true
-//        }
-//    }
 }

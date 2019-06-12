@@ -52,7 +52,7 @@ class DeviceService(private val repository: DeviceRepository, private val networ
             // TODO templated url
             val url = link.url(asQueryParameters).toString() ?: throw LCPError.licenseInteractionNotAvailable
 
-            network.fetch(url, timeout = null, method = NetworkService.Method.post, params = asQueryParameters) { status, data ->
+            network.fetch(url, method = NetworkService.Method.post, params = asQueryParameters) { status, data ->
                 if (status != 200) {
                     completion(null)
                 }

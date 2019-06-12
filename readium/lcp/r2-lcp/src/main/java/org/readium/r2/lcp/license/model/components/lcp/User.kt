@@ -20,9 +20,9 @@ data class User(val json: JSONObject) {
     var encrypted = mutableListOf<String>()
 
     init {
-        id = json.getString( "id")
-        email = json.getString("email")
-        name = json.getString( "name")
+        id = if (json.has("id")) json.getString("id") else  null
+        email = if (json.has("email")) json.getString("email") else  null
+        name = if (json.has("name")) json.getString("name") else  null
 
         if (json.has("encrypted")) {
             val encryptedArray = json.getJSONArray("encrypted")

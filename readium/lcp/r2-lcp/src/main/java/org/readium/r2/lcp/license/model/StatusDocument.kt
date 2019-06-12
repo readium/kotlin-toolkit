@@ -26,7 +26,7 @@ data class StatusDocument(val data: ByteArray) {
     val status: Status
     val message: String
     val licenseUpdated: DateTime
-    val updated: DateTime
+    val statusUpdated: DateTime
     val links: Links
     val potentialRights: PotentialRights?
     var events: MutableList<Event> = mutableListOf()
@@ -69,16 +69,16 @@ data class StatusDocument(val data: ByteArray) {
         status = if (json.has("status")) Status(json.getString("status"))!! else throw ParsingError.statusDocument
         message = if (json.has("message")) json.getString("message") else throw ParsingError.statusDocument
 
-        val up = if (json.has("updated")) json.getJSONObject("updated") else JSONObject()
+        val updated = if (json.has("updated")) json.getJSONObject("updated") else JSONObject()
 
-        licenseUpdated = if (up.has("license")) DateTime(up.getString("license")) else throw ParsingError.statusDocument
-        updated = if (up.has("status")) DateTime(up.getString("status")) else throw ParsingError.statusDocument
+        licenseUpdated = if (updated.has("license")) DateTime(updated.getString("license")) else throw ParsingError.statusDocument
+        statusUpdated = if (updated.has("status")) DateTime(updated.getString("status")) else throw ParsingError.statusDocument
 
 
         links = if (json.has("links")) Links(json.getJSONArray("links")) else throw ParsingError.statusDocument
 
-
         potentialRights = if (json.has("potential_rights")) PotentialRights(json.getJSONObject("potential_rights")) else null
+
         if (json.has("events")) {
             val ev = json.getJSONArray("events")
             for (i in 0 until ev.length()) {
@@ -87,7 +87,7 @@ data class StatusDocument(val data: ByteArray) {
         }
 
     }
-
+    // TODO()
     fun link(rel: Rel): Link? =
             links[rel.rawValue].firstOrNull()
 

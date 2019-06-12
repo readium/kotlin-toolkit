@@ -9,6 +9,7 @@
 
 package org.readium.r2.lcp.service
 
+import android.content.Context
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
@@ -25,7 +26,7 @@ class LicensesService(private val licenses: LicensesRepository,
                       private val device: DeviceService,
                       private val network: NetworkService,
                       private val passphrases: PassphrasesService,
-                      private val context: android.content.Context) : LCPService {
+                      private val context: Context) : LCPService {
 
 
     override fun importPublication(lcpl: ByteArray, authentication: LCPAuthenticating?, completion: (LCPImportedPublication?, LCPError?) -> Unit) = runBlocking {
@@ -36,16 +37,21 @@ class LicensesService(private val licenses: LicensesRepository,
                 license.moveLicense(publication.localURL, lcpl)
                 completion(publication, null)
             }?.fail {
-                completion(null, LCPError.network(Error(it)))
+                completion(null, LCPError.network(it))
             }
         }
     }
 
     override fun retrieveLicense(publication: String, authentication: LCPAuthenticating?, completion: (LCPLicense?, LCPError?) -> Unit) = runBlocking {
         val container = EPUBLicenseContainer(epub = publication)
-        retrieveLicense(container, authentication) { license ->
-            Timber.d("license retrieved ${license?.license}")
-            completion(license, null)
+
+        try {
+            retrieveLicense(container, authentication) { license ->
+                Timber.d("license retrieved ${license?.license}")
+                completion(license, null)
+            }
+        } catch (e:Exception) {
+            completion(null, LCPError.wrap(e))
         }
     }
 
@@ -55,7 +61,7 @@ class LicensesService(private val licenses: LicensesRepository,
         Timber.d("license ${LicenseDocument(data = initialData).json}")
 
         val validation = LicenseValidation(authentication = authentication, crl = this.crl,
-                device = this.device, network = this.network, passphrases = this.passphrases) { licenseDocument ->
+                device = this.device, network = this.network, passphrases = this.passphrases, context = this.context) { licenseDocument ->
             try {
                 this.licenses.addLicense(licenseDocument)
             } catch (error: Error) {
@@ -75,12 +81,18 @@ class LicensesService(private val licenses: LicensesRepository,
             }
 
         }
+
         validation.validate(LicenseValidation.Document.license(initialData)) { documents, error ->
             documents?.let {
                 Timber.d("validated documents $it")
-                documents.getContext()
+                try {
+                    documents.getContext()
+                    completion( License(documents = it, validation = validation, licenses = this.licenses, device = this.device, network = this.network) )
+                } catch (e:Exception) {
+                    throw e
+                }
             }
-            completion(documents?.let { License(documents = it, validation = validation, licenses = this.licenses, device = this.device, network = this.network) })
+            error?.let { throw error }
         }
 
     }

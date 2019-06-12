@@ -122,7 +122,7 @@ class License(private var documents: ValidatedDocuments,
         fun callPUT(url: URL, callback: (ByteArray) -> Unit)  {
             this.network.fetch(url.toString(), method = NetworkService.Method.put) { status, data ->
                 when (status) {
-                    200 -> callback(data)
+                    200 -> callback(data!!)
                     400 -> throw RenewError.renewFailed
                     403 -> throw RenewError.invalidRenewalPeriod(maxRenewDate = this.maxRenewDate)
                     else -> throw RenewError.unexpectedServerError
@@ -137,7 +137,7 @@ class License(private var documents: ValidatedDocuments,
                         if (status != 200) {
                             throw LCPError.network(null)
                         }
-                        callback(data)
+                        callback(data!!)
                     }
                 }
         }
@@ -175,7 +175,7 @@ class License(private var documents: ValidatedDocuments,
         }
         network.fetch(url.toString(), method = NetworkService.Method.put) { statusCode, data  ->
             when (statusCode) {
-                200 -> validateStatusDocument(data)
+                200 -> validateStatusDocument(data!!)
                 400 -> throw ReturnError.returnFailed
                 403 -> throw ReturnError.alreadyReturnedOrExpired
                 else -> throw ReturnError.unexpectedServerError
@@ -186,7 +186,7 @@ class License(private var documents: ValidatedDocuments,
 
     init {
         LicenseValidation.observe(validation) { documents, error  ->
-            if (documents != null) {
+            documents?.let {
                 this.documents = documents
             }
         }
@@ -229,7 +229,7 @@ class License(private var documents: ValidatedDocuments,
     }
 
     private fun validateStatusDocument(data: ByteArray) : Unit =
-            validation.validate(LicenseValidation.Document.status(data)) { validatedDocuments: ValidatedDocuments?, error: Error? -> }
+            validation.validate(LicenseValidation.Document.status(data)) { validatedDocuments: ValidatedDocuments?, error: Exception? -> }
 
 
 }
