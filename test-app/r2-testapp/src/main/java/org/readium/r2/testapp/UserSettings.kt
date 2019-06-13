@@ -70,6 +70,12 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         pageMargins = preferences.getFloat(PAGE_MARGINS_REF, pageMargins)
         lineHeight = preferences.getFloat(LINE_HEIGHT_REF, lineHeight)
         userProperties = getUserSettings()
+
+        //Setting up screen brightness
+        val backLightValue = preferences.getInt("reader_brightness", 50).toFloat() / 100
+        val layoutParams = (context as R2EpubActivity).window.attributes
+        layoutParams.screenBrightness = backLightValue
+        context.window.attributes = layoutParams
     }
 
     private fun getUserSettings(): UserProperties {
@@ -539,12 +545,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         // Brightness
         val brightnessSeekbar = layout.findViewById(R.id.brightness) as SeekBar
         val brightness = preferences.getInt("reader_brightness", 50)
-        run {
-            val backLightValue = brightness.toFloat() / 100
-            val layoutParams = (context as R2EpubActivity).window.attributes
-            layoutParams.screenBrightness = backLightValue
-            context.window.attributes = layoutParams
-        }
         brightnessSeekbar.progress = brightness
         brightnessSeekbar.setOnSeekBarChangeListener(
                 object : SeekBar.OnSeekBarChangeListener {
