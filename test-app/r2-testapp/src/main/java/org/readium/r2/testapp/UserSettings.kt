@@ -251,6 +251,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         fontSpinner.adapter = dataAdapter
         fontSpinner.setSelection(fontFamily.index)
+        fontSpinner.contentDescription = "Font Family"
         fontSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, pos: Int, id: Long) {
                 fontFamily.index = pos
@@ -271,8 +272,11 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         val appearanceGroup = layout.findViewById(R.id.appearance) as RadioGroup
         val appearanceRadios = mutableListOf<RadioButton>()
         appearanceRadios.add(layout.findViewById(R.id.appearance_default) as RadioButton)
+        (layout.findViewById(R.id.appearance_default) as RadioButton).contentDescription = "Appearance Default"
         appearanceRadios.add(layout.findViewById(R.id.appearance_sepia) as RadioButton)
+        (layout.findViewById(R.id.appearance_sepia) as RadioButton).contentDescription = "Appearance Sepia"
         appearanceRadios.add(layout.findViewById(R.id.appearance_night) as RadioButton)
+        (layout.findViewById(R.id.appearance_night) as RadioButton).contentDescription = "Appearance Night"
 
         UIPreset[ReadiumCSSName.appearance]?.let {
             appearanceGroup.isEnabled = false
@@ -329,6 +333,8 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
         // Publisher defaults
         val publisherDefaultSwitch = layout.findViewById(R.id.publisher_default) as Switch
+        publisherDefaultSwitch.contentDescription = "\u00A0";
+
         publisherDefaultSwitch.isChecked = publisherDefault.on
         publisherDefaultSwitch.setOnCheckedChangeListener { _, b ->
             publisherDefault.on = b
@@ -376,7 +382,10 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         val alignmentGroup = layout.findViewById(R.id.TextAlignment) as RadioGroup
         val alignmentRadios = mutableListOf<RadioButton>()
         alignmentRadios.add(layout.findViewById(R.id.alignment_left))
+        (layout.findViewById(R.id.alignment_left) as RadioButton).contentDescription = "Alignment Left"
+
         alignmentRadios.add(layout.findViewById(R.id.alignment_justify))
+        (layout.findViewById(R.id.alignment_justify) as RadioButton).contentDescription = "Alignment Justified"
 
         UIPreset[ReadiumCSSName.textAlignment]?.let {
             alignmentGroup.isEnabled = false
@@ -412,8 +421,13 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         val columnsCountGroup = layout.findViewById(R.id.columns) as RadioGroup
         val columnsRadios = mutableListOf<RadioButton>()
         columnsRadios.add(layout.findViewById(R.id.column_auto))
+        (layout.findViewById(R.id.column_auto) as RadioButton).contentDescription = "Columns Auto"
+
         columnsRadios.add(layout.findViewById(R.id.column_one))
+        (layout.findViewById(R.id.column_one) as RadioButton).contentDescription = "Columns 1"
+
         columnsRadios.add(layout.findViewById(R.id.column_two))
+        (layout.findViewById(R.id.column_two) as RadioButton).contentDescription = "Columns 2"
 
         UIPreset[ReadiumCSSName.columnCount]?.let {
             columnsCountGroup.isEnabled = false

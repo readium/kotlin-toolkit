@@ -303,6 +303,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             book.id = id
                             books.add(0,book)
                             booksAdapter.notifyDataSetChanged()
+                            catalogView.longSnackbar("publication added to your library")
                             //prepareSyntheticPageList(publication, book)
                         } ?: run {
 
@@ -357,6 +358,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         books.add(0,book)
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
+                        catalogView.longSnackbar("publication added to your library")
                         if (!lcp) {
                             //prepareSyntheticPageList(publication, book)
                         }
@@ -689,6 +691,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         book.id = it
                         books.add(0,book)
                         booksAdapter.notifyDataSetChanged()
+                        catalogView.longSnackbar("publication added to your library")
                         if (!lcp) {
                             //prepareSyntheticPageList(publication, book)
                         }
@@ -740,6 +743,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val publicationPath = R2DIRECTORY + book.fileName
             books.remove(book)
             booksAdapter.notifyDataSetChanged()
+            catalogView.longSnackbar("publication deleted from your library")
             val file = File(publicationPath)
             file.delete()
             popup.dismiss()
@@ -833,6 +837,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             book!!.id = id
                             books.add(0, book!!)
                             booksAdapter.notifyDataSetChanged()
+                            catalogView.longSnackbar("publication added to your library")
                             //prepareSyntheticPageList(externalPub, book!!)
                         } ?: run {
                             showDuplicateBookAlert(book!!, externalPub, false)
