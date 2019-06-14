@@ -34,7 +34,12 @@ class LicensesService(private val licenses: LicensesRepository,
         retrieveLicense(container, authentication) { license ->
             license?.fetchPublication(context)?.success {
                 val publication = LCPImportedPublication(localURL = it, suggestedFilename = "${license.license.id}.epub")
-                license.moveLicense(publication.localURL, lcpl)
+
+                // is needed to be able to write the license in it's container
+                container.publication = publication.localURL
+
+                container.write(license.license)
+
                 completion(publication, null)
             }?.fail {
                 completion(null, LCPError.network(it))

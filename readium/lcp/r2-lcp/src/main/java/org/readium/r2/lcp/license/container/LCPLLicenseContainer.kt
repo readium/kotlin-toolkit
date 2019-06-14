@@ -1,5 +1,3 @@
-//TODO double check this, there is no write function needed here
-
 /*
  * Module: r2-lcp-kotlin
  * Developers: Aferdita Muriqi
@@ -12,9 +10,14 @@ package org.readium.r2.lcp.license.container
 
 import android.net.Uri
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.zeroturnaround.zip.ZipUtil
+import timber.log.Timber
+import java.io.File
 import java.net.URL
 
 class LCPLLicenseContainer(private val lcpl: String? = null, private val byteArray: ByteArray? = null) : LicenseContainer {
+
+    lateinit var publication: String
 
     override fun read() : ByteArray {
         return lcpl?.let {
@@ -29,8 +32,19 @@ class LCPLLicenseContainer(private val lcpl: String? = null, private val byteArr
     }
 
     override fun write(license: LicenseDocument) {
-//        val file = File(lcpl)
-//        file.writeBytes(license.data)
+        val pathInZip = "META-INF/license.lcpl"
+        Timber.i("LCP moveLicense")
+        val source = File(publication)
+        val tmpZip = File("$publication.tmp")
+        tmpZip.delete()
+        source.copyTo(tmpZip)
+        source.delete()
+        if (ZipUtil.containsEntry(tmpZip, pathInZip)) {
+            ZipUtil.removeEntry(tmpZip, pathInZip)
+        }
+        ZipUtil.addEntry(tmpZip, pathInZip, license.data, source)
+        tmpZip.delete()
     }
+
 }
 
