@@ -27,44 +27,32 @@ class PassphrasesService(private val repository: PassphrasesRepository) {
             } catch (e: Exception) {
                 null
             }
-
-            if (passphrase != null) {
-                completion(passphrase)
-            } else if (authentication != null) {
-                this@PassphrasesService.authenticate(license, LCPAuthenticationReason.passphraseNotFound, authentication) {
+            when {
+                passphrase != null -> completion(passphrase)
+                authentication != null -> this@PassphrasesService.authenticate(license, LCPAuthenticationReason.passphraseNotFound, authentication) {
                     completion(it)
                 }
-            } else {
-                completion(null)
+                else -> completion(null)
             }
         }
     }
 
     private fun authenticate(license: LicenseDocument, reason: LCPAuthenticationReason, authentication: LCPAuthenticating, completion: (String?) -> Unit) {
-
         val authenticatedLicense = LCPAuthenticatedLicense(document = license)
         authentication.requestPassphrase(authenticatedLicense, reason) { clearPassphrase ->
-
             clearPassphrase?.let {
-
                 val hashedPassphrase = HASH.sha256(clearPassphrase)
-
-                val passphrase: String = try {
-                    Lcp().findOneValidPassphrase(license.json.toString(), listOf(hashedPassphrase).toTypedArray())
+                try {
+                    val passphrase = Lcp().findOneValidPassphrase(license.json.toString(), listOf(hashedPassphrase).toTypedArray())
+                    this.repository.addPassphrase(passphrase, license.id, license.provider, license.user.id)
+                    completion(passphrase)
                 } catch (e: Exception) {
-                    this.authenticate(license, LCPAuthenticationReason.invalidPassphrase, authentication) {
-                        Lcp().findOneValidPassphrase(license.json.toString(), listOf(it!!).toTypedArray())
-                    }.toString()
+                    authenticate(license, LCPAuthenticationReason.invalidPassphrase, authentication, completion)
                 }
-
-                this.repository.addPassphrase(passphrase, license.id, license.provider, license.user.id)
-                completion(passphrase)
-
             } ?: run {
                 completion(null)
             }
         }
-
     }
 
     private fun possiblePassphrasesFromRepository(license: LicenseDocument): List<String> {

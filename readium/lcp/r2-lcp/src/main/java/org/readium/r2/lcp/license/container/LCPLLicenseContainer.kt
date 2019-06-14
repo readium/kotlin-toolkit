@@ -17,7 +17,7 @@ import java.net.URL
 
 class LCPLLicenseContainer(private val lcpl: String? = null, private val byteArray: ByteArray? = null) : LicenseContainer {
 
-    lateinit var publication: String
+    var publication: String? = null
 
     override fun read() : ByteArray {
         return lcpl?.let {
@@ -32,18 +32,20 @@ class LCPLLicenseContainer(private val lcpl: String? = null, private val byteArr
     }
 
     override fun write(license: LicenseDocument) {
-        val pathInZip = "META-INF/license.lcpl"
-        Timber.i("LCP moveLicense")
-        val source = File(publication)
-        val tmpZip = File("$publication.tmp")
-        tmpZip.delete()
-        source.copyTo(tmpZip)
-        source.delete()
-        if (ZipUtil.containsEntry(tmpZip, pathInZip)) {
-            ZipUtil.removeEntry(tmpZip, pathInZip)
+        publication?.let {
+            val pathInZip = "META-INF/license.lcpl"
+            Timber.i("LCP moveLicense")
+            val source = File(publication)
+            val tmpZip = File("$publication.tmp")
+            tmpZip.delete()
+            source.copyTo(tmpZip)
+            source.delete()
+            if (ZipUtil.containsEntry(tmpZip, pathInZip)) {
+                ZipUtil.removeEntry(tmpZip, pathInZip)
+            }
+            ZipUtil.addEntry(tmpZip, pathInZip, license.data, source)
+            tmpZip.delete()
         }
-        ZipUtil.addEntry(tmpZip, pathInZip, license.data, source)
-        tmpZip.delete()
     }
 
 }
