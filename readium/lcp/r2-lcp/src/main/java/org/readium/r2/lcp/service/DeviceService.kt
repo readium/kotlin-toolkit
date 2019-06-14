@@ -29,14 +29,14 @@ class DeviceService(private val repository: DeviceRepository, private val networ
             return deviceId
         }
     val name: String
-        get() = {
+        get() {
             val deviceName = BluetoothAdapter.getDefaultAdapter()
-            deviceName?.name?.let  {
-                return@let it
+            return deviceName?.name?.let  {
+                it
             }?: run {
-                return@run "Android Unknown"
+               "Android Unknown"
             }
-        }.toString()
+        }
 
     val asQueryParameters: MutableList<Pair<String, Any?>>
         get() = mutableListOf("id" to id, "name" to name)

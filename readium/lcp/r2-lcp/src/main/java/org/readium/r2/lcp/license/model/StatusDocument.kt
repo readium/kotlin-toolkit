@@ -49,7 +49,7 @@ data class StatusDocument(val data: ByteArray) {
     enum class Rel(val rawValue: String) {
         register("register"),
         license("license"),
-        `return`("`return`"),
+        `return`("return"),
         renew("renew");
 
         companion object {

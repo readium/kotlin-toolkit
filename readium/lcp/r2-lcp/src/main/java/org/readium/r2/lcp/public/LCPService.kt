@@ -16,6 +16,7 @@ import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.persistence.Database
 import org.readium.r2.lcp.service.*
 import org.readium.r2.shared.drm.DRMLicense
+import java.io.Serializable
 import java.net.URL
 
 
@@ -31,7 +32,7 @@ data class LCPImportedPublication(
 
 typealias URLPresenter = (URL, dismissed: () -> Unit) -> Unit
 
-interface LCPLicense : DRMLicense {
+interface LCPLicense : DRMLicense, Serializable {
     val license: LicenseDocument
     val status: StatusDocument?
     val charactersToCopyLeft: Int?

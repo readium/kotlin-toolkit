@@ -49,10 +49,14 @@ class Licenses(var database: LcpDatabaseOpenHelper) : DeviceRepository, Licenses
                         val parser = rowParser { result: Int ->
                             return@rowParser result
                         }
-                        if (parseList(parser).isEmpty()) {
+                        try {
+                            if (parseList(parser).isNullOrEmpty()) {
+                                null
+                            } else {
+                                parseList(parser)[0]
+                            }
+                        } catch (e: Exception) {
                             null
-                        } else {
-                            parseList(parser)[0]
                         }
                     }
         }

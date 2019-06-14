@@ -40,7 +40,7 @@ class NetworkService {
                 },
                 { error ->
                     Timber.e("An error of type ${error.exception} happened: ${error.message}")
-                    completion(response.statusCode, null)
+                    completion(error.response.statusCode, null)
                 }
         )
 

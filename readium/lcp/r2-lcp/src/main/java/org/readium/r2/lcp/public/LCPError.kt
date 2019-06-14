@@ -122,7 +122,7 @@ sealed class StatusError : LCPError() {
                         "This license expired on ${end.toLocalDate()}."
                     }
                 }
-                is revoked -> "This license has been revoked by its provider on ${date.toLocalDate()}.\nThe license was registered by ${devicesCount} device${if (devicesCount > 1) "s" else ""}."
+                is revoked -> "This license has been revoked by its provider on ${date.toLocalDate()}. The license was registered by ${devicesCount} device${if (devicesCount > 1) "s" else ""}."
             }
         }
 
