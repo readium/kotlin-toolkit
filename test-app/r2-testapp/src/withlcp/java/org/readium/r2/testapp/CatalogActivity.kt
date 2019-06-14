@@ -1,5 +1,3 @@
-// TODO password validation
-
 /*
  * Module: r2-testapp-kotlin
  * Developers: Aferdita Muriqi, Clément Baumann
@@ -62,7 +60,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
     override fun canFulfill(file: String): Boolean =
             file.fileExtension().toLowerCase() == "lcpl"
 
-    override fun fulfill(byteArray: ByteArray, completion: (DRMFulfilledPublication) -> Unit) {
+    override fun fulfill(byteArray: ByteArray, completion: (Any?) -> Unit) {
         lcpService.importPublication(byteArray, this) { result, error ->
             result?.let {
                 val publication = DRMFulfilledPublication(localURL = result.localURL, suggestedFilename = result.suggestedFilename)
@@ -71,7 +69,10 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                 }
             }
             error?.let {
-                throw error
+                completion(error)
+            }
+            if (result == null && error == null) {
+                completion(null)
             }
         }
     }
@@ -101,8 +102,11 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
 
     override fun requestPassphrase(license: LCPAuthenticatedLicense, reason: LCPAuthenticationReason, completion: (String?) -> Unit) {
 
-        fun promptPassphrase(reason: String? = null, callback: (pass: String) -> Unit) {
+        authenticationCallbacks[license.document.id] = completion
+
+        fun promptPassphrase(reason: String? = null) {
             launch {
+
                 var editTextTitle: EditText? = null
 
                 alert(Appcompat, "Hint: " + license.hint, reason ?: "LCP Passphrase") {
@@ -119,22 +123,21 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                     positiveButton("OK") { }
                     negativeButton("Cancel") { }
                 }.build().apply {
-                    setCancelable(false)
                     setCanceledOnTouchOutside(false)
+                    setOnCancelListener {
+                        didCancelAuthentication(license)
+                    }
                     setOnShowListener {
+                        val a = getButton(AlertDialog.BUTTON_NEGATIVE)
+                        a.setOnClickListener {
+                            didCancelAuthentication(license)
+                            dismiss()
+                        }
+
                         val b = getButton(AlertDialog.BUTTON_POSITIVE)
                         b.setOnClickListener {
-                            callback(editTextTitle!!.text.toString())
-//                            session.checkPassphrases(listOf(passphraseHash))?.let {pass ->
-//                                session.storePassphrase(pass)
-//                                callback(pass)
+                            authenticate(license, editTextTitle!!.text.toString())
                             dismiss()
-//                            } ?:run {
-//                                launch {
-//                                    editTextTitle!!.error = "You entered a wrong passphrase."
-//                                    editTextTitle!!.requestFocus()
-//                                }
-//                            }
                         }
                     }
 
@@ -142,9 +145,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
             }
         }
 
-        promptPassphrase(reason.name) {
-            completion(it)
-        }
+        promptPassphrase(reason.name)
 
     }
 
@@ -153,21 +154,35 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
         uri?.let {
             val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
             progress.show()
+
             val bytes = URL(uri.toString()).openStream().readBytes()
-            fulfill(bytes) {
-                Timber.d(it.localURL)
-                Timber.d(it.suggestedFilename)
-                val file = File(it.localURL)
-                launch {
-                    val parser = EpubParser()
-                    val pub = parser.parse(it.localURL)
-                    pub?.let {
-                        val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
-                        pub.container = pair.first
-                        pub.publication = pair.second
-                        prepareToServe(pub, file.name, file.absolutePath, true, true)
+            fulfill(bytes) { result ->
+                if (result is Exception) {
+
+                    progress.dismiss()
+                    catalogView.longSnackbar("${(result as LCPError).errorDescription}")
+
+                } else {
+                    result?.let {
+                        val publication = result as DRMFulfilledPublication
+
+                        Timber.d(publication.localURL)
+                        Timber.d(publication.suggestedFilename)
+                        val file = File(publication.localURL)
+                        launch {
+                            val parser = EpubParser()
+                            val pub = parser.parse(publication.localURL)
+                            pub?.let {
+                                val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
+                                pub.container = pair.first
+                                pub.publication = pair.second
+                                prepareToServe(pub, file.name, file.absolutePath, true, true)
+                                progress.dismiss()
+                                catalogView.longSnackbar("publication added to your library")
+                            }
+                        }
+                    } ?: run {
                         progress.dismiss()
-                        catalogView.longSnackbar("publication added to your library")
                     }
                 }
             }
@@ -196,20 +211,35 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
     override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
         val bytes = contentResolver.openInputStream(uri)?.readBytes()
         bytes?.let {
-            fulfill(bytes) {
-                Timber.d(it.localURL)
-                Timber.d(it.suggestedFilename)
-                val file = File(it.localURL)
-                launch {
-                    val parser = EpubParser()
-                    val pub = parser.parse(it.localURL)
-                    pub?.let {
-                        val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
-                        pub.container = pair.first
-                        pub.publication = pair.second
-                        prepareToServe(pub, file.name, file.absolutePath, true, true)
+
+            fulfill(bytes) { result ->
+
+                if (result is Exception) {
+
+                    progress.dismiss()
+                    catalogView.longSnackbar("${(result as LCPError).errorDescription}")
+
+                } else {
+                    result?.let {
+                        val publication = result as DRMFulfilledPublication
+
+                        Timber.d(result.localURL)
+                        Timber.d(result.suggestedFilename)
+                        val file = File(result.localURL)
+                        launch {
+                            val parser = EpubParser()
+                            val pub = parser.parse(result.localURL)
+                            pub?.let {
+                                val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
+                                pub.container = pair.first
+                                pub.publication = pair.second
+                                prepareToServe(pub, file.name, file.absolutePath, true, true)
+                                progress.dismiss()
+                                catalogView.longSnackbar("publication added to your library")
+                            }
+                        }
+                    } ?: run {
                         progress.dismiss()
-                        catalogView.longSnackbar("publication added to your library")
                     }
                 }
             }

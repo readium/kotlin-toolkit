@@ -27,7 +27,7 @@ data class DRMFulfilledPublication(
 interface DRMLibraryService {
     val brand: DRM.Brand
     fun canFulfill(file: String) : Boolean
-    fun fulfill(byteArray: ByteArray, completion: (DRMFulfilledPublication) -> Unit)
+    fun fulfill(byteArray: ByteArray, completion: (Any?) -> Unit)
     fun loadPublication(publication: String, drm: DRM, completion: (Any?) -> Unit)
 }
 
