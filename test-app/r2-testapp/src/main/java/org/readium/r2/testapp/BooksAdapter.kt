@@ -35,8 +35,13 @@ open class BooksAdapter(private val activity: Activity, private var books: Mutab
         val book = books[position]
 
         viewHolder.textView.text = book.title
+        viewHolder.textView.contentDescription = "\u00A0";
 
         viewHolder.imageView.setImageResource(R.drawable.cover)
+
+        if (book.title.isNotEmpty()) {
+            viewHolder.imageView.contentDescription = book.title
+        }
 
         book.cover?.let {
             val arrayInputStream = ByteArrayInputStream(it)
