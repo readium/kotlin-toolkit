@@ -31,25 +31,32 @@ class LicensesService(private val licenses: LicensesRepository,
 
     override fun importPublication(lcpl: ByteArray, authentication: LCPAuthenticating?, completion: (LCPImportedPublication?, LCPError?) -> Unit) = runBlocking {
         val container = LCPLLicenseContainer(byteArray = lcpl)
-        retrieveLicense(container, authentication) { license ->
-            license?.fetchPublication(context)?.success {
-                val publication = LCPImportedPublication(localURL = it, suggestedFilename = "${license.license.id}.epub")
+        try {
+            retrieveLicense(container, authentication) { license ->
+                license?.let {
+                    license.fetchPublication(context).success {
+                        val publication = LCPImportedPublication(localURL = it, suggestedFilename = "${license.license.id}.epub")
 
-                // is needed to be able to write the license in it's container
-                container.publication = publication.localURL
+                        // is needed to be able to write the license in it's container
+                        container.publication = publication.localURL
 
-                container.write(license.license)
+                        container.write(license.license)
 
-                completion(publication, null)
-            }?.fail {
-                completion(null, LCPError.network(it))
+                        completion(publication, null)
+                    }.fail {
+                        completion(null, LCPError.network(it))
+                    }
+                } ?: run {
+                    completion(null, null)
+                }
             }
+        } catch (e:Exception) {
+            completion(null, LCPError.wrap(e))
         }
     }
 
     override fun retrieveLicense(publication: String, authentication: LCPAuthenticating?, completion: (LCPLicense?, LCPError?) -> Unit) = runBlocking {
         val container = EPUBLicenseContainer(epub = publication)
-
         try {
             retrieveLicense(container, authentication) { license ->
                 Timber.d("license retrieved ${license?.license}")
@@ -98,7 +105,11 @@ class LicensesService(private val licenses: LicensesRepository,
                 }
             }
             error?.let { throw error }
-        }
 
+            if (documents == null && error == null) {
+                completion(null)
+            }
+        }
     }
+
 }
