@@ -69,6 +69,7 @@
     <string name="copyright_label">Copyright</string>
     <string name="copyright">\@ 2018 European Digital Reading Lab</string>
     <string name="bsd_license_label">[BSD-3 license]</string>
+    <string name="bsd_license_label_accessible">[B S D 3 license]</string>
     <string name="acknowledgements_label">Acknowledgements</string>
     <string name="acknowledgements_french_state">R2 Reader wouldn\'t have been developed without the financial help of the French state.</string>
     <string name="opds_list_more">More…</string>
@@ -83,7 +84,8 @@
     <string name="usersettings_appearance_sepia">Sepia</string>
     <string name="usersettings_appearance_night">Night</string>
     <string name="usersettings_label_scroll_mode">Scroll mode</string>
-    <string name="usersettings_publisher_default">Original</string>
+    <string name="usersettings_publisher_default">"Publisher's Default"</string>
+    <string name="usersettings_publisher_default_accessibility">"Publisher's Default Settings"</string>
     <string name="usersettings_label_columns">Columns</string>
     <string name="usersettings_auto">Auto</string>
     <string name="usersettings_column_one">1</string>
@@ -96,7 +98,6 @@
 
     <!-- Accessibility -->
     <string name="usersettings_description_brightness">Set Brightness</string>
-    <string name="usersettings_publisher_default_label">Original Settings</string>
     <string name="usersettings_description_font_increase">Increase Font Size</string>
     <string name="usersettings_description_font_decrease">Decrease Font Size</string>
     <string name="usersettings_description_pm_increase">Increase Page Margins Size</string>

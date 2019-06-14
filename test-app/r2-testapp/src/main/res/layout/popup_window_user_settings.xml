@@ -202,7 +202,7 @@
                         android:layout_marginTop="10dp"
                         android:text="@string/usersettings_publisher_default"
                         android:textSize="16sp"
-                        android:contentDescription="@string/usersettings_publisher_default_label" />
+                        android:contentDescription="@string/usersettings_publisher_default_accessibility" />
 
                     <RadioGroup
                         android:id="@+id/TextAlignment"

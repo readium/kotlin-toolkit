@@ -109,6 +109,7 @@ class R2AboutActivity : AppCompatActivity() {
                     textView {
                         padding = dip(10)
                         text = context.getString(R.string.bsd_license_label)
+                        contentDescription = context.getString(R.string.bsd_license_label_accessible)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {
