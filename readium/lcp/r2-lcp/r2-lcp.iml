@@ -28,18 +28,19 @@
         <compilerSettings />
         <compilerArguments>
           <option name="destination" value="$MODULE_DIR$/build/tmp/kotlin-classes/intTestappWithLcpDebug" />
-          <option name="classpath" value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-android-extensions-runtime/1.3.31/721b62ccbafe51a284ca0d1c5dcfdce8cedd4255/kotlin-android-extensions-runtime-1.3.31.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.3.31/21edc5a6b2e39bc4dc2860346fd778e27503d6cb/kotlin-stdlib-jdk8-1.3.31.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/ee8a710339e3586045a161c7f1f655cc/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/e08f946d2827794261767b8d3e6192c4/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/joda-time/joda-time/2.9.9/f7b520c458572890807d143670c9b24f4de90897/joda-time-2.9.9.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/8a7c51a3fdf2aa0292dc22d0a2054d1e/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/92c99fab94cb87af91008dc74a473c8b/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.fuel/fuel-coroutines/1.16.0/7c5bbed13b1ee402a12fd7c24f5a0169430db343/fuel-coroutines-1.16.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.fuel/fuel/1.16.0/1e20fc873530422a2a1e66c955441a88b8744b6e/fuel-1.16.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-android/3.3.0/ac4138c42e3298bf7356ca1a8e5eb0d0c483a5dd/kovenant-android-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-combine/3.3.0/1bdff49646fed34078073162d790a394808fccf4/kovenant-combine-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-jvm/3.3.0/4f606e11c79adf7586d63a853fccc17a3dbf4676/kovenant-jvm-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-functional/3.3.0/685c048fd5d5b9befe3428223746302b893894be/kovenant-functional-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-ui/3.3.0/50caab4a5d4333db850a9e4aa389567638b92c33/kovenant-ui-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-core/3.3.0/2256fde027fa1716269bad6c6adfebe97920bec9/kovenant-core-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.zeroturnaround/zt-zip/1.12/465ca9c6c8a035f57e56395ca28cecc883da730d/zt-zip-1.12.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.3.31/e652770b6416c6d85934086899ffed3eccd35813/kotlin-stdlib-jdk7-1.3.31.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/ba6c477024ede1840ec176b686bca1d8/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/3c07fd19258b46800040cbfa6079cc39/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.result/result/1.6.0/203f6b1e4fa2481d8bdf068568b5360059be7baf/result-1.6.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-core/0.30.1-eap13/8b65f61f56979edcd46cb1a6ef26f3209b33a171/kotlinx-coroutines-core-0.30.1-eap13.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/86aa2b3a35bef9af45b9d48dd43bb3df/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.31/11289d20fd95ae219333f3456072be9f081c30cc/kotlin-stdlib-1.3.31.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-core-common/0.30.1-eap13/39c5d355c4c69d81fe0e910b1162ce2f632d2bba/kotlinx-coroutines-core-common-0.30.1-eap13.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/atomicfu-common/0.11.10-eap13/47bda3184d78ed1aac1becad1f72d5237d16770b/atomicfu-common-0.11.10-eap13.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.31/20c34a04ea25cb1ef0139598bd67c764562cb170/kotlin-stdlib-common-1.3.31.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/16.0.1/c1a6655cebcac68e63e4c24d23f573035032eb2a/annotations-16.0.1.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/androidx.annotation/annotation/1.1.0-alpha01/7740fa3bdddfdbf7b05d2483987a11c3da1d052c/annotation-1.1.0-alpha01.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.6.6/ce53b0a0e2cfbb27e8a59d38f79a18a5c6a8d2b0/slf4j-api-1.6.6.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/f1f007c7a928b08a1be141239c88df0c/jars/classes.jar:/Volumes/Data/EDRLab/new workspace/workspaces/kotlin/intlcp/r2-workspace-kotlin/r2-lcp-kotlin/r2-lcp/build/intermediates/compile_only_not_namespaced_r_class_jar/intTestappWithLcpDebug/generateIntTestappWithLcpDebugRFile/R.jar:/Users/aferditamuriqi/Library/Android/sdk/platforms/android-28/android.jar" />
+          <option name="classpath" value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-android-extensions-runtime/1.3.31/721b62ccbafe51a284ca0d1c5dcfdce8cedd4255/kotlin-android-extensions-runtime-1.3.31.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.3.31/21edc5a6b2e39bc4dc2860346fd778e27503d6cb/kotlin-stdlib-jdk8-1.3.31.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/ee8a710339e3586045a161c7f1f655cc/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/a914d6c8e1cc73529bf9e44eefb2067d/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/joda-time/joda-time/2.9.9/f7b520c458572890807d143670c9b24f4de90897/joda-time-2.9.9.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/8a7c51a3fdf2aa0292dc22d0a2054d1e/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/92c99fab94cb87af91008dc74a473c8b/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.fuel/fuel-coroutines/1.16.0/7c5bbed13b1ee402a12fd7c24f5a0169430db343/fuel-coroutines-1.16.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.fuel/fuel/1.16.0/1e20fc873530422a2a1e66c955441a88b8744b6e/fuel-1.16.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-android/3.3.0/ac4138c42e3298bf7356ca1a8e5eb0d0c483a5dd/kovenant-android-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-combine/3.3.0/1bdff49646fed34078073162d790a394808fccf4/kovenant-combine-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-jvm/3.3.0/4f606e11c79adf7586d63a853fccc17a3dbf4676/kovenant-jvm-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-functional/3.3.0/685c048fd5d5b9befe3428223746302b893894be/kovenant-functional-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-ui/3.3.0/50caab4a5d4333db850a9e4aa389567638b92c33/kovenant-ui-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/nl.komponents.kovenant/kovenant-core/3.3.0/2256fde027fa1716269bad6c6adfebe97920bec9/kovenant-core-3.3.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.zeroturnaround/zt-zip/1.12/465ca9c6c8a035f57e56395ca28cecc883da730d/zt-zip-1.12.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.3.31/e652770b6416c6d85934086899ffed3eccd35813/kotlin-stdlib-jdk7-1.3.31.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/ba6c477024ede1840ec176b686bca1d8/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/3c07fd19258b46800040cbfa6079cc39/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/com.github.kittinunf.result/result/1.6.0/203f6b1e4fa2481d8bdf068568b5360059be7baf/result-1.6.0.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-core/0.30.1-eap13/8b65f61f56979edcd46cb1a6ef26f3209b33a171/kotlinx-coroutines-core-0.30.1-eap13.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/86aa2b3a35bef9af45b9d48dd43bb3df/jars/classes.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.31/11289d20fd95ae219333f3456072be9f081c30cc/kotlin-stdlib-1.3.31.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-core-common/0.30.1-eap13/39c5d355c4c69d81fe0e910b1162ce2f632d2bba/kotlinx-coroutines-core-common-0.30.1-eap13.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/atomicfu-common/0.11.10-eap13/47bda3184d78ed1aac1becad1f72d5237d16770b/atomicfu-common-0.11.10-eap13.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.31/20c34a04ea25cb1ef0139598bd67c764562cb170/kotlin-stdlib-common-1.3.31.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/16.0.1/c1a6655cebcac68e63e4c24d23f573035032eb2a/annotations-16.0.1.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/androidx.annotation/annotation/1.1.0-rc01/e3a6fb2f40e3a3842e6b7472628ba4ce416ea4c8/annotation-1.1.0-rc01.jar:/Users/aferditamuriqi/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.6.6/ce53b0a0e2cfbb27e8a59d38f79a18a5c6a8d2b0/slf4j-api-1.6.6.jar:/Users/aferditamuriqi/.gradle/caches/transforms-2/files-2.1/1d5de277b115c7a18bc3ce91abb3835a/jars/classes.jar:/Volumes/Data/EDRLab/R2/workspaces/kotlin/intlcp/r2-workspace-kotlin/r2-lcp-kotlin/r2-lcp/build/intermediates/compile_only_not_namespaced_r_class_jar/intTestappWithLcpDebug/generateIntTestappWithLcpDebugRFile/R.jar:/Users/aferditamuriqi/Library/Android/sdk/platforms/android-28/android.jar" />
           <option name="noStdlib" value="true" />
           <option name="noReflect" value="true" />
           <option name="moduleName" value="r2-lcp_intTestappWithLcpDebug" />
           <option name="addCompilerBuiltIns" value="true" />
           <option name="loadBuiltInsFromDependencies" value="true" />
+          <option name="languageVersion" value="1.3" />
+          <option name="apiVersion" value="1.3" />
           <option name="pluginOptions">
             <array>
               <option value="plugin:org.jetbrains.kotlin.android:experimental=false" />
               <option value="plugin:org.jetbrains.kotlin.android:enabled=true" />
               <option value="plugin:org.jetbrains.kotlin.android:defaultCacheImplementation=hashMap" />
-              <option value="plugin:org.jetbrains.kotlin.android:configuration=rO0ABXoAAALrAAAAAwAIZmVhdHVyZXMAAAABAAV2aWV3cwAHcGFja2FnZQAAAAEAEm9yZy5yZWFkaXVtLnIyLmxjcAAHdmFyaWFudAAAAAUAdm1haW47L1ZvbHVtZXMvRGF0YS9FRFJMYWIvbmV3IHdvcmtzcGFjZS93b3Jrc3BhY2VzL2tvdGxpbi9pbnRsY3AvcjItd29ya3NwYWNlLWtvdGxpbi9yMi1sY3Ata290bGluL3IyLWxjcC9zcmMvbWFpbi9yZXMAgmRldlRlc3RhcHA7L1ZvbHVtZXMvRGF0YS9FRFJMYWIvbmV3IHdvcmtzcGFjZS93b3Jrc3BhY2VzL2tvdGxpbi9pbnRsY3AvcjItd29ya3NwYWNlLWtvdGxpbi9yMi1sY3Ata290bGluL3IyLWxjcC9zcmMvZGV2VGVzdGFwcC9yZXMAkGRldlRlc3RhcHBXaXRoTGNwOy9Wb2x1bWVzL0RhdGEvRURSTGFiL25ldyB3b3Jrc3BhY2Uvd29ya3NwYWNlcy9rb3RsaW4vaW50bGNwL3IyLXdvcmtzcGFjZS1rb3RsaW4vcjItbGNwLWtvdGxpbi9yMi1sY3Avc3JjL2RldlRlc3RhcHBXaXRoTGNwL3JlcwCCaW50VGVzdGFwcDsvVm9sdW1lcy9EYXRhL0VEUkxhYi9uZXcgd29ya3NwYWNlL3dvcmtzcGFjZXMva290bGluL2ludGxjcC9yMi13b3Jrc3BhY2Uta290bGluL3IyLWxjcC1rb3RsaW4vcjItbGNwL3NyYy9pbnRUZXN0YXBwL3JlcwCQaW50VGVzdGFwcFdpdGhMY3A7L1ZvbHVtZXMvRGF0YS9FRFJMYWIvbmV3IHdvcmtzcGFjZS93b3Jrc3BhY2VzL2tvdGxpbi9pbnRsY3AvcjItd29ya3NwYWNlLWtvdGxpbi9yMi1sY3Ata290bGluL3IyLWxjcC9zcmMvaW50VGVzdGFwcFdpdGhMY3AvcmVz" />
             </array>
           </option>
           <option name="pluginClasspaths">
@@ -100,13 +101,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/intTestappWithLcp/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/intTestappWithLcp/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/intTestappWithLcp/shaders" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/res" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/assets" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/aidl" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/rs" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/testIntTestappWithLcp/res" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/testIntTestappWithLcp/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/testIntTestappWithLcp/assets" type="java-test-resource" />
@@ -114,6 +108,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src/testIntTestappWithLcp/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/testIntTestappWithLcp/rs" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/testIntTestappWithLcp/shaders" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/res" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/assets" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/aidl" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/rs" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestIntTestappWithLcp/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/res" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/assets" type="java-resource" />
@@ -121,13 +122,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/debug/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/shaders" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/res" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/assets" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/aidl" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/rs" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/res" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/assets" type="java-test-resource" />
@@ -135,6 +129,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/rs" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/shaders" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/res" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/assets" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/aidl" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/rs" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/res" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/assets" type="java-resource" />
@@ -214,7 +215,6 @@
     <orderEntry type="library" scope="TEST" name="Gradle: junit:junit:4.12@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.31@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-core:1.3@jar" level="project" />
-    <orderEntry type="library" name="Gradle: androidx.annotation:annotation:1.0.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.anko:anko-sqlite:0.10.8@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.github.kittinunf.result:result:1.6.0@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: androidx.test:monitor:1.2.0@aar" level="project" />
@@ -222,15 +222,15 @@
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-junit:1.3.31@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-library:1.3@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-integration:1.3@jar" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.readium:r2-shared-kotlin:develop-SNAPSHOT@aar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.anko:anko-commons:0.10.8@aar" level="project" />
     <orderEntry type="library" name="Gradle: com.github.kittinunf.fuel:fuel-coroutines:1.16.0@jar" level="project" />
+    <orderEntry type="library" name="Gradle: androidx.annotation:annotation:1.1.0-rc01@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-common:1.3.31@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-android-extensions-runtime:1.3.31@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:kotlinx-coroutines-core-common:0.30.1-eap13@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: androidx.test.espresso:espresso-idling-resource:3.2.0@aar" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.anko:sqlite-base:0.10.8@aar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: net.sf.kxml:kxml2:2.3.0@jar" level="project" />
-    <orderEntry type="library" name="Gradle: androidx.annotation:annotation:1.1.0-alpha01@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.github.readium:r2-shared-kotlin:develop-SNAPSHOT@aar" level="project" />
   </component>
 </module>
