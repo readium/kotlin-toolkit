@@ -43,7 +43,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
     lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
     lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
 
-    private lateinit var publicationPath: String
+    lateinit var publicationPath: String
     protected lateinit var epubName: String
     lateinit var publication: Publication
     lateinit var publicationIdentifier: String
