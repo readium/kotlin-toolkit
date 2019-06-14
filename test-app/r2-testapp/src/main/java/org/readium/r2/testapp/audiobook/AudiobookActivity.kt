@@ -27,6 +27,7 @@ import org.readium.r2.shared.Locator
 import org.readium.r2.shared.LocatorText
 import org.readium.r2.shared.Publication
 import org.readium.r2.testapp.*
+import org.readium.r2.testapp.DRMViewModel
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 

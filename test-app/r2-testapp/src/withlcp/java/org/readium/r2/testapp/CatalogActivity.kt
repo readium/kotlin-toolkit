@@ -1,4 +1,3 @@
-// TODO DRM VIEW MODEL
 // TODO password validation
 
 /*
@@ -23,7 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
-import org.jetbrains.anko.design.snackbar
+import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.textInputLayout
 import org.readium.r2.lcp.public.*
 import org.readium.r2.shared.Publication
@@ -47,7 +46,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    lateinit var lcpService:LCPService
+    lateinit var lcpService: LCPService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,14 +59,14 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
     override val brand: DRM.Brand
         get() = DRM.Brand.lcp
 
-    override fun canFulfill(file: String) : Boolean =
+    override fun canFulfill(file: String): Boolean =
             file.fileExtension().toLowerCase() == "lcpl"
 
     override fun fulfill(byteArray: ByteArray, completion: (DRMFulfilledPublication) -> Unit) {
-        lcpService.importPublication(byteArray, this) { result, error  ->
+        lcpService.importPublication(byteArray, this) { result, error ->
             result?.let {
                 val publication = DRMFulfilledPublication(localURL = result.localURL, suggestedFilename = result.suggestedFilename)
-                lcpService.retrieveLicense(result.localURL, this) { license, error  ->
+                lcpService.retrieveLicense(result.localURL, this) { license, error ->
                     completion(publication)
                 }
             }
@@ -77,9 +76,9 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
         }
     }
 
-    override fun loadPublication(publication: String, drm: DRM, completion:  (Any?) -> Unit) {
-        lcpService.retrieveLicense(publication, this) { license, error  ->
-            license?.let{
+    override fun loadPublication(publication: String, drm: DRM, completion: (Any?) -> Unit) {
+        lcpService.retrieveLicense(publication, this) { license, error ->
+            license?.let {
                 drm.license = license
                 completion(drm)
             } ?: run {
@@ -129,7 +128,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
 //                            session.checkPassphrases(listOf(passphraseHash))?.let {pass ->
 //                                session.storePassphrase(pass)
 //                                callback(pass)
-                                dismiss()
+                            dismiss()
 //                            } ?:run {
 //                                launch {
 //                                    editTextTitle!!.error = "You entered a wrong passphrase."
@@ -146,7 +145,6 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
         promptPassphrase(reason.name) {
             completion(it)
         }
-
 
     }
 
@@ -169,6 +167,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                         pub.publication = pair.second
                         prepareToServe(pub, file.name, file.absolutePath, true, true)
                         progress.dismiss()
+                        catalogView.longSnackbar("publication added to your library")
                     }
                 }
             }
@@ -179,19 +178,16 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
         loadPublication(file.absolutePath, drm) {
             launch {
 
-                if(it is Exception) {
+                if (it is Exception) {
 
-                    catalogView.snackbar("${(it as LCPError).errorDescription}")
+                    catalogView.longSnackbar("${(it as LCPError).errorDescription}")
 
                 } else {
 
                     prepareToServe(pub, book.fileName, file.absolutePath, false, true)
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null)?.path + "/styles/UserProperties.json")
 
-//                val drmModel = DRMViewModel(drm)
-                    val drmModel = null
-
-                    this@CatalogActivity.startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drmModel" to drmModel))
+                    this@CatalogActivity.startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drm" to true))
                 }
             }
         }
@@ -213,6 +209,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                         pub.publication = pair.second
                         prepareToServe(pub, file.name, file.absolutePath, true, true)
                         progress.dismiss()
+                        catalogView.longSnackbar("publication added to your library")
                     }
                 }
             }

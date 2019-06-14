@@ -30,6 +30,7 @@ import org.jetbrains.anko.toast
 import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.*
+import org.readium.r2.shared.drm.DRM
 import kotlin.coroutines.CoroutineContext
 
 
@@ -61,7 +62,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
 
     private lateinit var screenReader: R2ScreenReader
 
-    protected var drmModel: DRMViewModel? = null
+    protected var drm: DRM? = null
     protected var menuDrm: MenuItem? = null
     protected var menuToc: MenuItem? = null
     protected var menuBmk: MenuItem? = null
@@ -77,17 +78,8 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
 
         Handler().postDelayed({
             bookId = intent.getLongExtra("bookId", -1)
-            if (intent.getSerializableExtra("drmModel") != null) {
-                drmModel = intent.getSerializableExtra("drmModel") as DRMViewModel
-                drmModel?.let {
-                    launch {
-                        menuDrm?.isVisible = true
-                    }
-                } ?: run {
-                    launch {
-                        menuDrm?.isVisible = false
-                    }
-                }
+            launch {
+                menuDrm?.isVisible = intent.getBooleanExtra("drm", false)
             }
         }, 100)
 
@@ -145,6 +137,8 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
 
         menuScreenReader = menu?.findItem(R.id.screen_reader)
 
+        menuScreenReader?.isVisible = !isExploreByTouchEnabled
+
         menuDrm?.isVisible = false
         return true
     }
@@ -193,7 +187,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                 if (screenReader.isSpeaking) {
                     dismissScreenReader(menuScreenReader!!)
                 }
-                startActivityForResult(intentFor<DRMManagementActivity>("drmModel" to drmModel), 1)
+                startActivityForResult(intentFor<DRMManagementActivity>("publication" to publicationPath), 1)
                 return true
             }
             R.id.bookmark -> {
