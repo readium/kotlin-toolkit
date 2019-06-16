@@ -214,21 +214,30 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                                         link.title?.let {
                                             title.text = it
                                         } ?: run {
-                                            try {
+                                            title.text = try {
                                                 when (URL(link.href).protocol) {
-                                                    "http" -> title.text = "Website"
-                                                    "https" -> title.text = "Website"
-                                                    "tel" -> title.text = "Phone"
-                                                    "mailto" -> title.text = "Mail"
+                                                    "http" -> "Website"
+                                                    "https" -> "Website"
+                                                    "tel" -> "Phone"
+                                                    "mailto" -> "Mail"
+                                                    else -> "Support"
                                                 }
-                                            }
-                                            catch (e:Exception)
-                                            {
-                                                title.text ="Support"
+                                            } catch (e:Exception) {
+                                                "Support"
                                             }
                                         }
                                         setOnClickListener {
-                                            val intent = Intent(Intent.ACTION_VIEW)
+                                            val intent = try {
+                                                when (URL(link.href).protocol) {
+                                                    "http" -> Intent(Intent.ACTION_VIEW)
+                                                    "https" -> Intent(Intent.ACTION_VIEW)
+                                                    "tel" -> Intent(Intent.ACTION_CALL)
+                                                    "mailto" -> Intent(Intent.ACTION_SEND)
+                                                    else -> Intent(Intent.ACTION_VIEW)
+                                                }
+                                            } catch (e:Exception) {
+                                                Intent(Intent.ACTION_VIEW)
+                                            }
                                             intent.data = Uri.parse(link.href)
                                             startActivity(intent)
                                         }
