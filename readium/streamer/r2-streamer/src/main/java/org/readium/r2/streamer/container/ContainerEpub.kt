@@ -11,7 +11,7 @@ package org.readium.r2.streamer.container
 
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
-import org.readium.r2.shared.drm.Drm
+import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.parser.lcplFilePath
 import org.readium.r2.streamer.parser.mimetype
@@ -45,7 +45,7 @@ class ContainerEpub : EpubContainer, ZipArchiveContainer {
 
     override var rootFile: RootFile
     override var zipFile: ZipFile
-    override var drm: Drm? = null
+    override var drm: DRM? = null
     override var successCreated: Boolean = false
 
     constructor(path: String) {
@@ -57,10 +57,10 @@ class ContainerEpub : EpubContainer, ZipArchiveContainer {
         rootFile = RootFile(path, mimetype)
     }
 
-    override fun scanForDrm(): Drm? {
+    override fun scanForDrm(): DRM? {
 
         if (ZipUtil.containsEntry(File(rootFile.rootPath), lcplFilePath)) {
-            return Drm(Drm.Brand.Lcp)
+            return DRM(DRM.Brand.lcp)
         }
         return null
     }

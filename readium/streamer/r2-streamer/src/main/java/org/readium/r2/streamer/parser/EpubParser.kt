@@ -13,7 +13,7 @@ import org.readium.r2.shared.ContentLayoutStyle
 import org.readium.r2.shared.Encryption
 import org.readium.r2.shared.LangType
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.drm.Drm
+import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerEpub
@@ -59,7 +59,7 @@ class EpubParser : PublicationParser {
         return container
     }
 
-    fun parseEncryption(container: Container, publication: Publication, drm: Drm?): Pair<Container, Publication> {
+    fun parseEncryption(container: Container, publication: Publication, drm: DRM?): Pair<Container, Publication> {
         container.drm = drm
         fillEncryptionProfile(publication, drm)
 
@@ -157,23 +157,23 @@ class EpubParser : PublicationParser {
         }
     }
 
-    private fun fillEncryptionProfile(publication: Publication, drm: Drm?): Publication {
+    private fun fillEncryptionProfile(publication: Publication, drm: DRM?): Publication {
         drm?.let {
             for (link in publication.resources) {
                 if (link.properties.encryption?.scheme == it.scheme) {
-                    link.properties.encryption?.profile = it.profile
+                    link.properties.encryption?.profile = it.license?.encryptionProfile
                 }
             }
             for (link in publication.readingOrder) {
                 if (link.properties.encryption?.scheme == it.scheme) {
-                    link.properties.encryption?.profile = it.profile
+                    link.properties.encryption?.profile = it.license?.encryptionProfile
                 }
             }
         }
         return publication
     }
 
-    private fun parseEncryption(container: EpubContainer, publication: Publication, drm: Drm?) {
+    private fun parseEncryption(container: EpubContainer, publication: Publication, drm: DRM?) {
         val documentData = try {
             container.data(encryptionDotXmlPath)
         } catch (e: Exception) {
@@ -185,8 +185,8 @@ class EpubParser : PublicationParser {
         for (encryptedDataElement in encryptedDataElements) {
             val encryption = Encryption()
             val keyInfoUri = encryptedDataElement.getFirst("KeyInfo")?.getFirst("RetrievalMethod")?.let { it.attributes["URI"] }
-            if (keyInfoUri == "license.lcpl#/encryption/content_key" && drm?.brand == Drm.Brand.Lcp)
-                encryption.scheme = Drm.Scheme.Lcp
+            if (keyInfoUri == "license.lcpl#/encryption/content_key" && drm?.brand == DRM.Brand.lcp)
+                encryption.scheme = DRM.Scheme.lcp
             encryption.algorithm = encryptedDataElement.getFirst("EncryptionMethod")?.let { it.attributes["Algorithm"] }
             encp.parseEncryptionProperties(encryptedDataElement, encryption)
             encp.add(encryption, publication, encryptedDataElement)
