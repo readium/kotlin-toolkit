@@ -42,7 +42,7 @@ data class LicenseDocument(val data: ByteArray) {
         status("status");
 
         companion object {
-            operator fun invoke(rawValue: String) = Rel.values().firstOrNull { it.rawValue == rawValue }
+            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
         }
     }
 

@@ -105,7 +105,7 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
             is Document.license -> event = Event.retrievedLicenseData(document.data)
             is Document.status -> event = Event.retrievedStatusData(document.data)
         }
-        Timber.d("validate ${event} ")
+        Timber.d("validate $event ")
         observe(event, completion)
     }
 
@@ -247,8 +247,8 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
 //                throw error
             }
         }
-        onTransition {
-            val validTransition = it as? StateMachine.Transition.Valid
+        onTransition { transition ->
+            val validTransition = transition as? StateMachine.Transition.Valid
             validTransition?.let {
                 state = it.toState
             }
@@ -368,7 +368,7 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
         if (!supportedProfiles.contains(profile)) {
             throw LCPError.licenseProfileNotSupported
         }
-        crl.retrieve() { crl ->
+        crl.retrieve { crl ->
             val context = Lcp().createContext(license.json.toString(), passphrase, crl)
             raise(Event.validatedIntegrity(context))
         }

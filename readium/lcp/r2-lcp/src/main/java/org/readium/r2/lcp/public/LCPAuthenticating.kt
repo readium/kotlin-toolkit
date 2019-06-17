@@ -28,7 +28,7 @@ enum class LCPAuthenticationReason {
     invalidPassphrase
 }
 
-data class LCPAuthenticatedLicense(public val document: LicenseDocument) {
+data class LCPAuthenticatedLicense(val document: LicenseDocument) {
     val hint: String
         get() = document.encryption.userKey.textHint
     val hintLink: Link?

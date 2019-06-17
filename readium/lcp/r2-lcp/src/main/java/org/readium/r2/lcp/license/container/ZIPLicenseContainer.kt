@@ -38,7 +38,7 @@ open class ZIPLicenseContainer(private val zip: String, private val pathInZIP: S
     override fun write(license: LicenseDocument) {
         try {
             val source = File(zip)
-            val tmpZip = File("${zip}.tmp")
+            val tmpZip = File("$zip.tmp")
             tmpZip.delete()
             source.copyTo(tmpZip)
             source.delete()

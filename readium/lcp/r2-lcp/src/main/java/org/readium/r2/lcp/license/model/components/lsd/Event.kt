@@ -21,12 +21,12 @@ data class Event(val json: JSONObject) {
     enum class EventType(val rawValue: String) {
         register("register"),
         renew("renew"),
-        `return`("`return`"),
+        `return`("return"),
         revoke("revoke"),
         cancel("cancel");
 
         companion object {
-            operator fun invoke(rawValue: String) = EventType.values().firstOrNull { it.rawValue == rawValue }
+            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
         }
     }
 

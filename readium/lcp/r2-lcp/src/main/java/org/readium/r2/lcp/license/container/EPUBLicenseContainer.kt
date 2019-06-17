@@ -10,7 +10,5 @@
 package org.readium.r2.lcp.license.container
 
 
-class EPUBLicenseContainer(epub: String) : ZIPLicenseContainer(zip = epub, pathInZIP = "META-INF/license.lcpl") {
-
-}
+class EPUBLicenseContainer(epub: String) : ZIPLicenseContainer(zip = epub, pathInZIP = "META-INF/license.lcpl")
 

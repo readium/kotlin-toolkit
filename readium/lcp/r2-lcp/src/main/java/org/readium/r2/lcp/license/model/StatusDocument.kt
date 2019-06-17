@@ -42,7 +42,7 @@ data class StatusDocument(val data: ByteArray) {
         expired("expired");
 
         companion object {
-            operator fun invoke(rawValue: String) = Status.values().firstOrNull { it.rawValue == rawValue }
+            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
         }
     }
 
@@ -53,7 +53,7 @@ data class StatusDocument(val data: ByteArray) {
         renew("renew");
 
         companion object {
-            operator fun invoke(rawValue: String) = Rel.values().firstOrNull { it.rawValue == rawValue }
+            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
         }
     }
 

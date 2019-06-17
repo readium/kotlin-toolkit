@@ -27,7 +27,7 @@ interface LCPService {
 
 data class LCPImportedPublication(
         val localURL: String,
-        val suggestedFilename: String) {}
+        val suggestedFilename: String)
 
 
 typealias URLPresenter = (URL, dismissed: () -> Unit) -> Unit
@@ -52,6 +52,5 @@ fun R2MakeLCPService(context: Context): LCPService {
     val device = DeviceService(repository = db.licenses, network = network, context = context)
     val crl = CRLService(network = network, context = context)
     val passphrases = PassphrasesService(repository = db.transactions)
-    val licenses = LicensesService(licenses = db.licenses, crl = crl, device = device, network = network, passphrases = passphrases, context = context)
-    return licenses
+    return LicensesService(licenses = db.licenses, crl = crl, device = device, network = network, passphrases = passphrases, context = context)
 }

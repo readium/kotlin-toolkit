@@ -77,7 +77,7 @@ class LicensesService(private val licenses: LicensesRepository,
             try {
                 this.licenses.addLicense(licenseDocument)
             } catch (error: Error) {
-                Timber.d("Failed to add the LCP License to the local database: ${error}")
+                Timber.d("Failed to add the LCP License to the local database: $error")
             }
             if (!licenseDocument.data.contentEquals(initialData)) {
                 try {
@@ -88,7 +88,7 @@ class LicensesService(private val licenses: LicensesRepository,
                     Timber.d("license ${LicenseDocument(data = initialData).json}")
                     Timber.d("Wrote updated License Document in container")
                 } catch (error: Error) {
-                    Timber.d("Failed to write updated License Document in container: ${error}")
+                    Timber.d("Failed to write updated License Document in container: $error")
                 }
             }
 

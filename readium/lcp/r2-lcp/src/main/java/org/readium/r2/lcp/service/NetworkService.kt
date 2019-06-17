@@ -19,7 +19,7 @@ class NetworkService {
         get("GET"), post("POST"), put("PUT");
 
         companion object {
-            operator fun invoke(rawValue: String) = Method.values().firstOrNull { it.rawValue == rawValue }
+            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
         }
     }
 

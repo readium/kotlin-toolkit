@@ -11,6 +11,7 @@ package org.readium.r2.lcp.service
 
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
+import android.content.SharedPreferences
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
@@ -20,7 +21,7 @@ import java.util.*
 
 class DeviceService(private val repository: DeviceRepository, private val network: NetworkService, val context: Context):Serializable {
 
-    val preferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+    val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
     val id: String
         get() {

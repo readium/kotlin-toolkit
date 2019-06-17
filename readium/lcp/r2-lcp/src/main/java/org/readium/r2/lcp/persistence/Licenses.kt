@@ -122,7 +122,7 @@ class Licenses(var database: LcpDatabaseOpenHelper) : DeviceRepository, Licenses
     }
 
     override fun printsLeft(licenseId: String): Int? {
-        return get(LicensesTable.PRINTSLEFT, licenseId) as Int?
+        return get(LicensesTable.PRINTSLEFT, licenseId)
     }
 
     override fun setPrintsLeft(quantity: Int, licenseId: String) {

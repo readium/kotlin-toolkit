@@ -10,6 +10,7 @@
 package org.readium.r2.lcp.service
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
@@ -20,7 +21,7 @@ import java.util.*
 
 class CRLService(val network: NetworkService, val context: Context) {
 
-    val preferences = context.getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
+    val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
     companion object {
         val expiration = 7
@@ -31,13 +32,13 @@ class CRLService(val network: NetworkService, val context: Context) {
     fun retrieve(completion: (String) -> Unit) {
         val localCRL = readLocal()
         localCRL?.let {
-            if (daysSince(localCRL.second) < CRLService.expiration) {
+            if (daysSince(localCRL.second) < expiration) {
                 completion(localCRL.first)
             }
         }
 
         try {
-            fetch() { received ->
+            fetch { received ->
                 received?.let {
                     saveLocal(received)
                     completion(received)
@@ -69,9 +70,9 @@ class CRLService(val network: NetworkService, val context: Context) {
     }
 
     private fun readLocal(): Pair<String, DateTime>? {
-        val crl = preferences.getString(CRLService.crlKey, null)
-        val date = preferences.getString(CRLService.dateKey, null)?.let {
-            DateTime(preferences.getString(CRLService.dateKey, null))
+        val crl = preferences.getString(crlKey, null)
+        val date = preferences.getString(dateKey, null)?.let {
+            DateTime(preferences.getString(dateKey, null))
         }
         if (crl == null || date == null) {
             return null
@@ -80,8 +81,8 @@ class CRLService(val network: NetworkService, val context: Context) {
     }
 
     private fun saveLocal(crl: String): String {
-        preferences.edit().putString(CRLService.crlKey, crl).apply()
-        preferences.edit().putString(CRLService.dateKey, DateTime().toString()).apply()
+        preferences.edit().putString(crlKey, crl).apply()
+        preferences.edit().putString(dateKey, DateTime().toString()).apply()
         return crl
     }
 

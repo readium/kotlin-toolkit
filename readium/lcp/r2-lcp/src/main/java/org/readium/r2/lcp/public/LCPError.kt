@@ -122,7 +122,7 @@ sealed class StatusError : LCPError() {
                         "This license expired on ${end.toLocalDate()}."
                     }
                 }
-                is revoked -> "This license has been revoked by its provider on ${date.toLocalDate()}. The license was registered by ${devicesCount} device${if (devicesCount > 1) "s" else ""}."
+                is revoked -> "This license has been revoked by its provider on ${date.toLocalDate()}. The license was registered by $devicesCount device${if (devicesCount > 1) "s" else ""}."
             }
         }
 
@@ -217,17 +217,17 @@ sealed class LCPClientError(errorCode: Int? = null) : LCPError() {
 
     override val errorDescription: String?
         get() {
-            when (this) {
-                is licenseOutOfDate -> return "License is out of date (check start and end date)."
-                is certificateRevoked -> return "Certificate has been revoked in the CRL."
-                is certificateSignatureInvalid -> return "Certificate has not been signed by CA."
-                is licenseSignatureDateInvalid -> return "License has been issued by an expired certificate."
-                is licenseSignatureInvalid -> return "License signature does not match."
-                is contextInvalid -> return "The drm context is invalid."
-                is contentKeyDecryptError -> return "Unable to decrypt encrypted content key from user key."
-                is userKeyCheckInvalid -> return "User key check invalid."
-                is contentDecryptError -> return "Unable to decrypt encrypted content from content key."
-                is unknown -> return "Unknown error."
+            return when (this) {
+                is licenseOutOfDate -> "License is out of date (check start and end date)."
+                is certificateRevoked -> "Certificate has been revoked in the CRL."
+                is certificateSignatureInvalid -> "Certificate has not been signed by CA."
+                is licenseSignatureDateInvalid -> "License has been issued by an expired certificate."
+                is licenseSignatureInvalid -> "License signature does not match."
+                is contextInvalid -> "The drm context is invalid."
+                is contentKeyDecryptError -> "Unable to decrypt encrypted content key from user key."
+                is userKeyCheckInvalid -> "User key check invalid."
+                is contentDecryptError -> "Unable to decrypt encrypted content from content key."
+                is unknown -> "Unknown error."
                 else -> TODO()
             }
         }
