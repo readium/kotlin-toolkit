@@ -22,7 +22,7 @@ import java.io.File
 
 data class DRMFulfilledPublication(
         val localURL: String,
-        val suggestedFilename: String) {}
+        val suggestedFilename: String)
 
 interface DRMLibraryService {
     val brand: DRM.Brand

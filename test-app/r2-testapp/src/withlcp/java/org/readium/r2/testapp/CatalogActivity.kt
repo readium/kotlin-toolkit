@@ -289,7 +289,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                                 val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
                                 pub.container = pair.first
                                 pub.publication = pair.second
-                                prepareToServe(pub, file.name, file.absolutePath, true, true)
+                                prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
                                 progress.dismiss()
                                 catalogView.longSnackbar("publication added to your library")
                             }
@@ -312,7 +312,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
 
                 } else {
 
-                    prepareToServe(pub, book.fileName, file.absolutePath, false, true)
+                    prepareToServe(pub, book.fileName, file.absolutePath, add = false, lcp = true)
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null)?.path + "/styles/UserProperties.json")
 
                     this@CatalogActivity.startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drm" to true))
@@ -349,7 +349,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                                 val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
                                 pub.container = pair.first
                                 pub.publication = pair.second
-                                prepareToServe(pub, file.name, file.absolutePath, true, true)
+                                prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
                                 progress.dismiss()
                                 catalogView.longSnackbar("publication added to your library")
                             }
