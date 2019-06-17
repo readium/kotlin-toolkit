@@ -277,7 +277,6 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
     private var menuToc: MenuItem? = null
     private var menuBmk: MenuItem? = null
     private var menuSettings: MenuItem? = null
-    private var drmModel: DRMViewModel? = null
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_audio, menu)
