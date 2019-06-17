@@ -11,6 +11,7 @@
 package org.readium.r2.testapp
 
 
+import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.ContentResolver
 import android.content.Context
@@ -54,7 +55,7 @@ import org.readium.r2.navigator.R2CbzActivity
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.drm.Drm
+import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.parsePublication
 import org.readium.r2.shared.promise
@@ -64,6 +65,7 @@ import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.audiobook.AudiobookActivity
+import org.readium.r2.testapp.drm.LCPLibraryActivityService
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSDownloader
 import org.readium.r2.testapp.opds.OPDSListActivity
@@ -81,7 +83,8 @@ import java.nio.charset.Charset
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
-open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LcpFunctions, CoroutineScope {
+@SuppressLint("Registered")
+open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LCPLibraryActivityService, CoroutineScope {
 
 
     /**
@@ -120,7 +123,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         localPort = s.localPort
         server = Server(localPort)
-        R2DIRECTORY = this.getExternalFilesDir(null).path + "/"
+        R2DIRECTORY = this.getExternalFilesDir(null)?.path + "/"
 
         permissions = Permissions(this)
         permissionHelper = PermissionHelper(this, permissions)
@@ -537,14 +540,14 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = false)
+                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
                         progress.dismiss()
                     }
                 } else if (uriString.endsWith(".cbz")) {
                     val parser = CbzParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = false)
+                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
                         progress.dismiss()
                     }
                 }
@@ -623,7 +626,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun copySamplesFromAssetsToStorage() {
-        val list = assets.list("Samples").filter { it.endsWith(".epub") || it.endsWith(".cbz") }
+        assets.list("Samples")?.filter { it.endsWith(".epub") || it.endsWith(".cbz") }?.let {list ->
             for (element in list) {
                 val input = assets.open("Samples/$element")
                 val fileName = UUID.randomUUID().toString()
@@ -634,13 +637,14 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
-                    prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = false)
+                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
                     }
                 } else if (element.endsWith(".cbz")) {
                     val parser = CbzParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
-                    prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = false)
+                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
+                    }
                 }
             }
         }
@@ -703,7 +707,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                 }
                 if (!lcp) {
-                    server.addEpub(publication, container, "/$fileName", applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
+                    server.addEpub(publication, container, "/$fileName", applicationContext.getExternalFilesDir(null)?.path + "/styles/UserProperties.json")
                 }
 
             } else if (publication.type == Publication.TYPE.CBZ) {
@@ -774,7 +778,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     pub?.let {
-                        pub.container.drm?.let { drm: Drm ->
+                        pub.container.drm?.let { drm: DRM ->
                             prepareAndStartActivityWithLCP(drm, pub, book, file, publicationPath, parser, pub.publication, isNetworkAvailable)
                         } ?: run {
                             prepareAndStartActivity(pub, book, file, publicationPath, pub.publication)
@@ -927,7 +931,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val publicationPath = R2DIRECTORY + fileName
 
         val input = contentResolver.openInputStream(uri)
-        input.toFile(publicationPath)
+        input?.toFile(publicationPath)
         val file = File(publicationPath)
 
         try {
@@ -936,7 +940,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = false)
+                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
                         progress.dismiss()
 
                     }
@@ -944,7 +948,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val parser = CbzParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = false)
+                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
                         progress.dismiss()
 
                     }
@@ -1004,7 +1008,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         listener?.parseIntentLcpl(uriString, networkAvailable)
     }
 
-    override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean) {
+    override fun prepareAndStartActivityWithLCP(drm: DRM, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean) {
         listener?.prepareAndStartActivityWithLCP(drm, pub, book, file, publicationPath, parser, publication, networkAvailable)
     }
 
@@ -1012,11 +1016,5 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         listener?.processLcpActivityResult(uri,it,progress, networkAvailable)
     }
 
-}
-
-interface LcpFunctions {
-    fun parseIntentLcpl(uriString: String, networkAvailable: Boolean)
-    fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean)
-    fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean)
 }
 
