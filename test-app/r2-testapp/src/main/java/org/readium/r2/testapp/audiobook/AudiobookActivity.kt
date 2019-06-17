@@ -27,7 +27,6 @@ import org.readium.r2.shared.Locator
 import org.readium.r2.shared.LocatorText
 import org.readium.r2.shared.Publication
 import org.readium.r2.testapp.*
-import org.readium.r2.testapp.DRMViewModel
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
@@ -70,17 +69,8 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
         epubName = intent.getStringExtra("epubName")
         publicationIdentifier = publication.metadata.identifier
 
-        if (intent.getSerializableExtra("drmModel") != null) {
-            drmModel = intent.getSerializableExtra("drmModel") as DRMViewModel
-            drmModel?.let {
-                launch {
-                    menuDrm?.isVisible = true
-                }
-            } ?: run {
-                launch {
-                    menuDrm?.isVisible = false
-                }
-            }
+        launch {
+            menuDrm?.isVisible = intent.getBooleanExtra("drm", false)
         }
 
         bookmarksDB = BookmarksDatabase(this)
@@ -316,7 +306,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
                 return true
             }
             R.id.drm -> {
-                startActivityForResult(intentFor<DRMManagementActivity>("drmModel" to drmModel), 1)
+                startActivityForResult(intentFor<DRMManagementActivity>("publication" to publicationPath), 1)
                 return true
             }
             R.id.bookmark -> {
