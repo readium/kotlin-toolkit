@@ -19,8 +19,9 @@ import android.widget.Scroller
 import androidx.annotation.CallSuper
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import org.readium.r2.shared.RenditionLayout
-import org.readium.r2.shared.SCROLL_REF
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 
@@ -34,21 +35,27 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         initWebPager()
     }
 
+    private val uiScope = CoroutineScope(Dispatchers.Main)
+
     @android.webkit.JavascriptInterface
     override fun scrollRight() {
         super.scrollRight()
-        if (mCurItem < numPages-1) {
-            mCurItem++
-            activity.onPageChanged(mCurItem + 1, numPages, url)
+        uiScope.launch {
+            if (mCurItem < numPages - 1) {
+                mCurItem++
+                activity.onPageChanged(mCurItem + 1, numPages, url)
+            }
         }
     }
 
     @android.webkit.JavascriptInterface
     override fun scrollLeft() {
         super.scrollLeft()
-        if (mCurItem > 0) {
-            mCurItem--
-            activity.onPageChanged(mCurItem + 1, numPages, url)
+        uiScope.launch {
+            if (mCurItem > 0) {
+                mCurItem--
+                activity.onPageChanged(mCurItem + 1, numPages, url)
+            }
         }
     }
 
@@ -104,8 +111,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     private var mScrollingCacheEnabled: Boolean = false
 
     private var mIsBeingDragged: Boolean = false
-    private var mIsUnableToDrag: Boolean = false
-    private var mGutterSize: Int = 0
+    private var mGutterSize: Int = 30
     private var mTouchSlop: Int = 0
     /**
      * Position of the last motion event.
@@ -269,8 +275,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
      * @param item Item index to select
      * @param smoothScroll True to smoothly scroll to the new item, false to transition immediately
      */
-    fun setCurrentItem(item: Int, smoothScroll: Boolean ) {
-       setCurrentItemInternal(item, smoothScroll, false)
+    fun setCurrentItem(item: Int, smoothScroll: Boolean) {
+        setCurrentItemInternal(item, smoothScroll, false)
     }
 
     fun calculateCurrentItem() {
@@ -290,7 +296,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             requestLayout()
         } else {
             mCurItem = item
-            scrollToItem(item, smoothScroll, velocity,true)
+            scrollToItem(item, smoothScroll, velocity, true)
         }
     }
 
@@ -621,137 +627,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         }
     }
 
-    private fun isGutterDrag(x: Float, dx: Float): Boolean {
-        return x < mGutterSize && dx > 0 || x > width - mGutterSize && dx < 0
-    }
-
-    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        /*
-         * This method JUST determines whether we want to intercept the motion.
-         * If we return true, onMotionEvent will be called and we do the actual
-         * scrolling there.
-         */
-
-        val action = ev.action and MotionEvent.ACTION_MASK
-
-        // Always take care of the touch gesture being complete.
-        if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
-            // Release the drag.
-            if (DEBUG) Timber.v( "Intercept done!")
-            return false
-        }
-
-        // Nothing more to do here if we have decided whether or not we
-        // are dragging.
-        if (action != MotionEvent.ACTION_DOWN) {
-            if (mIsBeingDragged) {
-                if (DEBUG) Timber.v( "Intercept returning true!")
-                return true
-            }
-            if (mIsUnableToDrag) {
-                if (DEBUG) Timber.v( "Intercept returning false!")
-                return false
-            }
-        }
-
-        when (action) {
-            MotionEvent.ACTION_MOVE -> {
-                /*
-                 * mIsBeingDragged == false, otherwise the shortcut would have caught it. Check
-                 * whether the user has moved far enough from his original down touch.
-                 */
-
-                /*
-                 * Locally do absolute value. mLastMotionY is set to the y value
-                 * of the down event.
-                 */
-                val activePointerId = mActivePointerId
-                val pointerIndex = ev.findPointerIndex(activePointerId)
-                val x = ev.getX(pointerIndex)
-                val dx = x - mLastMotionX
-                val xDiff = Math.abs(dx)
-                val y = ev.getY(pointerIndex)
-                val yDiff = Math.abs(y - mInitialMotionY)
-                if (DEBUG) Timber.v( "Moved x to $x,$y diff=$xDiff,$yDiff")
-
-                if (dx != 0f && !isGutterDrag(mLastMotionX, dx)
-                        && canScroll(this, false, dx.toInt(), x.toInt(), y.toInt())) {
-                    // Nested view has scrollable area under this point. Let it be handled there.
-                    mLastMotionX = x
-                    mLastMotionY = y
-                    mIsUnableToDrag = true
-                    return false
-                }
-                if (xDiff > mTouchSlop && xDiff * 0.5f > yDiff) {
-                    if (DEBUG) Timber.v( "Starting drag!")
-                    mIsBeingDragged = true
-                    setScrollState(SCROLL_STATE_DRAGGING)
-                    mLastMotionX = if (dx > 0)
-                        mInitialMotionX + mTouchSlop
-                    else
-                        mInitialMotionX - mTouchSlop
-                    mLastMotionY = y
-                    setScrollingCacheEnabled(true)
-                } else if (yDiff > mTouchSlop) {
-                    // The finger has moved enough in the vertical
-                    // direction to be counted as a drag...  abort
-                    // any attempt to drag horizontally, to work correctly
-                    // with children that have scrolling containers.
-                    if (DEBUG) Timber.v( "Starting unable to drag!")
-                    mIsUnableToDrag = true
-                }
-                if (mIsBeingDragged) {
-                    // Scroll to follow the motion event
-                    if (performDrag(x)) {
-                        ViewCompat.postInvalidateOnAnimation(this)
-                    }
-                }
-            }
-
-            MotionEvent.ACTION_DOWN -> {
-                /*
-                 * Remember location of down touch.
-                 * ACTION_DOWN always refers to pointer index 0.
-                 */
-                mInitialMotionX = ev.x
-                mLastMotionX = mInitialMotionX
-                mInitialMotionY = ev.y
-                mLastMotionY = mInitialMotionY
-                mActivePointerId = ev.getPointerId(0)
-                mIsUnableToDrag = false
-
-                mIsScrollStarted = true
-                mScroller!!.computeScrollOffset()
-                if (mScrollState == SCROLL_STATE_SETTLING && Math.abs(mScroller!!.finalX - mScroller!!.currX) > mCloseEnough) {
-                    // Let the user 'catch' the pager as it animates.
-                    mScroller!!.abortAnimation()
-                    mIsBeingDragged = true
-                    setScrollState(SCROLL_STATE_DRAGGING)
-                } else {
-                    completeScroll(false)
-                    mIsBeingDragged = false
-                }
-
-                if (DEBUG) {
-                    Timber.v( "Down at " + mLastMotionX + "," + mLastMotionY + " mIsBeingDragged=" + mIsBeingDragged + "mIsUnableToDrag=" + mIsUnableToDrag)
-                }
-            }
-
-            MotionEvent.ACTION_POINTER_UP -> onSecondaryPointerUp(ev)
-        }
-
-        if (mVelocityTracker == null) {
-            mVelocityTracker = VelocityTracker.obtain()
-        }
-        mVelocityTracker!!.addMovement(ev)
-
-        /*
-         * The only time we want to intercept motion events is if we are in the
-         * drag mode.
-         */
-        return mIsBeingDragged
-    }
-
     override fun onTouchEvent(ev: MotionEvent): Boolean {
 
         if (mVelocityTracker == null) {
@@ -760,7 +635,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         mVelocityTracker!!.addMovement(ev)
 
         val action = ev.action
-        var needsInvalidate = false
         when (action and MotionEvent.ACTION_MASK) {
 
             MotionEvent.ACTION_DOWN -> {
@@ -775,6 +649,12 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 mActivePointerId = ev.getPointerId(0)
             }
             MotionEvent.ACTION_MOVE -> {
+
+                if ((mLastMotionX > (width - mGutterSize)) || (mLastMotionX < mGutterSize)) {
+                    requestDisallowInterceptTouchEvent(true)
+                    return false
+                }
+
                 if (!mIsBeingDragged) {
                     val pointerIndex = ev.findPointerIndex(mActivePointerId)
                     val x = ev.getX(pointerIndex)
@@ -782,10 +662,11 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     val y = ev.getY(pointerIndex)
                     val yDiff = Math.abs(y - mLastMotionY)
                     if (DEBUG) {
-                        Timber.v( "Moved x to $x,$y diff=$xDiff,$yDiff")
+                        Timber.v("Moved x to $x,$y diff=$xDiff,$yDiff")
                     }
+
                     if (xDiff > mTouchSlop && xDiff > yDiff) {
-                        if (DEBUG) Timber.v( "Starting drag!")
+                        if (DEBUG) Timber.v("Starting drag!")
                         mIsBeingDragged = true
                         mLastMotionX = if (x - mInitialMotionX > 0)
                             mInitialMotionX + mTouchSlop
@@ -794,17 +675,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                         mLastMotionY = y
                         setScrollState(SCROLL_STATE_DRAGGING)
                         setScrollingCacheEnabled(true)
-                        if (activity.publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
-//                            activity.resourcePager.disableTouchEvents = true
-                        }
                     }
-                }
-                // Not else! Note that mIsBeingDragged can be set above.
-                if (mIsBeingDragged) {
-                    // Scroll to follow the motion event
-                    val activePointerIndex = ev.findPointerIndex(mActivePointerId)
-                    val x = ev.getX(activePointerIndex)
-//                    needsInvalidate = needsInvalidate or performDrag(x)
                 }
             }
             MotionEvent.ACTION_UP -> if (mIsBeingDragged) {
@@ -818,18 +689,9 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 val totalDelta = (x - mInitialMotionX).toInt()
                 val nextPage = determineTargetPage(currentPage, 0f, initialVelocity, totalDelta)
 
-                // TODO check if the start or end and switch resources instead
-                if (currentPage == 0 && nextPage == 0) {
-                    activity.resourcePager.disableTouchEvents = false
-                } else if(numPages == nextPage) {
-                    activity.resourcePager.disableTouchEvents = false
-                } else {
-                    activity.resourcePager.disableTouchEvents = true
-                }
-
                 setCurrentItemInternal(nextPage, true, initialVelocity)
-                return true
             }
+
             MotionEvent.ACTION_CANCEL -> if (mIsBeingDragged) {
                 scrollToItem(mCurItem, true, 0, false)
             }
@@ -844,68 +706,10 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 mLastMotionX = ev.getX(ev.findPointerIndex(mActivePointerId))
             }
         }
-        val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
-        if (scrollMode) {
-            return super.onTouchEvent(ev)
-        }
-//        super.onTouchEvent(ev);
-        return super.onTouchEvent(ev);
-//        return true
+
+        return super.onTouchEvent(ev)
     }
 
-    private fun performDrag(x: Float): Boolean {
-        var needsInvalidate = false
-
-        val deltaX = mLastMotionX - x
-        mLastMotionX = x
-
-        val oldScrollX = scrollX.toFloat()
-        var scrollX = oldScrollX + deltaX
-        val width = getClientWidth()
-
-        var leftBound = width * mFirstOffset
-        var rightBound = width * mLastOffset
-        var leftAbsolute = true
-        var rightAbsolute = true
-
-        val firstItem = ItemInfo()
-        firstItem.position = 0
-        firstItem.offset = 0f
-        val lastItem = ItemInfo()
-        lastItem.position = numPages - 1
-        lastItem.offset = 1f
-
-        if (firstItem.position != 0) {
-            leftAbsolute = false
-            leftBound = firstItem.offset * width
-        }
-        if (lastItem.position != numPages - 1) {
-            rightAbsolute = false
-            rightBound = lastItem.offset * width
-        }
-
-        if (scrollX < leftBound) {
-            if (leftAbsolute) {
-                val over = leftBound - scrollX
-                mLeftEdge!!.onPull(Math.abs(over) / width)
-                needsInvalidate = true
-            }
-            scrollX = leftBound
-        } else if (scrollX > rightBound) {
-            if (rightAbsolute) {
-                val over = scrollX - rightBound
-                mRightEdge!!.onPull(Math.abs(over) / width)
-                needsInvalidate = true
-            }
-            scrollX = rightBound
-        }
-        // Don't lose the rounded component
-        mLastMotionX += scrollX - scrollX.toInt()
-        scrollTo(scrollX.toInt(), scrollY)
-        pageScrolled(scrollX.toInt())
-
-        return needsInvalidate
-    }
 
     /**
      * @return Info about the page at the current scroll position.
@@ -1003,40 +807,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         }
     }
 
-
-    /**
-     * Tests scrollability within child views of v given a delta of dx.
-     *
-     * @param v View to test for horizontal scrollability
-     * @param checkV Whether the view v passed should itself be checked for scrollability (true),
-     * or just its children (false).
-     * @param dx Delta scrolled in pixels
-     * @param x X coordinate of the active touch point
-     * @param y Y coordinate of the active touch point
-     * @return true if child views of v can be scrolled by delta of dx.
-     */
-    private fun canScroll(v: View, checkV: Boolean, dx: Int, x: Int, y: Int): Boolean {
-        if (v is ViewGroup) {
-            val scrollX = v.getScrollX()
-            val scrollY = v.getScrollY()
-            val count = v.childCount
-            // Count backwards - let topmost views consume scroll distance first.
-            for (i in count - 1 downTo 0) {
-                // TODO: Add versioned support here for transformed views.
-                // This will not work for transformed views in Honeycomb+
-                val child = v.getChildAt(i)
-                if (x + scrollX >= child.left && x + scrollX < child.right
-                        && y + scrollY >= child.top && y + scrollY < child.bottom
-                        && canScroll(child, true, dx, x + scrollX - child.left,
-                                y + scrollY - child.top)) {
-                    return true
-                }
-            }
-        }
-
-        return checkV && v.canScrollHorizontally(-dx)
-    }
-
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         // Let the focused view and/or our descendants get the key first
         return super.dispatchKeyEvent(event) || executeKeyEvent(event)
@@ -1106,7 +876,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     sb.append(" => ").append(parent.javaClass.simpleName)
                     parent = parent.parent
                 }
-                Timber.e( "arrowScroll tried to find focus based on non-child current focused view %s", sb.toString())
+                Timber.e("arrowScroll tried to find focus based on non-child current focused view %s", sb.toString())
                 currentFocused = null
             }
         }
@@ -1198,10 +968,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             var numPages = 0
             try {
                 numPages = getContentWidth() / (getClientWidth() - 2)
-            }
-            catch (e:Exception) {
-            }
-            finally {
+            } catch (e: Exception) {
+            } finally {
                 if (numPages == 0) {
                     numPages = 1
                 }
@@ -1230,26 +998,11 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
          */
         var gravity: Int = 0
 
-        /**
-         * Width as a 0-1 multiplier of the measured pager width
-         */
-        internal var widthFactor = 0f
-
-        /**
-         * true if this view was added during layout and needs to be measured
-         * before being positioned.
-         */
-        internal var needsMeasure: Boolean = false
 
         /**
          * Adapter position this view is for if !isDecor
          */
         internal var position: Int = 0
-
-        /**
-         * Current child index within the ViewPager that this view occupies
-         */
-        internal var childIndex: Int = 0
 
         constructor() : super(MATCH_PARENT, MATCH_PARENT)
 
