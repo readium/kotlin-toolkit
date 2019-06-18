@@ -34,6 +34,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         initWebPager()
     }
 
+    @android.webkit.JavascriptInterface
     override fun scrollRight() {
         super.scrollRight()
         if (mCurItem < numPages-1) {
@@ -42,6 +43,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         }
     }
 
+    @android.webkit.JavascriptInterface
     override fun scrollLeft() {
         super.scrollLeft()
         if (mCurItem > 0) {
@@ -793,7 +795,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                         setScrollState(SCROLL_STATE_DRAGGING)
                         setScrollingCacheEnabled(true)
                         if (activity.publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
-                            activity.resourcePager.disableTouchEvents = true
+//                            activity.resourcePager.disableTouchEvents = true
                         }
                     }
                 }
@@ -802,7 +804,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     // Scroll to follow the motion event
                     val activePointerIndex = ev.findPointerIndex(mActivePointerId)
                     val x = ev.getX(activePointerIndex)
-                    needsInvalidate = needsInvalidate or performDrag(x)
+//                    needsInvalidate = needsInvalidate or performDrag(x)
                 }
             }
             MotionEvent.ACTION_UP -> if (mIsBeingDragged) {
@@ -821,20 +823,12 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     activity.resourcePager.disableTouchEvents = false
                 } else if(numPages == nextPage) {
                     activity.resourcePager.disableTouchEvents = false
+                } else {
+                    activity.resourcePager.disableTouchEvents = true
                 }
 
                 setCurrentItemInternal(nextPage, true, initialVelocity)
-
-            } else {
-                val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
-                val position = (ev.x % getClientWidth()) / getClientWidth()
-                if (!scrollMode) {
-                    when {
-                        position <= 0.2 -> scrollLeft()
-                        position >= 0.8 -> scrollRight()
-                        else -> centerTapped()
-                    }
-                }
+                return true
             }
             MotionEvent.ACTION_CANCEL -> if (mIsBeingDragged) {
                 scrollToItem(mCurItem, true, 0, false)
@@ -855,7 +849,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             return super.onTouchEvent(ev)
         }
 //        super.onTouchEvent(ev);
-        return true
+        return super.onTouchEvent(ev);
+//        return true
     }
 
     private fun performDrag(x: Float): Boolean {
@@ -1200,7 +1195,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
     internal val numPages: Int
         get() {
-            var numPages: Int = 0
+            var numPages = 0
             try {
                 numPages = getContentWidth() / (getClientWidth() - 2)
             }
