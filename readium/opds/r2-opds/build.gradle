@@ -16,12 +16,12 @@ group='com.github.readium'
 android {
     flavorDimensions "testapp"
 
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 27
+        targetSdkVersion 28
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -54,18 +54,17 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.7.1'
     if (findProject(':r2-shared')) {
-        devTestappImplementation project(':r2-shared')
-        devTestappWithLcpImplementation project(':r2-shared')
+        implementation project(':r2-shared')
+    } else {
+        implementation "com.github.readium:r2-shared-kotlin:1.0.10"
     }
-    intTestappImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
-    intTestappWithLcpImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
-    implementation "com.android.support:appcompat-v7:$support_version"
+    implementation "androidx.appcompat:appcompat:1.1.0-beta01"
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
     implementation 'joda-time:joda-time:2.9.9'
     implementation 'com.github.kittinunf.fuel:fuel:1.16.0'
     implementation 'com.github.kittinunf.fuel:fuel-android:1.16.0'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 }
