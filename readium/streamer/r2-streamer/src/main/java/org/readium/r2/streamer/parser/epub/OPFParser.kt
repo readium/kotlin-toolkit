@@ -9,16 +9,20 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import android.util.Log
 import org.joda.time.DateTime
-import org.readium.r2.shared.*
+import org.readium.r2.shared.Link
+import org.readium.r2.shared.Metadata
+import org.readium.r2.shared.Properties
+import org.readium.r2.shared.Publication
 import org.readium.r2.shared.parser.xml.Node
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.parser.normalize
+import timber.log.Timber
 
 class OPFParser {
 
     val smilp = SMILParser()
+
     private var rootFilePath: String? = null
 
     fun parseOpf(document: XmlParser, filePath: String, epubVersion: Double): Publication? {
@@ -48,7 +52,11 @@ class OPFParser {
                 document.getFirst("package")!!.attributes) ?: return false
         metadata.description = metadataElement.getFirst("dc:description")?.text
         metadata.publicationDate = metadataElement.getFirst("dc:date")?.text
-        metadata.modified = DateTime(metadataParser.modifiedDate(metadataElement)).toDate()
+        metadata.modified = try {
+            DateTime(metadataParser.modifiedDate(metadataElement)).toDate()
+        } catch (e: Exception) {
+            null
+        }
         metadata.source = metadataElement.getFirst("dc:sources")?.text
         metadataParser.subject(metadataElement)?.let { metadata.subjects.add(it) }
         metadata.languages = metadataElement.get("dc:language")?.map { it.text!! }?.toMutableList()
@@ -94,7 +102,7 @@ class OPFParser {
     private fun parseSpine(spine: Node, publication: Publication) {
         val spineItems = spine.get("itemref")!!
         if (spineItems.isEmpty()) {
-            Log.d("Warning", "Spine has no children elements")
+            Timber.tag("Warning").d("Spine has no children elements")
             return
         }
         for (item in spineItems) {
@@ -108,7 +116,6 @@ class OPFParser {
             }
             if (item.attributes["linear"]?.toLowerCase() == "no")
                 continue
-            publication.resources[index].title = null
             publication.readingOrder.add(publication.resources[index])
             publication.resources.removeAt(index)
         }

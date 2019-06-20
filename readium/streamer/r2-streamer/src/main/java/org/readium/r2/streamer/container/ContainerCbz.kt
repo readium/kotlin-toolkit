@@ -10,7 +10,7 @@
 package org.readium.r2.streamer.container
 
 import org.readium.r2.shared.RootFile
-import org.readium.r2.shared.drm.Drm
+import org.readium.r2.shared.drm.DRM
 import org.readium.r2.streamer.parser.mimetypeCBZ
 import java.io.File
 import java.util.zip.ZipFile
@@ -20,7 +20,7 @@ class ContainerCbz : CbzContainer, ZipArchiveContainer {
 
     override var rootFile: RootFile
     override var zipFile: ZipFile
-    override var drm: Drm? = null
+    override var drm: DRM? = null
     override var successCreated: Boolean = false
 
     constructor(path: String) {
@@ -36,7 +36,7 @@ class ContainerCbz : CbzContainer, ZipArchiveContainer {
         val filesList = mutableListOf<String>()
         zipFile.let {
             val listEntries = it.entries()
-            listEntries.toList().forEach { filesList.add(it.toString()) }
+            listEntries.toList().forEach { entry -> filesList.add(entry.toString()) }
         }
         return filesList
     }

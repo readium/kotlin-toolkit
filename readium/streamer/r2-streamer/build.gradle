@@ -16,11 +16,11 @@ group='com.github.readium'
 android {
     flavorDimensions "testapp"
 
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 27
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        targetSdkVersion 28
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -51,11 +51,10 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.7.1'
-    intTestappImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
-    intTestappWithLcpImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
     if (findProject(':r2-shared')) {
-        devTestappImplementation project(':r2-shared')
-        devTestappWithLcpImplementation project(':r2-shared')
+        implementation project(':r2-shared')
+    } else {
+        implementation "com.github.readium:r2-shared-kotlin:1.0.10"
     }
 
     //TODO conflicting support libraries, excluding these
@@ -66,7 +65,7 @@ dependencies {
     implementation('com.mcxiaoke.koi:async:0.5.5') {
         exclude module: 'support-v4'
     }
-    implementation "com.android.support:appcompat-v7:$support_version"
+    implementation "androidx.appcompat:appcompat:1.1.0-beta01"
     implementation 'org.nanohttpd:nanohttpd:2.3.2-SNAPSHOT'
     implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.2-SNAPSHOT'
     implementation 'com.google.code.gson:gson:2.8.2'
@@ -82,7 +81,7 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.11.2'
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 }

@@ -9,7 +9,6 @@
 
 package org.readium.r2.streamer.fetcher
 
-import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.*
@@ -131,7 +130,33 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
                 resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, " style=\"${buildStringProperties(propertyPair)}\"").toString()
             }
         }
+
+        resourceHtml = applyDirectionAttribute(resourceHtml, publication)
+
         return resourceHtml.toByteArray().inputStream()
+    }
+
+    private fun applyDirectionAttribute(resourceHtml: String, publication: Publication): String {
+        var resourceHtml1 = resourceHtml
+        fun addRTLDir(tagName: String, html: String): String {
+            return Regex("""<$tagName.*>""").find(html, 0)?.let { result ->
+                Regex("""dir=""").find(result.value, 0)?.let {
+                    html
+                } ?: run {
+                    val beginHtmlIndex = html.indexOf("<$tagName", 0, false) + 5
+                    StringBuilder(html).insert(beginHtmlIndex, " dir=\"rtl\"").toString()
+                }
+            } ?: run {
+                html
+            }
+        }
+
+        if (publication.cssStyle == PageProgressionDirection.rtl.name) {
+            resourceHtml1 = addRTLDir("html", resourceHtml1)
+            resourceHtml1 = addRTLDir("body", resourceHtml1)
+        }
+
+        return resourceHtml1
     }
 
     private fun injectFixedLayoutHtml(stream: InputStream): InputStream {
@@ -188,7 +213,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
             return@let try {
                 val propertiesArray = JSONArray(userPropertiesString)
                 val properties: MutableMap<String, String> = mutableMapOf()
-                for (i in 0..(propertiesArray.length() - 1)) {
+                for (i in 0 until propertiesArray.length()) {
                     val value = JSONObject(propertiesArray.getString(i))
                     var isInPreset = false
 
@@ -197,18 +222,17 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
                             isInPreset = true
                             val presetPair = Pair(property.key, preset[property.key])
                             val presetValue = applyPreset(presetPair)
-                            properties.put(presetValue.getString("name"), presetValue.getString("value"))
+                            properties[presetValue.getString("name")] = presetValue.getString("value")
                         }
                     }
 
                     if (!isInPreset) {
-                        properties.put(value.getString("name"), value.getString("value"))
+                        properties[value.getString("name")] = value.getString("value")
                     }
 
                 }
                 properties
             } catch (e: Exception) {
-                Log.e("ContentFilter", "Error parsing json : $e")
                 null
             }
         }

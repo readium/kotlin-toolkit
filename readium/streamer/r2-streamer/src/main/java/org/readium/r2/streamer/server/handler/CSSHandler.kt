@@ -47,7 +47,7 @@ class CSSHandler : RouterNanoHTTPD.DefaultHandler() {
             val x = createResponse(Status.OK, "text/css", resources.get(uri))
             x
         } catch (e: Exception) {
-            Timber.e( " Exception " + e.toString())
+            Timber.e( " Exception %s", e.toString())
             newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
 
