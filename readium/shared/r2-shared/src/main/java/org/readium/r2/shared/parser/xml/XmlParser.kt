@@ -9,8 +9,8 @@
 
 package org.readium.r2.shared.parser.xml
 
-import android.util.Xml
 import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserFactory
 import java.io.InputStream
 
 class XmlParser {
@@ -25,11 +25,13 @@ class XmlParser {
 
     fun root() = nodes.firstOrNull() ?: throw Exception("No root in xml document")
 
-    fun parseXml(stream: InputStream) {
+    fun parseXml(stream: InputStream, isNamespaceAware:Boolean = false) {
         nodes = mutableListOf()
-        val parser = Xml.newPullParser()
 
-        parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
+        val factory = XmlPullParserFactory.newInstance()
+        factory.isNamespaceAware = isNamespaceAware
+        val parser = factory.newPullParser()
+
         parser.setInput(stream, null)
         parser.nextTag()
         while (parser.eventType != XmlPullParser.END_DOCUMENT) {
@@ -38,7 +40,7 @@ class XmlParser {
                     val node = Node(parser.name)
                     for (i in 0 until parser.attributeCount)
                         node.attributes[parser.getAttributeName(i)] = parser.getAttributeValue(i)
-                    if (!(nodes.isEmpty()))
+                    if (nodes.isNotEmpty())
                         nodes.last().children.add(node)
                     nodes.add(node)
                 }

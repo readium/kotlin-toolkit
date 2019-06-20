@@ -21,7 +21,7 @@ class Contributor : JSONable, Serializable {
     var links: MutableList<Link> = mutableListOf()
     var identifier: String? = null
 
-    var name: String? = null
+    val name: String?
         get() = multilanguageName.singleString
 
     override fun toJSON(): JSONObject {
@@ -55,7 +55,7 @@ fun parseContributors(contributors: Any): List<Contributor> {
             val c = parseContributor(contributors)
             result.add(c)
         }
-        is JSONArray -> for (i in 0..(contributors.length() - 1)) {
+        is JSONArray -> for (i in 0 until contributors.length()) {
             when (contributors.get(i)) {
                 is String -> {
                     val c = Contributor()
@@ -98,7 +98,7 @@ fun parseContributor(cDict: JSONObject): Contributor {
         cDict.get("links")?.let {
         val links = it as? JSONArray
                 ?: JSONArray()
-        for (i in 0..(links.length() - 1)) {
+        for (i in 0 until links.length()) {
             val linkDict = links.getJSONObject(i)
             val link = parseLink(linkDict)
             c.links.add(link)

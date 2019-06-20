@@ -16,21 +16,21 @@ import java.io.Serializable
  * Locator model - https://github.com/readium/architecture/tree/master/locators
  *
  * @val href: String -  The href of the resource the locator points at.
- * @val created: Long - The datetime of creation of the locator.
+ * @val type: String - The media type of the resource that the Locator Object points to.
  * @val title: String - The title of the chapter or section which is more relevant in the context of this locator.
  * @val location: Location - One or more alternative expressions of the location.
  * @val text: LocatorText? - Textual context of the locator.
  */
 
 open class Locator(val href: String,
-                   val created: Long,
-                   val title: String,
-                   val locations: Locations,
+                   val type: String,
+                   val title: String? = null,
+                   val locations: Locations? = null,
                    val text: LocatorText?) : Serializable
 
 class LocatorText(var after: String? = null,
                   var before: String? = null,
-                  var hightlight: String? = null)
+                  var highlight: String? = null)
     : JSONable, Serializable {
 
     companion object {
@@ -40,8 +40,8 @@ class LocatorText(var after: String? = null,
             if (json.has("before")) {
                 location.before = json.getString("before")
             }
-            if (json.has("hightlight")) {
-                location.hightlight = json.getString("hightlight")
+            if (json.has("highlight")) {
+                location.highlight = json.getString("highlight")
             }
             if (json.has("after")) {
                 location.after = json.getString("after")
@@ -57,8 +57,8 @@ class LocatorText(var after: String? = null,
         before?.let {
             json.putOpt("before", before)
         }
-        hightlight?.let {
-            json.putOpt("hightlight", hightlight)
+        highlight?.let {
+            json.putOpt("highlight", highlight)
         }
         after?.let {
             json.putOpt("after", after)
@@ -69,16 +69,9 @@ class LocatorText(var after: String? = null,
 
     override fun toString(): String {
         var jsonString = """{"""
-
-        if (before != null) {
-            before.let { jsonString += """ "before": "$before" ,""" }
-        }
-        if (hightlight != null) {
-            hightlight.let { jsonString += """ "before": "$hightlight" ,""" }
-        }
-        if (after != null) {
-            after.let { jsonString += """ "after": "$after" ,""" }
-        }
+        before.let { jsonString += """ "before": "$before" ,""" }
+        highlight.let { jsonString += """ "before": "$highlight" ,""" }
+        after.let { jsonString += """ "after": "$after" ,""" }
         jsonString += """}"""
         return jsonString
     }
@@ -87,37 +80,22 @@ class LocatorText(var after: String? = null,
 /**
  * Location : Class that contain the different variables needed to localize a particular position
  *
- * @var id: Long? - Identifier of a specific fragment in the publication
- * @var cfi: String? - String formatted to designed a particular place in an Publication
- * @var cssSelector: String? - Css selector
- * @var xpath: String? - An xpath in the resource
- * @var progression: Double - A percentage ( between 0 and 1 ) of the progression in a Publication
- * @var position: Long - Index of a segment in the resource / synthetic page number!!??
+ * @var fragment: Long? - Contains one or more fragment in the resource referenced by the Locator Object.
+ * @var progression: Double - Progression in the resource expressed as a percentage.
+ * @var position: Long - An index in the publication.
  *
  */
-class Locations(var cfi: String? = null,             // 1 = highlight, annotation etc
-                var id: String? = null,              // 2 = fragment identifier (toc, page lists, landmarks)
-                var cssSelector: String? = null,     // 2 =
-                var xpath: String? = null,           // 2 =
-                var progression: Double? = null,     // 3 = bookmarks
-                var position: Long? = null           // 4 = goto page
+class Locations(var fragment: String? = null,        // 1 = fragment identifier (toc, page lists, landmarks)
+                var progression: Double? = null,     // 2 = bookmarks
+                var position: Long? = null           // 3 = goto page
 ) : JSONable, Serializable {
 
     companion object {
         fun fromJSON(json: JSONObject): Locations {
 
             val location = Locations()
-            if (json.has("id")) {
-                location.id = json.getString("id")
-            }
-            if (json.has("cfi")) {
-                location.cfi = json.getString("cfi")
-            }
-            if (json.has("cssSelector")) {
-                location.cssSelector = json.getString("cssSelector")
-            }
-            if (json.has("xpath")) {
-                location.xpath = json.getString("xpath")
+            if (json.has("fragment")) {
+                location.fragment = json.getString("fragment")
             }
             if (json.has("progression")) {
                 location.progression = json.getDouble("progression")
@@ -128,22 +106,21 @@ class Locations(var cfi: String? = null,             // 1 = highlight, annotatio
 
             return location
         }
+
+        fun isEmpty(locations: Locations):Boolean {
+            if (locations.fragment == null && locations.position == null && locations.progression == null) {
+                return true
+            }
+            return false
+        }
+
     }
 
     override fun toJSON(): JSONObject {
         val json = JSONObject()
 
-        id?.let {
-            json.putOpt("id", id)
-        }
-        cfi?.let {
-            json.putOpt("cfi", cfi)
-        }
-        cssSelector?.let {
-            json.putOpt("cssSelector", cssSelector)
-        }
-        xpath?.let {
-            json.putOpt("xpath", xpath)
+        fragment?.let {
+            json.putOpt("fragment", fragment)
         }
         progression?.let {
             json.putOpt("progression", progression)
@@ -157,18 +134,7 @@ class Locations(var cfi: String? = null,             // 1 = highlight, annotatio
 
     override fun toString(): String {
         var jsonString = """{"""
-        if (id != null) {
-            id.let { jsonString += """ "id": "$id" ,""" }
-        }
-        if (cfi != null) {
-            cfi.let { jsonString += """ "cfi": "$cfi" ,""" }
-        }
-        if (cssSelector != null) {
-            cssSelector.let { jsonString += """ "cssSelector": "$cssSelector" ,""" }
-        }
-        if (xpath != null) {
-            xpath.let { jsonString += """ "xpath": "$xpath" ,""" }
-        }
+        fragment.let { jsonString += """ "fragment": "$fragment" ,""" }
         progression.let { jsonString += """ "progression": "$progression" ,""" }
         position.let { jsonString += """ "position": "$position" """ }
         jsonString += """}"""

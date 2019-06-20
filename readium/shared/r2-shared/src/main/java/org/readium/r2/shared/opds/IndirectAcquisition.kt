@@ -19,7 +19,7 @@ data class IndirectAcquisition(var typeAcquisition: String) : Serializable {
 
 }
 
-enum class IndirectAcquisitionError(v: String) {
+enum class IndirectAcquisitionError(value: String) {
     InvalidJSON("OPDS 2 manifest is not valid JSON"),
     MetadataNotFound("Metadata not found"),
     InvalidMetadata("Invalid metadata"),
@@ -39,14 +39,13 @@ fun parseIndirectAcquisition(indirectAcquisitionDict: JSONObject): IndirectAcqui
             ?: throw Exception(IndirectAcquisitionError.InvalidIndirectAcquisition.name)
     val indirectAcquisition = IndirectAcquisition(typeAcquisition = indirectAcquisitionType)
     if (indirectAcquisitionDict.has("child")){
-        val childDictAny = indirectAcquisitionDict.get("child")
-        when (childDictAny) {
+        when (val childDictAny = indirectAcquisitionDict.get("child")) {
             is JSONObject -> {
                 val child = parseIndirectAcquisition(indirectAcquisitionDict = childDictAny)
                 indirectAcquisition.child.add(child)
             }
             is JSONArray -> {
-                for (i in 0..(childDictAny.length() - 1)) {
+                for (i in 0 until childDictAny.length()) {
                     val childDict = childDictAny.getJSONObject(i)
                     val child = parseIndirectAcquisition(indirectAcquisitionDict = childDict)
                     indirectAcquisition.child.add(child)
