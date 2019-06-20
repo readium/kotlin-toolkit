@@ -55,12 +55,10 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
-    intTestappImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
-    intTestappWithLcpImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
-
     if (findProject(':r2-shared')) {
-        devTestappImplementation project(':r2-shared')
-        devTestappWithLcpImplementation project(':r2-shared')
+        implementation project(':r2-shared')
+    } else {
+        implementation "com.github.readium:r2-shared-kotlin:1.0.10"
     }
 
     implementation project(':liblcp')
@@ -79,11 +77,6 @@ dependencies {
     implementation 'com.github.kittinunf.fuel:fuel-android:1.16.0'
     implementation 'com.github.kittinunf.fuel:fuel-coroutines:1.16.0'
 
-    //    implementation 'com.github.kittinunf.fuel:fuel-livedata:1.12.1' //for LiveData support
-    //    implementation 'com.github.kittinunf.fuel:fuel-rxjava:1.12.1' //for RxJava support
-    //    implementation 'com.github.kittinunf.fuel:fuel-gson:1.12.1' //for Gson support
-    //    implementation 'com.github.kittinunf.fuel:fuel-jackson:1.12.1' //for Jackson support
-    //    implementation 'com.github.kittinunf.fuel:fuel-moshi:1.12.1' //for Moshi support
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
     implementation 'nl.komponents.kovenant:kovenant-core:3.3.0'
     implementation 'nl.komponents.kovenant:kovenant-android:3.3.0'
