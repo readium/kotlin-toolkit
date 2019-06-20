@@ -39,10 +39,10 @@ class BooksDatabase(context: Context) {
 
 }
 
-class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "books_database", null, BooksDatabaseOpenHelper.DATABASE_VERSION) {
+class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "books_database", null, DATABASE_VERSION) {
     companion object {
         private var instance: BooksDatabaseOpenHelper? = null
-        private val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 3
 
         @Synchronized
         fun getInstance(ctx: Context): BooksDatabaseOpenHelper {

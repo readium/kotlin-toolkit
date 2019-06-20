@@ -3,6 +3,13 @@ window.addEventListener("load", function(){ // on page load
                         // Notify native code that the page is loaded.
                         //webkit.messageHandlers.didLoad.postMessage("");
                             checkScrollMode();
+                            if(scrolling) {
+                                update(last_known_scrollY_position);
+                                console.log("last_known_scrollY_position " + last_known_scrollY_position);
+                            } else {
+                                update(last_known_scroll_position);
+                                console.log("last_known_scroll_position " + last_known_scroll_position);
+                            }
                         }, false);
 
 var last_known_scroll_position = 0;
@@ -37,8 +44,8 @@ var checkScrollMode = function() {
 
 
 window.addEventListener('scroll', function(e) {
-    last_known_scrollY_position = window.scrollY / document.body.scrollHeight;
-    last_known_scroll_position = window.scrollX / document.body.scrollWidth;
+    last_known_scrollY_position = window.scrollY / document.scrollingElement.scrollHeight;
+    last_known_scroll_position = window.scrollX / document.scrollingElement.scrollWidth;
 
     checkScrollMode();
 
@@ -62,9 +69,9 @@ window.addEventListener('scroll', function(e) {
 var scrollToId = function(id) {
     var element = document.getElementById(id);
     var elementOffset = element.scrollLeft // element.getBoundingClientRect().left works for Gutenbergs books
-    var offset = window.scrollX + elementOffset;
+    var offset = Math.round(window.scrollX + elementOffset);
 
-    document.body.scrollLeft = snapOffset(offset);
+    document.scrollingElement.scrollLeft = snapOffset(offset);
 };
 
 // Position must be in the range [0 - 1], 0-100%.
@@ -74,10 +81,9 @@ var scrollToPosition = function(position) {
         console.log("InvalidPosition");
         return;
     }
-    var offset = document.body.scrollWidth * position;
+    var offset = Math.round(document.scrollingElement.scrollWidth * position);
 
-    console.log("ScrollToOffset " + offset);
-    document.body.scrollLeft = snapOffset(offset);
+    document.scrollingElement.scrollLeft = snapOffset(offset);
     update(position);
 };
 
@@ -86,8 +92,8 @@ var scrollToEnd = function() {
     checkScrollMode();
 
     if(!scrolling) {
-        console.log("scrollToEnd " + document.body.scrollWidth);
-        document.body.scrollLeft = document.body.scrollWidth;
+        console.log("scrollToEnd " + document.scrollingElement.scrollWidth);
+        document.scrollingElement.scrollLeft = document.scrollingElement.scrollWidth;
     } else {
         console.log("scrollToBottom " + document.body.scrollHeight);
         document.scrollingElement.scrollTop = document.body.scrollHeight;
@@ -101,7 +107,7 @@ var scrollToStart = function() {
 
     if(!scrolling) {
         console.log("scrollToStart " + 0);
-        document.body.scrollLeft = 0;
+        document.scrollingElement.scrollLeft = 0;
     } else {
         console.log("scrollToTop " + 0);
         document.scrollingElement.scrollTop = 0;
@@ -119,18 +125,16 @@ var scrollToPosition = function(position, dir) {
     checkScrollMode();
 
     if(!scrolling) {
-        var offset = 0.0;
+        var offset = 0;
         if (dir == 'rtl') {
-            offset = (-document.body.scrollWidth + maxScreenX) * (1.0-position);
+            offset = (-document.scrollingElement.scrollWidth + window.innerWidth) * (1.0-position);
         } else {
-            offset = document.body.scrollWidth * position;
+            offset = document.scrollingElement.scrollWidth * position;
         }
-        console.log("offset " + offset);
-        document.body.scrollLeft = snapOffset(offset);
+        document.scrollingElement.scrollLeft = snapOffset(offset);
         update(position);
     } else {
-        var offset = document.body.scrollHeight * position;
-        console.log(offset);
+        var offset = Math.round(document.body.scrollHeight * position);
         document.scrollingElement.scrollTop = offset;
         window.scrollTo(0, offset);
         update(position);
@@ -139,16 +143,15 @@ var scrollToPosition = function(position, dir) {
 
 var scrollLeft = function() {
     console.log("scrollLeft");
-    scrollToPosition(last_known_scroll_position, 'ltr')
-    var offset = window.scrollX - maxScreenX;
 
+    var offset = Math.round(window.scrollX - window.innerWidth);
     if (offset >= 0) {
-        document.body.scrollLeft = offset;
-        last_known_scroll_position = window.scrollX / document.body.scrollWidth;
+        document.scrollingElement.scrollLeft = snapOffset(offset);
+        last_known_scroll_position = window.scrollX / document.scrollingElement.scrollWidth;
         update(last_known_scroll_position);
         return "";
     } else {
-        document.body.scrollLeft = 0;
+        document.scrollingElement.scrollLeft = 0;
         update(1.0);
         return "edge"; // Need to previousDocument.
     }
@@ -157,8 +160,8 @@ var scrollLeft = function() {
 var scrollLeftRTL = function() {
     console.log("scrollLeftRTL");
 
-    var scrollWidth = document.body.scrollWidth;
-    var offset = window.scrollX - maxScreenX;
+    var scrollWidth = document.scrollingElement.scrollWidth;
+    var offset = Math.round(window.scrollX - window.innerWidth);
     var edge = -scrollWidth + window.innerWidth;
 
     if (window.innerWidth == scrollWidth) {
@@ -167,7 +170,7 @@ var scrollLeftRTL = function() {
     } else {
         // Scrolled and zoomed
         if (offset > edge) {
-            document.scrollingElement.scrollLeft = offset
+            document.scrollingElement.scrollLeft = snapOffset(offset)
             return 0;
         } else {
             var oldOffset = window.scrollX;
@@ -185,18 +188,17 @@ var scrollLeftRTL = function() {
 
 var scrollRight = function() {
     console.log("scrollRight");
-    scrollToPosition(last_known_scroll_position, 'ltr')
-    var offset = window.scrollX + maxScreenX;
-    var scrollWidth = document.body.scrollWidth;
+    var offset = Math.round(window.scrollX + window.innerWidth);
+    var scrollWidth = document.scrollingElement.scrollWidth;
 
     if (offset < scrollWidth) {
-        document.scrollingElement.scrollLeft = offset;
-        last_known_scroll_position = window.scrollX / document.body.scrollWidth;
-        console.log("last_known_scroll_position " + last_known_scroll_position);
+        document.scrollingElement.scrollLeft = snapOffset(offset);
+        last_known_scroll_position = scrollWidth / document.scrollingElement.scrollWidth;
         update(last_known_scroll_position);
         return "";
     } else {
         document.scrollingElement.scrollLeft = scrollWidth;
+        last_known_scroll_position = scrollWidth;
         update(0.0);
         return "edge"; // Need to nextDocument.
     }
@@ -205,8 +207,8 @@ var scrollRight = function() {
 var scrollRightRTL = function() {
    console.log("scrollRightRTL");
 
-    var scrollWidth = document.body.scrollWidth;
-    var offset = window.scrollX + window.innerWidth;
+    var scrollWidth = document.scrollingElement.scrollWidth;
+    var offset = Math.round(window.scrollX + window.innerWidth);
     var edge = 0;
 
     if (window.innerWidth == scrollWidth) {
@@ -215,7 +217,7 @@ var scrollRightRTL = function() {
     } else {
         // Scrolled and zoomed
         if (offset < edge) {
-            document.scrollingElement.scrollLeft = offset
+            document.scrollingElement.scrollLeft = snapOffset(offset)
             return 0;
         } else {
             var oldOffset = window.scrollX;
@@ -233,9 +235,9 @@ var scrollRightRTL = function() {
 
 // Snap the offset to the screen width (page width).
 var snapOffset = function(offset) {
-    let value = offset + 1;
+    let value = offset;
 
-    return value - (value % maxScreenX);
+    return value - (value % window.innerWidth);
 };
 
 /// User Settings.

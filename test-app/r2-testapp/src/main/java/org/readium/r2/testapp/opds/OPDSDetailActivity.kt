@@ -13,12 +13,15 @@ package org.readium.r2.testapp.opds
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.mcxiaoke.koi.ext.onClick
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
@@ -34,8 +37,14 @@ import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.coroutines.CoroutineContext
 
-class OPDSDetailActivity : AppCompatActivity() {
+class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,9 +63,18 @@ class OPDSDetailActivity : AppCompatActivity() {
 
                 imageView {
                     this@linearLayout.gravity = Gravity.CENTER
-                    Picasso.with(act).load(publication.images.first().href).into(this)
+
+                    publication.coverLink?.let { link ->
+                        Picasso.with(this@OPDSDetailActivity).load(link.href).into(this)
+                    } ?: run {
+                        if (publication.images.isNotEmpty()) {
+                            Picasso.with(this@OPDSDetailActivity).load(publication.images.first().href).into(this)
+                        }
+                    }
+
                 }.lparams {
                     height = 800
+                    width = matchParent
                 }
 
                 textView {
@@ -82,18 +100,27 @@ class OPDSDetailActivity : AppCompatActivity() {
                                 val publicationIdentifier = publication.metadata.identifier
                                 val author = authorName(publication)
                                 Thread {
-                                    val bitmap = getBitmapFromURL(publication.images.first().href!!)
                                     val stream = ByteArrayOutputStream()
-                                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+
+                                    publication.coverLink?.let { link ->
+                                        val bitmap = getBitmapFromURL(link.href!!)
+                                        bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                    } ?: run {
+                                        if (publication.images.isNotEmpty()) {
+                                            val bitmap = getBitmapFromURL(publication.images.first().href!!)
+                                            bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                        }
+                                    }
+
                                     val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
                                     database.books.insert(book, false)?.let {
                                         book.id = it
                                         books.add(0,book)
-                                        snackbar(this, "download completed")
+                                        this.snackbar("download completed")
                                         progress.dismiss()
                                     } ?: run {
                                         progress.dismiss()
-                                        runOnUiThread {
+                                        launch {
 
                                             val duplicateAlert = alert(Appcompat, "Publication already exists") {
 

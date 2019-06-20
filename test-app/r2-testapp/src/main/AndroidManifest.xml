@@ -25,7 +25,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:replace="android:allowBackup">
+        tools:replace="android:allowBackup"
+        android:usesCleartextTraffic="true"
+        tools:targetApi="m">
         <activity android:name=".CatalogActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

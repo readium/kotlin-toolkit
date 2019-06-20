@@ -12,31 +12,36 @@ package org.readium.r2.testapp
 
 import android.app.Activity
 import android.graphics.BitmapFactory
-import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import java.io.ByteArrayInputStream
 
 
 open class BooksAdapter(private val activity: Activity, private var books: MutableList<Book>, private val server: String, private var itemListener: RecyclerViewClickListener) : RecyclerView.Adapter<BooksAdapter.ViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BooksAdapter.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = activity.layoutInflater
         val view = inflater.inflate(R.layout.item_recycle_opds, parent, false)
 
         return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(viewHolder: BooksAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
         val book = books[position]
 
         viewHolder.textView.text = book.title
+        viewHolder.textView.contentDescription = "\u00A0";
 
         viewHolder.imageView.setImageResource(R.drawable.cover)
+
+        if (book.title.isNotEmpty()) {
+            viewHolder.imageView.contentDescription = book.title
+        }
 
         book.cover?.let {
             val arrayInputStream = ByteArrayInputStream(it)

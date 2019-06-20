@@ -15,17 +15,20 @@ package org.readium.r2.testapp.opds
 import android.app.ProgressDialog
 import android.content.Context
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
 import android.view.*
 import android.widget.LinearLayout
 import android.widget.ListPopupWindow
 import android.widget.ListView
 import android.widget.PopupWindow
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.commonsware.cwac.merge.MergeAdapter
 import com.mcxiaoke.koi.ext.onClick
 import kotlinx.android.synthetic.main.filter_row.view.*
 import kotlinx.android.synthetic.main.section_header.view.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.ui.successUi
 import org.jetbrains.anko.*
@@ -42,9 +45,15 @@ import org.readium.r2.testapp.R
 import timber.log.Timber
 import java.net.MalformedURLException
 import java.net.URL
+import kotlin.coroutines.CoroutineContext
 
 
-class OPDSCatalogActivity : AppCompatActivity() {
+class OPDSCatalogActivity : AppCompatActivity(), CoroutineScope {
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     private lateinit var facets: MutableList<Facet>
     private var parsePromise: Promise<ParseData, Exception>? = null
@@ -84,7 +93,7 @@ class OPDSCatalogActivity : AppCompatActivity() {
             }
             invalidateOptionsMenu()
 
-            runOnUiThread {
+            launch {
                 nestedScrollView {
                     padding = dip(10)
 
@@ -159,11 +168,11 @@ class OPDSCatalogActivity : AppCompatActivity() {
         }
 
         parsePromise?.fail {
-            runOnUiThread {
+            launch {
                 progress.dismiss()
 //                snackbar(act.coordinatorLayout(), it.message!!)
             }
-            Timber.e(it.message)
+            Timber.e(it)
         }
 
     }

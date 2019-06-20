@@ -12,10 +12,10 @@ package org.readium.r2.testapp
 
 import android.graphics.Typeface
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.appcompat.app.AppCompatActivity
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.coordinatorLayout
 
@@ -109,6 +109,7 @@ class R2AboutActivity : AppCompatActivity() {
                     textView {
                         padding = dip(10)
                         text = context.getString(R.string.bsd_license_label)
+                        contentDescription = context.getString(R.string.bsd_license_label_accessible)
                         textSize = 18f
                     }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                     textView {

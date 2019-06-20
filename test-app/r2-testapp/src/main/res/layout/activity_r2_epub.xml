@@ -8,7 +8,7 @@
   ~ LICENSE file present in the project repository where this source code is maintained.
   -->
 
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/constraint"
@@ -27,7 +27,7 @@
 
 
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
 
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -37,7 +37,7 @@
         >
 
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/timeline"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -68,15 +68,14 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                android:text="Chapter" />
+                android:text="@string/chapter" />
 
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
         <TextView
             android:id="@+id/tts_textView"
-            android:text="TextView"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginEnd="8dp"
@@ -123,7 +122,8 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_skip_previous_white_24dp" />
+                android:src="@drawable/ic_skip_previous_white_24dp"
+                android:contentDescription="TODO" />
 
             <ImageButton
                 android:id="@+id/fast_back"
@@ -132,7 +132,8 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:scaleType="fitCenter"
-                android:src="@drawable/baseline_fast_rewind_white_24" />
+                android:src="@drawable/baseline_fast_rewind_white_24"
+                android:contentDescription="TODO" />
 
 
             <ImageButton
@@ -142,7 +143,8 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_play_arrow_white_24dp" />
+                android:src="@drawable/ic_play_arrow_white_24dp"
+                android:contentDescription="TODO" />
 
             <ImageButton
                 android:id="@+id/fast_forward"
@@ -151,7 +153,8 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:scaleType="fitCenter"
-                android:src="@drawable/baseline_fast_forward_white_24" />
+                android:src="@drawable/baseline_fast_forward_white_24"
+                android:contentDescription="TODO" />
 
             <ImageButton
                 android:id="@+id/next_chapter"
@@ -160,14 +163,15 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_skip_next_white_24dp" />
+                android:src="@drawable/ic_skip_next_white_24dp"
+                android:contentDescription="TODO" />
 
 
         </LinearLayout>
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

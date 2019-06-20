@@ -8,13 +8,16 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.SeekBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_audiobook.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.indeterminateProgressDialog
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
@@ -23,12 +26,17 @@ import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
 import org.readium.r2.shared.LocatorText
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.drm.DRMModel
 import org.readium.r2.testapp.*
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.CoroutineContext
 
 
-class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
+class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineScope {
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     private var mediaPlayer: R2MediaPlayer? = null
 
@@ -61,24 +69,15 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
         epubName = intent.getStringExtra("epubName")
         publicationIdentifier = publication.metadata.identifier
 
-        if (intent.getSerializableExtra("drmModel") != null) {
-            drmModel = intent.getSerializableExtra("drmModel") as DRMModel
-            drmModel?.let {
-                runOnUiThread {
-                    menuDrm?.isVisible = true
-                }
-            } ?: run {
-                runOnUiThread {
-                    menuDrm?.isVisible = false
-                }
-            }
+        launch {
+            menuDrm?.isVisible = intent.getBooleanExtra("drm", false)
         }
 
         bookmarksDB = BookmarksDatabase(this)
 
         title = null
 
-        val locations = Locations.fromJSON(JSONObject(preferences.getString("${publicationIdentifier}-documentLocations", "{}")))
+        val locations = Locations.fromJSON(JSONObject(preferences.getString("$publicationIdentifier-documentLocations", "{}")))
 
         val index = preferences.getInt("$publicationIdentifier-document", 0)
 
@@ -255,7 +254,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
     var isSeekNeeded = false
     fun seekIfNeeded() {
         if (isSeekNeeded) {
-            val time = seekLocation?.id?.let {
+            val time = seekLocation?.fragment?.let {
                 var time = it
                 if (time.startsWith("#t=")) {
                     time = time.substring(time.indexOf('=') + 1)
@@ -278,10 +277,9 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
     private var menuToc: MenuItem? = null
     private var menuBmk: MenuItem? = null
     private var menuSettings: MenuItem? = null
-    private var drmModel: DRMModel? = null
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_audio, menu)
+        menuInflater.inflate(R.menu.menu_audio, menu)
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
         menuBmk = menu?.findItem(R.id.bookmark)
@@ -307,30 +305,34 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
                 return true
             }
             R.id.drm -> {
-                startActivityForResult(intentFor<DRMManagementActivity>("drmModel" to drmModel), 1)
+                startActivityForResult(intentFor<DRMManagementActivity>("publication" to publicationPath), 1)
                 return true
             }
             R.id.bookmark -> {
                 val resourceIndex = currentResource.toLong()
-                val resourceHref = publication.readingOrder[currentResource].href!!
-                val resourceTitle = publication.readingOrder[currentResource].title ?: ""
 
+                val resource = publication.readingOrder[currentResource]
+                val resourceHref = resource.href?: ""
+                val resourceType = resource.typeLink?: ""
+                val resourceTitle = resource.title?: ""
+                
                 val bookmark = Bookmark(
                         bookId,
                         publicationIdentifier,
                         resourceIndex,
                         resourceHref,
+                        resourceType,
                         resourceTitle,
                         Locations(progression = seekBar!!.progress.toDouble()),
                         LocatorText()
                 )
 
                 bookmarksDB.bookmarks.insert(bookmark)?.let {
-                    runOnUiThread {
+                    launch {
                         toast("Bookmark added")
                     }
                 } ?: run {
-                    runOnUiThread {
+                    launch {
                         toast("Bookmark already exists")
                     }
                 }
@@ -343,10 +345,10 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback {
 
     }
 
-    private fun storeProgression(locations: Locations) {
+    private fun storeProgression(locations: Locations?) {
         storeDocumentIndex()
         val publicationIdentifier = publication.metadata.identifier
-        preferences.edit().putString("$publicationIdentifier-documentLocations", locations.toJSON().toString()).apply()
+        preferences.edit().putString("$publicationIdentifier-documentLocations", locations?.toJSON().toString()).apply()
     }
 
     private fun storeDocumentIndex() {

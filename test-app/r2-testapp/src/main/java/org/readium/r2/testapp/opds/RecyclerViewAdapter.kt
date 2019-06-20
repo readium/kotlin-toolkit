@@ -11,11 +11,11 @@
 package org.readium.r2.testapp.opds
 
 import android.app.Activity
-import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.mcxiaoke.koi.ext.onClick
 import com.squareup.picasso.Picasso
 import org.jetbrains.anko.intentFor
@@ -36,15 +36,14 @@ class RecyclerViewAdapter(private val activity: Activity, private val strings: M
         val publication = strings[position]
         viewHolder.textView.text = publication.metadata.title
 
-        if (publication.images.isNotEmpty()) {
-            Picasso.with(activity).load(publication.images[0].href).into(viewHolder.imageView)
-        } else {
-            for (link in publication.links) {
-                if (link.rel.contains("http://opds-spec.org/image/thumbnail")) {
-                    Picasso.with(activity).load(link.href).into(viewHolder.imageView)
-                }
+        publication.linkWithRel("http://opds-spec.org/image/thumbnail")?.let { link ->
+            Picasso.with(activity).load(link.href).into(viewHolder.imageView)
+        } ?: run {
+            if (publication.images.isNotEmpty()) {
+                Picasso.with(activity).load(publication.images.first().href).into(viewHolder.imageView)
             }
         }
+
         viewHolder.itemView.onClick {
             activity.startActivity(activity.intentFor<OPDSDetailActivity>("publication" to publication))
         }

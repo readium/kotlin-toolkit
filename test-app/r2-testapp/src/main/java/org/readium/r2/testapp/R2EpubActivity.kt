@@ -22,23 +22,32 @@ import android.view.View
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_r2_epub.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
-import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.*
-import org.readium.r2.shared.drm.DRMModel
+import org.readium.r2.shared.drm.DRM
+import kotlin.coroutines.CoroutineContext
 
 
 /**
  * R2EpubActivity : Extension of the R2EpubActivity() from navigator
  *
  * That Activity manage everything related to the menu
- *      ( Table of content, User Settings, Drm, Bookmarks )
+ *      ( Table of content, User Settings, DRM, Bookmarks )
  *
  */
-class R2EpubActivity : R2EpubActivity() {
+class R2EpubActivity : R2EpubActivity(), CoroutineScope {
+
+    /**
+     * Context of this scope.
+     */
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     //UserSettings
     lateinit var userSettings: UserSettings
@@ -53,7 +62,7 @@ class R2EpubActivity : R2EpubActivity() {
 
     private lateinit var screenReader: R2ScreenReader
 
-    protected var drmModel: DRMModel? = null
+    protected var drm: DRM? = null
     protected var menuDrm: MenuItem? = null
     protected var menuToc: MenuItem? = null
     protected var menuBmk: MenuItem? = null
@@ -69,17 +78,8 @@ class R2EpubActivity : R2EpubActivity() {
 
         Handler().postDelayed({
             bookId = intent.getLongExtra("bookId", -1)
-            if (intent.getSerializableExtra("drmModel") != null) {
-                drmModel = intent.getSerializableExtra("drmModel") as DRMModel
-                drmModel?.let {
-                    runOnUiThread {
-                        menuDrm?.isVisible = true
-                    }
-                } ?: run {
-                    runOnUiThread {
-                        menuDrm?.isVisible = false
-                    }
-                }
+            launch {
+                menuDrm?.isVisible = intent.getBooleanExtra("drm", false)
             }
         }, 100)
 
@@ -130,12 +130,14 @@ class R2EpubActivity : R2EpubActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_epub, menu)
+        menuInflater.inflate(R.menu.menu_epub, menu)
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
         menuBmk = menu?.findItem(R.id.bookmark)
 
         menuScreenReader = menu?.findItem(R.id.screen_reader)
+
+        menuScreenReader?.isVisible = !isExploreByTouchEnabled
 
         menuDrm?.isVisible = false
         return true
@@ -185,14 +187,16 @@ class R2EpubActivity : R2EpubActivity() {
                 if (screenReader.isSpeaking) {
                     dismissScreenReader(menuScreenReader!!)
                 }
-                startActivityForResult(intentFor<DRMManagementActivity>("drmModel" to drmModel), 1)
+                startActivityForResult(intentFor<DRMManagementActivity>("publication" to publicationPath), 1)
                 return true
             }
             R.id.bookmark -> {
                 val resourceIndex = resourcePager.currentItem.toLong()
-                val resourceHref = publication.readingOrder[resourcePager.currentItem].href!!
-                val resourceTitle = publication.readingOrder[resourcePager.currentItem].title?: ""
-                val locations = Locations.fromJSON(JSONObject(preferences.getString("${publicationIdentifier}-documentLocations", "{}")))
+                val resource = publication.readingOrder[resourcePager.currentItem]
+                val resourceHref = resource.href?: ""
+                val resourceType = resource.typeLink?: ""
+                val resourceTitle = resource.title?: ""
+                val locations = Locations.fromJSON(JSONObject(preferences.getString("$publicationIdentifier-documentLocations", "{}")))
                 val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, locations.progression!!)?.let {
                     it
                 }
@@ -202,13 +206,14 @@ class R2EpubActivity : R2EpubActivity() {
                         publicationIdentifier,
                         resourceIndex,
                         resourceHref,
+                        resourceType,
                         resourceTitle,
                         Locations(progression = locations.progression, position = currentPage),
                         LocatorText()
                 )
                 
                 bookmarksDB.bookmarks.insert(bookmark)?.let {
-                    runOnUiThread {
+                    launch {
                         currentPage?.let {
                             toast("Bookmark added at page $currentPage")
                         } ?:run {
@@ -216,7 +221,7 @@ class R2EpubActivity : R2EpubActivity() {
                         }
                     }
                 } ?:run {
-                    runOnUiThread {
+                    launch {
                         toast("Bookmark already exists")
                     }
                 }
@@ -261,7 +266,7 @@ class R2EpubActivity : R2EpubActivity() {
         if (isExploreByTouchEnabled) {
 
             //Preset & preferences adapted
-            publication.userSettingsUIPreset.put(ReadiumCSSName.ref(SCROLL_REF), true)
+            publication.userSettingsUIPreset[ReadiumCSSName.ref(SCROLL_REF)] = true
             preferences.edit().putBoolean(SCROLL_REF, true).apply() //overriding user preferences
 
             userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
@@ -292,9 +297,13 @@ class R2EpubActivity : R2EpubActivity() {
     }
 
     override fun toggleActionBar() {
-        if (tts_overlay.visibility == View.INVISIBLE) {
+        val am = getSystemService(ACCESSIBILITY_SERVICE) as AccessibilityManager
+        isExploreByTouchEnabled = am.isTouchExplorationEnabled
+
+        if (!isExploreByTouchEnabled && tts_overlay.visibility == View.INVISIBLE) {
             super.toggleActionBar()
         }
+
     }
 
     override fun onDestroy() {
