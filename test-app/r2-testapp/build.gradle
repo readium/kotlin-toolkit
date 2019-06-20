@@ -108,36 +108,30 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.7.1'
+    if (findProject(':r2-shared')) {
+        implementation project(':r2-shared')
+    } else {
+        implementation "com.github.readium:r2-shared-kotlin:1.0.10"
+    }
     if (findProject(':r2-navigator')) {
-        devTestappImplementation project(':r2-navigator')
-        devTestappWithLcpImplementation project(':r2-navigator')
+        implementation project(':r2-navigator')
+    } else {
+        implementation "com.github.readium:r2-navigator-kotlin:1.0.10"
     }
     if (findProject(':r2-streamer')) {
-        devTestappImplementation project(':r2-streamer')
-        devTestappWithLcpImplementation project(':r2-streamer')
-    }
-    if (findProject(':r2-shared')) {
-        devTestappImplementation project(':r2-shared')
-        devTestappWithLcpImplementation project(':r2-shared')
+        implementation project(':r2-streamer')
+    } else {
+        implementation "com.github.readium:r2-streamer-kotlin:1.0.10"
     }
     if (findProject(':r2-opds')) {
-        devTestappImplementation project(':r2-opds')
-        devTestappWithLcpImplementation project(':r2-opds')
+        implementation project(':r2-opds')
+    } else {
+        implementation "com.github.readium:r2-opds-kotlin:1.0.9"
     }
     if (findProject(':r2-lcp')) {
-        devTestappWithLcpImplementation project(':r2-lcp')
-        intTestappWithLcpImplementation project(':r2-lcp')
+        implementation project(':r2-lcp')
     }
 
-    intTestappImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
-    intTestappImplementation "com.github.readium:r2-streamer-kotlin:$r2branch-SNAPSHOT"
-    intTestappImplementation "com.github.readium:r2-navigator-kotlin:$r2branch-SNAPSHOT"
-    intTestappImplementation "com.github.readium:r2-opds-kotlin:$r2branch-SNAPSHOT"
-
-    intTestappWithLcpImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
-    intTestappWithLcpImplementation "com.github.readium:r2-streamer-kotlin:$r2branch-SNAPSHOT"
-    intTestappWithLcpImplementation "com.github.readium:r2-navigator-kotlin:$r2branch-SNAPSHOT"
-    intTestappWithLcpImplementation "com.github.readium:r2-opds-kotlin:$r2branch-SNAPSHOT"
 
     implementation('com.mcxiaoke.koi:core:0.5.5') {
         exclude module: 'support-v4'
@@ -146,7 +140,6 @@ dependencies {
         exclude module: 'support-v4'
     }
 
-    //    implementation 'androidx.core:core-ktx:0.3'
     implementation "androidx.appcompat:appcompat:1.1.0-beta01"
     implementation "androidx.recyclerview:recyclerview:1.1.0-alpha06"
     implementation "androidx.cardview:cardview:1.0.0"
@@ -181,13 +174,6 @@ dependencies {
     //for JVM
     implementation 'com.github.kittinunf.fuel:fuel-android:1.16.0'
 
-    //for Android
-    //    implementation 'com.github.kittinunf.fuel:fuel-livedata:1.12.1' //for LiveData support
-    //    implementation 'com.github.kittinunf.fuel:fuel-rxjava:1.12.1' //for RxJava support
-    //    implementation 'com.github.kittinunf.fuel:fuel-gson:1.12.1' //for Gson support
-    //    implementation 'com.github.kittinunf.fuel:fuel-jackson:1.12.1' //for Jackson support
-    //    implementation 'com.github.kittinunf.fuel:fuel-moshi:1.12.1' //for Moshi support
-
     // async functions (only ~70k)
     final KOVENANT_VERSION = '3.3.0'
     implementation "nl.komponents.kovenant:kovenant:$KOVENANT_VERSION"
@@ -200,8 +186,6 @@ dependencies {
     implementation 'org.zeroturnaround:zt-zip:1.12'
     implementation 'joda-time:joda-time:2.9.9'
     implementation 'org.slf4j:slf4j-nop:1.7.25'
-
-    //    implementation 'net.theluckycoder.materialchooser:materialchooser:1.1.4'
 
     implementation 'com.duolingo.open:rtl-viewpager:1.0.3'
     implementation 'androidx.viewpager2:viewpager2:1.0.0-alpha05'
