@@ -825,7 +825,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         val bitmap: Bitmap? = if (URI(href).isAbsolute) {
                             getBitmapFromURL(href)
                         } else {
-                            getBitmapFromURL(externalURI + it)
+                            getBitmapFromURL(externalURI + href)
                         }
                         val stream = ByteArrayOutputStream()
                         bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
