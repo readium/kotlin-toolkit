@@ -12,17 +12,16 @@ package org.readium.r2.navigator.pager
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Parcelable
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentStatePagerAdapter
-import android.support.v4.app.FragmentTransaction
-import android.support.v4.util.LongSparseArray
-import android.support.v4.view.PagerAdapter
 import android.view.View
 import android.view.ViewGroup
+import androidx.collection.LongSparseArray
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
+import androidx.viewpager.widget.PagerAdapter
 
 
-abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : FragmentStatePagerAdapter(mFragmentManager) {
+abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : androidx.fragment.app.FragmentStatePagerAdapter(mFragmentManager) {
 
     val mFragments = LongSparseArray<Fragment>()
     private val mSavedStates = LongSparseArray<Fragment.SavedState>()
@@ -33,7 +32,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
 
     override fun startUpdate(container: ViewGroup) {
         if (container.id == View.NO_ID) {
-            throw IllegalStateException("ViewPager with adapter " + this + " requires a view id")
+            throw IllegalStateException("ViewPager with adapter $this requires a view id")
         }
     }
 

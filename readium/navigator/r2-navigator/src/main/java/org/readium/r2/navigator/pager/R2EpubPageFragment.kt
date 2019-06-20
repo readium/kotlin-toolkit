@@ -14,7 +14,6 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.support.v4.app.Fragment
 import android.util.DisplayMetrics
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -23,12 +22,16 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.webkit.WebViewClientCompat
 import org.json.JSONObject
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.shared.*
+import org.readium.r2.shared.APPEARANCE_REF
+import org.readium.r2.shared.Locations
+import org.readium.r2.shared.PageProgressionDirection
+import org.readium.r2.shared.SCROLL_REF
 
 
 class R2EpubPageFragment : Fragment() {
@@ -119,14 +122,15 @@ class R2EpubPageFragment : Fragment() {
             }
         })
 
-        webView.webViewClient = object : WebViewClient() {
+        webView.webViewClient = object : WebViewClientCompat() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                if (webView.overrideUrlLoading) {
+                if (!request.hasGesture()) return false
+                return if (webView.overrideUrlLoading) {
                     view.loadUrl(request.url.toString())
-                    return false
+                    false
                 } else {
                     webView.overrideUrlLoading = true
-                    return true
+                    true
                 }
             }
 
@@ -148,11 +152,11 @@ class R2EpubPageFragment : Fragment() {
                     // TODO this seems to be needed, will need to test more
                     if (url!!.indexOf("#") > 0) {
                         val id = url.substring(url.indexOf('#'))
-                        webView.loadUrl("javascript:scrollAnchor(" + id + ");");
-                        locations = Locations(id = id)
+                        webView.loadUrl("javascript:scrollAnchor($id);")
+                        locations = Locations(fragment = id)
                     }
 
-                    if (locations.id == null) {
+                    if (locations.fragment == null) {
                         locations.progression?.let { progression ->
                             currentFragment.webView.progression = progression
 
@@ -219,11 +223,11 @@ class R2EpubPageFragment : Fragment() {
 
         val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.activity.publicationIdentifier}-documentLocations", "{}")))
 
-        locations.id?.let {
+        locations.fragment?.let {
             var anchor = it
             if (anchor.startsWith("#")) {
             } else {
-                anchor = "#" + anchor
+                anchor = "#$anchor"
             }
             val href = resourceUrl +  anchor
             webView.loadUrl(href)

@@ -9,10 +9,10 @@
 
 package org.readium.r2.navigator.pager
 
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import org.readium.r2.shared.Publication
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import org.readium.r2.shared.Publication
 
 
 class R2PagerAdapter(fm: FragmentManager, private val resources: List<Any>, private val title: String, private val type: Publication.TYPE, private val publicationPath: String) : R2FragmentPagerAdapter(fm) {
