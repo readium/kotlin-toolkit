@@ -227,7 +227,7 @@ class License(private var documents: ValidatedDocuments,
         val title = license.link(LicenseDocument.Rel.publication)?.title
         val url = license.url(LicenseDocument.Rel.publication)
 
-        val rootDir: String = context.getExternalFilesDir(null)?.path + "/"
+        val rootDir: String = context.filesDir.path + "/"
         val fileName = UUID.randomUUID().toString()
         return Fuel.download(url.toString()).destination { _, _ ->
             Timber.i("LCP destination %s%s", rootDir, fileName)
