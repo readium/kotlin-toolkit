@@ -15,10 +15,10 @@ group='com.github.readium'
 
 android {
 
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 29
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -35,8 +35,8 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.7.1'
-    implementation "androidx.appcompat:appcompat:1.1.0-beta01"
-    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation "androidx.appcompat:appcompat:1.1.0-rc01"
+    implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.github.kittinunf.fuel:fuel:1.16.0'
     implementation 'com.github.kittinunf.fuel:fuel-android:1.16.0'
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
