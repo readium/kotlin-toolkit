@@ -15,10 +15,10 @@ group='com.github.readium'
 
 android {
 
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 29
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -36,7 +36,7 @@ dependencies {
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
     } else {
-        implementation "com.github.readium:r2-shared-kotlin:1.0.10"
+        implementation "com.github.readium:r2-shared-kotlin:1.1.0"
     }
 
     //TODO conflicting support libraries, excluding these
@@ -47,10 +47,10 @@ dependencies {
     implementation('com.mcxiaoke.koi:async:0.5.5') {
         exclude module: 'support-v4'
     }
-    implementation "androidx.appcompat:appcompat:1.1.0-beta01"
+    implementation "androidx.appcompat:appcompat:1.1.0-rc01"
     implementation 'org.nanohttpd:nanohttpd:2.3.2-SNAPSHOT'
     implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.2-SNAPSHOT'
-    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'commons-io:commons-io:2.4'
     implementation 'org.zeroturnaround:zt-zip:1.12'
     implementation 'joda-time:joda-time:2.9.9'
