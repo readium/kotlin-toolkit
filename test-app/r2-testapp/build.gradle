@@ -35,7 +35,6 @@ project.ext.versionCode = 1_000_000 * major + 10_000 * minor + 100 * patch + bui
 
 
 android {
-
     compileSdkVersion 29
     signingConfigs {
         release {
@@ -53,6 +52,10 @@ android {
         versionName project.ext.versionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         ndk.abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
+    }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
     }
     buildTypes {
         release {
