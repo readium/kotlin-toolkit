@@ -87,8 +87,6 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
                     publicationPath + spineItem.href
                 }
             } else {
-
-    //                uri = applicationContext.getExternalFilesDir(null).path + "/" + epubName + spineItem.href
                 "$BASE_URL:$port" + "/" + epubName + spineItem.href
             }
             resourcesSingle.add(Pair(resourceIndexSingle, uri))
