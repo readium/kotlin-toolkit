@@ -124,7 +124,17 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         localPort = s.localPort
         server = Server(localPort)
-        R2DIRECTORY = this.filesDir.path + "/"
+
+        val properties =  Properties();
+        val inputStream = this.assets.open("configs/config.properties");
+        properties.load(inputStream);
+        val useExternalFileDir = properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
+
+        R2DIRECTORY = if (useExternalFileDir) {
+            this.getExternalFilesDir(null)?.path + "/"
+        } else {
+            this.filesDir.path + "/"
+        }
 
         permissions = Permissions(this)
         permissionHelper = PermissionHelper(this, permissions)
