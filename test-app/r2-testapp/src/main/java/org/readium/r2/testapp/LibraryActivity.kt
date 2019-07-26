@@ -607,7 +607,18 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 // do nothing
                 Timber.e(e)
             }
-            server.loadResources(assets, applicationContext)
+            if (server.isAlive) {
+
+                // Add Resources from R2Navigator
+                server.loadReadiumCSSResources(assets)
+                server.loadR2ScriptResources(assets)
+                server.loadR2FontResources(assets, applicationContext)
+
+//                // Add your own resources here
+//                server.loadCustomResource(assets.open("scripts/test.js"), "test.js")
+//                server.loadCustomResource(assets.open("styles/test.css"), "test.css")
+//                server.loadCustomFont(assets.open("fonts/test.otf"), applicationContext, "test.otf")
+            }
         }
     }
 
