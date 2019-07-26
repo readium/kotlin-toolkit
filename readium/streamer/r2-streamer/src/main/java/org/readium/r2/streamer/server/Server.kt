@@ -12,11 +12,14 @@ package org.readium.r2.streamer.server
 import android.content.Context
 import android.content.res.AssetManager
 import org.nanohttpd.router.RouterNanoHTTPD
+import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.fetcher.Fetcher
 import org.readium.r2.streamer.server.handler.*
+import timber.log.Timber
 import java.io.File
+import java.io.IOException
 import java.io.InputStream
 import java.net.URL
 import java.util.*
@@ -30,57 +33,135 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
     private val JSON_MANIFEST_HANDLE = "/manifest.json"
     private val MANIFEST_ITEM_HANDLE = "/(.*)"
     private val MEDIA_OVERLAY_HANDLE = "/media-overlay"
-    private val CSS_HANDLE = "/styles/(.*)"
-    private val JS_HANDLE = "/scripts/(.*)"
-    private val FONT_HANDLE = "/fonts/(.*)"
+    private val CSS_HANDLE = "/"+ Injectable.Style.rawValue +"/(.*)"
+    private val JS_HANDLE = "/"+ Injectable.Script.rawValue +"/(.*)"
+    private val FONT_HANDLE = "/"+ Injectable.Font.rawValue +"/(.*)"
     private var containsMediaOverlay = false
 
-    private val resources = Ressources()
+    private val resources = Resources()
     private val fonts = Fonts()
 
-    private fun addResource(name: String, body: String) {
-        resources.add(name, body)
+    private fun addResource(name: String, body: String) { resources.add(name, body)
     }
 
-    private fun addFont(name: String, assets: AssetManager, context: Context) {
-        val inputStream = assets.open("fonts/$name")
-        val dir = File(context.getExternalFilesDir(null).path + "/fonts/")
+    private fun addFont(name: String, inputStream: InputStream, context: Context) {
+        val dir = File(context.filesDir.path + "/" + Injectable.Font.rawValue + "/")
         dir.mkdirs()
-        inputStream.toFile(context.getExternalFilesDir(null).path + "/fonts/" + name)
-        val file = File(context.getExternalFilesDir(null).path + "/fonts/" + name)
+        inputStream.toFile(context.filesDir.path + "/" + Injectable.Font.rawValue + "/" + name)
+        val file = File(context.filesDir.path + "/" + Injectable.Font.rawValue + "/" + name)
         fonts.add(name, file)
     }
 
-    fun loadResources(assets: AssetManager, context: Context) {
-        addResource("ltr-after.css", Scanner(assets.open("ReadiumCSS/ltr/ReadiumCSS-after.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("ltr-before.css", Scanner(assets.open("ReadiumCSS/ltr/ReadiumCSS-before.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("ltr-default.css", Scanner(assets.open("ReadiumCSS/ltr/ReadiumCSS-default.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("rtl-after.css", Scanner(assets.open("ReadiumCSS/rtl/ReadiumCSS-after.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("rtl-before.css", Scanner(assets.open("ReadiumCSS/rtl/ReadiumCSS-before.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("rtl-default.css", Scanner(assets.open("ReadiumCSS/rtl/ReadiumCSS-default.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("cjkv-after.css", Scanner(assets.open("ReadiumCSS/cjk-vertical/ReadiumCSS-after.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("cjkv-before.css", Scanner(assets.open("ReadiumCSS/cjk-vertical/ReadiumCSS-before.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("cjkv-default.css", Scanner(assets.open("ReadiumCSS/cjk-vertical/ReadiumCSS-default.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("cjkh-after.css", Scanner(assets.open("ReadiumCSS/cjk-horizontal/ReadiumCSS-after.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("cjkh-before.css", Scanner(assets.open("ReadiumCSS/cjk-horizontal/ReadiumCSS-before.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("cjkh-default.css", Scanner(assets.open("ReadiumCSS/cjk-horizontal/ReadiumCSS-default.css"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("touchHandling.js", Scanner(assets.open("ReadiumCSS/touchHandling.js"), "utf-8")
-                .useDelimiter("\\A").next())
-        addResource("utils.js", Scanner(assets.open("ReadiumCSS/utils.js"), "utf-8")
-                .useDelimiter("\\A").next())
-        addFont("OpenDyslexic-Regular.otf", assets, context)
+    fun loadReadiumCSSResources(assets: AssetManager) {
+        try {
+            addResource("ltr-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/ltr/ReadiumCSS-after.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("ltr-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/ltr/ReadiumCSS-before.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("ltr-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/ltr/ReadiumCSS-default.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("rtl-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/rtl/ReadiumCSS-after.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("rtl-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/rtl/ReadiumCSS-before.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("rtl-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/rtl/ReadiumCSS-default.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("cjkv-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-after.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("cjkv-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-before.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("cjkv-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-default.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("cjkh-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-after.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("cjkh-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-before.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("cjkh-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-default.css"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+    }
+    fun loadR2ScriptResources(assets: AssetManager) {
+        try {
+            addResource("touchHandling.js", Scanner(assets.open(Injectable.Script.rawValue + "/touchHandling.js"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+        try {
+            addResource("utils.js", Scanner(assets.open(Injectable.Script.rawValue + "/utils.js"), "utf-8")
+                    .useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+    }
+    fun loadR2FontResources(assets: AssetManager, context: Context) {
+        try {
+            addFont("OpenDyslexic-Regular.otf", assets.open("static/"+ Injectable.Font.rawValue +"/OpenDyslexic-Regular.otf"), context)
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+    }
+
+    fun loadCustomResource(inputStream: InputStream, fileName: String) {
+        try {
+            addResource(fileName, Scanner(inputStream, "utf-8").useDelimiter("\\A").next())
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
+    }
+
+    fun loadCustomFont(inputStream: InputStream, context: Context, fileName: String) {
+        try {
+            addFont(fileName, inputStream, context)
+        } catch (e: IOException) {
+            Timber.d(e)
+        }
     }
 
 

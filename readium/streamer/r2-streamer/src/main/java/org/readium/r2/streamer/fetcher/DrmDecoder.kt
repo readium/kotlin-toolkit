@@ -34,11 +34,11 @@ class DrmDecoder {
             if (scheme == drm.scheme) {
 
                 var data = decipher(input, drm) ?: return input
+                val padding = data[data.size - 1].toInt()
+                data = data.copyOfRange(0, data.size - padding)
 
                 if (resourceLink.properties.encryption?.compression == "deflate") {
 
-                    val padding = data[data.size - 1].toInt()
-                    data = data.copyOfRange(0, data.size - padding)
                     val inflater = Inflater(true)
                     inflater.setInput(data)
                     val output = ByteArrayOutputStream(data.size)

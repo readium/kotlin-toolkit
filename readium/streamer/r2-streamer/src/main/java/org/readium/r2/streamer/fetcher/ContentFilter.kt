@@ -79,7 +79,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
 
     private fun injectReflowableHtml(stream: InputStream, publication: Publication): InputStream {
         val data = stream.readBytes()
-        var resourceHtml = String(data)
+        var resourceHtml = String(data).trim()
         // Inject links to css and js files
         var beginHeadIndex = resourceHtml.indexOf("<head>", 0, false) + 6
         var endHeadIndex = resourceHtml.indexOf("</head>", 0, false)
@@ -92,12 +92,11 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         val beginIncludes = mutableListOf<String>()
         beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\" />")
 
-        beginIncludes.add(getHtmlLink("/styles/$cssStyle-before.css"))
-        beginIncludes.add(getHtmlLink("/styles/$cssStyle-default.css"))
-//        beginIncludes.add(getHtmlLink("/styles/transition.css"))
-        endIncludes.add(getHtmlLink("/styles/$cssStyle-after.css"))
-        endIncludes.add(getHtmlScript("/scripts/touchHandling.js"))
-        endIncludes.add(getHtmlScript("/scripts/utils.js"))
+        beginIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-before.css"))
+        beginIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-default.css"))
+        endIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-after.css"))
+        endIncludes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/touchHandling.js"))
+        endIncludes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/utils.js"))
 
         for (element in beginIncludes) {
             resourceHtml = StringBuilder(resourceHtml).insert(beginHeadIndex, element).toString()
@@ -166,8 +165,8 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         if (endHeadIndex == -1)
             return stream
         val includes = mutableListOf<String>()
-        includes.add(getHtmlScript("/scripts/touchHandling.js"))
-        includes.add(getHtmlScript("/scripts/utils.js"))
+        includes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/touchHandling.js"))
+        includes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/utils.js"))
         for (element in includes) {
             resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, element).toString()
         }
