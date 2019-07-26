@@ -15,7 +15,7 @@ import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
-import org.readium.r2.streamer.server.Ressources
+import org.readium.r2.streamer.server.Resources
 import timber.log.Timber
 
 
@@ -44,7 +44,7 @@ class JSHandler : RouterNanoHTTPD.DefaultHandler() {
         return try {
             val lastSlashIndex = uri.lastIndexOf('/')
             uri = uri.substring(lastSlashIndex + 1, uri.length)
-            val resources = uriResource!!.initParameter(Ressources::class.java)
+            val resources = uriResource!!.initParameter(Resources::class.java)
             val x = createResponse(Status.OK, "text/javascript", resources.get(uri))
             x
         } catch (e: Exception) {
