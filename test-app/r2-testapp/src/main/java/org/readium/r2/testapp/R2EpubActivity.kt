@@ -290,8 +290,10 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
          * Initialisation of the screen reader
          */
         Handler().postDelayed({
-            val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
-            screenReader = R2ScreenReader(this, publication, port, epubName)
+            val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
+            port?.let {
+                screenReader = R2ScreenReader(this, publication, port, epubName)
+            }
         }, 500)
 
     }

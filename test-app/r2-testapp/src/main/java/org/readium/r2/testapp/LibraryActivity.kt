@@ -952,8 +952,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val fileName = UUID.randomUUID().toString()
         val publicationPath = R2DIRECTORY + fileName
 
-        val input = contentResolver.openInputStream(uri)
-        input?.toFile(publicationPath)
+        uri?.let {
+            val input = contentResolver.openInputStream(uri)
+            input?.toFile(publicationPath)
+        }
+
         val file = File(publicationPath)
 
         try {
@@ -1001,7 +1004,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
                     fileExtension.toLowerCase())
         }
-        return Pair(mimeType, fileName)
+        return Pair(mimeType!!, fileName)
     }
 
     private fun getContentName(resolver: ContentResolver, uri: Uri): String? {
