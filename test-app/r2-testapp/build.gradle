@@ -35,7 +35,6 @@ project.ext.versionCode = 1_000_000 * major + 10_000 * minor + 100 * patch + bui
 
 
 android {
-    flavorDimensions "testapp"
 
     compileSdkVersion 28
     signingConfigs {
@@ -65,41 +64,17 @@ android {
     packagingOptions {
         exclude 'META-INF/*'
     }
-    productFlavors {
-        intTestapp {
-            dimension "testapp"
-        }
-        intTestappWithLcp {
-            dimension "testapp"
-        }
-        devTestapp {
-            dimension "testapp"
-        }
-        devTestappWithLcp {
-            dimension "testapp"
-        }
-    }
-
-    // default build flavour
-    defaultPublishConfig "intTestappDebug"
 
     sourceSets {
         main {
             java.srcDirs = ['src/main/java']
             res.srcDirs = ['src/main/res']
             assets.srcDirs = ['src/main/assets']
-        }
-        intTestapp {
-            java.srcDirs = ['src/main/java', 'src/nondrm/java']
-        }
-        devTestapp {
-            java.srcDirs = ['src/main/java', 'src/nondrm/java']
-        }
-        intTestappWithLcp {
-            java.srcDirs = ['src/main/java', 'src/withlcp/java']
-        }
-        devTestappWithLcp {
-            java.srcDirs = ['src/main/java', 'src/withlcp/java']
+            if (findProject(':r2-lcp')) {
+                java.srcDirs = ['src/main/java', 'src/withlcp/java']
+            } else {
+                java.srcDirs = ['src/main/java', 'src/nondrm/java']
+            }
         }
     }
 }
