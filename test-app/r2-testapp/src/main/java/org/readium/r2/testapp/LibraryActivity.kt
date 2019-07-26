@@ -54,6 +54,7 @@ import org.json.JSONObject
 import org.readium.r2.navigator.R2CbzActivity
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
+import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.opds.ParseData
@@ -123,7 +124,17 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         localPort = s.localPort
         server = Server(localPort)
-        R2DIRECTORY = this.getExternalFilesDir(null)?.path + "/"
+
+        val properties =  Properties();
+        val inputStream = this.assets.open("configs/config.properties");
+        properties.load(inputStream);
+        val useExternalFileDir = properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
+
+        R2DIRECTORY = if (useExternalFileDir) {
+            this.getExternalFilesDir(null)?.path + "/"
+        } else {
+            this.filesDir.path + "/"
+        }
 
         permissions = Permissions(this)
         permissionHelper = PermissionHelper(this, permissions)
@@ -607,7 +618,18 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 // do nothing
                 Timber.e(e)
             }
-            server.loadResources(assets, applicationContext)
+            if (server.isAlive) {
+
+                // Add Resources from R2Navigator
+                server.loadReadiumCSSResources(assets)
+                server.loadR2ScriptResources(assets)
+                server.loadR2FontResources(assets, applicationContext)
+
+//                // Add your own resources here
+//                server.loadCustomResource(assets.open("scripts/test.js"), "test.js")
+//                server.loadCustomResource(assets.open("styles/test.css"), "test.css")
+//                server.loadCustomFont(assets.open("fonts/test.otf"), applicationContext, "test.otf")
+            }
         }
     }
 
@@ -707,7 +729,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                 }
                 if (!lcp) {
-                    server.addEpub(publication, container, "/$fileName", applicationContext.getExternalFilesDir(null)?.path + "/styles/UserProperties.json")
+                    server.addEpub(publication, container, "/$fileName", applicationContext.filesDir.path + "/"+ Injectable.Style.rawValue +"/UserProperties.json")
                 }
 
             } else if (publication.type == Publication.TYPE.CBZ) {

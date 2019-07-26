@@ -120,7 +120,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
     fun saveChanges() {
         val json = makeJson()
-        val dir = File(context.getExternalFilesDir(null).path + "/styles/")
+        val dir = File(context.filesDir.path + "/"+ Injectable.Style.rawValue +"/")
         dir.mkdirs()
         val file = File(dir, "UserProperties.json")
         file.printWriter().use { out ->
@@ -153,12 +153,16 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
                 val zoomView = resourcePager.getChildAt(i).findViewById(R.id.r2FXLLayout) as R2FXLLayout
                 val webView1 = zoomView.findViewById(R.id.firstWebView) as? R2BasicWebView
                 val webView2 = zoomView.findViewById(R.id.secondWebView) as? R2BasicWebView
+                val webViewSingle = zoomView.findViewById(R.id.webViewSingle) as? R2BasicWebView
 
                 webView1?.let{
                     applyCSS(webView1, ref)
                 }
                 webView2?.let{
                     applyCSS(webView2, ref)
+                }
+                webViewSingle?.let{
+                    applyCSS(webViewSingle, ref)
                 }
             }
         }

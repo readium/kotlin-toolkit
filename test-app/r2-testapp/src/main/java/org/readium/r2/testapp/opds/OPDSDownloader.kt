@@ -22,7 +22,20 @@ import java.util.*
 
 class OPDSDownloader(context: Context) {
 
-    private val rootDir: String = context.getExternalFilesDir(null).path + "/"
+    private val useExternalFileDir = useExternalDir(context)
+
+    private val rootDir: String =  if (useExternalFileDir) {
+        context.getExternalFilesDir(null)?.path + "/"
+    } else {
+        context.filesDir.path + "/"
+    }
+
+    private fun useExternalDir(context: Context): Boolean {
+        val properties =  Properties();
+        val inputStream = context.assets.open("configs/config.properties");
+        properties.load(inputStream);
+        return properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
+    }
 
     fun publicationUrl(url: String, parameters: List<Pair<String, Any?>>? = null): Promise<Pair<String, String>, Exception> {
         val fileName = UUID.randomUUID().toString()

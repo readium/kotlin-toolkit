@@ -16,9 +16,9 @@ group='com.github.readium'
 
 
 int major = 2
-int minor = 0
-int patch = 2
-int build = 12
+int minor = 1
+int patch = 0
+int build = 1
 String type = ""
 
 def version = "$major.$minor.$patch"
@@ -35,9 +35,8 @@ project.ext.versionCode = 1_000_000 * major + 10_000 * minor + 100 * patch + bui
 
 
 android {
-    flavorDimensions "testapp"
 
-    compileSdkVersion 28
+    compileSdkVersion 29
     signingConfigs {
         release {
             keyAlias 'EDRLab'
@@ -49,7 +48,7 @@ android {
     defaultConfig {
         applicationId "org.readium.r2reader"
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode project.ext.versionCode
         versionName project.ext.versionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -65,41 +64,17 @@ android {
     packagingOptions {
         exclude 'META-INF/*'
     }
-    productFlavors {
-        intTestapp {
-            dimension "testapp"
-        }
-        intTestappWithLcp {
-            dimension "testapp"
-        }
-        devTestapp {
-            dimension "testapp"
-        }
-        devTestappWithLcp {
-            dimension "testapp"
-        }
-    }
-
-    // default build flavour
-    defaultPublishConfig "intTestappDebug"
 
     sourceSets {
         main {
             java.srcDirs = ['src/main/java']
             res.srcDirs = ['src/main/res']
             assets.srcDirs = ['src/main/assets']
-        }
-        intTestapp {
-            java.srcDirs = ['src/main/java', 'src/nondrm/java']
-        }
-        devTestapp {
-            java.srcDirs = ['src/main/java', 'src/nondrm/java']
-        }
-        intTestappWithLcp {
-            java.srcDirs = ['src/main/java', 'src/withlcp/java']
-        }
-        devTestappWithLcp {
-            java.srcDirs = ['src/main/java', 'src/withlcp/java']
+            if (findProject(':r2-lcp')) {
+                java.srcDirs = ['src/main/java', 'src/withlcp/java']
+            } else {
+                java.srcDirs = ['src/main/java', 'src/nondrm/java']
+            }
         }
     }
 }
@@ -111,22 +86,22 @@ dependencies {
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
     } else {
-        implementation "com.github.readium:r2-shared-kotlin:1.0.10"
+        implementation "com.github.readium:r2-shared-kotlin:1.1.0"
     }
     if (findProject(':r2-navigator')) {
         implementation project(':r2-navigator')
     } else {
-        implementation "com.github.readium:r2-navigator-kotlin:1.0.10"
+        implementation "com.github.readium:r2-navigator-kotlin:1.1.0"
     }
     if (findProject(':r2-streamer')) {
         implementation project(':r2-streamer')
     } else {
-        implementation "com.github.readium:r2-streamer-kotlin:1.0.10"
+        implementation "com.github.readium:r2-streamer-kotlin:1.1.0"
     }
     if (findProject(':r2-opds')) {
         implementation project(':r2-opds')
     } else {
-        implementation "com.github.readium:r2-opds-kotlin:1.0.9"
+        implementation "com.github.readium:r2-opds-kotlin:1.1.0"
     }
     if (findProject(':r2-lcp')) {
         implementation project(':r2-lcp')
@@ -140,15 +115,15 @@ dependencies {
         exclude module: 'support-v4'
     }
 
-    implementation "androidx.appcompat:appcompat:1.1.0-beta01"
-    implementation "androidx.recyclerview:recyclerview:1.1.0-alpha06"
+    implementation "androidx.appcompat:appcompat:1.1.0-rc01"
+    implementation "androidx.recyclerview:recyclerview:1.1.0-beta01"
     implementation "androidx.cardview:cardview:1.0.0"
-    implementation "com.google.android.material:material:1.1.0-alpha07"
+    implementation "com.google.android.material:material:1.1.0-alpha08"
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'org.nanohttpd:nanohttpd:2.3.2-SNAPSHOT'
     implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.2-SNAPSHOT'
 
-    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'io.reactivex.rxjava2:rxjava:2.1.8'
     implementation 'org.jetbrains.anko:anko-design:0.10.8'
@@ -188,7 +163,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-nop:1.7.25'
 
     implementation 'com.duolingo.open:rtl-viewpager:1.0.3'
-    implementation 'androidx.viewpager2:viewpager2:1.0.0-alpha05'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0-beta02'
 
     implementation 'com.commonsware.cwac:merge:1.1.2'
     implementation 'com.github.abacritt:sectionedmergeadapter:0.2'
