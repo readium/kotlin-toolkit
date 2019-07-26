@@ -32,6 +32,7 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.longSnackbar
 import org.readium.r2.lcp.public.*
+import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.streamer.parser.EpubParser
@@ -313,7 +314,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                 } else {
 
                     prepareToServe(pub, book.fileName, file.absolutePath, add = false, lcp = true)
-                    server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null)?.path + "/styles/UserProperties.json")
+                    server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.filesDir.path + "/"+ Injectable.Style.rawValue +"/UserProperties.json")
 
                     this@CatalogActivity.startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drm" to true))
                 }

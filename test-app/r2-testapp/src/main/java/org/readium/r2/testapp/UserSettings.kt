@@ -120,7 +120,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
     fun saveChanges() {
         val json = makeJson()
-        val dir = File(context.getExternalFilesDir(null).path + "/styles/")
+        val dir = File(context.filesDir.path + "/"+ Injectable.Style.rawValue +"/")
         dir.mkdirs()
         val file = File(dir, "UserProperties.json")
         file.printWriter().use { out ->

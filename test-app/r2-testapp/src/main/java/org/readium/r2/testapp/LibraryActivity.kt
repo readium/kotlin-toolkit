@@ -54,6 +54,7 @@ import org.json.JSONObject
 import org.readium.r2.navigator.R2CbzActivity
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
+import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.opds.ParseData
@@ -123,7 +124,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         localPort = s.localPort
         server = Server(localPort)
-        R2DIRECTORY = this.getExternalFilesDir(null)?.path + "/"
+        R2DIRECTORY = this.filesDir.path + "/"
 
         permissions = Permissions(this)
         permissionHelper = PermissionHelper(this, permissions)
@@ -718,7 +719,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                 }
                 if (!lcp) {
-                    server.addEpub(publication, container, "/$fileName", applicationContext.getExternalFilesDir(null)?.path + "/styles/UserProperties.json")
+                    server.addEpub(publication, container, "/$fileName", applicationContext.filesDir.path + "/"+ Injectable.Style.rawValue +"/UserProperties.json")
                 }
 
             } else if (publication.type == Publication.TYPE.CBZ) {
