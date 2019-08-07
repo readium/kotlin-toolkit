@@ -1,14 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ Module: r2-testapp-kotlin
-  ~ Developers: Aferdita Muriqi, Clément Baumann
-  ~
-  ~ Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
-  ~ Licensed to the Readium Foundation under one or more contributor license agreements.
-  ~ Use of this source code is governed by a BSD-style license which is detailed in the
-  ~ LICENSE file present in the project repository where this source code is maintained.
-  -->
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="org.readium.r2.testapp">
@@ -25,9 +15,11 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:replace="android:allowBackup"
         android:usesCleartextTraffic="true"
+        tools:replace="android:allowBackup"
         tools:targetApi="m">
+        <activity android:name=".search.R2SearchActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".CatalogActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -92,7 +84,7 @@
         <activity
             android:name=".DRMManagementActivity"
             android:label="DRM Management"
-            android:theme="@style/AppTheme"/>
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".R2OutlineActivity"
             android:label="@string/title_activity_outline" />
@@ -103,7 +95,6 @@
             android:name=".opds.OPDSDetailActivity"
             android:label="@string/title_activity_opds_detail" />
         <activity android:name=".audiobook.AudiobookActivity" />
-
     </application>
 
 </manifest>

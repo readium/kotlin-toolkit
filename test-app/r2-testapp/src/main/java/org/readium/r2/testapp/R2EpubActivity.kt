@@ -31,6 +31,7 @@ import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.testapp.search.R2SearchActivity
 import kotlin.coroutines.CoroutineContext
 
 
@@ -66,6 +67,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
     protected var menuDrm: MenuItem? = null
     protected var menuToc: MenuItem? = null
     protected var menuBmk: MenuItem? = null
+    protected var menuSearch: MenuItem? = null
 
     protected var menuScreenReader: MenuItem? = null
 
@@ -134,6 +136,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
         menuBmk = menu?.findItem(R.id.bookmark)
+        menuSearch = menu?.findItem(R.id.searchBtn)
 
         menuScreenReader = menu?.findItem(R.id.screen_reader)
 
@@ -226,6 +229,13 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                     }
                 }
 
+                return true
+            }
+
+            R.id.searchBtn -> {
+
+                val intent = Intent(this, R2SearchActivity::class.java)
+                startActivityForResult(intent, 2)
                 return true
             }
 

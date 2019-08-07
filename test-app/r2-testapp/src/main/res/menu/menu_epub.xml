@@ -14,6 +14,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context='org.readium.r2.testapp.R2EpubActivity'>
 
+
+    <item
+        android:id="@+id/searchBtn"
+        android:icon="@drawable/ic_action_action_search"
+        android:title="Search"
+        app:showAsAction="always|always"
+        tools:ignore="AlwaysShowAction"/>
+
+
     <item
         android:id="@+id/drm"
         android:icon="@drawable/icon_drm"
