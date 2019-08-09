@@ -233,9 +233,9 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
             }
 
             R.id.searchBtn -> {
-
-                val intent = Intent(this, R2SearchActivity::class.java)
-                startActivityForResult(intent, 2)
+                startActivity(intentFor<R2SearchActivity>(
+                        "publication" to publication,
+                        "epubName" to epubName))
                 return true
             }
 

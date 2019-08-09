@@ -1,15 +1,36 @@
 package org.readium.r2.testapp.search
 
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
 import com.miguelcatalan.materialsearchview.MaterialSearchView
+import org.readium.r2.shared.Publication
 import org.readium.r2.testapp.R
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.webkit.WebSettings
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import android.R.id.message
+import android.webkit.ConsoleMessage
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -18,9 +39,20 @@ class R2SearchActivity : AppCompatActivity() {
     lateinit var mMaterialSearchVIew: MaterialSearchView
     lateinit var listView : ListView
 
+    // This is for our custom search interface
+    lateinit var preferences: SharedPreferences
+    lateinit var epubName: String
+    lateinit var publication: Publication
+    lateinit var publicationIdentifier: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_r2_search)
+
+        preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+        publication = intent.getSerializableExtra("publication") as Publication
+        epubName = intent.getStringExtra("epubName")
+        publicationIdentifier = publication.metadata.identifier
 
 
         //Setting up toolbar
@@ -29,17 +61,15 @@ class R2SearchActivity : AppCompatActivity() {
         toolbar.setTitleTextColor(Color.parseColor("#FFFFFF"))
         mMaterialSearchVIew = findViewById(R.id.searchView)
 
-
          //Setting up search listener
         mMaterialSearchVIew.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                //Use SearchInterface & get Result
-                Toast.makeText(applicationContext, "Searching word : "+query,
-                        Toast.LENGTH_SHORT).show();
+                //Use SearchInterface & get Resul
 
                 query?.let {
-                    var searchInterface = MyMarkJSSearchInteface()
-                    var results = searchInterface.search(query, applicationContext)
+                    Toast.makeText(applicationContext, "Searching word : "+query, Toast.LENGTH_SHORT).show()
+                    var markJSSearchInteface = MyMarkJSSearchInteface(publication, publicationIdentifier, preferences, epubName)
+                    markJSSearchInteface.search(query, applicationContext)
                 }
 
                 //Setting up adapter

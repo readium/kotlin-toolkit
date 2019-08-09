@@ -44,6 +44,12 @@ android {
             storePassword '###         '
         }
     }
+    //Error: Invoke-customs are only supported starting with Android O (--min-api 26)
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         applicationId "org.readium.r2reader"
         minSdkVersion 21
@@ -184,4 +190,6 @@ dependencies {
     implementation 'com.miguelcatalan:materialsearchview:1.4.0'
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
+    //GSON Library
+    implementation 'com.google.code.gson:gson:2.8.5'
 }

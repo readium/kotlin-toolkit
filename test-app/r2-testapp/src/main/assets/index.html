@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script type="text/javascript" src="mark.js"></script>
+<script>
+function performSearch(keyword, element, resourceId) {
+
+    // Array of MarkJS result
+    var results = [];
+    var resultCounter = 0;
+
+    //Building mark instance using input html string
+    var htmlObject2 = document.createElement('div');
+    htmlObject2.innerHTML = element;
+    var markInstance = new Mark(htmlObject2);
+
+    //Perfomring search
+    markInstance.mark(keyword, {
+        //Push each result in final results array 
+        each: function(node) {
+            //Get snippet
+            var afterText = node.nextSibling.nodeValue;
+            var beforeText = node.previousSibling.nodeValue;
+
+            if (afterText.length > 30) afterText = afterText.substring(0, 30) + "...";
+            if (beforeText.length > 30) beforeText = "..." + beforeText.substring(beforeText.length - 30, beforeText.length);
+
+            var singleResultLocator = {
+                    "href" : resourceId,
+                    "type": "text/html",
+                    "title" : "TODO",
+                    "location" : {
+                                "fragments": {
+                                        "index": resultCounter
+                                }
+                    },
+                    "text": {
+                                "after": afterText,
+                                "before": beforeText,
+                                "highlight": keyword
+                    }
+            };
+            
+            results.push(singleResultLocator);
+            resultCounter = resultCounter + 1;
+        },
+        //When search end, build Locators object from results array
+        done: function(counter) {
+            console.log("Result 2: "+counter);
+            console.log(results);
+        }
+    });
+
+    //Return Locators Array as String
+    var stringResults = JSON.stringify(results);
+    return stringResults;
+};
+</script>
+</body>
+</html>
+
+//console.log("IN PERFORM");
+/*
+var tmp = "Chapter 1 The cold passed reluctantly from the earth, and the retiring fogs revealed an army stretched out on the hills, resting. As the landscape changed from brown to green, the army awakened, and began to tremble with eagerness at the noise of rumors. It cast its eyes upon the roads, which were growing from long troughs of liquid mud to proper thoroughfares. A river, amber-tinted in the shadow of its banks, purled at the army$s feet; and at night, when the stream had become of a sorrowful blackness, one could see across it the red, eyelike gleam of hostile camp-fires set in the low brows of distant hills. Once a certain tall soldier developed virtues and went resolutely to wash a shirt. He came flying back from a brook waving his garment bannerlike. He was swelled with a tale he had heard from a reliable friend, who had heard it from a truthful cavalryman, who had heard it from his trustworthy brother, one of the orderlies at division headquarters. He adopted the important air of a herald in red and gold. %We$re goin$ t$ move t$morrah—sure,% he said pompously to a group in the company street. %We$re goin$ $way up the river, cut across, an$ come around in behint $em.% To his attentive audience he drew a loud and elaborate plan of a very brilliant campaign. When he had finished, the blue-clothed men scattered into small arguing groups between the rows of squat brown huts. A negro teamster who had been dancing upon a cracker box with the hilarious encouragement of twoscore soldiers was deserted. He sat mournfully down. Smoke drifted lazily from a multitude of quaint chimneys. %It$s a lie! that$s all it is—a thunderin$ lie!% said another private loudly. His smooth face was flushed, and his hands were thrust sulkily into his trousers$ pockets. He took the matter as an affront to him. %I don$t believe the derned old army$s ever going to move. We$re set. I$ve got ready to move eight times in the last two weeks, and we ain$t moved yet.% The tall soldier felt called upon to defend the truth of a rumor he himself had introduced. He and the loud one came near to fighting over it. A corporal began to swear before the assemblage. He had just put a costly board floor in his house, he said. During the early spring he had refrained from adding extensively to the comfort of his environment because he had felt that the army might start on the march at any moment. Of late, however, he had been impressed that they were in a sort of eternal camp. Many of the men engaged in a spirited debate. One outlined in a peculiarly lucid manner all the plans of the commanding general. He was opposed by men who advocated that there were other plans of campaign. They clamored at each other, numbers making futile bids for the popular attention. Meanwhile, the soldier who had fetched the rumor bustled about with much importance. He was continually assailed by questions. %What$s up, Jim?% %Th$ army$s goin$ t$ move.% %Ah, what yeh talkin$ about? How yeh know it is?% %Well, yeh kin b$lieve me er not, jest as yeh like. I don$t care a hang.% There was much food for thought in the manner in which he replied. He came near to convincing them by disdaining to produce proofs. They grew excited over it. There was a youthful private who listened with eager ears to the words of the tall soldier and to the varied comments of his comrades. After receiving a fill of discussions concerning marches and attacks, he went to his hut and crawled through an intricate hole that served it as a door. He wished to be alone with some new thoughts that had lately come to him. He lay down on a wide bank that stretched across the end of the room. In the other end, cracker boxes were made to serve as furniture. They were grouped about the fireplace. A picture from an illustrated weekly was upon the log walls, and three rifles were paralleled on pegs. Equipments hunt on handy projections, and some tin dishes lay upon a small pile of firewood. A folded tent was serving as a roof. The sunlight, without, beating upon it, made it glow a light yellow shade. A small window shot an oblique square of whiter light upon the cluttered floor. The smoke from the fire at times neglected the clay chimney and wreathed into the room, and this flimsy chimney of clay and sticks made endless threats to set ablaze the whole establishment. The youth was in a little trance of astonishment. So they were at last going to fight. On the morrow, perhaps, there would be a battle, and he would be in it. For a time he was obliged to labor to make himself believe. He could not accept with assurance an omen that he was about to mingle in one of those great affairs of the earth. He had, of course, dreamed of battles all his life—of vague and bloody conflicts that had thrilled him with their sweep and fire. In visions he had seen himself in many struggles. He had imagined peoples secure in the shadow of his eagle-eyed prowess. But awake he had regarded battles as crimson blotches on the pages of the past. He had put them as things of the bygone with his thought-images of heavy crowns and high castles. There was a portion of the world$s history which he had regarded as the time of wars, but it, he thought, had been long gone over the horizon and had disappeared forever. From his home his youthful eyes had looked upon the war in his own country with distrust. It must be some sort of a play affair. He had long despaired of witnessing a Greeklike struggle. Such would be no more, he had said. Men were better, or more timid. Secular and religious education had effaced the throat-grappling instinct, or else firm finance held in check the passions. He had burned several times to enlist. Tales of great movements shook the land. They might not be distinctly Homeric, but there seemed to be much glory in them. He had read of marches, sieges, conflicts, and he had longed to see it all. His busy mind had drawn for him large pictures extravagant in color, lurid with breathless deeds. But his mother had discouraged him. She had affected to look with some contempt upon the quality of his war ardor and patriotism. She could calmly seat herself and with no apparent difficulty give him many hundreds of reasons why he was of vastly more importance on the farm than on the field of battle. She had had certain ways of expression that told him that her statements on the subject came from a deep conviction. Moreover, on her side, was his belief that her ethical motive in the argument was impregnable. At last, however, he had made firm rebellion against this yellow light thrown upon the color of his ambitions. The newspapers, the gossip of the village, his own picturings had aroused him to an uncheckable degree. They were in truth fighting finely down there. Almost every day the newspapers printed accounts of a decisive victory. One night, as he lay in bed, the winds had carried to him the clangoring of the church bell as some enthusiast jerked the rope frantically to tell the twisted news of a great battle. This voice of the people rejoicing in the night had made him shiver in a prolonged ecstasy of excitement. Later, he had gone down to his mother$s room and had spoken thus: %Ma, I$m going to enlist.% %Henry, don$t you be a fool,% his mother had replied. She had then covered her face with the quilt. There was an end to the matter for that night. Nevertheless, the next morning he had gone to a town that was near his mother$s farm and had enlisted in a company that was forming there. When he had returned home his mother was milking the brindle cow. Four others stood waiting. %Ma, I$ve enlisted,% he had said to her diffidently. There was a short silence. %The Lord$s will be done, Henry,% she had finally replied, and had then continued to milk the brindle cow. When he had stood in the doorway with his soldier$s clothes on his back, and with the light of excitement and expectancy in his eyes almost defeating the glow of regret for the home bonds, he had seen two tears leaving their trails on his mother$s scarred cheeks. Still, she had disappointed him by saying nothing whatever about returning with his shield or on it. He had privately primed himself for a beautiful scene. He had prepared certain sentences which he thought could be used with touching effect. But her words destroyed his plans. She had doggedly peeled potatoes and addressed him as follows: %You watch out, Henry, an$ take good care of yerself in this here fighting business—you watch out, an$ take good care of yerself. Don$t go a-thinkin$ you can lick the hull rebel army at the start, because yeh can$t. Yer jest one little feller amongst a hull lot of others, and yeh$ve got to keep quiet an$ do what they tell yeh. I know how you are, Henry. %I$ve knet yeh eight pair of socks, Henry, and I$ve put in all yer best shirts, because I want my boy to be jest as warm and comf$able as anybody in the army. Whenever they get holes in $em, I want yeh to send $em right-away back to me, so$s I kin dern $em. %An$ allus be careful an$ choose yer comp$ny. There$s lots of bad men in the army, Henry. The army makes $em wild, and they like nothing better than the job of leading off a young feller like you, as ain$t never been away from home much and has allus had a mother, an$ a-learning $em to drink and swear. Keep clear of them folks, Henry. I don$t want yeh to ever do anything, Henry, that yeh would be $shamed to let me know about. Jest think as if I was a-watchin$ yeh. If yeh keep that in yer mind allus, I guess yeh$ll come out about right. %Yeh must allus remember yer father, too, child, an$ remember he never drunk a drop of licker in his life, and seldom swore a cross oath. %I don$t know what else to tell yeh, Henry, excepting that yeh must never do no shirking, child, on my account. If so be a time comes when yeh have to be kilt or do a mean thing, why, Henry, don$t think of anything $cept what$s right, because there$s many a woman has to bear up $ginst sech things these times, and the Lo…";
+var htmlObject = document.createElement('div');
+htmlObject.innerHTML = tmp;
+*/
+
+
+
+//console.log("1: "+ tmp);
+//console.log("2: "+element);
+
+//console.log("1: "+htmlObject);
+//console.log("2: "+htmlObject2);
+/*
+var markInstance = new Mark(htmlObject);
+//console.log("1: "+markInstance);
+markInstance.mark(keyword, {
+done: function(counter) {
+//console.log("1: "+counter);
+}
+});
+*/
