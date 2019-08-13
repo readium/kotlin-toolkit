@@ -176,7 +176,7 @@ dependencies {
 
     implementation 'com.commonsware.cwac:merge:1.1.2'
     implementation 'com.github.abacritt:sectionedmergeadapter:0.2'
-    implementation 'org.jsoup:jsoup:1.11.2'
+    implementation 'org.jsoup:jsoup:1.10.3'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
@@ -190,6 +190,7 @@ dependencies {
     implementation 'com.miguelcatalan:materialsearchview:1.4.0'
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
+    
     //GSON Library
     implementation 'com.google.code.gson:gson:2.8.5'
 }

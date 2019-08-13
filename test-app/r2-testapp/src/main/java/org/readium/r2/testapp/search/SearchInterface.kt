@@ -6,14 +6,13 @@ import android.util.Log
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import org.json.JSONArray
 import org.jsoup.Jsoup
 import org.readium.r2.navigator.BASE_URL
+import org.readium.r2.shared.Locations
+import org.readium.r2.shared.LocatorText
 import org.readium.r2.shared.Publication
-import org.json.JSONObject
-import com.google.gson.JsonArray
-import com.google.gson.JsonElement
-import org.readium.r2.shared.Locator
 
 
 /**
@@ -45,7 +44,8 @@ class MyMarkJSSearchInteface(var publication: Publication, var publicationIdenti
 
         //Setting up variables for iteration
         val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
-        var resourceNumber = 3
+        var resourceNumber = 0
+        var locatorsList = mutableListOf<SearchLocator>()
 
         //When webview is loaded -> execute JS to get results
         webView.webViewClient = object : WebViewClient() {
@@ -76,21 +76,27 @@ class MyMarkJSSearchInteface(var publication: Publication, var publicationIdenti
                         element = element.replace("\"", "\\%")
                         element = element.replace("\'", "\\$")
 
-                        //Executing MarkJS to get results
 
+                        //Executing MarkJS to get results
                         webView.evaluateJavascript("performSearch(\"$keyword\", \"$element\", \"$resourceId\");") { results ->
-                            //Log.d("HTML", results)
-                            if(results != "[]") {
+                            if(results != "null") {
+                                Log.d("Enter", results)
+                                //Transforming json string
                                 var json = results
                                 json = json.replace("\\\"", "'")
+
                                 val jsonLocators = JSONArray(json.substring(1, json.length - 1))
                                 for (i in 0..(jsonLocators.length() - 1)) {
+                                    //Building Locators Objects
                                     val resultObj = jsonLocators.getJSONObject(i)
-
-
+                                    var href = resultObj.getString("href")
+                                    var type = resultObj.getString("type")
+                                    var text = LocatorText.fromJSON(resultObj.getJSONObject("text"))
+                                    var location = Locations.fromJSON(resultObj.getJSONObject("location"))
+                                    var tmpLocator = SearchLocator(href, type, "" ,location, text)
+                                    locatorsList.add(tmpLocator)
                                 }
                             }
-
                         }
 
                     }
@@ -98,7 +104,22 @@ class MyMarkJSSearchInteface(var publication: Publication, var publicationIdenti
                 }
             }
         }
-        return listOf()
+        return locatorsList
+    }
+
+
+    inner class MyJavascriptInterface(internal var context: Context) {
+
+        @android.webkit.JavascriptInterface
+        fun getStringFromJS(txtVal: String) {
+            Toast.makeText(context, "Value From JS : $txtVal", Toast.LENGTH_LONG).show()
+            Log.d("JS DEBUG : ", txtVal)
+        }
+
+        @android.webkit.JavascriptInterface
+        fun goToNextResource(currentResource: String) {
+
+        }
     }
 
 }

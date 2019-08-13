@@ -1,6 +1,7 @@
 package org.readium.r2.testapp.search
 
 
+import android.app.Dialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
@@ -8,30 +9,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
-import android.widget.ArrayAdapter
-import android.widget.ListView
-import android.widget.Toast
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import com.miguelcatalan.materialsearchview.MaterialSearchView
 import org.readium.r2.shared.Publication
+import android.widget.*
 import org.readium.r2.testapp.R
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.webkit.WebSettings
-import android.webkit.ValueCallback
-import android.webkit.WebChromeClient
-import android.R.id.message
-import android.webkit.ConsoleMessage
-
-
-
-
-
-
-
-
-
-
-
 
 
 class R2SearchActivity : AppCompatActivity() {
@@ -44,11 +27,15 @@ class R2SearchActivity : AppCompatActivity() {
     lateinit var epubName: String
     lateinit var publication: Publication
     lateinit var publicationIdentifier: String
+    lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_r2_search)
 
+
+        progressBar = findViewById(R.id.progressbar) as ProgressBar
+        progressBar.visibility = View.INVISIBLE
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         publication = intent.getSerializableExtra("publication") as Publication
         epubName = intent.getStringExtra("epubName")
@@ -59,21 +46,26 @@ class R2SearchActivity : AppCompatActivity() {
         var toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         toolbar.setTitleTextColor(Color.parseColor("#FFFFFF"))
+
         mMaterialSearchVIew = findViewById(R.id.searchView)
+
+        listView = findViewById(R.id.listView)
+
 
          //Setting up search listener
         mMaterialSearchVIew.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
+                progressBar.visibility = View.VISIBLE
                 //Use SearchInterface & get Resul
-
                 query?.let {
-                    Toast.makeText(applicationContext, "Searching word : "+query, Toast.LENGTH_SHORT).show()
                     var markJSSearchInteface = MyMarkJSSearchInteface(publication, publicationIdentifier, preferences, epubName)
-                    markJSSearchInteface.search(query, applicationContext)
+                    var locatorsList = markJSSearchInteface.search(query, applicationContext)
+                    var resultsAdapter = SearchLocatorAdapter(applicationContext, R.layout.search_view_adapter, locatorsList)
+                    listView.adapter = resultsAdapter
+                    //progressBar.visibility = View.INVISIBLE
                 }
 
-                //Setting up adapter
-                return false
+                return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
@@ -81,14 +73,21 @@ class R2SearchActivity : AppCompatActivity() {
             }
         })
 
+
+
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_search, menu)
         var menuItem = menu?.findItem(R.id.searchMenu)
         mMaterialSearchVIew?.setMenuItem(menuItem)
+        menuItem?.expandActionView()
+        menu?.performIdentifierAction(R.id.searchMenu, 0)
+
         return super.onCreateOptionsMenu(menu)
     }
+
 
 
 

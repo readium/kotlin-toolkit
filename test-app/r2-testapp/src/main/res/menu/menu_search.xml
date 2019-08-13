@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
     <item android:id="@+id/searchMenu"
         android:orderInCategory="100"
         android:title="Search"
         app:showAsAction="always"
         android:icon="@drawable/ic_action_action_search"
+        app:iconifiedByDefault="false"
         />
 
 </menu>

@@ -30,7 +30,7 @@ function performSearch(keyword, element, resourceId) {
                     "type": "text/html",
                     "title" : "TODO",
                     "location" : {
-                                "fragments": {
+                                "fragment": {
                                         "index": resultCounter
                                 }
                     },
@@ -52,8 +52,11 @@ function performSearch(keyword, element, resourceId) {
     });
 
     //Return Locators Array as String
-    var stringResults = JSON.stringify(results);
-    return stringResults;
+    if(resultCounter !=0) {
+        var stringResults = JSON.stringify(results);
+        return stringResults;
+    }
+    
 };
 </script>
 </body>
