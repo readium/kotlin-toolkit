@@ -25,7 +25,7 @@ interface SearchInterface {
 /**
  * This is our custom Search Module, this class uses MarkJS library and implements SearchInterface
  */
-class MyMarkJSSearchInteface(var publication: Publication, var publicationIdentifier: String, var preferences: SharedPreferences, var epubName: String) : SearchInterface {
+class MyMarkJSSearchInteface(var publication: Publication, var publicationIdentifier: String, var preferences: SharedPreferences, var epubName: String, var bv: BooVariable) : SearchInterface {
 
     /**
      * This function is used to get search results using JSOUP and MarkJS
@@ -73,8 +73,8 @@ class MyMarkJSSearchInteface(var publication: Publication, var publicationIdenti
                         //Log.d("JSOUP",resource.getElementsByTag("body").html().toString())
 
                         //Removing double and singles quotes from html string
-                        element = element.replace("\"", "\\%")
-                        element = element.replace("\'", "\\$")
+                        element = element.replace("\"", "!§")
+                        element = element.replace("\'", "§!")
 
 
                         //Executing MarkJS to get results
@@ -95,6 +95,7 @@ class MyMarkJSSearchInteface(var publication: Publication, var publicationIdenti
                                     var location = Locations.fromJSON(resultObj.getJSONObject("location"))
                                     var tmpLocator = SearchLocator(href, type, "" ,location, text)
                                     locatorsList.add(tmpLocator)
+                                    bv.resultsList = locatorsList
                                 }
                             }
                         }
@@ -104,7 +105,7 @@ class MyMarkJSSearchInteface(var publication: Publication, var publicationIdenti
                 }
             }
         }
-        return locatorsList
+        return mutableListOf()
     }
 
 
@@ -195,7 +196,6 @@ org.mozilla.javascript.Context.exit()
             resourceNumber++
         }
  */
-
 
 
 

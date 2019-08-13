@@ -15,11 +15,32 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView
 import org.readium.r2.shared.Publication
 import android.widget.*
 import org.readium.r2.testapp.R
+import android.widget.Toast
+import android.app.Activity
+import org.jetbrains.anko.indeterminateProgressDialog
+import android.app.ProgressDialog
+
+
+
+
+class BooVariable {
+    var listener: ChangeListener? = null
+
+    var resultsList = mutableListOf<SearchLocator>()
+        set(list) {
+            field = list
+            if (listener != null) listener!!.onChange()
+        }
+
+    interface ChangeListener {
+        fun onChange()
+    }
+}
 
 
 class R2SearchActivity : AppCompatActivity() {
 
-    lateinit var mMaterialSearchVIew: MaterialSearchView
+    lateinit var mMaterialSearchView: MaterialSearchView
     lateinit var listView : ListView
 
     // This is for our custom search interface
@@ -29,9 +50,12 @@ class R2SearchActivity : AppCompatActivity() {
     lateinit var publicationIdentifier: String
     lateinit var progressBar: ProgressBar
 
+    var results = listOf<SearchLocator>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_r2_search)
+
 
 
         progressBar = findViewById(R.id.progressbar) as ProgressBar
@@ -42,29 +66,48 @@ class R2SearchActivity : AppCompatActivity() {
         publicationIdentifier = publication.metadata.identifier
 
 
+
         //Setting up toolbar
         var toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         toolbar.setTitleTextColor(Color.parseColor("#FFFFFF"))
 
-        mMaterialSearchVIew = findViewById(R.id.searchView)
+        mMaterialSearchView = findViewById(R.id.searchView)
 
         listView = findViewById(R.id.listView)
 
+        val progressDialog = ProgressDialog(this@R2SearchActivity)
+        progressDialog.setMessage("Searching, please wait ...")
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+        progressDialog.isIndeterminate = false
+        progressDialog.setCancelable(false)
+        progressDialog.setCanceledOnTouchOutside(false)
+
+        // HANDLE RESULTS from SearchInterface
+        val bv = BooVariable()
+        bv.listener = object : BooVariable.ChangeListener {
+            override fun onChange() {
+                //Toast.makeText(this@R2SearchActivity, "Search Complete", Toast.LENGTH_LONG).show()
+                var resultsAdapter = SearchLocatorAdapter(applicationContext, R.layout.search_view_adapter, bv.resultsList)
+                listView.adapter = resultsAdapter
+                Log.d("HTML", "CHanged")
+                progressDialog.dismiss()
+            }
+        }
+
 
          //Setting up search listener
-        mMaterialSearchVIew.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
+        mMaterialSearchView.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                progressBar.visibility = View.VISIBLE
+                //progressBar.visibility = View.VISIBLE
                 //Use SearchInterface & get Resul
                 query?.let {
-                    var markJSSearchInteface = MyMarkJSSearchInteface(publication, publicationIdentifier, preferences, epubName)
-                    var locatorsList = markJSSearchInteface.search(query, applicationContext)
-                    var resultsAdapter = SearchLocatorAdapter(applicationContext, R.layout.search_view_adapter, locatorsList)
-                    listView.adapter = resultsAdapter
-                    //progressBar.visibility = View.INVISIBLE
+                    var markJSSearchInteface = MyMarkJSSearchInteface(publication, publicationIdentifier, preferences, epubName, bv)
+                    markJSSearchInteface.search(query, applicationContext)
+                    progressDialog.show()
+                    val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
                 }
-
                 return true
             }
 
@@ -81,7 +124,7 @@ class R2SearchActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_search, menu)
         var menuItem = menu?.findItem(R.id.searchMenu)
-        mMaterialSearchVIew?.setMenuItem(menuItem)
+        mMaterialSearchView?.setMenuItem(menuItem)
         menuItem?.expandActionView()
         menu?.performIdentifierAction(R.id.searchMenu, 0)
 

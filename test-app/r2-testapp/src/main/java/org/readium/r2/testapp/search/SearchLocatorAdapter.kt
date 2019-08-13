@@ -21,9 +21,13 @@ class SearchLocatorAdapter(context: Context, resource: Int, results: List<Search
         var tmpLocator = getItem(position)
         val index = position
         var txtBefore = tmpLocator.text?.before
-        /*txtBefore = txtBefore.replace("\\%", "\"")
-        txtBefore = txtBefore.replace("\\\$", "'")*/
+        txtBefore = txtBefore?.replace("!§", "\"")
+        txtBefore = txtBefore?.replace("§!", "'")
+
         var txtAfter = tmpLocator.text?.after
+        txtAfter = txtAfter?.replace("!§", "\"")
+        txtAfter = txtAfter?.replace("§!", "'")
+
         var highlight = tmpLocator.text?.highlight
 
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
