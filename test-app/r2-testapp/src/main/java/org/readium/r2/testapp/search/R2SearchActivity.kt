@@ -117,13 +117,13 @@ class R2SearchActivity : AppCompatActivity() {
         listView.setOnItemClickListener { adapterView, view, position, id ->
             val res =  adapterView.getItemAtPosition(position) as SearchLocator
             Log.d("OKOK", res.href)
-            val intent = Intent(this@R2SearchActivity, R2EpubSearchActivity::class.java)
+            val intent = Intent()
             intent.putExtra("publicationPath", publicationPath)
             intent.putExtra("epubName", epubName)
             intent.putExtra("publication", publication)
             intent.putExtra("bookId", bookId)
             intent.putExtra("locator", res)
-            startActivity(intent)
+            setResult(Activity.RESULT_OK, intent)
             finish()
         }
 
