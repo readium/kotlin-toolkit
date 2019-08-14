@@ -32,6 +32,7 @@ import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.search.R2SearchActivity
+import org.readium.r2.testapp.search.SearchLocator
 import kotlin.coroutines.CoroutineContext
 
 
@@ -42,7 +43,7 @@ import kotlin.coroutines.CoroutineContext
  *      ( Table of content, User Settings, DRM, Bookmarks )
  *
  */
-class R2EpubActivity : R2EpubActivity(), CoroutineScope {
+open class R2EpubActivity : R2EpubActivity(), CoroutineScope {
 
     /**
      * Context of this scope.
@@ -220,8 +221,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                         currentPage?.let {
                             toast("Bookmark added at page $currentPage")
                         } ?:run {
-                            toast("Bookmark added")
-                        }
+                            toast("Bookmark added") }
                     }
                 } ?:run {
                     launch {
@@ -233,9 +233,12 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
             }
 
             R.id.searchBtn -> {
-                startActivity(intentFor<R2SearchActivity>(
-                        "publication" to publication,
-                        "epubName" to epubName))
+                val intent = Intent(this, R2SearchActivity::class.java)
+                intent.putExtra("publicationPath", publicationPath)
+                intent.putExtra("epubName", epubName)
+                intent.putExtra("publication", publication)
+                intent.putExtra("epubName", epubName)
+                startActivityForResult(intent, 233)
                 return true
             }
 

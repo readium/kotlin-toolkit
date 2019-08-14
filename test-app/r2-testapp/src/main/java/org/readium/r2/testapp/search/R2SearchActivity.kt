@@ -1,7 +1,6 @@
 package org.readium.r2.testapp.search
 
 
-import android.app.Dialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
@@ -15,12 +14,16 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView
 import org.readium.r2.shared.Publication
 import android.widget.*
 import org.readium.r2.testapp.R
-import android.widget.Toast
 import android.app.Activity
-import org.jetbrains.anko.indeterminateProgressDialog
 import android.app.ProgressDialog
-
-
+import android.content.Intent
+import androidx.core.content.ContextCompat.startActivity
+import org.jetbrains.anko.intentFor
+import org.readium.r2.shared.Locations
+import org.readium.r2.shared.Locator
+import org.readium.r2.testapp.R2EpubActivity
+import android.provider.MediaStore
+import org.jetbrains.anko.Android
 
 
 class BooVariable {
@@ -48,6 +51,8 @@ class R2SearchActivity : AppCompatActivity() {
     lateinit var epubName: String
     lateinit var publication: Publication
     lateinit var publicationIdentifier: String
+    var bookId: Long = -1
+    lateinit var publicationPath: String
     lateinit var progressBar: ProgressBar
 
     var results = listOf<SearchLocator>()
@@ -63,6 +68,8 @@ class R2SearchActivity : AppCompatActivity() {
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         publication = intent.getSerializableExtra("publication") as Publication
         epubName = intent.getStringExtra("epubName")
+        publicationPath = intent.getStringExtra("publicationPath")
+        bookId = intent.getLongExtra("bookId", -1)
         publicationIdentifier = publication.metadata.identifier
 
 
@@ -76,13 +83,6 @@ class R2SearchActivity : AppCompatActivity() {
 
         listView = findViewById(R.id.listView)
 
-        val progressDialog = ProgressDialog(this@R2SearchActivity)
-        progressDialog.setMessage("Searching, please wait ...")
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-        progressDialog.isIndeterminate = false
-        progressDialog.setCancelable(false)
-        progressDialog.setCanceledOnTouchOutside(false)
-
         // HANDLE RESULTS from SearchInterface
         val bv = BooVariable()
         bv.listener = object : BooVariable.ChangeListener {
@@ -91,7 +91,6 @@ class R2SearchActivity : AppCompatActivity() {
                 var resultsAdapter = SearchLocatorAdapter(applicationContext, R.layout.search_view_adapter, bv.resultsList)
                 listView.adapter = resultsAdapter
                 Log.d("HTML", "CHanged")
-                progressDialog.dismiss()
             }
         }
 
@@ -104,7 +103,6 @@ class R2SearchActivity : AppCompatActivity() {
                 query?.let {
                     var markJSSearchInteface = MyMarkJSSearchInteface(publication, publicationIdentifier, preferences, epubName, bv)
                     markJSSearchInteface.search(query, applicationContext)
-                    progressDialog.show()
                     val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
                     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
                 }
@@ -116,10 +114,20 @@ class R2SearchActivity : AppCompatActivity() {
             }
         })
 
-
+        listView.setOnItemClickListener { adapterView, view, position, id ->
+            val res =  adapterView.getItemAtPosition(position) as SearchLocator
+            Log.d("OKOK", res.href)
+            val intent = Intent(this@R2SearchActivity, R2EpubSearchActivity::class.java)
+            intent.putExtra("publicationPath", publicationPath)
+            intent.putExtra("epubName", epubName)
+            intent.putExtra("publication", publication)
+            intent.putExtra("bookId", bookId)
+            intent.putExtra("locator", res)
+            startActivity(intent)
+            finish()
+        }
 
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_search, menu)
@@ -130,9 +138,6 @@ class R2SearchActivity : AppCompatActivity() {
 
         return super.onCreateOptionsMenu(menu)
     }
-
-
-
 
 }
 

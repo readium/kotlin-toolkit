@@ -184,13 +184,12 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 
 
-
     //Search Module
     //Search Bar
     implementation 'com.miguelcatalan:materialsearchview:1.4.0'
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
-    
+
     //GSON Library
     implementation 'com.google.code.gson:gson:2.8.5'
 }

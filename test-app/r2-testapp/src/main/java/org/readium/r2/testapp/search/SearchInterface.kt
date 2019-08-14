@@ -44,6 +44,7 @@ class MyMarkJSSearchInteface(var publication: Publication, var publicationIdenti
 
         //Setting up variables for iteration
         val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString()).toInt()
+        var title = publication.metadata.title
         var resourceNumber = 0
         var locatorsList = mutableListOf<SearchLocator>()
 
@@ -93,7 +94,7 @@ class MyMarkJSSearchInteface(var publication: Publication, var publicationIdenti
                                     var type = resultObj.getString("type")
                                     var text = LocatorText.fromJSON(resultObj.getJSONObject("text"))
                                     var location = Locations.fromJSON(resultObj.getJSONObject("location"))
-                                    var tmpLocator = SearchLocator(href, type, "" ,location, text)
+                                    var tmpLocator = SearchLocator(href, type, title ,location, text)
                                     locatorsList.add(tmpLocator)
                                     bv.resultsList = locatorsList
                                 }
