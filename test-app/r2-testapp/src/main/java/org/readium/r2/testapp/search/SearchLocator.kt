@@ -16,9 +16,4 @@ class SearchLocator(href: String,
                     title: String? = null,
                     locations: Locations? = null,
                     text: LocatorText?, var mark: String? = null, var rangeInfo: String? = null) :  Locator(href, type, title ,locations, text) {
-
-
-
-
-
 }

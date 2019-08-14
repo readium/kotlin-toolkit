@@ -72,25 +72,23 @@ class R2SearchActivity : AppCompatActivity() {
         bookId = intent.getLongExtra("bookId", -1)
         publicationIdentifier = publication.metadata.identifier
 
-
+        mMaterialSearchView = findViewById(R.id.searchView)
+        listView = findViewById(R.id.listView)
 
         //Setting up toolbar
         var toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         toolbar.setTitleTextColor(Color.parseColor("#FFFFFF"))
 
-        mMaterialSearchView = findViewById(R.id.searchView)
 
-        listView = findViewById(R.id.listView)
-
+        //This variable is used to notify SearchActivity that the search interface fully executed its JS code and modified listview's adapter
+        //This function basicaly refresh the listview once the JS is fully executed
         // HANDLE RESULTS from SearchInterface
         val bv = BooVariable()
         bv.listener = object : BooVariable.ChangeListener {
             override fun onChange() {
-                //Toast.makeText(this@R2SearchActivity, "Search Complete", Toast.LENGTH_LONG).show()
                 var resultsAdapter = SearchLocatorAdapter(applicationContext, R.layout.search_view_adapter, bv.resultsList)
                 listView.adapter = resultsAdapter
-                Log.d("HTML", "CHanged")
             }
         }
 
@@ -99,7 +97,6 @@ class R2SearchActivity : AppCompatActivity() {
         mMaterialSearchView.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 //progressBar.visibility = View.VISIBLE
-                //Use SearchInterface & get Resul
                 query?.let {
                     var markJSSearchInteface = MyMarkJSSearchInteface(publication, publicationIdentifier, preferences, epubName, bv)
                     markJSSearchInteface.search(query, applicationContext)
@@ -108,15 +105,15 @@ class R2SearchActivity : AppCompatActivity() {
                 }
                 return true
             }
-
             override fun onQueryTextChange(newText: String?): Boolean {
                 return false
             }
         })
 
+
+        //Setting up listener on item click
         listView.setOnItemClickListener { adapterView, view, position, id ->
             val res =  adapterView.getItemAtPosition(position) as SearchLocator
-            Log.d("OKOK", res.href)
             val intent = Intent()
             intent.putExtra("publicationPath", publicationPath)
             intent.putExtra("epubName", epubName)
@@ -135,48 +132,7 @@ class R2SearchActivity : AppCompatActivity() {
         mMaterialSearchView?.setMenuItem(menuItem)
         menuItem?.expandActionView()
         menu?.performIdentifierAction(R.id.searchMenu, 0)
-
         return super.onCreateOptionsMenu(menu)
     }
 
 }
-
-/*
-//Setting up listView adapter
-        var res1 = SearchLocator("", "", null, null,null, "Mark1", "")
-        var res2 = SearchLocator("", "", null, null,null, "Mark2", "")
-        var res3 = SearchLocator("", "", null, null,null, "Mark3", "")
-        var res4 = SearchLocator("", "", null, null,null, "Mark4", "")
-        var res5 = SearchLocator("", "", null, null,null, "Mark5", "")
-        var res6 = SearchLocator("", "", null, null,null, "Mark6", "")
-        var res7 = SearchLocator("", "", null, null,null, "Mark7", "")
-        var res8 = SearchLocator("", "", null, null,null, "Mark8", "")
-        var res9 = SearchLocator("", "", null, null,null, "Mark9", "")
-        var res10 = SearchLocator("", "", null, null,null, "Mark10", "")
-        var res11 = SearchLocator("", "", null, null,null, "Mark11", "")
-        var res12 = SearchLocator("", "", null, null,null, "Mark12", "")
-        var res13 = SearchLocator("", "", null, null,null, "Mark13", "")
-        var res14 = SearchLocator("", "", null, null,null, "Mark14", "")
-        var results = listOf<SearchLocator>(res1,res2,res3,res4,res5,res6,res7,res8,res9,res10,res11,res12,res13,res14)
-        var resultsAdapter = SearchLocatorAdapter(applicationContext, R.layout.search_view_adapter, results)
-        listView = findViewById(R.id.listView)
-        listView.adapter = resultsAdapter
- */
-
-
-
-
-/*
-Setting up items
-mMaterialSearchVIew.setOnSearchViewListener(object : MaterialSearchView.SearchViewListener {
-    override fun onSearchViewShown() {
-        Toast.makeText(applicationContext, "Search Enabled",
-                Toast.LENGTH_SHORT).show();
-    }
-
-    override fun onSearchViewClosed() {
-        val arrayAdapter = ArrayAdapter<String>(this@R2SearchActivity, android.R.layout.simple_list_item_1)
-        listView.setAdapter(arrayAdapter)
-    }
-})*/
-
