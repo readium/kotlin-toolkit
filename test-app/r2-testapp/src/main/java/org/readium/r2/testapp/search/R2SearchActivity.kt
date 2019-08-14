@@ -24,6 +24,10 @@ import org.readium.r2.shared.Locator
 import org.readium.r2.testapp.R2EpubActivity
 import android.provider.MediaStore
 import org.jetbrains.anko.Android
+import android.R.id.edit
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import kotlinx.android.synthetic.main.filter_row.view.*
 
 
 class BooVariable {
@@ -60,9 +64,6 @@ class R2SearchActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_r2_search)
-
-
-
         progressBar = findViewById(R.id.progressbar) as ProgressBar
         progressBar.visibility = View.INVISIBLE
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
@@ -71,6 +72,7 @@ class R2SearchActivity : AppCompatActivity() {
         publicationPath = intent.getStringExtra("publicationPath")
         bookId = intent.getLongExtra("bookId", -1)
         publicationIdentifier = publication.metadata.identifier
+        var searchedKeyword = ""
 
         mMaterialSearchView = findViewById(R.id.searchView)
         listView = findViewById(R.id.listView)
@@ -82,13 +84,21 @@ class R2SearchActivity : AppCompatActivity() {
 
 
         //This variable is used to notify SearchActivity that the search interface fully executed its JS code and modified listview's adapter
-        //This function basicaly refresh the listview once the JS is fully executed
+        //This function basicaly refresh the listview once the JS is fully executed + Save results
         // HANDLE RESULTS from SearchInterface
         val bv = BooVariable()
         bv.listener = object : BooVariable.ChangeListener {
             override fun onChange() {
                 var resultsAdapter = SearchLocatorAdapter(applicationContext, R.layout.search_view_adapter, bv.resultsList)
                 listView.adapter = resultsAdapter
+
+                //Saving results + keyword
+                val editor = getPreferences(Context.MODE_PRIVATE).edit()
+                val stringResults = Gson().toJson(bv.resultsList)
+                editor.putString("searchResults", stringResults)
+                editor.putString("keyword", searchedKeyword)
+                editor.commit()
+
             }
         }
 
@@ -98,6 +108,7 @@ class R2SearchActivity : AppCompatActivity() {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 //progressBar.visibility = View.VISIBLE
                 query?.let {
+                    searchedKeyword = query
                     var markJSSearchInteface = MyMarkJSSearchInteface(publication, publicationIdentifier, preferences, epubName, bv)
                     markJSSearchInteface.search(query, applicationContext)
                     val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -124,6 +135,9 @@ class R2SearchActivity : AppCompatActivity() {
             finish()
         }
 
+
+
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -132,6 +146,17 @@ class R2SearchActivity : AppCompatActivity() {
         mMaterialSearchView?.setMenuItem(menuItem)
         menuItem?.expandActionView()
         menu?.performIdentifierAction(R.id.searchMenu, 0)
+
+        //Loading previous results + keyword
+        var tmp = getPreferences(Context.MODE_PRIVATE).getString("searchResults", null)
+        if(tmp != null) {
+            val gson = Gson()
+            val results = gson.fromJson(tmp, Array<SearchLocator>::class.java).asList()
+            var resultsAdapter = SearchLocatorAdapter(applicationContext, R.layout.search_view_adapter, results)
+            listView.adapter = resultsAdapter
+            var keyword = getPreferences(Context.MODE_PRIVATE).getString("keyword", null)
+            mMaterialSearchView.setQuery(keyword, false)
+        }
         return super.onCreateOptionsMenu(menu)
     }
 
