@@ -7,9 +7,7 @@ import org.readium.r2.shared.LocatorText
 
 /**
  * This class describes a search result
- *
  */
-
 //DO WE STILL NEED TO STORE MARK OBJ AND RANGEINFO?
 class SearchLocator(href: String,
                     type: String,

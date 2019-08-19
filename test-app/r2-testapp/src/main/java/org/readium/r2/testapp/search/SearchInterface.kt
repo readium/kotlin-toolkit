@@ -71,7 +71,6 @@ class MyMarkJSSearchInteface(var publication: Publication, var publicationIdenti
                         var resourceId = publication.readingOrder[resourceNumber].href as String
                         //Element is current HTML resource as String
                         var element = resource.getElementsByClass("body").text()
-                        //Log.d("JSOUP",resource.getElementsByTag("body").html().toString())
 
                         //Removing double and singles quotes from html string
                         element = element.replace("\"", "!§")
@@ -81,7 +80,6 @@ class MyMarkJSSearchInteface(var publication: Publication, var publicationIdenti
                         //Executing MarkJS to get results
                         webView.evaluateJavascript("performSearch(\"$keyword\", \"$element\", \"$resourceId\");") { results ->
                             if(results != "null") {
-                                Log.d("Enter", results)
                                 //Transforming json string
                                 var json = results
                                 json = json.replace("\\\"", "'")
@@ -106,22 +104,7 @@ class MyMarkJSSearchInteface(var publication: Publication, var publicationIdenti
                 }
             }
         }
+        //Returning this empty list because we already use "bv" variable to trigger our R2SearchActivity that JS is fully executed
         return mutableListOf()
     }
-
-
-    inner class MyJavascriptInterface(internal var context: Context) {
-
-        @android.webkit.JavascriptInterface
-        fun getStringFromJS(txtVal: String) {
-            Toast.makeText(context, "Value From JS : $txtVal", Toast.LENGTH_LONG).show()
-            Log.d("JS DEBUG : ", txtVal)
-        }
-
-        @android.webkit.JavascriptInterface
-        fun goToNextResource(currentResource: String) {
-
-        }
-    }
-
 }

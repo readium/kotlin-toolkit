@@ -6,7 +6,6 @@ import android.content.SharedPreferences
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -15,24 +14,16 @@ import org.readium.r2.shared.Publication
 import android.widget.*
 import org.readium.r2.testapp.R
 import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Intent
-import androidx.core.content.ContextCompat.startActivity
-import org.jetbrains.anko.intentFor
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Locator
-import org.readium.r2.testapp.R2EpubActivity
-import android.provider.MediaStore
-import org.jetbrains.anko.Android
-import android.R.id.edit
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import kotlinx.android.synthetic.main.filter_row.view.*
 
 
+/**
+ * This Variable is used as a Trigger
+ * It notifies current R2SearchActivity once JS is fully executed in our SearchInterface
+ */
 class BooVariable {
     var listener: ChangeListener? = null
-
     var resultsList = mutableListOf<SearchLocator>()
         set(list) {
             field = list
@@ -44,13 +35,15 @@ class BooVariable {
     }
 }
 
-
+/**
+ *
+ */
 class R2SearchActivity : AppCompatActivity() {
 
     lateinit var mMaterialSearchView: MaterialSearchView
     lateinit var listView : ListView
 
-    // This is for our custom search interface
+    // This variables are for our custom search interface
     lateinit var preferences: SharedPreferences
     lateinit var epubName: String
     lateinit var publication: Publication
@@ -59,7 +52,6 @@ class R2SearchActivity : AppCompatActivity() {
     lateinit var publicationPath: String
     lateinit var progressBar: ProgressBar
 
-    var results = listOf<SearchLocator>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,16 +75,23 @@ class R2SearchActivity : AppCompatActivity() {
         toolbar.setTitleTextColor(Color.parseColor("#FFFFFF"))
 
 
+        var jsExecutionCounter = 0
+
         //This variable is used to notify SearchActivity that the search interface fully executed its JS code and modified listview's adapter
         //This function basicaly refresh the listview once the JS is fully executed + Save results
         // HANDLE RESULTS from SearchInterface
         val bv = BooVariable()
         bv.listener = object : BooVariable.ChangeListener {
             override fun onChange() {
+                jsExecutionCounter++
                 var resultsAdapter = SearchLocatorAdapter(applicationContext, R.layout.search_view_adapter, bv.resultsList)
                 listView.adapter = resultsAdapter
 
-                //Saving results + keyword
+
+                /**
+                 * TODO use jSExecutionCounter in order to only trigger R2SearchActivity once all JS is done, not at each occurence
+                 */
+                //Saving results + keyword only when JS is fully executed on all resources
                 val editor = getPreferences(Context.MODE_PRIVATE).edit()
                 val stringResults = Gson().toJson(bv.resultsList)
                 editor.putString("searchResults", stringResults)
@@ -106,11 +105,13 @@ class R2SearchActivity : AppCompatActivity() {
          //Setting up search listener
         mMaterialSearchView.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                //progressBar.visibility = View.VISIBLE
                 query?.let {
+                    //Saving searched term
                     searchedKeyword = query
+                    //Initializing our custom search interfaces
                     var markJSSearchInteface = MyMarkJSSearchInteface(publication, publicationIdentifier, preferences, epubName, bv)
                     markJSSearchInteface.search(query, applicationContext)
+                    //This hides keyboard
                     val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
                     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
                 }
@@ -123,6 +124,7 @@ class R2SearchActivity : AppCompatActivity() {
 
 
         //Setting up listener on item click
+        //Opens new R2EpubActivity with desired resource
         listView.setOnItemClickListener { adapterView, view, position, id ->
             val res =  adapterView.getItemAtPosition(position) as SearchLocator
             val intent = Intent()
@@ -134,13 +136,10 @@ class R2SearchActivity : AppCompatActivity() {
             setResult(Activity.RESULT_OK, intent)
             finish()
         }
-
-
-
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        //Setting up search bar
         menuInflater.inflate(R.menu.menu_search, menu)
         var menuItem = menu?.findItem(R.id.searchMenu)
         mMaterialSearchView?.setMenuItem(menuItem)
