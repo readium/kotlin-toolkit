@@ -60,9 +60,7 @@ import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.parsePublication
 import org.readium.r2.shared.promise
-import org.readium.r2.streamer.parser.CbzParser
-import org.readium.r2.streamer.parser.EpubParser
-import org.readium.r2.streamer.parser.PubBox
+import org.readium.r2.streamer.parser.*
 import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.audiobook.AudiobookActivity
@@ -146,7 +144,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         positionsDB = PositionsDatabase(this)
 
         booksAdapter = BooksAdapter(this, books, "$BASE_URL:$localPort", this)
-        
+
         parseIntent(null)
 
 
@@ -196,6 +194,13 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                                     onClick {
                                         alertDialog.dismiss()
                                         showDownloadFromUrlAlert()
+                                    }
+                                }
+                                button {
+                                    text = "Import AudioBook from your device"
+                                    onClick {
+                                        alertDialog.dismiss()
+                                        showDocumentPicker()
                                     }
                                 }
                             }
@@ -430,32 +435,38 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    private fun getPublicationURL(src: String): JSONObject? {
+    private fun getPublicationURL(src: String, signal: Boolean = false): JSONObject? {
         return try {
-            val url = URL(src)
-            val connection = url.openConnection() as HttpURLConnection
-            connection.instanceFollowRedirects = false
-            connection.doInput = true
-            connection.connect()
+            if(signal) {
+                val json = JSONObject(src)
+                return json
+            } else {
+                val url = URL(src)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.instanceFollowRedirects = false
+                connection.doInput = true
+                connection.connect()
 
-            val jsonManifestURL = URL(connection.getHeaderField("Location") ?: src).openConnection()
-            jsonManifestURL.connect()
+                val jsonManifestURL = URL(connection.getHeaderField("Location")
+                        ?: src).openConnection()
+                jsonManifestURL.connect()
 
-            val jsonManifest = jsonManifestURL.getInputStream().readBytes()
-            val stringManifest = jsonManifest.toString(Charset.defaultCharset())
-            val json = JSONObject(stringManifest)
+                val jsonManifest = jsonManifestURL.getInputStream().readBytes()
+                val stringManifest = jsonManifest.toString(Charset.defaultCharset())
+                val json = JSONObject(stringManifest)
 
-            jsonManifestURL.close()
-            connection.disconnect()
-            connection.close()
+                jsonManifestURL.close()
+                connection.disconnect()
+                connection.close()
 
-            json
+                json
+            }
         } catch (e: IOException) {
             e.printStackTrace()
             null
         }
     }
-    
+
     private fun getBitmapFromURL(src: String): Bitmap? {
         return try {
             val url = URL(src)
@@ -750,6 +761,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         }
                     }
                 }
+            } else if (publication.type == Publication.TYPE.AUDIO) {
+
             }
         }
     }
@@ -815,7 +828,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 }
                 book.ext == Publication.EXTENSION.JSON -> {
-                    prepareWebPublication(book.fileUrl, book, add = false)
+
+                    prepareWebPublication(book.fileUrl, book, add = false, signal = true)
                 }
                 else -> null
             }
@@ -826,18 +840,61 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean) {
+
+    private fun prepareWebPublicationAudio(externalManifest: String, pub: PubBox? = null, webPub: Book?, add: Boolean) {
+        var json: JSONObject? = null
+        var manifestByte = pub?.container?.data(manifestDotJSONPath)
+        val stringManifest = manifestByte?.toString(Charset.defaultCharset())
+        json = JSONObject(stringManifest)
+
+        json?.let {
+                val externalPub = parsePublication(json)
+                val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
+
+                var book: Book? = null
+
+                if (add && pub!=null) {
+                    externalPub.coverLink?.href?.let { href ->
+                        val arrayInputStream = pub.container.dataInputStream("audiobook/"+href)
+                        val bitmap = BitmapFactory.decodeStream(arrayInputStream)
+                        val stream = ByteArrayOutputStream()
+                        bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
+
+                        book = Book(externalURI, externalPub.metadata.title, null, stringManifest as String, null, externalURI + externalPub.coverLink?.href, externalPub.metadata.identifier, stream.toByteArray(), Publication.EXTENSION.JSON)
+
+                    } ?: run {
+                        book = Book(externalURI, externalPub.metadata.title, null, stringManifest as String, null, null, externalPub.metadata.identifier, null, Publication.EXTENSION.JSON)
+                    }
+
+                    launch {
+                        database.books.insert(book!!, false)?.let { id ->
+                            book!!.id = id
+                            books.add(0, book!!)
+                            booksAdapter.notifyDataSetChanged()
+                            catalogView.longSnackbar("publication added to your library")
+                            //prepareSyntheticPageList(externalPub, book!!)
+                        } ?: run {
+                            showDuplicateBookAlert(book!!, externalPub, false)
+                        }
+                    }
+                } else {
+                    book = webPub
+                    startActivity(book!!.fileName, book!!, externalPub)
+                }
+            }
+    }
+
+    private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean, signal: Boolean? = false) {
 
 
         task {
-
-            getPublicationURL(externalManifest)
+            getPublicationURL(externalManifest, signal as Boolean)
 
         } then { json ->
 
             json?.let {
                 val externalPub = parsePublication(json)
-                val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
+                val externalURI = ""
 
                 var book: Book? = null
 
@@ -969,6 +1026,18 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         progress.dismiss()
 
                     }
+                } else if (mime == "application/octet-stream") {
+                    val parser = EpubParser()
+                    val pub = parser.parseAudio(publicationPath, "")
+                    if(pub != null) {
+                        // GET MANISFEST AS JSON
+                        var manifestByte = pub.container.data(manifestDotJSONPath)
+                        val stringManifest = manifestByte.toString(Charset.defaultCharset())
+                        val json = JSONObject(stringManifest)
+                        prepareWebPublicationAudio("", pub, null, true)
+                        progress.dismiss()
+                    }
+
                 } else if (name.endsWith(".cbz")) {
                     val parser = CbzParser()
                     val pub = parser.parse(publicationPath)
