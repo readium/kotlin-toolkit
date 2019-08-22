@@ -266,6 +266,8 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
                 val string = array.getString(i)
                 m.languages.add(string)
             }
+        }else if (metadataDict.get("language") is String){
+            m.languages.add(metadataDict.get("language") as String)
         }
     }
 
