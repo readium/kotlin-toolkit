@@ -6,6 +6,7 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.view.Menu
@@ -27,6 +28,7 @@ import org.readium.r2.shared.Locator
 import org.readium.r2.shared.LocatorText
 import org.readium.r2.shared.Publication
 import org.readium.r2.testapp.*
+import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
@@ -56,6 +58,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
     private lateinit var preferences: SharedPreferences
     private lateinit var bookmarksDB: BookmarksDatabase
     private lateinit var progress: ProgressDialog
+    private lateinit var bookUrl: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +71,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
         publication = intent.getSerializableExtra("publication") as Publication
         epubName = intent.getStringExtra("epubName")
         publicationIdentifier = publication.metadata.identifier
+        bookUrl = intent.getStringExtra("bookUrl")
 
         launch {
             menuDrm?.isVisible = intent.getBooleanExtra("drm", false)
@@ -83,6 +87,12 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
         chapterView!!.text = publication.readingOrder[index].title
         progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_audiobook))
+
+        var counter = 0
+        while(counter<publication.readingOrder.size) {
+            publication.readingOrder[counter].href = bookUrl +"/"+publication.readingOrder[counter].href
+            counter++
+        }
 
         mediaPlayer = R2MediaPlayer(this, publication.readingOrder, progress, this)
 
@@ -204,6 +214,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
     private fun updateUI() {
 
 
+
         if (currentResource == publication.readingOrder.size - 1) {
             next_chapter!!.isEnabled = false
             next_chapter!!.alpha = .5f
@@ -222,7 +233,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
         }
 
         val current = publication.readingOrder[currentResource]
-        chapterView!!.text = current.title
+          chapterView!!.text = current.title
 
 
         if (mediaPlayer!!.isPlaying) {

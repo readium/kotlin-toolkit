@@ -344,11 +344,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 when (publication.type) {
                     Publication.TYPE.WEBPUB -> {
                         progress.dismiss()
-                        prepareWebPublication(self?.href!!, webPub = null, add = true)
+                        prepareWebPublication(self?.href!!, webPub = null, add = true, publicationpath = "")
                     }
                     Publication.TYPE.AUDIO -> {
                         progress.dismiss()
-                        prepareWebPublication(self?.href!!, webPub = null, add = true) //will be adapted later
+                        prepareWebPublication(self?.href!!, webPub = null, add = true, publicationpath = "") //will be adapted later
                     }
                     else -> {
                         progress.dismiss()
@@ -828,8 +828,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 }
                 book.ext == Publication.EXTENSION.JSON -> {
-
-                    prepareWebPublication(book.fileUrl, book, add = false, signal = true)
+                    prepareWebPublication(book.fileUrl, book, add = false, signal = true, publicationpath = publicationPath)
                 }
                 else -> null
             }
@@ -849,8 +848,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         json?.let {
                 val externalPub = parsePublication(json)
-                val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
-
+                externalPub.metadata.identifier = pub?.publication?.metadata?.identifier as String
+                //val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
+                val externalURI = ""
                 var book: Book? = null
 
                 if (add && pub!=null) {
@@ -884,7 +884,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             }
     }
 
-    private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean, signal: Boolean? = false) {
+    private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean, signal: Boolean? = false, publicationpath: String? = "") {
 
 
         task {
@@ -894,8 +894,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
             json?.let {
                 val externalPub = parsePublication(json)
+                //val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
                 val externalURI = ""
-
                 var book: Book? = null
 
                 if (add) {
@@ -945,7 +945,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             startActivity(intentFor<AudiobookActivity>("publicationPath" to publicationPath,
                     "epubName" to book.fileName,
                     "publication" to publication,
-                    "bookId" to book.id))
+                    "bookId" to book.id,
+                    "bookUrl" to book.identifier))
 
         } else {
             startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath,
