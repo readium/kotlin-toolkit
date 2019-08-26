@@ -22,12 +22,15 @@ class Subject : JSONable, Serializable {
     //  Epub 3.1 "code" (opf:term)
     var code: String? = null
 
+    var links: MutableList<Link> = mutableListOf()
+
     override fun toJSON(): JSONObject {
         val json = JSONObject()
         json.putOpt("name", name)
         json.putOpt("sortAs", sortAs)
         json.putOpt("scheme", scheme)
         json.putOpt("code", code)
+        json.putOpt("links", links)
         return json
     }
 
