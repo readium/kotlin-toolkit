@@ -213,6 +213,17 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
                             if (sub.has("code")) {
                                 subject.code = sub.getString("code")
                             }
+                            if (sub.has("links")) {
+                                sub.get("links")?.let {
+                                    val links = it as? JSONArray
+                                            ?: JSONArray()
+                                    for (i in 0 until links.length()) {
+                                        val linkDict = links.getJSONObject(i)
+                                        val link = parseLink(linkDict)
+                                        subject.links.add(link)
+                                    }
+                                }
+                            }
                             m.subjects.add(subject)
                         }
                     }
