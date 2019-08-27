@@ -344,11 +344,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 when (publication.type) {
                     Publication.TYPE.WEBPUB -> {
                         progress.dismiss()
-                        prepareWebPublication(self?.href!!, webPub = null, add = true, publicationpath = "")
+                        prepareWebPublication(self?.href!!, webPub = null, add = true)
                     }
                     Publication.TYPE.AUDIO -> {
                         progress.dismiss()
-                        prepareWebPublication(self?.href!!, webPub = null, add = true, publicationpath = "") //will be adapted later
+                        prepareWebPublication(self?.href!!, webPub = null, add = true) //will be adapted later
                     }
                     else -> {
                         progress.dismiss()
@@ -435,12 +435,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    private fun getPublicationURL(src: String, signal: Boolean = false): JSONObject? {
+    private fun getPublicationURL(src: String): JSONObject? {
         return try {
-            if(signal) {
-                val json = JSONObject(src)
-                return json
-            } else {
                 val url = URL(src)
                 val connection = url.openConnection() as HttpURLConnection
                 connection.instanceFollowRedirects = false
@@ -460,7 +456,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 connection.close()
 
                 json
-            }
         } catch (e: IOException) {
             e.printStackTrace()
             null
@@ -762,7 +757,27 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 }
             } else if (publication.type == Publication.TYPE.AUDIO) {
+                if (add) {
+                    //Getting book cover from file path to bitmap
+                    var ref = "audiobook/"+publication.coverLink?.href
+                    val arrayInputStream = pub.container.data(ref)
+                    val bitmap = BitmapFactory.decodeByteArray(arrayInputStream, 0, arrayInputStream.size)
+                    val stream = ByteArrayOutputStream()
+                    bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
+                    //Building book object and adding it to library
+                    val book = Book(fileName, publication.metadata.title, null, absolutePath, null, "audiobook/"+publication.coverLink?.href, UUID.randomUUID().toString(), stream.toByteArray(), Publication.EXTENSION.AUDIOBOOK)
+
+
+                    database.books.insert(book, false)?.let {
+                        book.id = it
+                        books.add(0,book)
+                        booksAdapter.notifyDataSetChanged()
+
+                    } ?: run {
+                        showDuplicateBookAlert(book, publication, lcp)
+                    }
+                }
             }
         }
     }
@@ -827,8 +842,20 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to pub.publication))
                     }
                 }
+                book.ext == Publication.EXTENSION.AUDIOBOOK -> {
+
+                    //If selected book is an audiobook
+                    val parser = AudioBookParser()
+                    //Parse book manifest to publication object
+                    val pub = parser.parse(publicationPath)
+
+                    pub?.let {
+                        //Starting AudiobookActivity
+                        startActivity(publicationPath, book, pub.publication)
+                    }
+                }
                 book.ext == Publication.EXTENSION.JSON -> {
-                    prepareWebPublication(book.fileUrl, book, add = false, signal = true, publicationpath = publicationPath)
+                    prepareWebPublication(book.fileUrl, book, add = false)
                 }
                 else -> null
             }
@@ -839,63 +866,17 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-
-    private fun prepareWebPublicationAudio(externalManifest: String, pub: PubBox? = null, webPub: Book?, add: Boolean) {
-        var json: JSONObject? = null
-        var manifestByte = pub?.container?.data(manifestDotJSONPath)
-        val stringManifest = manifestByte?.toString(Charset.defaultCharset())
-        json = JSONObject(stringManifest)
-
-        json?.let {
-                val externalPub = parsePublication(json)
-                externalPub.metadata.identifier = pub?.publication?.metadata?.identifier as String
-                //val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
-                val externalURI = ""
-                var book: Book? = null
-
-                if (add && pub!=null) {
-                    externalPub.coverLink?.href?.let { href ->
-                        val arrayInputStream = pub.container.dataInputStream("audiobook/"+href)
-                        val bitmap = BitmapFactory.decodeStream(arrayInputStream)
-                        val stream = ByteArrayOutputStream()
-                        bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
-
-                        book = Book(externalURI, externalPub.metadata.title, null, stringManifest as String, null, externalURI + externalPub.coverLink?.href, externalPub.metadata.identifier, stream.toByteArray(), Publication.EXTENSION.JSON)
-
-                    } ?: run {
-                        book = Book(externalURI, externalPub.metadata.title, null, stringManifest as String, null, null, externalPub.metadata.identifier, null, Publication.EXTENSION.JSON)
-                    }
-
-                    launch {
-                        database.books.insert(book!!, false)?.let { id ->
-                            book!!.id = id
-                            books.add(0, book!!)
-                            booksAdapter.notifyDataSetChanged()
-                            catalogView.longSnackbar("publication added to your library")
-                            //prepareSyntheticPageList(externalPub, book!!)
-                        } ?: run {
-                            showDuplicateBookAlert(book!!, externalPub, false)
-                        }
-                    }
-                } else {
-                    book = webPub
-                    startActivity(book!!.fileName, book!!, externalPub)
-                }
-            }
-    }
-
-    private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean, signal: Boolean? = false, publicationpath: String? = "") {
-
-
+    private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean) {
         task {
-            getPublicationURL(externalManifest, signal as Boolean)
+
+            getPublicationURL(externalManifest)
 
         } then { json ->
 
             json?.let {
                 val externalPub = parsePublication(json)
-                //val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
-                val externalURI = ""
+                val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
+
                 var book: Book? = null
 
                 if (add) {
@@ -945,8 +926,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             startActivity(intentFor<AudiobookActivity>("publicationPath" to publicationPath,
                     "epubName" to book.fileName,
                     "publication" to publication,
-                    "bookId" to book.id,
-                    "bookUrl" to book.identifier))
+                    "bookId" to book.id))
 
         } else {
             startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath,
@@ -1010,51 +990,58 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val fileName = UUID.randomUUID().toString()
         val publicationPath = R2DIRECTORY + fileName
 
-        uri?.let {
-            val input = contentResolver.openInputStream(uri)
-            input?.toFile(publicationPath)
-        }
+        val input = contentResolver.openInputStream(uri as Uri)
 
-        val file = File(publicationPath)
+        launch {
 
-        try {
-            launch {
+            //If its an audiobook, unpack the .audiobook file
+            if (name.endsWith(".audiobook")) {
+                val output = File(publicationPath);
+                if (!output.exists()) {
+                    if (!output.mkdir()) {
+                        throw RuntimeException("Cannot create directory")
+                    }
+                }
+                ZipUtil.unpack(input, output)
+            } else {
+                input?.toFile(publicationPath)
+            }
+
+            val file = File(publicationPath)
+
+            try {
                 if (mime == "application/epub+zip") {
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
+                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = false)
                         progress.dismiss()
 
                     }
-                } else if (mime == "application/octet-stream") {
-                    val parser = EpubParser()
-                    val pub = parser.parseAudio(publicationPath, "")
-                    if(pub != null) {
-                        // GET MANISFEST AS JSON
-                        var manifestByte = pub.container.data(manifestDotJSONPath)
-                        val stringManifest = manifestByte.toString(Charset.defaultCharset())
-                        val json = JSONObject(stringManifest)
-                        prepareWebPublicationAudio("", pub, null, true)
-                        progress.dismiss()
-                    }
-
                 } else if (name.endsWith(".cbz")) {
                     val parser = CbzParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
+                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = false)
                         progress.dismiss()
 
+                    }
+                } else if (name.endsWith(".audiobook")) {
+                    val parser = AudioBookParser()
+                    val pub = parser.parse(publicationPath)
+
+                    if (pub != null) {
+                        prepareToServe(pub, fileName, file.absolutePath, true, false)
+                        progress.dismiss()
                     }
                 } else {
                     catalogView.longSnackbar("Unsupported file")
                     progress.dismiss()
                     file.delete()
                 }
+            } catch (e: Throwable) {
+                e.printStackTrace()
             }
-        } catch (e: Throwable) {
-            e.printStackTrace()
         }
     }
 

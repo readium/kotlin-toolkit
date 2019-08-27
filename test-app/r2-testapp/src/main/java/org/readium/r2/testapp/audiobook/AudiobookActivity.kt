@@ -58,7 +58,6 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
     private lateinit var preferences: SharedPreferences
     private lateinit var bookmarksDB: BookmarksDatabase
     private lateinit var progress: ProgressDialog
-    private lateinit var bookUrl: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,7 +70,6 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
         publication = intent.getSerializableExtra("publication") as Publication
         epubName = intent.getStringExtra("epubName")
         publicationIdentifier = publication.metadata.identifier
-        bookUrl = intent.getStringExtra("bookUrl")
 
         launch {
             menuDrm?.isVisible = intent.getBooleanExtra("drm", false)
@@ -87,12 +85,6 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
         chapterView!!.text = publication.readingOrder[index].title
         progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_audiobook))
-
-        var counter = 0
-        while(counter<publication.readingOrder.size) {
-            publication.readingOrder[counter].href = bookUrl +"/"+publication.readingOrder[counter].href
-            counter++
-        }
 
         mediaPlayer = R2MediaPlayer(this, publication.readingOrder, progress, this)
 
