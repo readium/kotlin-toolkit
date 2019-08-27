@@ -37,6 +37,9 @@ const val mimetype = "application/epub+zip"
 const val mimetypeOEBPS = "application/oebps-package+xml"
 const val mediaOverlayURL = "media-overlay?resource="
 
+
+const val manifestDotJSONPath = "audiobook/manifest.json"
+
 class EpubParser : PublicationParser {
 
     private val opfParser = OPFParser()
@@ -65,6 +68,20 @@ class EpubParser : PublicationParser {
 
         return Pair(container, publication)
     }
+
+    fun parseAudio(fileAtPath: String, title: String): PubBox? {
+        val container = try {
+            generateContainerFrom(fileAtPath)
+        } catch (e: Exception) {
+            Timber.e(e, "Could not generate container")
+            return null
+        }
+        val publication = Publication()
+        publication.metadata.identifier = fileAtPath
+        publication.type = Publication.TYPE.AUDIO
+        return PubBox(publication, container)
+    }
+
 
     override fun parse(fileAtPath: String, title: String): PubBox? {
         val container = try {
