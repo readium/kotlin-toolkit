@@ -196,13 +196,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                                         showDownloadFromUrlAlert()
                                     }
                                 }
-                                button {
-                                    text = "Import AudioBook from your device"
-                                    onClick {
-                                        alertDialog.dismiss()
-                                        showDocumentPicker()
-                                    }
-                                }
                             }
                         }
                     }.show()

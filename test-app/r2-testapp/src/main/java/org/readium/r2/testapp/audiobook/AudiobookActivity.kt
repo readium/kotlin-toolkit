@@ -90,7 +90,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
         Handler().postDelayed({
 
-            Picasso.with(this).load(publication.links[1].href).into(imageView)
+            //Picasso.with(this).load(publication.links[1].href).into(imageView)
 
             mediaPlayer?.goTo(index)
 
