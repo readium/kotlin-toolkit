@@ -6,11 +6,17 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -27,6 +33,7 @@ import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
 import org.readium.r2.shared.LocatorText
 import org.readium.r2.shared.Publication
+import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.testapp.*
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -71,6 +78,13 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
         epubName = intent.getStringExtra("epubName")
         publicationIdentifier = publication.metadata.identifier
 
+        //Setting cover
+        if (intent.hasExtra("cover")) {
+            val byteArray = intent.getByteArrayExtra("cover")
+            val bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray!!.size)
+            findViewById<ImageView>(R.id.imageView).setImageBitmap(bmp)
+        }
+
         launch {
             menuDrm?.isVisible = intent.getBooleanExtra("drm", false)
         }
@@ -90,7 +104,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
         Handler().postDelayed({
 
-            //Picasso.with(this).load(publication.links[1].href).into(imageView)
+
 
             mediaPlayer?.goTo(index)
 
@@ -119,6 +133,10 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
                         return
                     }
                     mediaPlayer?.seekTo(progress)
+
+                    if(progress == seekBar?.max) {
+                        // Next track
+                    }
                 }
 
                 /**
@@ -195,6 +213,9 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
         }, 100)
 
+        /*mediaPlayer?.mediaPlayer?.setOnCompletionListener {
+
+        }*/
     }
 
     override fun onPrepared() {

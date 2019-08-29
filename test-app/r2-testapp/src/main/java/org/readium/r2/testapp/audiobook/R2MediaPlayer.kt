@@ -52,6 +52,10 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
         callback.onPrepared()
     }
 
+    fun test(tmp: Int) {
+        index = tmp
+        startPlayer()
+    }
     fun startPlayer() {
         mediaPlayer.setOnPreparedListener(this)
         mediaPlayer.reset()

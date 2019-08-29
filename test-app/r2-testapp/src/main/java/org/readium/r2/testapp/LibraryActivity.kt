@@ -17,9 +17,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Rect
+import android.graphics.*
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.net.Uri
@@ -758,6 +756,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val stream = ByteArrayOutputStream()
                     bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
+
+
                     //Building book object and adding it to library
                     val book = Book(fileName, publication.metadata.title, null, absolutePath, null, "audiobook/"+publication.coverLink?.href, UUID.randomUUID().toString(), stream.toByteArray(), Publication.EXTENSION.AUDIOBOOK)
 
@@ -844,7 +844,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                     pub?.let {
                         //Starting AudiobookActivity
-                        startActivity(publicationPath, book, pub.publication)
+                        var ref = "audiobook/"+pub.publication.coverLink?.href
+                        val coverByteArray = pub.container.data(ref)
+
+                        startActivity(publicationPath, book, pub.publication, coverByteArray)
                     }
                 }
                 book.ext == Publication.EXTENSION.JSON -> {
@@ -902,7 +905,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 } else {
                     book = webPub
-                    startActivity(book!!.fileName, book!!, externalPub)
+                    var bookCover = book?.cover
+                    startActivity(book!!.fileName, book!!, externalPub, bookCover)
                 }
             }
         }
@@ -913,14 +917,20 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         startActivity(publicationPath, book, publication)
     }
 
-    private fun startActivity(publicationPath: String, book: Book, publication: Publication) {
+    private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null) {
         if(publication.type == Publication.TYPE.AUDIO) {
-
-            startActivity(intentFor<AudiobookActivity>("publicationPath" to publicationPath,
-                    "epubName" to book.fileName,
-                    "publication" to publication,
-                    "bookId" to book.id))
-
+            coverByteArray?.let {
+                startActivity(intentFor<AudiobookActivity>("publicationPath" to publicationPath,
+                        "epubName" to book.fileName,
+                        "publication" to publication,
+                        "bookId" to book.id,
+                        "cover" to coverByteArray))
+            } ?: run {
+                startActivity(intentFor<AudiobookActivity>("publicationPath" to publicationPath,
+                        "epubName" to book.fileName,
+                        "publication" to publication,
+                        "bookId" to book.id))
+            }
         } else {
             startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath,
                     "epubName" to book.fileName,
@@ -989,7 +999,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
             //If its an audiobook, unpack the .audiobook file
             if (name.endsWith(".audiobook")) {
-                val output = File(publicationPath);
+                val output = File(publicationPath)
                 if (!output.exists()) {
                     if (!output.mkdir()) {
                         throw RuntimeException("Cannot create directory")
