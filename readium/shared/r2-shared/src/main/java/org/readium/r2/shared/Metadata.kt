@@ -268,17 +268,18 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
     if (metadataDict.has("duration")) {
         m.duration = metadataDict.getInt("duration")
     }
+    
     if (metadataDict.has("language")) {
-        if (metadataDict.get("language") is JSONObject) {
-            m.languages.add(metadataDict.getString("language"))
-        } else if (metadataDict.get("language") is JSONArray) {
-            val array = metadataDict.getJSONArray("language")
-            for (i in 0 until array.length()) {
-                val string = array.getString(i)
-                m.languages.add(string)
+        when {
+            metadataDict.get("language") is JSONObject -> m.languages.add(metadataDict.getString("language"))
+            metadataDict.get("language") is JSONArray -> {
+                val array = metadataDict.getJSONArray("language")
+                for (i in 0 until array.length()) {
+                    val string = array.getString(i)
+                    m.languages.add(string)
+                }
             }
-        }else if (metadataDict.get("language") is String){
-            m.languages.add(metadataDict.get("language") as String)
+            metadataDict.get("language") is String -> m.languages.add(metadataDict.get("language") as String)
         }
     }
 
