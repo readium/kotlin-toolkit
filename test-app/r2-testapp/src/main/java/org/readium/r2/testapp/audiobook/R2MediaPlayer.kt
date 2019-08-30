@@ -9,6 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.shared.Link
 import java.io.IOException
+import android.media.MediaPlayer.OnCompletionListener
+import android.util.Log
+
 
 class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList<Link>, var progress: ProgressDialog, var callback: MediaPlayerCallback) : OnPreparedListener {
 
@@ -37,6 +40,7 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
             mediaPlayer.release()
         }
         toggleProgress(true)
+
     }
 
 
@@ -52,10 +56,6 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
         callback.onPrepared()
     }
 
-    fun test(tmp: Int) {
-        index = tmp
-        startPlayer()
-    }
     fun startPlayer() {
         mediaPlayer.setOnPreparedListener(this)
         mediaPlayer.reset()
