@@ -18,7 +18,6 @@
         android:usesCleartextTraffic="true"
         tools:replace="android:allowBackup"
         tools:targetApi="m">
-        <activity android:name=".search.R2EpubSearchActivity"></activity>
         <activity
             android:name=".search.R2SearchActivity"
             android:theme="@style/AppTheme.NoActionBar" />
