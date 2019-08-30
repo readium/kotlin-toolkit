@@ -172,7 +172,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-nop:1.7.25'
 
     implementation 'com.duolingo.open:rtl-viewpager:1.0.3'
-    implementation 'androidx.viewpager2:viewpager2:1.0.0-beta02'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0-beta03'
 
     implementation 'com.commonsware.cwac:merge:1.1.2'
     implementation 'com.github.abacritt:sectionedmergeadapter:0.2'
@@ -183,12 +183,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 
-
-    //Search Module
-    //Search Bar
-    implementation 'com.miguelcatalan:materialsearchview:1.4.0'
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:design:27.1.1'
 
     //GSON Library
     implementation 'com.google.code.gson:gson:2.8.5'
