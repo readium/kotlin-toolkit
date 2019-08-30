@@ -2,63 +2,7 @@
 <html>
 <body>
 <script type="text/javascript" src="mark.js"></script>
-<script>
-function performSearch(keyword, element, resourceId) {
-
-    // Array of MarkJS result
-    var results = [];
-    var resultCounter = 0;
-
-    //Building mark instance using input html string
-    var htmlObject2 = document.createElement('div');
-    htmlObject2.innerHTML = element;
-    var markInstance = new Mark(htmlObject2);
-
-    //Perfomring search
-    markInstance.mark(keyword, {
-        //Push each result in final results array 
-        each: function(node) {
-            //Get snippet
-            var afterText = node.nextSibling.nodeValue;
-            var beforeText = node.previousSibling.nodeValue;
-
-            if (afterText.length > 30) afterText = afterText.substring(0, 30) + "...";
-            if (beforeText.length > 30) beforeText = "..." + beforeText.substring(beforeText.length - 30, beforeText.length);
-
-            var singleResultLocator = {
-                    "href" : resourceId,
-                    "type": "text/html",
-                    "title" : "TODO",
-                    "location" : {
-                                "fragment": {
-                                        "index": resultCounter
-                                }
-                    },
-                    "text": {
-                                "after": afterText,
-                                "before": beforeText,
-                                "highlight": keyword
-                    }
-            };
-            
-            results.push(singleResultLocator);
-            resultCounter = resultCounter + 1;
-        },
-        //When search end, build Locators object from results array
-        done: function(counter) {
-            console.log("Result 2: "+counter);
-            console.log(results);
-        }
-    });
-
-    //Return Locators Array as String
-    if(resultCounter !=0) {
-        var stringResults = JSON.stringify(results);
-        return stringResults;
-    }
-    
-};
-</script>
+<script type="text/javascript" src="search.js"></script>
 </body>
 </html>
 
@@ -68,7 +12,6 @@ var tmp = "Chapter 1 The cold passed reluctantly from the earth, and the retirin
 var htmlObject = document.createElement('div');
 htmlObject.innerHTML = tmp;
 */
-
 
 
 //console.log("1: "+ tmp);
