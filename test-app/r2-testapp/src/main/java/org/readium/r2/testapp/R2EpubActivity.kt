@@ -57,8 +57,7 @@ import kotlin.coroutines.CoroutineContext
  *      ( Table of content, User Settings, DRM, Bookmarks )
  *
  */
-
-open class R2EpubActivity : R2EpubActivity(), CoroutineScope {
+class R2EpubActivity : R2EpubActivity(), CoroutineScope {
 
     /**
      * Context of this scope.
