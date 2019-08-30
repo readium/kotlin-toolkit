@@ -39,9 +39,15 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
     private var containsMediaOverlay = false
 
     private val resources = Resources()
+    private val customResources = Resources()
+
     private val fonts = Fonts()
 
-    private fun addResource(name: String, body: String) { resources.add(name, body)
+    private fun addResource(name: String, body: String, custom: Boolean = false, injectable: Injectable? = null) {
+        if (custom) {
+            customResources.add(name, body, injectable)
+        }
+        resources.add(name, body)
     }
 
     private fun addFont(name: String, inputStream: InputStream, context: Context) {
@@ -148,9 +154,9 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
         }
     }
 
-    fun loadCustomResource(inputStream: InputStream, fileName: String) {
+    fun loadCustomResource(inputStream: InputStream, fileName: String, injectable: Injectable) {
         try {
-            addResource(fileName, Scanner(inputStream, "utf-8").useDelimiter("\\A").next())
+            addResource(fileName, Scanner(inputStream, "utf-8").useDelimiter("\\A").next(), true, injectable)
         } catch (e: IOException) {
             Timber.d(e)
         }
@@ -166,7 +172,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
 
 
     fun addEpub(publication: Publication, container: Container, fileName: String, userPropertiesPath: String?) {
-        val fetcher = Fetcher(publication, container, userPropertiesPath)
+        val fetcher = Fetcher(publication, container, userPropertiesPath, customResources)
 
         addLinks(publication, fileName)
 
