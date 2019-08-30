@@ -183,7 +183,4 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 
-
-    //GSON Library
-    implementation 'com.google.code.gson:gson:2.8.5'
 }
