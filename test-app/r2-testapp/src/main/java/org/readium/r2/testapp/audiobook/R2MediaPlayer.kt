@@ -40,7 +40,6 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
             mediaPlayer.release()
         }
         toggleProgress(true)
-
     }
 
 

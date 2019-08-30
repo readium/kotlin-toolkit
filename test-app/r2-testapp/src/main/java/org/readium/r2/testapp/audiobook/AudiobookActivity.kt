@@ -104,7 +104,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
         Handler().postDelayed({
 
-
+            //Picasso.with(this).load(publication.links[1].href).into(imageView)
 
             mediaPlayer?.goTo(index)
 
@@ -213,9 +213,6 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
         }, 100)
 
-        /*mediaPlayer?.mediaPlayer?.setOnCompletionListener {
-
-        }*/
     }
 
     override fun onPrepared() {
