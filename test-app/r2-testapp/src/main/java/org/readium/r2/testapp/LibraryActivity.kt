@@ -113,7 +113,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     protected lateinit var catalogView: androidx.recyclerview.widget.RecyclerView
     private lateinit var alertDialog: AlertDialog
 
-    protected var listener:LibraryActivity? = null
+    protected var listener: LibraryActivity? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,7 +127,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         localPort = s.localPort
         server = Server(localPort)
 
-        val properties =  Properties();
+        val properties = Properties();
         val inputStream = this.assets.open("configs/config.properties");
         properties.load(inputStream);
         val useExternalFileDir = properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
@@ -317,7 +317,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         progress.dismiss()
                         database.books.insert(book, false)?.let { id ->
                             book.id = id
-                            books.add(0,book)
+                            books.add(0, book)
                             booksAdapter.notifyDataSetChanged()
                             catalogView.longSnackbar("publication added to your library")
                             //prepareSyntheticPageList(publication, book)
@@ -336,22 +336,22 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             }
         } else if (publication.type == Publication.TYPE.WEBPUB || publication.type == Publication.TYPE.AUDIO) {
 
-                val self = publication.linkWithRel("self")
+            val self = publication.linkWithRel("self")
 
-                when (publication.type) {
-                    Publication.TYPE.WEBPUB -> {
-                        progress.dismiss()
-                        prepareWebPublication(self?.href!!, webPub = null, add = true)
-                    }
-                    Publication.TYPE.AUDIO -> {
-                        progress.dismiss()
-                        prepareWebPublication(self?.href!!, webPub = null, add = true) //will be adapted later
-                    }
-                    else -> {
-                        progress.dismiss()
-                        catalogView.snackbar("Invalid publication")
-                    }
+            when (publication.type) {
+                Publication.TYPE.WEBPUB -> {
+                    progress.dismiss()
+                    prepareWebPublication(self?.href!!, webPub = null, add = true)
                 }
+                Publication.TYPE.AUDIO -> {
+                    progress.dismiss()
+                    prepareWebPublication(self?.href!!, webPub = null, add = true) //will be adapted later
+                }
+                else -> {
+                    progress.dismiss()
+                    catalogView.snackbar("Invalid publication")
+                }
+            }
 
         }
     }
@@ -371,7 +371,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 button.setOnClickListener {
                     database.books.insert(book, true)?.let {
                         book.id = it
-                        books.add(0,book)
+                        books.add(0, book)
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
                         catalogView.longSnackbar("publication added to your library")
@@ -434,25 +434,25 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
     private fun getPublicationURL(src: String): JSONObject? {
         return try {
-                val url = URL(src)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.instanceFollowRedirects = false
-                connection.doInput = true
-                connection.connect()
+            val url = URL(src)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.instanceFollowRedirects = false
+            connection.doInput = true
+            connection.connect()
 
-                val jsonManifestURL = URL(connection.getHeaderField("Location")
-                        ?: src).openConnection()
-                jsonManifestURL.connect()
+            val jsonManifestURL = URL(connection.getHeaderField("Location")
+                    ?: src).openConnection()
+            jsonManifestURL.connect()
 
-                val jsonManifest = jsonManifestURL.getInputStream().readBytes()
-                val stringManifest = jsonManifest.toString(Charset.defaultCharset())
-                val json = JSONObject(stringManifest)
+            val jsonManifest = jsonManifestURL.getInputStream().readBytes()
+            val stringManifest = jsonManifest.toString(Charset.defaultCharset())
+            val json = JSONObject(stringManifest)
 
-                jsonManifestURL.close()
-                connection.disconnect()
-                connection.close()
+            jsonManifestURL.close()
+            connection.disconnect()
+            connection.close()
 
-                json
+            json
         } catch (e: IOException) {
             e.printStackTrace()
             null
@@ -651,7 +651,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun copySamplesFromAssetsToStorage() {
-        assets.list("Samples")?.filter { it.endsWith(".epub") || it.endsWith(".cbz") }?.let {list ->
+        assets.list("Samples")?.filter { it.endsWith(".epub") || it.endsWith(".cbz") }?.let { list ->
             for (element in list) {
                 val input = assets.open("Samples/$element")
                 val fileName = UUID.randomUUID().toString()
@@ -718,7 +718,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                     database.books.insert(book, false)?.let {
                         book.id = it
-                        books.add(0,book)
+                        books.add(0, book)
                         booksAdapter.notifyDataSetChanged()
                         catalogView.longSnackbar("publication added to your library")
                         if (!lcp) {
@@ -732,16 +732,16 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                 }
                 if (!lcp) {
-                    server.addEpub(publication, container, "/$fileName", applicationContext.filesDir.path + "/"+ Injectable.Style.rawValue +"/UserProperties.json")
+                    server.addEpub(publication, container, "/$fileName", applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json")
                 }
 
             } else if (publication.type == Publication.TYPE.CBZ) {
                 if (add) {
                     publication.coverLink?.href?.let {
                         val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it), Publication.EXTENSION.CBZ)
-                        database.books.insert(book, false)?.let { id->
+                        database.books.insert(book, false)?.let { id ->
                             book.id = id
-                            books.add(0,book)
+                            books.add(0, book)
                             booksAdapter.notifyDataSetChanged()
                             if (!lcp) {
                                 //prepareSyntheticPageList(publication, book)
@@ -759,9 +759,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val ref = publication.coverLink?.href
                     val stream = ByteArrayOutputStream()
                     ref?.let {
-                    val arrayInputStream = pub.container.data(ref)
-                    val bitmap = BitmapFactory.decodeByteArray(arrayInputStream, 0, arrayInputStream.size)
-                    bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                        val arrayInputStream = pub.container.data(ref)
+                        val bitmap = BitmapFactory.decodeByteArray(arrayInputStream, 0, arrayInputStream.size)
+                        bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
                     }
 
 
@@ -771,7 +771,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                     database.books.insert(book, false)?.let {
                         book.id = it
-                        books.add(0,book)
+                        books.add(0, book)
                         booksAdapter.notifyDataSetChanged()
 
                     } ?: run {
@@ -927,7 +927,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null) {
-        if(publication.type == Publication.TYPE.AUDIO) {
+        if (publication.type == Publication.TYPE.AUDIO) {
             coverByteArray?.let {
                 startActivity(intentFor<AudiobookActivity>("publicationPath" to publicationPath,
                         "epubName" to book.fileName,
@@ -1015,7 +1015,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 }
                 Handler().postDelayed({
-                ZipUtil.unpack(input, output)
+                    ZipUtil.unpack(input, output)
                 }, 100)
             } else {
                 input?.toFile(publicationPath)
@@ -1109,7 +1109,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
-        listener?.processLcpActivityResult(uri,it,progress, networkAvailable)
+        listener?.processLcpActivityResult(uri, it, progress, networkAvailable)
     }
 
 }
