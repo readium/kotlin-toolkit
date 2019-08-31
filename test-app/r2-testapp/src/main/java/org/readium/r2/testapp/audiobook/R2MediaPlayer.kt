@@ -9,11 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.shared.Link
 import java.io.IOException
-import android.media.MediaPlayer.OnCompletionListener
-import android.util.Log
 
 
-class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList<Link>, var progress: ProgressDialog, var callback: MediaPlayerCallback) : OnPreparedListener {
+class R2MediaPlayer(private var items: MutableList<Link>, private var progress: ProgressDialog, private var callback: MediaPlayerCallback) : OnPreparedListener {
 
     private val uiScope = CoroutineScope(Dispatchers.Main)
 
@@ -28,9 +26,9 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
     val currentPosition: Double
         get() = mediaPlayer.currentPosition.toDouble()
 
-    var isPaused:Boolean
+    var isPaused: Boolean
 
-    var index:Int
+    private var index: Int
 
     init {
         isPaused = false
@@ -41,7 +39,6 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
         }
         toggleProgress(true)
     }
-
 
 
     /**
@@ -56,10 +53,10 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
     }
 
     fun startPlayer() {
-        mediaPlayer.setOnPreparedListener(this)
         mediaPlayer.reset()
         try {
-            mediaPlayer.setDataSource(mediaActivity, Uri.parse(items[index].href))
+            mediaPlayer.setDataSource(Uri.parse(items[index].href).toString())
+            mediaPlayer.setOnPreparedListener(this)
             mediaPlayer.prepareAsync()
             toggleProgress(true)
         } catch (e: IllegalArgumentException) {
@@ -71,7 +68,7 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
         }
     }
 
-    fun toggleProgress(show: Boolean) {
+    private fun toggleProgress(show: Boolean) {
         uiScope.launch {
             if (show) progress.show()
             else progress.hide()
@@ -79,11 +76,11 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
     }
 
     fun seekTo(progression: Any) {
-            when (progression) {
-                is Double -> mediaPlayer.seekTo(progression.toInt())
-                is Int -> mediaPlayer.seekTo(progression)
-                else -> mediaPlayer.seekTo(progression.toString().toInt())
-            }
+        when (progression) {
+            is Double -> mediaPlayer.seekTo(progression.toInt())
+            is Int -> mediaPlayer.seekTo(progression)
+            else -> mediaPlayer.seekTo(progression.toString().toInt())
+        }
     }
 
     fun stop() {
@@ -95,13 +92,12 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
         isPaused = true
     }
 
-    fun release() {
-        mediaPlayer.release()
-    }
-
     fun start() {
         mediaPlayer.start()
         isPaused = false
+        mediaPlayer.setOnCompletionListener {
+            callback.onComplete(index, it.currentPosition, it.duration)
+        }
     }
 
     fun resume() {
@@ -126,6 +122,7 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
         }
         toggleProgress(true)
     }
+
     fun next() {
         index += 1
         isPaused = false
@@ -135,11 +132,11 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
         toggleProgress(true)
     }
 
-
 }
 
 interface MediaPlayerCallback {
     fun onPrepared()
+    fun onComplete(index: Int, currentPosition: Int, duration: Int)
 }
 
 
