@@ -24,7 +24,6 @@ import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.view.*
@@ -1007,16 +1006,14 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         launch {
 
             //If its an audiobook, unpack the .audiobook file
-            if (name.endsWith(".audiobook")) {
+            if (name.endsWith(Publication.EXTENSION.AUDIO.value)) {
                 val output = File(publicationPath)
                 if (!output.exists()) {
                     if (!output.mkdir()) {
                         throw RuntimeException("Cannot create directory")
                     }
                 }
-                Handler().postDelayed({
-                    ZipUtil.unpack(input, output)
-                }, 100)
+                ZipUtil.unpack(input, output)
             } else {
                 input?.toFile(publicationPath)
             }
@@ -1024,7 +1021,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val file = File(publicationPath)
 
             try {
-                if (mime == "application/epub+zip") {
+                if (mime == EpubParser.mimetype) {
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
@@ -1032,7 +1029,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         progress.dismiss()
 
                     }
-                } else if (name.endsWith(".cbz")) {
+                } else if (name.endsWith(Publication.EXTENSION.CBZ.value)) {
                     val parser = CbzParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
@@ -1040,7 +1037,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         progress.dismiss()
 
                     }
-                } else if (name.endsWith(".audiobook")) {
+                } else if (name.endsWith(Publication.EXTENSION.AUDIO.value) || mime == AudioBookParser.mimetypeAudiobook) {
                     val parser = AudioBookParser()
                     val pub = parser.parse(publicationPath)
 
