@@ -16,12 +16,6 @@ import org.readium.r2.streamer.container.ContainerCbz
 import timber.log.Timber
 import java.io.File
 
-// Some constants useful to parse an Cbz document
-const val mimetypeCBZ = "application/vnd.comicbook+zip"
-const val mimetypeCBR = "application/x-cbr"
-
-const val mimetypeJPEG = "image/jpeg"
-const val mimetypePNG = "image/png"
 
 /**
  *      CbzParser : Handle any CBZ file. Opening, listing files
@@ -30,6 +24,15 @@ const val mimetypePNG = "image/png"
  */
 
 class CbzParser : PublicationParser {
+
+    companion object {
+        // Some constants useful to parse an Cbz document
+        const val mimetypeCBZ = "application/vnd.comicbook+zip"
+        const val mimetypeCBR = "application/x-cbr"
+
+        const val mimetypeJPEG = "image/jpeg"
+        const val mimetypePNG = "image/png"
+    }
 
     /**
      * Check if path exist, generate a container for CBZ file

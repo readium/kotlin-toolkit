@@ -11,7 +11,7 @@ package org.readium.r2.streamer.container
 
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.DRM
-import org.readium.r2.streamer.parser.mimetypeCBZ
+import org.readium.r2.streamer.parser.CbzParser
 import java.io.File
 import java.util.zip.ZipFile
 
@@ -29,7 +29,7 @@ class ContainerCbz : CbzContainer, ZipArchiveContainer {
             successCreated = true
         }
         zipFile = ZipFile(path)
-        rootFile = RootFile(path, mimetypeCBZ)
+        rootFile = RootFile(path, CbzParser.mimetypeCBZ)
     }
 
     override fun getFilesList(): List<String> {

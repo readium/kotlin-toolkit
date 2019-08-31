@@ -53,7 +53,7 @@ class AudioBookParser : PublicationParser {
         val data = try {
             container.data(manifestPath)
         } catch (e: Exception) {
-            Timber.e(e, "Missing File : META-INF/container.xml")
+            Timber.e(e, "Missing File : $manifestPath")
             return null
         }
 

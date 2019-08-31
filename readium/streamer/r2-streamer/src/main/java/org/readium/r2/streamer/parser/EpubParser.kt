@@ -28,16 +28,19 @@ import org.readium.r2.streamer.parser.epub.OPFParser
 import timber.log.Timber
 import java.io.File
 
-// Some constants useful to parse an Epub document
-const val defaultEpubVersion = 1.2
-const val containerDotXmlPath = "META-INF/container.xml"
-const val encryptionDotXmlPath = "META-INF/encryption.xml"
-const val lcplFilePath = "META-INF/license.lcpl"
-const val mimetype = "application/epub+zip"
-const val mimetypeOEBPS = "application/oebps-package+xml"
-const val mediaOverlayURL = "media-overlay?resource="
 
 class EpubParser : PublicationParser {
+
+    companion object {
+        // Some constants useful to parse an Epub document
+        const val defaultEpubVersion = 1.2
+        const val containerDotXmlPath = "META-INF/container.xml"
+        const val encryptionDotXmlPath = "META-INF/encryption.xml"
+        const val lcplFilePath = "META-INF/license.lcpl"
+        const val mimetype = "application/epub+zip"
+        const val mimetypeOEBPS = "application/oebps-package+xml"
+        const val mediaOverlayURL = "media-overlay?resource="
+    }
 
     private val opfParser = OPFParser()
     private val ndp = NavigationDocumentParser()
