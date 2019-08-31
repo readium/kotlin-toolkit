@@ -1,23 +1,27 @@
 package org.readium.r2.streamer.parser
 
-import android.util.Log
 import org.json.JSONObject
-import org.readium.r2.shared.*
+import org.readium.r2.shared.parsePublication
 import org.readium.r2.streamer.container.ContainerAudioBook
+import timber.log.Timber
 import java.io.File
-
+import java.net.URI
 import java.nio.charset.Charset
 
-// Some constants useful to parse an DiViNa document
-const val mimetypeAudiobook = "application/audiobook+zip"
 
 /**
- *      DiViNaParser : Handle any DiViNa file. Opening, listing files
+ *      AudiobookParser : Handle any Audiobook Package file. Opening, listing files
  *                  get name of the resource, creating the Publication
  *                  for rendering
  */
 
 class AudioBookParser : PublicationParser {
+
+    companion object {
+        // Some constants useful to parse an DiViNa document
+        const val mimetypeAudiobook = "application/audiobook+zip"
+        const val manifestPath = "manifest.json"
+    }
 
     /**
      * Check if path exist, generate a container for CBZ file
@@ -35,7 +39,7 @@ class AudioBookParser : PublicationParser {
     }
 
     /**
-     * This functions parse a maninest.json and build PubBox object from it
+     * This functions parse a manifest.json and build PubBox object from it
      */
     override fun parse(fileAtPath: String, title: String): PubBox? {
 
@@ -43,29 +47,32 @@ class AudioBookParser : PublicationParser {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
-            Log.e("Error", "Could not generate container", e)
+            Timber.e(e, "Could not generate container")
+            return null
+        }
+        val data = try {
+            container.data(manifestPath)
+        } catch (e: Exception) {
+            Timber.e(e, "Missing File : META-INF/container.xml")
             return null
         }
 
-        //Builing publication object from manifest.json
-        var json: JSONObject?
-
+        //Building publication object from manifest.json
         //Getting manifest.json
-        var manifestByte = container?.data(manifestDotJSONPath)
-        val stringManifest = manifestByte?.toString(Charset.defaultCharset())
-        json = JSONObject(stringManifest)
+        val stringManifest = data.toString(Charset.defaultCharset())
+        val json = JSONObject(stringManifest)
 
         //Parsing manifest.json & building publication object
-        val externalPub = parsePublication(json)
-        var publication = externalPub
-
-        publication.metadata.identifier = fileAtPath
-        publication.type = Publication.TYPE.AUDIO
+        val publication = parsePublication(json)
 
         //Modifying path of links
-        for (counter in 0..(publication.readingOrder.size - 1)) {
-            var tmp = fileAtPath + "/audiobook/" + publication.readingOrder[counter].href
-            publication.readingOrder[counter].href = tmp
+        for ((index, link) in publication.readingOrder.withIndex()) {
+            val uri: String = if (URI(link.href).isAbsolute) {
+                link.href!!
+            } else {
+                fileAtPath + "/" + link.href
+            }
+            publication.readingOrder[index].href = uri
         }
 
         return PubBox(publication, container)

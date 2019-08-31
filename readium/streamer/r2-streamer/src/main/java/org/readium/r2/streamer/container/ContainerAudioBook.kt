@@ -2,10 +2,8 @@ package org.readium.r2.streamer.container
 
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.DRM
-import org.readium.r2.streamer.parser.mimetypeAudiobook
+import org.readium.r2.streamer.parser.AudioBookParser
 import java.io.File
-
-// TODO WIP
 
 /*
  * Module: r2-streamer-kotlin
@@ -28,7 +26,7 @@ class ContainerAudioBook : AudioBookContainer, DirectoryContainer {
         if (File(path).exists()) {
             successCreated = true
         }
-        rootFile = RootFile(path, mimetypeAudiobook)
+        rootFile = RootFile(path, AudioBookParser.mimetypeAudiobook)
     }
 
 }
