@@ -1028,7 +1028,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = false)
+                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
                         progress.dismiss()
 
                     }
@@ -1036,7 +1036,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val parser = CbzParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = false)
+                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
                         progress.dismiss()
 
                     }
@@ -1045,7 +1045,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val pub = parser.parse(publicationPath)
 
                     if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, true, false)
+                        prepareToServe(pub, fileName, file.absolutePath, true, pub.container.drm?.let { true } ?: false)
                         progress.dismiss()
                     }
                 } else {
