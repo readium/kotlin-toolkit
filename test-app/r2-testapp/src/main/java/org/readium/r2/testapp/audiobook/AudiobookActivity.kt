@@ -6,21 +6,15 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_audiobook.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,9 +27,8 @@ import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
 import org.readium.r2.shared.LocatorText
 import org.readium.r2.shared.Publication
-import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.testapp.*
-import java.io.File
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
@@ -100,12 +93,10 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
         chapterView!!.text = publication.readingOrder[index].title
         progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_audiobook))
 
-        mediaPlayer = R2MediaPlayer(this, publication.readingOrder, progress, this)
+        mediaPlayer = R2MediaPlayer(publication.readingOrder, progress, this)
 
         Handler().postDelayed({
-
-            //Picasso.with(this).load(publication.links[1].href).into(imageView)
-
+            
             mediaPlayer?.goTo(index)
 
             locations.progression?.let { progression ->
@@ -123,9 +114,6 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
                  *
                  * @param seekBar The SeekBar whose progress has changed
                  * @param progress The current progress level. This will be in the range min..max where min
-                 * and max were set by [ProgressBar.setMin] and
-                 * [ProgressBar.setMax], respectively. (The default values for
-                 * min is 0 and max is 100.)
                  * @param fromUser True if the progress change was initiated by the user.
                  */
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -134,9 +122,6 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
                     }
                     mediaPlayer?.seekTo(progress)
 
-                    if(progress == seekBar?.max) {
-                        // Next track
-                    }
                 }
 
                 /**
@@ -236,8 +221,6 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
     private fun updateUI() {
 
-
-
         if (currentResource == publication.readingOrder.size - 1) {
             next_chapter!!.isEnabled = false
             next_chapter!!.alpha = .5f
@@ -284,9 +267,9 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
     }
 
-    var seekLocation: Locations? = null
-    var isSeekNeeded = false
-    fun seekIfNeeded() {
+    private var seekLocation: Locations? = null
+    private var isSeekNeeded = false
+    private fun seekIfNeeded() {
         if (isSeekNeeded) {
             val time = seekLocation?.fragment?.let {
                 var time = it
