@@ -37,7 +37,6 @@ const val mimetype = "application/epub+zip"
 const val mimetypeOEBPS = "application/oebps-package+xml"
 const val mediaOverlayURL = "media-overlay?resource="
 
-
 class EpubParser : PublicationParser {
 
     private val opfParser = OPFParser()
