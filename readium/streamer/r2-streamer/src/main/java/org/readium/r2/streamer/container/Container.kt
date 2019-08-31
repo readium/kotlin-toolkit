@@ -70,8 +70,10 @@ interface CbzContainer : Container {
     fun getFilesList(): List<String>
 }
 
-
-// TODO WIP
+/**
+ * AudioBookContainer
+ *
+ */
 interface AudioBookContainer : Container {
 
 }
