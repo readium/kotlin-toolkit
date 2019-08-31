@@ -220,6 +220,19 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
         updateUI()
     }
 
+    override fun onComplete(index: Int, currentPosition: Int, duration: Int) {
+        if (currentResource == index && currentPosition > 0 && currentResource < publication.readingOrder.size - 1 && currentPosition >= duration - 200) {
+            Handler().postDelayed({
+                if (currentResource < publication.readingOrder.size - 1) {
+                    currentResource++
+                }
+                mediaPlayer?.next()
+                play_pause!!.callOnClick()
+            }, 100)
+        } else if (currentPosition > 0 && currentResource == publication.readingOrder.size - 1) {
+            mediaPlayer?.stop()
+        }
+    }
 
     private fun updateUI() {
 
