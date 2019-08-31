@@ -17,11 +17,14 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Rect
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.view.*
@@ -58,7 +61,10 @@ import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.parsePublication
 import org.readium.r2.shared.promise
-import org.readium.r2.streamer.parser.*
+import org.readium.r2.streamer.parser.AudioBookParser
+import org.readium.r2.streamer.parser.CbzParser
+import org.readium.r2.streamer.parser.EpubParser
+import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.audiobook.AudiobookActivity
@@ -750,16 +756,17 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             } else if (publication.type == Publication.TYPE.AUDIO) {
                 if (add) {
                     //Getting book cover from file path to bitmap
-                    var ref = "audiobook/"+publication.coverLink?.href
+                    val ref = publication.coverLink?.href
+                    val stream = ByteArrayOutputStream()
+                    ref?.let {
                     val arrayInputStream = pub.container.data(ref)
                     val bitmap = BitmapFactory.decodeByteArray(arrayInputStream, 0, arrayInputStream.size)
-                    val stream = ByteArrayOutputStream()
                     bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
-
+                    }
 
 
                     //Building book object and adding it to library
-                    val book = Book(fileName, publication.metadata.title, null, absolutePath, null, "audiobook/"+publication.coverLink?.href, UUID.randomUUID().toString(), stream.toByteArray(), Publication.EXTENSION.AUDIOBOOK)
+                    val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), stream.toByteArray(), Publication.EXTENSION.AUDIO)
 
 
                     database.books.insert(book, false)?.let {
@@ -835,7 +842,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to pub.publication))
                     }
                 }
-                book.ext == Publication.EXTENSION.AUDIOBOOK -> {
+                book.ext == Publication.EXTENSION.AUDIO -> {
 
                     //If selected book is an audiobook
                     val parser = AudioBookParser()
@@ -844,8 +851,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                     pub?.let {
                         //Starting AudiobookActivity
-                        var ref = "audiobook/"+pub.publication.coverLink?.href
-                        val coverByteArray = pub.container.data(ref)
+                        val ref = pub.publication.coverLink?.href
+                        val coverByteArray = ref?.let {
+                            pub.container.data(ref)
+                        }
 
                         startActivity(publicationPath, book, pub.publication, coverByteArray)
                     }
@@ -1005,7 +1014,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         throw RuntimeException("Cannot create directory")
                     }
                 }
+                Handler().postDelayed({
                 ZipUtil.unpack(input, output)
+                }, 100)
             } else {
                 input?.toFile(publicationPath)
             }
