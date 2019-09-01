@@ -14,13 +14,16 @@ apply plugin: 'com.github.dcendents.android-maven'
 group='com.github.readium'
 
 android {
-    flavorDimensions "testapp"
 
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 29
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
     }
     buildTypes {
         release {
@@ -28,34 +31,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    productFlavors {
-        intTestapp {
-            dimension "testapp"
-        }
-        intTestappWithLcp {
-            dimension "testapp"
-        }
-        devTestapp {
-            dimension "testapp"
-        }
-        devTestappWithLcp {
-            dimension "testapp"
-        }
-    }
-
-    // default build flavour
-    defaultPublishConfig "intTestappDebug"
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.7.1'
-    intTestappImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
-    intTestappWithLcpImplementation "com.github.readium:r2-shared-kotlin:$r2branch-SNAPSHOT"
     if (findProject(':r2-shared')) {
-        devTestappImplementation project(':r2-shared')
-        devTestappWithLcpImplementation project(':r2-shared')
+        implementation project(':r2-shared')
+    } else {
+        implementation "com.github.readium:r2-shared-kotlin:1.1.0"
     }
 
     //TODO conflicting support libraries, excluding these
@@ -66,10 +51,10 @@ dependencies {
     implementation('com.mcxiaoke.koi:async:0.5.5') {
         exclude module: 'support-v4'
     }
-    implementation "androidx.appcompat:appcompat:1.1.0-beta01"
+    implementation "androidx.appcompat:appcompat:1.1.0-rc01"
     implementation 'org.nanohttpd:nanohttpd:2.3.2-SNAPSHOT'
     implementation 'org.nanohttpd:nanohttpd-nanolets:2.3.2-SNAPSHOT'
-    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'commons-io:commons-io:2.4'
     implementation 'org.zeroturnaround:zt-zip:1.12'
     implementation 'joda-time:joda-time:2.9.9'

@@ -9,7 +9,7 @@
 
 package org.readium.r2.streamer.server
 
-class Ressources {
+class Resources {
     val resources: MutableMap<String, String> = mutableMapOf()
 
     fun add(key: String, body: String) {

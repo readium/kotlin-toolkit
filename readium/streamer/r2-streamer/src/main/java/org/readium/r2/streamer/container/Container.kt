@@ -11,7 +11,7 @@ package org.readium.r2.streamer.container
 
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
-import org.readium.r2.shared.drm.Drm
+import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.parser.xml.XmlParser
 import java.io.InputStream
 
@@ -35,7 +35,7 @@ interface Container {
 
     var rootFile: RootFile
 
-    var drm: Drm?
+    var drm: DRM?
 
     var successCreated: Boolean
 
@@ -58,7 +58,7 @@ interface EpubContainer : Container {
     fun xmlDocumentForFile(relativePath: String): XmlParser
     fun xmlDocumentForResource(link: Link?): XmlParser
     fun xmlAsByteArray(link: Link?): ByteArray
-    fun scanForDrm(): Drm?
+    fun scanForDrm(): DRM?
 }
 
 /**

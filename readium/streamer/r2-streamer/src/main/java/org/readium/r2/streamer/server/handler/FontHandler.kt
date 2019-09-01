@@ -60,7 +60,7 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
         var mimeType = "application/vnd.ms-opentype"
         if (extension != null) {
             try {
-                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)!!
             } catch (e: Exception) {
                 when (extension) {
                     ".otf" -> mimeType = "application/vnd.ms-opentype"

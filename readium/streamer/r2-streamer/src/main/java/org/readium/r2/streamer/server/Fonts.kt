@@ -12,7 +12,7 @@ package org.readium.r2.streamer.server
 import java.io.File
 
 class Fonts {
-    val fonts: MutableMap<String, File> = mutableMapOf()
+    private val fonts: MutableMap<String, File> = mutableMapOf()
 
     fun add(key: String, body: File) {
         fonts[key] = body
