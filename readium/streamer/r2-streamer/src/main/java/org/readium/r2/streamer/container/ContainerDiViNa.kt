@@ -12,17 +12,15 @@
 package org.readium.r2.streamer.container
 
 import org.readium.r2.shared.RootFile
-import org.readium.r2.shared.drm.Drm
-import org.readium.r2.streamer.parser.mimetypeCBZ
-import org.readium.r2.streamer.parser.mimetypeDiViNa
+import org.readium.r2.shared.drm.DRM
+import org.readium.r2.streamer.parser.DiViNaParser
 import java.io.File
-import java.util.zip.ZipFile
 
 
 class ContainerDiViNa : DiViNaContainer, DirectoryContainer {
 
     override var rootFile: RootFile
-    override var drm: Drm? = null
+    override var drm: DRM? = null
     override var successCreated: Boolean = false
 
     constructor(path: String) {
@@ -30,7 +28,7 @@ class ContainerDiViNa : DiViNaContainer, DirectoryContainer {
         if (File(path).exists()) {
             successCreated = true
         }
-        rootFile = RootFile(path, mimetypeDiViNa)
+        rootFile = RootFile(path, DiViNaParser.mimetypeDiViNa)
     }
 
 }
