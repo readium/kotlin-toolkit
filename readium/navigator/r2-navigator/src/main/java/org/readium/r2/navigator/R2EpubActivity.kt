@@ -43,7 +43,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
     lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
     lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
 
-    private lateinit var publicationPath: String
+    lateinit var publicationPath: String
     protected lateinit var epubName: String
     lateinit var publication: Publication
     lateinit var publicationIdentifier: String
@@ -76,7 +76,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
         // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
         var doublePageIndex = 0
         var doublePageLeft = ""
-        var doublePageRight: String = ""
+        var doublePageRight = ""
         var resourceIndexDouble = 0
 
         for ((resourceIndexSingle, spineItem) in publication.readingOrder.withIndex()) {
@@ -87,8 +87,6 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
                     publicationPath + spineItem.href
                 }
             } else {
-
-    //                uri = applicationContext.getExternalFilesDir(null).path + "/" + epubName + spineItem.href
                 "$BASE_URL:$port" + "/" + epubName + spineItem.href
             }
             resourcesSingle.add(Pair(resourceIndexSingle, uri))
@@ -161,7 +159,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
 
             override fun onPageSelected(position: Int) {
                 if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
-                    resourcePager.disableTouchEvents = true
+//                    resourcePager.disableTouchEvents = true
                 }
                 pagerPosition = 0
                 val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment

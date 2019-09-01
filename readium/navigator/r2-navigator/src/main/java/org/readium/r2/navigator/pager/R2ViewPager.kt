@@ -11,7 +11,6 @@ package org.readium.r2.navigator.pager
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.MotionEvent
 
 class R2ViewPager : R2RTLViewPager {
 
@@ -26,16 +25,5 @@ class R2ViewPager : R2RTLViewPager {
     override fun setCurrentItem(item: Int) {
         super.setCurrentItem(item, false)
     }
-
-
-    var disableTouchEvents: Boolean = false
-
-    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
-        return if (disableTouchEvents) false else super.onInterceptTouchEvent(event)
-    }
-
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        return if (disableTouchEvents) false else super.onTouchEvent(event)
-    }
-
+    
 }
