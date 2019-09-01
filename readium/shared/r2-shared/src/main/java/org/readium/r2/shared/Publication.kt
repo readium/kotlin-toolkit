@@ -132,7 +132,7 @@ class Publication : Serializable {
 
     var cssStyle: String? = null
 
-    var coverLink: Link? = null
+    val coverLink: Link?
         get() = linkWithRel("cover")
 
     fun baseUrl(): URL? {
@@ -343,9 +343,6 @@ fun parsePublication(pubDict: JSONObject): Publication {
         }
     }
 
-    p.linkWithRel("cover")?.let {
-        p.coverLink = it
-    }
 
     p.linkWithRel("self")?.let {
         if (it.typeLink == "application/webpub+json") p.type = Publication.TYPE.WEBPUB

@@ -213,6 +213,17 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
                             if (sub.has("code")) {
                                 subject.code = sub.getString("code")
                             }
+                            if (sub.has("links")) {
+                                sub.get("links")?.let {
+                                    val links = it as? JSONArray
+                                            ?: JSONArray()
+                                    for (i in 0 until links.length()) {
+                                        val linkDict = links.getJSONObject(i)
+                                        val link = parseLink(linkDict)
+                                        subject.links.add(link)
+                                    }
+                                }
+                            }
                             m.subjects.add(subject)
                         }
                     }
@@ -257,15 +268,18 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
     if (metadataDict.has("duration")) {
         m.duration = metadataDict.getInt("duration")
     }
+    
     if (metadataDict.has("language")) {
-        if (metadataDict.get("language") is JSONObject) {
-            m.languages.add(metadataDict.getString("language"))
-        } else if (metadataDict.get("language") is JSONArray) {
-            val array = metadataDict.getJSONArray("language")
-            for (i in 0 until array.length()) {
-                val string = array.getString(i)
-                m.languages.add(string)
+        when {
+            metadataDict.get("language") is JSONObject -> m.languages.add(metadataDict.getString("language"))
+            metadataDict.get("language") is JSONArray -> {
+                val array = metadataDict.getJSONArray("language")
+                for (i in 0 until array.length()) {
+                    val string = array.getString(i)
+                    m.languages.add(string)
+                }
             }
+            metadataDict.get("language") is String -> m.languages.add(metadataDict.get("language") as String)
         }
     }
 
