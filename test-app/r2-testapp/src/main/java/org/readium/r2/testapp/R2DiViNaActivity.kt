@@ -10,6 +10,7 @@
 
 package org.readium.r2.testapp
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -18,6 +19,8 @@ import android.view.MenuItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.R2DiViNaActivity
+import org.readium.r2.shared.Locator
+import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
 
@@ -69,6 +72,15 @@ class R2DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
             else -> return false
         }
 
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        data ?: return
+        if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
+            val locator = data.getSerializableExtra("locator") as Locator
+            Timber.d("locator href ${locator.href}")
+        }
     }
 
 }

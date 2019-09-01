@@ -975,12 +975,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val fileName = UUID.randomUUID().toString()
         val publicationPath = R2DIRECTORY + fileName
 
-        uri?.let {
-            val input = contentResolver.openInputStream(uri)
-            input?.toFile(publicationPath)
-        }
-
-        val file = File(publicationPath)
+        val input = contentResolver.openInputStream(uri as Uri)
 
         launch {
 
