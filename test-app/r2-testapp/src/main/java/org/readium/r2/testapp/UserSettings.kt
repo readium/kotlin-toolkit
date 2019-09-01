@@ -70,6 +70,12 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         pageMargins = preferences.getFloat(PAGE_MARGINS_REF, pageMargins)
         lineHeight = preferences.getFloat(LINE_HEIGHT_REF, lineHeight)
         userProperties = getUserSettings()
+
+        //Setting up screen brightness
+        val backLightValue = preferences.getInt("reader_brightness", 50).toFloat() / 100
+        val layoutParams = (context as R2EpubActivity).window.attributes
+        layoutParams.screenBrightness = backLightValue
+        context.window.attributes = layoutParams
     }
 
     private fun getUserSettings(): UserProperties {
@@ -114,7 +120,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
     fun saveChanges() {
         val json = makeJson()
-        val dir = File(context.getExternalFilesDir(null).path + "/styles/")
+        val dir = File(context.filesDir.path + "/"+ Injectable.Style.rawValue +"/")
         dir.mkdirs()
         val file = File(dir, "UserProperties.json")
         file.printWriter().use { out ->
@@ -147,12 +153,16 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
                 val zoomView = resourcePager.getChildAt(i).findViewById(R.id.r2FXLLayout) as R2FXLLayout
                 val webView1 = zoomView.findViewById(R.id.firstWebView) as? R2BasicWebView
                 val webView2 = zoomView.findViewById(R.id.secondWebView) as? R2BasicWebView
+                val webViewSingle = zoomView.findViewById(R.id.webViewSingle) as? R2BasicWebView
 
                 webView1?.let{
                     applyCSS(webView1, ref)
                 }
                 webView2?.let{
                     applyCSS(webView2, ref)
+                }
+                webViewSingle?.let{
+                    applyCSS(webViewSingle, ref)
                 }
             }
         }
@@ -245,6 +255,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         fontSpinner.adapter = dataAdapter
         fontSpinner.setSelection(fontFamily.index)
+        fontSpinner.contentDescription = "Font Family"
         fontSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, pos: Int, id: Long) {
                 fontFamily.index = pos
@@ -265,8 +276,11 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         val appearanceGroup = layout.findViewById(R.id.appearance) as RadioGroup
         val appearanceRadios = mutableListOf<RadioButton>()
         appearanceRadios.add(layout.findViewById(R.id.appearance_default) as RadioButton)
+        (layout.findViewById(R.id.appearance_default) as RadioButton).contentDescription = "Appearance Default"
         appearanceRadios.add(layout.findViewById(R.id.appearance_sepia) as RadioButton)
+        (layout.findViewById(R.id.appearance_sepia) as RadioButton).contentDescription = "Appearance Sepia"
         appearanceRadios.add(layout.findViewById(R.id.appearance_night) as RadioButton)
+        (layout.findViewById(R.id.appearance_night) as RadioButton).contentDescription = "Appearance Night"
 
         UIPreset[ReadiumCSSName.appearance]?.let {
             appearanceGroup.isEnabled = false
@@ -323,6 +337,8 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
         // Publisher defaults
         val publisherDefaultSwitch = layout.findViewById(R.id.publisher_default) as Switch
+        publisherDefaultSwitch.contentDescription = "\u00A0";
+
         publisherDefaultSwitch.isChecked = publisherDefault.on
         publisherDefaultSwitch.setOnCheckedChangeListener { _, b ->
             publisherDefault.on = b
@@ -370,7 +386,10 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         val alignmentGroup = layout.findViewById(R.id.TextAlignment) as RadioGroup
         val alignmentRadios = mutableListOf<RadioButton>()
         alignmentRadios.add(layout.findViewById(R.id.alignment_left))
+        (layout.findViewById(R.id.alignment_left) as RadioButton).contentDescription = "Alignment Left"
+
         alignmentRadios.add(layout.findViewById(R.id.alignment_justify))
+        (layout.findViewById(R.id.alignment_justify) as RadioButton).contentDescription = "Alignment Justified"
 
         UIPreset[ReadiumCSSName.textAlignment]?.let {
             alignmentGroup.isEnabled = false
@@ -406,8 +425,13 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         val columnsCountGroup = layout.findViewById(R.id.columns) as RadioGroup
         val columnsRadios = mutableListOf<RadioButton>()
         columnsRadios.add(layout.findViewById(R.id.column_auto))
+        (layout.findViewById(R.id.column_auto) as RadioButton).contentDescription = "Columns Auto"
+
         columnsRadios.add(layout.findViewById(R.id.column_one))
+        (layout.findViewById(R.id.column_one) as RadioButton).contentDescription = "Columns 1"
+
         columnsRadios.add(layout.findViewById(R.id.column_two))
+        (layout.findViewById(R.id.column_two) as RadioButton).contentDescription = "Columns 2"
 
         UIPreset[ReadiumCSSName.columnCount]?.let {
             columnsCountGroup.isEnabled = false
@@ -539,12 +563,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         // Brightness
         val brightnessSeekbar = layout.findViewById(R.id.brightness) as SeekBar
         val brightness = preferences.getInt("reader_brightness", 50)
-        run {
-            val backLightValue = brightness.toFloat() / 100
-            val layoutParams = (context as R2EpubActivity).window.attributes
-            layoutParams.screenBrightness = backLightValue
-            context.window.attributes = layoutParams
-        }
         brightnessSeekbar.progress = brightness
         brightnessSeekbar.setOnSeekBarChangeListener(
                 object : SeekBar.OnSeekBarChangeListener {

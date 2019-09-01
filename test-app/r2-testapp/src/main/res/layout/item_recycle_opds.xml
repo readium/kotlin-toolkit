@@ -34,7 +34,7 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:scaleType="centerCrop"
-                android:contentDescription="TODO" />
+                android:contentDescription="Cover Image" />
 
             <LinearLayout
                 android:layout_width="match_parent"

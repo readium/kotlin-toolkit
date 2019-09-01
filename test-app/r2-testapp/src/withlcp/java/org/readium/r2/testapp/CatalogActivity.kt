@@ -11,307 +11,355 @@ package org.readium.r2.testapp
 
 import android.app.ProgressDialog
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
-import com.mcxiaoke.koi.HASH
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.Button
+import android.widget.ListPopupWindow
+import android.widget.PopupWindow
+import android.widget.TextView
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import com.mcxiaoke.koi.ext.fileExtension
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.longSnackbar
-import org.jetbrains.anko.design.textInputLayout
-import org.readium.r2.lcp.LcpHttpService
-import org.readium.r2.lcp.LcpLicense
-import org.readium.r2.lcp.LcpSession
+import org.readium.r2.lcp.public.*
+import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.Publication
-import org.readium.r2.shared.drm.DRMModel
-import org.readium.r2.shared.drm.Drm
+import org.readium.r2.shared.drm.DRM
 import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
+import org.readium.r2.testapp.drm.DRMFulfilledPublication
+import org.readium.r2.testapp.drm.DRMLibraryService
+import org.readium.r2.testapp.drm.LCPLibraryActivityService
 import timber.log.Timber
 import java.io.File
 import java.net.URL
 import kotlin.coroutines.CoroutineContext
 
-class CatalogActivity : LibraryActivity(), LcpFunctions, CoroutineScope {
+class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineScope, DRMLibraryService, LCPAuthenticating, LCPAuthenticationDelegate {
+
+
     /**
      * Context of this scope.
      */
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
+    lateinit var lcpService: LCPService
+
+    private var currenProgressDialog:ProgressDialog? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         listener = this
+        lcpService = R2MakeLCPService(this)
     }
 
-//    Import a DRM license ( needs to be online )
-//
-//    An app which imports a DRM license will follow these steps (see the previous section for more details):
-//
-//    1/ Validate the license structure and check its profile identifier
-//
-//    2/ Get the passphrase associated with the license
-//
-//    3/ Validate the license integrity
-//
-//    4/ Check the license status
-//
-//    5/ Get an updated license if needed
-//
-//    6/ Fetch the encrypted publication
-//
-//    7/ Register the device / license
-//
-//    8/ Open the publication
+    internal var authenticationCallbacks: MutableMap<String, (String?) -> Unit> = mutableMapOf()
 
+    override val brand: DRM.Brand
+        get() = DRM.Brand.lcp
 
-//    Open a protected publication stored in the app catalog ( can work offline as well )
-//
-//    The process is a simpler than when the protected publication is imported, as some information about the license is stored in the database, especially the license identifier.
-//
-//    4/ Check the license status
-//
-//    5/ Get an updated license if needed
-//
-//    8/ Open the publication
+    override fun canFulfill(file: String): Boolean =
+            file.fileExtension().toLowerCase() == "lcpl"
 
-
-    override fun parseIntentLcpl(uriString: String, networkAvailable: Boolean) {
-        val uri: Uri? = Uri.parse(uriString)
-        if (uri != null) {
-            try {
-                val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
-                progress.show()
-                Thread {
-                    try {
-                        val bytes = URL(uri.toString()).openStream().readBytes()
-                        val lcpLicense = LcpLicense(bytes, this)
-                        lcpLicense.evaluate(bytes)?.let { path ->
-                            val file = File(path)
-                            launch {
-                                val parser = EpubParser()
-                                val pub = parser.parse(path)
-                                if (pub != null) {
-                                    val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
-                                    pub.container = pair.first
-                                    pub.publication = pair.second
-                                    prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
-                                    progress.dismiss()
-                                    handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), networkAvailable, {
-                                        // Do nothing
-                                    }, {
-                                        // Do nothing
-                                    }, {
-                                        // Do nothing
-                                    })
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        e.localizedMessage?.let {
-                            catalogView.longSnackbar(it)
-                        } ?: run {
-                            catalogView.longSnackbar("An error occurred")
-                        }
-                        progress.dismiss()
-                    }
-                }.start()
-            } catch (e: Exception) {
+    override fun fulfill(byteArray: ByteArray, completion: (Any?) -> Unit) {
+        lcpService.importPublication(byteArray, this) { result, error ->
+            result?.let {
+                val publication = DRMFulfilledPublication(localURL = result.localURL, suggestedFilename = result.suggestedFilename)
+                lcpService.retrieveLicense(result.localURL, this) { license, error ->
+                    completion(publication)
+                }
+            }
+            error?.let {
+                completion(error)
+            }
+            if (result == null && error == null) {
+                completion(null)
             }
         }
     }
 
-    override fun prepareAndStartActivityWithLCP(drm: Drm, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean) {
-        if (drm.brand == Drm.Brand.Lcp) {
-            prepareToServe(pub, book.fileName, file.absolutePath, add = false, lcp = true)
+    override fun loadPublication(publication: String, drm: DRM, completion: (Any?) -> Unit) {
+        lcpService.retrieveLicense(publication, this) { license, error ->
+            license?.let {
+                drm.license = license
+                completion(drm)
+            } ?: run {
+                error?.let {
+                    completion(error)
+                }
+            }
+        }
+    }
 
-            handleLcpPassphrase(publicationPath, drm, networkAvailable, { drm1 ->
-                val pair = parser.parseEncryption(pub.container, publication, drm1)
-                pub.container = pair.first
-                pub.publication = pair.second
-            }, { drm2 ->
-                if (supportedProfiles.contains(drm2.profile)) {
-                    server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.getExternalFilesDir(null).path + "/styles/UserProperties.json")
-                    //prepareSyntheticPageList(publication, book)
+    override fun authenticate(license: LCPAuthenticatedLicense, passphrase: String) {
+        val callback = authenticationCallbacks.remove(license.document.id) ?: return
+        callback(passphrase)
+    }
 
-                    val license = drm.license as LcpLicense
-                    val drmModel = DRMModel(drm.brand.value,
-                            license.archivePath!!)
+    override fun didCancelAuthentication(license: LCPAuthenticatedLicense) {
+        val callback = authenticationCallbacks.remove(license.document.id) ?: return
+        callback(null)
+    }
 
-                    startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drmModel" to drmModel))
+    override fun requestPassphrase(license: LCPAuthenticatedLicense, reason: LCPAuthenticationReason, completion: (String?) -> Unit) {
+
+        authenticationCallbacks[license.document.id] = completion
+
+        fun promptPassphrase(reason: String? = null) {
+            launch {
+
+                currenProgressDialog?.let {
+                    if (it.isShowing) {
+                        it.dismiss()
+                    }
+                }
+
+                // Initialize a new instance of LayoutInflater service
+                val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
+                // Inflate the custom layout/view
+                val customView = inflater.inflate(R.layout.popup_passphrase, null)
+
+                // Initialize a new instance of popup window
+                val mPopupWindow = PopupWindow(
+                        customView,
+                        ListPopupWindow.MATCH_PARENT,
+                        ListPopupWindow.MATCH_PARENT
+                )
+                mPopupWindow.isOutsideTouchable = false
+                mPopupWindow.isFocusable = true
+
+                // Set an elevation value for popup window
+                // Call requires API level 21
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    mPopupWindow.elevation = 5.0f
+                }
+
+                val title = customView.findViewById(R.id.title) as TextView
+                val description = customView.findViewById(R.id.description) as TextView
+                val hint = customView.findViewById(R.id.hint) as TextView
+                val passwordLayout = customView.findViewById(R.id.passwordLayout) as TextInputLayout
+                val password = customView.findViewById(R.id.password) as TextInputEditText
+                val confirmButton = customView.findViewById(R.id.confirm_button) as Button
+                val cancelButton = customView.findViewById(R.id.cancel_button) as Button
+                val forgotButton = customView.findViewById(R.id.forgot_link) as Button
+                val helpButton = customView.findViewById(R.id.help_link) as Button
+
+                if(license.supportLinks.isEmpty()) {
+                    helpButton.visibility = View.GONE
                 } else {
-                    alert(Appcompat, "The profile of this DRM is not supported.") {
-                        negativeButton("Ok") { }
+                    helpButton.visibility = View.VISIBLE
+                }
+
+                when (reason) {
+                        "passphraseNotFound" -> title.text = "Passphrase Required"
+                        "invalidPassphrase" -> {
+                            title.text = "Incorrect Passphrase"
+                            passwordLayout.error = "Incorrect Passphrase"
+                    }
+                }
+
+                val provider =  try {
+                    val test = URL(license.provider)
+                    URL(license.provider).host
+                } catch (e:Exception){
+                    license.provider
+                }
+
+                description.text = "This publication is protected by Readium LCP.\n\nIn order to open it, we need to know the passphrase required by: \n\n$provider.\n\nTo help you remember it, the following hint is available:"
+                hint.text = license.hint
+
+                // Set a click listener for the popup window close button
+                cancelButton.setOnClickListener {
+                    // Dismiss the popup window
+                    didCancelAuthentication(license)
+                    mPopupWindow.dismiss()
+                }
+
+                confirmButton.setOnClickListener {
+                    currenProgressDialog?.let {
+                        if (!it.isShowing) {
+                            it.show()
+                        }
+                    }
+
+                    authenticate(license, password.text.toString())
+                    mPopupWindow.dismiss()
+                }
+
+                forgotButton.setOnClickListener {
+                    license.hintLink?.href?.let { href ->
+                        val intent = Intent(Intent.ACTION_VIEW)
+                        intent.data = Uri.parse(href)
+                        startActivity(intent)
+                    }
+                }
+
+                helpButton.setOnClickListener {
+                    alert(Appcompat) {
+                        customView {
+                            verticalLayout {
+                                license.supportLinks.forEach { link ->
+                                    button {
+                                        link.title?.let {
+                                            title.text = it
+                                        } ?: run {
+                                            title.text = try {
+                                                when (URL(link.href).protocol) {
+                                                    "http" -> "Website"
+                                                    "https" -> "Website"
+                                                    "tel" -> "Phone"
+                                                    "mailto" -> "Mail"
+                                                    else -> "Support"
+                                                }
+                                            } catch (e:Exception) {
+                                                "Support"
+                                            }
+                                        }
+                                        setOnClickListener {
+                                            val intent = try {
+                                                when (URL(link.href).protocol) {
+                                                    "http" -> Intent(Intent.ACTION_VIEW)
+                                                    "https" -> Intent(Intent.ACTION_VIEW)
+                                                    "tel" -> Intent(Intent.ACTION_CALL)
+                                                    "mailto" -> Intent(Intent.ACTION_SEND)
+                                                    else -> Intent(Intent.ACTION_VIEW)
+                                                }
+                                            } catch (e:Exception) {
+                                                Intent(Intent.ACTION_VIEW)
+                                            }
+                                            intent.data = Uri.parse(link.href)
+                                            startActivity(intent)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }.build().apply {
+                        // nothing
                     }.show()
                 }
-            }, {
-                // Do nothing
-            })
 
+                // Finally, show the popup window at the center location of root relative layout
+                mPopupWindow.showAtLocation(contentView, Gravity.CENTER, 0, 0)
 
+            }
+        }
+
+        promptPassphrase(reason.name)
+
+    }
+
+    override fun parseIntentLcpl(uriString: String, networkAvailable: Boolean) {
+        val uri: Uri? = Uri.parse(uriString)
+        uri?.let {
+            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+            progress.show()
+
+            currenProgressDialog = progress
+
+            val bytes = URL(uri.toString()).openStream().readBytes()
+            fulfill(bytes) { result ->
+                if (result is Exception) {
+
+                    progress.dismiss()
+                    catalogView.longSnackbar("${(result as LCPError).errorDescription}")
+
+                } else {
+                    result?.let {
+                        val publication = result as DRMFulfilledPublication
+
+                        Timber.d(publication.localURL)
+                        Timber.d(publication.suggestedFilename)
+                        val file = File(publication.localURL)
+                        launch {
+                            val parser = EpubParser()
+                            val pub = parser.parse(publication.localURL)
+                            pub?.let {
+                                val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
+                                pub.container = pair.first
+                                pub.publication = pair.second
+                                prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
+                                progress.dismiss()
+                                catalogView.longSnackbar("publication added to your library")
+                            }
+                        }
+                    } ?: run {
+                        progress.dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    override fun prepareAndStartActivityWithLCP(drm: DRM, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean) {
+        loadPublication(file.absolutePath, drm) {
+            launch {
+
+                if (it is Exception) {
+
+                    catalogView.longSnackbar("${(it as LCPError).errorDescription}")
+
+                } else {
+
+                    prepareToServe(pub, book.fileName, file.absolutePath, add = false, lcp = true)
+                    server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.filesDir.path + "/"+ Injectable.Style.rawValue +"/UserProperties.json")
+
+                    this@CatalogActivity.startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drm" to true))
+                }
+            }
         }
     }
 
     override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
-        try {
-            val bytes = contentResolver.openInputStream(uri).readBytes()
-            val lcpLicense = LcpLicense(bytes, this@CatalogActivity)
-            lcpLicense.evaluate(bytes)?.let { path ->
-                val file = File(path)
-                launch {
-                    val parser = EpubParser()
-                    val pub = parser.parse(path)
-                    if (pub != null) {
-                        val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
-                        pub.container = pair.first
-                        pub.publication = pair.second
-                        prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
-                        progress.dismiss()
-                        handleLcpPassphrase(file.absolutePath, Drm(Drm.Brand.Lcp), networkAvailable, {
-                            // Do nothing
-                        }, {
-                            // Do nothing
-                        }, {
-                            // Do nothing
-                        })
-                    }
-                }
 
-            }
-        } catch (e: Exception) {
-            e.localizedMessage?.let {
-                catalogView.longSnackbar(it)
-            } ?: run {
-                catalogView.longSnackbar("An error occurred")
-            }
-            progress.dismiss()
-        }
+        currenProgressDialog = progress
 
-    }
+        val bytes = contentResolver.openInputStream(uri)?.readBytes()
+        bytes?.let {
 
-    private fun handleLcpPassphrase(publicationPath: String, drm: Drm, networkAvailable: Boolean, parsingCallback: (drm: Drm) -> Unit, callback: (drm: Drm) -> Unit, callbackUI: () -> Unit) {
-        val lcpHttpService = LcpHttpService()
-        val session = LcpSession(publicationPath, this)
+            fulfill(bytes) { result ->
 
-        fun validatePassphrase(passphraseHash: String):Any? {
-            Timber.i("LCP validatePassphrase")
-            val preferences = getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
+                if (result is Exception) {
 
-            if (networkAvailable) {
+                    progress.dismiss()
+                    catalogView.longSnackbar("${(result as LCPError).errorDescription}")
 
-                try {
-                    Timber.i("LCP lcpHttpService.certificateRevocationList")
-                    val pemCrtl = lcpHttpService.certificateRevocationList("http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl", session)
-
-                    Timber.i("LCP lcpHttpService.certificateRevocationList  %s", pemCrtl)
-                    return pemCrtl?.let {
-                        preferences.edit().putString("pemCrtl", pemCrtl).apply()
-                        val status = session.resolve(passphraseHash, pemCrtl, networkAvailable)
-                        if (status is String) {
-                            launch {
-                                toast("This license was $status")
-                            }
-                        } else {
-                            return@let status
-                        }
-                    } ?: run {
-                        val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", ""), networkAvailable)
-                        if (status is String) {
-                            launch {
-                                toast("This license was $status")
-                            }
-                        } else {
-                            status
-                        }
-                    }
-                } catch (exception: Exception) {
-                    exception.printStackTrace()
-                    exception.localizedMessage?.let { message ->
-                        launch {
-                            catalogView.longSnackbar(message)
-                        }
-                    } ?: run {
-                        launch {
-                            catalogView.longSnackbar("An error occurred")
-                        }
-                    }
-
-                }
-            } else {
-                val status = session.resolve(passphraseHash, preferences.getString("pemCrtl", ""), networkAvailable)
-                if (status is String) {
-                    launch {
-                        toast("This license was $status")
-                    }
                 } else {
-                    return status
+                    result?.let {
+                        val publication = result as DRMFulfilledPublication
+
+                        Timber.d(result.localURL)
+                        Timber.d(result.suggestedFilename)
+                        val file = File(result.localURL)
+                        launch {
+                            val parser = EpubParser()
+                            val pub = parser.parse(result.localURL)
+                            pub?.let {
+                                val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
+                                pub.container = pair.first
+                                pub.publication = pair.second
+                                prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
+                                progress.dismiss()
+                                catalogView.longSnackbar("publication added to your library")
+                            }
+                        }
+                    } ?: run {
+                        progress.dismiss()
+                    }
                 }
-            }
-            return null
-        }
-
-        fun promptPassphrase(reason: String? = null, callback: (pass: String) -> Unit) {
-            launch {
-                var editTextTitle: EditText? = null
-
-                alert(Appcompat, "Hint: " + session.getHint(), reason ?: "LCP Passphrase") {
-                    customView {
-                        verticalLayout {
-                            textInputLayout {
-                                padding = dip(10)
-                                editTextTitle = editText {
-                                    hint = "Passphrase"
-                                }
-                            }
-                        }
-                    }
-                    positiveButton("OK") { }
-                    negativeButton("Cancel") { }
-                }.build().apply {
-                    setCancelable(false)
-                    setCanceledOnTouchOutside(false)
-                    setOnShowListener {
-                        val b = getButton(AlertDialog.BUTTON_POSITIVE)
-                        b.setOnClickListener { _ ->
-                            val passphraseHash = HASH.sha256(editTextTitle!!.text.toString())
-                            session.checkPassphrases(listOf(passphraseHash))?.let {pass ->
-                                session.storePassphrase(pass)
-                                callback(pass)
-                                dismiss()
-                            } ?:run {
-                                launch {
-                                    editTextTitle!!.error = "You entered a wrong passphrase."
-                                    editTextTitle!!.requestFocus()
-                                }
-                            }
-                        }
-                    }
-
-                }.show()
-            }
-        }
-
-        val passphrases = session.passphraseFromDb()
-        passphrases?.let { passphraseHash ->
-            val lcpLicense = validatePassphrase(passphraseHash)
-            drm.license = lcpLicense as? LcpLicense
-            drm.profile = session.getProfile()
-            parsingCallback(drm)
-            callback(drm)
-        } ?: run {
-            promptPassphrase(null) { passphraseHash ->
-                val lcpLicense = validatePassphrase(passphraseHash)
-                drm.license = lcpLicense as? LcpLicense
-                drm.profile = session.getProfile()
-                parsingCallback(drm)
-                callback(drm)
-                callbackUI()
             }
         }
     }
-
 }

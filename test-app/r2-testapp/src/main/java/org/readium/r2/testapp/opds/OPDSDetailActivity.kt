@@ -63,11 +63,18 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
 
                 imageView {
                     this@linearLayout.gravity = Gravity.CENTER
-                    if (publication.images.isNotEmpty()) {
-                        Picasso.with(this@OPDSDetailActivity).load(publication.images.first().href).into(this)
+
+                    publication.coverLink?.let { link ->
+                        Picasso.with(this@OPDSDetailActivity).load(link.href).into(this)
+                    } ?: run {
+                        if (publication.images.isNotEmpty()) {
+                            Picasso.with(this@OPDSDetailActivity).load(publication.images.first().href).into(this)
+                        }
                     }
+
                 }.lparams {
                     height = 800
+                    width = matchParent
                 }
 
                 textView {
@@ -94,9 +101,15 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
                                 val author = authorName(publication)
                                 Thread {
                                     val stream = ByteArrayOutputStream()
-                                    if (publication.images.isNotEmpty()) {
-                                        val bitmap = getBitmapFromURL(publication.images.first().href!!)
+
+                                    publication.coverLink?.let { link ->
+                                        val bitmap = getBitmapFromURL(link.href!!)
                                         bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                    } ?: run {
+                                        if (publication.images.isNotEmpty()) {
+                                            val bitmap = getBitmapFromURL(publication.images.first().href!!)
+                                            bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                        }
                                     }
 
                                     val book = Book(pair.second, publication.metadata.title, author, pair.first, (-1).toLong(), publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)

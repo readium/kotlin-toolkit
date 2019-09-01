@@ -56,7 +56,7 @@ class OPDSListActivity : AppCompatActivity() {
 
         val preferences = getSharedPreferences("org.readium.r2.testapp", Context.MODE_PRIVATE)
 
-        val version = 1
+        val version = 2
         val VERSION_KEY = "OPDS_CATALOG_VERSION"
 
         if (preferences.getInt(VERSION_KEY, 0) < version) {
@@ -66,12 +66,14 @@ class OPDSListActivity : AppCompatActivity() {
 
             val R2TestCatalog = OPDSModel( "R2 Reader Test Catalog",  "https://d2g.dita.digital/opds/collections/10040", 1)
             val OPDS2Catalog = OPDSModel( "OPDS 2.0 Test Catalog",  "https://test.opds.io/2.0/home.json", 2)
+            val OTBCatalog = OPDSModel( "Open Textbooks Catalog",  "http://open.minitex.org/textbooks/", 1)
+            val SEBCatalog = OPDSModel( "Standard eBooks Catalog",  " https://standardebooks.org/opds/all", 1)
 
             database.opds.insert(R2TestCatalog)
             database.opds.insert(OPDS2Catalog)
+            database.opds.insert(OTBCatalog)
+            database.opds.insert(SEBCatalog)
         }
-
-
 
         val list = database.opds.list().toMutableList()
         val opdsAdapter = OPDSViewAdapter(this, list)
