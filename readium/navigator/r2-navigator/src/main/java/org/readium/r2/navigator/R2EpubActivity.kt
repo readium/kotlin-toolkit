@@ -283,7 +283,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
                     }
                 }
 
-                if (supportActionBar!!.isShowing) {
+                if (supportActionBar!!.isShowing && allowToggleActionBar) {
                     resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                             or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
