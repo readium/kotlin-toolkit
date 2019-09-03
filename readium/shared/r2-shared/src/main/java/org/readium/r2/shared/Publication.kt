@@ -94,7 +94,8 @@ class Publication : Serializable {
     enum class EXTENSION(var value: String) {
         EPUB(".epub"),
         CBZ(".cbz"),
-        JSON(".json");
+        JSON(".json"),
+        AUDIO(".audiobook");
 
         companion object : EnumCompanion<String, EXTENSION>(values().associateBy(EXTENSION::value))
     }
