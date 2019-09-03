@@ -225,4 +225,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     fun removeProperty(key: String) {
         this.evaluateJavascript("removeProperty(\"$key\");", null)
     }
+
+    fun runJavaScript(javascript: String, callback: (String) -> Unit) {
+        this.evaluateJavascript(javascript) { result ->
+            callback(result)
+        }
+    }
+
 }
