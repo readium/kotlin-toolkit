@@ -40,7 +40,7 @@ dependencies {
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
     } else {
-        implementation "com.github.readium:r2-shared-kotlin:1.1.0"
+        implementation "com.github.readium:r2-shared-kotlin:1.1.2"
     }
     implementation "androidx.appcompat:appcompat:1.1.0-rc01"
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
