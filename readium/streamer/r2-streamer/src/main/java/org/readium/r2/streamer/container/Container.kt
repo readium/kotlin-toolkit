@@ -69,3 +69,11 @@ interface EpubContainer : Container {
 interface CbzContainer : Container {
     fun getFilesList(): List<String>
 }
+
+/**
+ * AudioBookContainer
+ *
+ */
+interface AudioBookContainer : Container {
+
+}

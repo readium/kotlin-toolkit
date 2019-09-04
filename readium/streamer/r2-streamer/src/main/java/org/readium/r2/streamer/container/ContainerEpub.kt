@@ -13,8 +13,7 @@ import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.parser.xml.XmlParser
-import org.readium.r2.streamer.parser.lcplFilePath
-import org.readium.r2.streamer.parser.mimetype
+import org.readium.r2.streamer.parser.EpubParser
 import org.zeroturnaround.zip.ZipUtil
 import java.io.File
 import java.util.zip.ZipFile
@@ -54,12 +53,12 @@ class ContainerEpub : EpubContainer, ZipArchiveContainer {
             successCreated = true
         }
         zipFile = ZipFile(path)
-        rootFile = RootFile(path, mimetype)
+        rootFile = RootFile(path, EpubParser.mimetype)
     }
 
     override fun scanForDrm(): DRM? {
 
-        if (ZipUtil.containsEntry(File(rootFile.rootPath), lcplFilePath)) {
+        if (ZipUtil.containsEntry(File(rootFile.rootPath), EpubParser.lcplFilePath)) {
             return DRM(DRM.Brand.lcp)
         }
         return null
