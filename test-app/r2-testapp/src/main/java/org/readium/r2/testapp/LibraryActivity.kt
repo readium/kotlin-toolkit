@@ -913,8 +913,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 } else {
                     book = webPub
-                    var bookCover = book?.cover
-                    startActivity(book!!.fileName, book!!, externalPub, bookCover)
+                    startActivity(book!!.fileName, book!!, externalPub, book?.cover)
                 }
             }
         }
