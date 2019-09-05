@@ -13,7 +13,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
-import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.webkit.WebViewClientCompat
@@ -25,20 +24,21 @@ import org.readium.r2.shared.Publication
 import kotlin.coroutines.CoroutineContext
 
 
-open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope {
+open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
+
     /**
      * Context of this scope.
      */
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    private lateinit var preferences: SharedPreferences
-    lateinit var divinaWebView: R2BasicWebView
+    override lateinit var preferences: SharedPreferences
+    override lateinit var publication: Publication
+    override lateinit var publicationIdentifier: String
 
+    lateinit var divinaWebView: R2BasicWebView
     private lateinit var publicationPath: String
-    lateinit var publication: Publication
     private lateinit var zipName: String
-    private lateinit var publicationIdentifier: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +46,8 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope {
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         divinaWebView = findViewById(R.id.divinaWebView)
+        divinaWebView.activity = this
+        divinaWebView.listener = this
 
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
@@ -65,27 +67,19 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 // Define the JS toggleMenu function that will call Android's toggleActionBar
-                divinaWebView.evaluateJavascript("window.androidObj = function AndroidClass(){};", null)
-                divinaWebView.evaluateJavascript("window.androidObj.toggleMenu = function() { Android.toggleMenu() };", null)
+//                divinaWebView.evaluateJavascript("window.androidObj = function AndroidClass(){};", null)
+//                divinaWebView.evaluateJavascript("window.androidObj.toggleMenu = function() { Android.toggleMenu() };", null)
 
                 // Now launch the DiViNa player for the folderPath = publicationPath
-                divinaWebView.evaluateJavascript("if (player) { player.openDiViNaFromPath('${publicationPath}', window.androidObj.toggleMenu); };", null)
+                divinaWebView.evaluateJavascript("if (player) { player.openDiViNaFromPath('${publicationPath}'); };", null)
             }
         }
         divinaWebView.loadUrl("file:///android_asset/divinaPlayer.html")
-        divinaWebView.addJavascriptInterface(JavaScriptInterface(), "Android")
+        divinaWebView.addJavascriptInterface(divinaWebView, "Android")
 
     }
 
-    // Define a JavaScriptInterface to call native Android code from within the divinaWebView
-    private inner class JavaScriptInterface {
-        @JavascriptInterface
-        fun toggleMenu() {
-            toggleActionBar()
-        }
-    }
-
-    fun toggleActionBar(v: View? = null) {
+    override fun toggleActionBar() {
         launch {
             if (supportActionBar!!.isShowing) {
                 divinaWebView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE

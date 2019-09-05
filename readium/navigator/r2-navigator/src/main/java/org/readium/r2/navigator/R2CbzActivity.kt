@@ -24,23 +24,23 @@ import org.readium.r2.shared.Publication
 import kotlin.coroutines.CoroutineContext
 
 
-class R2CbzActivity : AppCompatActivity(), CoroutineScope {
+class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
     /**
      * Context of this scope.
      */
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    private lateinit var preferences: SharedPreferences
-    lateinit var resourcePager: R2ViewPager
+    override lateinit var preferences: SharedPreferences
+    override lateinit var resourcePager: R2ViewPager
     var resources = arrayListOf<String>()
 
     private lateinit var publicationPath: String
-    private lateinit var publication: Publication
+    override lateinit var publication: Publication
     private lateinit var cbzName: String
-    private lateinit var publicationIdentifier: String
+    override lateinit var publicationIdentifier: String
 
-    var allowToggleActionBar = true
+    override var allowToggleActionBar = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +54,7 @@ class R2CbzActivity : AppCompatActivity(), CoroutineScope {
         cbzName = intent.getStringExtra("cbzName")
         publicationIdentifier = publication.metadata.identifier
         title = publication.metadata.title
-
+        
         for (link in publication.pageList) {
             resources.add(link.href.toString())
         }
@@ -96,7 +96,7 @@ class R2CbzActivity : AppCompatActivity(), CoroutineScope {
         preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
     }
 
-    fun nextResource(v: View? = null) {
+    override fun nextResource(v: View?) {
         launch {
             if (layoutDirectionIsRTL()) {
                 // The view has RTL layout
@@ -108,7 +108,7 @@ class R2CbzActivity : AppCompatActivity(), CoroutineScope {
         }
     }
 
-    fun previousResource(v: View? = null) {
+    override fun previousResource(v: View?) {
         launch {
             if (layoutDirectionIsRTL()) {
                 // The view has RTL layout
@@ -121,7 +121,7 @@ class R2CbzActivity : AppCompatActivity(), CoroutineScope {
         }
     }
 
-    fun toggleActionBar(v: View? = null) {
+    override fun toggleActionBar(v: View?) {
         if (allowToggleActionBar) {
             launch {
                 if (supportActionBar!!.isShowing) {
