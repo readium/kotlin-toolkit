@@ -21,6 +21,7 @@ import android.widget.ImageButton
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,7 +29,7 @@ import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
 import org.readium.r2.navigator.BuildConfig
 import org.readium.r2.navigator.R
-import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.navigator.R2ActivityListener
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.getAbsolute
@@ -40,7 +41,9 @@ import org.readium.r2.shared.getAbsolute
 
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
-    lateinit var activity: R2EpubActivity
+    lateinit var activity: AppCompatActivity
+    lateinit var listener: R2ActivityListener
+
     var progression: Double = 0.0
     var overrideUrlLoading = true
     var resourceUrl: String? = null
@@ -72,28 +75,28 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     open fun scrollRight() {
         uiScope.launch {
-            if (activity.supportActionBar!!.isShowing && activity.allowToggleActionBar) {
-                activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            if (activity.supportActionBar!!.isShowing && listener.allowToggleActionBar) {
+                listener.resourcePager?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+            val scrollMode = listener.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
-                if (activity.publication.metadata.direction == "rtl") {
+                if (listener.publication.metadata.direction == "rtl") {
                     this@R2BasicWebView.evaluateJavascript("scrollRightRTL();") { result ->
                         if (result.contains("edge")) {
-                            activity.previousResource(false)
+                            listener.previousResource(false)
                         }
                     }
                 } else {
-                    activity.nextResource(false)
+                    listener.nextResource(false)
                 }
             } else {
                 if (!this@R2BasicWebView.canScrollHorizontally(1)) {
-                    activity.nextResource(false)
+                    listener.nextResource(false)
                 }
                 this@R2BasicWebView.evaluateJavascript("scrollRight();", null)
             }
@@ -103,29 +106,29 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     open fun scrollLeft() {
         uiScope.launch {
-            if (activity.supportActionBar!!.isShowing && activity.allowToggleActionBar) {
-                activity.resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            if (activity.supportActionBar!!.isShowing && listener.allowToggleActionBar) {
+                listener.resourcePager?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
             }
-            val scrollMode = activity.preferences.getBoolean(SCROLL_REF, false)
+            val scrollMode = listener.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
-                if (activity.publication.metadata.direction == "rtl") {
+                if (listener.publication.metadata.direction == "rtl") {
                     this@R2BasicWebView.evaluateJavascript("scrollLeftRTL();") { result ->
                         if (result.contains("edge")) {
-                            activity.nextResource(false)
+                            listener.nextResource(false)
                         }
                     }
                 } else {
-                    activity.previousResource(false)
+                    listener.previousResource(false)
                 }
             } else {
                 // fix this for when vertical scrolling is enabled
                 if (!this@R2BasicWebView.canScrollHorizontally(-1)) {
-                    activity.previousResource(false)
+                    listener.previousResource(false)
                 }
                 this@R2BasicWebView.evaluateJavascript("scrollLeft();", null)
             }
@@ -135,12 +138,12 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun progressionDidChange(positionString: String) {
         progression = positionString.toDouble()
-        activity.storeProgression(Locations(progression = progression))
+        listener.storeProgression(Locations(progression = progression))
     }
 
     @android.webkit.JavascriptInterface
     fun centerTapped() {
-        activity.toggleActionBar()
+        listener.toggleActionBar()
     }
 
     @android.webkit.JavascriptInterface
@@ -215,7 +218,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${activity.publication.metadata.direction}\");", null)
+        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${listener.publication.metadata.direction}\");", null)
     }
 
     fun setProperty(key: String, value: String) {
