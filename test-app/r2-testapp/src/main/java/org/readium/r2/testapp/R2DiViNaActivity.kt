@@ -80,6 +80,9 @@ class R2DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             val locator = data.getSerializableExtra("locator") as Locator
             Timber.d("locator href ${locator.href}")
+
+            // Call the player's goTo function with the considered href
+            divinaWebView.evaluateJavascript("if (player) { player.goTo('${locator.href}'); };", null)
         }
     }
 
