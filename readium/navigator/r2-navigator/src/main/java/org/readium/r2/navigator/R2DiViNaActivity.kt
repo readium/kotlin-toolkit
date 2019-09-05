@@ -13,24 +13,16 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
+import android.webkit.JavascriptInterface
+import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.webkit.WebViewClientCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.pager.R2BasicWebView
 import org.readium.r2.shared.Publication
 import kotlin.coroutines.CoroutineContext
-
-import android.util.Log
-import android.webkit.ConsoleMessage
-import android.webkit.JavascriptInterface
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-
-import org.zeroturnaround.zip.ZipUtil
-import timber.log.Timber
-import java.io.File
-import java.nio.charset.Charset
 
 
 open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope {
@@ -68,24 +60,16 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope {
         divinaWebView.getSettings().setJavaScriptEnabled(true)
         divinaWebView.getSettings().setAllowFileAccess(true)
         divinaWebView.getSettings().setAllowFileAccessFromFileURLs(true)
-        divinaWebView.webChromeClient = object : WebChromeClient() {
-            // Send JS's console.log to Android's Log
-            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-                consoleMessage?.apply {
-                    Timber.i("DiViNaPlayer ${message()} -- From line ${lineNumber()} of ${sourceId()}")
-                }
-                return true
-            }
-            // Wait until the HTML and its JS scripts are fully loaded before calling the divinaPlayer library
-            override fun onProgressChanged(view: WebView, newProgress: Int) {
-                if (newProgress == 100) {
-                    // Define the JS toggleMenu function that will call Android's toggleActionBar
-                    divinaWebView.evaluateJavascript("window.androidObj = function AndroidClass(){};", null)
-                    divinaWebView.evaluateJavascript("window.androidObj.toggleMenu = function() { Android.toggleMenu() };", null)
+        divinaWebView.webViewClient = object : WebViewClientCompat() {
 
-                    // Now launch the DiViNa player for the folderPath = publicationPath
-                    divinaWebView.evaluateJavascript("if (player) { player.openDiViNaFromPath('${publicationPath}', window.androidObj.toggleMenu); };", null)
-                }
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                // Define the JS toggleMenu function that will call Android's toggleActionBar
+                divinaWebView.evaluateJavascript("window.androidObj = function AndroidClass(){};", null)
+                divinaWebView.evaluateJavascript("window.androidObj.toggleMenu = function() { Android.toggleMenu() };", null)
+
+                // Now launch the DiViNa player for the folderPath = publicationPath
+                divinaWebView.evaluateJavascript("if (player) { player.openDiViNaFromPath('${publicationPath}', window.androidObj.toggleMenu); };", null)
             }
         }
         divinaWebView.loadUrl("file:///android_asset/divinaPlayer.html")
