@@ -71,7 +71,18 @@ interface CbzContainer : Container {
 }
 
 
-// TODO WIP
+/**
+ * DiViNaContainer
+ *
+ */
 interface DiViNaContainer : Container {
+    
+}
+
+/**
+ * AudioBookContainer
+ *
+ */
+interface AudioBookContainer : Container {
 
 }

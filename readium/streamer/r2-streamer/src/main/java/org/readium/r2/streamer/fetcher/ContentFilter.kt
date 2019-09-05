@@ -13,6 +13,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.*
 import org.readium.r2.streamer.container.Container
+import org.readium.r2.streamer.server.Resources
 import java.io.File
 import java.io.InputStream
 
@@ -29,7 +30,7 @@ interface ContentFilters {
     }
 }
 
-class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilters {
+class ContentFiltersEpub(private val userPropertiesPath: String?, var customResources: Resources?) : ContentFilters {
 
     override var fontDecoder = FontDecoder()
     override var drmDecoder = DrmDecoder()
@@ -97,6 +98,20 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         endIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-after.css"))
         endIncludes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/touchHandling.js"))
         endIncludes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/utils.js"))
+
+        customResources?.let {
+            // Inject all custom resourses
+            for ((key, value) in it.resources) {
+                if (value is Pair<*, *>) {
+                    val res = value as Pair<String, String>
+                    if (Injectable(res.second) == Injectable.Script) {
+                        endIncludes.add(getHtmlScript("/${Injectable.Script.rawValue}/$key"))
+                    } else if (Injectable(res.second) == Injectable.Style) {
+                        endIncludes.add(getHtmlLink("/${Injectable.Style.rawValue}/$key"))
+                    }
+                }
+            }
+        }
 
         for (element in beginIncludes) {
             resourceHtml = StringBuilder(resourceHtml).insert(beginHeadIndex, element).toString()

@@ -13,7 +13,7 @@ import org.readium.r2.shared.Link
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.parser.xml.XmlParser
-import org.readium.r2.streamer.parser.lcplFilePath
+import org.readium.r2.streamer.parser.EpubParser
 import java.io.File
 
 class ContainerEpubDirectory : EpubContainer, DirectoryContainer {
@@ -52,7 +52,7 @@ class ContainerEpubDirectory : EpubContainer, DirectoryContainer {
 
     override fun scanForDrm(): DRM? {
 
-        if (File(rootFile.rootPath + "/" + lcplFilePath).exists()) {
+        if (File(rootFile.rootPath + "/" + EpubParser.lcplFilePath).exists()) {
             return DRM(DRM.Brand.lcp)
         }
         return null
