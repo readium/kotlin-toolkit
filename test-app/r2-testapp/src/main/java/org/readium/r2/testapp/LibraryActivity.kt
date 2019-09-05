@@ -757,12 +757,17 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     //Getting book cover from file path to bitmap
                     val ref = publication.coverLink?.href
                     val stream = ByteArrayOutputStream()
-                    ref?.let {
-                        val arrayInputStream = pub.container.data(ref)
-                        val bitmap = BitmapFactory.decodeByteArray(arrayInputStream, 0, arrayInputStream.size)
+                    val coverByteArray = ref?.let {
+                        try {
+                            pub.container.data(ref)
+                        } catch (e:Exception) {
+                            null
+                        }
+                    }
+                    coverByteArray?.let {
+                        val bitmap = BitmapFactory.decodeByteArray(coverByteArray, 0, coverByteArray.size)
                         bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
                     }
-
 
                     //Building book object and adding it to library
                     val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), stream.toByteArray(), Publication.EXTENSION.AUDIO)
@@ -852,7 +857,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         //Starting AudiobookActivity
                         val ref = pub.publication.coverLink?.href
                         val coverByteArray = ref?.let {
-                            pub.container.data(ref)
+                            try {
+                                pub.container.data(ref)
+                            } catch (e:Exception) {
+                                null
+                            }
                         }
 
                         startActivity(publicationPath, book, pub.publication, coverByteArray)
