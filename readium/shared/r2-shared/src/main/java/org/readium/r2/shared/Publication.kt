@@ -96,6 +96,7 @@ class Publication : Serializable {
         CBZ(".cbz"),
         JSON(".json"),
         ZIP(".zip");
+        AUDIO(".audiobook");
 
         companion object : EnumCompanion<String, EXTENSION>(values().associateBy(EXTENSION::value))
     }
