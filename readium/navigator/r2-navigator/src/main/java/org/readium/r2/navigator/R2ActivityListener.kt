@@ -32,8 +32,6 @@ interface R2ActivityListener {
     fun previousResource(smoothScroll: Boolean) {}
     fun nextResource(v: View? = null) {}
     fun previousResource(v: View? = null) {}
-
-
     fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {}
     fun onPageEnded(end: Boolean) {}
 

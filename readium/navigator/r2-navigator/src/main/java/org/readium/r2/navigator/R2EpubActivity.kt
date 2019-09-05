@@ -350,7 +350,6 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
         }
     }
 
-
     override fun toggleActionBar() {
         if (allowToggleActionBar) {
             launch {
@@ -368,14 +367,6 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
                 }
             }
         }
-    }
-
-    override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
-        //optional
-    }
-
-    override fun onPageEnded(end: Boolean) {
-        //optional
     }
 
 }
