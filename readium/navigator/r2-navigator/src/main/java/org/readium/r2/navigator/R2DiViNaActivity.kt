@@ -74,7 +74,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, R2ActivityLis
                 divinaWebView.evaluateJavascript("if (player) { player.openDiViNaFromPath('${publicationPath}'); };", null)
             }
         }
-        divinaWebView.loadUrl("file:///android_asset/divinaPlayer.html")
+        divinaWebView.loadUrl("file:///android_asset/divina/divinaPlayer.html")
         divinaWebView.addJavascriptInterface(divinaWebView, "Android")
 
     }
