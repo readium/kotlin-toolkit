@@ -23,6 +23,7 @@ import kotlin.coroutines.CoroutineContext
 
 import android.util.Log
 import android.webkit.ConsoleMessage
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 
@@ -61,7 +62,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope {
         publicationIdentifier = publication.metadata.identifier
         title = publication.metadata.title
 
-//        toggleActionBar()
+        toggleActionBar()
 
         // Set up divinaWebView to enable JavaScript and access to local URLs
         divinaWebView.getSettings().setJavaScriptEnabled(true)
@@ -71,21 +72,33 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope {
             // Send JS's console.log to Android's Log
             override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
                 consoleMessage?.apply {
-                    Timber.i("DiViNaPlayer  ${message()} -- From line ${lineNumber()} of ${sourceId()}")
+                    Timber.i("DiViNaPlayer ${message()} -- From line ${lineNumber()} of ${sourceId()}")
                 }
                 return true
             }
             // Wait until the HTML and its JS scripts are fully loaded before calling the divinaPlayer library
             override fun onProgressChanged(view: WebView, newProgress: Int) {
                 if (newProgress == 100) {
+                    // Define the JS toggleMenu function that will call Android's toggleActionBar
+                    divinaWebView.evaluateJavascript("window.androidObj = function AndroidClass(){};", null)
+                    divinaWebView.evaluateJavascript("window.androidObj.toggleMenu = function() { Android.toggleMenu() };", null)
 
-                    // In the below, writing ${path} directly triggers an "Invalid flags supplied to RegExp constructor 'sdcard'" error...
-                    divinaWebView.evaluateJavascript("player.openDiViNaFromPath('${publicationPath}');", null)
+                    // Now launch the DiViNa player for the folderPath = publicationPath
+                    divinaWebView.evaluateJavascript("if (player) { player.openDiViNaFromPath('${publicationPath}', window.androidObj.toggleMenu); };", null)
                 }
             }
         }
-        divinaWebView.loadUrl("file:///android_asset/index.html") // Change index.html name to avoid ambiguity
+        divinaWebView.loadUrl("file:///android_asset/divinaPlayer.html")
+        divinaWebView.addJavascriptInterface(JavaScriptInterface(), "Android")
 
+    }
+
+    // Define a JavaScriptInterface to call native Android code from within the divinaWebView
+    private inner class JavaScriptInterface {
+        @JavascriptInterface
+        fun toggleMenu() {
+            toggleActionBar()
+        }
     }
 
     fun toggleActionBar(v: View? = null) {
@@ -103,6 +116,11 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope {
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        divinaWebView.evaluateJavascript("if (player) { player.destroy(); };", null)
     }
 }
 
