@@ -70,6 +70,15 @@ interface CbzContainer : Container {
     fun getFilesList(): List<String>
 }
 
+
+/**
+ * DiViNaContainer
+ *
+ */
+interface DiViNaContainer : Container {
+    
+}
+
 /**
  * AudioBookContainer
  *

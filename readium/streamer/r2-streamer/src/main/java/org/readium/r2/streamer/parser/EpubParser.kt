@@ -37,7 +37,7 @@ class EpubParser : PublicationParser {
         const val containerDotXmlPath = "META-INF/container.xml"
         const val encryptionDotXmlPath = "META-INF/encryption.xml"
         const val lcplFilePath = "META-INF/license.lcpl"
-        const val mimetype = "application/epub+zip"
+        const val mimetypeEpub = "application/epub+zip"
         const val mimetypeOEBPS = "application/oebps-package+xml"
         const val mediaOverlayURL = "media-overlay?resource="
     }
@@ -83,7 +83,7 @@ class EpubParser : PublicationParser {
             return null
         }
 
-        container.rootFile.mimetype = mimetype
+        container.rootFile.mimetype = mimetypeEpub
         container.rootFile.rootFilePath = getRootFilePath(data)
 
         val xmlParser = XmlParser()
