@@ -233,7 +233,6 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
 
                             if (last) {
                                 progress.dismiss()
-                                resourcePager.offscreenPageLimit = 1
                             }
                         }
                     }, 500)
@@ -418,6 +417,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
 
             android.R.id.home -> {
                 search_overlay.visibility = View.INVISIBLE
+                resourcePager.offscreenPageLimit = 1
                 val searchView = menuSearch?.getActionView() as SearchView
                 searchView.clearFocus()
                 return true
