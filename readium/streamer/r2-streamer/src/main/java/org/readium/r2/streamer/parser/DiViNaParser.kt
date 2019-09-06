@@ -38,11 +38,8 @@ class DiViNaParser : PublicationParser {
 
     companion object {
         // Some constants useful to parse an DiViNa document
-        const val mimetypeDiViNa = "application/divina+zip"
-        const val manifestPath = "publication.json"
-
-        //const val mimetypeJPEG = "image/jpeg"
-        //const val mimetypePNG = "image/png"
+        const val mimetypeDiViNa = "application/divina+json"
+        const val manifestPath = "manifest.json"
     }
 
     /**
