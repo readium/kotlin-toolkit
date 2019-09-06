@@ -87,5 +87,4 @@ class AudioBookParser : PublicationParser {
         return PubBox(publication, container)
 
     }
-
 }

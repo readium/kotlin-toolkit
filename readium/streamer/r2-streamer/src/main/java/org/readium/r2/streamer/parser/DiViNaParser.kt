@@ -1,5 +1,3 @@
-// TODO WIP
-
 /*
  * Module: r2-streamer-kotlin
  * Developers: Aferdita Muriqi
@@ -12,19 +10,12 @@
 package org.readium.r2.streamer.parser
 
 import android.util.Log
-import android.webkit.MimeTypeMap
-import com.mcxiaoke.koi.ext.close
 import org.json.JSONObject
-import org.readium.r2.shared.*
-import java.io.File
-import org.readium.r2.streamer.container.ContainerCbz
+import org.readium.r2.shared.Publication
+import org.readium.r2.shared.parsePublication
 import org.readium.r2.streamer.container.ContainerDiViNa
-import org.zeroturnaround.zip.ZipUtil
 import timber.log.Timber
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URI
-import java.net.URL
+import java.io.File
 import java.nio.charset.Charset
 
 
@@ -85,7 +76,7 @@ class DiViNaParser : PublicationParser {
         val publication = parsePublication(json)
         publication.type = Publication.TYPE.DiViNa
 
-        //Modifying path of links
+        // Add href as title if title is missing (this is used to display the TOC)
         for ((index, link) in publication.readingOrder.withIndex()) {
             if (link.title == null || link.title!!.isEmpty()) {
                 link.title = link.href
@@ -93,35 +84,6 @@ class DiViNaParser : PublicationParser {
         }
 
         return PubBox(publication, container)
-
-    }
-
-    private fun getPublicationURL(src: String, fileAtPath: String): JSONObject? {
-        return try {
-
-            val blob = ZipUtil.unpackEntry(File(fileAtPath), src)
-            blob?.let { jsonManifest ->
-
-                val stringManifest = jsonManifest.toString(Charset.defaultCharset())
-                val json = JSONObject(stringManifest)
-                json
-            }
-
-        } catch (e: IOException) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    private fun getMimeType(fileName: String): String? {
-        return try {
-            val name = fileName.replace(" ", "").replace("'", "").replace(",", "")
-            val extension = MimeTypeMap.getFileExtensionFromUrl(name)
-            MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-        } catch (e: Exception) {
-            Log.e("Error", "Something went wrong while getMimeType() : ${e.message}")
-            null
-        }
     }
 
 }
