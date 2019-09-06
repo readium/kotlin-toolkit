@@ -54,7 +54,7 @@ class SearchLocatorAdapter(private val activity: Activity, var results: List<Sea
         val title = tmpLocator.title
 
         viewHolder.chapterView.text = title
-        viewHolder.textView.setText(Html.fromHtml("$txtBefore <span style=\"background:yellow;\"><b>$highlight</b></span> $txtAfter"))
+        viewHolder.textView.setText(Html.fromHtml("$txtBefore<span style=\"background:yellow;\"><b>$highlight</b></span>$txtAfter"))
 
 
         viewHolder.itemView.setOnClickListener { v ->
