@@ -34,7 +34,7 @@ class DiViNaParser : PublicationParser {
     }
 
     /**
-     * Check if path exist, generate a container for CBZ file
+     * Check if path exist, generate a container for DiViNa file
      *                   then check if creation was a success
      */
     private fun generateContainerFrom(path: String): ContainerDiViNa {
