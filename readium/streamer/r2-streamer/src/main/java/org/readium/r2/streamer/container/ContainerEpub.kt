@@ -53,7 +53,7 @@ class ContainerEpub : EpubContainer, ZipArchiveContainer {
             successCreated = true
         }
         zipFile = ZipFile(path)
-        rootFile = RootFile(path, EpubParser.mimetype)
+        rootFile = RootFile(path, EpubParser.mimetypeEpub)
     }
 
     override fun scanForDrm(): DRM? {
