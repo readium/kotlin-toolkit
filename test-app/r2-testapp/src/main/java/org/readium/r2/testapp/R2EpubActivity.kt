@@ -209,34 +209,33 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                     //Saving searched term
                     searchTerm = query
                     //Initializing our custom search interfaces
-                    val markJSSearchInteface = MarkJSSearchInterface(publication, publicationIdentifier, preferences, epubName)
                     val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_searching_book))
                     progress.show()
-                    markJSSearchInteface.search(query, applicationContext) { (last, result) ->
+
+                    val markJSSearchInteface = MarkJSSearchInterface(this@R2EpubActivity, resourcePager, publication, publicationIdentifier, preferences)
+                    markJSSearchInteface.search(query) { (last, result) ->
+                        searchResult.clear()
+                        searchResult.addAll(result)
+                        searchResultAdapter.notifyDataSetChanged()
+
+                        //Saving results + keyword only when JS is fully executed on all resources
+                        val editor = searchStorage.edit()
+                        val stringResults = Gson().toJson(result)
+                        editor.putString("result", stringResults)
+                        editor.putString("term", searchTerm)
+                        editor.putLong("book", bookId)
+                        editor.apply()
+
                         if (last) {
                             progress.dismiss()
-                        } else {
-                            searchResult.clear()
-                            searchResult.addAll(result)
-                            searchResultAdapter.notifyDataSetChanged()
-
-                            //Saving results + keyword only when JS is fully executed on all resources
-                            val editor = searchStorage.edit()
-                            val stringResults = Gson().toJson(result)
-                            editor.putString("result", stringResults)
-                            editor.putString("term", searchTerm)
-                            editor.putLong("book", bookId)
-                            editor.apply()
                         }
                     }
+
                 }
                 return false
             }
 
             override fun onQueryTextChange(s: String): Boolean {
-//                if (TextUtils.isEmpty(s)){
-//                    bv.resultsList = mutableListOf()
-//                }
                 return false
             }
         })
@@ -433,7 +432,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
         } else {
             super.onActivityResult(requestCode, resultCode, data)
             if (requestCode == 2 && resultCode == Activity.RESULT_OK && data != null) {
-                val locator = data.getSerializableExtra("locator") as SearchLocator
+                val locator = data.getSerializableExtra("locator") as Locator
                 locator.locations?.fragment?.let { fragment ->
 
                     val fragments = JSONArray(fragment).getString(0).split(",").associate {
@@ -446,8 +445,6 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                     Handler().postDelayed({
                         if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
                             val currentFragent = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
-//                            val previousFragent = (resourcePager.adapter as R2PagerAdapter).getPreviousFragment() as R2EpubPageFragment
-//                            val nextFragent = (resourcePager.adapter as R2PagerAdapter).getNextFragment() as R2EpubPageFragment
                             val resource = publication.readingOrder[resourcePager.currentItem]
                             val resourceHref = resource.href ?: ""
                             val resourceType = resource.typeLink ?: ""
@@ -458,8 +455,6 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                                 Timber.d("###### $result")
 
                             }
-//                            previousFragent.webView.runJavaScript("performSearch('${searchStorage.getString("term", null)}', 'null')")
-//                            nextFragent.webView.runJavaScript("performSearch('${searchStorage.getString("term", null)}', 'null')")
                         }
                     }, 1200)
                 }
