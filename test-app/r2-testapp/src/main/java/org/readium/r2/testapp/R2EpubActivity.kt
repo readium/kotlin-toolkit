@@ -41,6 +41,7 @@ import org.json.JSONObject
 import org.readium.r2.navigator.R2EpubActivity
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
+import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.search.MarkJSSearchInterface
@@ -163,6 +164,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                 searchView.clearFocus()
                 if (searchView.isShown) {
                     menuSearch?.collapseActionView();
+                    resourcePager.offscreenPageLimit = 1
                 }
 
                 val locator = searchResult[position]
@@ -206,6 +208,8 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
 
                 query?.let {
                     search_overlay.visibility = View.VISIBLE
+                    resourcePager.offscreenPageLimit = publication.readingOrder.size
+
                     //Saving searched term
                     searchTerm = query
                     //Initializing our custom search interfaces
@@ -213,23 +217,27 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                     progress.show()
 
                     val markJSSearchInteface = MarkJSSearchInterface(this@R2EpubActivity, resourcePager, publication, publicationIdentifier, preferences)
-                    markJSSearchInteface.search(query) { (last, result) ->
-                        searchResult.clear()
-                        searchResult.addAll(result)
-                        searchResultAdapter.notifyDataSetChanged()
+                    Handler().postDelayed({
+                        markJSSearchInteface.search(query) { (last, result) ->
+                            searchResult.clear()
+                            searchResult.addAll(result)
+                            searchResultAdapter.notifyDataSetChanged()
 
-                        //Saving results + keyword only when JS is fully executed on all resources
-                        val editor = searchStorage.edit()
-                        val stringResults = Gson().toJson(result)
-                        editor.putString("result", stringResults)
-                        editor.putString("term", searchTerm)
-                        editor.putLong("book", bookId)
-                        editor.apply()
+                            //Saving results + keyword only when JS is fully executed on all resources
+                            val editor = searchStorage.edit()
+                            val stringResults = Gson().toJson(result)
+                            editor.putString("result", stringResults)
+                            editor.putString("term", searchTerm)
+                            editor.putLong("book", bookId)
+                            editor.apply()
 
-                        if (last) {
-                            progress.dismiss()
+                            if (last) {
+                                progress.dismiss()
+                                resourcePager.offscreenPageLimit = 1
+                            }
                         }
-                    }
+                    }, 500)
+
 
                 }
                 return false
@@ -244,6 +252,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                 search_overlay.visibility = View.INVISIBLE
             } else {
                 search_overlay.visibility = View.VISIBLE
+                resourcePager.offscreenPageLimit = publication.readingOrder.size
             }
         }
         searchView.onClose {
@@ -277,11 +286,13 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
             }
 
             search_overlay.visibility = View.VISIBLE
+            resourcePager.offscreenPageLimit = publication.readingOrder.size
         }
 
         menuSearch?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                 search_overlay.visibility = View.VISIBLE
+                resourcePager.offscreenPageLimit = publication.readingOrder.size
                 return true;
             }
 
@@ -396,6 +407,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
             }
             R.id.search -> {
                 search_overlay.visibility = View.VISIBLE
+                resourcePager.offscreenPageLimit = publication.readingOrder.size
 
                 val searchView = menuSearch?.getActionView() as SearchView
 
