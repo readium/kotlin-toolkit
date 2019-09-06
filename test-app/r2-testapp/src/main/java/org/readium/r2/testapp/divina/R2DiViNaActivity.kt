@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.divina
 
 import android.app.Activity
 import android.content.Intent
@@ -20,6 +20,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.R2DiViNaActivity
 import org.readium.r2.shared.Locator
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.R2OutlineActivity
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
@@ -41,7 +43,6 @@ class R2DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
 
     protected var menuToc: MenuItem? = null
 
-
     private var bookId: Long = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +54,7 @@ class R2DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(org.readium.r2.testapp.R.menu.menu_divina, menu)
+        menuInflater.inflate(R.menu.menu_divina, menu)
         menuToc = menu?.findItem(R.id.toc)
         return true
     }
@@ -71,7 +72,6 @@ class R2DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
 
             else -> return false
         }
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

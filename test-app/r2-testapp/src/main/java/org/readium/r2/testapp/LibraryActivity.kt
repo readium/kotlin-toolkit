@@ -67,6 +67,7 @@ import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.audiobook.AudiobookActivity
+import org.readium.r2.testapp.divina.R2DiViNaActivity
 import org.readium.r2.testapp.drm.LCPLibraryActivityService
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSDownloader
