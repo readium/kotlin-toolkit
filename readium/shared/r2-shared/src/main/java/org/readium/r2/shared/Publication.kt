@@ -95,7 +95,7 @@ class Publication : Serializable {
         EPUB(".epub"),
         CBZ(".cbz"),
         JSON(".json"),
-        ZIP(".zip"),
+        DIVINA(".divina"),
         AUDIO(".audiobook");
 
         companion object : EnumCompanion<String, EXTENSION>(values().associateBy(EXTENSION::value))
