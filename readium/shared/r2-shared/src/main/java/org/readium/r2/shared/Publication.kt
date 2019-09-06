@@ -83,7 +83,7 @@ class Publication : Serializable {
 
     // Navigator Type
     enum class TYPE {
-        EPUB, CBZ, FXL, WEBPUB, AUDIO
+        EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
     }
 
     open class EnumCompanion<T, V>(private val valueMap: Map<T, V>) {
@@ -95,6 +95,7 @@ class Publication : Serializable {
         EPUB(".epub"),
         CBZ(".cbz"),
         JSON(".json"),
+        DIVINA(".divina"),
         AUDIO(".audiobook");
 
         companion object : EnumCompanion<String, EXTENSION>(values().associateBy(EXTENSION::value))
