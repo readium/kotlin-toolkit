@@ -273,7 +273,7 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                                         val daysInput = Spinner(this@DRMManagementActivity)
                                         daysInput.dropDownWidth = wrapContent
 
-                                        val adapter: SpinnerAdapter = ArrayAdapter(this@DRMManagementActivity, R.layout.days_spinner, daysArray)
+                                        val adapter: SpinnerAdapter = ArrayAdapter(this@DRMManagementActivity, R.layout.item_spinner_days, daysArray)
                                         daysInput.adapter = adapter
 //
                                         val renewDialog = alert(Appcompat, "How many days do you wish to extend your loan ?") {
