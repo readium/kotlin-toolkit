@@ -11,7 +11,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context='org.readium.r2.testapp.R2EpubActivity'>
+    tools:context='org.readium.r2.testapp.epub.EpubActivity'>
 
     <item
         android:id="@+id/search"

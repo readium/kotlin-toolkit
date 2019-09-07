@@ -36,7 +36,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".R2DispatcherActivity"
+            android:name=".utils.R2DispatcherActivity"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@android:style/Theme.NoDisplay">
@@ -87,14 +87,14 @@
             android:name=".R2AboutActivity"
             android:label="@string/title_activity_r2_about" />
         <activity
-            android:name=".R2EpubActivity"
+            android:name=".epub.EpubActivity"
             android:label="@string/title_activity_epub" />
         <activity
             android:name=".DRMManagementActivity"
             android:label="DRM Management"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".R2OutlineActivity"
+            android:name=".outline.R2OutlineActivity"
             android:label="@string/title_activity_outline" />
         <activity
             android:name=".opds.OPDSListActivity"
@@ -102,7 +102,9 @@
         <activity
             android:name=".opds.OPDSDetailActivity"
             android:label="@string/title_activity_opds_detail" />
-        <activity android:name=".audiobook.AudiobookActivity" />
+        <activity
+            android:name=".audiobook.AudiobookActivity"
+            android:label="@string/title_activity_epub" />
     </application>
 
 </manifest>

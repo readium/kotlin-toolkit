@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.epub
 
 import android.app.Activity
 import android.content.Context
@@ -28,7 +28,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.activity_r2_epub.*
+import kotlinx.android.synthetic.main.activity_epub.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,13 +38,18 @@ import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONArray
 import org.json.JSONObject
-import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
-import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRM
-import org.readium.r2.testapp.search.MarkJSSearchInterface
+import org.readium.r2.testapp.DRMManagementActivity
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.db.Bookmark
+import org.readium.r2.testapp.db.BookmarksDatabase
+import org.readium.r2.testapp.db.PositionsDatabase
+import org.readium.r2.testapp.outline.R2OutlineActivity
+import org.readium.r2.testapp.search.MarkJSSearchEngine
 import org.readium.r2.testapp.search.SearchLocator
 import org.readium.r2.testapp.search.SearchLocatorAdapter
 import timber.log.Timber
@@ -52,13 +57,13 @@ import kotlin.coroutines.CoroutineContext
 
 
 /**
- * R2EpubActivity : Extension of the R2EpubActivity() from navigator
+ * EpubActivity : Extension of the EpubActivity() from navigator
  *
  * That Activity manage everything related to the menu
  *      ( Table of content, User Settings, DRM, Bookmarks )
  *
  */
-class R2EpubActivity : R2EpubActivity(), CoroutineScope {
+class EpubActivity : R2EpubActivity(), CoroutineScope {
 
     /**
      * Context of this scope.
@@ -170,7 +175,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                 val locator = searchResult[position]
                 val intent = Intent()
                 intent.putExtra("publicationPath", publicationPath)
-                intent.putExtra("epubName", epubName)
+                intent.putExtra("epubName", publicationFileName)
                 intent.putExtra("publication", publication)
                 intent.putExtra("bookId", bookId)
                 intent.putExtra("locator", locator)
@@ -216,7 +221,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                     val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_searching_book))
                     progress.show()
 
-                    val markJSSearchInteface = MarkJSSearchInterface(this@R2EpubActivity, resourcePager, publication, publicationIdentifier, preferences)
+                    val markJSSearchInteface = MarkJSSearchEngine(this@EpubActivity)
                     Handler().postDelayed({
                         markJSSearchInteface.search(query) { (last, result) ->
                             searchResult.clear()
@@ -513,7 +518,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
         Handler().postDelayed({
             val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
             port?.let {
-                screenReader = R2ScreenReader(this, publication, port, epubName)
+                screenReader = R2ScreenReader(this, publication, port, publicationFileName)
             }
         }, 500)
 

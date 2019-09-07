@@ -33,7 +33,7 @@ class SearchLocatorAdapter(private val activity: Activity, var results: List<Sea
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = activity.applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val view = inflater.inflate(R.layout.search_result_item, null)
+        val view = inflater.inflate(R.layout.item_recycle_search, null)
 
         return ViewHolder(view)
     }
@@ -42,13 +42,9 @@ class SearchLocatorAdapter(private val activity: Activity, var results: List<Sea
 
         val tmpLocator = results[position]
 
-        var txtBefore = tmpLocator.text?.before
-        txtBefore = txtBefore?.replace("!§", "\"")
-        txtBefore = txtBefore?.replace("§!", "'")
+        val txtBefore = tmpLocator.text?.before
 
-        var txtAfter = tmpLocator.text?.after
-        txtAfter = txtAfter?.replace("!§", "\"")
-        txtAfter = txtAfter?.replace("§!", "'")
+        val txtAfter = tmpLocator.text?.after
 
         val highlight = tmpLocator.text?.highlight
         val title = tmpLocator.title

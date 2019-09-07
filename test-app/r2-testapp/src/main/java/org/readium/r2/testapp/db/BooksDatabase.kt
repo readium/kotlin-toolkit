@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.db
 
 import android.content.ContentValues
 import android.content.Context
@@ -17,6 +17,12 @@ import android.database.sqlite.SQLiteException
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.readium.r2.shared.Publication
+
+/**
+ * Global Parameters
+ */
+
+lateinit var books: MutableList<Book>
 
 
 // Access property for Context
@@ -117,7 +123,7 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
             while (hasItem) {
                 val id = cursor.getInt(cursor.getColumnIndex(BOOKSTable.ID))
                 val values = ContentValues()
-                values.put(BOOKSTable. CREATION, DateTime().toDate().time)
+                values.put(BOOKSTable.CREATION, DateTime().toDate().time)
                 db.update(BOOKSTable.NAME, values, "${BOOKSTable.ID}=?", arrayOf(id.toString()))
                 hasItem = cursor.moveToNext()
             }

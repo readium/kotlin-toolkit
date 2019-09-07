@@ -13,7 +13,7 @@
     android:id="@+id/constraint"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.readium.r2.navigator.R2EpubActivity">
+    tools:context="org.readium.r2.navigator.epub.R2EpubActivity">
 
     <org.readium.r2.navigator.pager.R2ViewPager
         android:id="@+id/resourcePager"

@@ -1,16 +1,12 @@
 package org.readium.r2.testapp.search
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Handler
 import org.json.JSONArray
 import org.readium.r2.navigator.R2ActivityListener
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
-import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.LocatorText
-import org.readium.r2.shared.Publication
 import timber.log.Timber
 
 
@@ -24,14 +20,15 @@ interface SearchInterface {
 /**
  * This is our custom Search Module, this class uses MarkJS library and implements SearchInterface
  */
-class MarkJSSearchInterface(val context: Context, override var resourcePager: R2ViewPager, override var publication: Publication, override var publicationIdentifier: String, override var preferences: SharedPreferences) : SearchInterface, R2ActivityListener {
+class MarkJSSearchEngine(var listener: R2ActivityListener) : SearchInterface {
+
 
     override fun search(keyword: String, callback: (Pair<Boolean, MutableList<SearchLocator>>) -> Unit) {
         val searchResult = mutableListOf<SearchLocator>()
 
-        for (resourceIndex in 0 until publication.readingOrder.size) {
-            val fragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourceIndex))) as R2EpubPageFragment
-            val resource = publication.readingOrder[resourceIndex]
+        for (resourceIndex in 0 until listener.publication.readingOrder.size) {
+            val fragment = ((listener.resourcePager?.adapter as R2PagerAdapter).mFragments.get((listener.resourcePager?.adapter as R2PagerAdapter).getItemId(resourceIndex))) as R2EpubPageFragment
+            val resource = listener.publication.readingOrder[resourceIndex]
             val resourceHref = resource.href ?: ""
             val resourceType = resource.typeLink ?: ""
             val resourceTitle = resource.title ?: ""
@@ -58,8 +55,8 @@ class MarkJSSearchInterface(val context: Context, override var resourcePager: R2
                         }
                     }
 
-                    Timber.tag("SEARCH").d("resourceIndex $resourceIndex publication.readingOrder.size ${publication.readingOrder.size}")
-                    if (resourceIndex == (publication.readingOrder.size - 1)) {
+                    Timber.tag("SEARCH").d("resourceIndex $resourceIndex publication.readingOrder.size ${listener.publication.readingOrder.size}")
+                    if (resourceIndex == (listener.publication.readingOrder.size - 1)) {
                         callback(Pair(true, searchResult))
                     } else {
                         callback(Pair(false, searchResult))
