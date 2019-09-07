@@ -316,7 +316,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                     prepareToServe(pub, book.fileName, file.absolutePath, add = false, lcp = true)
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.filesDir.path + "/"+ Injectable.Style.rawValue +"/UserProperties.json")
 
-                    this@CatalogActivity.startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "epubName" to book.fileName, "publication" to publication, "bookId" to book.id, "drm" to true))
+                    this@CatalogActivity.startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "publicationFileName" to book.fileName, "publication" to publication, "bookId" to book.id, "drm" to true))
                 }
             }
         }

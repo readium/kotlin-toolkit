@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.epub
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
@@ -17,10 +17,11 @@ import android.util.TypedValue
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.TextViewCompat
-import kotlinx.android.synthetic.main.activity_r2_epub.*
+import kotlinx.android.synthetic.main.activity_epub.*
 import org.jsoup.Jsoup
 import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.shared.Publication
+import org.readium.r2.testapp.R
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.util.*
@@ -51,7 +52,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
     private var textToSpeech: TextToSpeech
 
-    private val activityReference: WeakReference<R2EpubActivity>
+    private val activityReference: WeakReference<EpubActivity>
 //    private var webView: WebView? = null
 
     var isPaused:Boolean
@@ -67,7 +68,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         resourceIndex = 0
 
         //Initialize reference
-        activityReference = WeakReference(context as R2EpubActivity)
+        activityReference = WeakReference(context as EpubActivity)
 
         //Initialize TTS
         textToSpeech = TextToSpeech(context,

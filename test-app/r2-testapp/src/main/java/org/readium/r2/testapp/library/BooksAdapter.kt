@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.library
 
 import android.app.Activity
 import android.graphics.BitmapFactory
@@ -18,6 +18,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.db.Book
 import java.io.ByteArrayInputStream
 
 

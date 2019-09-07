@@ -8,11 +8,13 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp;
+package org.readium.r2.testapp.utils;
 
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+
+import org.readium.r2.testapp.CatalogActivity;
 
 /**
  * Created by Aferdita Muriqi on 1/16/18.

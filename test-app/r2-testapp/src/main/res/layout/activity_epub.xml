@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Module: r2-navigator-kotlin
   ~ Developers: Aferdita Muriqi, Clément Baumann
   ~
@@ -14,7 +13,7 @@
     android:id="@+id/constraint"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.readium.r2.navigator.R2EpubActivity">
+    tools:context="org.readium.r2.navigator.epub.R2EpubActivity">
 
     <org.readium.r2.navigator.pager.R2ViewPager
         android:id="@+id/resourcePager"
@@ -26,15 +25,13 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
 
+        android:id="@+id/tts_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/tts_overlay"
-        android:visibility="invisible"
         android:background="@color/colorAccent"
-        >
+        android:visibility="invisible">
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -54,21 +51,21 @@
                 android:id="@+id/titleView"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp"
                 android:ellipsize="end"
                 android:gravity="center"
                 android:maxLines="1"
                 android:scrollHorizontally="true"
+                android:text="@string/chapter"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:text="@string/chapter" />
+                app:layout_constraintTop_toTopOf="parent" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -78,13 +75,13 @@
             android:id="@+id/tts_textView"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
             android:layout_centerHorizontal="true"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
-            android:gravity="center_vertical"
             android:adjustViewBounds="true"
             android:cropToPadding="true"
+            android:gravity="center_vertical"
             android:scaleType="fitXY"
             android:textAlignment="center"
             android:textColor="@color/colorPrimaryDark"
@@ -102,17 +99,16 @@
             android:id="@+id/controls"
             android:layout_width="0dp"
             android:layout_height="70dp"
+            android:layout_marginBottom="40dp"
             android:background="@color/colorPrimaryDark"
             android:gravity="center_vertical|center_horizontal"
             android:orientation="horizontal"
-            android:paddingBottom="10dp"
             android:paddingTop="10dp"
+            android:paddingBottom="10dp"
             android:weightSum="5"
-            android:layout_marginBottom="40dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
-
 
 
             <ImageButton
@@ -121,9 +117,9 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:contentDescription="TODO"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_skip_previous_white_24dp"
-                android:contentDescription="TODO" />
+                android:src="@drawable/ic_skip_previous_white_24dp" />
 
             <ImageButton
                 android:id="@+id/fast_back"
@@ -131,9 +127,9 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:contentDescription="TODO"
                 android:scaleType="fitCenter"
-                android:src="@drawable/baseline_fast_rewind_white_24"
-                android:contentDescription="TODO" />
+                android:src="@drawable/baseline_fast_rewind_white_24" />
 
 
             <ImageButton
@@ -142,9 +138,9 @@
                 android:layout_height="50dp"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:contentDescription="TODO"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_play_arrow_white_24dp"
-                android:contentDescription="TODO" />
+                android:src="@drawable/ic_play_arrow_white_24dp" />
 
             <ImageButton
                 android:id="@+id/fast_forward"
@@ -152,9 +148,9 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:contentDescription="TODO"
                 android:scaleType="fitCenter"
-                android:src="@drawable/baseline_fast_forward_white_24"
-                android:contentDescription="TODO" />
+                android:src="@drawable/baseline_fast_forward_white_24" />
 
             <ImageButton
                 android:id="@+id/next_chapter"
@@ -162,16 +158,14 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:contentDescription="TODO"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_skip_next_white_24dp"
-                android:contentDescription="TODO" />
+                android:src="@drawable/ic_skip_next_white_24dp" />
 
 
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

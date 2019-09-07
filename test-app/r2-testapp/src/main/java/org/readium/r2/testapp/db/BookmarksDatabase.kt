@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.db
 
 import android.content.ContentValues
 import android.content.Context
@@ -306,7 +306,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                 return@let it
             } ?: kotlin.run { return@run null }
 
-            return Bookmark(bookID as Long, publicationID as String, resourceIndex as Long, resourceHref as String, resourceType as String, resourceTitle as String, Locations.fromJSON(JSONObject(location as String)), LocatorText.fromJSON(JSONObject(locatorText as String)), created as Long,  id as Long)
+            return Bookmark(bookID as Long, publicationID as String, resourceIndex as Long, resourceHref as String, resourceType as String, resourceTitle as String, Locations.fromJSON(JSONObject(location as String)), LocatorText.fromJSON(JSONObject(locatorText as String)), created as Long, id as Long)
         }
     }
 
