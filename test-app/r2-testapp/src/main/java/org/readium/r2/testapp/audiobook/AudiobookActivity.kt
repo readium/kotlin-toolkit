@@ -126,6 +126,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
                  */
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {
                     // do nothing
+                    isSeekTracking = true
                 }
 
                 /**
@@ -135,6 +136,7 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
                  */
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
                     // do nothing
+                    isSeekTracking = false
                 }
 
             })
@@ -172,7 +174,6 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
             }
 
             next_chapter!!.setOnClickListener { view ->
-
                 if (currentResource < publication.readingOrder.size - 1) {
                     currentResource++
                 }
@@ -182,7 +183,6 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
             }
 
             prev_chapter!!.setOnClickListener { view ->
-
                 if (currentResource > 0) {
                     currentResource--
                 }
@@ -195,11 +195,29 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
     }
 
+
     override fun onPrepared() {
         seekIfNeeded()
         updateUI()
     }
 
+    override fun onComplete(index: Int, currentPosition: Int, duration: Int) {
+        if (currentResource == index && currentPosition > 0 && currentResource < publication.readingOrder.size - 1 && currentPosition >= duration - 200 && !isSeekTracking) {
+            Handler().postDelayed({
+                if (currentResource < publication.readingOrder.size - 1) {
+                    currentResource++
+                }
+                mediaPlayer?.next()
+                play_pause!!.callOnClick()
+            }, 100)
+        } else if (currentPosition > 0 && currentResource == publication.readingOrder.size - 1) {
+            mediaPlayer?.pause()
+            play_pause!!.setImageDrawable(ContextCompat.getDrawable(this@AudiobookActivity, R.drawable.ic_play_arrow_white_24dp))
+        } else {
+            mediaPlayer?.pause()
+            play_pause!!.setImageDrawable(ContextCompat.getDrawable(this@AudiobookActivity, R.drawable.ic_play_arrow_white_24dp))
+        }
+    }
 
     private fun updateUI() {
 
@@ -250,10 +268,11 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
     }
 
-    var seekLocation: Locations? = null
-    var isSeekNeeded = false
-    fun seekIfNeeded() {
-        if (isSeekNeeded) {
+    private var seekLocation: Locations? = null
+    private var isSeekNeeded = false
+    private var isSeekTracking = false
+    private fun seekIfNeeded() {
+        if (isSeekNeeded && mediaPlayer!!.isPrepared) {
             val time = seekLocation?.fragment?.let {
                 var time = it
                 if (time.startsWith("#t=")) {
@@ -397,17 +416,19 @@ class AudiobookActivity : AppCompatActivity(), MediaPlayerCallback, CoroutineSco
 
     private val updateSeekTime = object : Runnable {
         override fun run() {
-            mediaPlayer?.let {
-                startTime = it.mediaPlayer.currentPosition.toDouble()
+            if (mediaPlayer!!.isPrepared) {
+                mediaPlayer?.let {
+                    startTime = it.mediaPlayer.currentPosition.toDouble()
+                }
+                progressTime!!.text = String.format("%d:%d",
+                        TimeUnit.MILLISECONDS.toMinutes(startTime.toLong()),
+                        TimeUnit.MILLISECONDS.toSeconds(startTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(startTime.toLong())))
+                seekBar!!.progress = startTime.toInt()
+
+                storeProgression(Locations(progression = seekBar!!.progress.toDouble()))
+
+                Handler().postDelayed(this, 100)
             }
-            progressTime!!.text = String.format("%d:%d",
-                    TimeUnit.MILLISECONDS.toMinutes(startTime.toLong()),
-                    TimeUnit.MILLISECONDS.toSeconds(startTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(startTime.toLong())))
-            seekBar!!.progress = startTime.toInt()
-
-            storeProgression(Locations(progression = seekBar!!.progress.toDouble()))
-
-            Handler().postDelayed(this, 100)
         }
     }
 

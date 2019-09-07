@@ -20,17 +20,19 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
         get() = mediaPlayer.isPlaying
 
     val duration: Double
-        get() = mediaPlayer.duration.toDouble()
+        get() = if (isPrepared) {mediaPlayer.duration.toDouble()}else {0.0}
 
     val currentPosition: Double
-        get() = mediaPlayer.currentPosition.toDouble()
+        get() = if (isPrepared) {mediaPlayer.currentPosition.toDouble()}else {0.0}
 
-    var isPaused:Boolean
+    var isPaused: Boolean
+    var isPrepared: Boolean
 
     var index:Int
 
     init {
         isPaused = false
+        isPrepared = false
         index = 0
         if (mediaPlayer.isPlaying) {
             mediaPlayer.stop()
@@ -50,6 +52,7 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
         toggleProgress(false)
         this.start()
         callback.onPrepared()
+        isPrepared = true
     }
 
     fun startPlayer() {
@@ -76,20 +79,27 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
     }
 
     fun seekTo(progression: Any) {
+        if (isPrepared) {
             when (progression) {
                 is Double -> mediaPlayer.seekTo(progression.toInt())
                 is Int -> mediaPlayer.seekTo(progression)
                 else -> mediaPlayer.seekTo(progression.toString().toInt())
             }
+        }
     }
 
     fun stop() {
-        mediaPlayer.stop()
+        if (isPrepared) {
+            mediaPlayer.stop()
+            isPrepared = false
+        }
     }
 
     fun pause() {
-        mediaPlayer.pause()
-        isPaused = true
+        if (isPrepared) {
+            mediaPlayer.pause()
+            isPaused = true
+        }
     }
 
     fun release() {
@@ -99,16 +109,23 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
     fun start() {
         mediaPlayer.start()
         isPaused = false
+        isPrepared = false
+        mediaPlayer.setOnCompletionListener {
+            callback.onComplete(index, it.currentPosition, it.duration)
+        }
     }
 
     fun resume() {
-        mediaPlayer.start()
-        isPaused = false
+        if (isPrepared) {
+            mediaPlayer.start()
+            isPaused = false
+        }
     }
 
     fun goTo(index: Int) {
         this.index = index
         isPaused = false
+        isPrepared = false
         if (mediaPlayer.isPlaying) {
             mediaPlayer.stop()
         }
@@ -118,6 +135,7 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
     fun previous() {
         index -= 1
         isPaused = false
+        isPrepared = false
         if (mediaPlayer.isPlaying) {
             mediaPlayer.stop()
         }
@@ -126,6 +144,7 @@ class R2MediaPlayer(var mediaActivity: AudiobookActivity, var items: MutableList
     fun next() {
         index += 1
         isPaused = false
+        isPrepared = false
         if (mediaPlayer.isPlaying) {
             mediaPlayer.stop()
         }
