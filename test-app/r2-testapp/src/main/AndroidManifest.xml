@@ -55,6 +55,7 @@
                 <data android:pathPattern=".*\.epub" />
                 <data android:pathPattern=".*\.lcpl" />
                 <data android:pathPattern=".*\.cbz" />
+                <data android:pathPattern=".*\.divina" />
                 <data android:pathPattern=".*\.audiobook" />
                 <data android:mimeType="application/epub+zip" />
                 <data android:mimeType="application/x-cbz" />
@@ -79,6 +80,7 @@
                 <data android:pathPattern=".*\.epub" />
                 <data android:pathPattern=".*\.lcpl" />
                 <data android:pathPattern=".*\.cbz" />
+                <data android:pathPattern=".*\.divina" />
                 <data android:pathPattern=".*\.audiobook" />
             </intent-filter>
         </activity>
@@ -90,6 +92,9 @@
             android:label="@string/title_activity_r2_about" />
         <activity
             android:name=".epub.EpubActivity"
+            android:label="@string/title_activity_epub" />
+        <activity
+            android:name=".divina.DiViNaActivity"
             android:label="@string/title_activity_epub" />
         <activity
             android:name=".DRMManagementActivity"
