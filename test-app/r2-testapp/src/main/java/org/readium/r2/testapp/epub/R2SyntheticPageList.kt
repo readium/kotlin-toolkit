@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.epub
 
 import android.os.AsyncTask
 import android.text.Html
@@ -15,6 +15,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.Link
+import org.readium.r2.testapp.db.PositionsDatabase
 import java.net.URI
 import java.net.URL
 

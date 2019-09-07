@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.epub
 
 import android.app.Activity
 import android.content.Intent
@@ -21,27 +21,33 @@ import android.view.MenuItem
 import android.view.View
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_r2_epub.*
+import kotlinx.android.synthetic.main.activity_epub.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONObject
-import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.testapp.DRMManagementActivity
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.db.Bookmark
+import org.readium.r2.testapp.db.BookmarksDatabase
+import org.readium.r2.testapp.db.PositionsDatabase
+import org.readium.r2.testapp.outline.R2OutlineActivity
 import kotlin.coroutines.CoroutineContext
 
 
 /**
- * R2EpubActivity : Extension of the R2EpubActivity() from navigator
+ * EpubActivity : Extension of the EpubActivity() from navigator
  *
  * That Activity manage everything related to the menu
  *      ( Table of content, User Settings, DRM, Bookmarks )
  *
  */
-class R2EpubActivity : R2EpubActivity(), CoroutineScope {
+class EpubActivity : R2EpubActivity(), CoroutineScope {
 
     /**
      * Context of this scope.
@@ -193,9 +199,9 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
             R.id.bookmark -> {
                 val resourceIndex = resourcePager.currentItem.toLong()
                 val resource = publication.readingOrder[resourcePager.currentItem]
-                val resourceHref = resource.href?: ""
-                val resourceType = resource.typeLink?: ""
-                val resourceTitle = resource.title?: ""
+                val resourceHref = resource.href ?: ""
+                val resourceType = resource.typeLink ?: ""
+                val resourceTitle = resource.title ?: ""
                 val locations = Locations.fromJSON(JSONObject(preferences.getString("$publicationIdentifier-documentLocations", "{}")))
                 val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, locations.progression!!)?.let {
                     it
@@ -211,16 +217,16 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                         Locations(progression = locations.progression, position = currentPage),
                         LocatorText()
                 )
-                
+
                 bookmarksDB.bookmarks.insert(bookmark)?.let {
                     launch {
                         currentPage?.let {
                             toast("Bookmark added at page $currentPage")
-                        } ?:run {
+                        } ?: run {
                             toast("Bookmark added")
                         }
                     }
-                } ?:run {
+                } ?: run {
                     launch {
                         toast("Bookmark already exists")
                     }
@@ -229,7 +235,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
                 return true
             }
 
-            else -> return false
+            else -> return super.onOptionsItemSelected(item)
         }
 
     }
@@ -239,7 +245,6 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
         item.title = resources.getString(R.string.epubactivity_read_aloud_start)
         tts_overlay.visibility = View.INVISIBLE
         play_pause.setImageResource(android.R.drawable.ic_media_play)
-
         allowToggleActionBar = true
     }
 
@@ -292,7 +297,7 @@ class R2EpubActivity : R2EpubActivity(), CoroutineScope {
         Handler().postDelayed({
             val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
             port?.let {
-                screenReader = R2ScreenReader(this, publication, port, epubName)
+                screenReader = R2ScreenReader(this, publication, port, publicationFileName)
             }
         }, 500)
 

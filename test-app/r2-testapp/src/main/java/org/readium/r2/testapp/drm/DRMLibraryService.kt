@@ -16,7 +16,7 @@ import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
-import org.readium.r2.testapp.Book
+import org.readium.r2.testapp.db.Book
 import java.io.File
 
 

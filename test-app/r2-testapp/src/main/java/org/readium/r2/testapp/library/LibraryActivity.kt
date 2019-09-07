@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.library
 
 
 import android.annotation.SuppressLint
@@ -51,7 +51,7 @@ import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.json.JSONObject
-import org.readium.r2.navigator.R2CbzActivity
+import org.readium.r2.navigator.cbz.R2CbzActivity
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Injectable
@@ -66,13 +66,21 @@ import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.R2AboutActivity
 import org.readium.r2.testapp.audiobook.AudiobookActivity
+import org.readium.r2.testapp.db.*
 import org.readium.r2.testapp.drm.LCPLibraryActivityService
+import org.readium.r2.testapp.epub.EpubActivity
+import org.readium.r2.testapp.epub.R2SyntheticPageList
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSDownloader
 import org.readium.r2.testapp.opds.OPDSListActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
+import org.readium.r2.testapp.utils.R2IntentHelper
+import org.readium.r2.testapp.utils.RealPathUtil
+import org.readium.r2.testapp.utils.toFile
 import org.zeroturnaround.zip.ZipUtil
 import org.zeroturnaround.zip.commons.IOUtils
 import timber.log.Timber
@@ -344,7 +352,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 }
                 Publication.TYPE.AUDIO -> {
                     progress.dismiss()
-                    prepareWebPublication(self?.href!!, webPub = null, add = true) //will be adapted later
+                    prepareWebPublication(self?.href!!, webPub = null, add = true)
                 }
                 else -> {
                     progress.dismiss()
@@ -742,6 +750,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                             book.id = id
                             books.add(0, book)
                             booksAdapter.notifyDataSetChanged()
+
                             if (!lcp) {
                                 //prepareSyntheticPageList(publication, book)
                             }
@@ -843,7 +852,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val parser = CbzParser()
                     val pub = parser.parse(publicationPath)
                     pub?.let {
-                        startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to pub.publication))
+                        startActivity(publicationPath, book, pub.publication)
                     }
                 }
                 book.ext == Publication.EXTENSION.AUDIO -> {
@@ -934,25 +943,20 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null) {
-        if (publication.type == Publication.TYPE.AUDIO) {
-            coverByteArray?.let {
-                startActivity(intentFor<AudiobookActivity>("publicationPath" to publicationPath,
-                        "epubName" to book.fileName,
-                        "publication" to publication,
-                        "bookId" to book.id,
-                        "cover" to coverByteArray))
-            } ?: run {
-                startActivity(intentFor<AudiobookActivity>("publicationPath" to publicationPath,
-                        "epubName" to book.fileName,
-                        "publication" to publication,
-                        "bookId" to book.id))
-            }
-        } else {
-            startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath,
-                    "epubName" to book.fileName,
-                    "publication" to publication,
-                    "bookId" to book.id))
-        }
+
+        val intent = Intent(this,when {
+            publication.type == Publication.TYPE.AUDIO -> AudiobookActivity::class.java
+            publication.type == Publication.TYPE.CBZ -> R2CbzActivity::class.java
+            else -> EpubActivity::class.java
+        })
+        intent.putExtra("publicationPath", publicationPath)
+        intent.putExtra("publicationFileName", book.fileName)
+        intent.putExtra("publication", publication)
+        intent.putExtra("bookId", book.id)
+        intent.putExtra("cover", coverByteArray)
+
+        startActivity(intent)
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -1029,13 +1033,12 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val file = File(publicationPath)
 
             try {
-                if (mime == EpubParser.mimetype) {
+                if (mime == EpubParser.mimetypeEpub) {
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
                         prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
                         progress.dismiss()
-
                     }
                 } else if (name.endsWith(Publication.EXTENSION.CBZ.value)) {
                     val parser = CbzParser()
@@ -1043,7 +1046,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     if (pub != null) {
                         prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
                         progress.dismiss()
-
                     }
                 } else if (name.endsWith(Publication.EXTENSION.AUDIO.value) || mime == AudioBookParser.mimetypeAudiobook) {
                     val parser = AudioBookParser()

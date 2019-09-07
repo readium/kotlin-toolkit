@@ -28,10 +28,10 @@ import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.shared.Publication
-import org.readium.r2.testapp.Book
-import org.readium.r2.testapp.BooksDatabase
+import org.readium.r2.testapp.db.Book
+import org.readium.r2.testapp.db.BooksDatabase
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.books
+import org.readium.r2.testapp.db.books
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException

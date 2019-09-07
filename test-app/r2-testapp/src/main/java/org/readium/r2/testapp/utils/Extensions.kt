@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.utils
 
 import android.content.Context
 import androidx.annotation.ColorInt
@@ -17,17 +17,6 @@ import androidx.core.content.ContextCompat
 import java.io.File
 import java.io.FileFilter
 import java.io.InputStream
-
-/**
- * Created by aferditamuriqi on 10/3/17.
- */
-
-/**
- * Global Parameters
- */
-
-lateinit var books: MutableList<Book>
-val supportedProfiles = arrayListOf("http://readium.org/lcp/basic-profile", "http://readium.org/lcp/profile-1.0")
 
 
 /**
