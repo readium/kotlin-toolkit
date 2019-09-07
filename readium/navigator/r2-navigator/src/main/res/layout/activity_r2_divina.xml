@@ -12,7 +12,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <org.readium.r2.navigator.pager.R2BasicWebView
+    <org.readium.r2.navigator.R2BasicWebView
         android:id="@+id/divinaWebView"
         android:layerType="hardware"
         android:layout_width="match_parent"

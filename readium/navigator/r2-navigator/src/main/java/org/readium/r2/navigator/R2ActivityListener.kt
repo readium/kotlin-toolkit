@@ -20,6 +20,8 @@ interface R2ActivityListener {
     val publication: Publication
     val preferences: SharedPreferences
     val publicationIdentifier: String
+    val publicationFileName: String
+    val publicationPath: String
     val resourcePager: R2ViewPager?
         get() = null
     val allowToggleActionBar: Boolean

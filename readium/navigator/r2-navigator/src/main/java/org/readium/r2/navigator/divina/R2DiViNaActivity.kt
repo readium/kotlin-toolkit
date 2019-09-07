@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.navigator
+package org.readium.r2.navigator.divina
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -19,7 +19,9 @@ import androidx.webkit.WebViewClientCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.pager.R2BasicWebView
+import org.readium.r2.navigator.R
+import org.readium.r2.navigator.R2ActivityListener
+import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.shared.Publication
 import kotlin.coroutines.CoroutineContext
 
@@ -35,10 +37,10 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, R2ActivityLis
     override lateinit var preferences: SharedPreferences
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
+    override lateinit var publicationPath: String
+    override lateinit var publicationFileName: String
 
     lateinit var divinaWebView: R2BasicWebView
-    private lateinit var publicationPath: String
-    private lateinit var zipName: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +53,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, R2ActivityLis
 
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
-        zipName = intent.getStringExtra("zipName")
+        publicationFileName = intent.getStringExtra("publicationFileName")
 
         publicationIdentifier = publication.metadata.identifier
         title = publication.metadata.title
@@ -59,9 +61,9 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, R2ActivityLis
         toggleActionBar()
 
         // Set up divinaWebView to enable JavaScript and access to local URLs
-        divinaWebView.getSettings().setJavaScriptEnabled(true)
-        divinaWebView.getSettings().setAllowFileAccess(true)
-        divinaWebView.getSettings().setAllowFileAccessFromFileURLs(true)
+        divinaWebView.settings.javaScriptEnabled = true
+        divinaWebView.settings.allowFileAccess = true
+        divinaWebView.settings.allowFileAccessFromFileURLs = true
         divinaWebView.webViewClient = object : WebViewClientCompat() {
 
             override fun onPageFinished(view: WebView?, url: String?) {

@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.navigator
+package org.readium.r2.navigator.cbz
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -17,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.readium.r2.navigator.R
+import org.readium.r2.navigator.R2ActivityListener
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -33,14 +35,12 @@ class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
 
     override lateinit var preferences: SharedPreferences
     override lateinit var resourcePager: R2ViewPager
-    var resources = arrayListOf<String>()
-
-    private lateinit var publicationPath: String
+    override lateinit var publicationPath: String
     override lateinit var publication: Publication
-    private lateinit var cbzName: String
+    override lateinit var publicationFileName: String
     override lateinit var publicationIdentifier: String
 
-    override var allowToggleActionBar = true
+    var resources = arrayListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +51,7 @@ class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
 
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
-        cbzName = intent.getStringExtra("cbzName")
+        publicationFileName = intent.getStringExtra("publicationFileName")
         publicationIdentifier = publication.metadata.identifier
         title = publication.metadata.title
         

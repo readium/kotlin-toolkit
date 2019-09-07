@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.navigator
+package org.readium.r2.navigator.epub
 
 import android.app.Activity
 import android.content.Context
@@ -20,6 +20,9 @@ import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.readium.r2.navigator.BASE_URL
+import org.readium.r2.navigator.R
+import org.readium.r2.navigator.R2ActivityListener
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -39,15 +42,14 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
 
     override lateinit var preferences: SharedPreferences
     override lateinit var resourcePager: R2ViewPager
-    lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
-    lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
-
-    lateinit var publicationPath: String
-    protected lateinit var epubName: String
+    override lateinit var publicationPath: String
+    override lateinit var publicationFileName: String
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
-
     override var allowToggleActionBar = true
+
+    lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
+    lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
 
     var pagerPosition = 0
 
@@ -65,7 +67,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
 
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
-        epubName = intent.getStringExtra("epubName")
+        publicationFileName = intent.getStringExtra("publicationFileName")
         publicationIdentifier = publication.metadata.identifier
 
         title = null
@@ -86,7 +88,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
                     publicationPath + spineItem.href
                 }
             } else {
-                "$BASE_URL:$port" + "/" + epubName + spineItem.href
+                "$BASE_URL:$port" + "/" + publicationFileName + spineItem.href
             }
             resourcesSingle.add(Pair(resourceIndexSingle, uri))
 
