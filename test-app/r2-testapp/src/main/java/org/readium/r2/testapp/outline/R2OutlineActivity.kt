@@ -243,7 +243,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
         tabHost.addTab(tabTOC)
         tabHost.addTab(tabBookmarks)
-        if (publication.type != Publication.TYPE.AUDIO) {
+        if (publication.type != Publication.TYPE.AUDIO && publication.type != Publication.TYPE.DiViNa) {
             tabHost.addTab(tabPageList)
             tabHost.addTab(tabLandmarks)
         }
