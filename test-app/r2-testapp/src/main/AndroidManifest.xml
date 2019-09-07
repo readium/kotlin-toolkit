@@ -25,8 +25,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:replace="android:allowBackup"
         android:usesCleartextTraffic="true"
+        tools:replace="android:allowBackup"
         tools:targetApi="m">
         <activity android:name=".CatalogActivity">
             <intent-filter>
@@ -56,6 +56,7 @@
                 <data android:pathPattern=".*\.lcpl" />
                 <data android:pathPattern=".*\.cbz" />
                 <data android:pathPattern=".*\.divina" />
+                <data android:pathPattern=".*\.audiobook" />
                 <data android:mimeType="application/epub+zip" />
                 <data android:mimeType="application/x-cbz" />
             </intent-filter>
@@ -80,6 +81,7 @@
                 <data android:pathPattern=".*\.lcpl" />
                 <data android:pathPattern=".*\.cbz" />
                 <data android:pathPattern=".*\.divina" />
+                <data android:pathPattern=".*\.audiobook" />
             </intent-filter>
         </activity>
         <activity
@@ -97,7 +99,7 @@
         <activity
             android:name=".DRMManagementActivity"
             android:label="DRM Management"
-            android:theme="@style/AppTheme"/>
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".outline.R2OutlineActivity"
             android:label="@string/title_activity_outline" />

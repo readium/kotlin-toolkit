@@ -11,7 +11,9 @@
 package org.readium.r2.testapp.epub
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -20,15 +22,25 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.accessibility.AccessibilityManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.widget.SearchView
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_epub.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.anko.appcompat.v7.coroutines.onClose
+import org.jetbrains.anko.indeterminateProgressDialog
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
+import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.navigator.epub.R2EpubActivity
+import org.readium.r2.navigator.pager.R2EpubPageFragment
+import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.DRMManagementActivity
@@ -37,6 +49,10 @@ import org.readium.r2.testapp.db.Bookmark
 import org.readium.r2.testapp.db.BookmarksDatabase
 import org.readium.r2.testapp.db.PositionsDatabase
 import org.readium.r2.testapp.outline.R2OutlineActivity
+import org.readium.r2.testapp.search.MarkJSSearchEngine
+import org.readium.r2.testapp.search.SearchLocator
+import org.readium.r2.testapp.search.SearchLocatorAdapter
+import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
 
@@ -72,10 +88,16 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
     protected var menuDrm: MenuItem? = null
     protected var menuToc: MenuItem? = null
     protected var menuBmk: MenuItem? = null
+    protected var menuSearch: MenuItem? = null
 
     protected var menuScreenReader: MenuItem? = null
 
     private var bookId: Long = -1
+
+    private var searchTerm = ""
+    private lateinit var searchStorage: SharedPreferences
+    private lateinit var searchResultAdapter: SearchLocatorAdapter
+    private lateinit var searchResult: MutableList<SearchLocator>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -133,6 +155,37 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
             screenReader.start()
             play_pause.setImageResource(android.R.drawable.ic_media_pause)
         }
+
+
+        // SEARCH
+        searchStorage = getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
+        searchResult = mutableListOf()
+        searchResultAdapter = SearchLocatorAdapter(this, searchResult, object : SearchLocatorAdapter.RecyclerViewClickListener {
+            override fun recyclerViewListClicked(v: View, position: Int) {
+
+                search_overlay.visibility = View.INVISIBLE
+                val searchView = menuSearch?.getActionView() as SearchView
+
+                searchView.clearFocus()
+                if (searchView.isShown) {
+                    menuSearch?.collapseActionView();
+                    resourcePager.offscreenPageLimit = 1
+                }
+
+                val locator = searchResult[position]
+                val intent = Intent()
+                intent.putExtra("publicationPath", publicationPath)
+                intent.putExtra("epubName", publicationFileName)
+                intent.putExtra("publication", publication)
+                intent.putExtra("bookId", bookId)
+                intent.putExtra("locator", locator)
+                onActivityResult(2, Activity.RESULT_OK, intent)
+            }
+
+        })
+        search_listView.adapter = searchResultAdapter
+        search_listView.layoutManager = LinearLayoutManager(this)
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -140,12 +193,134 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
         menuDrm = menu?.findItem(R.id.drm)
         menuToc = menu?.findItem(R.id.toc)
         menuBmk = menu?.findItem(R.id.bookmark)
+        menuSearch = menu?.findItem(R.id.search)
 
         menuScreenReader = menu?.findItem(R.id.screen_reader)
 
         menuScreenReader?.isVisible = !isExploreByTouchEnabled
 
         menuDrm?.isVisible = false
+
+        val searchView = menuSearch?.getActionView() as SearchView
+
+        searchView.isFocusable = false
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+
+                searchResult.clear()
+                searchResultAdapter.notifyDataSetChanged()
+
+                query?.let {
+                    search_overlay.visibility = View.VISIBLE
+                    resourcePager.offscreenPageLimit = publication.readingOrder.size
+
+                    //Saving searched term
+                    searchTerm = query
+                    //Initializing our custom search interfaces
+                    val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_searching_book))
+                    progress.show()
+
+                    val markJSSearchInteface = MarkJSSearchEngine(this@EpubActivity)
+                    Handler().postDelayed({
+                        markJSSearchInteface.search(query) { (last, result) ->
+                            searchResult.clear()
+                            searchResult.addAll(result)
+                            searchResultAdapter.notifyDataSetChanged()
+
+                            //Saving results + keyword only when JS is fully executed on all resources
+                            val editor = searchStorage.edit()
+                            val stringResults = Gson().toJson(result)
+                            editor.putString("result", stringResults)
+                            editor.putString("term", searchTerm)
+                            editor.putLong("book", bookId)
+                            editor.apply()
+
+                            if (last) {
+                                progress.dismiss()
+                            }
+                        }
+                    }, 500)
+
+
+                }
+                return false
+            }
+
+            override fun onQueryTextChange(s: String): Boolean {
+                return false
+            }
+        })
+        searchView.setOnQueryTextFocusChangeListener { view, b ->
+            if (!b) {
+                search_overlay.visibility = View.INVISIBLE
+            } else {
+                search_overlay.visibility = View.VISIBLE
+                resourcePager.offscreenPageLimit = publication.readingOrder.size
+            }
+        }
+        searchView.onClose {
+            search_overlay.visibility = View.INVISIBLE
+
+        }
+        searchView.setOnCloseListener {
+            if (searchView.isShown) {
+                menuSearch?.collapseActionView();
+            }
+            search_overlay.visibility = View.INVISIBLE
+
+            true
+        }
+        searchView.setOnSearchClickListener {
+            val previouslySearchBook = searchStorage.getLong("book", -1)
+            if (previouslySearchBook == bookId) {
+                //Loading previous results + keyword
+                val tmp = searchStorage.getString("result", null)
+                if (tmp != null) {
+                    val gson = Gson()
+                    searchResult.clear()
+                    searchResult.addAll(gson.fromJson(tmp, Array<SearchLocator>::class.java).asList().toMutableList())
+                    searchResultAdapter.notifyDataSetChanged()
+
+                    val keyword = searchStorage.getString("term", null)
+                    searchView.setQuery(keyword, false)
+                    searchView.clearFocus()
+                }
+                searchView.setQuery(searchStorage.getString("term", null), false);
+            }
+
+            search_overlay.visibility = View.VISIBLE
+            resourcePager.offscreenPageLimit = publication.readingOrder.size
+        }
+
+        menuSearch?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+                search_overlay.visibility = View.VISIBLE
+                resourcePager.offscreenPageLimit = publication.readingOrder.size
+                return true;
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+                search_overlay.visibility = View.INVISIBLE
+                return true;
+            }
+        })
+
+        val closeButton = searchView.findViewById(R.id.search_close_btn) as ImageView
+        closeButton.setOnClickListener {
+            searchResult.clear()
+            searchResultAdapter.notifyDataSetChanged()
+
+            searchView.setQuery("", false);
+
+            (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+
+            val editor = searchStorage.edit()
+            editor.remove("result")
+            editor.remove("term")
+            editor.apply()
+        }
+
         return true
     }
 
@@ -234,6 +409,24 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
 
                 return true
             }
+            R.id.search -> {
+                search_overlay.visibility = View.VISIBLE
+                resourcePager.offscreenPageLimit = publication.readingOrder.size
+
+                val searchView = menuSearch?.getActionView() as SearchView
+
+                searchView.clearFocus()
+
+                return super.onOptionsItemSelected(item)
+            }
+
+            android.R.id.home -> {
+                search_overlay.visibility = View.INVISIBLE
+                resourcePager.offscreenPageLimit = 1
+                val searchView = menuSearch?.getActionView() as SearchView
+                searchView.clearFocus()
+                return true
+            }
 
             else -> return super.onOptionsItemSelected(item)
         }
@@ -255,6 +448,34 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data)
+            if (requestCode == 2 && resultCode == Activity.RESULT_OK && data != null) {
+                val locator = data.getSerializableExtra("locator") as Locator
+                locator.locations?.fragment?.let { fragment ->
+
+                    val fragments = JSONArray(fragment).getString(0).split(",").associate {
+                        val (left, right) = it.split("=")
+                        left to right.toInt()
+                    }
+
+                    val index = fragments.getValue("i").toInt()
+                    val searchStorage = getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
+                    Handler().postDelayed({
+                        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+                            val currentFragent = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
+                            val resource = publication.readingOrder[resourcePager.currentItem]
+                            val resourceHref = resource.href ?: ""
+                            val resourceType = resource.typeLink ?: ""
+                            val resourceTitle = resource.title ?: ""
+
+                            currentFragent.webView.runJavaScript("markSearch('${searchStorage.getString("term", null)}', null, '$resourceHref', '$resourceType', '$resourceTitle', '$index')") { result ->
+
+                                Timber.d("###### $result")
+
+                            }
+                        }
+                    }, 1200)
+                }
+            }
         }
     }
 
