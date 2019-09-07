@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.outline
 
 import android.app.Activity
 import android.content.Context
@@ -20,15 +20,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_outline_container.*
-import kotlinx.android.synthetic.main.bookmark_item.view.*
-import kotlinx.android.synthetic.main.navcontent_item.view.*
+import kotlinx.android.synthetic.main.activity_outline.*
+import kotlinx.android.synthetic.main.item_recycle_bookmark.view.*
+import kotlinx.android.synthetic.main.item_recycle_outline.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
 import org.readium.r2.shared.Publication
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.db.Bookmark
+import org.readium.r2.testapp.db.BookmarksDatabase
+import org.readium.r2.testapp.db.PositionsDatabase
+import org.readium.r2.testapp.epub.Position
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
@@ -41,7 +46,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_outline_container)
+        setContentView(R.layout.activity_outline)
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         val tabHost = findViewById<TabHost>(R.id.tabhost)
@@ -327,7 +332,7 @@ class R2OutlineActivity : AppCompatActivity() {
             val viewHolder: ViewHolder
             if (convertView == null) {
                 val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                view = inflater.inflate(R.layout.navcontent_item, null)
+                view = inflater.inflate(R.layout.item_recycle_outline, null)
                 viewHolder = ViewHolder(view)
                 view?.tag = viewHolder
             } else {
@@ -393,7 +398,7 @@ class R2OutlineActivity : AppCompatActivity() {
             val viewHolder: ViewHolder
             if (convertView == null) {
                 val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                view = inflater.inflate(R.layout.navcontent_item, null)
+                view = inflater.inflate(R.layout.item_recycle_outline, null)
                 viewHolder = ViewHolder(view)
                 view?.tag = viewHolder
             } else {
@@ -434,7 +439,7 @@ class R2OutlineActivity : AppCompatActivity() {
             val viewHolder: ViewHolder
             if (convertView == null) {
                 val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                view = inflater.inflate(R.layout.bookmark_item, null)
+                view = inflater.inflate(R.layout.item_recycle_bookmark, null)
                 viewHolder = ViewHolder(view)
                 view?.tag = viewHolder
             } else {

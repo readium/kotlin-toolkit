@@ -9,6 +9,8 @@
 
 package org.readium.r2.testapp
 
+import org.readium.r2.testapp.library.LibraryActivity
+
 
 class CatalogActivity : LibraryActivity() {
 

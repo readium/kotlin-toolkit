@@ -18,22 +18,22 @@ import android.view.Menu
 import android.view.MenuItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import org.readium.r2.navigator.R2DiViNaActivity
+import org.readium.r2.navigator.divina.R2DiViNaActivity
 import org.readium.r2.shared.Locator
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.R2OutlineActivity
+import org.readium.r2.testapp.outline.R2OutlineActivity
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
 
 /**
- * R2DiViNaActivity : Extension of the R2DiViNaActivity() from navigator
+ * DiViNaActivity : Extension of the DiViNaActivity() from navigator
  *
  * That Activity manage everything related to the menu
  *      ( Table of content, User Settings, Drm, Bookmarks )
  *
  */
-class R2DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
+class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
 
     /**
      * Context of this scope.

@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.library
 
 
 import android.annotation.SuppressLint
@@ -51,7 +51,7 @@ import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.json.JSONObject
-import org.readium.r2.navigator.R2CbzActivity
+import org.readium.r2.navigator.cbz.R2CbzActivity
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Injectable
@@ -66,14 +66,22 @@ import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.R2AboutActivity
 import org.readium.r2.testapp.audiobook.AudiobookActivity
-import org.readium.r2.testapp.divina.R2DiViNaActivity
+import org.readium.r2.testapp.db.*
+import org.readium.r2.testapp.divina.DiViNaActivity
 import org.readium.r2.testapp.drm.LCPLibraryActivityService
+import org.readium.r2.testapp.epub.EpubActivity
+import org.readium.r2.testapp.epub.R2SyntheticPageList
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSDownloader
 import org.readium.r2.testapp.opds.OPDSListActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
+import org.readium.r2.testapp.utils.R2IntentHelper
+import org.readium.r2.testapp.utils.RealPathUtil
+import org.readium.r2.testapp.utils.toFile
 import org.zeroturnaround.zip.ZipUtil
 import org.zeroturnaround.zip.commons.IOUtils
 import timber.log.Timber
@@ -113,7 +121,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     protected lateinit var catalogView: androidx.recyclerview.widget.RecyclerView
     private lateinit var alertDialog: AlertDialog
 
-    protected var listener:LibraryActivity? = null
+    protected var listener: LibraryActivity? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,7 +135,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         localPort = s.localPort
         server = Server(localPort)
 
-        val properties =  Properties();
+        val properties = Properties();
         val inputStream = this.assets.open("configs/config.properties");
         properties.load(inputStream);
         val useExternalFileDir = properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
@@ -148,7 +156,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         positionsDB = PositionsDatabase(this)
 
         booksAdapter = BooksAdapter(this, books, "$BASE_URL:$localPort", this)
-        
+
         parseIntent(null)
 
 
@@ -317,7 +325,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         progress.dismiss()
                         database.books.insert(book, false)?.let { id ->
                             book.id = id
-                            books.add(0,book)
+                            books.add(0, book)
                             booksAdapter.notifyDataSetChanged()
                             catalogView.longSnackbar("publication added to your library")
                             //prepareSyntheticPageList(publication, book)
@@ -336,22 +344,22 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             }
         } else if (publication.type == Publication.TYPE.WEBPUB || publication.type == Publication.TYPE.AUDIO) {
 
-                val self = publication.linkWithRel("self")
+            val self = publication.linkWithRel("self")
 
-                when (publication.type) {
-                    Publication.TYPE.WEBPUB -> {
-                        progress.dismiss()
-                        prepareWebPublication(self?.href!!, webPub = null, add = true)
-                    }
-                    Publication.TYPE.AUDIO -> {
-                        progress.dismiss()
-                        prepareWebPublication(self?.href!!, webPub = null, add = true) //will be adapted later
-                    }
-                    else -> {
-                        progress.dismiss()
-                        catalogView.snackbar("Invalid publication")
-                    }
+            when (publication.type) {
+                Publication.TYPE.WEBPUB -> {
+                    progress.dismiss()
+                    prepareWebPublication(self?.href!!, webPub = null, add = true)
                 }
+                Publication.TYPE.AUDIO -> {
+                    progress.dismiss()
+                    prepareWebPublication(self?.href!!, webPub = null, add = true)
+                }
+                else -> {
+                    progress.dismiss()
+                    catalogView.snackbar("Invalid publication")
+                }
+            }
 
         }
     }
@@ -371,7 +379,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 button.setOnClickListener {
                     database.books.insert(book, true)?.let {
                         book.id = it
-                        books.add(0,book)
+                        books.add(0, book)
                         duplicateAlert.dismiss()
                         booksAdapter.notifyDataSetChanged()
                         catalogView.longSnackbar("publication added to your library")
@@ -440,7 +448,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             connection.doInput = true
             connection.connect()
 
-            val jsonManifestURL = URL(connection.getHeaderField("Location") ?: src).openConnection()
+            val jsonManifestURL = URL(connection.getHeaderField("Location")
+                    ?: src).openConnection()
             jsonManifestURL.connect()
 
             val jsonManifest = jsonManifestURL.getInputStream().readBytes()
@@ -457,7 +466,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             null
         }
     }
-    
+
     private fun getBitmapFromURL(src: String): Bitmap? {
         return try {
             val url = URL(src)
@@ -650,7 +659,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun copySamplesFromAssetsToStorage() {
-        assets.list("Samples")?.filter { it.endsWith(".epub") || it.endsWith(".cbz") }?.let {list ->
+        assets.list("Samples")?.filter { it.endsWith(".epub") || it.endsWith(".cbz") }?.let { list ->
             for (element in list) {
                 val input = assets.open("Samples/$element")
                 val fileName = UUID.randomUUID().toString()
@@ -717,7 +726,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                     database.books.insert(book, false)?.let {
                         book.id = it
-                        books.add(0,book)
+                        books.add(0, book)
                         booksAdapter.notifyDataSetChanged()
                         catalogView.longSnackbar("publication added to your library")
                         if (!lcp) {
@@ -731,16 +740,16 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                 }
                 if (!lcp) {
-                    server.addEpub(publication, container, "/$fileName", applicationContext.filesDir.path + "/"+ Injectable.Style.rawValue +"/UserProperties.json")
+                    server.addEpub(publication, container, "/$fileName", applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json")
                 }
 
             } else if (publication.type == Publication.TYPE.CBZ) {
                 if (add) {
                     publication.coverLink?.href?.let {
                         val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it), Publication.EXTENSION.CBZ)
-                        database.books.insert(book, false)?.let { id->
+                        database.books.insert(book, false)?.let { id ->
                             book.id = id
-                            books.add(0,book)
+                            books.add(0, book)
                             booksAdapter.notifyDataSetChanged()
 
                             if (!lcp) {
@@ -828,14 +837,14 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val parser = CbzParser()
                     val pub = parser.parse(publicationPath)
                     pub?.let {
-                        startActivity(intentFor<R2CbzActivity>("publicationPath" to publicationPath, "cbzName" to book.fileName, "publication" to pub.publication))
+                        startActivity(publicationPath, book, pub.publication)
                     }
                 }
                 book.ext == Publication.EXTENSION.DIVINA -> {
                     val parser = DiViNaParser()
                     val pub = parser.parse(publicationPath)
                     pub?.let {
-                        startActivity(intentFor<R2DiViNaActivity>("publicationPath" to publicationPath, "zipName" to book.fileName, "publication" to pub.publication))
+                        startActivity(publicationPath, book, pub.publication)
                     }
                 }
                 book.ext == Publication.EXTENSION.JSON -> {
@@ -851,8 +860,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun prepareWebPublication(externalManifest: String, webPub: Book?, add: Boolean) {
-
-
         task {
 
             getPublicationURL(externalManifest)
@@ -895,7 +902,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 } else {
                     book = webPub
-                    startActivity(book!!.fileName, book!!, externalPub)
+                    startActivity(book!!.fileName, book!!, externalPub, book?.cover)
                 }
             }
         }
@@ -906,20 +913,22 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         startActivity(publicationPath, book, publication)
     }
 
-    private fun startActivity(publicationPath: String, book: Book, publication: Publication) {
-        if(publication.type == Publication.TYPE.AUDIO) {
+    private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null) {
 
-            startActivity(intentFor<AudiobookActivity>("publicationPath" to publicationPath,
-                    "epubName" to book.fileName,
-                    "publication" to publication,
-                    "bookId" to book.id))
+        val intent = Intent(this,when {
+            publication.type == Publication.TYPE.AUDIO -> AudiobookActivity::class.java
+            publication.type == Publication.TYPE.CBZ -> R2CbzActivity::class.java
+            publication.type == Publication.TYPE.DiViNa -> DiViNaActivity::class.java
+            else -> EpubActivity::class.java
+        })
+        intent.putExtra("publicationPath", publicationPath)
+        intent.putExtra("publicationFileName", book.fileName)
+        intent.putExtra("publication", publication)
+        intent.putExtra("bookId", book.id)
+        intent.putExtra("cover", coverByteArray)
 
-        } else {
-            startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath,
-                    "epubName" to book.fileName,
-                    "publication" to publication,
-                    "bookId" to book.id))
-        }
+        startActivity(intent)
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -1077,7 +1086,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
-        listener?.processLcpActivityResult(uri,it,progress, networkAvailable)
+        listener?.processLcpActivityResult(uri, it, progress, networkAvailable)
     }
 
 }
