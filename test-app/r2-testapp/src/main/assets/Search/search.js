@@ -11,40 +11,44 @@ var markSearch = function(searchTerm, searchElement, href, type, title, index) {
         searchDocument = searchDiv;
     }
 
-    new Mark(searchDocument).mark(searchTerm, {
-        each: function (element) {
+    var instance = new Mark(searchDocument);
+    instance.unmark({
+        done: function () {
+            instance.mark(searchTerm, {
+                each: function (element) {
 
-            var before = element.previousSibling.nodeValue
-            var after = element.nextSibling.nodeValue
+                    var before = element.previousSibling.nodeValue
+                    var after = element.nextSibling.nodeValue
 
-            if (before.length > 30) before = "..." + before.substring(before.length - 30, before.length);
-            if (after.length > 30) after = after.substring(0, 30) + "...";
+                    if (before.length > 30) before = "..." + before.substring(before.length - 30, before.length);
+                    if (after.length > 30) after = after.substring(0, 30) + "...";
 
-            var locator = {
-                "href" : href,
-                "type": type,
-                "title" : title,
-                "locations" : {
-                    "fragment":  [ "i="+markElements.length ]
+                    var locator = {
+                        "href" : href,
+                        "type": type,
+                        "title" : title,
+                        "locations" : {
+                            "fragment":  [ "i="+markElements.length ]
+                        },
+                        "text": {
+                            "after": after,
+                            "before": before,
+                            "highlight": element.innerHTML
+                        }
+                    };
+
+                    markElements.push(element)
+                    locators.push(locator)
+
                 },
-                "text": {
-                    "after": after,
-                    "before": before,
-                    "highlight": element.innerHTML
+                done: function(counter) {
+                    if (index) {
+                        jumpToMark(index ? index : 0);
+                    }
                 }
-            };
-
-            markElements.push(element)
-            locators.push(locator)
-
-        },
-        done: function(counter) {
-            if (index) {
-                jumpToMark(index ? index : 0);
-            }
+            });
         }
     });
-
     return locators;
 
 
