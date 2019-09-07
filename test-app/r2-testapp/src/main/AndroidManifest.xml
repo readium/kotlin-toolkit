@@ -55,6 +55,7 @@
                 <data android:pathPattern=".*\.epub" />
                 <data android:pathPattern=".*\.lcpl" />
                 <data android:pathPattern=".*\.cbz" />
+                <data android:pathPattern=".*\.audiobook" />
                 <data android:mimeType="application/epub+zip" />
                 <data android:mimeType="application/x-cbz" />
             </intent-filter>
@@ -78,6 +79,7 @@
                 <data android:pathPattern=".*\.epub" />
                 <data android:pathPattern=".*\.lcpl" />
                 <data android:pathPattern=".*\.cbz" />
+                <data android:pathPattern=".*\.audiobook" />
             </intent-filter>
         </activity>
         <activity

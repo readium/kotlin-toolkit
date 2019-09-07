@@ -761,6 +761,36 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         }
                     }
                 }
+            } else if (publication.type == Publication.TYPE.AUDIO) {
+                if (add) {
+                    //Getting book cover from file path to bitmap
+                    val ref = publication.coverLink?.href
+                    val stream = ByteArrayOutputStream()
+                    val coverByteArray = ref?.let {
+                        try {
+                            pub.container.data(ref)
+                        } catch (e:Exception) {
+                            null
+                        }
+                    }
+                    coverByteArray?.let {
+                        val bitmap = BitmapFactory.decodeByteArray(coverByteArray, 0, coverByteArray.size)
+                        bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                    }
+
+                    //Building book object and adding it to library
+                    val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), stream.toByteArray(), Publication.EXTENSION.AUDIO)
+
+
+                    database.books.insert(book, false)?.let {
+                        book.id = it
+                        books.add(0, book)
+                        booksAdapter.notifyDataSetChanged()
+
+                    } ?: run {
+                        showDuplicateBookAlert(book, publication, lcp)
+                    }
+                }
             }
         }
     }
@@ -823,6 +853,27 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val pub = parser.parse(publicationPath)
                     pub?.let {
                         startActivity(publicationPath, book, pub.publication)
+                    }
+                }
+                book.ext == Publication.EXTENSION.AUDIO -> {
+
+                    //If selected book is an audiobook
+                    val parser = AudioBookParser()
+                    //Parse book manifest to publication object
+                    val pub = parser.parse(publicationPath)
+
+                    pub?.let {
+                        //Starting AudiobookActivity
+                        val ref = pub.publication.coverLink?.href
+                        val coverByteArray = ref?.let {
+                            try {
+                                pub.container.data(ref)
+                            } catch (e:Exception) {
+                                null
+                            }
+                        }
+
+                        startActivity(publicationPath, book, pub.publication, coverByteArray)
                     }
                 }
                 book.ext == Publication.EXTENSION.JSON -> {
@@ -966,7 +1017,18 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         launch {
 
-            input?.toFile(publicationPath)
+            //If its an audiobook, unpack the .audiobook file
+            if (name.endsWith(Publication.EXTENSION.AUDIO.value)) {
+                val output = File(publicationPath)
+                if (!output.exists()) {
+                    if (!output.mkdir()) {
+                        throw RuntimeException("Cannot create directory")
+                    }
+                }
+                ZipUtil.unpack(input, output)
+            } else {
+                input?.toFile(publicationPath)
+            }
 
             val file = File(publicationPath)
 
@@ -983,6 +1045,14 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
                         prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true } ?: false)
+                        progress.dismiss()
+                    }
+                } else if (name.endsWith(Publication.EXTENSION.AUDIO.value) || mime == AudioBookParser.mimetypeAudiobook) {
+                    val parser = AudioBookParser()
+                    val pub = parser.parse(publicationPath)
+
+                    if (pub != null) {
+                        prepareToServe(pub, fileName, file.absolutePath, true, pub.container.drm?.let { true } ?: false)
                         progress.dismiss()
                     }
                 } else {
