@@ -26,6 +26,25 @@
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/search_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorAccent"
+        android:fitsSystemWindows="true"
+        android:visibility="invisible">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/search_listView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="@id/search_overlay"
+            app:layout_constraintEnd_toEndOf="@id/search_overlay"
+            app:layout_constraintStart_toStartOf="@id/search_overlay"
+            app:layout_constraintTop_toTopOf="@id/search_overlay" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
 
         android:id="@+id/tts_overlay"
         android:layout_width="match_parent"

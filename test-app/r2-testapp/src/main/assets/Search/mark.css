@@ -1,0 +1,7 @@
+mark {
+  background: yellow;
+}
+
+mark.current {
+   background: orange;
+}
