@@ -8,7 +8,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.epub
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -19,11 +19,14 @@ import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.*
 import org.json.JSONArray
-import org.readium.r2.navigator.R2EpubActivity
-import org.readium.r2.navigator.color
+import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.R2WebView
+import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.navigator.fxl.R2FXLLayout
 import org.readium.r2.navigator.pager.*
 import org.readium.r2.shared.*
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.utils.color
 import java.io.File
 
 class UserSettings(var preferences: SharedPreferences, val context: Context, val UIPreset: MutableMap<ReadiumCSSName, Boolean>) {
@@ -221,7 +224,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
         val fonts = context.resources.getStringArray(R.array.font_list)
 
-        val dataAdapter = object : ArrayAdapter<String>(context, R.layout.spinner_item_font, fonts) {
+        val dataAdapter = object : ArrayAdapter<String>(context, R.layout.item_spinner_font, fonts) {
 
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val v: View? = super.getDropDownView(position, null, parent)
