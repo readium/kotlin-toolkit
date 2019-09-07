@@ -28,7 +28,9 @@ import androidx.webkit.WebViewClientCompat
 import org.json.JSONObject
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2ActivityListener
-import org.readium.r2.navigator.R2EpubActivity
+import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.R2WebView
+import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.PageProgressionDirection
@@ -49,7 +51,7 @@ class R2EpubPageFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val v = inflater.inflate(R.layout.fragment_page_epub, container, false)
+        val v = inflater.inflate(R.layout.viewpager_fragment_epub, container, false)
         val preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
 
         // Set text color depending of appearance preference

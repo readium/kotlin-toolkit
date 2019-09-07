@@ -30,7 +30,7 @@ class R2CbzPageFragment : androidx.fragment.app.Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val v = inflater.inflate(R.layout.fragment_page_cbz, container, false)
+        val v = inflater.inflate(R.layout.viewpager_fragment_cbz, container, false)
         val imageView = v.findViewById<ImageView>(R.id.imageView)
 
         val blob = ZipUtil.unpackEntry(File(zipFile), zipEntry)

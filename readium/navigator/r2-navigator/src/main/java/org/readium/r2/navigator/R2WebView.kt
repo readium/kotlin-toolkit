@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.navigator.pager
+package org.readium.r2.navigator
 
 import android.content.Context
 import android.graphics.Rect

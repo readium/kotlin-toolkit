@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.navigator.pager
+package org.readium.r2.navigator
 
 import android.content.Context
 import android.os.Build
@@ -27,9 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
-import org.readium.r2.navigator.BuildConfig
-import org.readium.r2.navigator.R
-import org.readium.r2.navigator.R2ActivityListener
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.getAbsolute

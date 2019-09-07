@@ -21,10 +21,16 @@
         tools:replace="android:allowBackup">
 
         <activity
-            android:name=".R2EpubActivity"
+            android:name=".epub.R2EpubActivity"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".R2CbzActivity"
+            android:name=".cbz.R2CbzActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".audiobook.R2AudiobookActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".divina.R2DiViNaActivity"
             android:theme="@style/AppTheme" />
 
     </application>
