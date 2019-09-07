@@ -34,24 +34,19 @@ class SearchLocatorAdapter(private val activity: Activity, var results: List<Sea
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = activity.applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val view = inflater.inflate(R.layout.item_recycle_search, null)
-
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
         val tmpLocator = results[position]
-
         val txtBefore = tmpLocator.text?.before
-
         val txtAfter = tmpLocator.text?.after
-
         val highlight = tmpLocator.text?.highlight
         val title = tmpLocator.title
 
         viewHolder.chapterView.text = title
         viewHolder.textView.setText(Html.fromHtml("$txtBefore<span style=\"background:yellow;\"><b>$highlight</b></span>$txtAfter"))
-
 
         viewHolder.itemView.setOnClickListener { v ->
             //get the position of the image which is clicked
@@ -64,18 +59,14 @@ class SearchLocatorAdapter(private val activity: Activity, var results: List<Sea
         return results.size
     }
 
-
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val chapterView: TextView = view.findViewById<View>(R.id.chapter) as TextView
         val textView: TextView = view.findViewById<View>(R.id.text) as TextView
-
     }
 
     interface RecyclerViewClickListener {
-
         //this is method to handle the event when clicked on the image in Recyclerview
         fun recyclerViewListClicked(v: View, position: Int)
-
     }
 
 }
