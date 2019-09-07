@@ -21,7 +21,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
-import org.readium.r2.navigator.pager.PageCallback
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -30,7 +29,7 @@ import java.net.URI
 import kotlin.coroutines.CoroutineContext
 
 
-open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
+open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineScope {
     /**
      * Context of this scope.
      */
@@ -38,17 +37,17 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
         get() = Dispatchers.Main
 
 
-    lateinit var preferences: SharedPreferences
-    lateinit var resourcePager: R2ViewPager
+    override lateinit var preferences: SharedPreferences
+    override lateinit var resourcePager: R2ViewPager
     lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
     lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
 
     lateinit var publicationPath: String
     protected lateinit var epubName: String
-    lateinit var publication: Publication
-    lateinit var publicationIdentifier: String
+    override lateinit var publication: Publication
+    override lateinit var publicationIdentifier: String
 
-    var allowToggleActionBar = true
+    override var allowToggleActionBar = true
 
     var pagerPosition = 0
 
@@ -193,7 +192,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
     /**
      * storeProgression() : save in the preference the last progression in the spine item
      */
-    fun storeProgression(locations: Locations?) {
+    override fun storeProgression(locations: Locations?) {
         storeDocumentIndex()
         val publicationIdentifier = publication.metadata.identifier
         preferences.edit().putString("$publicationIdentifier-documentLocations", locations?.toJSON().toString()).apply()
@@ -297,7 +296,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
     }
 
 
-    fun nextResource(smoothScroll: Boolean) {
+    override fun nextResource(smoothScroll: Boolean) {
         launch {
             pagerPosition = 0
             if (resourcePager.currentItem < resourcePager.adapter!!.count - 1 ) {
@@ -324,7 +323,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
         }
     }
 
-    fun previousResource(smoothScroll: Boolean) {
+    override fun previousResource(smoothScroll: Boolean) {
         launch {
             pagerPosition = 0
             if (resourcePager.currentItem > 0) {
@@ -351,8 +350,7 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
         }
     }
 
-
-    open fun toggleActionBar() {
+    override fun toggleActionBar() {
         if (allowToggleActionBar) {
             launch {
                 if (supportActionBar!!.isShowing) {
@@ -369,14 +367,6 @@ open class R2EpubActivity : AppCompatActivity(), PageCallback, CoroutineScope {
                 }
             }
         }
-    }
-
-    override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
-        //optional
-    }
-
-    override fun onPageEnded(end: Boolean) {
-        //optional
     }
 
 }
