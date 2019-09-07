@@ -37,9 +37,12 @@ import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
+import org.readium.r2.testapp.db.Book
 import org.readium.r2.testapp.drm.DRMFulfilledPublication
 import org.readium.r2.testapp.drm.DRMLibraryService
 import org.readium.r2.testapp.drm.LCPLibraryActivityService
+import org.readium.r2.testapp.epub.EpubActivity
+import org.readium.r2.testapp.library.LibraryActivity
 import timber.log.Timber
 import java.io.File
 import java.net.URL
@@ -316,7 +319,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                     prepareToServe(pub, book.fileName, file.absolutePath, add = false, lcp = true)
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.filesDir.path + "/"+ Injectable.Style.rawValue +"/UserProperties.json")
 
-                    this@CatalogActivity.startActivity(intentFor<R2EpubActivity>("publicationPath" to publicationPath, "publicationFileName" to book.fileName, "publication" to publication, "bookId" to book.id, "drm" to true))
+                    this@CatalogActivity.startActivity(intentFor<EpubActivity>("publicationPath" to publicationPath, "publicationFileName" to book.fileName, "publication" to publication, "bookId" to book.id, "drm" to true))
                 }
             }
         }
