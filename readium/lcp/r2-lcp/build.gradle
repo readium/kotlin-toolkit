@@ -42,7 +42,7 @@ dependencies {
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
     } else {
-        implementation "com.github.readium:r2-shared-kotlin:1.1.0"
+        implementation "com.github.readium:r2-shared-kotlin:1.1.4"
     }
 
     implementation project(':liblcp')
@@ -68,7 +68,7 @@ dependencies {
     implementation 'nl.komponents.kovenant:kovenant-jvm:3.3.0'
     implementation 'nl.komponents.kovenant:kovenant-functional:3.3.0'
 
-    implementation 'org.zeroturnaround:zt-zip:1.12'
+    implementation 'org.zeroturnaround:zt-zip:1.13'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
