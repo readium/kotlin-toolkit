@@ -32,6 +32,28 @@ class CbzParser : PublicationParser {
 
         const val mimetypeJPEG = "image/jpeg"
         const val mimetypePNG = "image/png"
+
+//        Remember .zip files are .cbz; .rar files are .cbr; and .tar files are .cbt.
+//        http://fileformats.archiveteam.org/wiki/Comic_Book_Archive
+
+//        The format is fairly simple. First you take the scanned images of each page of the comic
+//        (usually in PNG or JPEG, but TIFF, GIF, and BMP have been used)
+//        and give them filenames that sort in order of the page number (e.g., 0001.png, 0002.png, etc.).
+//        Then compress them into an archive using ZIP, RAR, TAR, ACE, or 7z.
+//        Finally, change the file extension to signify a comic book archive:
+
+
+// Extensions
+//        .cbz for ZIP format
+//        .cbr for RAR format
+//        .cbt for TAR format
+//        .cba for ACE archive
+//        .cb7 for 7z archive
+
+// Mimetypes
+//        application/vnd.comicbook+zip,
+//        application/vnd.comicbook-rar,
+//        application/x-cbr
     }
 
     /**
@@ -57,7 +79,7 @@ class CbzParser : PublicationParser {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
-            Timber.e(e,  "Could not generate container")
+            Timber.e(e, "Could not generate container")
             return null
         }
         val listFiles = try {
@@ -101,20 +123,5 @@ class CbzParser : PublicationParser {
         }
     }
 
-    /**
-     * List all CBZ files in a particular path
-     *
-     * @return listCBZ: List<String>
-     */
-//    fun getCbzFiles(path: String): List<String>{
-//        var listCBZ = emptyList<String>()
-//        try {
-//            val file = File(path)
-//            listCBZ = file.list().filter { it.endsWith(".cbz") }
-//        } catch (e: Exception){
-//            Log.e("Error", "Can't open the file (${e.message})")
-//        }
-//        return listCBZ
-//    }
 
 }
