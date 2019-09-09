@@ -664,26 +664,73 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun copySamplesFromAssetsToStorage() {
-        assets.list("Samples")?.filter { it.endsWith(".epub") || it.endsWith(".cbz") }?.let { list ->
+        assets.list("Samples")?.filter {
+            it.endsWith(Publication.EXTENSION.EPUB.value)
+                    || it.endsWith(Publication.EXTENSION.CBZ.value)
+                    || it.endsWith(Publication.EXTENSION.AUDIO.value)
+                    || it.endsWith(Publication.EXTENSION.DIVINA.value)
+        }?.let { list ->
             for (element in list) {
                 val input = assets.open("Samples/$element")
                 val fileName = UUID.randomUUID().toString()
                 val publicationPath = R2DIRECTORY + fileName
-                input.toFile(publicationPath)
-                val file = File(publicationPath)
-                if (element.endsWith(".epub")) {
-                    val parser = EpubParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                ?: false)
+
+                when {
+                    element.endsWith(Publication.EXTENSION.DIVINA.value) -> {
+                        val output = File(publicationPath);
+                        if (!output.exists()) {
+                            if (!output.mkdir()) {
+                                throw RuntimeException("Cannot create directory");
+                            }
+                        }
+                        ZipUtil.unpack(input, output)
                     }
-                } else if (element.endsWith(".cbz")) {
-                    val parser = CbzParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                ?: false)
+                    element.endsWith(Publication.EXTENSION.AUDIO.value) -> {
+                        val output = File(publicationPath)
+                        if (!output.exists()) {
+                            if (!output.mkdir()) {
+                                throw RuntimeException("Cannot create directory")
+                            }
+                        }
+                        ZipUtil.unpack(input, output)
+                    }
+                    else -> input.toFile(publicationPath)
+                }
+
+                val file = File(publicationPath)
+
+                when {
+                    element.endsWith(Publication.EXTENSION.EPUB.value) -> {
+                        val parser = EpubParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
+                                    ?: false)
+                        }
+                    }
+                    element.endsWith(Publication.EXTENSION.CBZ.value) -> {
+                        val parser = CbzParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
+                                    ?: false)
+                        }
+                    }
+                    element.endsWith(Publication.EXTENSION.AUDIO.value) -> {
+                        val parser = AudioBookParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
+                                    ?: false)
+                        }
+                    }
+                    element.endsWith(Publication.EXTENSION.DIVINA.value) -> {
+                        val parser = DiViNaParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
+                                    ?: false)
+                        }
                     }
                 }
             }
@@ -714,104 +761,52 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val container = pub.container
 
         launch {
-            if (publication.type == Publication.TYPE.EPUB) {
-                val publicationIdentifier = publication.metadata.identifier
-                preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
-                val author = authorName(publication)
-                if (add) {
-                    var book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, null, Publication.EXTENSION.EPUB)
-                    publication.coverLink?.href?.let {
-                        val blob = ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
-                        blob?.let {
-                            book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, blob, Publication.EXTENSION.EPUB)
-                        } ?: run {
-                            book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, null, Publication.EXTENSION.EPUB)
-                        }
-                    } ?: run {
-                        book = Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, null, Publication.EXTENSION.EPUB)
+            val publicationIdentifier = publication.metadata.identifier
+            val book: Book = when {
+                publication.type == Publication.TYPE.EPUB -> {
+                    preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
+                    val author = authorName(publication)
+                    val cover = publication.coverLink?.href?.let {
+                        ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
                     }
 
-                    database.books.insert(book, false)?.let {
-                        book.id = it
-                        books.add(0, book)
-                        booksAdapter.notifyDataSetChanged()
-                        catalogView.longSnackbar("publication added to your library")
-                        if (!lcp) {
-                            //prepareSyntheticPageList(publication, book)
-                        }
-                    } ?: run {
-
-                        showDuplicateBookAlert(book, publication, lcp)
-
+                    if (!lcp) {
+                        server.addEpub(publication, container, "/$fileName", applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json")
                     }
-
+                    Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, cover, Publication.EXTENSION.EPUB)
                 }
-                if (!lcp) {
-                    server.addEpub(publication, container, "/$fileName", applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json")
-                }
-
-            } else if (publication.type == Publication.TYPE.CBZ) {
-                if (add) {
-                    publication.coverLink?.href?.let {
-                        val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), container.data(it), Publication.EXTENSION.CBZ)
-                        database.books.insert(book, false)?.let { id ->
-                            book.id = id
-                            books.add(0, book)
-                            booksAdapter.notifyDataSetChanged()
-
-                            if (!lcp) {
-                                //prepareSyntheticPageList(publication, book)
-                            }
-                        } ?: run {
-
-                            showDuplicateBookAlert(book, publication, lcp)
-
-                        }
+                publication.type == Publication.TYPE.CBZ -> {
+                    val cover = publication.coverLink?.href?.let {
+                        container.data(it)
                     }
-                }
-            } else if (publication.type == Publication.TYPE.DiViNa) {
-                if (add) {
-                    val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), null, Publication.EXTENSION.DIVINA)
-                    database.books.insert(book, false)?.let {
-                        book.id = it
-                        books.add(0, book)
-                        booksAdapter.notifyDataSetChanged()
 
-                    } ?: run {
-
-                        showDuplicateBookAlert(book, publication, lcp)
-                        
-                    }
+                    Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, publicationIdentifier, cover, Publication.EXTENSION.CBZ)
                 }
-            } else if (publication.type == Publication.TYPE.AUDIO) {
-                if (add) {
-                    //Getting book cover from file path to bitmap
-                    val ref = publication.coverLink?.href
-                    val stream = ByteArrayOutputStream()
-                    val coverByteArray = ref?.let {
-                        try {
-                            pub.container.data(ref)
-                        } catch (e: Exception) {
-                            null
-                        }
+                publication.type == Publication.TYPE.DiViNa -> {
+                    val cover = publication.coverLink?.href?.let {
+                        container.data(it)
                     }
-                    coverByteArray?.let {
-                        val bitmap = BitmapFactory.decodeByteArray(coverByteArray, 0, coverByteArray.size)
-                        bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
+
+                    Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, publicationIdentifier, cover, Publication.EXTENSION.DIVINA)
+                }
+                publication.type == Publication.TYPE.AUDIO -> {
+                    val cover = publication.coverLink?.href?.let {
+                        container.data(it)
                     }
 
                     //Building book object and adding it to library
-                    val book = Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, UUID.randomUUID().toString(), stream.toByteArray(), Publication.EXTENSION.AUDIO)
-
-
-                    database.books.insert(book, false)?.let {
-                        book.id = it
-                        books.add(0, book)
-                        booksAdapter.notifyDataSetChanged()
-
-                    } ?: run {
-                        showDuplicateBookAlert(book, publication, lcp)
-                    }
+                    Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, publicationIdentifier, cover, Publication.EXTENSION.AUDIO)
+                }
+                else -> TODO()
+            }
+            if (add) {
+                database.books.insert(book, false)?.let { id ->
+                    book.id = id
+                    books.add(0, book)
+                    booksAdapter.notifyDataSetChanged()
+                    catalogView.longSnackbar("publication added to your library")
+                } ?: run {
+                    showDuplicateBookAlert(book, publication, lcp)
                 }
             }
         }
