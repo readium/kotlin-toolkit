@@ -25,7 +25,7 @@ class ContainerAudioBook : AudioBookContainer, DirectoryContainer {
         if (File(path).exists()) {
             successCreated = true
         }
-        rootFile = RootFile(path, AudioBookParser.mimetypeAudiobook)
+        rootFile = RootFile(rootPath = path, mimetype = AudioBookParser.mimetypeAudiobook)
     }
 
 }

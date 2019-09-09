@@ -9,13 +9,15 @@
 
 package org.readium.r2.streamer.parser
 
-import android.util.Log
 import org.json.JSONObject
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.parsePublication
 import org.readium.r2.streamer.container.ContainerDiViNa
 import timber.log.Timber
+import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.InputStream
 import java.nio.charset.Charset
 
 
@@ -31,6 +33,7 @@ class DiViNaParser : PublicationParser {
         // Some constants useful to parse an DiViNa document
         const val mimetypeDiViNa = "application/divina+json"
         const val manifestPath = "manifest.json"
+        const val publicationPath = "publication.json"
     }
 
     /**
@@ -56,7 +59,7 @@ class DiViNaParser : PublicationParser {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
-            Log.e("Error", "Could not generate container", e)
+            Timber.e(e,"Could not generate container")
             return null
         }
 
@@ -64,7 +67,19 @@ class DiViNaParser : PublicationParser {
             container.data(manifestPath)
         } catch (e: Exception) {
             Timber.e(e, "Missing File : $manifestPath")
-            return null
+            try {
+                val publication = container.data(publicationPath)
+                container.rootFile
+                val inputStream = ByteArrayInputStream(publication)
+                inputStream.toFile("${container.rootFile.rootPath} / $manifestPath")
+                publication
+            } catch (e: FileNotFoundException) {
+                Timber.e(e, "Missing File : $publicationPath")
+                return null
+            } catch (e: Exception) {
+                Timber.e(e, "${container.rootFile.rootPath} / $manifestPath")
+                return null
+            }
         }
 
         //Building publication object from manifest.json
@@ -84,6 +99,12 @@ class DiViNaParser : PublicationParser {
         }
 
         return PubBox(publication, container)
+    }
+
+    private fun InputStream.toFile(path: String) {
+        use { input ->
+            File(path).outputStream().use { input.copyTo(it) }
+        }
     }
 
 }
