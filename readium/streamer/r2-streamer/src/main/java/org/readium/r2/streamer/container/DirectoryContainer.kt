@@ -13,12 +13,14 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
+import java.net.URLEncoder
 
 interface DirectoryContainer : Container {
 
     override fun data(relativePath: String): ByteArray {
 
-        val decodedFilePath = rootFile.rootPath + "/" + getDecodedRelativePath(relativePath)
+        val encodedPath = URLEncoder.encode(relativePath, "UTF-8");
+        val decodedFilePath = rootFile.rootPath + "/" + getDecodedRelativePath(encodedPath)
         val file = File(decodedFilePath)
 
         if (!file.exists())
