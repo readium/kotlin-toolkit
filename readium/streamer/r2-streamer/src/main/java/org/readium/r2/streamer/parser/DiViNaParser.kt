@@ -71,13 +71,13 @@ class DiViNaParser : PublicationParser {
                 val publication = container.data(publicationPath)
                 container.rootFile
                 val inputStream = ByteArrayInputStream(publication)
-                inputStream.toFile("${container.rootFile.rootPath} / $manifestPath")
+                inputStream.toFile("${container.rootFile.rootPath}/$manifestPath")
                 publication
             } catch (e: FileNotFoundException) {
                 Timber.e(e, "Missing File : $publicationPath")
                 return null
             } catch (e: Exception) {
-                Timber.e(e, "${container.rootFile.rootPath} / $manifestPath")
+                Timber.e(e, "${container.rootFile.rootPath}/$manifestPath")
                 return null
             }
         }
