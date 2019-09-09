@@ -14,8 +14,9 @@
     <string name="menu_item_add_epub">Add ePub</string>
     <string name="menu_item_filter">Filter</string>
     <string name="progress_wait_while_searching_book">Please wait.</string>
-    <string name="progress_wait_while_downloading_book">Please wait while your book is being downloaded.</string>
-    <string name="progress_wait_while_preparing_book">Please wait while your book is being prepared.</string>
+    <string name="progress_wait">Please wait.</string>
+    <string name="progress_wait_while_downloading_book">Please wait while your publication is being downloaded.</string>
+    <string name="progress_wait_while_preparing_book">Please wait while your publication is being prepared.</string>
     <string name="progress_wait_while_preparing_audiobook">Please wait while your audiobook is being prepared.</string>
     <string name="progress_wait_while_loading_feed">Please wait while your feed is loading.</string>
     <string name="error_invalid_epub">Invalid Epub</string>
@@ -57,15 +58,14 @@
     <string name="more_options">More Options</string>
     <string name="opds_feeds">OPDS Feeds</string>
     <string name="popup_delete_button">DELETE</string>
+    <string name="add_publication_to_library">Add a publication to your library</string>
     <string name="select_from_your_device">select from your device</string>
+    <string name="download_from_url">download from a url</string>
+
     <string name="app_version_header">Version</string>
     <string name="app_version_label">App Version:</string>
-
     <string name="app_version">2.1.0</string>
-
-    <string name="download_from_url">download from a url</string>
     <string name="github_tab_label">GitHub Tag:</string>
-
     <string name="github_tag">V2.1.0-beta.1</string>
 
     <string name="copyright_label">Copyright</string>

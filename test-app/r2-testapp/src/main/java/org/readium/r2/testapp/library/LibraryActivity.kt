@@ -185,7 +185,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                 onClick {
 
-                    alertDialog = alert(Appcompat, "Add an ePub to your library") {
+                    alertDialog = alert(Appcompat, context.getString(R.string.add_publication_to_library)) {
                         customView {
                             verticalLayout {
                                 lparams {
