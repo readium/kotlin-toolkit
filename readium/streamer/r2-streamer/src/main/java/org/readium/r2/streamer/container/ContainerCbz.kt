@@ -29,7 +29,7 @@ class ContainerCbz : CbzContainer, ZipArchiveContainer {
             successCreated = true
         }
         zipFile = ZipFile(path)
-        rootFile = RootFile(path, CbzParser.mimetypeCBZ)
+        rootFile = RootFile(rootPath = path, mimetype = CbzParser.mimetypeCBZ)
     }
 
     override fun getFilesList(): List<String> {

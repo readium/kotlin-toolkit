@@ -28,7 +28,7 @@ class ContainerDiViNa : DiViNaContainer, DirectoryContainer {
         if (File(path).exists()) {
             successCreated = true
         }
-        rootFile = RootFile(path, DiViNaParser.mimetypeDiViNa)
+        rootFile = RootFile(rootPath = path, mimetype = DiViNaParser.mimetypeDiViNa)
     }
 
 }
