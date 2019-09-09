@@ -114,8 +114,6 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
     }
     if (metadataDict.has("identifier")) {
         m.identifier = metadataDict.getString("identifier")
-    } else {
-        m.identifier = UUID.randomUUID().toString()
     }
     if (metadataDict.has("@type")) {
         m.rdfType = metadataDict.getString("@type")
