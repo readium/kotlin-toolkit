@@ -94,7 +94,10 @@
             android:name=".epub.EpubActivity"
             android:label="@string/title_activity_epub" />
         <activity
-            android:name=".divina.DiViNaActivity"
+            android:name=".comic.DiViNaActivity"
+            android:label="@string/title_activity_epub" />
+        <activity
+            android:name=".comic.ComicActivity"
             android:label="@string/title_activity_epub" />
         <activity
             android:name=".DRMManagementActivity"

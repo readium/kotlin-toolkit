@@ -51,7 +51,6 @@ import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.json.JSONObject
-import org.readium.r2.navigator.cbz.R2CbzActivity
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Injectable
@@ -67,7 +66,8 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.R2AboutActivity
 import org.readium.r2.testapp.audiobook.AudiobookActivity
 import org.readium.r2.testapp.db.*
-import org.readium.r2.testapp.divina.DiViNaActivity
+import org.readium.r2.testapp.comic.ComicActivity
+import org.readium.r2.testapp.comic.DiViNaActivity
 import org.readium.r2.testapp.drm.LCPLibraryActivityService
 import org.readium.r2.testapp.epub.EpubActivity
 import org.readium.r2.testapp.epub.R2SyntheticPageList
@@ -970,7 +970,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         val intent = Intent(this, when {
             publication.type == Publication.TYPE.AUDIO -> AudiobookActivity::class.java
-            publication.type == Publication.TYPE.CBZ -> R2CbzActivity::class.java
+            publication.type == Publication.TYPE.CBZ -> ComicActivity::class.java
             publication.type == Publication.TYPE.DiViNa -> DiViNaActivity::class.java
             else -> EpubActivity::class.java
         })

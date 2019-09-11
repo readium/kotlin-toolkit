@@ -8,9 +8,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp.divina
+package org.readium.r2.testapp.comic
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -18,22 +17,20 @@ import android.view.Menu
 import android.view.MenuItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import org.readium.r2.navigator.divina.R2DiViNaActivity
-import org.readium.r2.shared.Locator
+import org.readium.r2.navigator.cbz.R2CbzActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.outline.R2OutlineActivity
-import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
 
 /**
- * DiViNaActivity : Extension of the DiViNaActivity() from navigator
+ * ComicActivity : Extension of the R2CbzActivity() from navigator
  *
  * That Activity manage everything related to the menu
  *      ( Table of content, User Settings, Drm, Bookmarks )
  *
  */
-class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
+class ComicActivity : R2CbzActivity(), CoroutineScope {
 
     /**
      * Context of this scope.
@@ -41,7 +38,7 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    protected var menuToc: MenuItem? = null
+    private var menuToc: MenuItem? = null
 
     private var bookId: Long = -1
 
@@ -54,35 +51,21 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_divina, menu)
+        menuInflater.inflate(R.menu.menu_comic, menu)
         menuToc = menu?.findItem(R.id.toc)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-
+        return when (item.itemId) {
             R.id.toc -> {
                 val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publication", publication)
                 intent.putExtra("bookId", bookId)
                 startActivityForResult(intent, 2)
-                return true
+                true
             }
-
-            else -> return false
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        data ?: return
-        if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
-            val locator = data.getSerializableExtra("locator") as Locator
-            Timber.d("locator href ${locator.href}")
-
-            // Call the player's goTo function with the considered href
-            divinaWebView.evaluateJavascript("if (player) { player.goTo('${locator.href}'); };", null)
+            else -> false
         }
     }
 
