@@ -42,7 +42,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
     private lateinit var preferences:SharedPreferences
     lateinit var bookmarkDB: BookmarksDatabase
-    lateinit var positionsDB: PositionsDatabase
+    private lateinit var positionsDB: PositionsDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -240,12 +240,19 @@ class R2OutlineActivity : AppCompatActivity() {
         tabLandmarks.setIndicator(tabLandmarks.tag)
         tabLandmarks.setContent(R.id.landmarks_tab)
 
-
-        tabHost.addTab(tabTOC)
-        tabHost.addTab(tabBookmarks)
-        if (publication.type != Publication.TYPE.AUDIO && publication.type != Publication.TYPE.DiViNa) {
-            tabHost.addTab(tabPageList)
-            tabHost.addTab(tabLandmarks)
+        when {
+            publication.type == Publication.TYPE.AUDIO -> {
+                tabHost.addTab(tabTOC)
+                tabHost.addTab(tabBookmarks)
+            }
+            publication.type == Publication.TYPE.DiViNa -> tabHost.addTab(tabTOC)
+            publication.type == Publication.TYPE.CBZ -> tabHost.addTab(tabTOC)
+            else -> {
+                tabHost.addTab(tabTOC)
+                tabHost.addTab(tabBookmarks)
+                tabHost.addTab(tabPageList)
+                tabHost.addTab(tabLandmarks)
+            }
         }
     }
 
@@ -266,7 +273,7 @@ class R2OutlineActivity : AppCompatActivity() {
     /*
      * Adapter for navigation links (Table of Contents, Page lists & Landmarks)
      */
-    inner class NavigationAdapter(var activity: Activity, var items: MutableList<Any>) : BaseAdapter() {
+    inner class NavigationAdapter(var activity: Activity, private var items: MutableList<Any>) : BaseAdapter() {
 
         private inner class ViewHolder(row: View?) {
             var navigationTextView: TextView? = null
@@ -353,7 +360,7 @@ class R2OutlineActivity : AppCompatActivity() {
         }
     }
 
-    inner class SyntheticPageListAdapter(var activity: Activity, var items: MutableList<Position>) : BaseAdapter() {
+    inner class SyntheticPageListAdapter(var activity: Activity, private var items: MutableList<Position>) : BaseAdapter() {
         /**
          * Get the data item associated with the specified position in the data set.
          *
