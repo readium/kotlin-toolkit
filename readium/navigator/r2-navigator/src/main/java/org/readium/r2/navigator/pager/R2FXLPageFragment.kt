@@ -90,7 +90,6 @@ class R2FXLPageFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView(webView: R2BasicWebView, resourceUrl: String?) {
         webView.activity = activity as AppCompatActivity
-        webView.listener = activity as R2ActivityListener
 
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
