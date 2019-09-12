@@ -18,12 +18,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONArray
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.R2WebView
-import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.navigator.fxl.R2FXLLayout
-import org.readium.r2.navigator.pager.*
+import org.readium.r2.navigator.pager.R2EpubPageFragment
+import org.readium.r2.navigator.pager.R2PagerAdapter
+import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.*
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.color
@@ -76,7 +78,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
         //Setting up screen brightness
         val backLightValue = preferences.getInt("reader_brightness", 50).toFloat() / 100
-        val layoutParams = (context as R2EpubActivity).window.attributes
+        val layoutParams = (context as AppCompatActivity).window.attributes
         layoutParams.screenBrightness = backLightValue
         context.window.attributes = layoutParams
     }
@@ -378,9 +380,10 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
                 updateSwitchable(scrollMode)
                 updateViewCSS(SCROLL_REF)
 
-                val currentFragment: R2EpubPageFragment = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
-                currentFragment.webView.scrollToPosition(currentFragment.webView.progression)
-
+                val currentFragment = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment()
+                if (currentFragment is R2EpubPageFragment) {
+                    currentFragment.webView.scrollToPosition(currentFragment.webView.progression)
+                }
             }
         }
 
@@ -571,7 +574,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
                 object : SeekBar.OnSeekBarChangeListener {
                     override fun onProgressChanged(bar: SeekBar, progress: Int, from_user: Boolean) {
                         val backLightValue = progress.toFloat() / 100
-                        val layoutParams = (context as R2EpubActivity).window.attributes
+                        val layoutParams = (context as AppCompatActivity).window.attributes
                         layoutParams.screenBrightness = backLightValue
                         context.window.attributes = layoutParams
                         preferences.edit().putInt("reader_brightness", progress).apply()
