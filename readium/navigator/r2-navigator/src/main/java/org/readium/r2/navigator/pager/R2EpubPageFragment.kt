@@ -23,6 +23,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
 import org.json.JSONObject
@@ -30,7 +31,6 @@ import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2ActivityListener
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.R2WebView
-import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.PageProgressionDirection
@@ -74,7 +74,7 @@ class R2EpubPageFragment : Fragment() {
 
         webView = v!!.findViewById(R.id.webView) as R2WebView
 
-        webView.activity = activity as R2EpubActivity
+        webView.activity = activity as AppCompatActivity
         webView.listener = activity as R2ActivityListener
 
         webView.settings.javaScriptEnabled = true
