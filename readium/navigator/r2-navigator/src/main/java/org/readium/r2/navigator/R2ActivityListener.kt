@@ -36,5 +36,7 @@ interface R2ActivityListener {
     fun previousResource(v: View? = null) {}
     fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {}
     fun onPageEnded(end: Boolean) {}
-
+    fun onPageLoaded() {}
+    fun highlightActivated(id: String) {}
+    fun highlightAnnotationMarkActivated(id: String) {}
 }
