@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context='org.readium.r2.navigator.R2EpubActivity'>
+
+    <item
+        android:id="@+id/highlight"
+        android:title="Highlight"
+        app:showAsAction="always">
+    </item>
+
+    <item
+        android:id="@+id/memo"
+        android:title="Memo"
+        app:showAsAction="always">
+    </item>
+
+</menu>

@@ -59,24 +59,12 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/pagelists_tab"
+                        android:id="@+id/highlights_tab"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
                         <ListView
-                            android:id="@+id/page_list"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"/>
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/landmarks_tab"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent">
-
-                        <ListView
-                            android:id="@+id/landmarks_list"
+                            android:id="@+id/highlight_list"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"/>
 
