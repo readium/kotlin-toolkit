@@ -275,7 +275,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     /**
      * @return: Int - Returns the horizontal scrolling value to be scrolled by the webview.
      * Does not return the device width minus the padding because the value returned by [getContentWidth]
-     * is sometimes NOT a multiple of '[getMeasuredWidth] - [getPaddingLeft] - [getPaddingRight]
+     * is sometimes NOT a multiple of '[getMeasuredWidth] - [getPaddingLeft] - [getPaddingRight]'
      * (the value is not consistent across devices).
      *
      * It will instead add a portion of the remaining pixels to the value returned, so that columns will not be
