@@ -18,13 +18,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.activity_epub.*
+import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.shared.Publication
 import org.readium.r2.testapp.R
 import java.io.IOException
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.Locale
 
 
 /**
@@ -143,7 +144,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
             //Load resource as sentences
             utterances = mutableListOf()
-
             getUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
 
             if (utterances.size == 0 ){
@@ -173,14 +173,14 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 //                        (webView as WebView).evaluateJavascript("findUtterance(\"$toHighlight\");", null)
 //                    }
 
-                    activityReference.get()?.findViewById<TextView>(R.id.tts_textView)?.text = toHighlight
+                    activityReference.get()?.launch {
+                        activityReference.get()?.findViewById<TextView>(R.id.tts_textView)?.text = toHighlight
+                        activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_pause)
 
-
-                    activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_pause)
-
-
-                    TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(activityReference.get()?.tts_textView!!, 1, 30, 1,
+                        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(activityReference.get()?.tts_textView!!, 1, 30, 1,
                             TypedValue.COMPLEX_UNIT_DIP)
+                    }
+
                 }
 
                 /**
@@ -195,7 +195,10 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 //                        (webView as WebView).post {
 //                            (webView as WebView).evaluateJavascript("setHighlight();", null)
 //                        }
-                        activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
+                        activityReference.get()?.launch {
+                            activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
+                        }
+
                     }
                 }
 
@@ -212,12 +215,14 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 //                    (webView as WebView).post {
 //                        (webView as WebView).evaluateJavascript("setHighlight();", null)
 //                    }
-                    activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
+                    activityReference.get()?.launch {
+                        activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
 
-                    if (utteranceId.equals((utterances.size-1).toString())) {
-                        activityReference.get()?.nextResource(false)
-                        nextResource()
-                        startReading()
+                        if (utteranceId.equals((utterances.size-1).toString())) {
+                            activityReference.get()?.nextResource(false)
+                            nextResource()
+                            startReading()
+                        }
                     }
 
                 }
