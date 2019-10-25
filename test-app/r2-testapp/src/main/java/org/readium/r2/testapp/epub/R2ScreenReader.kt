@@ -266,16 +266,21 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         textToSpeech.stop()
     }
 
+    /**
+     * @param index: Int - The index of the utterance to be read by the TTS. Its value is considered always beneath
+     * [utterances].size as it is checked before by all calling functions.
+     * [TextToSpeech.QUEUE_FLUSH] means that the TTS queue is flushed before adding the utterance.
+     */
+    private fun requeueTTS(index:Int) {
+        textToSpeech.speak(utterances[index], TextToSpeech.QUEUE_FLUSH, null, index.toString())
+        for (i in index + 1 until utterances.size)
+            textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString())
+    }
+
     private fun resumeReading() {
         isPaused = false
         val index = utterancesCurrentIndex
-        for (i in index until utterances.size) {
-            if (i == index) {
-                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_FLUSH, null, i.toString())
-            } else {
-                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString())
-            }
-        }
+        requeueTTS(index)
     }
 
     private fun stopReading() {
@@ -283,35 +288,42 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         textToSpeech.stop()
     }
 
+
+
+    /**
+     * Checks that by adding one to the [utterancesCurrentIndex], it doesn't go over [utterances].size. Also checks, as
+     * precaution, that index is not negative. Then calls [requeueTTS] to synchronize TTS with the current index.
+     *
+     * @return false if new index is invalid
+     * @return true if new index is valid
+     */
     fun nextSentence(): Boolean {
         isPaused = false
         val index = utterancesCurrentIndex + 1
-        if (utterancesCurrentIndex < 0) {
+
+        if (index >= utterances.size || index < 0 )
             return false
-        }
-        for (i in index until utterances.size) {
-            if (i == index) {
-                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_FLUSH, null, i.toString())
-            } else {
-                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString())
-            }
-        }
+
+        requeueTTS(index)
         return true
     }
 
+    /**
+     * Checks that by substracting one to the [utterancesCurrentIndex], it doesn't go over [utterances].size. Also
+     * checks, as precaution, that index is not negative. Then calls [requeueTTS] to synchronize TTS with the current
+     * index.
+     *
+     * @return false if new index is invalid
+     * @return true if new index is valid
+     */
     fun previousSentence(): Boolean {
         isPaused = false
         val index = utterancesCurrentIndex - 1
-        if (utterancesCurrentIndex > utterances.size) {
+
+        if (index >=  utterances.size || index < 0 )
             return false
-        }
-        for (i in index until utterances.size) {
-            if (i == index) {
-                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_FLUSH, null, i.toString())
-            } else {
-                textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString())
-            }
-        }
+        
+        requeueTTS(index)
         return true
     }
 
