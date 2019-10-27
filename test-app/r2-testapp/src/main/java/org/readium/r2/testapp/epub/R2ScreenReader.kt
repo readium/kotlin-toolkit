@@ -20,6 +20,7 @@ import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.activity_epub.*
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+import org.jsoup.select.Elements
 import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.shared.Publication
 import org.readium.r2.testapp.R
@@ -43,6 +44,12 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     private var utterances = mutableListOf<String>()
     private var utterancesCurrentIndex: Int = 0
     private var items = publication.readingOrder
+
+    enum class PLAY_SENTENCE(val value: Int) {
+        SAME(0),
+        NEXT(1),
+        PREV(-1)
+    }
 
     /*
      * May prove useful
@@ -132,19 +139,19 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         }
     }
 
-
     fun configure() {
         if (initialized) {
             val language = textToSpeech.setLanguage(Locale(publication.metadata.languages.firstOrNull()))
 
             if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Toast.makeText(context.applicationContext, "There was an error with the TTS language, switching to EN-US", Toast.LENGTH_LONG).show()
+                Toast.makeText(context.applicationContext, "There was an error with the TTS language, switching "
+                    + "to EN-US", Toast.LENGTH_LONG).show()
                 textToSpeech.language = Locale.US
             }
 
             //Load resource as sentences
             utterances = mutableListOf()
-            getUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
+            splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
 
             if (utterances.size == 0 ){
                 nextResource()
@@ -189,7 +196,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                  * @param utteranceId The utterance ID of the utterance.
                  * @param interrupted Whether or not the speaking has been interrupted.
                  */
-
                 override fun onStop(utteranceId: String?, interrupted: Boolean) {
                     if (interrupted) {
 //                        (webView as WebView).post {
@@ -241,7 +247,8 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             })
 
         } else {
-            Toast.makeText(context.applicationContext, "There was an error with the TTS initialization", Toast.LENGTH_LONG).show()
+            Toast.makeText(context.applicationContext, "There was an error with the TTS initialization",
+                Toast.LENGTH_LONG).show()
         }
     }
 
@@ -250,7 +257,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         stopReading()
         textToSpeech.shutdown()
     }
-
 
     private fun startReading() {
         isPaused = false
@@ -266,108 +272,99 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         textToSpeech.stop()
     }
 
-    /**
-     * @param index: Int - The index of the utterance to be read by the TTS. Its value is considered always beneath
-     * [utterances].size as it is checked before by all calling functions.
-     * [TextToSpeech.QUEUE_FLUSH] means that the TTS queue is flushed before adding the utterance.
-     */
-    private fun requeueTTS(index:Int) {
-        textToSpeech.speak(utterances[index], TextToSpeech.QUEUE_FLUSH, null, index.toString())
-        for (i in index + 1 until utterances.size)
-            textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString())
-    }
-
-    private fun resumeReading() {
-        isPaused = false
-        val index = utterancesCurrentIndex
-        requeueTTS(index)
-    }
-
     private fun stopReading() {
         isPaused = false
         textToSpeech.stop()
     }
 
+    private fun resumeReading() {
+        playSentence(PLAY_SENTENCE.SAME.value)
+    }
 
+    fun nextSentence(): Boolean {
+        return playSentence(PLAY_SENTENCE.NEXT.value)
+    }
+
+    fun previousSentence(): Boolean {
+        return playSentence(PLAY_SENTENCE.PREV.value)
+    }
 
     /**
-     * Checks that by adding one to the [utterancesCurrentIndex], it doesn't go over [utterances].size. Also checks, as
-     * precaution, that index is not negative. Then calls [requeueTTS] to synchronize TTS with the current index.
+     * Reorder the text to speech queue (after flushing it) according to the current track and the argument value.
      *
-     * @return false if new index is invalid
-     * @return true if new index is valid
+     * @param playSentence: [Int] - The track to play (relative to the current track).
      */
-    fun nextSentence(): Boolean {
+    private fun playSentence(playSentence: Int): Boolean {
         isPaused = false
-        val index = utterancesCurrentIndex + 1
+        val index = utterancesCurrentIndex + playSentence
 
         if (index >= utterances.size || index < 0 )
             return false
 
-        requeueTTS(index)
+        textToSpeech.speak(utterances[index], TextToSpeech.QUEUE_FLUSH, null, index.toString())
+
+        for (i in index + 1 until utterances.size)
+            textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString())
+
         return true
     }
 
     /**
-     * Checks that by substracting one to the [utterancesCurrentIndex], it doesn't go over [utterances].size. Also
-     * checks, as precaution, that index is not negative. Then calls [requeueTTS] to synchronize TTS with the current
-     * index.
-     *
-     * @return false if new index is invalid
-     * @return true if new index is valid
+     * Clean the text to speech queue by adding an empty text and using the TextToSpeech.QUEUE_FLUSH flag value.
      */
-    fun previousSentence(): Boolean {
-        isPaused = false
-        val index = utterancesCurrentIndex - 1
-
-        if (index >=  utterances.size || index < 0 )
-            return false
-        
-        requeueTTS(index)
-        return true
-    }
-
     private fun flushUtterancesQueue() {
         textToSpeech.speak("", TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
-    private fun getUtterances(resourceUrl: String?) {
+    /**
+     * Split the big paragraph into smaller paragraphs (sentence by sentence). The sentences are then added to the
+     * [utterances] list.
+     *
+     * @param elements: Elements - The list of elements (paragraphs)
+     */
+    private fun splitParagraphAndAddToUtterances(elements: Elements) {
+        val elementSize = elements.size
+        var index = 0
+        for (i in 0 until elementSize) {
+
+            val element = elements.eq(i)
+
+            if (element.`is`("p") || element.`is`("h1") || element.`is`("h2")
+                || element.`is`("h3")) {
+
+                //val sentences = element.text().split(Regex("(?<=\\. |(,{1}))"))
+                val sentences = element.text().split(Regex("(?<=\\.)"))
+
+                for (sentence in sentences) {
+                    var sentenceCleaned = sentence
+                    if (sentenceCleaned.isNotEmpty()) {
+                        if (sentenceCleaned.first() == ' ') sentenceCleaned = sentenceCleaned.removeRange(0, 1)
+                        if (sentenceCleaned.last() == ' ') sentenceCleaned =
+                            sentenceCleaned.removeRange(sentenceCleaned.length - 1, sentenceCleaned.length)
+                        utterances.add(sentenceCleaned)
+                        index++
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Fetch a resource and get short sentences from it.
+     *
+     * @param resourceUrl: String - The html resource to fetch from the internal server, containing the text to be
+     * voiced.
+     */
+    private fun splitResourceAndAddToUtterances(resourceUrl: String?) {
         val thread = Thread(Runnable {
             try {
                 val document = Jsoup.connect(resourceUrl).get()
                 val elements = document.select("*")
-                val elementSize = elements.size
 
-                var index2=0
-
-                for (i in 0 until elementSize) {
-                    val element = elements.eq(i)
-
-                    if (element.`is`("p") || element.`is`("h1") || element.`is`("h2") || element.`is`("h3")) {
-                        /*
-                         * Splitting the big paragraph into smaller paragraphs
-                         * (sentences by sentences)
-                         * These sentences will be passed onto TTS
-                         */
-//                        val sentences = element.text().split(Regex("(?<=\\. |(,{1}))"))
-                        val sentences = element.text().split(Regex("(?<=\\.)"))
-
-                        for (sentence in sentences) {
-                            var sentenceCleaned = sentence
-                            if (sentenceCleaned.isNotEmpty()) {
-                                if (sentenceCleaned.first() == ' ') sentenceCleaned = sentenceCleaned.removeRange(0, 1)
-                                if (sentenceCleaned.last() == ' ') sentenceCleaned = sentenceCleaned.removeRange(sentenceCleaned.length - 1, sentenceCleaned.length)
-                                utterances.add(sentenceCleaned)
-                                index2++
-                            }
-                        }
-                    }
-                }
-
+                splitParagraphAndAddToUtterances(elements)
             } catch (e: IOException) {
                 e.printStackTrace()
             }
-
         })
 
         thread.start()
