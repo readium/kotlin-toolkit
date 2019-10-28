@@ -95,24 +95,12 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         // TODO
     }
 
-    fun stop() {
-        stopReading()
-    }
-
-    fun pause() {
-        pauseReading()
-    }
-
-    fun release() {
-        shutdown()
-    }
-
-    fun start() {
-        startReading()
-    }
-
-    fun resume() {
-        resumeReading()
+    fun onResume() {
+        val paused = isPaused
+        if (utterances.size == 0)
+            startReading()
+        if (paused)
+            pauseReading()
     }
 
     fun goTo(index: Int) {
@@ -252,13 +240,13 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         }
     }
 
-    private fun shutdown() {
+    fun shutdown() {
         initialized = false
         stopReading()
         textToSpeech.shutdown()
     }
 
-    private fun startReading() {
+    fun startReading() {
         isPaused = false
         configure()
         val index = 0
@@ -267,17 +255,17 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         }
     }
 
-    private fun pauseReading() {
+    fun pauseReading() {
         isPaused = true
         textToSpeech.stop()
     }
 
-    private fun stopReading() {
+    fun stopReading() {
         isPaused = false
         textToSpeech.stop()
     }
 
-    private fun resumeReading() {
+    fun resumeReading() {
         playSentence(PLAY_SENTENCE.SAME.value)
     }
 
@@ -312,13 +300,12 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     /**
      * Clean the text to speech queue by adding an empty text and using the TextToSpeech.QUEUE_FLUSH flag value.
      */
-    private fun flushUtterancesQueue() {
+    fun flushUtterancesQueue() {
         textToSpeech.speak("", TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     /**
-     * Split the big paragraph into smaller paragraphs (sentence by sentence). The sentences are then added to the
-     * [utterances] list.
+     * Split all the resource's paragraphs into sentences. The sentences are then added to the [utterances] list.
      *
      * @param elements: Elements - The list of elements (paragraphs)
      */

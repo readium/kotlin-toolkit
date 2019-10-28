@@ -41,7 +41,14 @@ import org.json.JSONObject
 import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
-import org.readium.r2.shared.*
+import org.readium.r2.shared.APPEARANCE_REF
+import org.readium.r2.shared.ContentLayoutStyle
+import org.readium.r2.shared.Locations
+import org.readium.r2.shared.Locator
+import org.readium.r2.shared.LocatorText
+import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.RenditionLayout
+import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
@@ -122,10 +129,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
 
         play_pause.setOnClickListener {
             if (screenReader.isPaused) {
-                screenReader.resume()
+                screenReader.resumeReading()
                 play_pause.setImageResource(android.R.drawable.ic_media_pause)
             } else {
-                screenReader.pause()
+                screenReader.pauseReading()
                 play_pause.setImageResource(android.R.drawable.ic_media_play)
             }
         }
@@ -139,7 +146,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
         next_chapter.setOnClickListener {
             nextResource(false)
             screenReader.nextResource()
-            screenReader.start()
+            screenReader.startReading()
             play_pause.setImageResource(android.R.drawable.ic_media_pause)
         }
         fast_back.setOnClickListener {
@@ -152,7 +159,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
         prev_chapter.setOnClickListener {
             previousResource(false)
             screenReader.previousResource()
-            screenReader.start()
+            screenReader.startReading()
             play_pause.setImageResource(android.R.drawable.ic_media_pause)
         }
 
@@ -186,6 +193,16 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
         search_listView.adapter = searchResultAdapter
         search_listView.layoutManager = LinearLayoutManager(this)
 
+    }
+
+    override fun onPause() {
+        super.onPause()
+        screenReader.pauseReading()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        screenReader.stopReading()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -348,7 +365,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
                 if (!screenReader.isSpeaking && !screenReader.isPaused && item.title == resources.getString(R.string.epubactivity_read_aloud_start)) {
 
                     screenReader.goTo(resourcePager.currentItem)
-                    screenReader.start()
+                    screenReader.startReading()
 
                     item.title = resources.getString(R.string.epubactivity_read_aloud_stop)
 
@@ -434,7 +451,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
     }
 
     fun dismissScreenReader(item: MenuItem) {
-        screenReader.stop()
+        screenReader.stopReading()
         item.title = resources.getString(R.string.epubactivity_read_aloud_start)
         tts_overlay.visibility = View.INVISIBLE
         play_pause.setImageResource(android.R.drawable.ic_media_play)
@@ -511,17 +528,25 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
             userSettings.resourcePager = resourcePager
         }
 
-
-        /*
-         * Initialisation of the screen reader
-         */
-        Handler().postDelayed({
-            val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
-            port?.let {
-                screenReader = R2ScreenReader(this, publication, port, publicationFileName)
+        if (this::screenReader.isInitialized) {
+            if (tts_overlay.visibility == View.VISIBLE) {
+                if (screenReader.isPaused) {
+                    screenReader.resumeReading()
+                    play_pause.setImageResource(android.R.drawable.ic_media_pause)
+                } else {
+                    screenReader.pauseReading()
+                    play_pause.setImageResource(android.R.drawable.ic_media_play)
+                }
+                screenReader.onResume()
             }
-        }, 500)
-
+        } else {
+            Handler().postDelayed({
+                val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
+                port?.let {
+                    screenReader = R2ScreenReader(this, publication, port, publicationFileName)
+                }
+            }, 500)
+        }
     }
 
     override fun toggleActionBar() {
@@ -537,7 +562,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
     override fun onDestroy() {
         super.onDestroy()
 
-        screenReader.release()
+        screenReader.shutdown()
     }
 
 
