@@ -61,11 +61,11 @@ class CBZConstant {
 }
 
 /**
- *      CbzParser : Handle any CBZ file. Opening, listing files
+ *      CBZParser : Handle any CBZ file. Opening, listing files
  *                  get name of the resource, creating the Publication
  *                  for rendering
  */
-class CbzParser : PublicationParser {
+class CBZParser : PublicationParser {
 
 
     /**
