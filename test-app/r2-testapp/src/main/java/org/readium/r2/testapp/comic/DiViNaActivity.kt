@@ -50,7 +50,7 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
         Handler().postDelayed({
             bookId = intent.getLongExtra("bookId", -1)
         }, 100)
-
+        toggleActionBar()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
