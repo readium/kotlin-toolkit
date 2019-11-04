@@ -39,7 +39,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, R2Activity
     override lateinit var publicationFileName: String
     override lateinit var publicationPath: String
 
-    lateinit var currentLocation: Locations
+    lateinit var currentLocations: Locations
     var currentResource = 0
 
     var startTime = 0.0
@@ -59,24 +59,24 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, R2Activity
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
         publicationFileName = intent.getStringExtra("publicationFileName")
-        publicationIdentifier = publication.metadata.identifier
+        publicationIdentifier = publication.metadata.identifier!!
 
-        currentLocation = Locations.fromJSON(JSONObject(preferences.getString("$publicationIdentifier-documentLocations", "{}")))
+        currentLocations = Locations.fromJSON(JSONObject(preferences.getString("$publicationIdentifier-documentLocations", "{}")))
         currentResource = preferences.getInt("$publicationIdentifier-document", 0)
 
         title = null
-
-        mediaPlayer = R2MediaPlayer(publication.readingOrder, this)
 
         chapterView!!.text = publication.readingOrder[currentResource].title
 
         Handler().postDelayed({
 
+            mediaPlayer = R2MediaPlayer(publication.readingOrder, this)
+
             mediaPlayer?.goTo(currentResource)
 
-            currentLocation.progression?.let { progression ->
+            currentLocations.progression?.let { progression ->
                 mediaPlayer?.seekTo(progression)
-                seekLocation = currentLocation
+                seekLocation = currentLocations
                 isSeekNeeded = true
             }
 
@@ -259,6 +259,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, R2Activity
 
     override fun onPrepared() {
         seekIfNeeded()
+        Handler().postDelayed(updateSeekTime, 100)
         updateUI()
     }
 
@@ -322,7 +323,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, R2Activity
                 // Set the progression fetched
                 storeProgression(locator.locations)
 
-                currentLocation = locator.locations!!
+                currentLocations = locator.locations!!
 
                 // href is the link to the page in the toc
                 var href = locator.href
@@ -339,7 +340,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, R2Activity
                     }
                     index++
                 }
-                seekLocation = currentLocation
+                seekLocation = currentLocations
 
                 isSeekNeeded = true
 
