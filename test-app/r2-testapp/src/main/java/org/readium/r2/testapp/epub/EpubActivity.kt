@@ -454,28 +454,28 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
 
                     // TODO handle fragment anchors (id=) instead of catching the json exception
                     try {
-                    val fragments = JSONArray(fragment).getString(0).split(",").associate {
-                        val (left, right) = it.split("=")
-                        left to right.toInt()
-                    }
-
-                    val index = fragments.getValue("i").toInt()
-                    val searchStorage = getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
-                    Handler().postDelayed({
-                        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
-                            val currentFragent = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
-                            val resource = publication.readingOrder[resourcePager.currentItem]
-                            val resourceHref = resource.href ?: ""
-                            val resourceType = resource.typeLink ?: ""
-                            val resourceTitle = resource.title ?: ""
-
-                            currentFragent.webView.runJavaScript("markSearch('${searchStorage.getString("term", null)}', null, '$resourceHref', '$resourceType', '$resourceTitle', '$index')") { result ->
-
-                                Timber.d("###### $result")
-
-                            }
+                        val fragments = JSONArray(fragment).getString(0).split(",").associate {
+                            val (left, right) = it.split("=")
+                            left to right.toInt()
                         }
-                    }, 1200)
+
+                        val index = fragments.getValue("i").toInt()
+                        val searchStorage = getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
+                        Handler().postDelayed({
+                            if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+                                val currentFragent = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
+                                val resource = publication.readingOrder[resourcePager.currentItem]
+                                val resourceHref = resource.href ?: ""
+                                val resourceType = resource.typeLink ?: ""
+                                val resourceTitle = resource.title ?: ""
+
+                                currentFragent.webView.runJavaScript("markSearch('${searchStorage.getString("term", null)}', null, '$resourceHref', '$resourceType', '$resourceTitle', '$index')") { result ->
+
+                                    Timber.d("###### $result")
+
+                                }
+                            }
+                        }, 1200)
                     } catch (e: Exception) {
                     }
                 }

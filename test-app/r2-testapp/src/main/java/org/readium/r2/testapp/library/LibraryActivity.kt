@@ -526,7 +526,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val intent = intent
             val uriString: String? = intent.getStringExtra(R2IntentHelper.URI)
             uriString?.let {
-                when (Publication.EXTENSION.fromString(intent.getStringExtra(R2IntentHelper.EXTENSION)!!)){
+                when (Publication.EXTENSION.fromString(intent.getStringExtra(R2IntentHelper.EXTENSION)!!)) {
                     Publication.EXTENSION.LCPL -> parseIntentLcpl(uriString, isNetworkAvailable)
                     else -> parseIntentPublication(uriString)
                 }
@@ -544,7 +544,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val publicationPath = R2DIRECTORY + fileName
 
             task {
-                ContentResolverUtil.getContentInputStream(this,uri, publicationPath)
+                ContentResolverUtil.getContentInputStream(this, uri, publicationPath)
             } then {
                 preparePublication(publicationPath, uriString, fileName, progress)
             }
@@ -562,13 +562,13 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                 when {
                     uriString.endsWith(Publication.EXTENSION.EPUB.value) -> {
-                    val parser = EpubParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                ?: false)
-                        progress.dismiss()
-                    }
+                        val parser = EpubParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
+                                    ?: false)
+                            progress.dismiss()
+                        }
                     }
                     uriString.endsWith(Publication.EXTENSION.CBZ.value) -> {
                         val parser = CBZParser()
@@ -590,13 +590,13 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                     uriString.endsWith(Publication.EXTENSION.DIVINA.value) -> {
                         val parser = DiViNaParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                ?: false)
-                        progress.dismiss()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
+                                    ?: false)
+                            progress.dismiss()
+                        }
                     }
-                }
 
 
                 }
@@ -780,7 +780,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val author = authorName(publication)
                     val cover = publication.coverLink?.href?.let {
                         try {
-                        ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
+                            ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
                         } catch (e: ZipException) {
                             null
                         }
@@ -794,7 +794,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 publication.type == Publication.TYPE.CBZ -> {
                     val cover = publication.coverLink?.href?.let {
                         try {
-                        container.data(it)
+                            container.data(it)
                         } catch (e: ContainerError.fileNotFound) {
                             null
                         }
@@ -805,10 +805,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 publication.type == Publication.TYPE.DiViNa -> {
                     val cover = publication.coverLink?.href?.let {
                         try {
-                        container.data(it)
+                            container.data(it)
                         } catch (e: ContainerError.fileNotFound) {
                             null
-                    }
+                        }
                     }
 
                     Book(title = publication.metadata.title, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.DIVINA, progression = "{}")
@@ -816,7 +816,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 publication.type == Publication.TYPE.AUDIO -> {
                     val cover = publication.coverLink?.href?.let {
                         try {
-                        container.data(it)
+                            container.data(it)
                         } catch (e: ContainerError.fileNotFound) {
                             null
                         }
@@ -968,7 +968,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         book = Book(title = externalPub.metadata.title, href = externalManifest, identifier = externalPub.metadata.identifier!!, cover = stream.toByteArray(), ext = Publication.EXTENSION.JSON)
 
                     } ?: run {
-                        book = Book(title = externalPub.metadata.title, href = externalManifest, identifier = externalPub.metadata.identifier!!,  ext = Publication.EXTENSION.JSON)
+                        book = Book(title = externalPub.metadata.title, href = externalManifest, identifier = externalPub.metadata.identifier!!, ext = Publication.EXTENSION.JSON)
                     }
 
                     launch {
