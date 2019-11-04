@@ -67,7 +67,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
         publicationFileName = intent.getStringExtra("publicationFileName")
-        publicationIdentifier = publication.metadata.identifier
+        publicationIdentifier = publication.metadata.identifier!!
 
         title = null
 

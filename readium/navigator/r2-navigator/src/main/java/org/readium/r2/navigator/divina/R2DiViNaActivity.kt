@@ -55,10 +55,8 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, R2ActivityLis
         publication = intent.getSerializableExtra("publication") as Publication
         publicationFileName = intent.getStringExtra("publicationFileName")
 
-        publicationIdentifier = publication.metadata.identifier
+        publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title
-
-        toggleActionBar()
 
         // Set up divinaWebView to enable JavaScript and access to local URLs
         divinaWebView.settings.javaScriptEnabled = true
