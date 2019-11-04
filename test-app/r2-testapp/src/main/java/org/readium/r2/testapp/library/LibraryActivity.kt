@@ -59,15 +59,24 @@ import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.parsePublication
 import org.readium.r2.shared.promise
-import org.readium.r2.streamer.parser.*
+import org.readium.r2.streamer.container.ContainerError
+import org.readium.r2.streamer.parser.PubBox
+import org.readium.r2.streamer.parser.audio.AudioBookConstant
+import org.readium.r2.streamer.parser.audio.AudioBookParser
+import org.readium.r2.streamer.parser.cbz.CBZConstant
+import org.readium.r2.streamer.parser.cbz.CBZParser
+import org.readium.r2.streamer.parser.divina.DiViNaConstant
+import org.readium.r2.streamer.parser.divina.DiViNaParser
+import org.readium.r2.streamer.parser.epub.EPUBConstant
+import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.R2AboutActivity
 import org.readium.r2.testapp.audiobook.AudiobookActivity
-import org.readium.r2.testapp.db.*
 import org.readium.r2.testapp.comic.ComicActivity
 import org.readium.r2.testapp.comic.DiViNaActivity
+import org.readium.r2.testapp.db.*
 import org.readium.r2.testapp.drm.LCPLibraryActivityService
 import org.readium.r2.testapp.epub.EpubActivity
 import org.readium.r2.testapp.epub.R2SyntheticPageList
@@ -76,19 +85,21 @@ import org.readium.r2.testapp.opds.OPDSDownloader
 import org.readium.r2.testapp.opds.OPDSListActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
+import org.readium.r2.testapp.utils.ContentResolverUtil
 import org.readium.r2.testapp.utils.R2IntentHelper
-import org.readium.r2.testapp.utils.RealPathUtil
 import org.readium.r2.testapp.utils.toFile
 import org.zeroturnaround.zip.ZipUtil
-import org.zeroturnaround.zip.commons.IOUtils
 import timber.log.Timber
-import java.io.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.ServerSocket
 import java.net.URI
 import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
+import java.util.zip.ZipException
 import kotlin.coroutines.CoroutineContext
 
 @SuppressLint("Registered")
@@ -307,7 +318,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
             opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
-                val publicationIdentifier = publication.metadata.identifier
+                val publicationIdentifier = publication.metadata.identifier!!
                 val author = authorName(publication)
                 task {
                     getBitmapFromURL(publication.images.first().href!!)
@@ -316,7 +327,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val stream = ByteArrayOutputStream()
                     bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-                    val book = Book(pair.second, publication.metadata.title, author, pair.first, null, publication.coverLink?.href, publicationIdentifier, stream.toByteArray(), Publication.EXTENSION.EPUB)
+                    val book = Book(title = publication.metadata.title, author = author, href = pair.first, identifier = publicationIdentifier, cover = stream.toByteArray(), ext = Publication.EXTENSION.EPUB, progression = "{}")
 
                     launch {
                         progress.dismiss()
@@ -387,7 +398,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 }
                 val cancelButton = getButton(AlertDialog.BUTTON_NEGATIVE)
                 cancelButton.setOnClickListener {
-                    File(book.fileUrl).delete()
+                    File(book.href).delete()
                     duplicateAlert.dismiss()
                 }
             }
@@ -439,14 +450,14 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
     private fun getPublicationURL(src: String): JSONObject? {
         return try {
-            val url = URL(src)
+            val url = URL(src.removeSuffix("/"))
             val connection = url.openConnection() as HttpURLConnection
             connection.instanceFollowRedirects = false
             connection.doInput = true
             connection.connect()
 
             val jsonManifestURL = URL(connection.getHeaderField("Location")
-                    ?: src).openConnection()
+                    ?: src.removeSuffix("/")).openConnection()
             jsonManifestURL.connect()
 
             val jsonManifest = jsonManifestURL.getInputStream().readBytes()
@@ -486,7 +497,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         for (link in links) {
             val href = link.href
             if (href != null) {
-                if (href.contains(".epub") || href.contains(".lcpl")) {
+                if (href.contains(Publication.EXTENSION.EPUB.value) || href.contains(Publication.EXTENSION.LCPL.value)) {
                     url = URL(href)
                     break
                 }
@@ -506,7 +517,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val publicationPath = R2DIRECTORY + fileName
 
             task {
-                copyFile(File(filePath), File(publicationPath))
+                ContentResolverUtil.copyFile(File(filePath), File(publicationPath))
             } then {
                 preparePublication(publicationPath, filePath, fileName, progress)
             }
@@ -514,17 +525,16 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         } ?: run {
             val intent = intent
             val uriString: String? = intent.getStringExtra(R2IntentHelper.URI)
-            val lcp: Boolean = intent.getBooleanExtra(R2IntentHelper.LCP, false)
             uriString?.let {
-                when {
-                    lcp -> parseIntentLcpl(uriString, isNetworkAvailable)
-                    else -> parseIntentEpub(uriString)
+                when (Publication.EXTENSION.fromString(intent.getStringExtra(R2IntentHelper.EXTENSION)!!)){
+                    Publication.EXTENSION.LCPL -> parseIntentLcpl(uriString, isNetworkAvailable)
+                    else -> parseIntentPublication(uriString)
                 }
             }
         }
     }
 
-    private fun parseIntentEpub(uriString: String) {
+    private fun parseIntentPublication(uriString: String) {
         val uri: Uri? = Uri.parse(uriString)
         if (uri != null) {
 
@@ -532,14 +542,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             progress.show()
             val fileName = UUID.randomUUID().toString()
             val publicationPath = R2DIRECTORY + fileName
-            val path = RealPathUtil.getRealPath(this, uri)
+
             task {
-                if (path != null) {
-                    copyFile(File(path), File(publicationPath))
-                } else {
-                    val input = URL(uri.toString()).openStream()
-                    input.toFile(publicationPath)
-                }
+                ContentResolverUtil.getContentInputStream(this,uri, publicationPath)
             } then {
                 preparePublication(publicationPath, uriString, fileName, progress)
             }
@@ -555,7 +560,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         try {
             launch {
 
-                if (uriString.endsWith(".epub")) {
+                when {
+                    uriString.endsWith(Publication.EXTENSION.EPUB.value) -> {
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
@@ -563,8 +569,27 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                                 ?: false)
                         progress.dismiss()
                     }
-                } else if (uriString.endsWith(".cbz")) {
-                    val parser = CbzParser()
+                    }
+                    uriString.endsWith(Publication.EXTENSION.CBZ.value) -> {
+                        val parser = CBZParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
+                                    ?: false)
+                            progress.dismiss()
+                        }
+                    }
+                    uriString.endsWith(Publication.EXTENSION.AUDIO.value) -> {
+                        val parser = AudioBookParser()
+                        val pub = parser.parse(publicationPath)
+                        if (pub != null) {
+                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
+                                    ?: false)
+                            progress.dismiss()
+                        }
+                    }
+                    uriString.endsWith(Publication.EXTENSION.DIVINA.value) -> {
+                        val parser = DiViNaParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
                         prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
@@ -573,6 +598,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 }
 
+
+                }
             }
         } catch (e: Throwable) {
             e.printStackTrace()
@@ -581,11 +608,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
     fun prepareSyntheticPageList(pub: Publication, book: Book) {
         if (pub.pageList.isEmpty() && !(positionsDB.positions.isInitialized(book.id!!))) {
-            val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!, pub.metadata.identifier)
+            val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!, pub.metadata.identifier!!)
 
             when (pub.type) {
-                Publication.TYPE.EPUB -> syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName, pub.readingOrder))
-                Publication.TYPE.WEBPUB -> syntheticPageList.execute(Triple("", book.fileName, pub.readingOrder))
+                Publication.TYPE.EPUB -> syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName!!, pub.readingOrder))
+                Publication.TYPE.WEBPUB -> syntheticPageList.execute(Triple("", book.fileName!!, pub.readingOrder))
                 else -> {
                     //no page list
                 }
@@ -709,7 +736,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         }
                     }
                     element.endsWith(Publication.EXTENSION.CBZ.value) -> {
-                        val parser = CbzParser()
+                        val parser = CBZParser()
                         val pub = parser.parse(publicationPath)
                         if (pub != null) {
                             prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
@@ -737,21 +764,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    private fun copyFile(src: File, dst: File) {
-        var `in`: InputStream? = null
-        var out: OutputStream? = null
-        try {
-            `in` = FileInputStream(src)
-            out = FileOutputStream(dst)
-            IOUtils.copy(`in`, out)
-        } catch (ioe: IOException) {
-            Timber.e(ioe)
-        } finally {
-            IOUtils.closeQuietly(out)
-            IOUtils.closeQuietly(`in`)
-        }
-    }
-
     protected fun prepareToServe(pub: PubBox?, fileName: String, absolutePath: String, add: Boolean, lcp: Boolean) {
         if (pub == null) {
             catalogView.snackbar("Invalid publication")
@@ -761,41 +773,57 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val container = pub.container
 
         launch {
-            val publicationIdentifier = publication.metadata.identifier
+            val publicationIdentifier = publication.metadata.identifier!!
             val book: Book = when {
                 publication.type == Publication.TYPE.EPUB -> {
                     preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
                     val author = authorName(publication)
                     val cover = publication.coverLink?.href?.let {
+                        try {
                         ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
+                        } catch (e: ZipException) {
+                            null
+                        }
                     }
 
                     if (!lcp) {
                         server.addEpub(publication, container, "/$fileName", applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json")
                     }
-                    Book(fileName, publication.metadata.title, author, absolutePath, null, publication.coverLink?.href, publicationIdentifier, cover, Publication.EXTENSION.EPUB)
+                    Book(title = publication.metadata.title, author = author, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.EPUB, progression = "{}")
                 }
                 publication.type == Publication.TYPE.CBZ -> {
                     val cover = publication.coverLink?.href?.let {
+                        try {
                         container.data(it)
+                        } catch (e: ContainerError.fileNotFound) {
+                            null
+                        }
                     }
 
-                    Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, publicationIdentifier, cover, Publication.EXTENSION.CBZ)
+                    Book(title = publication.metadata.title, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.CBZ, progression = "{}")
                 }
                 publication.type == Publication.TYPE.DiViNa -> {
                     val cover = publication.coverLink?.href?.let {
+                        try {
                         container.data(it)
+                        } catch (e: ContainerError.fileNotFound) {
+                            null
+                    }
                     }
 
-                    Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, publicationIdentifier, cover, Publication.EXTENSION.DIVINA)
+                    Book(title = publication.metadata.title, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.DIVINA, progression = "{}")
                 }
                 publication.type == Publication.TYPE.AUDIO -> {
                     val cover = publication.coverLink?.href?.let {
+                        try {
                         container.data(it)
+                        } catch (e: ContainerError.fileNotFound) {
+                            null
+                        }
                     }
 
                     //Building book object and adding it to library
-                    Book(fileName, publication.metadata.title, null, absolutePath, null, publication.coverLink?.href, publicationIdentifier, cover, Publication.EXTENSION.AUDIO)
+                    Book(title = publication.metadata.title, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.AUDIO, progression = "{}")
                 }
                 else -> TODO()
             }
@@ -852,7 +880,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         task {
             val book = books[position]
             val publicationPath = R2DIRECTORY + book.fileName
-            val file = File(publicationPath)
+            val file = File(book.href)
             when {
                 book.ext == Publication.EXTENSION.EPUB -> {
                     val parser = EpubParser()
@@ -866,7 +894,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 }
                 book.ext == Publication.EXTENSION.CBZ -> {
-                    val parser = CbzParser()
+                    val parser = CBZParser()
                     val pub = parser.parse(publicationPath)
                     pub?.let {
                         startActivity(publicationPath, book, pub.publication)
@@ -901,7 +929,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 }
                 book.ext == Publication.EXTENSION.JSON -> {
-                    prepareWebPublication(book.fileUrl, book, add = false)
+                    prepareWebPublication(book.href, book, add = false)
                 }
                 else -> null
             }
@@ -921,7 +949,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
             json?.let {
                 val externalPub = parsePublication(json)
-                val externalURI = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
+                val externalURIBase = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
+                val externalURIFileName = externalPub.linkWithRel("self")!!.href!!.substring(externalManifest.lastIndexOf("/") + 1)
 
                 var book: Book? = null
 
@@ -931,15 +960,15 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         val bitmap: Bitmap? = if (URI(href).isAbsolute) {
                             getBitmapFromURL(href)
                         } else {
-                            getBitmapFromURL(externalURI + href)
+                            getBitmapFromURL(externalURIBase + href)
                         }
                         val stream = ByteArrayOutputStream()
                         bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-                        book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, externalURI + externalPub.coverLink?.href, externalPub.metadata.identifier, stream.toByteArray(), Publication.EXTENSION.JSON)
+                        book = Book(title = externalPub.metadata.title, href = externalManifest, identifier = externalPub.metadata.identifier!!, cover = stream.toByteArray(), ext = Publication.EXTENSION.JSON)
 
                     } ?: run {
-                        book = Book(externalURI, externalPub.metadata.title, null, externalManifest, null, null, externalPub.metadata.identifier, null, Publication.EXTENSION.JSON)
+                        book = Book(title = externalPub.metadata.title, href = externalManifest, identifier = externalPub.metadata.identifier!!,  ext = Publication.EXTENSION.JSON)
                     }
 
                     launch {
@@ -955,14 +984,14 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     }
                 } else {
                     book = webPub
-                    startActivity(book!!.fileName, book!!, externalPub, book?.cover)
+                    startActivity(externalManifest, book!!, externalPub, book?.cover)
                 }
             }
         }
     }
 
     private fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication) {
-        prepareToServe(pub, book.fileName, file.absolutePath, add = false, lcp = false)
+        prepareToServe(pub, book.fileName!!, file.absolutePath, add = false, lcp = false)
         startActivity(publicationPath, book, publication)
     }
 
@@ -1009,7 +1038,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val mime = fileType.first
                     val name = fileType.second
 
-                    if (name.endsWith(".lcpl")) {
+                    if (name.endsWith(Publication.EXTENSION.LCPL.value)) {
                         processLcpActivityResult(uri, it, progress, isNetworkAvailable)
                     } else {
                         processEpubResult(uri, mime, progress, name)
@@ -1067,7 +1096,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val file = File(publicationPath)
 
             try {
-                if (mime == EpubParser.mimetypeEpub) {
+                if (mime == EPUBConstant.mimetype) {
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
@@ -1075,15 +1104,15 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                                 ?: false)
                         progress.dismiss()
                     }
-                } else if (name.endsWith(Publication.EXTENSION.CBZ.value)) {
-                    val parser = CbzParser()
+                } else if (name.endsWith(Publication.EXTENSION.CBZ.value) || mime == CBZConstant.mimetypeCBZ) {
+                    val parser = CBZParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
                         prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
                                 ?: false)
                         progress.dismiss()
                     }
-                } else if (name.endsWith(Publication.EXTENSION.DIVINA.value) || mime == DiViNaParser.mimetypeDiViNa) {
+                } else if (name.endsWith(Publication.EXTENSION.DIVINA.value) || mime == DiViNaConstant.mimetype) {
                     val parser = DiViNaParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
@@ -1091,7 +1120,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                                 ?: false)
                         progress.dismiss()
                     }
-                } else if (name.endsWith(Publication.EXTENSION.AUDIO.value) || mime == AudioBookParser.mimetypeAudiobook) {
+                } else if (name.endsWith(Publication.EXTENSION.AUDIO.value) || mime == AudioBookConstant.mimetype) {
                     val parser = AudioBookParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {

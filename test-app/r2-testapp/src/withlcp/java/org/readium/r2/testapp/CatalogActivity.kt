@@ -35,8 +35,8 @@ import org.readium.r2.lcp.public.*
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRM
-import org.readium.r2.streamer.parser.EpubParser
 import org.readium.r2.streamer.parser.PubBox
+import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.testapp.db.Book
 import org.readium.r2.testapp.drm.DRMFulfilledPublication
 import org.readium.r2.testapp.drm.DRMLibraryService
@@ -290,7 +290,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                             val parser = EpubParser()
                             val pub = parser.parse(publication.localURL)
                             pub?.let {
-                                val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
+                                val pair = parser.fillEncryption(pub.container, pub.publication, pub.container.drm)
                                 pub.container = pair.first
                                 pub.publication = pair.second
                                 prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
@@ -316,7 +316,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
 
                 } else {
 
-                    prepareToServe(pub, book.fileName, file.absolutePath, add = false, lcp = true)
+                    prepareToServe(pub, book.fileName!!, file.absolutePath, add = false, lcp = true)
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.filesDir.path + "/"+ Injectable.Style.rawValue +"/UserProperties.json")
 
                     this@CatalogActivity.startActivity(intentFor<EpubActivity>("publicationPath" to publicationPath, "publicationFileName" to book.fileName, "publication" to publication, "bookId" to book.id, "drm" to true))
@@ -350,7 +350,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                             val parser = EpubParser()
                             val pub = parser.parse(result.localURL)
                             pub?.let {
-                                val pair = parser.parseEncryption(pub.container, pub.publication, pub.container.drm)
+                                val pair = parser.fillEncryption(pub.container, pub.publication, pub.container.drm)
                                 pub.container = pair.first
                                 pub.publication = pair.second
                                 prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)

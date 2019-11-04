@@ -14,9 +14,13 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
+import android.net.Uri
+import android.os.Build
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.readium.r2.shared.Publication
+import java.net.URI
+import java.nio.file.Paths
 
 /**
  * Global Parameters
@@ -32,7 +36,44 @@ val Context.database: BooksDatabaseOpenHelper
 val Context.appContext: Context
     get() = applicationContext
 
-class Book(val fileName: String, val title: String, val author: String?, val fileUrl: String, var id: Long?, val coverLink: String?, val identifier: String, val cover: ByteArray?, val ext: Publication.EXTENSION, val creation:Long = DateTime().toDate().time)
+class Book(var id: Long? = null,
+           val creation: Long = DateTime().toDate().time,
+           val href: String,
+           val title: String,
+           val author: String? = null,
+           val identifier: String,
+           val cover: ByteArray? = null,
+           val progression: String? = "{}",
+           val ext: Publication.EXTENSION
+) {
+
+    val fileName: String?
+        get() {
+            val url = URI(href)
+            if (!url.scheme.isNullOrEmpty() && url.isAbsolute) {
+                val uri = Uri.parse(href);
+                return uri.lastPathSegment
+            }
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val path = Paths.get(href)
+                path.fileName.toString()
+            } else {
+                val uri = Uri.parse(href);
+                uri.lastPathSegment
+            }
+        }
+
+    val url: URI?
+        get() {
+            val url = URI(href)
+            if (url.isAbsolute && url.scheme.isNullOrEmpty()) {
+                return null
+            }
+            return url
+        }
+
+
+}
 
 class BooksDatabase(context: Context) {
 
@@ -62,16 +103,15 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
     override fun onCreate(db: SQLiteDatabase) {
 
         db.createTable(BOOKSTable.NAME, true,
-                BOOKSTable.ID to INTEGER + PRIMARY_KEY  + AUTOINCREMENT,
-                BOOKSTable.FILENAME to TEXT,
+                BOOKSTable.ID to INTEGER + PRIMARY_KEY + AUTOINCREMENT,
                 BOOKSTable.TITLE to TEXT,
                 BOOKSTable.AUTHOR to TEXT,
-                BOOKSTable.FILEURL to TEXT,
+                BOOKSTable.HREF to TEXT,
                 BOOKSTable.IDENTIFIER to TEXT,
                 BOOKSTable.COVER to BLOB,
-                BOOKSTable.COVERURL to TEXT,
                 BOOKSTable.EXTENSION to TEXT,
-                BOOKSTable.CREATION to INTEGER)
+                BOOKSTable.CREATION to INTEGER,
+                BOOKSTable.PROGRESSION to TEXT)
 
     }
 
@@ -84,12 +124,14 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
                     upgradeVersion2(db) {
                         //done
                     }
-                } catch (e: SQLiteException) { }
+                } catch (e: SQLiteException) {
+                }
                 try {
                     upgradeVersion3(db) {
                         //done
                     }
-                } catch (e: SQLiteException) { }
+                } catch (e: SQLiteException) {
+                }
             }
             2 -> {
                 upgradeVersion3(db) {
@@ -107,7 +149,7 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
             while (hasItem) {
                 val id = cursor.getInt(cursor.getColumnIndex(BOOKSTable.ID))
                 val values = ContentValues()
-                values.put(BOOKSTable.EXTENSION, ".epub")
+                values.put(BOOKSTable.EXTENSION, Publication.EXTENSION.EPUB.value)
                 db.update(BOOKSTable.NAME, values, "${BOOKSTable.ID}=?", arrayOf(id.toString()))
                 hasItem = cursor.moveToNext()
             }
@@ -115,6 +157,7 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
         }
         callback()
     }
+
     private fun upgradeVersion3(db: SQLiteDatabase, callback: () -> Unit) {
         db.execSQL("ALTER TABLE " + BOOKSTable.NAME + " ADD COLUMN " + BOOKSTable.CREATION + " INTEGER DEFAULT ${DateTime().toDate().time};")
         val cursor = db.query(BOOKSTable.NAME, BOOKSTable.RESULT_COLUMNS, null, null, null, null, null, null)
@@ -138,15 +181,14 @@ object BOOKSTable {
     const val NAME = "BOOKS"
     const val ID = "id"
     const val IDENTIFIER = "identifier"
-    const val FILENAME = "href"
     const val TITLE = "title"
     const val AUTHOR = "author"
-    const val FILEURL = "fileUrl"
+    const val HREF = "href"
     const val COVER = "cover"
-    const val COVERURL = "coverUrl"
     const val EXTENSION = "extension"
-    const val CREATION = "creantionDate"
-    var RESULT_COLUMNS = arrayOf(ID, IDENTIFIER, FILENAME, TITLE, AUTHOR, FILEURL, COVER, COVERURL, EXTENSION, CREATION)
+    const val CREATION = "creationDate"
+    const val PROGRESSION = "progression"
+    var RESULT_COLUMNS = arrayOf(ID, IDENTIFIER, TITLE, AUTHOR, HREF, COVER, EXTENSION, CREATION, PROGRESSION)
 
 }
 
@@ -163,13 +205,11 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
         if (exists.isEmpty() || allowDuplicates) {
             return database.use {
                 return@use insert(BOOKSTable.NAME,
-                        BOOKSTable.FILENAME to book.fileName,
                         BOOKSTable.TITLE to book.title,
                         BOOKSTable.AUTHOR to book.author,
-                        BOOKSTable.FILEURL to book.fileUrl,
+                        BOOKSTable.HREF to book.href,
                         BOOKSTable.IDENTIFIER to book.identifier,
                         BOOKSTable.COVER to book.cover,
-                        BOOKSTable.COVERURL to book.coverLink,
                         BOOKSTable.EXTENSION to book.ext.value,
                         BOOKSTable.CREATION to book.creation)
             }
@@ -179,7 +219,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     private fun has(book: Book): List<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION)
+            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION)
                     .whereArgs("identifier = {identifier}", "identifier" to book.identifier)
                     .exec {
                         parseList(MyRowParser())
@@ -189,7 +229,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     fun has(identifier: String): List<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION)
+            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION)
                     .whereArgs("identifier = {identifier}", "identifier" to identifier)
                     .exec {
                         parseList(MyRowParser())
@@ -197,7 +237,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
         }
     }
 
-    fun delete(book: Book) : Int {
+    fun delete(book: Book): Int {
         return database.use {
             return@use delete(BOOKSTable.NAME, "id = {id}", "id" to book.id!!)
         }
@@ -205,7 +245,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     fun list(): MutableList<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.FILENAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.FILEURL, BOOKSTable.ID, BOOKSTable.COVERURL, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION)
+            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION)
                     .orderBy(BOOKSTable.CREATION, SqlOrderDirection.DESC)
                     .orderBy(BOOKSTable.TITLE, SqlOrderDirection.ASC)
                     .exec {
@@ -216,38 +256,44 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     class MyRowParser : RowParser<Book> {
         override fun parseRow(columns: Array<Any?>): Book {
-            val filename = columns[0]?.let {
+
+            val title = columns[0]?.let {
                 return@let it as String
             } ?: kotlin.run { return@run "" }
-            val title = columns[1]?.let {
+
+            val author = columns[1]?.let {
                 return@let it as String
             } ?: kotlin.run { return@run "" }
-            val author = columns[2]?.let {
+
+            val href = columns[2]?.let {
                 return@let it as String
             } ?: kotlin.run { return@run "" }
-            val fileUrl = columns[3]?.let {
-                return@let it as String
-            } ?: kotlin.run { return@run "" }
-            val id = columns[4]?.let {
+
+            val id = columns[3]?.let {
                 return@let it as Long
             } ?: kotlin.run { return@run (-1).toLong() }
-            val coverUrl = columns[5]?.let {
-                return@let it as String
-            }
-            val identifier = columns[6]?.let {
+
+            val identifier = columns[4]?.let {
                 return@let it as String
             } ?: kotlin.run { return@run "" }
-            val cover = columns[7]?.let {
+
+            val cover = columns[5]?.let {
                 return@let it as ByteArray
             }
-            val ext = columns[8]?.let {
+
+            val ext = columns[6]?.let {
                 return@let it as String
             } ?: kotlin.run { return@run "" }
-            val creation = columns[9]?.let {
+
+            val creation = columns[7]?.let {
                 return@let it
             } ?: kotlin.run { return@run 0 }
 
-            return Book(filename, title, author, fileUrl, id, coverUrl, identifier, cover, Publication.EXTENSION.fromString(ext)!!, creation as Long)
+            val progression = columns[8]?.let {
+                return@let it as String
+            } ?: kotlin.run { return@run "" }
+
+            return Book(id, creation as Long, href, title, author, identifier, cover, progression, Publication.EXTENSION.fromString(ext)!!)
 
         }
     }

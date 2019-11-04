@@ -452,6 +452,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
                 val locator = data.getSerializableExtra("locator") as Locator
                 locator.locations?.fragment?.let { fragment ->
 
+                    // TODO handle fragment anchors (id=) instead of catching the json exception
+                    try {
                     val fragments = JSONArray(fragment).getString(0).split(",").associate {
                         val (left, right) = it.split("=")
                         left to right.toInt()
@@ -474,6 +476,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
                             }
                         }
                     }, 1200)
+                    } catch (e: Exception) {
+                    }
                 }
             }
         }
