@@ -60,10 +60,10 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListen
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
         publicationFileName = intent.getStringExtra("publicationFileName")
-        publicationIdentifier = publication.metadata.identifier
+        publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title
 
-        for (link in publication.readingOrder) {
+        for (link in publication.images) {
             resources.add(link.href.toString())
         }
 
@@ -85,7 +85,6 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListen
             resourcePager.currentItem = index
         }
 
-        toggleActionBar()
     }
 
     override fun onPause() {
@@ -136,7 +135,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListen
         preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
     }
 
-    override fun toggleActionBar(v: View?) {
+    override fun toggleActionBar() {
         if (allowToggleActionBar) {
             launch {
                 if (supportActionBar!!.isShowing) {
@@ -153,6 +152,10 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListen
                 }
             }
         }
+    }
+
+    override fun toggleActionBar(v: View?) {
+        toggleActionBar()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
