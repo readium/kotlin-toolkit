@@ -42,15 +42,17 @@ class AudiobookActivity : R2AudiobookActivity() {
             launch {
                 if (intent.hasExtra("cover")) {
                     val byteArray = intent.getByteArrayExtra("cover")
-                    val bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray!!.size)
-                    findViewById<ImageView>(R.id.imageView).setImageBitmap(bmp)
+                    byteArray?.let {
+                        val bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                        findViewById<ImageView>(R.id.imageView).setImageBitmap(bmp)
+                    }
                 }
                 menuDrm?.isVisible = intent.getBooleanExtra("drm", false)
             }
+            mediaPlayer?.progress = progressDialog
 
         }, 100)
 
-        mediaPlayer?.progress = progressDialog
 
     }
 
