@@ -24,7 +24,7 @@ class Metadata : Serializable {
         get() = multilanguageTitle?.singleString ?: ""
 
     var languages: MutableList<String> = mutableListOf()
-    lateinit var identifier: String
+    var identifier: String? = null
     // Contributors.
     var authors: MutableList<Contributor> = mutableListOf()
     var translators: MutableList<Contributor> = mutableListOf()

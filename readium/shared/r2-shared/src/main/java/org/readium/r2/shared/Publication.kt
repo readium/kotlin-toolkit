@@ -96,7 +96,9 @@ class Publication : Serializable {
         CBZ(".cbz"),
         JSON(".json"),
         DIVINA(".divina"),
-        AUDIO(".audiobook");
+        AUDIO(".audiobook"),
+        LCPL(".lcpl"),
+        UNKNOWN("");
 
         companion object : EnumCompanion<String, EXTENSION>(values().associateBy(EXTENSION::value))
     }
@@ -208,6 +210,7 @@ class Publication : Serializable {
     private fun findLinkInPublicationLinks(closure: (Link) -> Boolean) =
             resources.firstOrNull(closure) ?: readingOrder.firstOrNull(closure)
             ?: links.firstOrNull(closure) ?: pageList.firstOrNull(closure)
+            ?: images.firstOrNull(closure)
 
     fun addSelfLink(endPoint: String, baseURL: URL) {
         val publicationUrl: URL
