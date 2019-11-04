@@ -15,6 +15,9 @@ import kotlinx.coroutines.Dispatchers
 import org.json.JSONObject
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2ActivityListener
+import org.readium.r2.navigator.ReadingProgression
+import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.shared.Link
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
 import org.readium.r2.shared.Publication
