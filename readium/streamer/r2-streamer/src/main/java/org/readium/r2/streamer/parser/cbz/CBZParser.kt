@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.parser
+package org.readium.r2.streamer.parser.cbz
 
 import android.net.Uri
 import android.os.Build
@@ -15,7 +15,9 @@ import android.text.TextUtils
 import android.webkit.MimeTypeMap
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
-import org.readium.r2.streamer.container.ContainerCbz
+import org.readium.r2.streamer.container.ContainerError
+import org.readium.r2.streamer.parser.PubBox
+import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -25,14 +27,7 @@ import java.security.MessageDigest
 import kotlin.experimental.and
 
 
-/**
- *      CbzParser : Handle any CBZ file. Opening, listing files
- *                  get name of the resource, creating the Publication
- *                  for rendering
- */
-
-class CbzParser : PublicationParser {
-
+class CBZConstant {
     companion object {
         // Some constants useful to parse an Cbz document
         const val mimetypeCBZ = "application/vnd.comicbook+zip"
@@ -63,23 +58,28 @@ class CbzParser : PublicationParser {
 //        application/vnd.comicbook-rar,
 //        application/x-cbr
     }
+}
+
+/**
+ *      CbzParser : Handle any CBZ file. Opening, listing files
+ *                  get name of the resource, creating the Publication
+ *                  for rendering
+ */
+class CbzParser : PublicationParser {
+
 
     /**
      * Check if path exist, generate a container for CBZ file
      *                   then check if creation was a success
      */
-    private fun generateContainerFrom(path: String): ContainerCbz {
-        val container: ContainerCbz?
-
+    private fun generateContainerFrom(path: String): CBZArchiveContainer {
+        val container: CBZArchiveContainer?
         if (!File(path).exists())
-            throw Exception("Missing File")
-        container = ContainerCbz(path)
-        if (!container.successCreated)
-            throw Exception("Missing File")
+            throw ContainerError.missingFile(path)
+        container = CBZArchiveContainer(path)
         return container
     }
 
-    //TODO Comment that code
     /**
      *
      */
@@ -91,7 +91,7 @@ class CbzParser : PublicationParser {
             return null
         }
         val listFiles = try {
-            container.getFilesList()
+            container.files
         } catch (e: Exception) {
             Timber.e(e, "Missing File : META-INF/container.xml")
             return null
@@ -105,23 +105,26 @@ class CbzParser : PublicationParser {
             link.typeLink = getMimeType(it)
             link.href = it
 
-            if (getMimeType(it) == mimetypeJPEG || getMimeType(it) == mimetypePNG) {
-                publication.readingOrder.add(link)
-            } else {
-                publication.resources.add(link)
+            if (!it.startsWith("_") && !it.startsWith(".")) {
+                if (link.typeLink == CBZConstant.mimetypeJPEG || link.typeLink == CBZConstant.mimetypePNG) {
+                    publication.images.add(link)
+                } else {
+                    publication.resources.add(link)
+                }
             }
+
         }
         val hash = fileToMD5(fileAtPath)
-        publication.readingOrder.first().rel.add("cover")
+        publication.images.first().rel.add("cover")
 
         // Add href as title if title is missing (this is used to display the TOC)
-        for ((index, link) in publication.readingOrder.withIndex()) {
+        for ((index, link) in publication.images.withIndex()) {
             if (link.title == null || link.title!!.isEmpty()) {
                 link.title = link.href
             }
         }
 
-        publication.readingOrder = publication.readingOrder.sortedWith(compareBy {it.href}).toMutableList()
+        publication.images = publication.images.sortedWith(compareBy { it.href }).toMutableList()
 
         publication.metadata.identifier = hash!!
         publication.type = Publication.TYPE.CBZ
