@@ -40,7 +40,84 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
     }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
+        pagerPosition = 0
+
+        // Set the progression fetched
+        navigatorDelegate?.navigator(this, locator)
+
+        // href is the link to the page in the toc
+        var href = locator.href
+
+        if (href!!.indexOf("#") > 0) {
+            href = href.substring(0, href.indexOf("#"))
+        }
+
+        fun setCurrent(resources: ArrayList<*>) {
+            for (resource in resources) {
+                if (resource is Pair<*, *>) {
+                    resource as Pair<Int, String>
+                    if (resource.second.endsWith(href)) {
+                        if (resourcePager.currentItem == resource.first) {
+                            // reload webview if it has an anchor
+                            val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
+                            locator.locations?.fragment?.let {
+                                var anchor = it
+                                if (anchor.startsWith("#")) {
+                                } else {
+                                    anchor = "#$anchor"
+                                }
+                                val goto = resource.second + anchor
+                                currentFragent?.webView?.loadUrl(goto)
+                            } ?: run {
+                                currentFragent?.webView?.loadUrl(resource.second)
+                            }
+                        } else {
+                            resourcePager.currentItem = resource.first
+                        }
+                        break
+                    }
+                } else {
+                    resource as Triple<Int, String, String>
+                    if (resource.second.endsWith(href) || resource.third.endsWith(href)) {
+                        resourcePager.currentItem = resource.first
+                        break
+                    }
+                }
+            }
+        }
+
+        resourcePager.adapter = adapter
+
+        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+            setCurrent(resourcesSingle)
+        } else {
+
+            when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
+                1 -> {
+                    setCurrent(resourcesSingle)
+                }
+                2 -> {
+                    setCurrent(resourcesDouble)
+                }
+                else -> {
+                    // TODO based on device
+                    // TODO decide if 1 page or 2 page
+                    setCurrent(resourcesSingle)
+                }
+            }
+        }
+
+        if (supportActionBar!!.isShowing && allowToggleActionBar) {
+            resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE)
+        }
+
+        return true
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
