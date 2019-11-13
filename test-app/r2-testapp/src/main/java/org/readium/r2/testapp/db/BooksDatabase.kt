@@ -18,6 +18,8 @@ import android.net.Uri
 import android.os.Build
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
+import org.json.JSONObject
+import org.readium.r2.shared.Locator
 import org.readium.r2.shared.Publication
 import java.net.URI
 import java.nio.file.Paths
@@ -43,7 +45,7 @@ class Book(var id: Long? = null,
            val author: String? = null,
            val identifier: String,
            val cover: ByteArray? = null,
-           val progression: String? = "{}",
+           val progression: String? = null,
            val ext: Publication.EXTENSION
 ) {
 
@@ -237,6 +239,29 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
         }
     }
 
+    private fun has(id: Long): List<Book> {
+        return database.use {
+            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION)
+                    .whereArgs("id = {id}", "id" to id)
+                    .exec {
+                        parseList(MyRowParser())
+                    }
+        }
+    }
+    fun currentLocator(id: Long): Locator? {
+        return database.use {
+            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION)
+                    .whereArgs("id = {id}", "id" to id)
+                    .exec {
+                        parseList(MyRowParser()).firstOrNull()?.progression?.let {
+                            Locator.fromJSON(JSONObject(it))
+                        } ?: run {
+                            null
+                        }
+                    }
+        }
+    }
+
     fun delete(book: Book): Int {
         return database.use {
             return@use delete(BOOKSTable.NAME, "id = {id}", "id" to book.id!!)
@@ -251,6 +276,18 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
+        }
+    }
+
+    fun saveProgression(locator: Locator?, bookId: Long) : Boolean {
+        val exists = has(bookId)
+        if (exists.isEmpty()) {
+            return false
+        }
+        return database.use {
+            return@use update(BOOKSTable.NAME,BOOKSTable.PROGRESSION to locator?.toJSON().toString())
+                    .whereArgs("${BOOKSTable.ID} = {id}", "id" to bookId)
+                    .exec() > 0
         }
     }
 
@@ -291,7 +328,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
             val progression = columns[8]?.let {
                 return@let it as String
-            } ?: kotlin.run { return@run "" }
+            } ?: kotlin.run { return@run null }
 
             return Book(id, creation as Long, href, title, author, identifier, cover, progression, Publication.EXTENSION.fromString(ext)!!)
 
