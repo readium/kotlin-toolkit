@@ -174,7 +174,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, R2Activity
         }, 100)
     }
 
-    override fun storeProgression(locations: Locations?) {
+    fun storeProgression(locations: Locations?) {
         storeDocumentIndex()
         val publicationIdentifier = publication.metadata.identifier
         preferences.edit().putString("$publicationIdentifier-documentLocations", locations?.toJSON().toString()).apply()
@@ -328,7 +328,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, R2Activity
                 // href is the link to the page in the toc
                 var href = locator.href
 
-                if (href.indexOf("#") > 0) {
+                if (href!!.indexOf("#") > 0) {
                     href = href.substring(0, href.indexOf("#"))
                 }
 

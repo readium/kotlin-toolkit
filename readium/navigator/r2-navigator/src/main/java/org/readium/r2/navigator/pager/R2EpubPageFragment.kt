@@ -26,11 +26,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
-import org.json.JSONObject
-import org.readium.r2.navigator.R
-import org.readium.r2.navigator.R2ActivityListener
-import org.readium.r2.navigator.R2BasicWebView
-import org.readium.r2.navigator.R2WebView
+import org.readium.r2.navigator.*
 import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.PageProgressionDirection
@@ -76,6 +72,7 @@ class R2EpubPageFragment : Fragment() {
 
         webView.activity = activity as AppCompatActivity
         webView.listener = activity as R2ActivityListener
+        webView.navigator = activity as Navigator
 
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
@@ -92,12 +89,12 @@ class R2EpubPageFragment : Fragment() {
 
         var endReached = false
         webView.setOnOverScrolledCallback(object : R2BasicWebView.OnOverScrolledCallback {
-             override fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean) {
+            override fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean) {
                 val metrics = DisplayMetrics()
                 webView.activity.windowManager.defaultDisplay.getMetrics(metrics)
 
 
-                val topDecile = webView.contentHeight - 1.15*metrics.heightPixels
+                val topDecile = webView.contentHeight - 1.15 * metrics.heightPixels
                 val bottomDecile = (webView.contentHeight - metrics.heightPixels).toDouble()
 
                 when (scrollY) {
@@ -147,12 +144,12 @@ class R2EpubPageFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
-                val currentFragment:R2EpubPageFragment = (webView.listener.resourcePager?.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
+                val currentFragment: R2EpubPageFragment = (webView.listener.resourcePager?.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
                 val previousFragment:R2EpubPageFragment? = (webView.listener.resourcePager?.adapter as R2PagerAdapter).getPreviousFragment() as? R2EpubPageFragment
                 val nextFragment:R2EpubPageFragment? = (webView.listener.resourcePager?.adapter as R2PagerAdapter).getNextFragment() as? R2EpubPageFragment
 
                 if (this@R2EpubPageFragment.tag == currentFragment.tag) {
-                    var locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.listener.publicationIdentifier}-documentLocations", "{}")))
+                    var locations = webView.navigator.currentLocation?.locations
 
                     // TODO this seems to be needed, will need to test more
                     if (url!!.indexOf("#") > 0) {
@@ -161,13 +158,13 @@ class R2EpubPageFragment : Fragment() {
                         locations = Locations(fragment = id)
                     }
 
-                    if (locations.fragment == null) {
-                        locations.progression?.let { progression ->
+                    if (locations?.fragment == null) {
+                        locations?.progression?.let { progression ->
                             currentFragment.webView.progression = progression
 
                             if (webView.listener.preferences.getBoolean(SCROLL_REF, false)) {
 
-                            currentFragment.webView.scrollToPosition(progression)
+                                currentFragment.webView.scrollToPosition(progression)
 
                             } else {
                                 (object : CountDownTimer(100, 1) {
@@ -226,17 +223,18 @@ class R2EpubPageFragment : Fragment() {
             true
         }
 
-        val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.listener.publicationIdentifier}-documentLocations", "{}")))
 
-        locations.fragment?.let {
+        val locations = webView.navigator.currentLocation?.locations
+
+        locations?.fragment?.let {
             var anchor = it
             if (anchor.startsWith("#")) {
             } else {
                 anchor = "#$anchor"
             }
-            val href = resourceUrl +  anchor
+            val href = resourceUrl + anchor
             webView.loadUrl(href)
-        }?:run {
+        } ?: run {
             webView.loadUrl(resourceUrl)
         }
 

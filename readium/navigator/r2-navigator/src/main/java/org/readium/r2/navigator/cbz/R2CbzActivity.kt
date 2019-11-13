@@ -121,7 +121,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListen
     /**
      * storeProgression() : save in the preference the last progression in the spine item
      */
-    override fun storeProgression(locations: Locations?) {
+    fun storeProgression(locations: Locations?) {
         storeDocumentIndex()
         val publicationIdentifier = publication.metadata.identifier
         preferences.edit().putString("$publicationIdentifier-documentLocations", locations?.toJSON().toString()).apply()
@@ -170,7 +170,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListen
                 fun setCurrent(resources: ArrayList<*>) {
                     for (index in 0 until resources.count()) {
                         val resource = resources[index] as String
-                        if (resource.endsWith(locator.href)) {
+                        if (resource.endsWith(locator.href!!)) {
                             resourcePager.currentItem = index
                             break
                         }

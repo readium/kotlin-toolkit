@@ -27,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
-import org.readium.r2.shared.Locations
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.getAbsolute
 
@@ -40,6 +39,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     lateinit var activity: AppCompatActivity
     lateinit var listener: R2ActivityListener
+    lateinit var navigator: Navigator
 
     var progression: Double = 0.0
     var overrideUrlLoading = true
@@ -85,15 +85,15 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 if (listener.publication.metadata.direction == "rtl") {
                     this@R2BasicWebView.evaluateJavascript("scrollRightRTL();") { result ->
                         if (result.contains("edge")) {
-                            listener.previousResource(false)
+                            navigator.goBackward()
                         }
                     }
                 } else {
-                    listener.nextResource(false)
+                    navigator.goForward()
                 }
             } else {
                 if (!this@R2BasicWebView.canScrollHorizontally(1)) {
-                    listener.nextResource(false)
+                    navigator.goForward()
                 }
                 this@R2BasicWebView.evaluateJavascript("scrollRight();", null)
             }
@@ -116,16 +116,16 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 if (listener.publication.metadata.direction == "rtl") {
                     this@R2BasicWebView.evaluateJavascript("scrollLeftRTL();") { result ->
                         if (result.contains("edge")) {
-                            listener.nextResource(false)
+                            navigator.goForward()
                         }
                     }
                 } else {
-                    listener.previousResource(false)
+                    navigator.goBackward()
                 }
             } else {
                 // fix this for when vertical scrolling is enabled
                 if (!this@R2BasicWebView.canScrollHorizontally(-1)) {
-                    listener.previousResource(false)
+                    navigator.goBackward()
                 }
                 this@R2BasicWebView.evaluateJavascript("scrollLeft();", null)
             }
@@ -135,7 +135,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun progressionDidChange(positionString: String) {
         progression = positionString.toDouble()
-        listener.storeProgression(Locations(progression = progression))
+        listener.progressionDidChange(progression)
     }
 
     @android.webkit.JavascriptInterface
