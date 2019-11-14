@@ -213,7 +213,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                         activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
 
                         if (utteranceId.equals((utterances.size-1).toString())) {
-                            activityReference.get()?.nextResource(false)
+                            activityReference.get()?.goForward(false, completion = {})
                             nextResource()
                             startReading()
                         }
