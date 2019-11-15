@@ -252,10 +252,16 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
     fun startReading() {
         isPaused = false
-        configure()
-        val index = 0
-        for (i in index until utterances.size) {
-            textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString())
+        if (configure()) {
+            val index = 0
+            for (i in index until utterances.size) {
+                try {
+                    if (textToSpeech.speak(utterances[i], TextToSpeech.QUEUE_ADD, null, i.toString()) == TextToSpeech.ERROR)
+                        throw Exception("Couldn't add the string to the TTS queue")
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
+            }
         }
     }
 
@@ -304,8 +310,13 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     /**
      * Clean the text to speech queue by adding an empty text and using the TextToSpeech.QUEUE_FLUSH flag value.
      */
-    fun flushUtterancesQueue() {
-        textToSpeech.speak("", TextToSpeech.QUEUE_FLUSH, null, null)
+    private fun flushUtterancesQueue() {
+        try {
+            if (textToSpeech.speak("", TextToSpeech.QUEUE_FLUSH, null, null) == TextToSpeech.ERROR)
+                throw Exception("Unable to flush queue")
+        } catch(e: Exception) {
+            Timber.e(e)
+        }
     }
 
     /**
