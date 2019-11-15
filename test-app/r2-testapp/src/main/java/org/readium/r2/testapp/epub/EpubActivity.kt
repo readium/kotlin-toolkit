@@ -177,7 +177,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         next_chapter.setOnClickListener {
             goForward(false, completion = {})
             screenReader.nextResource()
-            screenReader.startReading()
             play_pause.setImageResource(android.R.drawable.ic_media_pause)
         }
         fast_back.setOnClickListener {
@@ -190,7 +189,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         prev_chapter.setOnClickListener {
             goBackward(false, completion = {})
             screenReader.previousResource()
-            screenReader.startReading()
             play_pause.setImageResource(android.R.drawable.ic_media_pause)
         }
 
@@ -422,7 +420,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                     updateScreenReaderSpeed(ttsSpeed)
 
                     screenReader.goTo(resourcePager.currentItem)
-                    screenReader.startReading()
 
                     item.title = resources.getString(R.string.epubactivity_read_aloud_stop)
 

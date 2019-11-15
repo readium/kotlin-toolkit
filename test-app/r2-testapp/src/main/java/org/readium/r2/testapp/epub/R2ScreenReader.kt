@@ -107,25 +107,34 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     fun goTo(index: Int) {
         this.resourceIndex = index
         isPaused = false
+
         if (textToSpeech.isSpeaking) {
             textToSpeech.stop()
         }
+
+        startReading()
     }
 
     fun previousResource() {
         resourceIndex -= 1
         isPaused = false
+
         if (textToSpeech.isSpeaking) {
             textToSpeech.stop()
         }
+
+        startReading()
     }
 
     fun nextResource() {
         resourceIndex += 1
         isPaused = false
+
         if (textToSpeech.isSpeaking) {
             textToSpeech.stop()
         }
+
+        startReading()
     }
 
     private fun configure(): Boolean {
@@ -250,7 +259,11 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         textToSpeech.shutdown()
     }
 
-    fun startReading() {
+    /**
+     * Set [isPaused] to false and add the [utterances] to the [textToSpeech] queue if [configure] worked
+     * successfully (returning true)
+     */
+    private fun startReading() {
         isPaused = false
         if (configure()) {
             val index = 0
