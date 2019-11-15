@@ -236,6 +236,12 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         screenReader.stopReading()
     }
 
+    /**
+     * The function allows to access the [R2ScreenReader] instance and set the [TextToSpeech] speech speed.
+     * Values are limited between 0.25 and 3.0 included.
+     *
+     * @param speed: Float - The speech speed we wish to use with Android's [TextToSpeech].
+     */
     fun updateScreenReaderSpeed(speed: Float) {
         var rSpeed = speed
 
@@ -406,9 +412,13 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             R.id.screen_reader -> {
                 if (!screenReader.isSpeaking && !screenReader.isPaused && item.title == resources.getString(R.string.epubactivity_read_aloud_start)) {
 
-                    val speed = preferences.getInt("reader_TTS_speed", (2.75 * 4.toDouble() / 11.toDouble()).toInt())
-
+                    //Get user settings speed when opening the screen reader. Get a neutral percentage (corresponding to
+                    //the normal speech speed) if no user settings exist.
+                    val speed = preferences.getInt("reader_TTS_speed",
+                        (2.75 * 3.toDouble() / 11.toDouble() * 100).toInt())
+                    //Convert percentage to a float value between 0.25 and 3.0
                     val ttsSpeed = 0.25.toFloat() + (speed.toFloat() / 100.toFloat()) * 2.75.toFloat()
+
                     updateScreenReaderSpeed(ttsSpeed)
 
                     screenReader.goTo(resourcePager.currentItem)
