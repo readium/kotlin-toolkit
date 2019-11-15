@@ -634,7 +634,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
         // Speech speed
         val speechSeekBar = layout.findViewById(R.id.TTS_speech_speed) as SeekBar
-        val speed = preferences.getInt("reader_TTS_speed", (2.75 * 4.toDouble() / 11.toDouble()).toInt())
+
+        //Get the user settings value or set the progress bar to a neutral position (1 time speech speed).
+        val speed = preferences.getInt("reader_TTS_speed", (2.75 * 3.toDouble() / 11.toDouble() * 100).toInt())
 
         speechSeekBar.progress = speed
         speechSeekBar.setOnSeekBarChangeListener(
@@ -649,6 +651,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
                 }
 
                 override fun onStopTrackingTouch(bar: SeekBar) {
+                    //Convert seekBar percent to a float value between 0.25 and 3.
                     val speechSpeed = 0.25.toFloat() + (bar.progress.toFloat() / 100.toFloat()) * 2.75.toFloat()
                     preferences.edit().putInt("reader_TTS_speed", bar.progress).apply()
                     (context as EpubActivity).updateScreenReaderSpeed(speechSpeed)

@@ -287,6 +287,14 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         return playSentence(PLAY_SENTENCE.PREV)
     }
 
+    /**
+     * The entry point for the hosting activity to adjust speech speed. Input is considered valid and within arbitrary
+     * set boundaries. The update is not instantaneous and [TextToSpeech] needs to be paused and resumed for it to work.
+     *
+     * Prints an exception if [textToSpeech.setSpeechRate] fails.
+     *
+     * @param speed: Float - The speech speed we wish to use with Android's [TextToSpeech].
+     */
     fun setSpeechSpeed(speed: Float) {
         try {
             if (textToSpeech.setSpeechRate(speed) == TextToSpeech.ERROR)
