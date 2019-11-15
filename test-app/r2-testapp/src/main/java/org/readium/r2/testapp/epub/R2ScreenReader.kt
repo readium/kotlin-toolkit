@@ -365,7 +365,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
                 splitParagraphAndAddToUtterances(elements)
             } catch (e: IOException) {
-                e.printStackTrace()
+                Timber.e(e)
             }
         })
 
