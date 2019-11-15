@@ -276,25 +276,25 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     }
 
     fun resumeReading() {
-        playSentence(PLAY_SENTENCE.SAME.value)
+        playSentence(PLAY_SENTENCE.SAME)
     }
 
     fun nextSentence(): Boolean {
-        return playSentence(PLAY_SENTENCE.NEXT.value)
+        return playSentence(PLAY_SENTENCE.NEXT)
     }
 
     fun previousSentence(): Boolean {
-        return playSentence(PLAY_SENTENCE.PREV.value)
+        return playSentence(PLAY_SENTENCE.PREV)
     }
 
     /**
      * Reorder the text to speech queue (after flushing it) according to the current track and the argument value.
      *
-     * @param playSentence: [Int] - The track to play (relative to the current track).
+     * @param playSentence: [PLAY_SENTENCE] - The track to play (relative to the current track).
      */
-    private fun playSentence(playSentence: Int): Boolean {
+    private fun playSentence(playSentence: PLAY_SENTENCE): Boolean {
         isPaused = false
-        val index = utterancesCurrentIndex + playSentence
+        val index = utterancesCurrentIndex + playSentence.value
 
         if (index >= utterances.size || index < 0 )
             return false
