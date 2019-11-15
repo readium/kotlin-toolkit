@@ -97,8 +97,11 @@
     <string name="usersettings_label_word_spacing">Word Spacing</string>
     <string name="usersettings_label_letter_spacing">Letter Spacing</string>
     <string name="usersettings_label_line_height">Line Height</string>
+    <string name="usersettings_label_TTS_speech_speed">TTS speed</string>
 
     <!-- Accessibility -->
+
+    <string name="usersettings_description_TTS_speech_speed">Set TTS speech speed</string>
     <string name="usersettings_description_brightness">Set Brightness</string>
     <string name="usersettings_description_font_increase">Increase Font Size</string>
     <string name="usersettings_description_font_decrease">Decrease Font Size</string>

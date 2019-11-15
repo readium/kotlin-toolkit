@@ -287,6 +287,17 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         return playSentence(PLAY_SENTENCE.PREV)
     }
 
+    fun setSpeechSpeed(speed: Float) {
+        try {
+            if (textToSpeech.setSpeechRate(speed) == TextToSpeech.ERROR)
+                Exception("Failed to update speech speed")
+            pauseReading()
+            resumeReading()
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+    }
+
     /**
      * Reorder the text to speech queue (after flushing it) according to the current track and the argument value.
      *

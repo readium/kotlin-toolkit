@@ -17,7 +17,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
-import android.widget.*
+import android.widget.Adapter
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.ImageButton
+import android.widget.ListPopupWindow
+import android.widget.PopupWindow
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.SeekBar
+import android.widget.Spinner
+import android.widget.Switch
+import android.widget.TabHost
+import android.widget.TabWidget
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONArray
 import org.readium.r2.navigator.R2BasicWebView
@@ -26,7 +39,37 @@ import org.readium.r2.navigator.fxl.R2FXLLayout
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.*
+import org.readium.r2.shared.APPEARANCE_NAME
+import org.readium.r2.shared.APPEARANCE_REF
+import org.readium.r2.shared.COLUMN_COUNT_NAME
+import org.readium.r2.shared.COLUMN_COUNT_REF
+import org.readium.r2.shared.Enumerable
+import org.readium.r2.shared.FONT_FAMILY_NAME
+import org.readium.r2.shared.FONT_FAMILY_REF
+import org.readium.r2.shared.FONT_OVERRIDE_NAME
+import org.readium.r2.shared.FONT_OVERRIDE_REF
+import org.readium.r2.shared.FONT_SIZE_NAME
+import org.readium.r2.shared.FONT_SIZE_REF
+import org.readium.r2.shared.Incremental
+import org.readium.r2.shared.Injectable
+import org.readium.r2.shared.LETTER_SPACING_NAME
+import org.readium.r2.shared.LETTER_SPACING_REF
+import org.readium.r2.shared.LINE_HEIGHT_NAME
+import org.readium.r2.shared.LINE_HEIGHT_REF
+import org.readium.r2.shared.PAGE_MARGINS_NAME
+import org.readium.r2.shared.PAGE_MARGINS_REF
+import org.readium.r2.shared.PUBLISHER_DEFAULT_NAME
+import org.readium.r2.shared.PUBLISHER_DEFAULT_REF
+import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.SCROLL_NAME
+import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.Switchable
+import org.readium.r2.shared.TEXT_ALIGNMENT_NAME
+import org.readium.r2.shared.TEXT_ALIGNMENT_REF
+import org.readium.r2.shared.UserProperties
+import org.readium.r2.shared.UserProperty
+import org.readium.r2.shared.WORD_SPACING_NAME
+import org.readium.r2.shared.WORD_SPACING_REF
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.color
 import java.io.File
@@ -588,6 +631,29 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
                         // Nothing
                     }
                 })
+
+        // Speech speed
+        val speechSeekBar = layout.findViewById(R.id.TTS_speech_speed) as SeekBar
+        val speed = preferences.getInt("reader_TTS_speed", (2.75 * 4.toDouble() / 11.toDouble()).toInt())
+
+        speechSeekBar.progress = speed
+        speechSeekBar.setOnSeekBarChangeListener(
+            object : SeekBar.OnSeekBarChangeListener {
+
+                override fun onProgressChanged(bar: SeekBar, progress: Int, from_user: Boolean) {
+                    // Nothing
+                }
+
+                override fun onStartTrackingTouch(bar: SeekBar) {
+                    // Nothing
+                }
+
+                override fun onStopTrackingTouch(bar: SeekBar) {
+                    val speechSpeed = 0.25.toFloat() + (bar.progress.toFloat() / 100.toFloat()) * 2.75.toFloat()
+                    preferences.edit().putInt("reader_TTS_speed", bar.progress).apply()
+                    (context as EpubActivity).updateScreenReaderSpeed(speechSpeed)
+                }
+            })
 
         return userSettingsPopup
     }

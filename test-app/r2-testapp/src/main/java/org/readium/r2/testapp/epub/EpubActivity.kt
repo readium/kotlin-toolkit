@@ -236,6 +236,14 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         screenReader.stopReading()
     }
 
+    fun updateScreenReaderSpeed(speed: Float) {
+        if (speed < 0.25 || speed > 3.0) {
+            Timber.e("Invalid ScreenReader Speed: $speed. Speed should be between 0.25 and 3.0")
+            return
+        }
+        screenReader.setSpeechSpeed(speed)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_epub, menu)
         menuDrm = menu?.findItem(R.id.drm)
@@ -386,14 +394,19 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 return true
             }
             R.id.settings -> {
-                if (screenReader.isSpeaking) {
-                    dismissScreenReader(menuScreenReader!!)
-                }
+                //if (screenReader.isSpeaking) {
+                //    dismissScreenReader(menuScreenReader!!)
+                //}
                 userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.settings), 0, 0, Gravity.END)
                 return true
             }
             R.id.screen_reader -> {
                 if (!screenReader.isSpeaking && !screenReader.isPaused && item.title == resources.getString(R.string.epubactivity_read_aloud_start)) {
+
+                    val speed = preferences.getInt("reader_TTS_speed", (2.75 * 4.toDouble() / 11.toDouble()).toInt())
+
+                    val ttsSpeed = 0.25.toFloat() + (speed.toFloat() / 100.toFloat()) * 2.75.toFloat()
+                    updateScreenReaderSpeed(ttsSpeed)
 
                     screenReader.goTo(resourcePager.currentItem)
                     screenReader.startReading()
