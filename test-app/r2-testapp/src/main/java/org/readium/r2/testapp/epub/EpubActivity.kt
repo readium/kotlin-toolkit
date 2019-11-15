@@ -237,11 +237,14 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     }
 
     fun updateScreenReaderSpeed(speed: Float) {
-        if (speed < 0.25 || speed > 3.0) {
-            Timber.e("Invalid ScreenReader Speed: $speed. Speed should be between 0.25 and 3.0")
-            return
+        var rSpeed = speed
+
+        if (speed < 0.25) {
+            rSpeed = 0.25.toFloat()
+        } else if (speed > 3.0) {
+            rSpeed = 3.0.toFloat()
         }
-        screenReader.setSpeechSpeed(speed)
+        screenReader.setSpeechSpeed(rSpeed)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
