@@ -52,17 +52,9 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         PREV(-1)
     }
 
-    /*
-     * May prove useful
-    private var utterancesProgression: Int = 0
-    private var resourceLength: Int = -1
-    private var progression: Double = 0.0
-    */
-
     private var textToSpeech: TextToSpeech
 
     private val activityReference: WeakReference<EpubActivity>
-//    private var webView: WebView? = null
 
     var isPaused:Boolean
 
@@ -84,11 +76,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                 TextToSpeech.OnInitListener { status ->
                     initialized = (status != TextToSpeech.ERROR)
                 })
-
-        //Create webview reference
-//        val adapter = activityReference.get()?.resourcePager?.adapter as R2PagerAdapter
-//        val fragment = (adapter.mFragments.get((adapter).getItemId(activityReference.get()?.resourcePager!!.currentItem))) as? R2EpubPageFragment
-//        webView = fragment?.webView
     }
 
 
@@ -96,6 +83,12 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         // TODO
     }
 
+    /**
+     * - Set a temporary var to isPaused (isPaused's value may be altered by calls).
+     * - Start initialization if [utterances] is empty.
+     * - Stop [textToSpeech] if it is reading.
+     * - Start [textToSpeech] setup.
+     */
     fun onResume() {
         val paused = isPaused
         if (utterances.size == 0)
@@ -104,6 +97,14 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             pauseReading()
     }
 
+    /**
+     * - Update the resource index.
+     * - Mark [textToSpeech] as reading.
+     * - Stop [textToSpeech] if it is reading.
+     * - Start [textToSpeech] setup.
+     *
+     * @param index: Int - The index of the resource we want read.
+     */
     fun goTo(index: Int) {
         this.resourceIndex = index
         isPaused = false
@@ -115,6 +116,12 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         startReading()
     }
 
+    /**
+     * - Update the resource index.
+     * - Mark [textToSpeech] as reading.
+     * - Stop [textToSpeech] if it is reading.
+     * - Start [textToSpeech] setup.
+     */
     fun previousResource() {
         resourceIndex -= 1
         isPaused = false
@@ -126,6 +133,12 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         startReading()
     }
 
+    /**
+     * - Update the resource index.
+     * - Mark [textToSpeech] as reading.
+     * - Stop [textToSpeech] if it is reading.
+     * - Start [textToSpeech] setup.
+     */
     fun nextResource() {
         resourceIndex += 1
         isPaused = false
@@ -137,6 +150,16 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         startReading()
     }
 
+    /**
+     * - If [initialized] is false, print a Toast and return false.
+     * - Set the language.
+     * - Split the current resource and adds sentences to [utterances].
+     * - If no utterances were found, restart the whole setup.
+     * - Flush [textToSpeech] queue and add listeners on its events.
+     * - return True
+     *
+     * @return Boolean - Whether configure was successful or not.
+     */
     private fun configure(): Boolean {
         if (initialized) {
             val language = textToSpeech.setLanguage(Locale(publication.metadata.languages.firstOrNull()))
@@ -253,6 +276,9 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         return true
     }
 
+    /**
+     * Stop reading and uninitialize the [textToSpeech].
+     */
     fun shutdown() {
         initialized = false
         stopReading()
@@ -278,24 +304,47 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         }
     }
 
+    /**
+     * Stop text to speech and set [isPaused] to true so that subsequent playing of TTS will not automatically
+     * start playing.
+     */
     fun pauseReading() {
         isPaused = true
         textToSpeech.stop()
     }
 
+    /**
+     * Stop text to speech and set [isPaused] to false so that subsequent playing of TTS will automatically
+     * start playing.
+     */
     fun stopReading() {
         isPaused = false
         textToSpeech.stop()
     }
 
+    /**
+     * Allow to resume playing from the start of the current track while still being in a completely black box.
+     *
+     * @return Boolean - Whether resuming playing from the start of the current track was successful.
+     */
     fun resumeReading() {
         playSentence(PLAY_SENTENCE.SAME)
     }
 
+    /**
+     * Allow to go the next sentence while still being in a completely black box.
+     *
+     * @return Boolean - Whether moving to the next sentence was successful.
+     */
     fun nextSentence(): Boolean {
         return playSentence(PLAY_SENTENCE.NEXT)
     }
 
+    /**
+     * Allow to go the previous sentence while still being in a completely black box.
+     *
+     * @return Boolean - Whether moving to the previous sentence was successful.
+     */
     fun previousSentence(): Boolean {
         return playSentence(PLAY_SENTENCE.PREV)
     }
@@ -304,7 +353,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * The entry point for the hosting activity to adjust speech speed. Input is considered valid and within arbitrary
      * set boundaries. The update is not instantaneous and [TextToSpeech] needs to be paused and resumed for it to work.
      *
-     * Prints an exception if [textToSpeech.setSpeechRate] fails.
+     * Print an exception if [textToSpeech.setSpeechRate] fails.
      *
      * @param speed: Float - The speech speed we wish to use with Android's [TextToSpeech].
      */
