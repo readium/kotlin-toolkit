@@ -24,6 +24,7 @@ import org.jsoup.select.Elements
 import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.shared.Publication
 import org.readium.r2.testapp.R
+import timber.log.Timber
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.util.Locale
@@ -127,7 +128,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         }
     }
 
-    fun configure() {
+    private fun configure(): Boolean {
         if (initialized) {
             val language = textToSpeech.setLanguage(Locale(publication.metadata.languages.firstOrNull()))
 
@@ -144,6 +145,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             if (utterances.size == 0 ){
                 nextResource()
                 startReading()
+                return false
             }
 
             //emptying TTS' queue
@@ -237,7 +239,9 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         } else {
             Toast.makeText(context.applicationContext, "There was an error with the TTS initialization",
                 Toast.LENGTH_LONG).show()
+            return false
         }
+        return true
     }
 
     fun shutdown() {
