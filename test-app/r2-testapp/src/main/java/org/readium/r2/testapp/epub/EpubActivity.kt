@@ -387,6 +387,37 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         return true
     }
 
+    /**
+     * Management of the menu bar.
+     *
+     * When (TOC):
+     *   - Open TOC activity for current publication.
+     *
+     * When (Settings):
+     *   - Show settings view as a dropdown menu starting from the clicked button
+     *
+     * When (Screen Reader):
+     *   - Switch screen reader on or off.
+     *   - If screen reader was off, get reading speed from preferences, update reading speed and sync it with the
+     *       active section in the webView.
+     *   - If screen reader was on, dismiss it.
+     *
+     * When (DRM):
+     *   - Dismiss screen reader if it was on
+     *   - Start the DRM management activity.
+     *
+     * When (Bookmark):
+     *   - Create a bookmark marking the current page and insert it inside the database.
+     *
+     * When (Search):
+     *   - Make the search overlay visible.
+     *
+     * When (Home):
+     *   - Make the search view invisible.
+     *
+     * @param item: MenuItem - The button that was pressed.
+     * @return Boolean - Return true if the button has a switch case. Return false otherwise.
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
 
@@ -425,9 +456,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                     allowToggleActionBar = false
 
                 } else {
-
                     dismissScreenReader(item)
-
                 }
 
                 return true
