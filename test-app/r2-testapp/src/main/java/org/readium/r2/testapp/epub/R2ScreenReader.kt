@@ -56,17 +56,22 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
     private val activityReference: WeakReference<EpubActivity>
 
-    var isPaused:Boolean
+    var isPaused: Boolean
 
     val isSpeaking: Boolean
         get() = textToSpeech.isSpeaking
 
-    private var resourceIndex:Int
+    private var resourceIndex: Int
+
+    val currentResource
+        get() = resourceIndex
+
 
     init {
 
         isPaused = false
-        resourceIndex = 0
+
+        resourceIndex= 0
 
         //Initialize reference
         activityReference = WeakReference(context as EpubActivity)

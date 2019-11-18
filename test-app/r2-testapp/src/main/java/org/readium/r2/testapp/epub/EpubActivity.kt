@@ -391,9 +391,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         when (item.itemId) {
 
             R.id.toc -> {
-                if (screenReader.isSpeaking) {
-                    dismissScreenReader(menuScreenReader!!)
-                }
                 val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publication", publication)
                 intent.putExtra("bookId", bookId)
@@ -503,6 +500,15 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     }
 
+    /**
+     * - Stop screenReader's reading.
+     * - Set the title of the menu's button for launching TTS to a value that indicates it was closed.
+     * - Make the TTS view invisible.
+     * - Update the TTS play/pause button to show the good resource picture.
+     * - Enable toggling the scrollbar which was previously disable for TTS.
+     *
+     * @param item: MenuItem - The Screen Reader menu button.
+     */
     fun dismissScreenReader(item: MenuItem) {
         screenReader.stopReading()
         item.title = resources.getString(R.string.epubactivity_read_aloud_start)
@@ -587,6 +593,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
         if (this::screenReader.isInitialized) {
             if (tts_overlay.visibility == View.VISIBLE) {
+                if (screenReader.currentResource != resourcePager.currentItem) {
+                    screenReader.goTo(resourcePager.currentItem)
+                }
+
                 if (screenReader.isPaused) {
                     screenReader.resumeReading()
                     play_pause.setImageResource(android.R.drawable.ic_media_pause)
