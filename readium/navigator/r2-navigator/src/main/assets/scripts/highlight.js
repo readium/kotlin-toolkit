@@ -1,3 +1,14 @@
+//
+//  highlight.js
+//  r2-navigator-kotlin
+//
+//  Organized by Taehyun Kim on 6/27/19 from r2-navigator-js.
+//
+//  Copyright 2019 Readium Foundation. All rights reserved.
+//  Use of this source code is governed by a BSD-style license which is detailed
+//  in the LICENSE file present in the project repository where this source code is maintained.
+//
+
 const ROOT_CLASS_REDUCE_MOTION = "r2-reduce-motion";
 const ROOT_CLASS_NO_FOOTNOTES = "r2-no-popup-foonotes";
 const POPUP_DIALOG_CLASS = "r2-popup-dialog";
