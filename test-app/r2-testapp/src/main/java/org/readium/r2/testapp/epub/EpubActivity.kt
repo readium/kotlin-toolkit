@@ -224,11 +224,17 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     }
 
+    /**
+     * Pause the screenReader if view is paused.
+     */
     override fun onPause() {
         super.onPause()
         screenReader.pauseReading()
     }
 
+    /**
+     * Stop the screenReader if app is view is stopped.
+     */
     override fun onStop() {
         super.onStop()
         screenReader.stopReading()
@@ -251,6 +257,13 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         screenReader.setSpeechSpeed(rSpeed)
     }
 
+    /**
+     * Override Android's option menu by inflating a custom view instead.
+     *   - Initialize the search component.
+     *
+     * @param menu: Menu? - The menu view.
+     * @return Boolean - return true.
+     */
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_epub, menu)
         menuDrm = menu?.findItem(R.id.drm)
@@ -429,9 +442,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 return true
             }
             R.id.settings -> {
-                //if (screenReader.isSpeaking) {
-                //    dismissScreenReader(menuScreenReader!!)
-                //}
                 userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.settings), 0, 0, Gravity.END)
                 return true
             }
@@ -588,6 +598,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         }
     }
 
+    /**
+     * Manage what happens when the focus is put back on the EpubActivity.
+     *  - Synchronize the [R2ScreenReader] with the webView if the [R2ScreenReader] exists.
+     *  - Create a [R2ScreenReader] instance if it was uninitialized.
+     */
     override fun onResume() {
         super.onResume()
 
