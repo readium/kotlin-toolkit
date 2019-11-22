@@ -501,7 +501,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, SelectableI
                 put("green", Color.green(highlight.color))
                 put("blue", Color.blue(highlight.color))
             }
-            createHighlight(highlight.locator.toString(), colorJson.toString()) {
+            createHighlight(highlight.locator.toJSON().toString(), colorJson.toString()) {
                 if (highlight.annotationMarkStyle.isNullOrEmpty().not())
                     createAnnotation(highlight.id)
             }
@@ -568,7 +568,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, SelectableI
                 put("blue", Color.blue(color))
             }
 
-            currentFragment?.webView?.createHighlight(locator.toString(), colorJson.toString()) {
+            currentFragment?.webView?.createHighlight(locator?.toJSON().toString(), colorJson.toString()) {
                 val json = JSONObject(it)
                 val id = json.getString("id")
                 callback(

@@ -1962,5 +1962,3 @@ function setScrollMode(flag) {
         });
     }
 */
-
-Z

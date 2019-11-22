@@ -206,8 +206,6 @@ class R2EpubPageFragment : Fragment() {
                     }
                 }
 
-                injectScriptFile(view, "scripts/highlight.js")
-                injectScriptFile(view, "scripts/crypto-sha256.js")
 
                 webView.listener.onPageLoaded()
             }
