@@ -65,12 +65,13 @@ fun Navigator.goBackward(animated: Boolean = false, completion: () -> Unit = {})
 
 
 interface NavigatorDelegate {
-    fun navigator(navigator: Navigator?, locator: Locator)
+    fun locationDidChange(navigator: Navigator? = null, locator: Locator)
+
     // present error message
-    fun navigator(navigator: Navigator?, error: NavigatorError) {}
+    fun presentError(navigator: Navigator? = null, error: NavigatorError) {}
 
     // present external url
-    fun navigator(navigator: Navigator?, url: URL) {}
+    fun presentExternalURL(navigator: Navigator? = null, url: URL) {}
 }
 
 

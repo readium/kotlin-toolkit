@@ -36,7 +36,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
     override fun progressionDidChange(progression: Double) {
         val locator = currentLocation
         locator?.locations?.progression = progression
-        navigatorDelegate?.navigator(this, locator!!)
+        navigatorDelegate?.locationDidChange(locator = locator!!)
     }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
@@ -44,7 +44,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
         pagerPosition = 0
 
         // Set the progression fetched
-        navigatorDelegate?.navigator(this, locator)
+        navigatorDelegate?.locationDidChange(locator = locator)
 
         // href is the link to the page in the toc
         var href = locator.href
@@ -150,7 +150,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
                 val resourceHref = resource.href ?: ""
                 val resourceType = resource.typeLink ?: ""
 
-                navigatorDelegate?.navigator(null, Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = currentFragment?.webView?.progression)))
+                navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = currentFragment?.webView?.progression)))
 
             }
         }
@@ -183,7 +183,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
                 val resourceHref = resource.href ?: ""
                 val resourceType = resource.typeLink ?: ""
 
-                navigatorDelegate?.navigator(null, Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = currentFragment?.webView?.progression)))
+                navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = currentFragment?.webView?.progression)))
 
             }
         }
@@ -367,7 +367,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, CoroutineSc
                 val locator = data.getSerializableExtra("locator") as Locator
 
                 // Set the progression fetched
-                navigatorDelegate?.navigator(this, locator)
+                navigatorDelegate?.locationDidChange(locator = locator)
 
                 // href is the link to the page in the toc
                 var href = locator.href
