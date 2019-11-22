@@ -670,6 +670,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 server.loadCustomResource(assets.open("Search/mark.js"), "mark.js", Injectable.Script)
                 server.loadCustomResource(assets.open("Search/search.js"), "search.js", Injectable.Script)
                 server.loadCustomResource(assets.open("Search/mark.css"), "mark.css", Injectable.Style)
+                server.loadCustomResource(assets.open("scripts/crypto-sha256.js"), "crypto-sha256.js", Injectable.Script)
+                server.loadCustomResource(assets.open("scripts/highlight.js"), "highlight.js", Injectable.Script)
 
 
             }

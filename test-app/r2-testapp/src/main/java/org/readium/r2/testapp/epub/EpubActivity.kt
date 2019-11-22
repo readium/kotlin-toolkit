@@ -50,10 +50,6 @@ import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.*
-import org.readium.r2.testapp.db.Bookmark
-import org.readium.r2.testapp.db.BookmarksDatabase
-import org.readium.r2.testapp.db.BooksDatabase
-import org.readium.r2.testapp.db.PositionsDatabase
 import org.readium.r2.testapp.outline.R2OutlineActivity
 import org.readium.r2.testapp.search.MarkJSSearchEngine
 import org.readium.r2.testapp.search.SearchLocator
@@ -742,13 +738,12 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         val resourceHref = resource.href?: ""
         val resourceType = resource.typeLink?: ""
         val resourceTitle = resource.title?: ""
-        val locations = Locations.fromJSON(JSONObject(preferences.getString("$publicationIdentifier-documentLocations", "{}")))
-        val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, locations.progression!!)?.let {
+        val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocation?.locations?.progression!!)?.let {
             it
         }
 
         val highlightLocations = highlight.locator.locations?.apply {
-            progression = locations.progression
+            progression = currentLocation?.locations?.progression
             position = currentPage
         } ?: Locations()
         val locationText = highlight.locator.text ?: LocatorText()
