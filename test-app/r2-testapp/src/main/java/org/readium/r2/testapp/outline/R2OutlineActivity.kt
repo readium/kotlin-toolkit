@@ -60,37 +60,37 @@ class R2OutlineActivity : AppCompatActivity() {
         /*
          * Retrieve the Table of Content
          */
-        val tableOfContents: MutableList<Link> = publication.tableOfContents
-        val allElements = mutableListOf<Pair<Int,Link>>()
+        val tableOfContext = mutableListOf<Pair<Int,Link>>()
 
-        for (link in tableOfContents) {
+        val contents: MutableList<Link> = when {
+            publication.tableOfContents.isNotEmpty() -> {
+                publication.tableOfContents
+            }
+            publication.readingOrder.isNotEmpty() -> {
+                publication.readingOrder
+            }
+            publication.images.isNotEmpty() -> {
+                publication.images
+            }
+            else -> mutableListOf()
+        }
+
+        for (link in contents) {
             val children = childrenOf(Pair(0,link))
             // Append parent.
-            allElements.add(Pair(0,link))
+            tableOfContext.add(Pair(0,link))
             // Append children, and their children... recursive.
-            allElements.addAll(children)
+            tableOfContext.addAll(children)
         }
 
-        if (allElements.isEmpty()) {
-
-            for (link in publication.readingOrder) {
-                val children = childrenOf(Pair(0,link))
-                // Append parent.
-                allElements.add(Pair(0,link))
-                // Append children, and their children... recursive.
-                allElements.addAll(children)
-            }
-
-        }
-
-        val tocAdapter = NavigationAdapter(this, allElements.toMutableList())
+        val tocAdapter = NavigationAdapter(this, tableOfContext.toMutableList())
 
         toc_list.adapter = tocAdapter
 
         toc_list.setOnItemClickListener { _, _, position, _ ->
             //Link to the resource in the publication
 
-            val resource = allElements[position].second
+            val resource = tableOfContext[position].second
             val resourceHref = resource.href
             val resourceType = resource.typeLink?: ""
 
@@ -181,10 +181,21 @@ class R2OutlineActivity : AppCompatActivity() {
         tabHighlights.setIndicator(tabHighlights.tag)
         tabHighlights.setContent(R.id.highlights_tab)
 
-
-        tabHost.addTab(tabTOC)
-        tabHost.addTab(tabBookmarks)
-        tabHost.addTab(tabHighlights)
+        when {
+            publication.type == Publication.TYPE.AUDIO -> {
+                tabHost.addTab(tabTOC)
+                tabHost.addTab(tabBookmarks)
+            }
+            publication.type == Publication.TYPE.DiViNa -> tabHost.addTab(tabTOC)
+            publication.type == Publication.TYPE.CBZ -> tabHost.addTab(tabTOC)
+            else -> {
+                tabHost.addTab(tabTOC)
+                tabHost.addTab(tabBookmarks)
+                tabHost.addTab(tabHighlights)
+//                tabHost.addTab(tabPageList)
+//                tabHost.addTab(tabLandmarks)
+            }
+        }
     }
 
 
@@ -204,7 +215,7 @@ class R2OutlineActivity : AppCompatActivity() {
     /*
      * Adapter for navigation links (Table of Contents, Page lists & Landmarks)
      */
-    inner class NavigationAdapter(var activity: Activity, var items: MutableList<Any>) : BaseAdapter() {
+    inner class NavigationAdapter(var activity: Activity, private var items: MutableList<Any>) : BaseAdapter() {
 
         private inner class ViewHolder(row: View?) {
             var navigationTextView: TextView? = null
@@ -291,7 +302,7 @@ class R2OutlineActivity : AppCompatActivity() {
         }
     }
 
-    inner class SyntheticPageListAdapter(var activity: Activity, var items: MutableList<Position>) : BaseAdapter() {
+    inner class SyntheticPageListAdapter(var activity: Activity, private var items: MutableList<Position>) : BaseAdapter() {
         /**
          * Get the data item associated with the specified position in the data set.
          *

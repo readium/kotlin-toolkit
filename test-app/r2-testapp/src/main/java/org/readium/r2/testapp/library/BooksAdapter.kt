@@ -17,7 +17,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.picasso.Picasso
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Book
 import java.io.ByteArrayInputStream
@@ -49,11 +48,6 @@ open class BooksAdapter(private val activity: Activity, private var books: Mutab
             val arrayInputStream = ByteArrayInputStream(it)
             val bitmap = BitmapFactory.decodeStream(arrayInputStream)
             viewHolder.imageView.setImageBitmap(bitmap)
-        } ?: run {
-            book.coverLink?.let {
-                val baseUrl = server + "/" + book.fileName + it
-                Picasso.with(activity).load(baseUrl).into(viewHolder.imageView)
-            }
         }
 
         viewHolder.itemView.setOnClickListener { v ->

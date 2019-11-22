@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
+import org.readium.r2.shared.Publication;
 import org.readium.r2.testapp.CatalogActivity;
 
 /**
@@ -23,16 +24,13 @@ import org.readium.r2.testapp.CatalogActivity;
 public class R2IntentHelper {
 
     public static final String URI = "URI";
-    public static final String LCP = "LCP";
+    public static final String EXTENSION = "EXTENSION";
 
-    public Intent catalogActivityIntent(Context context, Uri uri) {
-        return catalogActivityIntent(context, uri, false);
-    }
 
-    public Intent catalogActivityIntent(Context context, Uri uri, boolean lcp) {
+    public Intent catalogActivityIntent(Context context, Uri uri, Publication.EXTENSION extension) {
         Intent i = new Intent(context, CatalogActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        i.putExtra(LCP, lcp);
+        i.putExtra(EXTENSION, extension.name());
         i.putExtra(URI, uri.toString());
         return i;
     }

@@ -39,6 +39,8 @@ import org.jetbrains.anko.toast
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.navigator.epub.Style
 import org.readium.r2.navigator.pager.R2EpubPageFragment
@@ -48,6 +50,10 @@ import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.*
+import org.readium.r2.testapp.db.Bookmark
+import org.readium.r2.testapp.db.BookmarksDatabase
+import org.readium.r2.testapp.db.BooksDatabase
+import org.readium.r2.testapp.db.PositionsDatabase
 import org.readium.r2.testapp.outline.R2OutlineActivity
 import org.readium.r2.testapp.search.MarkJSSearchEngine
 import org.readium.r2.testapp.search.SearchLocator
@@ -63,7 +69,27 @@ import kotlin.coroutines.CoroutineContext
  *      ( Table of content, User Settings, DRM, Bookmarks )
  *
  */
-class EpubActivity : R2EpubActivity(), CoroutineScope {
+class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, VisualNavigatorDelegate, OutlineTableViewControllerDelegate*/ {
+
+    override val currentLocation: Locator?
+        get() {
+            val resourceIndex = resourcePager.currentItem.toLong()
+            val resource = publication.readingOrder[resourcePager.currentItem]
+            val resourceHref = resource.href ?: ""
+            val resourceType = resource.typeLink ?: ""
+            val resourceTitle = resource.title ?: ""
+
+            return booksDB.books.currentLocator(bookId)?.let {
+                it
+            } ?: run {
+                Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0))
+            }
+        }
+
+    override fun locationDidChange(navigator: Navigator?, locator: Locator) {
+        booksDB.books.saveProgression(locator, bookId)
+    }
+
 
     /**
      * Context of this scope.
@@ -80,6 +106,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
 
     // Provide access to the Bookmarks & Positions Databases
     private lateinit var bookmarksDB: BookmarksDatabase
+    private lateinit var booksDB: BooksDatabase
     private lateinit var positionsDB: PositionsDatabase
     private lateinit var highlightDB: HighligtsDatabase
 
@@ -105,11 +132,14 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bookmarksDB = BookmarksDatabase(this)
+        booksDB = BooksDatabase(this)
         positionsDB = PositionsDatabase(this)
         highlightDB = HighligtsDatabase(this)
 
+        navigatorDelegate = this
+        bookId = intent.getLongExtra("bookId", -1)
+
         Handler().postDelayed({
-            bookId = intent.getLongExtra("bookId", -1)
             launch {
                 menuDrm?.isVisible = intent.getBooleanExtra("drm", false)
             }
@@ -121,6 +151,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
         resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
         (resourcePager.focusedChild?.findViewById(org.readium.r2.navigator.R.id.book_title) as? TextView)?.setTextColor(Color.parseColor(textColors[appearancePref]))
         toggleActionBar()
+
+        resourcePager.offscreenPageLimit = 1
+
+        currentPagerPosition = publication.readingOrder.indexOfFirst { it.href == currentLocation?.href }
+        resourcePager.currentItem = currentPagerPosition
 
         titleView.text = publication.metadata.title
 
@@ -141,7 +176,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
             }
         }
         next_chapter.setOnClickListener {
-            nextResource(false)
+            goForward(false, completion = {})
             screenReader.nextResource()
             screenReader.start()
             play_pause.setImageResource(android.R.drawable.ic_media_pause)
@@ -154,7 +189,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
             }
         }
         prev_chapter.setOnClickListener {
-            previousResource(false)
+            goBackward(false, completion = {})
             screenReader.previousResource()
             screenReader.start()
             play_pause.setImageResource(android.R.drawable.ic_media_pause)
@@ -381,8 +416,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
                 val resourceHref = resource.href ?: ""
                 val resourceType = resource.typeLink ?: ""
                 val resourceTitle = resource.title ?: ""
-                val locations = Locations.fromJSON(JSONObject(preferences.getString("$publicationIdentifier-documentLocations", "{}")))
-                val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, locations.progression!!)?.let {
+                val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocation?.locations?.progression!!)?.let {
                     it
                 }
 
@@ -393,7 +427,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
                         resourceHref,
                         resourceType,
                         resourceTitle,
-                        Locations(progression = locations.progression, position = currentPage),
+                        Locations(progression = currentLocation?.locations?.progression, position = currentPage),
                         LocatorText()
                 )
 
@@ -456,28 +490,32 @@ class EpubActivity : R2EpubActivity(), CoroutineScope {
                 val locator = data.getSerializableExtra("locator") as Locator
                 locator.locations?.fragment?.let { fragment ->
 
-                    val fragments = JSONArray(fragment).getString(0).split(",").associate {
-                        val (left, right) = it.split("=")
-                        left to right.toInt()
-                    }
-
-                    val index = fragments.getValue("i").toInt()
-                    val searchStorage = getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
-                    Handler().postDelayed({
-                        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
-                            val currentFragent = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
-                            val resource = publication.readingOrder[resourcePager.currentItem]
-                            val resourceHref = resource.href ?: ""
-                            val resourceType = resource.typeLink ?: ""
-                            val resourceTitle = resource.title ?: ""
-
-                            currentFragent.webView.runJavaScript("markSearch('${searchStorage.getString("term", null)}', null, '$resourceHref', '$resourceType', '$resourceTitle', '$index')") { result ->
-
-                                Timber.d("###### $result")
-
-                            }
+                    // TODO handle fragment anchors (id=) instead of catching the json exception
+                    try {
+                        val fragments = JSONArray(fragment).getString(0).split(",").associate {
+                            val (left, right) = it.split("=")
+                            left to right.toInt()
                         }
-                    }, 1200)
+
+                        val index = fragments.getValue("i").toInt()
+                        val searchStorage = getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
+                        Handler().postDelayed({
+                            if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+                                val currentFragent = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
+                                val resource = publication.readingOrder[resourcePager.currentItem]
+                                val resourceHref = resource.href ?: ""
+                                val resourceType = resource.typeLink ?: ""
+                                val resourceTitle = resource.title ?: ""
+
+                                currentFragent.webView.runJavaScript("markSearch('${searchStorage.getString("term", null)}', null, '$resourceHref', '$resourceType', '$resourceTitle', '$index')") { result ->
+
+                                    Timber.d("###### $result")
+
+                                }
+                            }
+                        }, 1200)
+                    } catch (e: Exception) {
+                    }
                 }
             }
         }
