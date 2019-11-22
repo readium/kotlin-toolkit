@@ -22,17 +22,64 @@ import java.io.Serializable
  * @val text: LocatorText? - Textual context of the locator.
  */
 
-open class Locator(val href: String,
-                   val type: String,
-                   val title: String? = null,
-                   val locations: Locations? = null,
-                   val text: LocatorText?) : Serializable {
+open class Locator(var href: String? = null,
+                   var type: String? = null,
+                   var title: String? = null,
+                   var locations: Locations? = null,
+                   var text: LocatorText? = null) : JSONable, Serializable {
+
+
+    companion object {
+        fun fromJSON(json: JSONObject): Locator {
+
+            val locator = Locator()
+            if (json.has("href")) {
+                locator.href = json.getString("href")
+            }
+            if (json.has("type")) {
+                locator.type = json.getString("type")
+            }
+            if (json.has("title")) {
+                locator.title = json.getString("title")
+            }
+            if (json.has("locations")) {
+                locator.locations = Locations.fromJSON(JSONObject(json.getString("locations")))
+            }
+            if (json.has("text")) {
+                locator.text = LocatorText.fromJSON(JSONObject(json.getString("text")))
+            }
+
+            return locator
+        }
+    }
+    override fun toJSON(): JSONObject {
+        val json = JSONObject()
+
+        href.let {
+            json.putOpt("href", href)
+        }
+        type.let {
+            json.putOpt("type", type)
+        }
+        title.let {
+            json.putOpt("title", title)
+        }
+        locations?.let {
+            json.putOpt("locations", it.toJSON())
+        }
+        text?.let {
+            json.putOpt("text", it.toJSON())
+        }
+        return json
+    }
+
     override fun toString(): String {
         var jsonString = """{"""
         href.let { jsonString += """ "href": "$href" ,""" }
         type.let { jsonString += """ "type": "$type" ,""" }
         title.let { jsonString += """ "title": "$title" ,""" }
-        locations.let { jsonString += """ "locations": $locations """ }
+        locations.let { jsonString += """ "locations": "${locations.toString()}" ,""" }
+        text.let { jsonString += """ "text": "${text.toString()}" ,""" }
         jsonString += """}"""
         return jsonString
     }
