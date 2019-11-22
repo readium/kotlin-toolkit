@@ -26,7 +26,17 @@ open class Locator(val href: String,
                    val type: String,
                    val title: String? = null,
                    val locations: Locations? = null,
-                   val text: LocatorText?) : Serializable
+                   val text: LocatorText?) : Serializable {
+    override fun toString(): String {
+        var jsonString = """{"""
+        href.let { jsonString += """ "href": "$href" ,""" }
+        type.let { jsonString += """ "type": "$type" ,""" }
+        title.let { jsonString += """ "title": "$title" ,""" }
+        locations.let { jsonString += """ "locations": $locations """ }
+        jsonString += """}"""
+        return jsonString
+    }
+}
 
 class LocatorText(var after: String? = null,
                   var before: String? = null,
@@ -87,7 +97,10 @@ class LocatorText(var after: String? = null,
  */
 class Locations(var fragment: String? = null,        // 1 = fragment identifier (toc, page lists, landmarks)
                 var progression: Double? = null,     // 2 = bookmarks
-                var position: Long? = null           // 3 = goto page
+                var position: Long? = null,           // 3 = goto page
+                var cssSelector: String? = null,
+                var partialCfi: String? = null,
+                var domRange: String? = null
 ) : JSONable, Serializable {
 
     companion object {
@@ -103,12 +116,20 @@ class Locations(var fragment: String? = null,        // 1 = fragment identifier 
             if (json.has("position")) {
                 location.position = json.getLong("position")
             }
-
+            if (json.has("cssSelector")) {
+                location.cssSelector = json.getString("cssSelector")
+            }
+            if (json.has("partialCfi")) {
+                location.partialCfi = json.getString("partialCfi")
+            }
+            if (json.has("domRange")) {
+                location.domRange = json.getString("domRange")
+            }
             return location
         }
 
         fun isEmpty(locations: Locations):Boolean {
-            if (locations.fragment == null && locations.position == null && locations.progression == null) {
+            if (locations.fragment == null && locations.position == null && locations.progression == null && locations.cssSelector == null && locations.partialCfi == null && locations.domRange == null) {
                 return true
             }
             return false
@@ -128,6 +149,15 @@ class Locations(var fragment: String? = null,        // 1 = fragment identifier 
         position?.let {
             json.putOpt("position", position)
         }
+        cssSelector?.let {
+            json.putOpt("cssSelector", cssSelector)
+        }
+        partialCfi?.let {
+            json.putOpt("partialCfi", partialCfi)
+        }
+        domRange?.let {
+            json.putOpt("domRange", domRange)
+        }
 
         return json
     }
@@ -136,7 +166,10 @@ class Locations(var fragment: String? = null,        // 1 = fragment identifier 
         var jsonString = """{"""
         fragment.let { jsonString += """ "fragment": "$fragment" ,""" }
         progression.let { jsonString += """ "progression": "$progression" ,""" }
-        position.let { jsonString += """ "position": "$position" """ }
+        position.let { jsonString += """ "position": "$position" ,""" }
+        cssSelector.let { jsonString += """ "cssSelector": "$cssSelector" ,""" }
+        partialCfi.let { jsonString += """ "partialCfi": "$partialCfi" ,""" }
+        domRange.let { jsonString += """ "domRange": $domRange """ }
         jsonString += """}"""
         return jsonString
     }
