@@ -82,7 +82,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             }
         }
 
-    override fun navigator(navigator: Navigator?, locator: Locator) {
+    override fun locationDidChange(navigator: Navigator?, locator: Locator) {
         booksDB.books.saveProgression(locator, bookId)
     }
 
