@@ -14,6 +14,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.util.Base64
 import android.util.DisplayMetrics
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -35,6 +36,8 @@ import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.PageProgressionDirection
 import org.readium.r2.shared.SCROLL_REF
+import java.io.IOException
+import java.io.InputStream
 
 
 class R2EpubPageFragment : Fragment() {
@@ -206,6 +209,10 @@ class R2EpubPageFragment : Fragment() {
                     }
                 }
 
+                injectScriptFile(view, "scripts/highlight.js")
+                injectScriptFile(view, "scripts/crypto-sha256.js")
+
+                webView.listener.onPageLoaded()
             }
 
             // prevent favicon.ico to be loaded, this was causing NullPointerException in NanoHttp
@@ -219,11 +226,38 @@ class R2EpubPageFragment : Fragment() {
                 return null
             }
 
+            private fun injectScriptFile(view: WebView?, scriptFile: String) {
+                val input: InputStream
+                try {
+                    input = resources.assets.open(scriptFile)
+                    val buffer = ByteArray(input.available())
+                    input.read(buffer)
+                    input.close()
+
+                    // String-ify the script byte-array using BASE64 encoding !!!
+                    val encoded = Base64.encodeToString(buffer, Base64.NO_WRAP)
+                    view?.loadUrl("javascript:(function() {" +
+                            "var parent = document.getElementsByTagName('head').item(0);" +
+                            "var script = document.createElement('script');" +
+                            "script.type = 'text/javascript';" +
+                            // Tell the browser to BASE64-decode the string into your script !!!
+                            "script.innerHTML = window.atob('" + encoded + "');" +
+                            "parent.appendChild(script)" +
+                            "})()")
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                } catch (e1: IllegalStateException) {
+                    // not attached to a context
+                }
+
+            }
+
+
         }
         webView.isHapticFeedbackEnabled = false
         webView.isLongClickable = false
         webView.setOnLongClickListener {
-            true
+            false
         }
 
         val locations = Locations.fromJSON(JSONObject(preferences.getString("${webView.listener.publicationIdentifier}-documentLocations", "{}")))
