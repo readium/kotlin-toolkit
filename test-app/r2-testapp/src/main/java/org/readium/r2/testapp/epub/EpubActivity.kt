@@ -25,6 +25,7 @@ import android.view.accessibility.AccessibilityManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
@@ -91,6 +92,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     override fun navigator(navigator: Navigator?, locator: Locator) {
         booksDB.books.saveProgression(locator, bookId)
+
+        if (locator.locations?.progression == 0.toDouble()) {
+            booksDB.books.saveCurrentUtterance(bookId, 0)
+            screenReader.currentUtterance = 0
+        }
     }
 
 
@@ -112,6 +118,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     private lateinit var booksDB: BooksDatabase
     private lateinit var positionsDB: PositionsDatabase
 
+
     private lateinit var screenReader: R2ScreenReader
 
     protected var drm: DRM? = null
@@ -129,6 +136,13 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     private lateinit var searchResultAdapter: SearchLocatorAdapter
     private lateinit var searchResult: MutableList<SearchLocator>
 
+    /**
+     * Manage activity creation.
+     *   - Load data from the database
+     *   - Set background and text colors
+     *   - Set onClickListener callbacks for the [screenReader] buttons
+     *   - Initialize search.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bookmarksDB = BookmarksDatabase(this)
@@ -175,9 +189,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             }
         }
         next_chapter.setOnClickListener {
-            goForward(false, completion = {})
-            screenReader.nextResource()
-            play_pause.setImageResource(android.R.drawable.ic_media_pause)
+            if (goForward(false, completion = {})) {
+                screenReader.nextResource()
+                play_pause.setImageResource(android.R.drawable.ic_media_pause)
+            }
         }
         fast_back.setOnClickListener {
             if (screenReader.previousSentence()) {
@@ -222,6 +237,22 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         search_listView.adapter = searchResultAdapter
         search_listView.layoutManager = LinearLayoutManager(this)
 
+    }
+
+    /**
+     * @param currentUtterance: Long - The utterance index inside the current resource to save inside the database for
+     *   [bookId].
+     */
+    fun saveCurrentUtterance(currentUtterance: Long) {
+        booksDB.books.saveCurrentUtterance(bookId, currentUtterance)
+    }
+
+    /**
+     * @return: Int? - Returns the first value from the column utterances for which the line's bookId matches [bookId],
+     *   or null if not found.
+     */
+    fun getCurrentUtterance(): Int? {
+        return booksDB.books.getSavedUtterance(bookId)?.toInt()
     }
 
     /**
@@ -457,23 +488,25 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
                     updateScreenReaderSpeed(ttsSpeed)
 
-                    screenReader.goTo(resourcePager.currentItem)
-
-                    item.title = resources.getString(R.string.epubactivity_read_aloud_stop)
-
-                    tts_overlay.visibility = View.VISIBLE
-                    play_pause.setImageResource(android.R.drawable.ic_media_pause)
-                    allowToggleActionBar = false
+                    if (screenReader.goTo(resourcePager.currentItem)) {
+                        item.title = resources.getString(R.string.epubactivity_read_aloud_stop)
+                        tts_overlay.visibility = View.VISIBLE
+                        play_pause.setImageResource(android.R.drawable.ic_media_pause)
+                        allowToggleActionBar = false
+                    }
+                    else {
+                        Toast.makeText(applicationContext, "No further chapter contains text to read", Toast.LENGTH_LONG).show()
+                    }
 
                 } else {
-                    dismissScreenReader(item)
+                    dismissScreenReader()
                 }
 
                 return true
             }
             R.id.drm -> {
                 if (screenReader.isSpeaking) {
-                    dismissScreenReader(menuScreenReader!!)
+                    dismissScreenReader()
                 }
                 startActivityForResult(intentFor<DRMManagementActivity>("publication" to publicationPath), 1)
                 return true
@@ -548,9 +581,9 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
      *
      * @param item: MenuItem - The Screen Reader menu button.
      */
-    fun dismissScreenReader(item: MenuItem) {
+    fun dismissScreenReader() {
         screenReader.stopReading()
-        item.title = resources.getString(R.string.epubactivity_read_aloud_start)
+        menuScreenReader?.title = resources.getString(R.string.epubactivity_read_aloud_start)
         tts_overlay.visibility = View.INVISIBLE
         play_pause.setImageResource(android.R.drawable.ic_media_play)
         allowToggleActionBar = true
@@ -654,12 +687,16 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             Handler().postDelayed({
                 val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
                 port?.let {
-                    screenReader = R2ScreenReader(this, publication, port, publicationFileName)
+                    screenReader = R2ScreenReader(this, publication, port, publicationFileName, resourcePager.currentItem)
                 }
             }, 500)
         }
     }
 
+    /**
+     * Determine whether the touch exploration is enabled (i.e. that description of touched elements is orally
+     * fed back to the user) and toggle the ActionBar if it is disabled and if the text to speech is invisible.
+     */
     override fun toggleActionBar() {
         val am = getSystemService(ACCESSIBILITY_SERVICE) as AccessibilityManager
         isExploreByTouchEnabled = am.isTouchExplorationEnabled
@@ -670,19 +707,22 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     }
 
+    /**
+     * Manage activity destruction.
+     */
     override fun onDestroy() {
         super.onDestroy()
-
         screenReader.shutdown()
     }
 
-
+    /**
+     * Communicate with the user using a toast if touch exploration is enabled, to indicate the end of a chapter.
+     */
     override fun onPageEnded(end: Boolean) {
         if (isExploreByTouchEnabled) {
             if (!pageEnded == end && end) {
                 toast("End of chapter")
             }
-
             pageEnded = end
         }
     }

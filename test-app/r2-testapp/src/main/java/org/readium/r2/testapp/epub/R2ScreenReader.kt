@@ -36,12 +36,46 @@ import java.util.Locale
  * Basic screen reader overlay that uses Android's TextToSpeech
  */
 
-class R2ScreenReader(var context: Context, var publication: Publication, var port: Int, var epubName:String) {
+class R2ScreenReader(var context: Context, var publication: Publication, var port: Int, var epubName:String, indexResource: Int) {
 
     private var initialized = false
 
+    private var resourceIndex = indexResource
+
+    private fun setResourceIndex(value: Int): Boolean {
+        if (value >= items.size) {
+            resourceIndex = items.size
+            dismissScreenReader()
+            return false
+        }
+        else if (value < 0) {
+            resourceIndex = 0
+        }
+        else {
+            resourceIndex = value
+            currentUtterance = 0
+        }
+        Timber.d( "resourceIndex: $resourceIndex")
+        return true
+    }
+
     private var utterances = mutableListOf<String>()
+
     private var utterancesCurrentIndex: Int = 0
+
+    var currentUtterance
+        get() = utterancesCurrentIndex
+        set(value) {
+            if (value == 0)
+                utterancesCurrentIndex = 0
+            else if (value > utterances.size - 1)
+                utterancesCurrentIndex = utterances.size - 1
+            else if (value < 0)
+                utterancesCurrentIndex = 0
+            else
+                utterancesCurrentIndex = value
+        }
+
     private var items = publication.readingOrder
 
     enum class PLAY_SENTENCE(val value: Int) {
@@ -59,20 +93,18 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     val isSpeaking: Boolean
         get() = textToSpeech.isSpeaking
 
-    private var resourceIndex: Int
-
     val currentResource
         get() = resourceIndex
 
 
     init {
-
         isPaused = false
-
-        resourceIndex= 0
 
         //Initialize reference
         activityReference = WeakReference(context as EpubActivity)
+
+        //Set utterance
+        currentUtterance = activityReference.get()?.getCurrentUtterance() ?: 0
 
         //Initialize TTS
         textToSpeech = TextToSpeech(context,
@@ -94,6 +126,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      */
     fun onResume() {
         val paused = isPaused
+
         if (utterances.size == 0)
             startReading()
         if (paused)
@@ -108,58 +141,67 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      *
      * @param index: Int - The index of the resource we want read.
      */
-    fun goTo(index: Int) {
-        this.resourceIndex = index
-        isPaused = false
+    fun goTo(index: Int): Boolean {
+        if (index >= items.size)
+            return false
+        if (resourceIndex != index) {
+            if (setResourceIndex(index)) {
+                isPaused = false
 
-        if (textToSpeech.isSpeaking) {
-            textToSpeech.stop()
+                currentUtterance = 0
+                //currentUtterance = activityReference.get()?.getCurrentUtterance() ?: 0
+            }
+
+            if (textToSpeech.isSpeaking) {
+                textToSpeech.stop()
+            }
         }
-
-        startReading()
+        return startReading()
     }
 
     /**
      * - Update the resource index.
+     * - Check that it has a valid value. Update it if the value is too big or small.
      * - Mark [textToSpeech] as reading.
      * - Stop [textToSpeech] if it is reading.
      * - Start [textToSpeech] setup.
      */
-    fun previousResource() {
-        resourceIndex -= 1
-        isPaused = false
+    private fun addToResourceIndex(value: Int): Boolean {
+        if (setResourceIndex(resourceIndex + value)) {
+            isPaused = false
+            currentUtterance = 0
 
-        if (textToSpeech.isSpeaking) {
-            textToSpeech.stop()
+            if (textToSpeech.isSpeaking) {
+                textToSpeech.stop()
+            }
+
+            return startReading()
         }
 
-        startReading()
+        return false
     }
 
     /**
-     * - Update the resource index.
-     * - Mark [textToSpeech] as reading.
-     * - Stop [textToSpeech] if it is reading.
-     * - Start [textToSpeech] setup.
+     * - Remove 1 from [resourceIndex] by calling [R2ScreenReader.addToResourceIndex] with -1 as a parameter.
      */
-    fun nextResource() {
-        resourceIndex += 1
-        isPaused = false
+    fun previousResource(): Boolean {
+        return addToResourceIndex(-1)
+    }
 
-        if (textToSpeech.isSpeaking) {
-            textToSpeech.stop()
-        }
-
-        startReading()
+    /**
+     * - Add 1 to [resourceIndex] by calling [R2ScreenReader.addToResourceIndex] with 1 as a parameter.
+     */
+    fun nextResource(): Boolean {
+        return addToResourceIndex(1)
     }
 
     /**
      * - If [initialized] is false, print a Toast and return false.
      * - Set the language.
      * - Split the current resource and adds sentences to [utterances].
-     * - If no utterances were found, restart the whole setup.
+     * - If no utterances were found, restart the whole setup for the next resource.
      * - Flush [textToSpeech] queue and add listeners on its events.
-     * - return True
+     * - return true if everything went well or false if it failed.
      *
      * @return Boolean - Whether configure was successful or not.
      */
@@ -178,8 +220,9 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
 
             if (utterances.size == 0 ){
-                nextResource()
-                startReading()
+                if (nextResource()) {
+                    startReading()
+                }
                 return false
             }
 
@@ -198,7 +241,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                  * @param utteranceId The utterance ID of the utterance.
                  */
                 override fun onStart(utteranceId: String?) {
-                    utterancesCurrentIndex = utteranceId!!.toInt()
+                    currentUtterance = utteranceId!!.toInt()
 
                     val toHighlight = utterances[utterancesCurrentIndex]
 
@@ -273,10 +316,24 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         return true
     }
 
+    fun dismissScreenReader(): Boolean {
+        pauseReading()
+        val activity = activityReference.get()
+        try {
+            activity?.dismissScreenReader()
+        } catch (e: Exception) {
+            Timber.e(e.toString())
+            return false
+        }
+        return true
+    }
+
     /**
      * Stop reading and uninitialize the [textToSpeech].
      */
     fun shutdown() {
+        val activity = activityReference.get()
+        activity?.saveCurrentUtterance(currentUtterance.toLong())
         initialized = false
         stopReading()
         textToSpeech.shutdown()
@@ -286,15 +343,23 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * Set [isPaused] to false and add the [utterances] to the [textToSpeech] queue if [configure] worked
      * successfully (returning true)
      */
-    private fun startReading() {
+    private fun startReading(): Boolean {
         isPaused = false
         if (configure()) {
-            val index = 0
+            if (utterancesCurrentIndex >= utterances.size) {
+                Timber.e("Invalid utterancesCurrentIndex value: $utterancesCurrentIndex . Expected less than $utterances.size")
+                currentUtterance = 0
+            }
+            val index = utterancesCurrentIndex
             for (i in index until utterances.size) {
                 if (!actOnUtterancesQueue(utterances[i], TextToSpeech.QUEUE_ADD, i))
-                    break
+                    return false
             }
+
+            return true
         }
+
+        return false
     }
 
     /**
@@ -311,6 +376,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * start playing.
      */
     fun stopReading() {
+        activityReference.get()?.saveCurrentUtterance(currentUtterance.toLong())
         isPaused = false
         textToSpeech.stop()
     }
@@ -350,15 +416,19 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      *
      * @param speed: Float - The speech speed we wish to use with Android's [TextToSpeech].
      */
-    fun setSpeechSpeed(speed: Float) {
+    fun setSpeechSpeed(speed: Float): Boolean {
         try {
             if (textToSpeech.setSpeechRate(speed) == TextToSpeech.ERROR)
                 Exception("Failed to update speech speed")
+
             pauseReading()
             resumeReading()
         } catch (e: Exception) {
             Timber.e(e.printStackTrace().toString())
+            return false
         }
+
+        return true
     }
 
     /**
@@ -378,7 +448,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         if (!actOnUtterancesQueue("", TextToSpeech.QUEUE_FLUSH, null))
             return false
 
-        for (i in index + 1 until utterances.size) {
+        for (i in index until utterances.size) {
             if (!actOnUtterancesQueue(utterances[i], TextToSpeech.QUEUE_ADD, i)) {
                 return false
             }
@@ -403,7 +473,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                 throw Exception("Couldn't perform action on TTS queue")
             }
         } catch (e: Exception) {
-            Timber.e("Critical TTS error " + e.printStackTrace().toString())
+            Timber.e("Critical TTS error $e")
 
             Toast.makeText(context.applicationContext, "Internal TTS error",
                 Toast.LENGTH_LONG).show()
@@ -451,19 +521,25 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * @param resourceUrl: String - The html resource to fetch from the internal server, containing the text to be
      *   voiced.
      */
-    private fun splitResourceAndAddToUtterances(resourceUrl: String?) {
+    private fun splitResourceAndAddToUtterances(resourceUrl: String?): Boolean {
+        var success = false
         val thread = Thread(Runnable {
             try {
                 val document = Jsoup.connect(resourceUrl).get()
                 val elements = document.select("*")
 
                 splitParagraphAndAddToUtterances(elements)
+
             } catch (e: IOException) {
-                Timber.e(e)
+                Timber.e(e.toString())
+                success = false
+                return@Runnable
             }
+            success = true
         })
 
         thread.start()
         thread.join()
+        return success
     }
 }
