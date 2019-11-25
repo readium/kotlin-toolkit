@@ -42,6 +42,11 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
     private var resourceIndex = indexResource
 
+    /**
+     * Set the value of [resourceIndex] and dismiss screen reader if the new value is over the maximal value.
+     *
+     * @return: Boolean - Whether the function executed successfully.
+     */
     private fun setResourceIndex(value: Int): Boolean {
         if (value >= items.size) {
             resourceIndex = items.size
@@ -140,6 +145,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * - Start [textToSpeech] setup.
      *
      * @param index: Int - The index of the resource we want read.
+     * @return: Boolean - Whether the function executed successfully.
      */
     fun goTo(index: Int): Boolean {
         if (index >= items.size)
@@ -165,6 +171,8 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * - Mark [textToSpeech] as reading.
      * - Stop [textToSpeech] if it is reading.
      * - Start [textToSpeech] setup.
+     *
+     * @return: Boolean - Whether the function executed successfully.
      */
     private fun addToResourceIndex(value: Int): Boolean {
         if (setResourceIndex(resourceIndex + value)) {
@@ -183,6 +191,8 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
     /**
      * - Remove 1 from [resourceIndex] by calling [R2ScreenReader.addToResourceIndex] with -1 as a parameter.
+     *
+     * @return: Boolean - Whether the function executed successfully.
      */
     fun previousResource(): Boolean {
         return addToResourceIndex(-1)
@@ -190,6 +200,8 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
     /**
      * - Add 1 to [resourceIndex] by calling [R2ScreenReader.addToResourceIndex] with 1 as a parameter.
+     *
+     * @return: Boolean - Whether the function executed successfully.
      */
     fun nextResource(): Boolean {
         return addToResourceIndex(1)
@@ -316,16 +328,12 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         return true
     }
 
-    fun dismissScreenReader(): Boolean {
+    /**
+     * Dismiss the screen reader
+     */
+    private fun dismissScreenReader() {
         pauseReading()
-        val activity = activityReference.get()
-        try {
-            activity?.dismissScreenReader()
-        } catch (e: Exception) {
-            Timber.e(e.toString())
-            return false
-        }
-        return true
+        activityReference.get()?.dismissScreenReader()
     }
 
     /**
@@ -342,6 +350,8 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     /**
      * Set [isPaused] to false and add the [utterances] to the [textToSpeech] queue if [configure] worked
      * successfully (returning true)
+     *
+     * @return: Boolean - Whether the function executed successfully.
      */
     private fun startReading(): Boolean {
         isPaused = false
@@ -520,6 +530,8 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      *
      * @param resourceUrl: String - The html resource to fetch from the internal server, containing the text to be
      *   voiced.
+     *
+     * @return: Boolean - Whether the function executed successfully.
      */
     private fun splitResourceAndAddToUtterances(resourceUrl: String?): Boolean {
         var success = false

@@ -578,8 +578,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
      * - Make the TTS view invisible.
      * - Update the TTS play/pause button to show the good resource picture.
      * - Enable toggling the scrollbar which was previously disable for TTS.
-     *
-     * @param item: MenuItem - The Screen Reader menu button.
      */
     fun dismissScreenReader() {
         screenReader.stopReading()
