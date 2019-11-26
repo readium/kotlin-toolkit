@@ -153,9 +153,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         if (resourceIndex != index) {
             if (setResourceIndex(index)) {
                 isPaused = false
-
                 currentUtterance = 0
-                //currentUtterance = activityReference.get()?.getCurrentUtterance() ?: 0
             }
 
             if (textToSpeech.isSpeaking) {
