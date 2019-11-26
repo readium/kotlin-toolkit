@@ -83,7 +83,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
     private var items = publication.readingOrder
 
-    enum class PLAY_SENTENCE(val value: Int) {
+    private enum class PLAY_SENTENCE(val value: Int) {
         SAME(0),
         NEXT(1),
         PREV(-1)
