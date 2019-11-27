@@ -127,7 +127,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * - Set a temporary var to isPaused (isPaused's value may be altered by calls).
      * - Start initialization if [utterances] is empty.
      * - Stop [textToSpeech] if it is reading.
-     * - Start [textToSpeech] setup.
      */
     fun onResume() {
         val paused = isPaused
@@ -206,121 +205,136 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     }
 
     /**
-     * - If [initialized] is false, print a Toast and return false.
-     * - Set the language.
-     * - Split the current resource and adds sentences to [utterances].
-     * - If no utterances were found, restart the whole setup for the next resource.
-     * - Flush [textToSpeech] queue and add listeners on its events.
-     * - return true if everything went well or false if it failed.
+     * Inner function that sets the Text To Speech language.
+     */
+    private fun setTTSLanguage() {
+
+        val language = textToSpeech.setLanguage(Locale(publication.metadata.languages.firstOrNull()))
+
+        if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
+            Toast.makeText(context.applicationContext, "There was an error with the TTS language, switching "
+                + "to EN-US", Toast.LENGTH_LONG).show()
+            textToSpeech.language = Locale.US
+        }
+    }
+
+    /**
+     * Inner function that sets the utterances variable.
      *
-     * @return Boolean - Whether configure was successful or not.
+     * @return: Boolean - Whether utterances was able to be filled or not.
+     */
+    private fun setUtterances(): Boolean {
+        //Load resource as sentences
+        utterances = mutableListOf()
+        splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
+
+        while (++resourceIndex < items.size && utterances.size == 0) {
+            splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
+        }
+
+        if (resourceIndex == items.size)
+            --resourceIndex
+
+        return utterances.size != 0
+    }
+
+    /**
+     * Call the core setup functions to set the language, the utterances and the callbacks.
+     *
+     * @return: Boolean - Whether executing the function was successful or not.
      */
     private fun configure(): Boolean {
-        if (initialized) {
-            val language = textToSpeech.setLanguage(Locale(publication.metadata.languages.firstOrNull()))
+        setTTSLanguage()
 
-            if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Toast.makeText(context.applicationContext, "There was an error with the TTS language, switching "
-                    + "to EN-US", Toast.LENGTH_LONG).show()
-                textToSpeech.language = Locale.US
+        return setUtterances()
+            && flushUtterancesQueue()
+            && setTTSCallbacks()
+    }
+
+    /**
+     * Set the TTS callbacks.
+     *
+     * @return: Boolean - Whether setting the callbacks was successful or not.
+     */
+    private fun setTTSCallbacks(): Boolean {
+        val res = textToSpeech.setOnUtteranceProgressListener(object: UtteranceProgressListener() {
+            /**
+             * Called when an utterance "starts" as perceived by the caller. This will
+             * be soon before audio is played back in the case of a [TextToSpeech.speak]
+             * or before the first bytes of a file are written to the file system in the case
+             * of [TextToSpeech.synthesizeToFile].
+             *
+             * @param utteranceId The utterance ID of the utterance.
+             */
+            override fun onStart(utteranceId: String?) {
+                currentUtterance = utteranceId!!.toInt()
+
+                val toHighlight = utterances[utterancesCurrentIndex]
+
+                activityReference.get()?.launch {
+                    activityReference.get()?.findViewById<TextView>(R.id.tts_textView)?.text = toHighlight
+                    activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_pause)
+
+                    TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(activityReference.get()?.tts_textView!!, 1, 30, 1,
+                        TypedValue.COMPLEX_UNIT_DIP)
+                }
             }
 
-            //Load resource as sentences
-            utterances = mutableListOf()
-            splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
-
-            while (resourceIndex < items.size && utterances.size == 0) {
-                setResourceIndex(resourceIndex + 1)
-                splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
-            }
-
-            //emptying TTS' queue
-            if (!actOnUtterancesQueue("", TextToSpeech.QUEUE_FLUSH, null))
-                return false
-
-            //checking progression
-            val res = textToSpeech.setOnUtteranceProgressListener(object: UtteranceProgressListener() {
-                /**
-                 * Called when an utterance "starts" as perceived by the caller. This will
-                 * be soon before audio is played back in the case of a [TextToSpeech.speak]
-                 * or before the first bytes of a file are written to the file system in the case
-                 * of [TextToSpeech.synthesizeToFile].
-                 *
-                 * @param utteranceId The utterance ID of the utterance.
-                 */
-                override fun onStart(utteranceId: String?) {
-                    currentUtterance = utteranceId!!.toInt()
-
-                    val toHighlight = utterances[utterancesCurrentIndex]
-
-                    activityReference.get()?.launch {
-                        activityReference.get()?.findViewById<TextView>(R.id.tts_textView)?.text = toHighlight
-                        activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_pause)
-
-                        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(activityReference.get()?.tts_textView!!, 1, 30, 1,
-                            TypedValue.COMPLEX_UNIT_DIP)
-                    }
-                }
-
-                /**
-                 * Called when an utterance is stopped, whether voluntarily by the user, or not.
-                 *
-                 * @param utteranceId The utterance ID of the utterance.
-                 * @param interrupted Whether or not the speaking has been interrupted.
-                 */
-                override fun onStop(utteranceId: String?, interrupted: Boolean) {
-                    if (interrupted) {
-                        activityReference.get()?.launch {
-                            activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
-                        }
-
-                    }
-                }
-
-                /**
-                 * Called when an utterance has successfully completed processing.
-                 * All audio will have been played back by this point for audible output, and all
-                 * output will have been written to disk for file synthesis requests.
-                 *
-                 * This request is guaranteed to be called after [.onStart].
-                 *
-                 * @param utteranceId The utterance ID of the utterance.
-                 */
-                override fun onDone(utteranceId: String?) {
+            /**
+             * Called when an utterance is stopped, whether voluntarily by the user, or not.
+             *
+             * @param utteranceId The utterance ID of the utterance.
+             * @param interrupted Whether or not the speaking has been interrupted.
+             */
+            override fun onStop(utteranceId: String?, interrupted: Boolean) {
+                if (interrupted) {
                     activityReference.get()?.launch {
                         activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
+                    }
 
-                        if (utteranceId.equals((utterances.size - 1).toString())) {
-                            activityReference.get()?.goForward(false, completion = {})
-                            nextResource()
-                            startReading()
-                        }
+                }
+            }
+
+            /**
+             * Called when an utterance has successfully completed processing.
+             * All audio will have been played back by this point for audible output, and all
+             * output will have been written to disk for file synthesis requests.
+             *
+             * This request is guaranteed to be called after [.onStart].
+             *
+             * @param utteranceId The utterance ID of the utterance.
+             */
+            override fun onDone(utteranceId: String?) {
+                activityReference.get()?.launch {
+                    activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
+
+                    if (utteranceId.equals((utterances.size - 1).toString())) {
+                        activityReference.get()?.goForward(false, completion = {})
+                        nextResource()
+                        startReading()
                     }
                 }
-
-                /**
-                 * Called when an error has occurred during processing. This can be called
-                 * at any point in the synthesis process. Note that there might be calls
-                 * to [.onStart] for specified utteranceId but there will never
-                 * be a call to both [.onDone] and [.onError] for
-                 * the same utterance.
-                 *
-                 * @param utteranceId The utterance ID of the utterance.
-                 */
-                override fun onError(utteranceId: String?) {
-                    Timber.e("Error saying: " + utterances[utteranceId!!.toInt()])
-                }
-            })
-
-            if (res == TextToSpeech.ERROR) {
-                Timber.e("TTS failed to set callbacks")
-                return false
             }
-        } else {
-            Toast.makeText(context.applicationContext, "There was an error with the TTS initialization",
-                Toast.LENGTH_LONG).show()
+
+            /**
+             * Called when an error has occurred during processing. This can be called
+             * at any point in the synthesis process. Note that there might be calls
+             * to [.onStart] for specified utteranceId but there will never
+             * be a call to both [.onDone] and [.onError] for
+             * the same utterance.
+             *
+             * @param utteranceId The utterance ID of the utterance.
+             */
+            override fun onError(utteranceId: String?) {
+                Timber.e("Error saying: ${utterances[utteranceId!!.toInt()]}")
+            }
+        })
+
+        if (res == TextToSpeech.ERROR) {
+            Timber.e("TTS failed to set callbacks")
             return false
         }
+
         return true
     }
 
@@ -351,18 +365,25 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      */
     private fun startReading(): Boolean {
         isPaused = false
-        if (configure()) {
+        if (initialized && configure()) {
             if (utterancesCurrentIndex >= utterances.size) {
                 Timber.e("Invalid utterancesCurrentIndex value: $utterancesCurrentIndex . Expected less than $utterances.size")
                 currentUtterance = 0
             }
             val index = utterancesCurrentIndex
             for (i in index until utterances.size) {
-                if (!actOnUtterancesQueue(utterances[i], TextToSpeech.QUEUE_ADD, i))
+                if (!addToUtterancesQueue(utterances[i], i))
                     return false
             }
 
             return true
+        }
+
+        if (!initialized) {
+            Toast.makeText(
+                context.applicationContext, "There was an error with the TTS initialization",
+                Toast.LENGTH_LONG
+            ).show()
         }
 
         return false
@@ -451,11 +472,11 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         if (index >= utterances.size || index < 0 )
             return false
 
-        if (!actOnUtterancesQueue("", TextToSpeech.QUEUE_FLUSH, null))
+        if (!flushUtterancesQueue())
             return false
 
         for (i in index until utterances.size) {
-            if (!actOnUtterancesQueue(utterances[i], TextToSpeech.QUEUE_ADD, i)) {
+            if (!addToUtterancesQueue(utterances[i], i)) {
                 return false
             }
         }
@@ -463,34 +484,35 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     }
 
     /**
-     * Perform an action on the TTS service and manage the result (and error if an error happened).
-     * The function will shutdown the TTS if it fails.
+     * Helper function that manages adding an utterance to the Text To Speech for us.
      *
-     * @param str: String - The string TTS should speak. Empty string if flushing.
-     * @param flag: Int - The flag that indicates which action TTS should make [TextToSpeech.QUEUE_ADD]
-     *   or [TextToSpeech.QUEUE_FLUSH].
-     * @param index: Int - The index of the string in the utterances queue.
-     *
-     * @return Boolean - Whether the function was executed successfully.
+     * @return: Boolean - Whether adding the utterance to the Text To Speech queue was successful.
      */
-    private fun actOnUtterancesQueue(str: String, flag: Int, index: Int?): Boolean {
-        try {
-            if (textToSpeech.speak(str, flag, null, index?.toString()) == TextToSpeech.ERROR) {
-                throw Exception("Couldn't perform action on TTS queue")
-            }
-        } catch (e: Exception) {
-            Timber.e("Critical TTS error $e")
-
-            Toast.makeText(context.applicationContext, "Internal TTS error",
-                Toast.LENGTH_LONG).show()
-            shutdown()
+    private fun addToUtterancesQueue(utterance: String, index: Int): Boolean {
+        if (textToSpeech.speak(utterance, TextToSpeech.QUEUE_ADD, null, index.toString()) == TextToSpeech.ERROR) {
+            Timber.e("Error while adding utterance: $utterance to the TTS queue")
             return false
         }
+
         return true
     }
 
     /**
-     * Split all the resource's paragraphs into sentences. The sentences are then added to the [utterances] list.
+     * Helper function that manages flushing the Text To Speech for us.
+     *
+     * @return: Boolean - Whether flushing the Text To Speech queue was successful.
+     */
+    private fun flushUtterancesQueue(): Boolean {
+        if (textToSpeech.speak("", TextToSpeech.QUEUE_FLUSH, null, null) == TextToSpeech.ERROR) {
+            Timber.e("Error while flushing TTS queue.")
+            return false
+        }
+
+        return true
+    }
+
+    /**
+     * Split all the paragraphs of the resource into sentences. The sentences are then added to the [utterances] list.
      *
      * @param elements: Elements - The list of elements (paragraphs)
      */
