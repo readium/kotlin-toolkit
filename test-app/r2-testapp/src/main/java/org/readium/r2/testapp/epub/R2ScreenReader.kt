@@ -430,7 +430,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             pauseReading()
             resumeReading()
         } catch (e: Exception) {
-            Timber.e(e.printStackTrace().toString())
+            Timber.e(e.toString())
             return false
         }
 
