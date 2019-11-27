@@ -229,11 +229,9 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             utterances = mutableListOf()
             splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
 
-            if (utterances.size == 0 ){
-                if (nextResource()) {
-                    startReading()
-                }
-                return false
+            while (resourceIndex < items.size && utterances.size == 0) {
+                setResourceIndex(resourceIndex + 1)
+                splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
             }
 
             //emptying TTS' queue
