@@ -79,6 +79,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                 utterancesCurrentIndex = 0
             else
                 utterancesCurrentIndex = value
+            Timber.d("Current utterance index: $currentUtterance")
         }
 
     private var items = publication.readingOrder
@@ -116,6 +117,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                 TextToSpeech.OnInitListener { status ->
                     initialized = (status != TextToSpeech.ERROR)
                 })
+        Timber.d("textToSpeech initialization status: $initialized")
     }
 
 
@@ -187,7 +189,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     }
 
     /**
-     * - Remove 1 from [resourceIndex] by calling [R2ScreenReader.addToResourceIndex] with -1 as a parameter.
+     * - Remove 1 from [resourceIndex] by calling [addToResourceIndex] with -1 as a parameter.
      *
      * @return: Boolean - Whether the function executed successfully.
      */
@@ -196,7 +198,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     }
 
     /**
-     * - Add 1 to [resourceIndex] by calling [R2ScreenReader.addToResourceIndex] with 1 as a parameter.
+     * - Add 1 to [resourceIndex] by calling [addToResourceIndex] with 1 as a parameter.
      *
      * @return: Boolean - Whether the function executed successfully.
      */
@@ -208,7 +210,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * Inner function that sets the Text To Speech language.
      */
     private fun setTTSLanguage() {
-
         val language = textToSpeech.setLanguage(Locale(publication.metadata.languages.firstOrNull()))
 
         if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
@@ -275,8 +276,8 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                     activityReference.get()?.findViewById<TextView>(R.id.tts_textView)?.text = toHighlight
                     activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_pause)
 
-                    TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(activityReference.get()?.tts_textView!!, 1, 30, 1,
-                        TypedValue.COMPLEX_UNIT_DIP)
+                    TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(activityReference.get()?.tts_textView!!,
+                        1, 30, 1, TypedValue.COMPLEX_UNIT_DIP)
                 }
             }
 
