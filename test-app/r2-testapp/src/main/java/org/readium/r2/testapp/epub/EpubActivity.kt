@@ -124,6 +124,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     private lateinit var searchResult: MutableList<SearchLocator>
 
     private var mode: ActionMode? = null
+    private var popupWindow:PopupWindow? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -518,7 +519,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     }
 
     override fun onActionModeStarted(mode: ActionMode?) {
-
+        super.onActionModeStarted(mode)
         mode?.menu?.run {
             menuInflater.inflate(R.menu.menu_action_mode, this)
             findItem(R.id.highlight).setOnMenuItemClickListener {
@@ -551,10 +552,15 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             }
         }
         this.mode = mode
-        super.onActionModeStarted(mode)
     }
 
     private fun showHighlightPopup(highlightID: String? = null, size: Rect?, dismissCallback: () -> Unit) {
+        popupWindow?.let {
+            if (it.isShowing) {
+                return
+            }
+        }
+        mode?.finish()
         var highlight: org.readium.r2.navigator.epub.Highlight? = null
 
         highlightID?.let { id ->
@@ -562,7 +568,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 highlight = convertHighlight2NavigationHighlight(it)
             }
         }
-        val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
 
         val display = windowManager.defaultDisplay
         val rect = size ?: Rect()
@@ -577,13 +582,13 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         )
         popupView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
 
-        val popupWindow = PopupWindow(popupView, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        popupWindow.isFocusable = true
+        popupWindow = PopupWindow(popupView, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        popupWindow?.isFocusable = true
 
         val x = rect.left
         val y = if (rect.top > rect.height()) rect.top - rect.height() - 80 else rect.bottom
 
-        popupWindow.showAtLocation(popupView, Gravity.NO_GRAVITY, x  , y)
+        popupWindow?.showAtLocation(popupView, Gravity.NO_GRAVITY, x  , y)
 
         popupView.run {
             findViewById<View>(R.id.notch).run {
@@ -606,12 +611,13 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             }
             findViewById<View>(R.id.annotation).setOnClickListener {
                 showAnnotationPopup(highlight)
+                popupWindow?.dismiss()
+                mode?.finish()
             }
             findViewById<View>(R.id.del).run {
                 visibility = if (highlight != null) View.VISIBLE else View.GONE
                 setOnClickListener {
                     deleteHighlight(highlight)
-                    popupWindow.dismiss()
                 }
             }
         }
@@ -635,6 +641,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 addHighlight(it)
             }
         }
+        popupWindow?.dismiss()
+        mode?.finish()
     }
 
     private fun addHighlight(highlight: org.readium.r2.navigator.epub.Highlight) {
@@ -656,6 +664,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         highlight?.let {
             highlightDB.highlights.delete(it.id)
             hideHighlightWithID(it.id)
+            popupWindow?.dismiss()
+            mode?.finish()
         }
     }
 
@@ -695,12 +705,18 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 if (memo.text.isEmpty().not()) {
                     createAnnotation(highlight) {
                         addAnnotation(it, memo.text.toString())
+                        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(memo.applicationWindowToken,InputMethodManager.HIDE_NOT_ALWAYS);
                     }
                 }
                 alert.dismiss()
+                mode?.finish()
+                popupWindow?.dismiss()
             }
             findViewById<TextView>(R.id.negative).setOnClickListener {
                 alert.dismiss()
+                mode?.finish()
+                popupWindow?.dismiss()
+                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(memo.applicationWindowToken,InputMethodManager.HIDE_NOT_ALWAYS);
             }
             if (highlight != null) {
                 findViewById<TextView>(R.id.select_text).text = highlight.locator.text?.highlight
