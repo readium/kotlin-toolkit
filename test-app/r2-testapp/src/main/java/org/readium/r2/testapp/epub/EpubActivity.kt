@@ -686,7 +686,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     }
 
     private fun showAnnotationPopup(highlight: org.readium.r2.navigator.epub.Highlight? = null) {
-        val view = layoutInflater.inflate(R.layout.popup_memo, null, false)
+        val view = layoutInflater.inflate(R.layout.popup_note, null, false)
         val alert = AlertDialog.Builder(this)
                 .setView(view)
                 .create()
@@ -699,12 +699,12 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         }
 
         with(view) {
-            val memo = findViewById<EditText>(R.id.memo)
+            val note = findViewById<EditText>(R.id.note)
             findViewById<TextView>(R.id.positive).setOnClickListener {
-                if (memo.text.isEmpty().not()) {
+                if (note.text.isEmpty().not()) {
                     createAnnotation(highlight) {
-                        addAnnotation(it, memo.text.toString())
-                        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(memo.applicationWindowToken,InputMethodManager.HIDE_NOT_ALWAYS);
+                        addAnnotation(it, note.text.toString())
+                        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(note.applicationWindowToken,InputMethodManager.HIDE_NOT_ALWAYS);
                     }
                 }
                 alert.dismiss()
@@ -715,11 +715,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 alert.dismiss()
                 mode?.finish()
                 popupWindow?.dismiss()
-                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(memo.applicationWindowToken,InputMethodManager.HIDE_NOT_ALWAYS);
+                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(note.applicationWindowToken,InputMethodManager.HIDE_NOT_ALWAYS);
             }
             if (highlight != null) {
                 findViewById<TextView>(R.id.select_text).text = highlight.locator.text?.highlight
-                memo.setText(annotation)
+                note.setText(annotation)
             }
             else {
                 currentSelection {
