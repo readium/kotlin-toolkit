@@ -40,9 +40,9 @@ import kotlin.math.roundToInt
 class R2OutlineActivity : AppCompatActivity() {
 
     private lateinit var preferences:SharedPreferences
-    lateinit var bookmarkDB: BookmarksDatabase
-    lateinit var highlightsDB: HighligtsDatabase
-    lateinit var positionsDB: PositionsDatabase
+    private lateinit var bookmarkDB: BookmarksDatabase
+    private lateinit var highlightsDB: HighligtsDatabase
+    private lateinit var positionsDB: PositionsDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -69,15 +69,12 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     override val currentLocation: Locator?
         get() {
-            val resourceIndex = resourcePager.currentItem.toLong()
-            val resource = publication.readingOrder[resourcePager.currentItem]
-            val resourceHref = resource.href ?: ""
-            val resourceType = resource.typeLink ?: ""
-            val resourceTitle = resource.title ?: ""
-
             return booksDB.books.currentLocator(bookId)?.let {
                 it
             } ?: run {
+                val resource = publication.readingOrder[resourcePager.currentItem]
+                val resourceHref = resource.href ?: ""
+                val resourceType = resource.typeLink ?: ""
                 Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0))
             }
         }
