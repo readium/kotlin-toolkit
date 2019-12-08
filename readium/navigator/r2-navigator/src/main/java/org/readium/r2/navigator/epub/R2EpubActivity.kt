@@ -17,6 +17,7 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.DisplayMetrics
+import android.view.ActionMode
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
@@ -361,7 +362,11 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, SelectableI
 
     }
 
-
+    override fun onActionModeStarted(mode: ActionMode?) {
+        mode?.menu?.run {
+            this.clear()
+        }
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
