@@ -14,6 +14,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.util.Base64
 import android.util.DisplayMetrics
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -29,8 +30,9 @@ import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.*
 import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.Locations
-import org.readium.r2.shared.PageProgressionDirection
 import org.readium.r2.shared.SCROLL_REF
+import java.io.IOException
+import java.io.InputStream
 
 
 class R2EpubPageFragment : Fragment() {
@@ -145,8 +147,6 @@ class R2EpubPageFragment : Fragment() {
                 super.onPageFinished(view, url)
 
                 val currentFragment: R2EpubPageFragment = (webView.listener.resourcePager?.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
-                val previousFragment:R2EpubPageFragment? = (webView.listener.resourcePager?.adapter as R2PagerAdapter).getPreviousFragment() as? R2EpubPageFragment
-                val nextFragment:R2EpubPageFragment? = (webView.listener.resourcePager?.adapter as R2PagerAdapter).getNextFragment() as? R2EpubPageFragment
 
                 if (this@R2EpubPageFragment.tag == currentFragment.tag) {
                     var locations = webView.navigator.currentLocation?.locations
@@ -177,31 +177,9 @@ class R2EpubPageFragment : Fragment() {
                             }
                         }
                     }
-                }
 
-                nextFragment?.let {
-                    if (this@R2EpubPageFragment.tag == nextFragment.tag){
-                        if (nextFragment.webView.listener.publication.metadata.direction == PageProgressionDirection.rtl.name) {
-                            // The view has RTL layout
-                            nextFragment.webView.scrollToEnd()
-                        } else {
-                            // The view has LTR layout
-                            nextFragment.webView.scrollToStart()
-                        }
-                    }
                 }
-
-                previousFragment?.let {
-                    if (this@R2EpubPageFragment.tag == previousFragment.tag){
-                        if (previousFragment.webView.listener.publication.metadata.direction == PageProgressionDirection.rtl.name) {
-                            // The view has RTL layout
-                            previousFragment.webView.scrollToStart()
-                        } else {
-                            // The view has LTR layout
-                            previousFragment.webView.scrollToEnd()
-                        }
-                    }
-                }
+                webView.listener.onPageLoaded()
 
             }
 
@@ -216,11 +194,38 @@ class R2EpubPageFragment : Fragment() {
                 return null
             }
 
+            private fun injectScriptFile(view: WebView?, scriptFile: String) {
+                val input: InputStream
+                try {
+                    input = resources.assets.open(scriptFile)
+                    val buffer = ByteArray(input.available())
+                    input.read(buffer)
+                    input.close()
+
+                    // String-ify the script byte-array using BASE64 encoding !!!
+                    val encoded = Base64.encodeToString(buffer, Base64.NO_WRAP)
+                    view?.loadUrl("javascript:(function() {" +
+                            "var parent = document.getElementsByTagName('head').item(0);" +
+                            "var script = document.createElement('script');" +
+                            "script.type = 'text/javascript';" +
+                            // Tell the browser to BASE64-decode the string into your script !!!
+                            "script.innerHTML = window.atob('" + encoded + "');" +
+                            "parent.appendChild(script)" +
+                            "})()")
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                } catch (e1: IllegalStateException) {
+                    // not attached to a context
+                }
+
+            }
+
+
         }
         webView.isHapticFeedbackEnabled = false
         webView.isLongClickable = false
         webView.setOnLongClickListener {
-            true
+            false
         }
 
 
@@ -228,8 +233,7 @@ class R2EpubPageFragment : Fragment() {
 
         locations?.fragment?.let {
             var anchor = it
-            if (anchor.startsWith("#")) {
-            } else {
+            if (!anchor.startsWith("#")) {
                 anchor = "#$anchor"
             }
             val href = resourceUrl + anchor

@@ -35,7 +35,9 @@ interface R2ActivityListener {
     fun previousResource(v: View? = null) {}
     fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {}
     fun onPageEnded(end: Boolean) {}
-
+    fun onPageLoaded() {}
+    fun highlightActivated(id: String) {}
+    fun highlightAnnotationMarkActivated(id: String) {}
     fun progressionDidChange(progression: Double) {}
 }
 
@@ -134,6 +136,5 @@ fun VisualNavigator.goRight(animated: Boolean = false, completion: () -> Unit = 
 //}
 
 //public fun VisualNavigatorDelegate.navigator(navigator: VisualNavigator, point: CGPoint) {}
-
 
 
