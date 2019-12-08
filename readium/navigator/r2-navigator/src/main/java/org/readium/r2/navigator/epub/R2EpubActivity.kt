@@ -25,7 +25,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
-import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
@@ -133,7 +132,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, SelectableI
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
         launch {
             pagerPosition = 0
-            if (resourcePager.currentItem < resourcePager.adapter!!.count - 1 ) {
+            if (resourcePager.currentItem < resourcePager.adapter!!.count - 1) {
 
                 resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
 
@@ -143,13 +142,13 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, SelectableI
                     // The view has RTL layout
                     currentFragment?.webView?.let {
                         currentFragment.webView.progression = 1.0
-                        currentFragment.webView.setCurrentItem(currentFragment.webView.numPages - 1,false)
+                        currentFragment.webView.setCurrentItem(currentFragment.webView.numPages - 1, false)
                     }
                 } else {
                     // The view has LTR layout
                     currentFragment?.webView?.let {
                         currentFragment.webView.progression = 0.0
-                        currentFragment.webView.setCurrentItem(0,false)
+                        currentFragment.webView.setCurrentItem(0, false)
                     }
                 }
                 val resource = publication.readingOrder[resourcePager.currentItem]
@@ -176,13 +175,13 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, SelectableI
                     // The view has RTL layout
                     currentFragment?.webView?.let {
                         currentFragment.webView.progression = 0.0
-                        currentFragment.webView.setCurrentItem(0,false)
+                        currentFragment.webView.setCurrentItem(0, false)
                     }
                 } else {
                     // The view has LTR layout
                     currentFragment?.webView?.let {
                         currentFragment.webView.progression = 1.0
-                        currentFragment.webView.setCurrentItem(currentFragment.webView.numPages - 1,false)
+                        currentFragment.webView.setCurrentItem(currentFragment.webView.numPages - 1, false)
                     }
                 }
                 val resource = publication.readingOrder[resourcePager.currentItem]
@@ -228,7 +227,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, SelectableI
     var pagerPosition = 0
 
     var currentPagerPosition: Int = 0
-    lateinit var adapter:R2PagerAdapter
+    lateinit var adapter: R2PagerAdapter
 
     protected var navigatorDelegate: NavigatorDelegate? = null
 
@@ -396,9 +395,9 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, SelectableI
                                         } else {
                                             anchor = "#$anchor"
                                         }
-                                        val goto = resource.second +  anchor
+                                        val goto = resource.second + anchor
                                         currentFragent?.webView?.loadUrl(goto)
-                                    }?:run {
+                                    } ?: run {
                                         currentFragent?.webView?.loadUrl(resource.second)
                                     }
                                 } else {
@@ -477,8 +476,8 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, SelectableI
         currentFragment?.webView?.getCurrentSelectionInfo {
             val selection = JSONObject(it)
             val resource = publication.readingOrder[resourcePager.currentItem]
-            val resourceHref = resource.href?: ""
-            val resourceType = resource.typeLink?: ""
+            val resourceHref = resource.href ?: ""
+            val resourceType = resource.typeLink ?: ""
             val locations = Locations.fromJSON(selection.getJSONObject("locations"))
             val text = LocatorText.fromJSON(selection.getJSONObject("text"))
 
@@ -588,8 +587,7 @@ open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, SelectableI
             val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
             currentFragment?.webView?.createAnnotation(highlight.id)
             callback(highlight)
-        }
-        else {
+        } else {
             createHighlight(Color.rgb(150, 150, 150)) {
                 createAnnotation(it) {
                     callback(it)
