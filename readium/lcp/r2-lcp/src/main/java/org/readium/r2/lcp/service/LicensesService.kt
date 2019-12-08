@@ -18,6 +18,7 @@ import org.readium.r2.lcp.license.container.LCPLLicenseContainer
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.public.*
+import org.readium.r2.shared.Publication
 import timber.log.Timber
 
 
@@ -35,7 +36,7 @@ class LicensesService(private val licenses: LicensesRepository,
             retrieveLicense(container, authentication) { license ->
                 license?.let {
                     license.fetchPublication(context).success {
-                        val publication = LCPImportedPublication(localURL = it, suggestedFilename = "${license.license.id}.epub")
+                        val publication = LCPImportedPublication(localURL = it, suggestedFilename = "${license.license.id}${Publication.EXTENSION.EPUB.value}")
 
                         // is needed to be able to write the license in it's container
                         container.publication = publication.localURL
