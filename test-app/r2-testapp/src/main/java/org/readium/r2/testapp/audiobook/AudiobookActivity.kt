@@ -12,19 +12,39 @@ import android.widget.ImageView
 import kotlinx.android.synthetic.main.activity_audiobook.*
 import kotlinx.coroutines.launch
 import org.jetbrains.anko.indeterminateProgressDialog
-import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
+import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.audiobook.R2AudiobookActivity
 import org.readium.r2.shared.Locations
+import org.readium.r2.shared.Locator
 import org.readium.r2.shared.LocatorText
-import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Bookmark
 import org.readium.r2.testapp.db.BookmarksDatabase
+import org.readium.r2.testapp.db.BooksDatabase
 import org.readium.r2.testapp.outline.R2OutlineActivity
 
 
-class AudiobookActivity : R2AudiobookActivity() {
+class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
+
+    override val currentLocation: Locator?
+        get() {
+            return booksDB.books.currentLocator(bookId)?.let {
+                it
+            } ?: run {
+                val resource = publication.readingOrder[currentResource]
+                val resourceHref = resource.href ?: ""
+                val resourceType = resource.typeLink ?: ""
+                Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0))
+            }
+        }
+
+    override fun locationDidChange(navigator: Navigator?, locator: Locator) {
+        booksDB.books.saveProgression(locator, bookId)
+    }
+
+    private lateinit var booksDB: BooksDatabase
 
     private lateinit var bookmarksDB: BookmarksDatabase
     private lateinit var progressDialog: ProgressDialog
@@ -33,11 +53,18 @@ class AudiobookActivity : R2AudiobookActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        booksDB = BooksDatabase(this)
         bookmarksDB = BookmarksDatabase(this)
+
+        navigatorDelegate = this
+
+        bookId = intent.getLongExtra("bookId", -1)
+
         progressDialog = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_audiobook))
 
+        currentResource = publication.readingOrder.indexOfFirst { it.href == currentLocation?.href }
+
         Handler().postDelayed({
-            bookId = intent.getLongExtra("bookId", -1)
             //Setting cover
             launch {
                 if (intent.hasExtra("cover")) {
@@ -85,10 +112,6 @@ class AudiobookActivity : R2AudiobookActivity() {
             }
             R.id.settings -> {
                 // TODO do we need any settings ?
-                return true
-            }
-            R.id.drm -> {
-                startActivityForResult(intentFor<DRMManagementActivity>("publication" to publicationPath), 1)
                 return true
             }
             R.id.bookmark -> {
