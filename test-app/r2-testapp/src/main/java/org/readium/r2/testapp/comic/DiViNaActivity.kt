@@ -13,7 +13,6 @@ package org.readium.r2.testapp.comic
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.coroutines.CoroutineScope
@@ -43,13 +42,10 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
 
     private var menuToc: MenuItem? = null
 
-    private var bookId: Long = -1
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Handler().postDelayed({
-            bookId = intent.getLongExtra("bookId", -1)
-        }, 100)
+        bookId = intent.getLongExtra("bookId", -1)
+
         toggleActionBar()
     }
 

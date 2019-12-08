@@ -63,8 +63,6 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
 
     private lateinit var booksDB: BooksDatabase
 
-    private var bookId: Long = -1
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

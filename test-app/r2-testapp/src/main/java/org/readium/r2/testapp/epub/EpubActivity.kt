@@ -113,8 +113,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     protected var menuScreenReader: MenuItem? = null
 
-    private var bookId: Long = -1
-
     private var searchTerm = ""
     private lateinit var searchStorage: SharedPreferences
     private lateinit var searchResultAdapter: SearchLocatorAdapter
@@ -772,7 +770,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 resourceType,
                 resourceTitle,
                 highlightLocations,
-                locationText
+                locationText,
+                bookID = bookId
         )
     }
 

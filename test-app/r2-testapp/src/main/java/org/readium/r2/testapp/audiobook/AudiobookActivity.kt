@@ -48,7 +48,6 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
 
     private lateinit var bookmarksDB: BookmarksDatabase
     private lateinit var progressDialog: ProgressDialog
-    private var bookId: Long = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

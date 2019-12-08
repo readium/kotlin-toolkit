@@ -9,13 +9,8 @@
 
 package org.readium.r2.testapp.db
 
-import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteException
-import android.util.Log
-import nl.komponents.kovenant.task
-import nl.komponents.kovenant.then
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.json.JSONObject
@@ -36,7 +31,8 @@ class Highlight(val highlightID: String,
                 val location: Locations,
                 val locatorText: LocatorText,
                 var creationDate: Long = DateTime().toDate().time,
-                var id: Long? = null):
+                var id: Long? = null,
+                val bookID: Long):
         Locator(resourceHref, resourceType, resourceTitle, location, locatorText)
 
 class HighligtsDatabase(context: Context) {
@@ -70,6 +66,7 @@ class HighlightsDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, 
                 HIGHLIGHTSTable.ID to INTEGER + PRIMARY_KEY + AUTOINCREMENT,
                 HIGHLIGHTSTable.HIGHLIGHT_ID to INTEGER,
                 HIGHLIGHTSTable.PUBLICATION_ID to TEXT,
+                HIGHLIGHTSTable.BOOK_ID to INTEGER,
                 HIGHLIGHTSTable.RESOURCE_INDEX to INTEGER,
                 HIGHLIGHTSTable.STYLE to TEXT,
                 HIGHLIGHTSTable.COLOR to INTEGER,
@@ -85,58 +82,7 @@ class HighlightsDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, 
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
 
-        when (oldVersion) {
-            1 -> {
-                try {
 
-                    task {
-                        //  add migration: rename timestamp to creationDate
-                        db.execSQL("ALTER TABLE " + HIGHLIGHTSTable.NAME + " RENAME COLUMN 'timestamp' to " + HIGHLIGHTSTable.CREATION_DATE + ";")
-                    } then {
-                        //  add migration: add publicationId
-                        db.execSQL("ALTER TABLE " + HIGHLIGHTSTable.NAME + " ADD COLUMN " + HIGHLIGHTSTable.PUBLICATION_ID + " TEXT DEFAULT '';")
-                    } then {
-                        // add migration: add location
-                        db.execSQL("ALTER TABLE " + HIGHLIGHTSTable.NAME + " ADD COLUMN " + HIGHLIGHTSTable.LOCATION + " TEXT DEFAULT '{}';")
-                    } then {
-                        //  add migration: convert progression into location
-                        val cursor = db.query(HIGHLIGHTSTable.NAME, arrayOf(HIGHLIGHTSTable.ID, "progression", HIGHLIGHTSTable.LOCATION), null, null, null, null, null, null)
-                        if (cursor != null) {
-                            var hasItem = cursor.moveToFirst()
-                            while (hasItem) {
-                                val id = cursor.getInt(cursor.getColumnIndex(HIGHLIGHTSTable.ID))
-                                val progression = cursor.getDouble(cursor.getColumnIndex("progression"))
-                                val values = ContentValues()
-                                values.put(HIGHLIGHTSTable.LOCATION, Locations(progression = progression).toJSON().toString())
-                                db.update(HIGHLIGHTSTable.NAME, values, "${HIGHLIGHTSTable.ID}=?", arrayOf(id.toString()))
-                                hasItem = cursor.moveToNext()
-                            }
-                            cursor.close()
-                        }
-                    } then {
-                        //  add migration: remove progression
-                        db.execSQL("ALTER TABLE " + HIGHLIGHTSTable.NAME + " DROP COLUMN 'progression';")
-                    } then {
-                        //  add migration: add resourceTitle
-                        db.execSQL("ALTER TABLE " + HIGHLIGHTSTable.NAME + " ADD COLUMN " + HIGHLIGHTSTable.RESOURCE_TITLE + " TEXT DEFAULT '';")
-                    } then {
-                        //  add migration: add locatorText
-                        db.execSQL("ALTER TABLE " + HIGHLIGHTSTable.NAME + " ADD COLUMN " + HIGHLIGHTSTable.LOCATOR_TEXT + " TEXT DEFAULT '{}';")
-                    } then {
-                        //  add migration: add resourceType
-                        db.execSQL("ALTER TABLE " + HIGHLIGHTSTable.NAME + " ADD COLUMN " + HIGHLIGHTSTable.RESOURCE_TYPE + " TEXT DEFAULT '';")
-                    }
-
-                } catch (e: SQLiteException) { }
-            }
-            2 -> {
-                try {
-
-                    db.execSQL("ALTER TABLE " + HIGHLIGHTSTable.NAME + " ADD COLUMN " + HIGHLIGHTSTable.RESOURCE_TYPE + " TEXT DEFAULT '';")
-
-                } catch (e: SQLiteException) { }
-            }
-        }
 
     }
 
@@ -146,6 +92,7 @@ class HighlightsDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, 
 object HIGHLIGHTSTable {
     const val NAME = "HIGHLIGHTS"
     const val ID = "id"
+    const val BOOK_ID = "bookID"
     const val HIGHLIGHT_ID = "highlightID"
     const val PUBLICATION_ID = "publicationID"
     const val STYLE = "style"
@@ -159,7 +106,7 @@ object HIGHLIGHTSTable {
     const val LOCATION = "location"
     const val LOCATOR_TEXT = "locatorText"
     const val CREATION_DATE = "creationDate"
-    var RESULT_COLUMNS = arrayOf(ID, HIGHLIGHT_ID, PUBLICATION_ID, STYLE, COLOR, ANNOTATION, ANNOTATION_MARK_STYLE, RESOURCE_INDEX, RESOURCE_HREF, RESOURCE_TYPE, RESOURCE_TITLE, LOCATION, LOCATOR_TEXT, CREATION_DATE)
+    var RESULT_COLUMNS = arrayOf(ID, HIGHLIGHT_ID, PUBLICATION_ID, BOOK_ID, STYLE, COLOR, ANNOTATION, ANNOTATION_MARK_STYLE, RESOURCE_INDEX, RESOURCE_HREF, RESOURCE_TYPE, RESOURCE_TITLE, LOCATION, LOCATOR_TEXT, CREATION_DATE)
 
 }
 
@@ -188,6 +135,7 @@ class HIGHLIGHTS(private var database: HighlightsDatabaseOpenHelper) {
                 return@use insert(HIGHLIGHTSTable.NAME,
                         HIGHLIGHTSTable.HIGHLIGHT_ID to highlight.highlightID,
                         HIGHLIGHTSTable.PUBLICATION_ID to highlight.publicationID,
+                        HIGHLIGHTSTable.BOOK_ID to highlight.bookID,
                         HIGHLIGHTSTable.STYLE to highlight.style,
                         HIGHLIGHTSTable.COLOR to highlight.color,
                         HIGHLIGHTSTable.ANNOTATION to highlight.annotation,
@@ -206,6 +154,7 @@ class HIGHLIGHTS(private var database: HighlightsDatabaseOpenHelper) {
                 update(HIGHLIGHTSTable.NAME,
                         HIGHLIGHTSTable.HIGHLIGHT_ID to highlight.highlightID,
                         HIGHLIGHTSTable.PUBLICATION_ID to highlight.publicationID,
+                        HIGHLIGHTSTable.BOOK_ID to highlight.bookID,
                         HIGHLIGHTSTable.STYLE to highlight.style,
                         HIGHLIGHTSTable.COLOR to highlight.color,
                         HIGHLIGHTSTable.ANNOTATION to highlight.annotation,
@@ -242,7 +191,8 @@ class HIGHLIGHTS(private var database: HighlightsDatabaseOpenHelper) {
                     HIGHLIGHTSTable.RESOURCE_TITLE,
                     HIGHLIGHTSTable.LOCATION,
                     HIGHLIGHTSTable.LOCATOR_TEXT,
-                    HIGHLIGHTSTable.CREATION_DATE)
+                    HIGHLIGHTSTable.CREATION_DATE,
+                    HIGHLIGHTSTable.BOOK_ID)
                     .whereArgs("(highlightID = {highlightID})",
                             "highlightID" to highlight.highlightID)
                     .exec {
@@ -283,13 +233,40 @@ class HIGHLIGHTS(private var database: HighlightsDatabaseOpenHelper) {
                     HIGHLIGHTSTable.RESOURCE_TITLE,
                     HIGHLIGHTSTable.LOCATION,
                     HIGHLIGHTSTable.LOCATOR_TEXT,
-                    HIGHLIGHTSTable.CREATION_DATE)
+                    HIGHLIGHTSTable.CREATION_DATE,
+                    HIGHLIGHTSTable.BOOK_ID)
                     .exec {
                         parseList(MyRowParser()).toMutableList()
                     }
         }
     }
 
+    fun listAll(bookID: Long): MutableList<Highlight> {
+        return database.use {
+            select(HIGHLIGHTSTable.NAME,
+                    HIGHLIGHTSTable.ID,
+                    HIGHLIGHTSTable.HIGHLIGHT_ID,
+                    HIGHLIGHTSTable.PUBLICATION_ID,
+                    HIGHLIGHTSTable.STYLE,
+                    HIGHLIGHTSTable.COLOR,
+                    HIGHLIGHTSTable.ANNOTATION,
+                    HIGHLIGHTSTable.ANNOTATION_MARK_STYLE,
+                    HIGHLIGHTSTable.RESOURCE_INDEX,
+                    HIGHLIGHTSTable.RESOURCE_HREF,
+                    HIGHLIGHTSTable.RESOURCE_TYPE,
+                    HIGHLIGHTSTable.RESOURCE_TITLE,
+                    HIGHLIGHTSTable.LOCATION,
+                    HIGHLIGHTSTable.LOCATOR_TEXT,
+                    HIGHLIGHTSTable.CREATION_DATE,
+                    HIGHLIGHTSTable.BOOK_ID)
+                    .whereArgs("bookID = {bookID}", "bookID" to bookID as Any)
+                    .orderBy(BOOKMARKSTable.RESOURCE_INDEX, SqlOrderDirection.ASC)
+                    .orderBy(BOOKMARKSTable.CREATION_DATE, SqlOrderDirection.ASC)
+                    .exec {
+                        parseList(MyRowParser()).toMutableList()
+                    }
+        }
+    }
 
     fun list(highlightID: String): MutableList<Highlight> {
         return database.use {
@@ -307,7 +284,8 @@ class HIGHLIGHTS(private var database: HighlightsDatabaseOpenHelper) {
                     HIGHLIGHTSTable.RESOURCE_TITLE,
                     HIGHLIGHTSTable.LOCATION,
                     HIGHLIGHTSTable.LOCATOR_TEXT,
-                    HIGHLIGHTSTable.CREATION_DATE)
+                    HIGHLIGHTSTable.CREATION_DATE,
+                    HIGHLIGHTSTable.BOOK_ID)
                     .whereArgs("highlightID = {highlightID}", "highlightID" to highlightID as Any)
                     .orderBy(HIGHLIGHTSTable.RESOURCE_INDEX, SqlOrderDirection.ASC)
                     .orderBy(HIGHLIGHTSTable.CREATION_DATE, SqlOrderDirection.ASC)
@@ -361,8 +339,11 @@ class HIGHLIGHTS(private var database: HighlightsDatabaseOpenHelper) {
             val created = columns[13]?.let {
                 return@let it
             } ?: kotlin.run { return@run null }
+            val bookID = columns[14]?.let {
+                return@let it
+            } ?: kotlin.run { return@run 0 }
 
-            return Highlight(highlightID as String, publicationID as String, style as String, (color as Long).toInt(), annotation as String, annotationMarkStyle as String, resourceIndex as Long, resourceHref as String, resourceType as String, resourceTitle as String, Locations.fromJSON(JSONObject(location as String)), LocatorText.fromJSON(JSONObject(locatorText as String)), created as Long,  id as Long)
+            return Highlight(highlightID as String, publicationID as String, style as String, (color as Long).toInt(), annotation as String, annotationMarkStyle as String, resourceIndex as Long, resourceHref as String, resourceType as String, resourceTitle as String, Locations.fromJSON(JSONObject(location as String)), LocatorText.fromJSON(JSONObject(locatorText as String)), created as Long,  id as Long, bookID =  bookID as Long)
         }
     }
 

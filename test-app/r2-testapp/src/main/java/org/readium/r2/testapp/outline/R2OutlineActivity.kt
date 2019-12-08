@@ -142,8 +142,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
         highlightsDB = HighligtsDatabase(this)
 
-        val highlightID = intent.getStringExtra("highlightId")
-        val highlights = highlightsDB.highlights.listAll().sortedWith(compareBy({it.resourceIndex},{ it.location.progression })).toMutableList()
+        val highlights = highlightsDB.highlights.listAll(bookID).sortedWith(compareBy({it.resourceIndex},{ it.location.progression })).toMutableList()
         val highlightsAdapter = HighlightsAdapter(this, highlights, publication)
         highlight_list.adapter = highlightsAdapter
         highlight_list.setOnItemClickListener { _, _, position, _ ->
