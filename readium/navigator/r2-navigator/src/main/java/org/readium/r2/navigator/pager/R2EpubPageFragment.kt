@@ -177,9 +177,9 @@ class R2EpubPageFragment : Fragment() {
                             }
                         }
                     }
-                    webView.listener.onPageLoaded()
 
                 }
+                webView.listener.onPageLoaded()
 
             }
 
