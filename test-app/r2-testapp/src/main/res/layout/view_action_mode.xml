@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/notch"
+        android:layout_width="18dp"
+        android:layout_height="9dp"
+        android:src="@drawable/ic_notch"
+        android:rotation="180"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/background_action_mode"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <RadioButton
+                android:id="@+id/yellow"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginLeft="14dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="6dp"
+                android:button="@android:color/transparent"
+                android:background="@drawable/selector_yellow"/>
+
+            <RadioButton
+                android:id="@+id/green"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginRight="10dp"
+                android:button="@android:color/transparent"
+                android:background="@drawable/selector_green"/>
+
+            <RadioButton
+                android:id="@+id/blue"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginRight="10dp"
+                android:button="@android:color/transparent"
+                android:background="@drawable/selector_blue"/>
+
+            <RadioButton
+                android:id="@+id/red"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginRight="10dp"
+                android:button="@android:color/transparent"
+                android:background="@drawable/selector_red"/>
+
+            <RadioButton
+                android:id="@+id/purple"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginRight="10dp"
+                android:button="@android:color/transparent"
+                android:background="@drawable/selector_purple"/>
+
+        </RadioGroup>
+
+        <View
+            android:layout_width="0.5dp"
+            android:layout_height="match_parent"
+            android:background="#b9b9b9"
+            android:layout_marginLeft="4dp"/>
+
+        <ImageView
+            android:id="@+id/annotation"
+            android:layout_width="21dp"
+            android:layout_height="21dp"
+            android:layout_marginTop="7.5dp"
+            android:layout_marginBottom="7.5dp"
+            android:layout_marginLeft="9dp"
+            android:layout_marginRight="9.5dp"
+            android:src="@drawable/ic_pen"
+            android:scaleType="fitXY"/>
+
+        <View
+            android:layout_width="0.5dp"
+            android:layout_height="match_parent"
+            android:background="#b9b9b9"/>
+
+        <ImageView
+            android:id="@+id/del"
+            android:layout_width="14dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8.6dp"
+            android:layout_marginLeft="12.5dp"
+            android:layout_marginRight="13dp"
+            android:src="@drawable/ic_delete"
+            android:scaleType="fitXY"/>
+
+    </LinearLayout>
+
+</LinearLayout>
