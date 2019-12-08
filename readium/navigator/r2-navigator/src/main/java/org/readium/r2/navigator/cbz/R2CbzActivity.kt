@@ -69,7 +69,6 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     override lateinit var resourcePager: R2ViewPager
     override lateinit var publicationPath: String
     override lateinit var publication: Publication
-    override lateinit var publicationFileName: String
     override lateinit var publicationIdentifier: String
 
     var resources = arrayListOf<String>()
@@ -87,7 +86,6 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
         publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
-        publicationFileName = intent.getStringExtra("publicationFileName")
         publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title
 

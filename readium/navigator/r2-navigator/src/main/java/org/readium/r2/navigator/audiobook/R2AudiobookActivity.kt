@@ -71,8 +71,6 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     override lateinit var preferences: SharedPreferences
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
-    override lateinit var publicationFileName: String
-    override lateinit var publicationPath: String
 
     var currentResource = 0
 
@@ -92,9 +90,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
-        publicationPath = intent.getStringExtra("publicationPath")
         publication = intent.getSerializableExtra("publication") as Publication
-        publicationFileName = intent.getStringExtra("publicationFileName")
         publicationIdentifier = publication.metadata.identifier!!
 
         title = null
