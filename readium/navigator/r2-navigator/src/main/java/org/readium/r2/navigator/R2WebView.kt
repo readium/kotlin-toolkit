@@ -299,7 +299,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
     fun calculateCurrentItem() {
         val currentPage = numPages * progression
-        mCurItem = currentPage.toInt()
+        mCurItem = Math.abs(currentPage).roundToInt()
     }
 
     internal fun setCurrentItemInternal(item: Int, smoothScroll: Boolean, always: Boolean) {
@@ -697,6 +697,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 }
             }
             MotionEvent.ACTION_UP -> if (mIsBeingDragged) {
+                mIsBeingDragged = false
                 val velocityTracker = mVelocityTracker
                 velocityTracker!!.computeCurrentVelocity(2000, mMaximumVelocity.toFloat())
                 val initialVelocity = velocityTracker.getXVelocity(mActivePointerId).toInt()

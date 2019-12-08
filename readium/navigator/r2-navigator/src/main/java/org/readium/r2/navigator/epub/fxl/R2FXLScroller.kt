@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.navigator.fxl
+package org.readium.r2.navigator.epub.fxl
 
 import android.content.Context
 import android.widget.OverScroller
