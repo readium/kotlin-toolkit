@@ -27,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
-import org.readium.r2.shared.Locations
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.getAbsolute
 
@@ -39,7 +38,8 @@ import org.readium.r2.shared.getAbsolute
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
     lateinit var activity: AppCompatActivity
-    lateinit var listener: R2ActivityListener
+    lateinit var listener: IR2Activity
+    lateinit var navigator: Navigator
 
     var progression: Double = 0.0
     var overrideUrlLoading = true
@@ -50,7 +50,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     private val uiScope = CoroutineScope(Dispatchers.Main)
 
     init {
-      setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+        setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
     }
 
     interface OnOverScrolledCallback {
@@ -85,15 +85,15 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 if (listener.publication.metadata.direction == "rtl") {
                     this@R2BasicWebView.evaluateJavascript("scrollRightRTL();") { result ->
                         if (result.contains("edge")) {
-                            listener.previousResource(false)
+                            navigator.goBackward()
                         }
                     }
                 } else {
-                    listener.nextResource(false)
+                    navigator.goForward()
                 }
             } else {
                 if (!this@R2BasicWebView.canScrollHorizontally(1)) {
-                    listener.nextResource(false)
+                    navigator.goForward()
                 }
                 this@R2BasicWebView.evaluateJavascript("scrollRight();", null)
             }
@@ -116,16 +116,16 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 if (listener.publication.metadata.direction == "rtl") {
                     this@R2BasicWebView.evaluateJavascript("scrollLeftRTL();") { result ->
                         if (result.contains("edge")) {
-                            listener.nextResource(false)
+                            navigator.goForward()
                         }
                     }
                 } else {
-                    listener.previousResource(false)
+                    navigator.goBackward()
                 }
             } else {
                 // fix this for when vertical scrolling is enabled
                 if (!this@R2BasicWebView.canScrollHorizontally(-1)) {
-                    listener.previousResource(false)
+                    navigator.goBackward()
                 }
                 this@R2BasicWebView.evaluateJavascript("scrollLeft();", null)
             }
@@ -135,7 +135,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun progressionDidChange(positionString: String) {
         progression = positionString.toDouble()
-        listener.storeProgression(Locations(progression = progression))
+        listener.progressionDidChange(progression)
     }
 
     @android.webkit.JavascriptInterface
@@ -150,7 +150,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         link?.let { noteref ->
             val href = noteref.attr("href")
             if (href.indexOf("#") > 0) {
-                val id = href.substring(href.indexOf('#')+1)
+                val id = href.substring(href.indexOf('#') + 1)
                 var absolute = getAbsolute(href, resourceUrl!!)
                 absolute = absolute.substring(0, absolute.indexOf("#"))
                 val document = Jsoup.connect(absolute).get()
@@ -204,6 +204,21 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
+    @android.webkit.JavascriptInterface
+    fun highlightActivated(id: String) {
+        uiScope.launch {
+            listener.highlightActivated(id)
+        }
+    }
+
+    @android.webkit.JavascriptInterface
+    fun highlightAnnotationMarkActivated(id: String) {
+        uiScope.launch {
+            listener.highlightAnnotationMarkActivated(id)
+        }
+    }
+
+
     fun Boolean.toInt() = if (this) 1 else 0
 
     fun scrollToStart() {
@@ -218,12 +233,58 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         this.evaluateJavascript("scrollToPosition(\"$progression\", \"${listener.publication.metadata.direction}\");", null)
     }
 
+    fun setScrollMode(scrollMode: Boolean) {
+        this.evaluateJavascript("setScrollMode($scrollMode)", null)
+    }
+
     fun setProperty(key: String, value: String) {
-        this.evaluateJavascript("setProperty(\"$key\", \"$value\");", null)
+        this.evaluateJavascript("setProperty(\"$key\", \"$value\");") {
+            listener.onPageLoaded()
+        }
     }
 
     fun removeProperty(key: String) {
         this.evaluateJavascript("removeProperty(\"$key\");", null)
+    }
+
+    fun getCurrentSelectionInfo(callback: (String) -> Unit) {
+        this.evaluateJavascript("getCurrentSelectionInfo();") {
+            callback(it)
+        }
+    }
+
+    fun getCurrentSelectionRect(callback: (String) -> Unit) {
+        this.evaluateJavascript("getSelectionRect();") {
+            callback(it)
+        }
+    }
+
+    fun createHighlight(locator: String?, color: String?, callback: (String) -> Unit) {
+        uiScope.launch {
+            this@R2BasicWebView.evaluateJavascript("createHighlight($locator, $color, true);") {
+                callback(it)
+            }
+        }
+    }
+
+    fun destroyHighlight(id: String) {
+        uiScope.launch {
+            this@R2BasicWebView.evaluateJavascript("destroyHighlight(\"$id\");", null)
+        }
+    }
+
+    fun createAnnotation(id: String) {
+        uiScope.launch {
+            this@R2BasicWebView.evaluateJavascript("createAnnotation(\"$id\");", null)
+        }
+    }
+
+    fun rectangleForHighlightWithID(id: String, callback: (String) -> Unit) {
+        uiScope.launch {
+            this@R2BasicWebView.evaluateJavascript("rectangleForHighlightWithID(\"$id\");") {
+                callback(it)
+            }
+        }
     }
 
     fun runJavaScript(javascript: String, callback: (String) -> Unit) {

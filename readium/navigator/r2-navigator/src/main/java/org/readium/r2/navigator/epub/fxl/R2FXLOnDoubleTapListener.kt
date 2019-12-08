@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.navigator.fxl
+package org.readium.r2.navigator.epub.fxl
 
 class R2FXLOnDoubleTapListener(var threeStep: Boolean) : R2FXLLayout.OnDoubleTapListener {
 

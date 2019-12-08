@@ -9,7 +9,9 @@
 
 package org.readium.r2.navigator.cbz
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
@@ -17,16 +19,46 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.R
-import org.readium.r2.navigator.R2ActivityListener
+import org.readium.r2.navigator.*
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.shared.Link
+import org.readium.r2.shared.Locations
+import org.readium.r2.shared.Locator
 import org.readium.r2.shared.Publication
 import kotlin.coroutines.CoroutineContext
 
 
-class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
+open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator {
+
+    override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override val readingProgression: ReadingProgression
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+    override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun goRight(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     /**
      * Context of this scope.
      */
@@ -37,10 +69,15 @@ class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
     override lateinit var resourcePager: R2ViewPager
     override lateinit var publicationPath: String
     override lateinit var publication: Publication
-    override lateinit var publicationFileName: String
     override lateinit var publicationIdentifier: String
+    override lateinit var publicationFileName: String
+    override var bookId: Long = -1
 
     var resources = arrayListOf<String>()
+    lateinit var adapter: R2PagerAdapter
+
+    var currentPagerPosition: Int = 0
+    protected var navigatorDelegate: NavigatorDelegate? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,51 +86,41 @@ class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         resourcePager = findViewById(R.id.resourcePager)
 
-        publicationPath = intent.getStringExtra("publicationPath")
+        publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
+        publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publication = intent.getSerializableExtra("publication") as Publication
-        publicationFileName = intent.getStringExtra("publicationFileName")
-        publicationIdentifier = publication.metadata.identifier
+        publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title
-        
-        for (link in publication.pageList) {
+
+        for (link in publication.images) {
             resources.add(link.href.toString())
         }
 
-        val index = preferences.getInt("$publicationIdentifier-document", 0)
-
-        val adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
+        adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
 
         resourcePager.adapter = adapter
 
-        if (index == 0) {
+        if (currentPagerPosition == 0) {
             if (layoutDirectionIsRTL()) {
                 // The view has RTL layout
                 resourcePager.currentItem = resources.size - 1
             } else {
                 // The view has LTR layout
-                resourcePager.currentItem = index
+                resourcePager.currentItem = currentPagerPosition
             }
         } else {
-            resourcePager.currentItem = index
+            resourcePager.currentItem = currentPagerPosition
         }
 
-        toggleActionBar()
     }
-
-//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-//        // TODO we could add a thumbnail view here
-//        return true
-//    }
-//
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        return super.onOptionsItemSelected(item)
-//    }
 
     override fun onPause() {
         super.onPause()
-        val publicationIdentifier = publication.metadata.identifier
-        val documentIndex = resourcePager.currentItem
-        preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
+        val resource = publication.images[resourcePager.currentItem]
+        val resourceHref = resource.href ?: ""
+        val resourceType = resource.typeLink ?: ""
+
+        navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
     }
 
     override fun nextResource(v: View?) {
@@ -105,6 +132,11 @@ class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
                 // The view has LTR layout
                 resourcePager.currentItem = resourcePager.currentItem + 1
             }
+            val resource = publication.images[resourcePager.currentItem]
+            val resourceHref = resource.href ?: ""
+            val resourceType = resource.typeLink ?: ""
+
+            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
         }
     }
 
@@ -117,11 +149,15 @@ class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
                 // The view has LTR layout
                 resourcePager.currentItem = resourcePager.currentItem - 1
             }
+            val resource = publication.images[resourcePager.currentItem]
+            val resourceHref = resource.href ?: ""
+            val resourceType = resource.typeLink ?: ""
 
+            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
         }
     }
 
-    override fun toggleActionBar(v: View?) {
+    override fun toggleActionBar() {
         if (allowToggleActionBar) {
             launch {
                 if (supportActionBar!!.isShowing) {
@@ -139,5 +175,46 @@ class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
             }
         }
     }
+
+    override fun toggleActionBar(v: View?) {
+        toggleActionBar()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
+            if (data != null) {
+
+                val locator = data.getSerializableExtra("locator") as Locator
+
+                // Set the progression fetched
+                navigatorDelegate?.locationDidChange(locator = locator)
+
+                fun setCurrent(resources: ArrayList<*>) {
+                    for (index in 0 until resources.count()) {
+                        val resource = resources[index] as String
+                        if (resource.endsWith(locator.href!!)) {
+                            resourcePager.currentItem = index
+                            break
+                        }
+                    }
+                }
+
+                resourcePager.adapter = adapter
+
+                setCurrent(resources)
+
+                if (supportActionBar!!.isShowing && allowToggleActionBar) {
+                    resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            or View.SYSTEM_UI_FLAG_IMMERSIVE)
+                }
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
 }
 
