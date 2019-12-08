@@ -41,8 +41,8 @@ class R2OutlineActivity : AppCompatActivity() {
 
     private lateinit var preferences:SharedPreferences
     lateinit var bookmarkDB: BookmarksDatabase
-    lateinit var positionsDB: PositionsDatabase
     lateinit var highlightsDB: HighligtsDatabase
+    lateinit var positionsDB: PositionsDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -159,9 +159,6 @@ class R2OutlineActivity : AppCompatActivity() {
             finish()
 
         }
-
-        positionsDB = PositionsDatabase(this)
-
 
         /*
          * Retrieve the page list
