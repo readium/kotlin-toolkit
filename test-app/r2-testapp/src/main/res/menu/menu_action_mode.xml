@@ -11,7 +11,7 @@
     </item>
 
     <item
-        android:id="@+id/memo"
+        android:id="@+id/note"
         android:title="Note"
         app:showAsAction="always">
     </item>

@@ -546,7 +546,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 }
                 true
             }
-            findItem(R.id.memo).setOnMenuItemClickListener {
+            findItem(R.id.note).setOnMenuItemClickListener {
                 showAnnotationPopup()
                 true
             }
