@@ -12,7 +12,7 @@ package org.readium.r2.navigator.epub
 import android.graphics.Rect
 import org.readium.r2.shared.Locator
 
-interface HighlightableImpl {
+interface IR2Highlightable {
     fun showHighlight(highlight: Highlight)
 
     fun showHighlights(highlights: Array<Highlight>)

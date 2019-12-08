@@ -46,7 +46,7 @@ class R2EpubPageFragment : Fragment() {
         get() = arguments!!.getString("title")
 
     lateinit var webView: R2WebView
-    lateinit var listener: R2ActivityListener
+    lateinit var listener: IR2Activity
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -75,7 +75,7 @@ class R2EpubPageFragment : Fragment() {
         webView = v!!.findViewById(R.id.webView) as R2WebView
 
         webView.activity = activity as AppCompatActivity
-        webView.listener = activity as R2ActivityListener
+        webView.listener = activity as IR2Activity
         webView.navigator = activity as Navigator
 
         webView.settings.javaScriptEnabled = true

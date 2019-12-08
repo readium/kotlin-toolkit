@@ -37,7 +37,7 @@ import java.net.URI
 import kotlin.coroutines.CoroutineContext
 
 
-open class R2EpubActivity : AppCompatActivity(), R2ActivityListener, SelectableImpl, HighlightableImpl, CoroutineScope, VisualNavigator {
+open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, CoroutineScope, VisualNavigator {
 
     override fun progressionDidChange(progression: Double) {
         val locator = currentLocation

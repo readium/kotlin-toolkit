@@ -21,7 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.R
-import org.readium.r2.navigator.R2ActivityListener
+import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
@@ -52,7 +52,7 @@ class R2FXLPageFragment : Fragment() {
 
             r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
                 override fun onTap(view: R2FXLLayout, info: R2FXLLayout.TapInfo): Boolean {
-                    (activity as R2ActivityListener).toggleActionBar()
+                    (activity as IR2Activity).toggleActionBar()
                     return true
                 }
             })
@@ -74,7 +74,7 @@ class R2FXLPageFragment : Fragment() {
 
             r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
                 override fun onTap(view: R2FXLLayout, info: R2FXLLayout.TapInfo): Boolean {
-                    (activity as R2ActivityListener).toggleActionBar()
+                    (activity as IR2Activity).toggleActionBar()
                     return true
                 }
             })

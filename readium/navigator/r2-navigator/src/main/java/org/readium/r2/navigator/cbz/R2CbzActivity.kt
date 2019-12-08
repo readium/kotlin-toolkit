@@ -20,7 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
-import org.readium.r2.navigator.R2ActivityListener
+import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.ReadingProgression
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
@@ -33,7 +33,7 @@ import org.readium.r2.shared.Publication
 import kotlin.coroutines.CoroutineContext
 
 
-open class R2CbzActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
+open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
     /**
      * Context of this scope.
      */

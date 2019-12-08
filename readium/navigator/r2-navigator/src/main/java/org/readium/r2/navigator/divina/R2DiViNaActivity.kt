@@ -27,7 +27,7 @@ import org.readium.r2.shared.Publication
 import kotlin.coroutines.CoroutineContext
 
 
-open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener {
+open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
 
     /**
      * Context of this scope.

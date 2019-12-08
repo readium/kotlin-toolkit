@@ -17,7 +17,7 @@ import org.readium.r2.shared.Locator
 import org.readium.r2.shared.Publication
 import java.net.URL
 
-interface R2ActivityListener {
+interface IR2Activity {
 
     val publication: Publication
     val preferences: SharedPreferences

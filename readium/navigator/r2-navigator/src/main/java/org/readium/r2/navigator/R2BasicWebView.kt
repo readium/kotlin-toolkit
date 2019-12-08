@@ -38,7 +38,7 @@ import org.readium.r2.shared.getAbsolute
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
     lateinit var activity: AppCompatActivity
-    lateinit var listener: R2ActivityListener
+    lateinit var listener: IR2Activity
     lateinit var navigator: Navigator
 
     var progression: Double = 0.0

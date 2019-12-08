@@ -14,7 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.json.JSONObject
 import org.readium.r2.navigator.R
-import org.readium.r2.navigator.R2ActivityListener
+import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.ReadingProgression
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.shared.Link
@@ -25,7 +25,7 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
-open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, R2ActivityListener, MediaPlayerCallback {
+open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activity, MediaPlayerCallback {
 
     /**
      * Context of this scope.
