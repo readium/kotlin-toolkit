@@ -2,7 +2,7 @@ package org.readium.r2.testapp.search
 
 import android.os.Handler
 import org.json.JSONArray
-import org.readium.r2.navigator.R2ActivityListener
+import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.shared.Locations
@@ -20,7 +20,7 @@ interface SearchInterface {
 /**
  * This is our custom Search Module, this class uses MarkJS library and implements SearchInterface
  */
-class MarkJSSearchEngine(var listener: R2ActivityListener) : SearchInterface {
+class MarkJSSearchEngine(var listener: IR2Activity) : SearchInterface {
 
 
     override fun search(keyword: String, callback: (Pair<Boolean, MutableList<SearchLocator>>) -> Unit) {

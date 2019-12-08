@@ -13,6 +13,7 @@ package org.readium.r2.testapp.utils
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import org.readium.r2.shared.Publication
 
 
 /**
@@ -26,6 +27,7 @@ class R2IntentMapper(private val mContext: Context, private val mIntents: R2Inte
         // Get intent, action and MIME type
         val action = intent.action
         val type = intent.type
+        val scheme = intent.scheme
         val uri: Uri
         uri = if (Intent.ACTION_SEND == action && type != null) {
             intent.getParcelableExtra(Intent.EXTRA_STREAM)
@@ -35,13 +37,18 @@ class R2IntentMapper(private val mContext: Context, private val mIntents: R2Inte
         }
 
         if (uri.toString().contains(".")) {
-            val extension = uri.toString().substring(uri.toString().lastIndexOf("."))
-            if (extension == ".lcpl") {
-                mContext.startActivity(mIntents.catalogActivityIntent(mContext, uri, true))
-            } else {
-                val dispatchIntent = mIntents.catalogActivityIntent(mContext, uri)
-                mContext.startActivity(dispatchIntent)
+
+            val extension = when (uri.toString().substring(uri.toString().lastIndexOf("."))){
+
+                Publication.EXTENSION.EPUB.value -> Publication.EXTENSION.EPUB
+                Publication.EXTENSION.JSON.value -> Publication.EXTENSION.JSON
+                Publication.EXTENSION.AUDIO.value -> Publication.EXTENSION.AUDIO
+                Publication.EXTENSION.DIVINA.value -> Publication.EXTENSION.DIVINA
+                Publication.EXTENSION.LCPL.value -> Publication.EXTENSION.LCPL
+                Publication.EXTENSION.CBZ.value -> Publication.EXTENSION.CBZ
+                else -> Publication.EXTENSION.UNKNOWN
             }
+            mContext.startActivity(mIntents.catalogActivityIntent(mContext, uri, extension))
         }
     }
 }

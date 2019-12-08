@@ -22,7 +22,7 @@ import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONArray
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.R2WebView
-import org.readium.r2.navigator.fxl.R2FXLLayout
+import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -383,6 +383,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
                 val currentFragment = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment()
                 if (currentFragment is R2EpubPageFragment) {
                     currentFragment.webView.scrollToPosition(currentFragment.webView.progression)
+                    currentFragment.webView.setScrollMode(b)
                 }
             }
         }

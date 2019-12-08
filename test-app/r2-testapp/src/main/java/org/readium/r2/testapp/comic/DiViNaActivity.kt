@@ -8,12 +8,11 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp.divina
+package org.readium.r2.testapp.comic
 
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.coroutines.CoroutineScope
@@ -27,7 +26,7 @@ import kotlin.coroutines.CoroutineContext
 
 
 /**
- * DiViNaActivity : Extension of the DiViNaActivity() from navigator
+ * DiViNaActivity : Extension of the R2DiViNaActivity() from navigator
  *
  * That Activity manage everything related to the menu
  *      ( Table of content, User Settings, Drm, Bookmarks )
@@ -41,16 +40,13 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    protected var menuToc: MenuItem? = null
-
-    private var bookId: Long = -1
+    private var menuToc: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Handler().postDelayed({
-            bookId = intent.getLongExtra("bookId", -1)
-        }, 100)
+        bookId = intent.getLongExtra("bookId", -1)
 
+        toggleActionBar()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -60,17 +56,15 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-
+        return when (item.itemId) {
             R.id.toc -> {
                 val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publication", publication)
                 intent.putExtra("bookId", bookId)
                 startActivityForResult(intent, 2)
-                return true
+                true
             }
-
-            else -> return false
+            else -> false
         }
     }
 
