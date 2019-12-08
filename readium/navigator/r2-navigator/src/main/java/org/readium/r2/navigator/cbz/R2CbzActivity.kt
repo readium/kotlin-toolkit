@@ -19,10 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.R
-import org.readium.r2.navigator.IR2Activity
-import org.readium.r2.navigator.ReadingProgression
-import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.*
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -33,7 +30,35 @@ import org.readium.r2.shared.Publication
 import kotlin.coroutines.CoroutineContext
 
 
-open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
+open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator {
+
+    override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override val readingProgression: ReadingProgression
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+    override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun goRight(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     /**
      * Context of this scope.
      */
@@ -49,6 +74,9 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
 
     var resources = arrayListOf<String>()
     lateinit var adapter: R2PagerAdapter
+
+    var currentPagerPosition: Int = 0
+    protected var navigatorDelegate: NavigatorDelegate? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,29 +95,31 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
             resources.add(link.href.toString())
         }
 
-        val index = preferences.getInt("$publicationIdentifier-document", 0)
-
         adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
 
         resourcePager.adapter = adapter
 
-        if (index == 0) {
+        if (currentPagerPosition == 0) {
             if (layoutDirectionIsRTL()) {
                 // The view has RTL layout
                 resourcePager.currentItem = resources.size - 1
             } else {
                 // The view has LTR layout
-                resourcePager.currentItem = index
+                resourcePager.currentItem = currentPagerPosition
             }
         } else {
-            resourcePager.currentItem = index
+            resourcePager.currentItem = currentPagerPosition
         }
 
     }
 
     override fun onPause() {
         super.onPause()
-        storeDocumentIndex()
+        val resource = publication.images[resourcePager.currentItem]
+        val resourceHref = resource.href ?: ""
+        val resourceType = resource.typeLink ?: ""
+
+        navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
     }
 
     override fun nextResource(v: View?) {
@@ -101,7 +131,11 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
                 // The view has LTR layout
                 resourcePager.currentItem = resourcePager.currentItem + 1
             }
-            storeDocumentIndex()
+            val resource = publication.images[resourcePager.currentItem]
+            val resourceHref = resource.href ?: ""
+            val resourceType = resource.typeLink ?: ""
+
+            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
         }
     }
 
@@ -114,25 +148,12 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
                 // The view has LTR layout
                 resourcePager.currentItem = resourcePager.currentItem - 1
             }
-            storeDocumentIndex()
+            val resource = publication.images[resourcePager.currentItem]
+            val resourceHref = resource.href ?: ""
+            val resourceType = resource.typeLink ?: ""
+
+            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
         }
-    }
-
-    /**
-     * storeProgression() : save in the preference the last progression in the spine item
-     */
-    fun storeProgression(locations: Locations?) {
-        storeDocumentIndex()
-        val publicationIdentifier = publication.metadata.identifier
-        preferences.edit().putString("$publicationIdentifier-documentLocations", locations?.toJSON().toString()).apply()
-    }
-
-    /**
-     * storeDocumentIndex() : save in the preference the last spine item
-     */
-    private fun storeDocumentIndex() {
-        val documentIndex = resourcePager.currentItem
-        preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
     }
 
     override fun toggleActionBar() {
@@ -165,7 +186,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
                 val locator = data.getSerializableExtra("locator") as Locator
 
                 // Set the progression fetched
-                storeProgression(locator.locations)
+                navigatorDelegate?.locationDidChange(locator = locator)
 
                 fun setCurrent(resources: ArrayList<*>) {
                     for (index in 0 until resources.count()) {

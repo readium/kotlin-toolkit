@@ -12,11 +12,7 @@ import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_r2_audiobook.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import org.json.JSONObject
-import org.readium.r2.navigator.R
-import org.readium.r2.navigator.IR2Activity
-import org.readium.r2.navigator.ReadingProgression
-import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.*
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
@@ -25,7 +21,46 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
-open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activity, MediaPlayerCallback {
+open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activity, MediaPlayerCallback, VisualNavigator {
+
+    override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
+        if (currentResource < publication.readingOrder.size - 1) {
+            currentResource++
+        }
+
+        mediaPlayer?.next()
+        play_pause!!.callOnClick()
+        return true
+    }
+
+    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
+        if (currentResource > 0) {
+            currentResource--
+        }
+
+        mediaPlayer?.previous()
+        play_pause!!.callOnClick()
+        return true
+    }
+
+    override val readingProgression: ReadingProgression
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+    override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun goRight(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     /**
      * Context of this scope.
@@ -39,7 +74,6 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     override lateinit var publicationFileName: String
     override lateinit var publicationPath: String
 
-    lateinit var currentLocations: Locations
     var currentResource = 0
 
     var startTime = 0.0
@@ -49,6 +83,8 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     val backwardTime = 10000
 
     var mediaPlayer: R2MediaPlayer? = null
+
+    protected var navigatorDelegate: NavigatorDelegate? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,12 +97,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         publicationFileName = intent.getStringExtra("publicationFileName")
         publicationIdentifier = publication.metadata.identifier!!
 
-        currentLocations = Locations.fromJSON(JSONObject(preferences.getString("$publicationIdentifier-documentLocations", "{}")))
-        currentResource = preferences.getInt("$publicationIdentifier-document", 0)
-
         title = null
-
-        chapterView!!.text = publication.readingOrder[currentResource].title
 
         Handler().postDelayed({
 
@@ -74,9 +105,9 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
             mediaPlayer?.goTo(currentResource)
 
-            currentLocations.progression?.let { progression ->
+            currentLocation?.locations?.progression?.let { progression ->
                 mediaPlayer?.seekTo(progression)
-                seekLocation = currentLocations
+                seekLocation = currentLocation?.locations
                 isSeekNeeded = true
             }
 
@@ -154,35 +185,14 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
             }
 
             next_chapter!!.setOnClickListener { view ->
-                if (currentResource < publication.readingOrder.size - 1) {
-                    currentResource++
-                }
-
-                mediaPlayer?.next()
-                play_pause!!.callOnClick()
+                goForward(false, {})
             }
 
             prev_chapter!!.setOnClickListener { view ->
-                if (currentResource > 0) {
-                    currentResource--
-                }
-
-                mediaPlayer?.previous()
-                play_pause!!.callOnClick()
+                goBackward(false, {})
             }
 
         }, 100)
-    }
-
-    fun storeProgression(locations: Locations?) {
-        storeDocumentIndex()
-        val publicationIdentifier = publication.metadata.identifier
-        preferences.edit().putString("$publicationIdentifier-documentLocations", locations?.toJSON().toString()).apply()
-    }
-
-    private fun storeDocumentIndex() {
-        val documentIndex = currentResource
-        preferences.edit().putInt("$publicationIdentifier-document", documentIndex).apply()
     }
 
     fun updateUI() {
@@ -229,7 +239,11 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
         seekBar!!.progress = startTime.toInt()
 
-        storeProgression(Locations(progression = seekBar!!.progress.toDouble()))
+        val resource = publication.readingOrder[currentResource]
+        val resourceHref = resource.href ?: ""
+        val resourceType = resource.typeLink ?: ""
+
+        navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = seekBar!!.progress.toDouble())))
 
     }
 
@@ -292,7 +306,11 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                         TimeUnit.MILLISECONDS.toSeconds(startTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(startTime.toLong())))
                 seekBar!!.progress = startTime.toInt()
 
-                storeProgression(Locations(progression = seekBar!!.progress.toDouble()))
+                val resource = publication.readingOrder[currentResource]
+                val resourceHref = resource.href ?: ""
+                val resourceType = resource.typeLink ?: ""
+
+                navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = seekBar!!.progress.toDouble())))
 
                 Handler().postDelayed(this, 100)
             }
@@ -321,9 +339,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 val locator = data.getSerializableExtra("locator") as Locator
 
                 // Set the progression fetched
-                storeProgression(locator.locations)
-
-                currentLocations = locator.locations!!
+                navigatorDelegate?.locationDidChange(locator = locator)
 
                 // href is the link to the page in the toc
                 var href = locator.href
@@ -340,7 +356,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                     }
                     index++
                 }
-                seekLocation = currentLocations
+                seekLocation = locator.locations
 
                 isSeekNeeded = true
 
