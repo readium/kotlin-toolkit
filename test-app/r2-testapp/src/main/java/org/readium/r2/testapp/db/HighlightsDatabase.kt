@@ -240,6 +240,34 @@ class HIGHLIGHTS(private var database: HighlightsDatabaseOpenHelper) {
                     }
         }
     }
+    
+    fun listAll(bookID: Long, resourceHref: String): MutableList<Highlight> {
+        return database.use {
+            select(HIGHLIGHTSTable.NAME,
+                    HIGHLIGHTSTable.ID,
+                    HIGHLIGHTSTable.HIGHLIGHT_ID,
+                    HIGHLIGHTSTable.PUBLICATION_ID,
+                    HIGHLIGHTSTable.STYLE,
+                    HIGHLIGHTSTable.COLOR,
+                    HIGHLIGHTSTable.ANNOTATION,
+                    HIGHLIGHTSTable.ANNOTATION_MARK_STYLE,
+                    HIGHLIGHTSTable.RESOURCE_INDEX,
+                    HIGHLIGHTSTable.RESOURCE_HREF,
+                    HIGHLIGHTSTable.RESOURCE_TYPE,
+                    HIGHLIGHTSTable.RESOURCE_TITLE,
+                    HIGHLIGHTSTable.LOCATION,
+                    HIGHLIGHTSTable.LOCATOR_TEXT,
+                    HIGHLIGHTSTable.CREATION_DATE,
+                    HIGHLIGHTSTable.BOOK_ID)
+                    .whereArgs("${HIGHLIGHTSTable.BOOK_ID} = {bookID} AND ${HIGHLIGHTSTable.RESOURCE_HREF} = {resourceHref}",
+                            "bookID" to bookID, "resourceHref" to resourceHref)
+                    .orderBy(BOOKMARKSTable.RESOURCE_INDEX, SqlOrderDirection.ASC)
+                    .orderBy(BOOKMARKSTable.CREATION_DATE, SqlOrderDirection.ASC)
+                    .exec {
+                        parseList(MyRowParser()).toMutableList()
+                    }
+        }
+    }
 
     fun listAll(bookID: Long): MutableList<Highlight> {
         return database.use {

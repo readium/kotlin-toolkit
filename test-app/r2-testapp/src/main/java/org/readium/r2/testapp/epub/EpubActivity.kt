@@ -670,13 +670,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     }
 
     private fun drawHighlight() {
-        highlightDB.highlights.listAll().forEach {
-            val resource = publication.readingOrder[resourcePager.currentItem]
-
-            if (it.resourceHref == resource.href) {
-                val highlight = convertHighlight2NavigationHighlight(it)
-                showHighlight(highlight)
-            }
+        val resource = publication.readingOrder[resourcePager.currentItem]
+        highlightDB.highlights.listAll(bookId, resource.href!!).forEach {
+            val highlight = convertHighlight2NavigationHighlight(it)
+            showHighlight(highlight)
         }
     }
 
