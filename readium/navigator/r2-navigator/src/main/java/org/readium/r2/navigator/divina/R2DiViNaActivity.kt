@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Locator
 import org.readium.r2.shared.Publication

@@ -28,6 +28,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.R2WebView
 import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.SCROLL_REF

@@ -7,7 +7,7 @@
   ~ LICENSE file present in the project repository where this source code is maintained.
   -->
 
-<org.readium.r2.navigator.fxl.R2FXLLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.readium.r2.navigator.epub.fxl.R2FXLLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/r2FXLLayout"
     android:layout_width="match_parent"
@@ -44,4 +44,4 @@
         </RelativeLayout>
     </ScrollView>
 
-</org.readium.r2.navigator.fxl.R2FXLLayout>
+</org.readium.r2.navigator.epub.fxl.R2FXLLayout>

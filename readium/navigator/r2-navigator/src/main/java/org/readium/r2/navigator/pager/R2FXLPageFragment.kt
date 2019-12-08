@@ -23,8 +23,8 @@ import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2ActivityListener
 import org.readium.r2.navigator.R2BasicWebView
-import org.readium.r2.navigator.fxl.R2FXLLayout
-import org.readium.r2.navigator.fxl.R2FXLOnDoubleTapListener
+import org.readium.r2.navigator.epub.fxl.R2FXLLayout
+import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
 
 
 class R2FXLPageFragment : Fragment() {
