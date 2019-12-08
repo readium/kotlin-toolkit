@@ -84,7 +84,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         resourcePager = findViewById(R.id.resourcePager)
 
-        publicationPath = intent.getStringExtra("publicationPath")
+        publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publication = intent.getSerializableExtra("publication") as Publication
         publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title

@@ -19,10 +19,9 @@ import androidx.webkit.WebViewClientCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.*
+import org.readium.r2.navigator.IR2Activity
+import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
-import org.readium.r2.shared.Link
-import org.readium.r2.shared.Locator
 import org.readium.r2.shared.Publication
 import kotlin.coroutines.CoroutineContext
 
@@ -39,7 +38,6 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
     override lateinit var publicationPath: String
-    override lateinit var publicationFileName: String
 
     lateinit var divinaWebView: R2BasicWebView
 
@@ -52,9 +50,8 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
         divinaWebView.activity = this
         divinaWebView.listener = this
 
-        publicationPath = intent.getStringExtra("publicationPath")
+        publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publication = intent.getSerializableExtra("publication") as Publication
-        publicationFileName = intent.getStringExtra("publicationFileName")
 
         publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title
