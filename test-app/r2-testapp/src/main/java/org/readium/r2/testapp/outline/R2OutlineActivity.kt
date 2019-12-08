@@ -162,6 +162,83 @@ class R2OutlineActivity : AppCompatActivity() {
 
         positionsDB = PositionsDatabase(this)
 
+
+        /*
+         * Retrieve the page list
+         */
+        positionsDB = PositionsDatabase(this)
+
+        val pageList = publication.pageList
+
+        if (pageList.isNotEmpty()) {
+            val pageListAdapter = NavigationAdapter(this, pageList.toMutableList())
+            page_list.adapter = pageListAdapter
+
+            page_list.setOnItemClickListener { _, _, position, _ ->
+
+                //Link to the resource in the publication
+                val link = pageList[position]
+                val resourceHref = link.href?: ""
+                val resourceType = link.typeLink?: ""
+
+
+                val intent = Intent()
+                intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0),null))
+                setResult(Activity.RESULT_OK, intent)
+                finish()
+
+            }
+        } else {
+            if (positionsDB.positions.has(bookID)) {
+                val jsonPageList = positionsDB.positions.getSyntheticPageList(bookID)
+
+                val syntheticPageList = Position.fromJSON(jsonPageList!!)
+
+                val syntheticPageListAdapter = SyntheticPageListAdapter(this, syntheticPageList)
+                page_list.adapter = syntheticPageListAdapter
+
+                page_list.setOnItemClickListener { _, _, position, _ ->
+
+                    //Link to the resource in the publication
+
+                    val page = syntheticPageList[position]
+                    val resourceHref = page.href?: ""
+                    val resourceType = page.type?: ""
+
+                    val pageProgression = syntheticPageList[position].progression
+
+                    val intent = Intent()
+                    intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = pageProgression), null))
+                    setResult(Activity.RESULT_OK, intent)
+                    finish()
+                }
+            }
+        }
+
+
+        /*
+         * Retrieve the landmarks
+         */
+        val landmarks = publication.landmarks
+
+        val landmarksAdapter = NavigationAdapter(this, landmarks.toMutableList())
+        landmarks_list.adapter = landmarksAdapter
+
+        landmarks_list.setOnItemClickListener { _, _, position, _ ->
+
+            //Link to the resource in the publication
+            val link = landmarks[position]
+            val resourceHref = link.href?: ""
+            val resourceType = link.typeLink?: ""
+
+            val intent = Intent()
+            intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0),null))
+            setResult(Activity.RESULT_OK, intent)
+            finish()
+
+        }
+
+
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
 
@@ -171,15 +248,23 @@ class R2OutlineActivity : AppCompatActivity() {
         tabTOC.setIndicator(tabTOC.tag)
         tabTOC.setContent(R.id.toc_tab)
 
-
         val tabBookmarks: TabHost.TabSpec = tabHost.newTabSpec("Bookmarks")
         tabBookmarks.setIndicator(tabBookmarks.tag)
         tabBookmarks.setContent(R.id.bookmarks_tab)
 
-
         val tabHighlights: TabHost.TabSpec = tabHost.newTabSpec("Highlights")
         tabHighlights.setIndicator(tabHighlights.tag)
         tabHighlights.setContent(R.id.highlights_tab)
+
+        val tabPageList: TabHost.TabSpec = tabHost.newTabSpec("Page List")
+        tabPageList.setIndicator(tabPageList.tag)
+        tabPageList.setContent(R.id.pagelists_tab)
+
+
+        val tabLandmarks: TabHost.TabSpec = tabHost.newTabSpec("Landmarks")
+        tabLandmarks.setIndicator(tabLandmarks.tag)
+        tabLandmarks.setContent(R.id.landmarks_tab)
+
 
         when {
             publication.type == Publication.TYPE.AUDIO -> {
@@ -192,8 +277,8 @@ class R2OutlineActivity : AppCompatActivity() {
                 tabHost.addTab(tabTOC)
                 tabHost.addTab(tabBookmarks)
                 tabHost.addTab(tabHighlights)
-//                tabHost.addTab(tabPageList)
-//                tabHost.addTab(tabLandmarks)
+                tabHost.addTab(tabPageList)
+                tabHost.addTab(tabLandmarks)
             }
         }
     }
