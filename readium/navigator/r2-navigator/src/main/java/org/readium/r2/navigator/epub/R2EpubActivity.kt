@@ -220,6 +220,8 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     override lateinit var publicationFileName: String
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
+    override var bookId: Long = -1
+
     override var allowToggleActionBar = true
 
     lateinit var resourcesSingle: ArrayList<Pair<Int, String>>

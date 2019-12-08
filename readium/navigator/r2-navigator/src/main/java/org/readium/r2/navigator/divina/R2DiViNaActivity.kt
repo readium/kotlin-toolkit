@@ -38,6 +38,8 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
     override lateinit var publicationPath: String
+    override lateinit var publicationFileName: String
+    override var bookId: Long = -1
 
     lateinit var divinaWebView: R2BasicWebView
 
@@ -51,6 +53,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
         divinaWebView.listener = this
 
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
+        publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publication = intent.getSerializableExtra("publication") as Publication
 
         publicationIdentifier = publication.metadata.identifier!!
