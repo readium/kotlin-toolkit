@@ -12,10 +12,10 @@
             android:layout_width="match_parent"
             android:layout_height="42dp"
             android:gravity="center"
-            android:text="Memo"
-            android:textSize="16sp"
+            android:lineSpacingExtra="4sp"
+            android:text="Note"
             android:textColor="#212121"
-            android:lineSpacingExtra="4sp"/>
+            android:textSize="16sp" />
 
         <View
             android:layout_width="match_parent"
@@ -77,10 +77,10 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:gravity="center"
                 android:text="Cancel"
-                android:textColor="#999999"
-                android:textSize="16sp"
-                android:gravity="center"/>
+                android:textColor="#000000"
+                android:textSize="16sp" />
 
             <View
                 android:layout_width="2dp"
@@ -92,10 +92,10 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="Done"
-                android:textColor="#0074ff"
-                android:textSize="16sp"
-                android:gravity="center"/>
+                android:gravity="center"
+                android:text="Save"
+                android:textColor="#009688"
+                android:textSize="16sp" />
         </LinearLayout>
 
     </LinearLayout>
