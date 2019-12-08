@@ -51,7 +51,7 @@ dependencies {
     implementation('com.mcxiaoke.koi:async:0.5.5') {
         exclude module: 'support-v4'
     }
-    implementation "androidx.appcompat:appcompat:1.1.0-rc01"
+    implementation "androidx.appcompat:appcompat:1.2.0-alpha01"
 
     implementation ('com.github.edrlab.nanohttpd:nanohttpd:2.3.2') {
         exclude group: 'org.parboiled'

@@ -7,43 +7,47 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.parser
+package org.readium.r2.streamer.parser.audio
 
 import org.json.JSONObject
+import org.readium.r2.shared.Publication
 import org.readium.r2.shared.parsePublication
-import org.readium.r2.streamer.container.ContainerAudioBook
+import org.readium.r2.streamer.container.ContainerError
+import org.readium.r2.streamer.parser.PubBox
+import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
 import java.io.File
 import java.net.URI
 import java.nio.charset.Charset
 
 
+
+class AudioBookConstant {
+    companion object {
+        // Some constants useful to parse an DiViNa document
+        const val mimetype = "application/audiobook+zip"
+        const val manifestPath = "manifest.json"
+    }
+}
+
 /**
  *      AudiobookParser : Handle any Audiobook Package file. Opening, listing files
  *                  get name of the resource, creating the Publication
  *                  for rendering
  */
-
 class AudioBookParser : PublicationParser {
 
-    companion object {
-        // Some constants useful to parse an DiViNa document
-        const val mimetypeAudiobook = "application/audiobook+zip"
-        const val manifestPath = "manifest.json"
-    }
 
     /**
      * Check if path exist, generate a container for CBZ file
      *                   then check if creation was a success
      */
-    private fun generateContainerFrom(path: String): ContainerAudioBook {
-        val container: ContainerAudioBook?
+    private fun generateContainerFrom(path: String): AudioBookDirectoryContainer {
+        val container: AudioBookDirectoryContainer?
 
         if (!File(path).exists())
-            throw Exception("Missing File")
-        container = ContainerAudioBook(path)
-        if (!container.successCreated)
-            throw Exception("Missing File")
+            throw ContainerError.missingFile(path)
+        container = AudioBookDirectoryContainer(path)
         return container
     }
 
@@ -60,9 +64,9 @@ class AudioBookParser : PublicationParser {
             return null
         }
         val data = try {
-            container.data(manifestPath)
+            container.data(AudioBookConstant.manifestPath)
         } catch (e: Exception) {
-            Timber.e(e, "Missing File : $manifestPath")
+            Timber.e(e, "Missing File : ${AudioBookConstant.manifestPath}")
             return null
         }
 
@@ -83,6 +87,8 @@ class AudioBookParser : PublicationParser {
             }
             publication.readingOrder[index].href = uri
         }
+
+        publication.type = Publication.TYPE.AUDIO
 
         return PubBox(publication, container)
 

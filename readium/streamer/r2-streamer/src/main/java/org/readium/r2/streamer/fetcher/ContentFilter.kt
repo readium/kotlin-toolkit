@@ -18,9 +18,6 @@ import java.io.File
 import java.io.InputStream
 
 interface ContentFilters {
-    var fontDecoder: FontDecoder
-    var drmDecoder: DrmDecoder
-
     fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
         return input
     }
@@ -32,14 +29,11 @@ interface ContentFilters {
 
 class ContentFiltersEpub(private val userPropertiesPath: String?, var customResources: Resources?) : ContentFilters {
 
-    override var fontDecoder = FontDecoder()
-    override var drmDecoder = DrmDecoder()
-
     override fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
         publication.linkWithHref(path)?.let { resourceLink ->
 
-            var decodedInputStream = drmDecoder.decoding(input, resourceLink, container.drm)
-            decodedInputStream = fontDecoder.decoding(decodedInputStream, publication, path)
+            var decodedInputStream = DrmDecoder().decoding(input, resourceLink, container.drm)
+            decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
             if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")) {
                 decodedInputStream = if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && resourceLink.properties.layout == null
                         || resourceLink.properties.layout == "reflowable") {
@@ -59,8 +53,8 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, var customReso
     override fun apply(input: ByteArray, publication: Publication, container: Container, path: String): ByteArray {
         publication.linkWithHref(path)?.let { resourceLink ->
             val inputStream = input.inputStream()
-            var decodedInputStream = drmDecoder.decoding(inputStream, resourceLink, container.drm)
-            decodedInputStream = fontDecoder.decoding(decodedInputStream, publication, path)
+            var decodedInputStream = DrmDecoder().decoding(inputStream, resourceLink, container.drm)
+            decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
             val baseUrl = publication.baseUrl()?.removeLastComponent()
             if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")
                     && baseUrl != null) {
@@ -324,50 +318,6 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, var customReso
 
 }
 
-val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("ligatures") to false
-)
 
-val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false,
-        ReadiumCSSName.ref("ligatures") to true
-)
-
-val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("textAlignment") to false,
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("paraIndent") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false
-)
-
-val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("scroll") to true,
-        ReadiumCSSName.ref("columnCount") to false,
-        ReadiumCSSName.ref("textAlignment") to false,
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("paraIndent") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false
-)
-
-val forceScrollPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("scroll") to true
-)
-
-val userSettingsUIPreset: MutableMap<ContentLayoutStyle, MutableMap<ReadiumCSSName, Boolean>> = mutableMapOf(
-        ContentLayoutStyle.layout("ltr") to ltrPreset,
-        ContentLayoutStyle.layout("rtl") to rtlPreset,
-        ContentLayoutStyle.layout("cjkv") to cjkVerticalPreset,
-        ContentLayoutStyle.layout("cjkh") to cjkHorizontalPreset
-)
-
-
-class ContentFiltersCbz : ContentFilters {
-    override var fontDecoder: FontDecoder = FontDecoder()
-    override var drmDecoder: DrmDecoder = DrmDecoder()
-}
+class ContentFiltersCbz : ContentFilters {}
 

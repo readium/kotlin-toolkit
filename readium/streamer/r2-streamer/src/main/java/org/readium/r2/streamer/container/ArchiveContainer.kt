@@ -9,6 +9,8 @@
 
 package org.readium.r2.streamer.container
 
+import org.readium.r2.shared.RootFile
+import org.readium.r2.shared.drm.DRM
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.URI
@@ -23,13 +25,15 @@ import java.util.zip.ZipFile
  *
  */
 
-interface ZipArchiveContainer : Container {
-    var zipFile: ZipFile
+
+open class ArchiveContainer(path: String, mimetype: String) : Container {
+    override var rootFile: RootFile = RootFile(rootPath = path, mimetype = mimetype)
+    override var drm: DRM? = null
+    val archive: ZipFile = ZipFile(path)
 
     override fun data(relativePath: String): ByteArray {
-
         val zipEntry = getEntry(relativePath)// ?: return ByteArray(0)
-        val inputStream = zipFile.getInputStream(zipEntry)
+        val inputStream = archive.getInputStream(zipEntry)
         val outputStream = ByteArrayOutputStream()
         var readLength = 0
         val buffer = ByteArray(16384)
@@ -39,17 +43,18 @@ interface ZipArchiveContainer : Container {
 
         inputStream.close()
         return outputStream.toByteArray()
+
     }
 
     override fun dataLength(relativePath: String): Long {
-        return zipFile.size().toLong()
+        return archive.size().toLong()
     }
 
     override fun dataInputStream(relativePath: String): InputStream {
-        return zipFile.getInputStream(getEntry(relativePath))
+        return archive.getInputStream(getEntry(relativePath))
     }
-
-    fun getEntry(relativePath: String): ZipEntry? {
+    
+    private fun getEntry(relativePath: String): ZipEntry? {
 
         val path: String = try {
             URI(relativePath).path
@@ -57,11 +62,11 @@ interface ZipArchiveContainer : Container {
             relativePath
         }
 
-        var zipEntry = zipFile.getEntry(path)
+        var zipEntry = archive.getEntry(path)
         if (zipEntry != null)
             return zipEntry
 
-        val zipEntries = zipFile.entries()
+        val zipEntries = archive.entries()
         while (zipEntries.hasMoreElements()) {
             zipEntry = zipEntries.nextElement()
             if (path.equals(zipEntry.name, true))
