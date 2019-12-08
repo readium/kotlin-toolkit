@@ -560,7 +560,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 return
             }
         }
-        mode?.finish()
         var highlight: org.readium.r2.navigator.epub.Highlight? = null
 
         highlightID?.let { id ->

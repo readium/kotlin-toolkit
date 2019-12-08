@@ -22,8 +22,8 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_outline.*
 import kotlinx.android.synthetic.main.item_recycle_bookmark.view.*
-import kotlinx.android.synthetic.main.item_recycle_outline.view.*
 import kotlinx.android.synthetic.main.item_recycle_highlight.view.*
+import kotlinx.android.synthetic.main.item_recycle_outline.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.Link
@@ -468,18 +468,18 @@ class R2OutlineActivity : AppCompatActivity() {
     inner class HighlightsAdapter(val activity: Activity, private val items: MutableList<Highlight>, private val publication: Publication) : BaseAdapter() {
 
         private inner class ViewHolder(row: View?) {
-            internal var highlightTitle: TextView? = null
-            internal var annotation: TextView? = null
-            internal var highlightOverflow: ImageView? = null
+            internal var highlightedText: TextView? = null
             internal var highlightTimestamp: TextView? = null
             internal var highlightChapter: TextView? = null
+            internal var highlightOverflow: ImageView? = null
+            internal var annotation: TextView? = null
 
             init {
-                this.highlightTitle = row?.highlight_title as TextView
-                this.annotation = row.annotation as TextView
-                this.highlightOverflow = row.highlight_overflow as ImageView
+                this.highlightedText = row?.highlight_text as TextView
                 this.highlightTimestamp = row.highlight_time_stamp as TextView
                 this.highlightChapter = row.highlight_chapter as TextView
+                this.highlightOverflow = row.highlight_overflow as ImageView
+                this.annotation = row.annotation as TextView
             }
         }
 
@@ -500,17 +500,28 @@ class R2OutlineActivity : AppCompatActivity() {
 
             val highlight = getItem(position) as Highlight
 
-            var chpater = getHighlightSpineItem(highlight.resourceHref)
-            var title = highlight.locatorText.highlight
-            if(title.isNullOrEmpty()){
-                title = "*Title Missing*"
-            }
-
-            viewHolder.highlightChapter!!.text = chpater
-            viewHolder.highlightTitle!!.text = title
+            viewHolder.highlightChapter!!.text = getHighlightSpineItem(highlight.resourceHref)
+            viewHolder.highlightedText!!.text = highlight.locatorText.highlight
             viewHolder.annotation!!.text = highlight.annotation
+
             val formattedDate = DateTime(highlight.creationDate).toString(DateTimeFormat.shortDateTime())
             viewHolder.highlightTimestamp!!.text = formattedDate
+
+            viewHolder.highlightOverflow?.setOnClickListener {
+
+                val popupMenu = PopupMenu(parent?.context, viewHolder.highlightChapter)
+                popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
+                popupMenu.show()
+
+                popupMenu.setOnMenuItemClickListener { item ->
+                    if (item.itemId == R.id.delete) {
+                        highlightsDB.highlights.delete(items[position])
+                        items.removeAt(position)
+                        notifyDataSetChanged()
+                    }
+                    false
+                }
+            }
 
             return view as View
         }
