@@ -263,7 +263,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                 if (URI(spineItem.href).isAbsolute) {
                     spineItem.href!!
                 } else {
-                    publicationPath + spineItem.href
+                    getAbsolute(spineItem.href!!, publicationPath)
                 }
             } else {
                 "$BASE_URL:$port" + "/" + publicationFileName + spineItem.href
