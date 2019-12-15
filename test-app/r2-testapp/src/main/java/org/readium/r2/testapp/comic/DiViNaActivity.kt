@@ -44,8 +44,8 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
     private var menuToc: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         if (activitiesLaunched.incrementAndGet() > 1) { finish(); }
+        super.onCreate(savedInstanceState)
 
         bookId = intent.getLongExtra("bookId", -1)
 

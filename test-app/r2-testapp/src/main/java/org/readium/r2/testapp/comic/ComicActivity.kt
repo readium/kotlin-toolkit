@@ -65,8 +65,8 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
     private lateinit var booksDB: BooksDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         if (activitiesLaunched.incrementAndGet() > 1) { finish(); }
+        super.onCreate(savedInstanceState)
 
         booksDB = BooksDatabase(this)
 
