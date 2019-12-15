@@ -30,7 +30,7 @@ public class R2IntentHelper {
     public Intent catalogActivityIntent(Context context, Uri uri, Publication.EXTENSION extension) {
         Intent i = new Intent(context, CatalogActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        i.putExtra(EXTENSION, extension.name());
+        i.putExtra(EXTENSION, extension.getValue());
         i.putExtra(URI, uri.toString());
         return i;
     }
