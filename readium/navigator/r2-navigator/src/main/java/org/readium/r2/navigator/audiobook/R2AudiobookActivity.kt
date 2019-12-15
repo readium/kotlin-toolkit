@@ -9,6 +9,7 @@ import android.os.Handler
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import kotlinx.android.synthetic.main.activity_r2_audiobook.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -102,6 +103,8 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         title = null
 
         Handler().postDelayed({
+            
+        if (this.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
 
             mediaPlayer = R2MediaPlayer(publication.readingOrder, this)
 
@@ -194,6 +197,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 goBackward(false, {})
             }
 
+        }
         }, 100)
     }
 
@@ -331,6 +335,11 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
     override fun onStop() {
         super.onStop()
+        mediaPlayer?.stop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
         mediaPlayer?.stop()
     }
 
