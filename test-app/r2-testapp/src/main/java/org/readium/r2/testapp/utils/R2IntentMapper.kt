@@ -28,27 +28,42 @@ class R2IntentMapper(private val mContext: Context, private val mIntents: R2Inte
         val action = intent.action
         val type = intent.type
         val scheme = intent.scheme
-        val uri: Uri
-        uri = if (Intent.ACTION_SEND == action && type != null) {
-            intent.getParcelableExtra(Intent.EXTRA_STREAM)
-        } else {
-            // Handle other intents, such as being started from the home screen
-            intent.data ?: throw IllegalArgumentException("Uri cannot be null")
+        var uri: Uri? = null
+        val clipData = intent.clipData
+        val extras = intent.extras
+
+        when (action) {
+            Intent.ACTION_SEND -> {
+                type?.let {
+                    if ("text/plain" == it) {
+                        intent.getStringExtra(Intent.EXTRA_TEXT).let { url ->
+                            uri = Uri.parse(url)
+                        }
+                    } else {
+                        uri = intent.getParcelableExtra(Intent.EXTRA_STREAM)
+                    }
+                }
+            }
+            else -> {
+                uri = intent.data ?: throw IllegalArgumentException("Uri cannot be null")
+            }
         }
 
-        if (uri.toString().contains(".")) {
+        uri?.let {
+            if (uri.toString().contains(".")) {
 
-            val extension = when (uri.toString().substring(uri.toString().lastIndexOf("."))){
+                val extension = when (uri.toString().substring(uri.toString().lastIndexOf("."))) {
 
-                Publication.EXTENSION.EPUB.value -> Publication.EXTENSION.EPUB
-                Publication.EXTENSION.JSON.value -> Publication.EXTENSION.JSON
-                Publication.EXTENSION.AUDIO.value -> Publication.EXTENSION.AUDIO
-                Publication.EXTENSION.DIVINA.value -> Publication.EXTENSION.DIVINA
-                Publication.EXTENSION.LCPL.value -> Publication.EXTENSION.LCPL
-                Publication.EXTENSION.CBZ.value -> Publication.EXTENSION.CBZ
-                else -> Publication.EXTENSION.UNKNOWN
+                    Publication.EXTENSION.EPUB.value -> Publication.EXTENSION.EPUB
+                    Publication.EXTENSION.JSON.value -> Publication.EXTENSION.JSON
+                    Publication.EXTENSION.AUDIO.value -> Publication.EXTENSION.AUDIO
+                    Publication.EXTENSION.DIVINA.value -> Publication.EXTENSION.DIVINA
+                    Publication.EXTENSION.LCPL.value -> Publication.EXTENSION.LCPL
+                    Publication.EXTENSION.CBZ.value -> Publication.EXTENSION.CBZ
+                    else -> Publication.EXTENSION.UNKNOWN
+                }
+                mContext.startActivity(mIntents.catalogActivityIntent(mContext, uri, extension))
             }
-            mContext.startActivity(mIntents.catalogActivityIntent(mContext, uri, extension))
         }
     }
 }

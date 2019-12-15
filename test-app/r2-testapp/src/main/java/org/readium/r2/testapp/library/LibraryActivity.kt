@@ -259,7 +259,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         stopServer()
     }
 
-    private fun showDownloadFromUrlAlert() {
+    open fun showDownloadFromUrlAlert() {
         var editTextHref: EditText? = null
         alert(Appcompat, "Add a publication from URL") {
 
@@ -290,14 +290,52 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         editTextHref!!.error = "Please Enter A Valid URL."
                         editTextHref!!.requestFocus()
                     } else {
-                        val parseDataPromise = parseURL(URL(editTextHref!!.text.toString()))
-                        parseDataPromise.successUi { parseData ->
-                            dismiss()
-                            downloadData(parseData)
-                        }
-                        parseDataPromise.failUi {
-                            editTextHref!!.error = "Please Enter A Valid OPDS Book URL."
-                            editTextHref!!.requestFocus()
+                        editTextHref!!.text.toString().let {
+                            val extension = when (it.substring(it.lastIndexOf("."))){
+                                Publication.EXTENSION.EPUB.value -> Publication.EXTENSION.EPUB
+                                Publication.EXTENSION.JSON.value -> Publication.EXTENSION.JSON
+                                Publication.EXTENSION.AUDIO.value -> Publication.EXTENSION.AUDIO
+                                Publication.EXTENSION.DIVINA.value -> Publication.EXTENSION.DIVINA
+                                Publication.EXTENSION.LCPL.value -> Publication.EXTENSION.LCPL
+                                Publication.EXTENSION.CBZ.value -> Publication.EXTENSION.CBZ
+                                else -> Publication.EXTENSION.UNKNOWN
+                            }
+
+                            when (extension) {
+                                Publication.EXTENSION.LCPL -> {
+                                    dismiss()
+                                    parseIntentLcpl(editTextHref!!.text.toString(), isNetworkAvailable)
+                                }
+                                Publication.EXTENSION.EPUB, Publication.EXTENSION.CBZ -> {
+                                    dismiss()
+                                    parseIntentPublication(editTextHref!!.text.toString())
+                                }
+                                Publication.EXTENSION.AUDIO -> {
+                                    editTextHref!!.error = "Import Audio via URL not supported yet."
+                                    editTextHref!!.requestFocus()
+                                }
+                                Publication.EXTENSION.DIVINA -> {
+                                    editTextHref!!.error = "Import DiViNa via URL not supported yet."
+                                    editTextHref!!.requestFocus()
+                                }
+                                else -> {
+                                    val parseDataPromise = parseURL(URL(editTextHref!!.text.toString()))
+                                    parseDataPromise.successUi { parseData ->
+                                        if (parseData.feed == null) {
+                                            dismiss()
+                                            downloadData(parseData)
+                                        } else {
+                                            editTextHref!!.error = "Please Enter A Valid Publication URL."
+                                            editTextHref!!.requestFocus()
+                                        }
+                                    }
+                                    parseDataPromise.failUi {
+                                        editTextHref!!.error = "Please Enter A Valid Publication URL."
+                                        editTextHref!!.requestFocus()
+                                    }
+
+                                }
+                            }
                         }
                     }
                 }
@@ -306,7 +344,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }.show()
     }
 
-    private fun downloadData(parseData: ParseData) {
+    fun downloadData(parseData: ParseData) {
         val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
         progress.show()
 
@@ -428,7 +466,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         startActivityForResult(intent, 1)
     }
 
-    private fun parseURL(url: URL): Promise<ParseData, Exception> {
+    fun parseURL(url: URL): Promise<ParseData, Exception> {
         return Fuel.get(url.toString(), null).promise() then {
             val (_, _, result) = it
             if (isJson(result)) {

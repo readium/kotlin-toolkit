@@ -42,47 +42,65 @@
             android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="content" />
-                <data android:scheme="file" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:scheme="app" />
-                <data android:host="*" />
-                <data android:pathPattern=".*\.epub" />
-                <data android:pathPattern=".*\.lcpl" />
-                <data android:pathPattern=".*\.cbz" />
-                <data android:pathPattern=".*\.divina" />
-                <data android:pathPattern=".*\.audiobook" />
-                <data android:mimeType="application/epub+zip" />
-                <data android:mimeType="application/x-cbz" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.epub" android:scheme="content"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:mimeType="application/epub+zip" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.epub"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:host="*" />
-                <data android:pathPattern=".*\.epub" />
-                <data android:pathPattern=".*\.lcpl" />
-                <data android:pathPattern=".*\.cbz" />
-                <data android:pathPattern=".*\.divina" />
-                <data android:pathPattern=".*\.audiobook" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.lcpl" android:scheme="content"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.lcpl"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.divina" android:scheme="content"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.divina"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.audiobook" android:scheme="content"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.audiobook"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.cbz" android:scheme="content" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.cbz"/>
+            </intent-filter>
+
         </activity>
         <activity
             android:name=".opds.OPDSCatalogActivity"
