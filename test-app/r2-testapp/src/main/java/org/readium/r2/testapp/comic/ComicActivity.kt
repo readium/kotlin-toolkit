@@ -23,6 +23,7 @@ import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.BooksDatabase
+import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
 import kotlin.coroutines.CoroutineContext
 
@@ -65,6 +66,7 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (activitiesLaunched.incrementAndGet() > 1) { finish(); }
 
         booksDB = BooksDatabase(this)
 
@@ -95,5 +97,11 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
             else -> false
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        activitiesLaunched.getAndDecrement();
+    }
+
 
 }

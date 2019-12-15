@@ -99,8 +99,11 @@ import java.net.URI
 import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.ZipException
 import kotlin.coroutines.CoroutineContext
+
+var activitiesLaunched: AtomicInteger = AtomicInteger(0);
 
 @SuppressLint("Registered")
 open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, LCPLibraryActivityService, CoroutineScope {
@@ -921,8 +924,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val book = books[position]
             val publicationPath = R2DIRECTORY + book.fileName
             val file = File(book.href)
-            when {
-                book.ext == Publication.EXTENSION.EPUB -> {
+            when (book.ext) {
+                Publication.EXTENSION.EPUB -> {
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     pub?.let {
@@ -933,21 +936,21 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         }
                     }
                 }
-                book.ext == Publication.EXTENSION.CBZ -> {
+                Publication.EXTENSION.CBZ -> {
                     val parser = CBZParser()
                     val pub = parser.parse(publicationPath)
                     pub?.let {
                         startActivity(publicationPath, book, pub.publication)
                     }
                 }
-                book.ext == Publication.EXTENSION.DIVINA -> {
+                Publication.EXTENSION.DIVINA -> {
                     val parser = DiViNaParser()
                     val pub = parser.parse(publicationPath)
                     pub?.let {
                         startActivity(publicationPath, book, pub.publication)
                     }
                 }
-                book.ext == Publication.EXTENSION.AUDIO -> {
+                Publication.EXTENSION.AUDIO -> {
 
                     //If selected book is an audiobook
                     val parser = AudioBookParser()
@@ -968,7 +971,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         startActivity(publicationPath, book, pub.publication, coverByteArray)
                     }
                 }
-                book.ext == Publication.EXTENSION.JSON -> {
+                Publication.EXTENSION.JSON -> {
                     prepareWebPublication(book.href, book, add = false)
                 }
                 else -> null
