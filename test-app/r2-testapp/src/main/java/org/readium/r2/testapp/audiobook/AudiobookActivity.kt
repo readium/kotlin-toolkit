@@ -23,6 +23,7 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Bookmark
 import org.readium.r2.testapp.db.BookmarksDatabase
 import org.readium.r2.testapp.db.BooksDatabase
+import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
 
 
@@ -50,6 +51,7 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
     private lateinit var progressDialog: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (activitiesLaunched.incrementAndGet() > 1) { finish(); }
         super.onCreate(savedInstanceState)
 
         booksDB = BooksDatabase(this)
@@ -148,6 +150,11 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
             else -> return false
         }
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        activitiesLaunched.getAndDecrement();
     }
 
     override fun onStop() {

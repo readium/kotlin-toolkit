@@ -12,6 +12,7 @@ import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
 import org.readium.r2.shared.LocatorText
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.utils.singleClick
 
 
 /**
@@ -48,8 +49,7 @@ class SearchLocatorAdapter(private val activity: Activity, var results: List<Sea
         viewHolder.chapterView.text = title
         viewHolder.textView.setText(Html.fromHtml("$txtBefore<span style=\"background:yellow;\"><b>$highlight</b></span>$txtAfter"))
 
-        viewHolder.itemView.setOnClickListener { v ->
-            //get the position of the image which is clicked
+        viewHolder.itemView.singleClick { v->
             itemListener.recyclerViewListClicked(v, position)
         }
 

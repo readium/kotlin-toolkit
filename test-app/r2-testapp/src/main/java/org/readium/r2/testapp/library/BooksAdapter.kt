@@ -19,6 +19,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Book
+import org.readium.r2.testapp.utils.singleClick
 import java.io.ByteArrayInputStream
 
 
@@ -50,8 +51,7 @@ open class BooksAdapter(private val activity: Activity, private var books: Mutab
             viewHolder.imageView.setImageBitmap(bitmap)
         }
 
-        viewHolder.itemView.setOnClickListener { v ->
-            //get the position of the image which is clicked
+        viewHolder.itemView.singleClick { v->
             itemListener.recyclerViewListClicked(v, position)
         }
 

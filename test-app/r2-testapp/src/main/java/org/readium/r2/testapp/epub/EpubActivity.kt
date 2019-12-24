@@ -50,6 +50,7 @@ import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.*
+import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
 import org.readium.r2.testapp.search.MarkJSSearchEngine
 import org.readium.r2.testapp.search.SearchLocator
@@ -122,6 +123,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     private var popupWindow:PopupWindow? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (activitiesLaunched.incrementAndGet() > 1) { finish(); }
         super.onCreate(savedInstanceState)
         bookmarksDB = BookmarksDatabase(this)
         booksDB = BooksDatabase(this)
@@ -845,8 +847,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     override fun onDestroy() {
         super.onDestroy()
-
-        screenReader.release()
+        activitiesLaunched.getAndDecrement();
+        try {
+            screenReader.release()
+        } catch (e: Exception) {
+        }
     }
 
 
