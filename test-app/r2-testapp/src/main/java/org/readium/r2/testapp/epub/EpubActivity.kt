@@ -23,6 +23,9 @@ import android.util.DisplayMetrics
 import android.view.*
 import android.view.accessibility.AccessibilityManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
@@ -45,7 +48,14 @@ import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.navigator.epub.Style
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
-import org.readium.r2.shared.*
+import org.readium.r2.shared.APPEARANCE_REF
+import org.readium.r2.shared.ContentLayoutStyle
+import org.readium.r2.shared.Locations
+import org.readium.r2.shared.Locator
+import org.readium.r2.shared.LocatorText
+import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.RenditionLayout
+import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
@@ -82,6 +92,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     override fun locationDidChange(navigator: Navigator?, locator: Locator) {
         booksDB.books.saveProgression(locator, bookId)
+
+        if (locator.locations?.progression == 0.toDouble()) {
+            booksDB.books.saveCurrentUtterance(bookId, 0)
+            screenReader.currentUtterance = 0
+        }
     }
 
 
@@ -104,6 +119,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     private lateinit var positionsDB: PositionsDatabase
     private lateinit var highlightDB: HighligtsDatabase
 
+
     private lateinit var screenReader: R2ScreenReader
 
     protected var drm: DRM? = null
@@ -122,6 +138,13 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     private var mode: ActionMode? = null
     private var popupWindow:PopupWindow? = null
 
+    /**
+     * Manage activity creation.
+     *   - Load data from the database
+     *   - Set background and text colors
+     *   - Set onClickListener callbacks for the [screenReader] buttons
+     *   - Initialize search.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         if (activitiesLaunched.incrementAndGet() > 1) { finish(); }
         super.onCreate(savedInstanceState)
@@ -155,10 +178,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
         play_pause.setOnClickListener {
             if (screenReader.isPaused) {
-                screenReader.resume()
+                screenReader.resumeReading()
                 play_pause.setImageResource(android.R.drawable.ic_media_pause)
             } else {
-                screenReader.pause()
+                screenReader.pauseReading()
                 play_pause.setImageResource(android.R.drawable.ic_media_play)
             }
         }
@@ -170,10 +193,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             }
         }
         next_chapter.setOnClickListener {
-            goForward(false, completion = {})
-            screenReader.nextResource()
-            screenReader.start()
-            play_pause.setImageResource(android.R.drawable.ic_media_pause)
+            if (goForward(false, completion = {})) {
+                screenReader.nextResource()
+                play_pause.setImageResource(android.R.drawable.ic_media_pause)
+            }
         }
         fast_back.setOnClickListener {
             if (screenReader.previousSentence()) {
@@ -185,7 +208,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         prev_chapter.setOnClickListener {
             goBackward(false, completion = {})
             screenReader.previousResource()
-            screenReader.start()
             play_pause.setImageResource(android.R.drawable.ic_media_pause)
         }
 
@@ -221,6 +243,62 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     }
 
+    /**
+     * @param currentUtterance: Long - The utterance index inside the current resource to save inside the database for
+     *   [bookId].
+     */
+    fun saveCurrentUtterance(currentUtterance: Long) {
+        booksDB.books.saveCurrentUtterance(bookId, currentUtterance)
+    }
+
+    /**
+     * @return: Int? - Returns the first value from the column utterances for which the line's bookId matches [bookId],
+     *   or null if not found.
+     */
+    fun getCurrentUtterance(): Int? {
+        return booksDB.books.getSavedUtterance(bookId)?.toInt()
+    }
+
+    /**
+     * Pause the screenReader if view is paused.
+     */
+    override fun onPause() {
+        super.onPause()
+        screenReader.pauseReading()
+    }
+
+    /**
+     * Stop the screenReader if app is view is stopped.
+     */
+    override fun onStop() {
+        super.onStop()
+        screenReader.stopReading()
+    }
+
+    /**
+     * The function allows to access the [R2ScreenReader] instance and set the [TextToSpeech] speech speed.
+     * Values are limited between 0.25 and 3.0 included.
+     *
+     * @param speed: Float - The speech speed we wish to use with Android's [TextToSpeech].
+     */
+    fun updateScreenReaderSpeed(speed: Float) {
+        var rSpeed = speed
+
+        if (speed < 0.25) {
+            rSpeed = 0.25.toFloat()
+        } else if (speed > 3.0) {
+            rSpeed = 3.0.toFloat()
+        }
+        screenReader.setSpeechSpeed(rSpeed)
+    }
+
+    /**
+     * Override Android's option menu by inflating a custom view instead.
+     *   - Initialize the search component.
+     *
+     * @param menu: Menu? - The menu view.
+     * @return Boolean - return true.
+     */
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_epub, menu)
         menuDrm = menu?.findItem(R.id.drm)
@@ -357,13 +435,41 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         return true
     }
 
+    /**
+     * Management of the menu bar.
+     *
+     * When (TOC):
+     *   - Open TOC activity for current publication.
+     *
+     * When (Settings):
+     *   - Show settings view as a dropdown menu starting from the clicked button
+     *
+     * When (Screen Reader):
+     *   - Switch screen reader on or off.
+     *   - If screen reader was off, get reading speed from preferences, update reading speed and sync it with the
+     *       active section in the webView.
+     *   - If screen reader was on, dismiss it.
+     *
+     * When (DRM):
+     *   - Dismiss screen reader if it was on
+     *   - Start the DRM management activity.
+     *
+     * When (Bookmark):
+     *   - Create a bookmark marking the current page and insert it inside the database.
+     *
+     * When (Search):
+     *   - Make the search overlay visible.
+     *
+     * When (Home):
+     *   - Make the search view invisible.
+     *
+     * @param item: MenuItem - The button that was pressed.
+     * @return Boolean - Return true if the button has a switch case. Return false otherwise.
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
 
             R.id.toc -> {
-                if (screenReader.isSpeaking) {
-                    dismissScreenReader(menuScreenReader!!)
-                }
                 val intent = Intent(this, R2OutlineActivity::class.java)
                 intent.putExtra("publication", publication)
                 intent.putExtra("bookId", bookId)
@@ -371,35 +477,40 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 return true
             }
             R.id.settings -> {
-                if (screenReader.isSpeaking) {
-                    dismissScreenReader(menuScreenReader!!)
-                }
                 userSettings.userSettingsPopUp().showAsDropDown(this.findViewById(R.id.settings), 0, 0, Gravity.END)
                 return true
             }
             R.id.screen_reader -> {
                 if (!screenReader.isSpeaking && !screenReader.isPaused && item.title == resources.getString(R.string.epubactivity_read_aloud_start)) {
 
-                    screenReader.goTo(resourcePager.currentItem)
-                    screenReader.start()
+                    //Get user settings speed when opening the screen reader. Get a neutral percentage (corresponding to
+                    //the normal speech speed) if no user settings exist.
+                    val speed = preferences.getInt("reader_TTS_speed",
+                        (2.75 * 3.toDouble() / 11.toDouble() * 100).toInt())
+                    //Convert percentage to a float value between 0.25 and 3.0
+                    val ttsSpeed = 0.25.toFloat() + (speed.toFloat() / 100.toFloat()) * 2.75.toFloat()
 
-                    item.title = resources.getString(R.string.epubactivity_read_aloud_stop)
+                    updateScreenReaderSpeed(ttsSpeed)
 
-                    tts_overlay.visibility = View.VISIBLE
-                    play_pause.setImageResource(android.R.drawable.ic_media_pause)
-                    allowToggleActionBar = false
+                    if (screenReader.goTo(resourcePager.currentItem)) {
+                        item.title = resources.getString(R.string.epubactivity_read_aloud_stop)
+                        tts_overlay.visibility = View.VISIBLE
+                        play_pause.setImageResource(android.R.drawable.ic_media_pause)
+                        allowToggleActionBar = false
+                    }
+                    else {
+                        Toast.makeText(applicationContext, "No further chapter contains text to read", Toast.LENGTH_LONG).show()
+                    }
 
                 } else {
-
-                    dismissScreenReader(item)
-
+                    dismissScreenReader()
                 }
 
                 return true
             }
             R.id.drm -> {
                 if (screenReader.isSpeaking) {
-                    dismissScreenReader(menuScreenReader!!)
+                    dismissScreenReader()
                 }
                 startActivityForResult(intentFor<DRMManagementActivity>("publication" to publicationPath), 1)
                 return true
@@ -465,9 +576,16 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     }
 
-    fun dismissScreenReader(item: MenuItem) {
-        screenReader.stop()
-        item.title = resources.getString(R.string.epubactivity_read_aloud_start)
+    /**
+     * - Stop screenReader's reading.
+     * - Set the title of the menu's button for launching TTS to a value that indicates it was closed.
+     * - Make the TTS view invisible.
+     * - Update the TTS play/pause button to show the good resource picture.
+     * - Enable toggling the scrollbar which was previously disable for TTS.
+     */
+    fun dismissScreenReader() {
+        screenReader.stopReading()
+        menuScreenReader?.title = resources.getString(R.string.epubactivity_read_aloud_start)
         tts_overlay.visibility = View.INVISIBLE
         play_pause.setImageResource(android.R.drawable.ic_media_play)
         allowToggleActionBar = true
@@ -787,7 +905,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             highlight.annotationMarkStyle
     )
 
-
+    /**
+     * Manage what happens when the focus is put back on the EpubActivity.
+     *  - Synchronize the [R2ScreenReader] with the webView if the [R2ScreenReader] exists.
+     *  - Create a [R2ScreenReader] instance if it was uninitialized.
+     */
     override fun onResume() {
         super.onResume()
 
@@ -820,19 +942,35 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             userSettings.resourcePager = resourcePager
         }
 
+        if (this::screenReader.isInitialized) {
+            if (tts_overlay.visibility == View.VISIBLE) {
+                if (screenReader.currentResource != resourcePager.currentItem) {
+                    screenReader.goTo(resourcePager.currentItem)
+                }
 
-        /*
-         * Initialisation of the screen reader
-         */
-        Handler().postDelayed({
-            val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
-            port?.let {
-                screenReader = R2ScreenReader(this, publication, port, publicationFileName)
+                if (screenReader.isPaused) {
+                    screenReader.resumeReading()
+                    play_pause.setImageResource(android.R.drawable.ic_media_pause)
+                } else {
+                    screenReader.pauseReading()
+                    play_pause.setImageResource(android.R.drawable.ic_media_play)
+                }
+                screenReader.onResume()
             }
-        }, 500)
-
+        } else {
+            Handler().postDelayed({
+                val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
+                port?.let {
+                    screenReader = R2ScreenReader(this, publication, port, publicationFileName, resourcePager.currentItem)
+                }
+            }, 500)
+        }
     }
 
+    /**
+     * Determine whether the touch exploration is enabled (i.e. that description of touched elements is orally
+     * fed back to the user) and toggle the ActionBar if it is disabled and if the text to speech is invisible.
+     */
     override fun toggleActionBar() {
         val am = getSystemService(ACCESSIBILITY_SERVICE) as AccessibilityManager
         isExploreByTouchEnabled = am.isTouchExplorationEnabled
@@ -845,22 +983,27 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         }
     }
 
+    /**
+     * Manage activity destruction.
+     */
     override fun onDestroy() {
         super.onDestroy()
         activitiesLaunched.getAndDecrement();
+        screenReader.shutdown()
         try {
             screenReader.release()
         } catch (e: Exception) {
         }
     }
 
-
+    /**
+     * Communicate with the user using a toast if touch exploration is enabled, to indicate the end of a chapter.
+     */
     override fun onPageEnded(end: Boolean) {
         if (isExploreByTouchEnabled) {
             if (!pageEnded == end && end) {
                 toast("End of chapter")
             }
-
             pageEnded = end
         }
     }
