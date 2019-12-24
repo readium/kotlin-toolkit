@@ -23,9 +23,6 @@ import android.util.DisplayMetrics
 import android.view.*
 import android.view.accessibility.AccessibilityManager
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
@@ -48,14 +45,7 @@ import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.navigator.epub.Style
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
-import org.readium.r2.shared.APPEARANCE_REF
-import org.readium.r2.shared.ContentLayoutStyle
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Locator
-import org.readium.r2.shared.LocatorText
-import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.RenditionLayout
-import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
@@ -989,9 +979,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     override fun onDestroy() {
         super.onDestroy()
         activitiesLaunched.getAndDecrement();
-        screenReader.shutdown()
         try {
-            screenReader.release()
+            screenReader.shutdown()
         } catch (e: Exception) {
         }
     }
