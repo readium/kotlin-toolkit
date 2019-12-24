@@ -12,14 +12,9 @@ package org.readium.r2.navigator
 import android.content.Context
 import android.graphics.Rect
 import android.util.AttributeSet
-import android.view.FocusFinder
-import android.view.Gravity
+import android.view.*
 import android.view.KeyEvent
-import android.view.MotionEvent
-import android.view.SoundEffectConstants
-import android.view.VelocityTracker
 import android.view.View
-import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.animation.Interpolator
 import android.widget.EdgeEffect
@@ -282,9 +277,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
      * misaligned.
      */
     private fun getClientWidth(): Int {
-        val contentWidth = getContentWidth()
-        val width = measuredWidth - paddingLeft - paddingRight
-        return width + ((contentWidth % width).toFloat() / contentWidth.toFloat() * width.toFloat()).roundToInt()
+        return this.computeHorizontalScrollRange() / numPages
     }
 
     /**
@@ -320,8 +313,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
     private fun scrollToItem(item: Int, smoothScroll: Boolean, velocity: Int, post: Boolean) {
 
-        // todo double check why +2 is needed here
-        val destX = (getClientWidth() * item)
+        val width = this.computeHorizontalScrollRange() / numPages
+        val destX = (width * item)
         if (smoothScroll) {
             smoothScrollTo(destX, 0, velocity)
         } else {
@@ -430,7 +423,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             if (!mScroller!!.isFinished) {
                 val currentPage = scrollX / getClientWidth()
 
-                mScroller!!.finalX = currentPage * getClientWidth()
+                mScroller!!.finalX = (currentPage * getClientWidth())
             } else {
                 val widthWithMargin = width - paddingLeft - paddingRight + margin
                 val oldWidthWithMargin = oldWidth - paddingLeft - paddingRight + oldMargin
@@ -986,7 +979,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         get() {
             var numPages = 0
             try {
-                numPages = getContentWidth() / (getClientWidth() - 2)
+                numPages = this.computeHorizontalScrollRange() / this.computeHorizontalScrollExtent()
             } catch (e: Exception) {
             } finally {
                 if (numPages == 0) {
