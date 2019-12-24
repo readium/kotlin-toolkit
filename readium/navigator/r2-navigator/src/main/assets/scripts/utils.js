@@ -36,6 +36,25 @@ window.addEventListener('scroll', function(e) {
     ticking = true;
 });
 
+var uScrollWidth = function() {
+    return document.scrollingElement.scrollWidth
+};
+var uScrollX = function() {
+    return window.scrollX
+};
+
+var scrollToPage = function(page) {
+    console.log("scrollToPage " + page);
+
+    var offset = window.innerWidth * page;
+
+    document.scrollingElement.scrollLeft = snapOffset(offset);
+    last_known_scrollX_position = window.scrollX / document.scrollingElement.scrollWidth;
+    update(last_known_scrollX_position);
+
+    return document.scrollingElement.scrollLeft
+};
+
 // Scroll to the given TagId in document and snap.
 var scrollToId = function(id) {
     var element = document.getElementById(id);
@@ -158,9 +177,16 @@ var scrollRight = function() {
         console.log("offset < scrollWidth");
 
         document.scrollingElement.scrollLeft = snapOffset(offset);
-        last_known_scrollX_position = window.scrollX / document.scrollingElement.scrollWidth;
-
-        update(last_known_scrollX_position);
+        var newScrollPos = window.scrollX / document.scrollingElement.scrollWidth
+        if ((newScrollPos - last_known_scrollX_position) > 0.001) {
+            last_known_scrollX_position = window.scrollX / document.scrollingElement.scrollWidth;
+            update(last_known_scrollX_position);
+        } else {
+            var newoffset = Math.round(window.scrollX + window.innerWidth);
+            document.scrollingElement.scrollLeft = snapOffset(newoffset);
+            last_known_scrollX_position = window.scrollX / document.scrollingElement.scrollWidth;
+            update(last_known_scrollX_position);
+        }
         return "";
     } else {
         console.log("else");
