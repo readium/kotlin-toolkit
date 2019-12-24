@@ -56,7 +56,7 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
 
         val drm: DRM = DRM(DRM.Brand.lcp)
 
-        lcpService.retrieveLicense(intent.getStringExtra("publication"), null) { license, error  ->
+        lcpService.retrieveLicense(intent.getStringExtra("publication") ?: throw Exception("publication required") , null) { license, error  ->
             license?.let{
                 drm.license = license
                 drmModel = DRMViewModel.make(drm, this)

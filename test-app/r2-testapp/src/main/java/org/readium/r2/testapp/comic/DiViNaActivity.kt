@@ -13,7 +13,6 @@ package org.readium.r2.testapp.comic
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.coroutines.CoroutineScope
@@ -21,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.divina.R2DiViNaActivity
 import org.readium.r2.shared.Locator
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
@@ -43,13 +43,12 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
 
     private var menuToc: MenuItem? = null
 
-    private var bookId: Long = -1
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (activitiesLaunched.incrementAndGet() > 1) { finish(); }
         super.onCreate(savedInstanceState)
-        Handler().postDelayed({
-            bookId = intent.getLongExtra("bookId", -1)
-        }, 100)
+
+        bookId = intent.getLongExtra("bookId", -1)
+
         toggleActionBar()
     }
 
@@ -83,5 +82,11 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
             divinaWebView.evaluateJavascript("if (player) { player.goTo('${locator.href}'); };", null)
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        activitiesLaunched.getAndDecrement();
+    }
+
 
 }

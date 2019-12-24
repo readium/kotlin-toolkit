@@ -22,6 +22,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_outline.*
 import kotlinx.android.synthetic.main.item_recycle_bookmark.view.*
+import kotlinx.android.synthetic.main.item_recycle_highlight.view.*
 import kotlinx.android.synthetic.main.item_recycle_outline.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
@@ -30,9 +31,7 @@ import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
 import org.readium.r2.shared.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.db.Bookmark
-import org.readium.r2.testapp.db.BookmarksDatabase
-import org.readium.r2.testapp.db.PositionsDatabase
+import org.readium.r2.testapp.db.*
 import org.readium.r2.testapp.epub.Position
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
@@ -41,7 +40,8 @@ import kotlin.math.roundToInt
 class R2OutlineActivity : AppCompatActivity() {
 
     private lateinit var preferences:SharedPreferences
-    lateinit var bookmarkDB: BookmarksDatabase
+    private lateinit var bookmarkDB: BookmarksDatabase
+    private lateinit var highlightsDB: HighligtsDatabase
     private lateinit var positionsDB: PositionsDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -140,6 +140,24 @@ class R2OutlineActivity : AppCompatActivity() {
         }
 
 
+        highlightsDB = HighligtsDatabase(this)
+
+        val highlights = highlightsDB.highlights.listAll(bookID).sortedWith(compareBy({it.resourceIndex},{ it.location.progression })).toMutableList()
+        val highlightsAdapter = HighlightsAdapter(this, highlights, publication)
+        highlight_list.adapter = highlightsAdapter
+        highlight_list.setOnItemClickListener { _, _, position, _ ->
+            //Link to the resource in the publication
+            val highlight = highlights[position]
+            val resourceHref = highlight.resourceHref
+            val resourceType = highlight.resourceType
+            //Progression of the selected bookmark
+            val highlightProgression = highlights[position].location.progression
+            val intent = Intent()
+            intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = highlightProgression),null))
+            setResult(Activity.RESULT_OK, intent)
+            finish()
+
+        }
 
         /*
          * Retrieve the page list
@@ -216,6 +234,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
         }
 
+
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
 
@@ -225,11 +244,13 @@ class R2OutlineActivity : AppCompatActivity() {
         tabTOC.setIndicator(tabTOC.tag)
         tabTOC.setContent(R.id.toc_tab)
 
-
         val tabBookmarks: TabHost.TabSpec = tabHost.newTabSpec("Bookmarks")
         tabBookmarks.setIndicator(tabBookmarks.tag)
         tabBookmarks.setContent(R.id.bookmarks_tab)
 
+        val tabHighlights: TabHost.TabSpec = tabHost.newTabSpec("Highlights")
+        tabHighlights.setIndicator(tabHighlights.tag)
+        tabHighlights.setContent(R.id.highlights_tab)
 
         val tabPageList: TabHost.TabSpec = tabHost.newTabSpec("Page List")
         tabPageList.setIndicator(tabPageList.tag)
@@ -239,6 +260,7 @@ class R2OutlineActivity : AppCompatActivity() {
         val tabLandmarks: TabHost.TabSpec = tabHost.newTabSpec("Landmarks")
         tabLandmarks.setIndicator(tabLandmarks.tag)
         tabLandmarks.setContent(R.id.landmarks_tab)
+
 
         when {
             publication.type == Publication.TYPE.AUDIO -> {
@@ -250,6 +272,7 @@ class R2OutlineActivity : AppCompatActivity() {
             else -> {
                 tabHost.addTab(tabTOC)
                 tabHost.addTab(tabBookmarks)
+                tabHost.addTab(tabHighlights)
                 tabHost.addTab(tabPageList)
                 tabHost.addTab(tabLandmarks)
             }
@@ -519,6 +542,95 @@ class R2OutlineActivity : AppCompatActivity() {
 
         override fun getItemId(position: Int): Long {
             return position.toLong()
+        }
+
+    }
+
+    inner class HighlightsAdapter(val activity: Activity, private val items: MutableList<Highlight>, private val publication: Publication) : BaseAdapter() {
+
+        private inner class ViewHolder(row: View?) {
+            internal var highlightedText: TextView? = null
+            internal var highlightTimestamp: TextView? = null
+            internal var highlightChapter: TextView? = null
+            internal var highlightOverflow: ImageView? = null
+            internal var annotation: TextView? = null
+
+            init {
+                this.highlightedText = row?.highlight_text as TextView
+                this.highlightTimestamp = row.highlight_time_stamp as TextView
+                this.highlightChapter = row.highlight_chapter as TextView
+                this.highlightOverflow = row.highlight_overflow as ImageView
+                this.annotation = row.annotation as TextView
+            }
+        }
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+
+
+            val view: View?
+            val viewHolder: ViewHolder
+            if (convertView == null) {
+                val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                view = inflater.inflate(R.layout.item_recycle_highlight, null)
+                viewHolder = ViewHolder(view)
+                view?.tag = viewHolder
+            } else {
+                view = convertView
+                viewHolder = view.tag as ViewHolder
+            }
+
+            val highlight = getItem(position) as Highlight
+
+            viewHolder.highlightChapter!!.text = getHighlightSpineItem(highlight.resourceHref)
+            viewHolder.highlightedText!!.text = highlight.locatorText.highlight
+            viewHolder.annotation!!.text = highlight.annotation
+
+            val formattedDate = DateTime(highlight.creationDate).toString(DateTimeFormat.shortDateTime())
+            viewHolder.highlightTimestamp!!.text = formattedDate
+
+            viewHolder.highlightOverflow?.setOnClickListener {
+
+                val popupMenu = PopupMenu(parent?.context, viewHolder.highlightChapter)
+                popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
+                popupMenu.show()
+
+                popupMenu.setOnMenuItemClickListener { item ->
+                    if (item.itemId == R.id.delete) {
+                        highlightsDB.highlights.delete(items[position])
+                        items.removeAt(position)
+                        notifyDataSetChanged()
+                    }
+                    false
+                }
+            }
+
+            return view as View
+        }
+
+        override fun getCount(): Int {
+            return items.size
+        }
+
+        override fun getItem(position: Int): Any {
+            return items[position]
+        }
+
+        override fun getItemId(position: Int): Long {
+            return position.toLong()
+        }
+
+        private fun getHighlightSpineItem(href: String): String? {
+            for (link in publication.tableOfContents) {
+                if (link.href == href) {
+                    return link.title
+                }
+            }
+            for (link in publication.readingOrder) {
+                if (link.href == href) {
+                    return link.title
+                }
+            }
+            return null
         }
 
     }

@@ -12,13 +12,18 @@ package org.readium.r2.testapp.comic
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.cbz.R2CbzActivity
+import org.readium.r2.shared.Locations
+import org.readium.r2.shared.Locator
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.db.BooksDatabase
+import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
 import kotlin.coroutines.CoroutineContext
 
@@ -30,7 +35,24 @@ import kotlin.coroutines.CoroutineContext
  *      ( Table of content, User Settings, Drm, Bookmarks )
  *
  */
-class ComicActivity : R2CbzActivity(), CoroutineScope {
+class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
+
+
+    override val currentLocation: Locator?
+        get() {
+            return booksDB.books.currentLocator(bookId)?.let {
+                it
+            } ?: run {
+                val resource = publication.images[resourcePager.currentItem]
+                val resourceHref = resource.href ?: ""
+                val resourceType = resource.typeLink ?: ""
+                Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0))
+            }
+        }
+
+    override fun locationDidChange(navigator: Navigator?, locator: Locator) {
+        booksDB.books.saveProgression(locator, bookId)
+    }
 
     /**
      * Context of this scope.
@@ -40,13 +62,20 @@ class ComicActivity : R2CbzActivity(), CoroutineScope {
 
     private var menuToc: MenuItem? = null
 
-    private var bookId: Long = -1
+    private lateinit var booksDB: BooksDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (activitiesLaunched.incrementAndGet() > 1) { finish(); }
         super.onCreate(savedInstanceState)
-        Handler().postDelayed({
-            bookId = intent.getLongExtra("bookId", -1)
-        }, 100)
+
+        booksDB = BooksDatabase(this)
+
+        navigatorDelegate = this
+        bookId = intent.getLongExtra("bookId", -1)
+
+        currentPagerPosition = publication.images.indexOfFirst { it.href == currentLocation?.href }
+        resourcePager.currentItem = currentPagerPosition
+
         toggleActionBar()
     }
 
@@ -68,5 +97,11 @@ class ComicActivity : R2CbzActivity(), CoroutineScope {
             else -> false
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        activitiesLaunched.getAndDecrement();
+    }
+
 
 }
