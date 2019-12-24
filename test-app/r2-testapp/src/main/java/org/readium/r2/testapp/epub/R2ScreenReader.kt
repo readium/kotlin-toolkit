@@ -27,7 +27,7 @@ import org.readium.r2.testapp.R
 import timber.log.Timber
 import java.io.IOException
 import java.lang.ref.WeakReference
-import java.util.Locale
+import java.util.*
 
 
 /**
@@ -41,44 +41,39 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     private var initialized = false
 
     private var resourceIndex = indexResource
-
-    /**
-     * Set the value of [resourceIndex] and dismiss screen reader if the new value is over the maximal value.
-     *
-     * @return: Boolean - Whether the function executed successfully.
-     */
-    private fun setResourceIndex(value: Int): Boolean {
-        if (value >= items.size) {
-            resourceIndex = items.size
-            dismissScreenReader()
-            return false
+        set(value)  {
+            when {
+                value >= items.size -> {
+                    field = items.size -1
+                    currentUtterance = 0
+                }
+                value < 0 -> {
+                    field = 0
+                    currentUtterance = 0
+                }
+                else -> {
+                    field = value
+                    currentUtterance = 0
+                }
+            }
         }
-        else if (value < 0) {
-            resourceIndex = 0
-        }
-        else {
-            resourceIndex = value
-            currentUtterance = 0
-        }
-        Timber.d( "resourceIndex: $resourceIndex")
-        return true
-    }
 
     private var utterances = mutableListOf<String>()
 
     private var utterancesCurrentIndex: Int = 0
+        get() = if (field != -1)  field else 0
+
 
     var currentUtterance
-        get() = utterancesCurrentIndex
+        get() = if (utterancesCurrentIndex != -1)  utterancesCurrentIndex else 0
         set(value) {
-            if (value == 0)
-                utterancesCurrentIndex = 0
-            else if (value > utterances.size - 1)
-                utterancesCurrentIndex = utterances.size - 1
-            else if (value < 0)
-                utterancesCurrentIndex = 0
-            else
-                utterancesCurrentIndex = value
+            utterancesCurrentIndex = when {
+                value == -1 -> 0
+                value == 0 -> 0
+                value > utterances.size - 1 -> utterances.size - 1
+                value < 0 -> 0
+                else -> value
+            }
             Timber.d("Current utterance index: $currentUtterance")
         }
 
@@ -151,41 +146,14 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     fun goTo(index: Int): Boolean {
         if (index >= items.size)
             return false
-        if (resourceIndex != index) {
-            if (setResourceIndex(index)) {
-                isPaused = false
-                currentUtterance = 0
-            }
 
-            if (textToSpeech.isSpeaking) {
-                textToSpeech.stop()
-            }
+        resourceIndex = index
+        isPaused = false
+
+        if (textToSpeech.isSpeaking) {
+            textToSpeech.stop()
         }
         return startReading()
-    }
-
-    /**
-     * - Update the resource index.
-     * - Check that it has a valid value. Update it if the value is too big or small.
-     * - Mark [textToSpeech] as reading.
-     * - Stop [textToSpeech] if it is reading.
-     * - Start [textToSpeech] setup.
-     *
-     * @return: Boolean - Whether the function executed successfully.
-     */
-    private fun addToResourceIndex(value: Int): Boolean {
-        if (setResourceIndex(resourceIndex + value)) {
-            isPaused = false
-            currentUtterance = 0
-
-            if (textToSpeech.isSpeaking) {
-                textToSpeech.stop()
-            }
-
-            return startReading()
-        }
-
-        return false
     }
 
     /**
@@ -194,7 +162,14 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * @return: Boolean - Whether the function executed successfully.
      */
     fun previousResource(): Boolean {
-        return addToResourceIndex(-1)
+        resourceIndex--
+        isPaused = false
+
+        if (textToSpeech.isSpeaking) {
+            textToSpeech.stop()
+        }
+
+        return startReading()
     }
 
     /**
@@ -203,7 +178,14 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * @return: Boolean - Whether the function executed successfully.
      */
     fun nextResource(): Boolean {
-        return addToResourceIndex(1)
+        resourceIndex++
+        isPaused = false
+
+        if (textToSpeech.isSpeaking) {
+            textToSpeech.stop()
+        }
+
+        return startReading()
     }
 
     /**
@@ -229,12 +211,12 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         utterances = mutableListOf()
         splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
 
-        while (++resourceIndex < items.size && utterances.size == 0) {
-            splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
-        }
-
-        if (resourceIndex == items.size)
-            --resourceIndex
+//        while (++resourceIndex < items.size && utterances.size == 0) {
+//            splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
+//        }
+//
+//        if (resourceIndex == items.size)
+//            --resourceIndex
 
         return utterances.size != 0
     }
@@ -310,9 +292,14 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                     activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
 
                     if (utteranceId.equals((utterances.size - 1).toString())) {
-                        activityReference.get()?.goForward(false, completion = {})
-                        nextResource()
-                        startReading()
+                        if (items.size - 1 == resourceIndex) {
+                            dismissScreenReader()
+                            stopReading()
+                        } else {
+                            activityReference.get()?.goForward(false, completion = {})
+                            nextResource()
+                            startReading()
+                        }
                     }
                 }
             }
@@ -378,7 +365,11 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             }
 
             return true
+        }  else if (initialized && (items.size - 1) > resourceIndex ) {
+            activityReference.get()?.goForward(false, completion = {})
+            return nextResource()
         }
+
 
         if (!initialized) {
             Toast.makeText(
@@ -447,7 +438,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     fun setSpeechSpeed(speed: Float): Boolean {
         try {
             if (textToSpeech.setSpeechRate(speed) == TextToSpeech.ERROR)
-                Exception("Failed to update speech speed")
+                throw Exception("Failed to update speech speed")
 
             pauseReading()
             resumeReading()
@@ -525,7 +516,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             val element = elements.eq(i)
 
             if (element.`is`("p") || element.`is`("h1") || element.`is`("h2")
-                || element.`is`("h3")) {
+                || element.`is`("h3") || element.`is`("div") || element.`is`("span")) {
 
                 //val sentences = element.text().split(Regex("(?<=\\. |(,{1}))"))
                 val sentences = element.text().split(Regex("(?<=\\.)"))
