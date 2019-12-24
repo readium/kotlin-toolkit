@@ -16,7 +16,6 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebView
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONArray
@@ -361,29 +360,32 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
             scrollModeSwitch.isChecked = scrollMode.on
             scrollModeSwitch.setOnCheckedChangeListener { _, b ->
                 scrollMode.on = scrollModeSwitch.isChecked
-                (resourcePager.focusedChild?.findViewById(R.id.resource_end) as? TextView)?.visibility = View.GONE
-
-                val webView = resourcePager.focusedChild?.findViewById(R.id.webView) as? WebView
-                webView?.let {
-                    when (b) {
-                        true -> {
-                            resourcePager.focusedChild?.setPadding(0, 0, 0, 0)
-                        }
-                        false -> {
-                            resourcePager.focusedChild?.setPadding(0, 60, 0, 40)
-                        }
-                    }
-                } ?: run {
-                    resourcePager.focusedChild?.setPadding(0, 0, 0, 0)
-                }
 
                 updateSwitchable(scrollMode)
                 updateViewCSS(SCROLL_REF)
 
                 val currentFragment = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment()
+                val previousFragment = (resourcePager.adapter as R2PagerAdapter).getPreviousFragment()
+                val nextFragment = (resourcePager.adapter as R2PagerAdapter).getNextFragment()
                 if (currentFragment is R2EpubPageFragment) {
                     currentFragment.webView.scrollToPosition(currentFragment.webView.progression)
+                    (previousFragment as? R2EpubPageFragment)?.webView?.scrollToEnd()
+                    (nextFragment as? R2EpubPageFragment)?.webView?.scrollToStart()
                     currentFragment.webView.setScrollMode(b)
+                    (previousFragment as? R2EpubPageFragment)?.webView?.setScrollMode(b)
+                    (nextFragment as? R2EpubPageFragment)?.webView?.setScrollMode(b)
+                    when (b) {
+                        true -> {
+                            currentFragment.view?.setPadding(0, 0, 0, 0)
+                            previousFragment?.view?.setPadding(0, 0, 0, 0)
+                            nextFragment?.view?.setPadding(0, 0, 0, 0)
+                        }
+                        false -> {
+                            currentFragment.view?.setPadding(0, 60, 0, 40)
+                            previousFragment?.view?.setPadding(0, 60, 0, 40)
+                            nextFragment?.view?.setPadding(0, 60, 0, 40)
+                        }
+                    }
                 }
             }
         }
