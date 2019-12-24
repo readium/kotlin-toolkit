@@ -16,21 +16,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.net.Uri
 import android.os.Build
-import org.jetbrains.anko.db.AUTOINCREMENT
-import org.jetbrains.anko.db.BLOB
-import org.jetbrains.anko.db.INTEGER
-import org.jetbrains.anko.db.ManagedSQLiteOpenHelper
-import org.jetbrains.anko.db.PRIMARY_KEY
-import org.jetbrains.anko.db.RowParser
-import org.jetbrains.anko.db.SqlOrderDirection
-import org.jetbrains.anko.db.TEXT
-import org.jetbrains.anko.db.createTable
-import org.jetbrains.anko.db.delete
-import org.jetbrains.anko.db.dropTable
-import org.jetbrains.anko.db.insert
-import org.jetbrains.anko.db.parseList
-import org.jetbrains.anko.db.select
-import org.jetbrains.anko.db.update
+import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.json.JSONObject
 import org.readium.r2.shared.Locator
@@ -106,7 +92,7 @@ class BooksDatabase(context: Context) {
 class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "books_database", null, DATABASE_VERSION) {
     companion object {
         private var instance: BooksDatabaseOpenHelper? = null
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 4
 
         @Synchronized
         fun getInstance(ctx: Context): BooksDatabaseOpenHelper {
@@ -150,11 +136,32 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
                     }
                 } catch (e: SQLiteException) {
                 }
-            }
-            2 -> {
-                upgradeVersion3(db) {
+                try {
+                    upgradeVersion4(db) {
                     //done
                 }
+                } catch (e: SQLiteException) {
+                }
+            }
+            2 -> {
+                try {
+                    upgradeVersion3(db) {
+                        //done
+                    }
+                } catch (e: SQLiteException) {
+                }
+                try {
+                    upgradeVersion4(db) {
+                        //done
+                    }
+                } catch (e: SQLiteException) {
+                }
+            }
+            3 -> {
+                upgradeVersion4(db) {
+                    //done
+                }
+
             }
         }
     }
@@ -190,6 +197,10 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
             }
             cursor.close()
         }
+        callback()
+    }
+    private fun upgradeVersion4(db: SQLiteDatabase, callback: () -> Unit) {
+        db.execSQL("ALTER TABLE " + BOOKSTable.NAME + " ADD COLUMN " + BOOKSTable.UTTERANCE + " INTEGER DEFAULT 0;")
         callback()
     }
 
