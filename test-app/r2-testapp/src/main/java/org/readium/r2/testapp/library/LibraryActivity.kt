@@ -416,7 +416,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     private fun showDuplicateBookAlert(book: Book, publication: Publication, lcp: Boolean) {
         val duplicateAlert = alert(Appcompat, "Publication already exists") {
 
-            positiveButton("Add anyways") { }
+            positiveButton("Add anyway") { }
             negativeButton("Cancel") { }
 
         }.build()

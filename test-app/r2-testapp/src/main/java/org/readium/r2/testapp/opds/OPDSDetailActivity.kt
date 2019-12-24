@@ -124,7 +124,7 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
 
                                             val duplicateAlert = alert(Appcompat, "Publication already exists") {
 
-                                                positiveButton("Add anyways") { }
+                                                positiveButton("Add anyway") { }
                                                 negativeButton("Cancel") { }
 
                                             }.build()
