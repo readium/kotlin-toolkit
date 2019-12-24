@@ -20,8 +20,9 @@ import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
-import org.readium.r2.navigator.R
 import org.readium.r2.navigator.IR2Activity
+import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
@@ -90,6 +91,8 @@ class R2FXLPageFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView(webView: R2BasicWebView, resourceUrl: String?) {
         webView.activity = activity as AppCompatActivity
+        webView.listener = activity as IR2Activity
+        webView.navigator = activity as Navigator
 
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false

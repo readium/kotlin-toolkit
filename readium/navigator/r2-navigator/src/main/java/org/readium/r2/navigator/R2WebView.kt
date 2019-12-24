@@ -13,6 +13,9 @@ import android.content.Context
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.*
+import android.view.KeyEvent
+import android.view.View
+import android.view.ViewGroup
 import android.view.animation.Interpolator
 import android.widget.EdgeEffect
 import android.widget.Scroller
@@ -24,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.math.roundToInt
-
 
 /**
  * Created by Aferdita Muriqi on 12/2/17.
@@ -265,9 +267,17 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         mScrollState = newState
     }
 
-
+    /**
+     * @return: Int - Returns the horizontal scrolling value to be scrolled by the webview.
+     * Does not return the device width minus the padding because the value returned by [getContentWidth]
+     * is sometimes NOT a multiple of '[getMeasuredWidth] - [getPaddingLeft] - [getPaddingRight]'
+     * (the value is not consistent across devices).
+     *
+     * It will instead add a portion of the remaining pixels to the value returned, so that columns will not be
+     * misaligned.
+     */
     private fun getClientWidth(): Int {
-        return (measuredWidth - paddingLeft - paddingRight) + 2
+        return this.computeHorizontalScrollRange() / numPages
     }
 
     /**
@@ -303,8 +313,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
     private fun scrollToItem(item: Int, smoothScroll: Boolean, velocity: Int, post: Boolean) {
 
-        // todo double check why +2 is needed here
-        val destX = (getClientWidth() * item)
+        val width = this.computeHorizontalScrollRange() / numPages
+        val destX = (width * item)
         if (smoothScroll) {
             smoothScrollTo(destX, 0, velocity)
         } else {
@@ -413,7 +423,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             if (!mScroller!!.isFinished) {
                 val currentPage = scrollX / getClientWidth()
 
-                mScroller!!.finalX = currentPage * getClientWidth()
+                mScroller!!.finalX = (currentPage * getClientWidth())
             } else {
                 val widthWithMargin = width - paddingLeft - paddingRight + margin
                 val oldWidthWithMargin = oldWidth - paddingLeft - paddingRight + oldMargin
@@ -969,7 +979,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         get() {
             var numPages = 0
             try {
-                numPages = getContentWidth() / (getClientWidth() - 2)
+                numPages = this.computeHorizontalScrollRange() / this.computeHorizontalScrollExtent()
             } catch (e: Exception) {
             } finally {
                 if (numPages == 0) {
