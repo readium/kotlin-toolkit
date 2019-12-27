@@ -36,15 +36,15 @@ import java.util.*
  * Basic screen reader overlay that uses Android's TextToSpeech
  */
 
-class R2ScreenReader(var context: Context, var publication: Publication, var port: Int, var epubName:String, indexResource: Int) {
+class R2ScreenReader(var context: Context, var publication: Publication, var port: Int, var epubName: String, initialResourceIndex: Int) {
 
     private var initialized = false
 
-    private var resourceIndex = indexResource
-        set(value)  {
+    private var resourceIndex = initialResourceIndex
+        set(value) {
             when {
                 value >= items.size -> {
-                    field = items.size -1
+                    field = items.size - 1
                     currentUtterance = 0
                 }
                 value < 0 -> {
@@ -61,11 +61,11 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     private var utterances = mutableListOf<String>()
 
     private var utterancesCurrentIndex: Int = 0
-        get() = if (field != -1)  field else 0
+        get() = if (field != -1) field else 0
 
 
     var currentUtterance
-        get() = if (utterancesCurrentIndex != -1)  utterancesCurrentIndex else 0
+        get() = if (utterancesCurrentIndex != -1) utterancesCurrentIndex else 0
         set(value) {
             utterancesCurrentIndex = when {
                 value == -1 -> 0
@@ -196,7 +196,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
         if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
             Toast.makeText(context.applicationContext, "There was an error with the TTS language, switching "
-                + "to EN-US", Toast.LENGTH_LONG).show()
+                    + "to EN-US", Toast.LENGTH_LONG).show()
             textToSpeech.language = Locale.US
         }
     }
@@ -230,8 +230,8 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         setTTSLanguage()
 
         return setUtterances()
-            && flushUtterancesQueue()
-            && setTTSCallbacks()
+                && flushUtterancesQueue()
+                && setTTSCallbacks()
     }
 
     /**
@@ -240,7 +240,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * @return: Boolean - Whether setting the callbacks was successful or not.
      */
     private fun setTTSCallbacks(): Boolean {
-        val res = textToSpeech.setOnUtteranceProgressListener(object: UtteranceProgressListener() {
+        val res = textToSpeech.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             /**
              * Called when an utterance "starts" as perceived by the caller. This will
              * be soon before audio is played back in the case of a [TextToSpeech.speak]
@@ -259,7 +259,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                     activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_pause)
 
                     TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(activityReference.get()?.tts_textView!!,
-                        1, 30, 1, TypedValue.COMPLEX_UNIT_DIP)
+                            1, 30, 1, TypedValue.COMPLEX_UNIT_DIP)
                 }
             }
 
@@ -365,7 +365,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             }
 
             return true
-        }  else if (initialized && (items.size - 1) > resourceIndex ) {
+        } else if (initialized && (items.size - 1) > resourceIndex) {
             activityReference.get()?.goForward(false, completion = {})
             return nextResource()
         }
@@ -373,8 +373,8 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
         if (!initialized) {
             Toast.makeText(
-                context.applicationContext, "There was an error with the TTS initialization",
-                Toast.LENGTH_LONG
+                    context.applicationContext, "There was an error with the TTS initialization",
+                    Toast.LENGTH_LONG
             ).show()
         }
 
@@ -461,7 +461,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         isPaused = false
         val index = utterancesCurrentIndex + playSentence.value
 
-        if (index >= utterances.size || index < 0 )
+        if (index >= utterances.size || index < 0)
             return false
 
         if (!flushUtterancesQueue())
@@ -516,7 +516,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             val element = elements.eq(i)
 
             if (element.`is`("p") || element.`is`("h1") || element.`is`("h2")
-                || element.`is`("h3") || element.`is`("div") || element.`is`("span")) {
+                    || element.`is`("h3") || element.`is`("div") || element.`is`("span")) {
 
                 //val sentences = element.text().split(Regex("(?<=\\. |(,{1}))"))
                 val sentences = element.text().split(Regex("(?<=\\.)"))
@@ -526,7 +526,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                     if (sentenceCleaned.isNotEmpty()) {
                         if (sentenceCleaned.first() == ' ') sentenceCleaned = sentenceCleaned.removeRange(0, 1)
                         if (sentenceCleaned.last() == ' ') sentenceCleaned =
-                            sentenceCleaned.removeRange(sentenceCleaned.length - 1, sentenceCleaned.length)
+                                sentenceCleaned.removeRange(sentenceCleaned.length - 1, sentenceCleaned.length)
                         utterances.add(sentenceCleaned)
                         index++
                     }
