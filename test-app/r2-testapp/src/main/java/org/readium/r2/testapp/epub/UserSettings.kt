@@ -25,37 +25,7 @@ import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.APPEARANCE_NAME
-import org.readium.r2.shared.APPEARANCE_REF
-import org.readium.r2.shared.COLUMN_COUNT_NAME
-import org.readium.r2.shared.COLUMN_COUNT_REF
-import org.readium.r2.shared.Enumerable
-import org.readium.r2.shared.FONT_FAMILY_NAME
-import org.readium.r2.shared.FONT_FAMILY_REF
-import org.readium.r2.shared.FONT_OVERRIDE_NAME
-import org.readium.r2.shared.FONT_OVERRIDE_REF
-import org.readium.r2.shared.FONT_SIZE_NAME
-import org.readium.r2.shared.FONT_SIZE_REF
-import org.readium.r2.shared.Incremental
-import org.readium.r2.shared.Injectable
-import org.readium.r2.shared.LETTER_SPACING_NAME
-import org.readium.r2.shared.LETTER_SPACING_REF
-import org.readium.r2.shared.LINE_HEIGHT_NAME
-import org.readium.r2.shared.LINE_HEIGHT_REF
-import org.readium.r2.shared.PAGE_MARGINS_NAME
-import org.readium.r2.shared.PAGE_MARGINS_REF
-import org.readium.r2.shared.PUBLISHER_DEFAULT_NAME
-import org.readium.r2.shared.PUBLISHER_DEFAULT_REF
-import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.SCROLL_NAME
-import org.readium.r2.shared.SCROLL_REF
-import org.readium.r2.shared.Switchable
-import org.readium.r2.shared.TEXT_ALIGNMENT_NAME
-import org.readium.r2.shared.TEXT_ALIGNMENT_REF
-import org.readium.r2.shared.UserProperties
-import org.readium.r2.shared.UserProperty
-import org.readium.r2.shared.WORD_SPACING_NAME
-import org.readium.r2.shared.WORD_SPACING_REF
+import org.readium.r2.shared.*
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.color
 import java.io.File
@@ -154,7 +124,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
     fun saveChanges() {
         val json = makeJson()
-        val dir = File(context.filesDir.path + "/"+ Injectable.Style.rawValue +"/")
+        val dir = File(context.filesDir.path + "/" + Injectable.Style.rawValue + "/")
         dir.mkdirs()
         val file = File(dir, "UserProperties.json")
         file.printWriter().use { out ->
@@ -183,19 +153,19 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
             val webView = resourcePager.getChildAt(i).findViewById(R.id.webView) as? R2WebView
             webView?.let {
                 applyCSS(webView, ref)
-            }?: run {
+            } ?: run {
                 val zoomView = resourcePager.getChildAt(i).findViewById(R.id.r2FXLLayout) as R2FXLLayout
                 val webView1 = zoomView.findViewById(R.id.firstWebView) as? R2BasicWebView
                 val webView2 = zoomView.findViewById(R.id.secondWebView) as? R2BasicWebView
                 val webViewSingle = zoomView.findViewById(R.id.webViewSingle) as? R2BasicWebView
 
-                webView1?.let{
+                webView1?.let {
                     applyCSS(webView1, ref)
                 }
-                webView2?.let{
+                webView2?.let {
                     applyCSS(webView2, ref)
                 }
-                webViewSingle?.let{
+                webViewSingle?.let {
                     applyCSS(webViewSingle, ref)
                 }
             }
@@ -318,7 +288,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
         UIPreset[ReadiumCSSName.appearance]?.let {
             appearanceGroup.isEnabled = false
-            for(appearanceRadio in appearanceRadios) {
+            for (appearanceRadio in appearanceRadios) {
                 appearanceRadio.isEnabled = false
             }
         } ?: run {
@@ -433,7 +403,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         UIPreset[ReadiumCSSName.textAlignment]?.let {
             alignmentGroup.isEnabled = false
             alignmentGroup.isActivated = false
-            for(alignmentRadio in alignmentRadios) {
+            for (alignmentRadio in alignmentRadios) {
                 alignmentRadio.isEnabled = false
             }
         } ?: run {
@@ -475,7 +445,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
         UIPreset[ReadiumCSSName.columnCount]?.let {
             columnsCountGroup.isEnabled = false
             columnsCountGroup.isActivated = false
-            for(columnRadio in columnsRadios) {
+            for (columnRadio in columnsRadios) {
                 columnRadio.isEnabled = false
             }
         } ?: run {
@@ -630,23 +600,23 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
         speechSeekBar.progress = speed
         speechSeekBar.setOnSeekBarChangeListener(
-            object : SeekBar.OnSeekBarChangeListener {
+                object : SeekBar.OnSeekBarChangeListener {
 
-                override fun onProgressChanged(bar: SeekBar, progress: Int, from_user: Boolean) {
-                    // Nothing
-                }
+                    override fun onProgressChanged(bar: SeekBar, progress: Int, from_user: Boolean) {
+                        // Nothing
+                    }
 
-                override fun onStartTrackingTouch(bar: SeekBar) {
-                    // Nothing
-                }
+                    override fun onStartTrackingTouch(bar: SeekBar) {
+                        // Nothing
+                    }
 
-                override fun onStopTrackingTouch(bar: SeekBar) {
-                    //Convert seekBar percent to a float value between 0.25 and 3.
-                    val speechSpeed = 0.25.toFloat() + (bar.progress.toFloat() / 100.toFloat()) * 2.75.toFloat()
-                    preferences.edit().putInt("reader_TTS_speed", bar.progress).apply()
-                    (context as EpubActivity).updateScreenReaderSpeed(speechSpeed)
-                }
-            })
+                    override fun onStopTrackingTouch(bar: SeekBar) {
+                        //Convert seekBar percent to a float value between 0.25 and 3.
+                        val speechSpeed = 0.25.toFloat() + (bar.progress.toFloat() / 100.toFloat()) * 2.75.toFloat()
+                        preferences.edit().putInt("reader_TTS_speed", bar.progress).apply()
+                        (context as EpubActivity).updateScreenReaderSpeed(speechSpeed)
+                    }
+                })
 
         return userSettingsPopup
     }
