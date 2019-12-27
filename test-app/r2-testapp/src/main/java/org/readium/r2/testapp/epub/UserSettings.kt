@@ -614,6 +614,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
                         //Convert seekBar percent to a float value between 0.25 and 3.
                         val speechSpeed = 0.25.toFloat() + (bar.progress.toFloat() / 100.toFloat()) * 2.75.toFloat()
                         preferences.edit().putInt("reader_TTS_speed", bar.progress).apply()
+                        // TODO this might need to be refactored
                         (context as EpubActivity).updateScreenReaderSpeed(speechSpeed)
                     }
                 })
