@@ -196,9 +196,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             }
         }
         prev_chapter.setOnClickListener {
-            goBackward(false, completion = {})
-            screenReader.previousResource()
-            play_pause.setImageResource(android.R.drawable.ic_media_pause)
+           if (goBackward(false, completion = {})) {
+               screenReader.previousResource()
+               play_pause.setImageResource(android.R.drawable.ic_media_pause)
+           }
         }
 
 
