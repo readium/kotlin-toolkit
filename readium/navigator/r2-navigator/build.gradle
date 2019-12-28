@@ -61,7 +61,7 @@ dependencies {
 
     implementation 'org.zeroturnaround:zt-zip:1.13'
 
-    implementation 'org.jsoup:jsoup:1.11.2'
+    implementation 'org.jsoup:jsoup:1.10.3'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'

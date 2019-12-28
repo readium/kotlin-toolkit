@@ -70,7 +70,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
 
     @android.webkit.JavascriptInterface
-    open fun scrollRight() {
+    open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {
             if (activity.supportActionBar!!.isShowing && listener.allowToggleActionBar) {
                 listener.resourcePager?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -85,15 +85,15 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 if (listener.publication.metadata.direction == "rtl") {
                     this@R2BasicWebView.evaluateJavascript("scrollRightRTL();") { result ->
                         if (result.contains("edge")) {
-                            navigator.goBackward()
+                            navigator.goBackward(animated = animated)
                         }
                     }
                 } else {
-                    navigator.goForward()
+                    navigator.goForward(animated = animated)
                 }
             } else {
                 if (!this@R2BasicWebView.canScrollHorizontally(1)) {
-                    navigator.goForward()
+                    navigator.goForward(animated = animated)
                 }
                 this@R2BasicWebView.evaluateJavascript("scrollRight();", null)
             }
@@ -101,7 +101,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @android.webkit.JavascriptInterface
-    open fun scrollLeft() {
+    open fun scrollLeft(animated: Boolean = false) {
         uiScope.launch {
             if (activity.supportActionBar!!.isShowing && listener.allowToggleActionBar) {
                 listener.resourcePager?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -116,16 +116,16 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 if (listener.publication.metadata.direction == "rtl") {
                     this@R2BasicWebView.evaluateJavascript("scrollLeftRTL();") { result ->
                         if (result.contains("edge")) {
-                            navigator.goForward()
+                            navigator.goForward(animated = animated)
                         }
                     }
                 } else {
-                    navigator.goBackward()
+                    navigator.goBackward(animated = animated)
                 }
             } else {
                 // fix this for when vertical scrolling is enabled
                 if (!this@R2BasicWebView.canScrollHorizontally(-1)) {
-                    navigator.goBackward()
+                    navigator.goBackward(animated = animated)
                 }
                 this@R2BasicWebView.evaluateJavascript("scrollLeft();", null)
             }

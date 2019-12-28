@@ -37,7 +37,7 @@ import java.net.URI
 import kotlin.coroutines.CoroutineContext
 
 
-open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, CoroutineScope, VisualNavigator {
+open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator {
 
     override fun progressionDidChange(progression: Double) {
         val locator = currentLocation
@@ -240,6 +240,8 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         resourcePager = findViewById(R.id.resourcePager)
+        resourcePager.type = Publication.TYPE.EPUB
+
         resourcesSingle = ArrayList()
         resourcesDouble = ArrayList()
 
@@ -298,7 +300,9 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
         if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
             adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
+            resourcePager.type = Publication.TYPE.EPUB
         } else {
+            resourcePager.type = Publication.TYPE.FXL
             adapter = when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
                 1 -> {
                     R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)

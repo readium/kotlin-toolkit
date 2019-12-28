@@ -58,10 +58,10 @@ var handleTouchEnd = function(event) {
         var position = (touch.screenX % availWidth) / availWidth;
         if (position <= 0.2) {
             console.log("LeftTapped");
-            Android.scrollLeft();
+            Android.scrollLeft(false);
         } else if (position >= 0.8) {
             console.log("RightTapped");
-            Android.scrollRight();
+            Android.scrollRight(false);
         } else {
             console.log("CenterTapped");
             Android.centerTapped();

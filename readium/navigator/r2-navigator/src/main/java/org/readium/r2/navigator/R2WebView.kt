@@ -41,8 +41,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     private val uiScope = CoroutineScope(Dispatchers.Main)
 
     @android.webkit.JavascriptInterface
-    override fun scrollRight() {
-        super.scrollRight()
+    override fun scrollRight(animated: Boolean) {
+        super.scrollRight(animated)
         uiScope.launch {
             if (mCurItem < numPages - 1) {
                 mCurItem++
@@ -52,8 +52,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     }
 
     @android.webkit.JavascriptInterface
-    override fun scrollLeft() {
-        super.scrollLeft()
+    override fun scrollLeft(animated: Boolean) {
+        super.scrollLeft(animated)
         uiScope.launch {
             if (mCurItem > 0) {
                 mCurItem--
@@ -701,7 +701,16 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 val totalDelta = (x - mInitialMotionX).toInt()
                 val nextPage = determineTargetPage(currentPage, 0f, initialVelocity, totalDelta)
 
-                setCurrentItemInternal(nextPage, true, initialVelocity)
+                if (nextPage == currentPage && nextPage == 0 && scrollX == 0) {
+                    Timber.tag(this::class.java.simpleName).d("onTouchEvent scrollLeft")
+                    scrollLeft(animated = true)
+                } else if (nextPage == numPages) {
+                    Timber.tag(this::class.java.simpleName).d("onTouchEvent scrollRight")
+                    scrollRight(animated = true)
+                } else {
+                    Timber.tag(this::class.java.simpleName).d("onTouchEvent setCurrentItemInternal")
+                    setCurrentItemInternal(nextPage, true, initialVelocity)
+                }
             }
 
             MotionEvent.ACTION_CANCEL -> if (mIsBeingDragged) {
