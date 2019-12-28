@@ -20,12 +20,14 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.os.Handler
 import android.util.DisplayMetrics
+import android.util.TypedValue
 import android.view.*
 import android.view.accessibility.AccessibilityManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
+import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_epub.*
@@ -257,7 +259,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
      *
      * @param speed: Float - The speech speed we wish to use with Android's [TextToSpeech].
      */
-    fun updateScreenReaderSpeed(speed: Float, restart:Boolean) {
+    fun updateScreenReaderSpeed(speed: Float, restart: Boolean) {
         var rSpeed = speed
 
         if (speed < 0.25) {
@@ -550,21 +552,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             else -> return super.onOptionsItemSelected(item)
         }
 
-    }
-
-    /**
-     * - Stop screenReader's reading.
-     * - Set the title of the menu's button for launching TTS to a value that indicates it was closed.
-     * - Make the TTS view invisible.
-     * - Update the TTS play/pause button to show the good resource picture.
-     * - Enable toggling the scrollbar which was previously disable for TTS.
-     */
-    fun dismissScreenReader() {
-        screenReader.stopReading()
-        menuScreenReader?.title = resources.getString(R.string.epubactivity_read_aloud_start)
-        tts_overlay.visibility = View.INVISIBLE
-        play_pause.setImageResource(android.R.drawable.ic_media_play)
-        allowToggleActionBar = true
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -935,7 +922,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             Handler().postDelayed({
                 val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
                 port?.let {
-                    screenReader = R2ScreenReader(this, publication, port, publicationFileName, resourcePager.currentItem)
+                    screenReader = R2ScreenReader(this, this, this, publication, port, publicationFileName, resourcePager.currentItem)
                 }
             }, 500)
         }
@@ -978,6 +965,37 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 toast("End of chapter")
             }
             pageEnded = end
+        }
+    }
+
+    /**
+     * - Stop screenReader's reading.
+     * - Set the title of the menu's button for launching TTS to a value that indicates it was closed.
+     * - Make the TTS view invisible.
+     * - Update the TTS play/pause button to show the good resource picture.
+     * - Enable toggling the scrollbar which was previously disable for TTS.
+     */
+    override fun dismissScreenReader() {
+        super.dismissScreenReader()
+        screenReader.stopReading()
+        menuScreenReader?.title = resources.getString(R.string.epubactivity_read_aloud_start)
+        tts_overlay.visibility = View.INVISIBLE
+        play_pause.setImageResource(android.R.drawable.ic_media_play)
+        allowToggleActionBar = true
+    }
+
+    override fun playTextChanged(text: String) {
+        super.playTextChanged(text)
+        findViewById<TextView>(R.id.tts_textView)?.text = text
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(tts_textView!!, 1, 30, 1, TypedValue.COMPLEX_UNIT_DIP)
+    }
+
+    override fun playStateChanged(playing: Boolean) {
+        super.playStateChanged(playing)
+        if (playing) {
+            play_pause?.setImageResource(android.R.drawable.ic_media_pause)
+        } else {
+            play_pause?.setImageResource(android.R.drawable.ic_media_play)
         }
     }
 

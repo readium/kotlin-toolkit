@@ -13,20 +13,15 @@ package org.readium.r2.testapp.epub
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
-import android.util.TypedValue
-import android.widget.TextView
 import android.widget.Toast
-import androidx.core.widget.TextViewCompat
-import kotlinx.android.synthetic.main.activity_epub.*
-import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.select.Elements
 import org.readium.r2.navigator.BASE_URL
+import org.readium.r2.navigator.IR2TTS
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.shared.Publication
-import org.readium.r2.testapp.R
 import timber.log.Timber
 import java.io.IOException
-import java.lang.ref.WeakReference
 import java.util.*
 
 
@@ -36,7 +31,7 @@ import java.util.*
  * Basic screen reader overlay that uses Android's TextToSpeech
  */
 
-class R2ScreenReader(var context: Context, var publication: Publication, var port: Int, var epubName: String, initialResourceIndex: Int) {
+class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigator: VisualNavigator, var publication: Publication, private var port: Int, private var epubName: String, initialResourceIndex: Int) {
 
     private var initialized = false
 
@@ -82,8 +77,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
     private var textToSpeech: TextToSpeech
 
-    private val activityReference: WeakReference<EpubActivity>
-
     var isPaused: Boolean
 
     val isSpeaking: Boolean
@@ -95,10 +88,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
     init {
         isPaused = false
-
-        //Initialize reference
-        activityReference = WeakReference(context as EpubActivity)
-
 
         //Initialize TTS
         textToSpeech = TextToSpeech(context,
@@ -117,10 +106,12 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     fun onResume() {
         val paused = isPaused
 
-        if (utterances.size == 0)
+        if (utterances.size == 0) {
             startReading()
-        if (paused)
+        }
+        if (paused) {
             pauseReading()
+        }
     }
 
     /**
@@ -132,7 +123,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * @param resource: Int - The index of the resource we want read.
      * @return: Boolean - Whether the function executed successfully.
      */
-    fun goTo(resource: Int ): Boolean {
+    fun goTo(resource: Int): Boolean {
         if (resource >= items.size)
             return false
 
@@ -146,8 +137,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     }
 
     /**
-     * - Remove 1 from [resourceIndex] by calling [addToResourceIndex] with -1 as a parameter.
-     *
      * @return: Boolean - Whether the function executed successfully.
      */
     fun previousResource(): Boolean {
@@ -162,8 +151,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     }
 
     /**
-     * - Add 1 to [resourceIndex] by calling [addToResourceIndex] with 1 as a parameter.
-     *
      * @return: Boolean - Whether the function executed successfully.
      */
     fun nextResource(): Boolean {
@@ -241,15 +228,8 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             override fun onStart(utteranceId: String?) {
                 currentUtterance = utteranceId!!.toInt()
 
-                val toHighlight = utterances[currentUtterance]
-
-                activityReference.get()?.launch {
-                    activityReference.get()?.findViewById<TextView>(R.id.tts_textView)?.text = toHighlight
-                    activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_pause)
-
-                    TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(activityReference.get()?.tts_textView!!,
-                            1, 30, 1, TypedValue.COMPLEX_UNIT_DIP)
-                }
+                ttsCallbacks.playTextChanged(utterances[currentUtterance])
+                ttsCallbacks.playStateChanged(true)
             }
 
             /**
@@ -260,10 +240,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
              */
             override fun onStop(utteranceId: String?, interrupted: Boolean) {
                 if (interrupted) {
-                    activityReference.get()?.launch {
-                        activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
-                    }
-
+                    ttsCallbacks.playStateChanged(false)
                 }
             }
 
@@ -277,18 +254,16 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
              * @param utteranceId The utterance ID of the utterance.
              */
             override fun onDone(utteranceId: String?) {
-                activityReference.get()?.launch {
-                    activityReference.get()?.play_pause?.setImageResource(android.R.drawable.ic_media_play)
+                ttsCallbacks.playStateChanged(false)
 
-                    if (utteranceId.equals((utterances.size - 1).toString())) {
-                        if (items.size - 1 == resourceIndex) {
-                            dismissScreenReader()
-                            stopReading()
-                        } else {
-                            activityReference.get()?.goForward(false, completion = {})
-                            nextResource()
-                            startReading()
-                        }
+                if (utteranceId.equals((utterances.size - 1).toString())) {
+                    if (items.size - 1 == resourceIndex) {
+                        dismissScreenReader()
+                        stopReading()
+                    } else {
+                        navigator.goForward(false, completion = {})
+                        nextResource()
+                        startReading()
                     }
                 }
             }
@@ -320,11 +295,11 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      */
     private fun dismissScreenReader() {
         pauseReading()
-        activityReference.get()?.dismissScreenReader()
+        ttsCallbacks.dismissScreenReader()
     }
 
     /**
-     * Stop reading and uninitialize the [textToSpeech].
+     * Stop reading and destroy the [textToSpeech].
      */
     fun shutdown() {
         initialized = false
@@ -353,7 +328,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
 
             return true
         } else if (initialized && (items.size - 1) > resourceIndex) {
-            activityReference.get()?.goForward(false, completion = {})
+            navigator.goForward(false, completion = {})
             return nextResource()
         }
 
@@ -417,11 +392,11 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * The entry point for the hosting activity to adjust speech speed. Input is considered valid and within arbitrary
      * set boundaries. The update is not instantaneous and [TextToSpeech] needs to be paused and resumed for it to work.
      *
-     * Print an exception if [textToSpeech.setSpeechRate] fails.
+     * Print an exception if [textToSpeech.setSpeechRate(speed)] fails.
      *
      * @param speed: Float - The speech speed we wish to use with Android's [TextToSpeech].
      */
-    fun setSpeechSpeed(speed: Float, restart:Boolean): Boolean {
+    fun setSpeechSpeed(speed: Float, restart: Boolean): Boolean {
         try {
             if (textToSpeech.setSpeechRate(speed) == TextToSpeech.ERROR)
                 throw Exception("Failed to update speech speed")
