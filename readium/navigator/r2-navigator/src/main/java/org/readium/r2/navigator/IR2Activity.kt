@@ -42,6 +42,12 @@ interface IR2Activity {
     fun progressionDidChange(progression: Double) {}
 }
 
+interface IR2TTS {
+    fun playTextChanged(text: String) {}
+    fun playStateChanged(playing: Boolean) {}
+    fun dismissScreenReader() {}
+}
+
 
 interface Navigator {
     val currentLocation: Locator?
