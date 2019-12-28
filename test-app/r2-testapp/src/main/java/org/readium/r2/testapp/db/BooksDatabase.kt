@@ -136,8 +136,11 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
                 }
             }
             2 -> {
-                upgradeVersion3(db) {
-                    //done
+                try {
+                    upgradeVersion3(db) {
+                        //done
+                    }
+                } catch (e: SQLiteException) {
                 }
             }
         }
@@ -248,6 +251,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
                     }
         }
     }
+
     fun currentLocator(id: Long): Locator? {
         return database.use {
             select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION)
@@ -279,13 +283,13 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
         }
     }
 
-    fun saveProgression(locator: Locator?, bookId: Long) : Boolean {
+    fun saveProgression(locator: Locator?, bookId: Long): Boolean {
         val exists = has(bookId)
         if (exists.isEmpty()) {
             return false
         }
         return database.use {
-            return@use update(BOOKSTable.NAME,BOOKSTable.PROGRESSION to locator?.toJSON().toString())
+            return@use update(BOOKSTable.NAME, BOOKSTable.PROGRESSION to locator?.toJSON().toString())
                     .whereArgs("${BOOKSTable.ID} = {id}", "id" to bookId)
                     .exec() > 0
         }
@@ -331,8 +335,6 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
             } ?: kotlin.run { return@run null }
 
             return Book(id, creation as Long, href, title, author, identifier, cover, progression, Publication.EXTENSION.fromString(ext)!!)
-
         }
     }
-
 }
