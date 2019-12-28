@@ -12,11 +12,7 @@ package org.readium.r2.streamer.parser.divina
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.DirectoryContainer
 
-interface DiViNaContainer: Container {
-
-}
+interface DiViNaContainer: Container
 
 
-class ContainerDiViNa(path: String) : DiViNaContainer, DirectoryContainer(path, DiViNaConstant.mimetype) {
-
-}
+class ContainerDiViNa(path: String) : DiViNaContainer, DirectoryContainer(path, DiViNaConstant.mimetype)

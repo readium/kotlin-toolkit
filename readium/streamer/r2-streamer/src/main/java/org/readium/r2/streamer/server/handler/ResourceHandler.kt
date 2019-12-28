@@ -17,6 +17,7 @@ import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
 import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
+import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.fetcher.Fetcher
 import timber.log.Timber
 import java.io.IOException
@@ -40,10 +41,10 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
     override fun get(uriResource: RouterNanoHTTPD.UriResource?, urlParams: Map<String, String>?,
                      session: IHTTPSession?): Response? {
         try {
-            Timber.v("Method: ${session!!.method}, Uri: ${session.uri}")
+            if (DEBUG) Timber.v("Method: ${session!!.method}, Uri: ${session.uri}")
             val fetcher = uriResource!!.initParameter(Fetcher::class.java)
 
-            val filePath = getHref(session.uri)
+            val filePath = getHref(session!!.uri)
             val link = fetcher.publication.linkWithHref(filePath)!!
             val mimeType = link.typeLink!!
 
@@ -59,7 +60,7 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
             return serveResponse(session, fetcher.dataStream(filePath), mimeType)
         } catch (e: Exception) {
-            Timber.e(e)
+            if (DEBUG) Timber.e(e)
             return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
     }

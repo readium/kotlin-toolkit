@@ -14,6 +14,7 @@ import android.content.res.AssetManager
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.Publication
+import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.fetcher.Fetcher
 import org.readium.r2.streamer.server.handler.*
@@ -63,73 +64,73 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
             addResource("ltr-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/ltr/ReadiumCSS-after.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("ltr-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/ltr/ReadiumCSS-before.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("ltr-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/ltr/ReadiumCSS-default.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("rtl-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/rtl/ReadiumCSS-after.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("rtl-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/rtl/ReadiumCSS-before.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("rtl-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/rtl/ReadiumCSS-default.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("cjkv-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-after.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("cjkv-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-before.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("cjkv-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-default.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("cjkh-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-after.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("cjkh-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-before.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("cjkh-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-default.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
     }
     fun loadR2ScriptResources(assets: AssetManager) {
@@ -137,20 +138,20 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
             addResource("touchHandling.js", Scanner(assets.open(Injectable.Script.rawValue + "/touchHandling.js"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
         try {
             addResource("utils.js", Scanner(assets.open(Injectable.Script.rawValue + "/utils.js"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
     }
     fun loadR2FontResources(assets: AssetManager, context: Context) {
         try {
             addFont("OpenDyslexic-Regular.otf", assets.open("static/"+ Injectable.Font.rawValue +"/OpenDyslexic-Regular.otf"), context)
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
     }
 
@@ -158,7 +159,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
         try {
             addResource(fileName, Scanner(inputStream, "utf-8").useDelimiter("\\A").next(), true, injectable)
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
     }
 
@@ -166,7 +167,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
         try {
             addFont(fileName, inputStream, context)
         } catch (e: IOException) {
-            Timber.d(e)
+            if (DEBUG) Timber.d(e)
         }
     }
 

@@ -12,10 +12,6 @@ package org.readium.r2.streamer.parser.audio
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.DirectoryContainer
 
-interface AudioBookContainer : Container {
+interface AudioBookContainer : Container
 
-}
-
-class AudioBookDirectoryContainer(path: String) : AudioBookContainer, DirectoryContainer(path, AudioBookConstant.mimetype) {
-
-}
+class AudioBookDirectoryContainer(path: String) : AudioBookContainer, DirectoryContainer(path, AudioBookConstant.mimetype)
