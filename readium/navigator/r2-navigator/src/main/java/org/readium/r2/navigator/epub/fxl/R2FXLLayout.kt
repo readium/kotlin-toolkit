@@ -23,6 +23,9 @@ import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
 import com.shopgun.android.utils.NumberUtils
 import java.util.*
+import kotlin.math.min
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 class R2FXLLayout : FrameLayout {
 
@@ -56,7 +59,7 @@ class R2FXLLayout : FrameLayout {
             field = if (zoomDuration < 0) DEF_ZOOM_DURATION else zoomDuration
         }
 
-    var isScrollingAllowed = false
+    private var isScrollingAllowed = false
 
     // allow parent views to intercept any touch events that we do not consume
     var isAllowParentInterceptOnEdge = true
@@ -103,7 +106,7 @@ class R2FXLLayout : FrameLayout {
             val r = RectF()
             val maxDeltaX = drawRect.width() - viewPortRect.width()
             if (maxDeltaX < 0) {
-                val leftEdge = Math.round((viewPortRect.width() - drawRect.width()) / 2).toFloat()
+                val leftEdge = ((viewPortRect.width() - drawRect.width()) / 2).roundToLong().toFloat()
                 if (leftEdge > drawRect.left) {
                     r.left = 0f
                     r.right = leftEdge - drawRect.left
@@ -118,7 +121,7 @@ class R2FXLLayout : FrameLayout {
 
             val maxDeltaY = drawRect.height() - viewPortRect.height()
             if (maxDeltaY < 0) {
-                val topEdge = Math.round((viewPortRect.height() - drawRect.height()) / 2f).toFloat()
+                val topEdge = ((viewPortRect.height() - drawRect.height()) / 2f).roundToLong().toFloat()
                 if (topEdge > drawRect.top) {
                     r.top = drawRect.top - topEdge
                     r.bottom = 0f
@@ -610,7 +613,7 @@ class R2FXLLayout : FrameLayout {
 
         private fun interpolate(): Float {
             var t = 1f * (System.currentTimeMillis() - mStartTime) / zoomDuration
-            t = Math.min(1f, t)
+            t = min(1f, t)
             return animationInterpolator.getInterpolation(t)
         }
 
@@ -625,23 +628,23 @@ class R2FXLLayout : FrameLayout {
 
         internal fun fling(velocityX: Int, velocityY: Int) {
 
-            val startX = Math.round(viewPortRect.left)
+            val startX = viewPortRect.left.roundToInt()
             val minX: Int
             val maxX: Int
             if (viewPortRect.width() < drawRect.width()) {
-                minX = Math.round(drawRect.left)
-                maxX = Math.round(drawRect.width() - viewPortRect.width())
+                minX = drawRect.left.roundToInt()
+                maxX = (drawRect.width() - viewPortRect.width()).roundToInt()
             } else {
                 maxX = startX
                 minX = maxX
             }
 
-            val startY = Math.round(viewPortRect.top)
+            val startY = viewPortRect.top.roundToInt()
             val minY: Int
             val maxY: Int
             if (viewPortRect.height() < drawRect.height()) {
-                minY = Math.round(drawRect.top)
-                maxY = Math.round(drawRect.bottom - viewPortRect.bottom)
+                minY = drawRect.top.roundToInt()
+                maxY = (drawRect.bottom - viewPortRect.bottom).roundToInt()
             } else {
                 maxY = startY
                 minY = maxY
