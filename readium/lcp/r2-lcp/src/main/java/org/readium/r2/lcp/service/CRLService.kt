@@ -15,6 +15,7 @@ import android.os.Build
 import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.joda.time.Days
+import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.public.LCPError
 import timber.log.Timber
 import java.util.*
@@ -24,9 +25,9 @@ class CRLService(val network: NetworkService, val context: Context) {
     val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
     companion object {
-        val expiration = 7
-        val crlKey = "org.readium.r2-lcp-swift.CRL"
-        val dateKey = "org.readium.r2-lcp-swift.CRLDate"
+        const val expiration = 7
+        const val crlKey = "org.readium.r2-lcp-swift.CRL"
+        const val dateKey = "org.readium.r2-lcp-swift.CRLDate"
     }
 
     fun retrieve(completion: (String) -> Unit) {
@@ -45,7 +46,7 @@ class CRLService(val network: NetworkService, val context: Context) {
                 }
             }
         } catch (error: LCPError) {
-            Timber.e(error)
+            if (DEBUG) Timber.e(error)
             val (received, _) = localCRL ?: throw error
             completion(received)
         }
@@ -57,7 +58,7 @@ class CRLService(val network: NetworkService, val context: Context) {
         val url = "http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl"
         network.fetch(url, NetworkService.Method.get) { status, data ->
 
-            Timber.d("Status $status")
+            if (DEBUG) Timber.d("Status $status")
             if (status != 200) {
                 throw LCPError.crlFetching
             }

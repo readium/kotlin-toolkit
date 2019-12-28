@@ -12,6 +12,7 @@ package org.readium.r2.lcp.license
 import org.joda.time.DateTime
 import org.readium.lcp.sdk.DRMContext
 import org.readium.lcp.sdk.Lcp
+import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.license.model.components.Link
@@ -100,12 +101,11 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
     }
 
     fun validate(document: Document, completion: Observer) {
-        val event: Event
-        when (document) {
-            is Document.license -> event = Event.retrievedLicenseData(document.data)
-            is Document.status -> event = Event.retrievedStatusData(document.data)
+        val event: Event = when (document) {
+            is Document.license -> Event.retrievedLicenseData(document.data)
+            is Document.status -> Event.retrievedStatusData(document.data)
         }
-        Timber.d("validate $event ")
+//        Timber.tag("LicenseValidation").d("validate ${event} ")
         observe(event, completion)
     }
 
@@ -124,82 +124,82 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
         initialState(State.start)
         state<State.start> {
             on<Event.retrievedLicenseData> {
-                Timber.d("State.validateLicense(it.data, null)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.validateLicense(it.data, null)")
                 transitionTo(State.validateLicense(it.data, null))
             }
         }
         state<State.validateLicense> {
             on<Event.validatedLicense> {
                 status?.let { status ->
-                    Timber.d("State.checkLicenseStatus(it.license, status)")
+                    if (DEBUG) Timber.tag("LicenseValidation").d("State.checkLicenseStatus(it.license, status)")
                     transitionTo(State.checkLicenseStatus(it.license, status))
                 } ?: run {
-                    Timber.d("State.fetchStatus(it.license)")
+                    if (DEBUG) Timber.tag("LicenseValidation").d("State.fetchStatus(it.license)")
                     transitionTo(State.fetchStatus(it.license))
                 }
             }
             on<Event.failed> {
-                Timber.d("State.failure(it.error)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.failure(it.error)")
                 transitionTo(State.failure(it.error))
             }
         }
         state<State.fetchStatus> {
             on<Event.retrievedStatusData> {
-                Timber.d("State.validateStatus(license, it.data)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.validateStatus(license, it.data)")
                 transitionTo(State.validateStatus(license, it.data))
             }
             on<Event.failed> {
-                Timber.d("State.checkLicenseStatus(license, null)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.checkLicenseStatus(license, null)")
                 transitionTo(State.checkLicenseStatus(license, null))
             }
         }
         state<State.validateStatus> {
             on<Event.validatedStatus> {
                 if (license.updated < it.status.licenseUpdated) {
-                    Timber.d("State.fetchLicense(license, it.status)")
+                    if (DEBUG) Timber.tag("LicenseValidation").d("State.fetchLicense(license, it.status)")
                     transitionTo(State.fetchLicense(license, it.status))
                 } else {
-                    Timber.d("State.checkLicenseStatus(license, it.status)")
+                    if (DEBUG) Timber.tag("LicenseValidation").d("State.checkLicenseStatus(license, it.status)")
                     transitionTo(State.checkLicenseStatus(license, it.status))
                 }
             }
             on<Event.failed> {
-                Timber.d("State.checkLicenseStatus(license, null)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.checkLicenseStatus(license, null)")
                 transitionTo(State.checkLicenseStatus(license, null))
             }
         }
         state<State.fetchLicense> {
             on<Event.retrievedLicenseData> {
-                Timber.d("State.validateLicense(it.data, status)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.validateLicense(it.data, status)")
                 transitionTo(State.validateLicense(it.data, status))
             }
             on<Event.failed> {
-                Timber.d("State.checkLicenseStatus(license, status)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.checkLicenseStatus(license, status)")
                 transitionTo(State.checkLicenseStatus(license, status))
             }
         }
         state<State.checkLicenseStatus> {
             on<Event.checkedLicenseStatus> {
                 it.error?.let{ error ->
-                    Timber.d("State.valid(ValidatedDocuments(license, Either.Right(error), status))")
+                    if (DEBUG) Timber.tag("LicenseValidation").d("State.valid(ValidatedDocuments(license, Either.Right(error), status))")
                     transitionTo(State.valid(ValidatedDocuments(license, Either.Right(error), status)))
                 }?: run  {
-                    Timber.d("State.requestPassphrase(license, status)")
+                    if (DEBUG) Timber.tag("LicenseValidation").d("State.requestPassphrase(license, status)")
                     transitionTo(State.requestPassphrase(license, status))
                 }
             }
         }
         state<State.requestPassphrase> {
             on<Event.retrievedPassphrase> {
-                Timber.d("State.validateIntegrity(license, status, it.passphrase)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.validateIntegrity(license, status, it.passphrase)")
                 transitionTo(State.validateIntegrity(license, status, it.passphrase))
             }
             on<Event.failed> {
-                Timber.d("State.failure(it.error)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.failure(it.error)")
                 transitionTo(State.failure(it.error))
             }
             on<Event.cancelled> {
-                Timber.d("State.start)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.start)")
                 transitionTo(State.start)
             }
         }
@@ -208,42 +208,42 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
                 val documents = ValidatedDocuments(license, Either.Left(it.context), status)
                 val link = status?.link(StatusDocument.Rel.register)
                 link?.let {
-                    Timber.d("State.registerDevice(documents, link)")
+                    if (DEBUG) Timber.tag("LicenseValidation").d("State.registerDevice(documents, link)")
                     transitionTo(State.registerDevice(documents, link))
                 } ?: run {
-                    Timber.d("State.valid(documents)")
+                    if (DEBUG) Timber.tag("LicenseValidation").d("State.valid(documents)")
                     transitionTo(State.valid(documents))
                 }
             }
             on<Event.failed> {
-                Timber.d("State.failure(it.error)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.failure(it.error)")
                 transitionTo(State.failure(it.error))
             }
         }
         state<State.registerDevice> {
             on<Event.registeredDevice> {
                 it.statusData?.let { statusData->
-                    Timber.d("State.validateStatus(documents.license, statusData)")
+                    if (DEBUG) Timber.tag("LicenseValidation").d("State.validateStatus(documents.license, statusData)")
                     transitionTo(State.validateStatus(documents.license, statusData))
                 } ?: run {
-                    Timber.d("State.valid(documents)")
+                    if (DEBUG) Timber.tag("LicenseValidation").d("State.valid(documents)")
                     transitionTo(State.valid(documents))
                 }
             }
             on<Event.failed> {
-                Timber.d("State.valid(documents)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.valid(documents)")
                 transitionTo(State.valid(documents))
             }
         }
         state<State.valid> {
             on<Event.retrievedStatusData> {
-                Timber.d("State.validateStatus(documents.license, it.data)")
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.validateStatus(documents.license, it.data)")
                 transitionTo(State.validateStatus(documents.license, it.data))
             }
         }
         state<State.failure> {
             onEnter {
-                Timber.d("throw error")
+                if (DEBUG) Timber.tag("LicenseValidation").d("throw error")
 //                throw error
             }
         }
@@ -275,7 +275,7 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
                 is State.failure -> notifyObservers(null, state.error)
             }
         } catch (error: Exception) {
-            Timber.e(error)
+            if (DEBUG) Timber.tag("LicenseValidation").e(error)
             raise(Event.failed(error))
         }
     }
@@ -287,12 +287,12 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
 
     private fun notifyObservers(documents: ValidatedDocuments?, error: Exception?) {
         for (observer in observers) {
-            Timber.d("observers $observers")
+//            Timber.tag("LicenseValidation").d("observers $observers")
             observer.first(documents, error)
         }
-        Timber.d("observers $observers")
+//        Timber.tag("LicenseValidation").d("observers $observers")
         observers = (observers.filter { it.second != ObserverPolicy.once }).toMutableList()
-        Timber.d("observers $observers")
+//        Timber.tag("LicenseValidation").d("observers $observers")
     }
 
     private fun validateLicense(data: ByteArray) {
@@ -335,25 +335,26 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
         val start = license.rights.start ?: now
         val end = license.rights.end ?: now
         if (start > now || now > end) {
-            if (status != null) {
+            error = if (status != null) {
                 val date = status.statusUpdated
                 when (status.status) {
-                    StatusDocument.Status.ready, StatusDocument.Status.active, StatusDocument.Status.expired -> error = StatusError.expired(start = start, end = end)
-                    StatusDocument.Status.returned -> error = StatusError.returned(date)
+                    StatusDocument.Status.ready, StatusDocument.Status.active, StatusDocument.Status.expired -> StatusError.expired(start = start, end = end)
+                    StatusDocument.Status.returned -> StatusError.returned(date)
                     StatusDocument.Status.revoked -> {
                         val devicesCount = status.events(org.readium.r2.lcp.license.model.components.lsd.Event.EventType.register).size
-                        error = StatusError.revoked(date, devicesCount = devicesCount)
+                        StatusError.revoked(date, devicesCount = devicesCount)
                     }
-                    StatusDocument.Status.cancelled -> error = StatusError.cancelled(date)
+                    StatusDocument.Status.cancelled -> StatusError.cancelled(date)
                 }
             } else {
-                error = StatusError.expired(start = start, end = end)
+                StatusError.expired(start = start, end = end)
             }
         }
         raise(Event.checkedLicenseStatus(error))
     }
 
     private fun requestPassphrase(license: LicenseDocument) {
+        if (DEBUG) Timber.tag("LicenseValidation").d("requestPassphrase")
         passphrases.request(license, authentication) { passphrase ->
             passphrase?.let {
                 raise(Event.retrievedPassphrase(passphrase))
@@ -364,6 +365,7 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
     }
 
     private fun validateIntegrity(license: LicenseDocument, passphrase: String) {
+        if (DEBUG) Timber.tag("LicenseValidation").d("validateIntegrity")
         val profile = license.encryption.profile
         if (!supportedProfiles.contains(profile)) {
             throw LCPError.licenseProfileNotSupported
@@ -375,6 +377,7 @@ class LicenseValidation(var authentication: LCPAuthenticating?,
     }
 
     private fun registerDevice(license: LicenseDocument, link: Link) {
+        if (DEBUG) Timber.tag("LicenseValidation").d("registerDevice")
         device.registerLicense(license, link) { data ->
             raise(Event.registeredDevice(data))
         }
