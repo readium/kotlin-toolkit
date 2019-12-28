@@ -69,8 +69,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                             val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
                             locator.locations?.fragment?.let {
                                 var anchor = it
-                                if (anchor.startsWith("#")) {
-                                } else {
+                                if (!anchor.startsWith("#")) {
                                     anchor = "#$anchor"
                                 }
                                 val goto = resource.second + anchor
@@ -224,8 +223,8 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
     override var allowToggleActionBar = true
 
-    lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
-    lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
+    private lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
+    private lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
 
     var pagerPosition = 0
 
@@ -338,9 +337,9 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
             }
 
             override fun onPageSelected(position: Int) {
-                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+//                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
 //                    resourcePager.disableTouchEvents = true
-                }
+//                }
                 pagerPosition = 0
                 val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
                 if (preferences.getBoolean(SCROLL_REF, false)) {
@@ -368,11 +367,13 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
     }
 
+    override fun onWindowStartingActionMode(callback: ActionMode.Callback?, type: Int): ActionMode? {
+        return super.onWindowStartingActionMode(callback, type)
+    }
+
     override fun onActionModeStarted(mode: ActionMode?) {
+        mode?.menu?.clear()
         super.onActionModeStarted(mode)
-        mode?.menu?.run {
-            this.clear()
-        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -403,8 +404,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                                     val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
                                     locator.locations?.fragment?.let {
                                         var anchor = it
-                                        if (anchor.startsWith("#")) {
-                                        } else {
+                                        if (!anchor.startsWith("#")) {
                                             anchor = "#$anchor"
                                         }
                                         val goto = resource.second + anchor
@@ -601,8 +601,8 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
             callback(highlight)
         } else {
             createHighlight(Color.rgb(150, 150, 150)) {
-                createAnnotation(it) {
-                    callback(it)
+                createAnnotation(it) { highlight ->
+                    callback(highlight)
                 }
             }
         }

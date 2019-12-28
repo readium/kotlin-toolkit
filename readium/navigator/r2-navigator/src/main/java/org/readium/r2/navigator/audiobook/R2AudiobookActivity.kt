@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.activity_r2_audiobook.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.BuildConfig.*
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
@@ -79,10 +80,10 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     var currentResource = 0
 
     var startTime = 0.0
-    var finalTime = 0.0
+    private var finalTime = 0.0
 
-    val forwardTime = 10000
-    val backwardTime = 10000
+    private val forwardTime = 10000
+    private val backwardTime = 10000
 
     var mediaPlayer: R2MediaPlayer? = null
 
@@ -130,7 +131,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                         return
                     }
                     mediaPlayer?.seekTo(progress)
-                    Timber.tag("AUDIO").d("progress $progress")
+                    if (DEBUG) Timber.tag("AUDIO").d("progress $progress")
                 }
 
                 /**
@@ -141,7 +142,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {
                     // do nothing
                     isSeekTracking = true
-                    Timber.tag("AUDIO").d("start tracking")
+                    if (DEBUG) Timber.tag("AUDIO").d("start tracking")
                 }
 
                 /**
@@ -152,7 +153,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
                     // do nothing
                     isSeekTracking = false
-                    Timber.tag("AUDIO").d("stop tracking")
+                    if (DEBUG) Timber.tag("AUDIO").d("stop tracking")
                 }
 
             })
@@ -190,18 +191,18 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
             }
 
             next_chapter!!.setOnClickListener { view ->
-                goForward(false, {})
+                goForward(false) {}
             }
 
             prev_chapter!!.setOnClickListener { view ->
-                goBackward(false, {})
+                goBackward(false) {}
             }
 
         }
         }, 100)
     }
 
-    fun updateUI() {
+    private fun updateUI() {
 
         if (currentResource == publication.readingOrder.size - 1) {
             next_chapter!!.isEnabled = false
@@ -253,8 +254,8 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
     }
 
-    var seekLocation: Locations? = null
-    var isSeekNeeded = false
+    private var seekLocation: Locations? = null
+    private var isSeekNeeded = false
     var isSeekTracking = false
     private fun seekIfNeeded() {
         if (isSeekNeeded) {

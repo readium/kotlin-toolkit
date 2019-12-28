@@ -9,6 +9,7 @@
 
 package org.readium.r2.navigator.divina
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -43,6 +44,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
 
     lateinit var divinaWebView: R2BasicWebView
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_r2_divina)

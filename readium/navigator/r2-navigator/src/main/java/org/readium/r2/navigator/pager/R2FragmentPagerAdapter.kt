@@ -124,7 +124,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
             for (i in 0 until mSavedStates.size()) {
                 val entry = mSavedStates.valueAt(i)
                 stateIds[i] = mSavedStates.keyAt(i)
-                state.putParcelable(java.lang.Long.toString(stateIds[i]), entry)
+                state.putParcelable(stateIds[i].toString(), entry)
             }
             state.putLongArray("states", stateIds)
         }
@@ -150,7 +150,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
             mFragments.clear()
             if (fss != null) {
                 for (fs in fss) {
-                    mSavedStates.put(fs, bundle.getParcelable<Parcelable>(java.lang.Long.toString(fs)) as Fragment.SavedState)
+                    mSavedStates.put(fs, bundle.getParcelable<Parcelable>(fs.toString()) as Fragment.SavedState)
                 }
             }
             val keys = bundle.keySet()

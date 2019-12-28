@@ -11,6 +11,8 @@ package org.readium.r2.navigator.epub.fxl
 
 import android.graphics.Rect
 import android.graphics.RectF
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 object R2FXLUtils {
 
@@ -41,7 +43,7 @@ object R2FXLUtils {
      * @param bottom bottom
      */
     fun setRect(rect: RectF, left: Float, top: Float, right: Float, bottom: Float) {
-        rect.set(Math.round(left).toFloat(), Math.round(top).toFloat(), Math.round(right).toFloat(), Math.round(bottom).toFloat())
+        rect.set(left.roundToLong().toFloat(), top.roundToLong().toFloat(), right.roundToLong().toFloat(), bottom.roundToLong().toFloat())
     }
 
     /**
@@ -53,7 +55,7 @@ object R2FXLUtils {
      * @param bottom bottom
      */
     private fun setRect(rect: Rect, left: Float, top: Float, right: Float, bottom: Float) {
-        rect.set(Math.round(left), Math.round(top), Math.round(right), Math.round(bottom))
+        rect.set(left.roundToInt(), top.roundToInt(), right.roundToInt(), bottom.roundToInt())
     }
 
     fun setArray(array: FloatArray, rect: Rect) {
