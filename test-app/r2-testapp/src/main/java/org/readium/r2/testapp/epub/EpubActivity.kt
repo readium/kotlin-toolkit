@@ -136,7 +136,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         if (activitiesLaunched.incrementAndGet() > 1) {
-            finish(); }
+            finish()
+        }
         super.onCreate(savedInstanceState)
         bookmarksDB = BookmarksDatabase(this)
         booksDB = BooksDatabase(this)
