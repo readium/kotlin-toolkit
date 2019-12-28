@@ -48,7 +48,6 @@ import org.readium.r2.navigator.epub.Style
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.shared.*
-import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.*
@@ -98,7 +97,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         get() = Dispatchers.Main
 
     //UserSettings
-    lateinit var userSettings: UserSettings
+    private lateinit var userSettings: UserSettings
 
     //Accessibility
     private var isExploreByTouchEnabled = false
@@ -113,13 +112,12 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     private lateinit var screenReader: R2ScreenReader
 
-    protected var drm: DRM? = null
-    protected var menuDrm: MenuItem? = null
-    protected var menuToc: MenuItem? = null
-    protected var menuBmk: MenuItem? = null
-    protected var menuSearch: MenuItem? = null
+    private var menuDrm: MenuItem? = null
+    private var menuToc: MenuItem? = null
+    private var menuBmk: MenuItem? = null
+    private var menuSearch: MenuItem? = null
 
-    protected var menuScreenReader: MenuItem? = null
+    private var menuScreenReader: MenuItem? = null
 
     private var searchTerm = ""
     private lateinit var searchStorage: SharedPreferences
@@ -212,11 +210,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             override fun recyclerViewListClicked(v: View, position: Int) {
 
                 search_overlay.visibility = View.INVISIBLE
-                val searchView = menuSearch?.getActionView() as SearchView
+                val searchView = menuSearch?.actionView as SearchView
 
                 searchView.clearFocus()
                 if (searchView.isShown) {
-                    menuSearch?.collapseActionView();
+                    menuSearch?.collapseActionView()
                     resourcePager.offscreenPageLimit = 1
                 }
 
@@ -254,10 +252,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     }
 
     /**
-     * The function allows to access the [R2ScreenReader] instance and set the [TextToSpeech] speech speed.
+     * The function allows to access the [R2ScreenReader] instance and set the TextToSpeech speech speed.
      * Values are limited between 0.25 and 3.0 included.
      *
-     * @param speed: Float - The speech speed we wish to use with Android's [TextToSpeech].
+     * @param speed: Float - The speech speed we wish to use with Android's TextToSpeech.
      */
     fun updateScreenReaderSpeed(speed: Float, restart: Boolean) {
         var rSpeed = speed
@@ -290,7 +288,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
         menuDrm?.isVisible = false
 
-        val searchView = menuSearch?.getActionView() as SearchView
+        val searchView = menuSearch?.actionView as SearchView
 
         searchView.isFocusable = false
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -310,9 +308,9 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                     val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_searching_book))
                     progress.show()
 
-                    val markJSSearchInteface = MarkJSSearchEngine(this@EpubActivity)
+                    val markJSSearchInterface = MarkJSSearchEngine(this@EpubActivity)
                     Handler().postDelayed({
-                        markJSSearchInteface.search(query) { (last, result) ->
+                        markJSSearchInterface.search(query) { (last, result) ->
                             searchResult.clear()
                             searchResult.addAll(result)
                             searchResultAdapter.notifyDataSetChanged()
@@ -354,7 +352,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         }
         searchView.setOnCloseListener {
             if (searchView.isShown) {
-                menuSearch?.collapseActionView();
+                menuSearch?.collapseActionView()
             }
             search_overlay.visibility = View.INVISIBLE
 
@@ -366,16 +364,15 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 //Loading previous results + keyword
                 val tmp = searchStorage.getString("result", null)
                 if (tmp != null) {
-                    val gson = Gson()
                     searchResult.clear()
-                    searchResult.addAll(gson.fromJson(tmp, Array<SearchLocator>::class.java).asList().toMutableList())
+                    searchResult.addAll(Gson().fromJson(tmp, Array<SearchLocator>::class.java).asList().toMutableList())
                     searchResultAdapter.notifyDataSetChanged()
 
                     val keyword = searchStorage.getString("term", null)
                     searchView.setQuery(keyword, false)
                     searchView.clearFocus()
                 }
-                searchView.setQuery(searchStorage.getString("term", null), false);
+                searchView.setQuery(searchStorage.getString("term", null), false)
             }
 
             search_overlay.visibility = View.VISIBLE
@@ -386,12 +383,12 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                 search_overlay.visibility = View.VISIBLE
                 resourcePager.offscreenPageLimit = publication.readingOrder.size
-                return true;
+                return true
             }
 
             override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
                 search_overlay.visibility = View.INVISIBLE
-                return true;
+                return true
             }
         })
 
@@ -400,9 +397,9 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             searchResult.clear()
             searchResultAdapter.notifyDataSetChanged()
 
-            searchView.setQuery("", false);
+            searchView.setQuery("", false)
 
-            (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+            (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
 
             val editor = searchStorage.edit()
             editor.remove("result")
@@ -534,7 +531,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 search_overlay.visibility = View.VISIBLE
                 resourcePager.offscreenPageLimit = publication.readingOrder.size
 
-                val searchView = menuSearch?.getActionView() as SearchView
+                val searchView = menuSearch?.actionView as SearchView
 
                 searchView.clearFocus()
 
@@ -544,7 +541,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             android.R.id.home -> {
                 search_overlay.visibility = View.INVISIBLE
                 resourcePager.offscreenPageLimit = 1
-                val searchView = menuSearch?.getActionView() as SearchView
+                val searchView = menuSearch?.actionView as SearchView
                 searchView.clearFocus()
                 return true
             }
@@ -576,13 +573,13 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                         val searchStorage = getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
                         Handler().postDelayed({
                             if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
-                                val currentFragent = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
+                                val currentFragment = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
                                 val resource = publication.readingOrder[resourcePager.currentItem]
                                 val resourceHref = resource.href ?: ""
                                 val resourceType = resource.typeLink ?: ""
                                 val resourceTitle = resource.title ?: ""
 
-                                currentFragent.webView.runJavaScript("markSearch('${searchStorage.getString("term", null)}', null, '$resourceHref', '$resourceType', '$resourceTitle', '$index')") { result ->
+                                currentFragment.webView.runJavaScript("markSearch('${searchStorage.getString("term", null)}', null, '$resourceHref', '$resourceType', '$resourceTitle', '$index')") { result ->
 
                                     Timber.d("###### $result")
 
@@ -778,7 +775,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 if (note.text.isEmpty().not()) {
                     createAnnotation(highlight) {
                         addAnnotation(it, note.text.toString())
-                        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(note.applicationWindowToken, InputMethodManager.HIDE_NOT_ALWAYS);
+                        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(note.applicationWindowToken, InputMethodManager.HIDE_NOT_ALWAYS)
                     }
                 }
                 alert.dismiss()
@@ -789,7 +786,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 alert.dismiss()
                 mode?.finish()
                 popupWindow?.dismiss()
-                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(note.applicationWindowToken, InputMethodManager.HIDE_NOT_ALWAYS);
+                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(note.applicationWindowToken, InputMethodManager.HIDE_NOT_ALWAYS)
             }
             if (highlight != null) {
                 findViewById<TextView>(R.id.select_text).text = highlight.locator.text?.highlight
@@ -949,7 +946,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
      */
     override fun onDestroy() {
         super.onDestroy()
-        activitiesLaunched.getAndDecrement();
+        activitiesLaunched.getAndDecrement()
         try {
             screenReader.shutdown()
         } catch (e: Exception) {
