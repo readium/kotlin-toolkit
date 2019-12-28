@@ -27,7 +27,7 @@ interface ContentFilters {
     }
 }
 
-class ContentFiltersEpub(private val userPropertiesPath: String?, var customResources: Resources?) : ContentFilters {
+class ContentFiltersEpub(private val userPropertiesPath: String?, private var customResources: Resources?) : ContentFilters {
 
     override fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
         publication.linkWithHref(path)?.let { resourceLink ->
@@ -125,7 +125,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, var customReso
             html?.let {
                 val match = Regex("""(style=("([^"]*)"[ >]))|(style='([^']*)'[ >])""").find(html.value, 0)
                 if (match != null) {
-                    val beginStyle = match.range.start + 7
+                    val beginStyle = match.range.first + 7
                     var newHtml = html.value
                     newHtml = StringBuilder(newHtml).insert(beginStyle, "${buildStringProperties(propertyPair)} ").toString()
                     resourceHtml = StringBuilder(resourceHtml).replace(Regex("""<html.*>"""), newHtml)
@@ -319,5 +319,5 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, var customReso
 }
 
 
-class ContentFiltersCbz : ContentFilters {}
+class ContentFiltersCbz : ContentFilters
 

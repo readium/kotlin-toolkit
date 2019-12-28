@@ -15,6 +15,7 @@ import android.text.TextUtils
 import android.webkit.MimeTypeMap
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
+import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
@@ -87,13 +88,13 @@ class CBZParser : PublicationParser {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
-            Timber.e(e, "Could not generate container")
+            if (DEBUG) Timber.e(e, "Could not generate container")
             return null
         }
         val listFiles = try {
             container.files
         } catch (e: Exception) {
-            Timber.e(e, "Missing File : META-INF/container.xml")
+            if (DEBUG) Timber.e(e, "Missing File : META-INF/container.xml")
             return null
         }
 
@@ -118,7 +119,7 @@ class CBZParser : PublicationParser {
         publication.images.first().rel.add("cover")
 
         // Add href as title if title is missing (this is used to display the TOC)
-        for ((index, link) in publication.images.withIndex()) {
+        for (link in publication.images) {
             if (link.title == null || link.title!!.isEmpty()) {
                 link.title = link.href
             }
@@ -137,7 +138,7 @@ class CBZParser : PublicationParser {
                 val path = Paths.get(file)
                 path.fileName.toString()
             } else {
-                val uri = Uri.parse(file);
+                val uri = Uri.parse(file)
                 uri.lastPathSegment
             }
             var type: String? = null
@@ -153,7 +154,7 @@ class CBZParser : PublicationParser {
             }
             type
         } catch (e: Exception) {
-            Timber.e(e)
+            if (DEBUG) Timber.e(e)
             null
         }
     }
@@ -188,7 +189,7 @@ class CBZParser : PublicationParser {
     private fun convertHashToString(md5Bytes: ByteArray): String {
         var returnVal = ""
         for (i in md5Bytes.indices) {
-            returnVal += Integer.toString((md5Bytes[i] and 0xff.toByte()) + 0x100, 16).substring(1)
+            returnVal += ((md5Bytes[i] and 0xff.toByte()) + 0x100).toString(16).substring(1)
         }
         return returnVal
     }

@@ -15,6 +15,7 @@ import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
+import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.server.Resources
 import timber.log.Timber
 
@@ -39,7 +40,7 @@ class JSHandler : RouterNanoHTTPD.DefaultHandler() {
         val method = session!!.method
         var uri = session.uri
 
-        Timber.v("Method: $method, Url: $uri")
+        if (DEBUG) Timber.v("Method: $method, Url: $uri")
 
         return try {
             val lastSlashIndex = uri.lastIndexOf('/')
@@ -48,7 +49,7 @@ class JSHandler : RouterNanoHTTPD.DefaultHandler() {
             val x = createResponse(Status.OK, "text/javascript", resources.get(uri))
             x
         } catch (e: Exception) {
-            Timber.e(" Exception %s", e.toString())
+            if (DEBUG) Timber.e(" Exception %s", e.toString())
             newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
 

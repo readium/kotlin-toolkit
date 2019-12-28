@@ -12,6 +12,7 @@ package org.readium.r2.streamer.parser.audio
 import org.json.JSONObject
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.parsePublication
+import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
@@ -60,13 +61,13 @@ class AudioBookParser : PublicationParser {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
-            Timber.e(e, "Could not generate container")
+            if (DEBUG) Timber.e(e, "Could not generate container")
             return null
         }
         val data = try {
             container.data(AudioBookConstant.manifestPath)
         } catch (e: Exception) {
-            Timber.e(e, "Missing File : ${AudioBookConstant.manifestPath}")
+            if (DEBUG) Timber.e(e, "Missing File : ${AudioBookConstant.manifestPath}")
             return null
         }
 

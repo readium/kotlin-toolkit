@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import android.annotation.SuppressLint
 import org.joda.time.DateTime
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Metadata
@@ -16,6 +17,7 @@ import org.readium.r2.shared.Properties
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.parser.xml.Node
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.parser.normalize
 import timber.log.Timber
 
@@ -99,10 +101,11 @@ class OPFParser {
         coverLink?.rel?.add("cover")
     }
 
+    @SuppressLint("DefaultLocale")
     private fun parseSpine(spine: Node, publication: Publication) {
         val spineItems = spine.get("itemref")!!
         if (spineItems.isEmpty()) {
-            Timber.tag("Warning").d("Spine has no children elements")
+            if (DEBUG) Timber.tag("Warning").d("Spine has no children elements")
             return
         }
         for (item in spineItems) {

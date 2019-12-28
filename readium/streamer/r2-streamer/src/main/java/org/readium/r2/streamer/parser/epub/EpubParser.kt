@@ -12,6 +12,7 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
@@ -29,19 +30,19 @@ class EPUBConstant {
         const val mediaOverlayURL: String = "media-overlay?resource="
         const val containerDotXmlPath = "META-INF/container.xml"
         const val encryptionDotXmlPath = "META-INF/encryption.xml"
-        val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+        private val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
                 ReadiumCSSName.ref("hyphens") to false,
                 ReadiumCSSName.ref("ligatures") to false
         )
 
-        val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+        private val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
                 ReadiumCSSName.ref("hyphens") to false,
                 ReadiumCSSName.ref("wordSpacing") to false,
                 ReadiumCSSName.ref("letterSpacing") to false,
                 ReadiumCSSName.ref("ligatures") to true
         )
 
-        val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+        private val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
                 ReadiumCSSName.ref("textAlignment") to false,
                 ReadiumCSSName.ref("hyphens") to false,
                 ReadiumCSSName.ref("paraIndent") to false,
@@ -49,7 +50,7 @@ class EPUBConstant {
                 ReadiumCSSName.ref("letterSpacing") to false
         )
 
-        val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+        private val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
                 ReadiumCSSName.ref("scroll") to true,
                 ReadiumCSSName.ref("columnCount") to false,
                 ReadiumCSSName.ref("textAlignment") to false,
@@ -112,13 +113,13 @@ class EpubParser : PublicationParser {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
-            Timber.e(e, "Could not generate container")
+            if (DEBUG) Timber.e(e, "Could not generate container")
             return null
         }
         val data = try {
             container.data(EPUBConstant.containerDotXmlPath)
         } catch (e: Exception) {
-            Timber.e(e, "Missing File : ${EPUBConstant.containerDotXmlPath}")
+            if (DEBUG) Timber.e(e, "Missing File : ${EPUBConstant.containerDotXmlPath}")
             return null
         }
 
@@ -130,7 +131,7 @@ class EpubParser : PublicationParser {
         val documentData = try {
             container.data(container.rootFile.rootFilePath)
         } catch (e: Exception) {
-            Timber.e(e, "Missing File : ${container.rootFile.rootFilePath}")
+            if (DEBUG) Timber.e(e, "Missing File : ${container.rootFile.rootFilePath}")
             return null
         }
 
@@ -258,14 +259,14 @@ class EpubParser : PublicationParser {
         val navDocument = try {
             xmlDocumentForResource(navLink, container)
         } catch (e: Exception) {
-            Timber.e(e)
+            if (DEBUG) Timber.e(e)
             return
         }
 
         val navByteArray = try {
             xmlAsByteArray(navLink, container)
         } catch (e: Exception) {
-            Timber.e(e)
+            if (DEBUG) Timber.e(e)
             return
         }
 
@@ -285,7 +286,7 @@ class EpubParser : PublicationParser {
         val ncxDocument = try {
             xmlDocumentForResource(ncxLink, container)
         } catch (e: Exception) {
-            Timber.e(e)
+            if (DEBUG) Timber.e(e)
             return
         }
         ncxp.ncxDocumentPath = ncxLink.href ?: return

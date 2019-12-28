@@ -40,7 +40,7 @@ dependencies {
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
     } else {
-        implementation "com.github.readium:r2-shared-kotlin:1.1.4"
+        implementation "com.github.readium:r2-shared-kotlin:1.1.5"
     }
 
     //TODO conflicting support libraries, excluding these
@@ -70,6 +70,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-annotations:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION"
+    //noinspection GradleDependency
     implementation 'org.jsoup:jsoup:1.10.3'
 
     testImplementation 'junit:junit:4.12'

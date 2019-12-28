@@ -12,6 +12,7 @@ package org.readium.r2.streamer.parser.divina
 import org.json.JSONObject
 import org.readium.r2.shared.Publication
 import org.readium.r2.shared.parsePublication
+import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
@@ -60,14 +61,14 @@ class DiViNaParser : PublicationParser {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
-            Timber.e(e,"Could not generate container")
+            if (DEBUG) Timber.e(e,"Could not generate container")
             return null
         }
 
         val data = try {
             container.data(DiViNaConstant.manifestPath)
         } catch (e: Exception) {
-            Timber.e(e, "Missing File : ${DiViNaConstant.manifestPath}")
+            if (DEBUG) Timber.e(e, "Missing File : ${DiViNaConstant.manifestPath}")
             try {
                 val publication = container.data(DiViNaConstant.publicationPath)
                 container.rootFile
@@ -75,10 +76,10 @@ class DiViNaParser : PublicationParser {
                 inputStream.toFile("${container.rootFile.rootPath}/${DiViNaConstant.manifestPath}")
                 publication
             } catch (e: FileNotFoundException) {
-                Timber.e(e, "Missing File : ${DiViNaConstant.publicationPath}")
+                if (DEBUG) Timber.e(e, "Missing File : ${DiViNaConstant.publicationPath}")
                 return null
             } catch (e: Exception) {
-                Timber.e(e, "${container.rootFile.rootPath}/${DiViNaConstant.manifestPath}")
+                if (DEBUG) Timber.e(e, "${container.rootFile.rootPath}/${DiViNaConstant.manifestPath}")
                 return null
             }
         }
@@ -93,7 +94,7 @@ class DiViNaParser : PublicationParser {
         publication.type = Publication.TYPE.DiViNa
 
         // Add href as title if title is missing (this is used to display the TOC)
-        for ((index, link) in publication.readingOrder.withIndex()) {
+        for (link in publication.readingOrder) {
             if (link.title == null || link.title!!.isEmpty()) {
                 link.title = link.href
             }

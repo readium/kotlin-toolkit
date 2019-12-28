@@ -12,6 +12,7 @@ package org.readium.r2.streamer.fetcher
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
 import org.readium.r2.shared.Publication
+import org.readium.r2.streamer.BuildConfig.DEBUG
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -39,7 +40,7 @@ class FontDecoder {
         val algorithm = encryption.algorithm ?: return input
         val type = decoders[link.properties.encryption?.algorithm] ?: return input
         if (!decodableAlgorithms.values.contains(algorithm)) {
-            Timber.e("Error $path is encrypted, but can't handle it")
+            if (DEBUG) Timber.e("Error $path is encrypted, but can't handle it")
             return input
         }
         return decodingFont(input, publicationIdentifier, type)
