@@ -48,20 +48,19 @@ class DeviceService(private val repository: DeviceRepository, private val networ
             val registered = repository.isDeviceRegistered(license)
             if (registered) {
                 completion(null)
-            }
+            } else {
+                // TODO templated url
+                val url = link.url(asQueryParameters).toString() ?: throw LCPError.licenseInteractionNotAvailable
 
-            // TODO templated url
-            val url = link.url(asQueryParameters).toString() ?: throw LCPError.licenseInteractionNotAvailable
+                network.fetch(url, method = NetworkService.Method.post, params = asQueryParameters) { status, data ->
+                    if (status != 200) {
+                        completion(null)
+                    }
 
-            network.fetch(url, method = NetworkService.Method.post, params = asQueryParameters) { status, data ->
-                if (status != 200) {
-                    completion(null)
+                    repository.registerDevice(license)
+                    completion(data)
                 }
-
-                repository.registerDevice(license)
-                completion(data)
             }
-
         }
     }
 
