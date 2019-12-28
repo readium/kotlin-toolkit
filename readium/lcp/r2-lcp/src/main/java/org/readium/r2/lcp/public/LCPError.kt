@@ -113,7 +113,7 @@ sealed class StatusError : LCPError() {
     override val errorDescription: String?
         get() {
             return when (this) {
-                is cancelled -> "You have cancelled this license on ${date.toLocalDate()}."
+                is cancelled -> "This license was cancelled on ${date.toLocalDate()}."
                 is returned -> "This license has been returned on ${date.toLocalDate()}."
                 is expired -> {
                     if (start > DateTime()) {
@@ -122,7 +122,7 @@ sealed class StatusError : LCPError() {
                         "This license expired on ${end.toLocalDate()}."
                     }
                 }
-                is revoked -> "This license has been revoked by its provider on ${date.toLocalDate()}. The license was registered by $devicesCount device${if (devicesCount > 1) "s" else ""}."
+                is revoked -> "This license was revoked by its provider on ${date.toLocalDate()}. It was registered by $devicesCount device${if (devicesCount > 1) "s" else ""}."
             }
         }
 

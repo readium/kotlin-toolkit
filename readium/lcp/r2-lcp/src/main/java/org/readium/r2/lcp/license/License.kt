@@ -171,7 +171,7 @@ class License(private var documents: ValidatedDocuments,
         } catch (e: LCPError) {
             completion(LCPError.wrap(e))
         }
-
+        completion(null)
     }
 
     override val canReturnPublication: Boolean
@@ -197,6 +197,7 @@ class License(private var documents: ValidatedDocuments,
             }
             completion(null)
         }
+        completion(null)
     }
 
     init {
