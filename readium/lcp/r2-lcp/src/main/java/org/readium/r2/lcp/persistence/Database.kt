@@ -27,12 +27,11 @@ val Context.appContext: Context
 
 class Database(context: Context) {
 
-    val shared: LcpDatabaseOpenHelper
+    val shared: LcpDatabaseOpenHelper = LcpDatabaseOpenHelper(context)
     var licenses: Licenses
     var transactions: Transactions
 
     init {
-        shared = LcpDatabaseOpenHelper(context)
         licenses = Licenses(shared)
         transactions = Transactions(shared)
     }
