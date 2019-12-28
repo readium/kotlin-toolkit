@@ -1,4 +1,3 @@
-// TODO
 /*
  * Module: r2-testapp-kotlin
  * Developers: Aferdita Muriqi, Clément Baumann
@@ -13,10 +12,17 @@ package org.readium.r2.testapp
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
-import android.widget.*
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.mcxiaoke.koi.ext.onClick
@@ -29,10 +35,13 @@ import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.longSnackbar
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
+import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.public.LCPError
+import org.readium.r2.lcp.public.LCPLicense
 import org.readium.r2.lcp.public.LCPService
 import org.readium.r2.lcp.public.R2MakeLCPService
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.testapp.utils.color
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
@@ -45,19 +54,20 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    lateinit var lcpService: LCPService
-    lateinit var drmModel:DRMViewModel
-    lateinit var endTextView:TextView
+    private lateinit var lcpService: LCPService
+    private lateinit var drmModel: DRMViewModel
+    private lateinit var endTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         lcpService = R2MakeLCPService(this)
 
-        val drm: DRM = DRM(DRM.Brand.lcp)
+        val drm = DRM(DRM.Brand.lcp)
 
-        lcpService.retrieveLicense(intent.getStringExtra("publication") ?: throw Exception("publication required") , null) { license, error  ->
-            license?.let{
+        lcpService.retrieveLicense(intent.getStringExtra("publication")
+                ?: throw Exception("publication required"), null) { license, error ->
+            license?.let {
                 drm.license = license
                 drmModel = DRMViewModel.make(drm, this)
                 Timber.e(error)
@@ -69,6 +79,36 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
             }
         }
 
+
+        val daysArray = arrayOf(1, 3, 7, 15)
+
+        val daysInput = Spinner(this@DRMManagementActivity)
+        daysInput.dropDownWidth = wrapContent
+
+        val adapter = object : ArrayAdapter<Int>(this@DRMManagementActivity, R.layout.item_spinner_days, daysArray) {
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val v: View? = super.getDropDownView(position, null, parent)
+                // Makes the selected font appear in dark
+                // If this is the selected item position
+                if (position == daysInput.selectedItemPosition) {
+                    v!!.setBackgroundColor(context.color(R.color.colorPrimaryDark))
+                    v.findViewById<TextView>(R.id.days_spinner).setTextColor(Color.WHITE)
+                } else {
+                    // for other views
+                    v!!.setBackgroundColor(Color.WHITE)
+                    v.findViewById<TextView>(R.id.days_spinner).setTextColor(Color.BLACK)
+                }
+                return v
+            }
+        }
+
+        daysInput.adapter = adapter
+        val renewDialog = alert(Appcompat, "How many days do you wish to extend your loan ?") {
+            this.customView = daysInput
+            daysInput.setSelection(2)
+            positiveButton("Renew") { }
+            negativeButton("Cancel") { }
+        }.build()
 
         coordinatorLayout {
             fitsSystemWindows = true
@@ -166,7 +206,6 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                         }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                         textView {
                             padding = dip(10)
-    //                        text = DateTime(lcpLicense.lastUpdate()).toString(DateTimeFormat.shortDateTime())
                             text = drmModel.updated?.toString(DateTimeFormat.shortDateTime())
                             textSize = 18f
                             gravity = Gravity.END
@@ -260,48 +299,31 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                                 text = context.getString(R.string.drm_label_renew)
                                 onClick {
 
-                                    //TODO test this
-
                                     // if a renew URL is set in the server configuration, open the web browser
-//                                    if (lcpLicense.status?.link("renew")?.type == "text/html") {
-//                                        val intent = Intent(Intent.ACTION_VIEW)
-//                                        intent.data = Uri.parse(lcpLicense.status?.link("renew")?.href.toString())
-//                                        startActivity(intent)
-//                                    } else {
-                                        val daysArray = arrayOf(1, 3, 7, 15)
+                                    if ((drm.license as LCPLicense).status?.link(StatusDocument.Rel.renew)?.type == "text/html") {
+                                        val intent = Intent(Intent.ACTION_VIEW)
+                                        intent.data = Uri.parse((drm.license as LCPLicense).status?.link(StatusDocument.Rel.renew)?.href.toString())
+                                        startActivity(intent)
+                                    } else {
 
-                                        val daysInput = Spinner(this@DRMManagementActivity)
-                                        daysInput.dropDownWidth = wrapContent
-
-                                        val adapter: SpinnerAdapter = ArrayAdapter(this@DRMManagementActivity, R.layout.item_spinner_days, daysArray)
-                                        daysInput.adapter = adapter
-//
-                                        val renewDialog = alert(Appcompat, "How many days do you wish to extend your loan ?") {
-                                            this.customView = daysInput
-
-                                            positiveButton("Renew") { }
-                                            negativeButton("Cancel") { }
-                                        }.build()
                                         renewDialog.apply {
                                             setCancelable(false)
                                             setCanceledOnTouchOutside(false)
                                             setOnShowListener {
-                                                daysInput.setSelection(2)
                                                 val renewButton = getButton(AlertDialog.BUTTON_POSITIVE)
                                                 renewButton.setOnClickListener {
 
+                                                    val addDays = daysInput.selectedItem.toString().toInt()
+                                                    val newEndDate = DateTime(drmModel.end).plusDays(addDays)
 
-                                                val addDays = daysInput.selectedItem.toString().toInt()
-                                                val newEndDate = DateTime(drmModel.end).plusDays(addDays)
-
-                                                    drmModel.renewLoan(newEndDate) {error ->
-                                                        it?.let {
-                                                            renewDialog.dismiss()
-                                                            (error as LCPError).errorDescription?.let {errorDescription ->
+                                                    drmModel.renewLoan(newEndDate) { error ->
+                                                        error?.let {
+                                                            dismiss()
+                                                            (error as LCPError).errorDescription?.let { errorDescription ->
                                                                 longSnackbar(errorDescription)
                                                             }
                                                         } ?: run {
-                                                            renewDialog.dismiss()
+                                                            dismiss()
                                                             launch {
                                                                 endTextView.text = newEndDate?.toString(DateTimeFormat.shortDateTime())
                                                             }
@@ -311,7 +333,7 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                                             }
                                         }
                                         renewDialog.show()
-//                                    }
+                                    }
                                 }
                             }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                         }
@@ -319,13 +341,12 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                             button {
                                 text = context.getString(R.string.drm_label_return)
                                 onClick {
-                                    val returnDialog = alert(Appcompat, "This will return the publication") {
+                                    alert(Appcompat, "This will return the publication") {
 
                                         positiveButton("Return") { }
                                         negativeButton("Cancel") { }
 
-                                    }.build()
-                                    returnDialog.apply {
+                                    }.build().apply {
                                         setCancelable(false)
                                         setCanceledOnTouchOutside(false)
                                         setOnShowListener {
@@ -333,17 +354,20 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                                             button.setOnClickListener {
                                                 drmModel.returnPublication { error ->
                                                     error?.let {
+                                                        (error as LCPError).errorDescription?.let { errorDescription ->
+                                                            longSnackbar(errorDescription)
+                                                        }
+                                                    } ?: run {
                                                         val intent = Intent()
                                                         intent.putExtra("returned", true)
                                                         setResult(Activity.RESULT_OK, intent)
-                                                        returnDialog.dismiss()
+                                                        dismiss()
                                                         finish()
                                                     }
                                                 }
                                             }
                                         }
-                                    }
-                                    returnDialog.show()
+                                    }.show()
                                 }
                             }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                         }
