@@ -53,28 +53,23 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                 }
                 else -> {
                     field = value
-                    currentUtterance = 0
                 }
             }
         }
 
     private var utterances = mutableListOf<String>()
 
-    private var utterancesCurrentIndex: Int = 0
+    var currentUtterance: Int = 0
         get() = if (field != -1) field else 0
-
-
-    var currentUtterance
-        get() = if (utterancesCurrentIndex != -1) utterancesCurrentIndex else 0
         set(value) {
-            utterancesCurrentIndex = when {
+            field = when {
                 value == -1 -> 0
                 value == 0 -> 0
                 value > utterances.size - 1 -> utterances.size - 1
                 value < 0 -> 0
                 else -> value
             }
-            Timber.d("Current utterance index: $currentUtterance")
+            Timber.tag(this::class.java.simpleName).d("Current utterance index: $currentUtterance")
         }
 
     private var items = publication.readingOrder
@@ -104,21 +99,15 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
         //Initialize reference
         activityReference = WeakReference(context as EpubActivity)
 
-        //Set utterance
-        currentUtterance = activityReference.get()?.getCurrentUtterance() ?: 0
 
         //Initialize TTS
         textToSpeech = TextToSpeech(context,
                 TextToSpeech.OnInitListener { status ->
                     initialized = (status != TextToSpeech.ERROR)
+                    Timber.tag(this::class.java.simpleName).d("textToSpeech initialization status: $initialized")
                 })
-        Timber.d("textToSpeech initialization status: $initialized")
     }
 
-
-    fun seekTo(progression: Any) {
-        // TODO
-    }
 
     /**
      * - Set a temporary var to isPaused (isPaused's value may be altered by calls).
@@ -140,14 +129,14 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * - Stop [textToSpeech] if it is reading.
      * - Start [textToSpeech] setup.
      *
-     * @param index: Int - The index of the resource we want read.
+     * @param resource: Int - The index of the resource we want read.
      * @return: Boolean - Whether the function executed successfully.
      */
-    fun goTo(index: Int): Boolean {
-        if (index >= items.size)
+    fun goTo(resource: Int ): Boolean {
+        if (resource >= items.size)
             return false
 
-        resourceIndex = index
+        resourceIndex = resource
         isPaused = false
 
         if (textToSpeech.isSpeaking) {
@@ -252,7 +241,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
             override fun onStart(utteranceId: String?) {
                 currentUtterance = utteranceId!!.toInt()
 
-                val toHighlight = utterances[utterancesCurrentIndex]
+                val toHighlight = utterances[currentUtterance]
 
                 activityReference.get()?.launch {
                     activityReference.get()?.findViewById<TextView>(R.id.tts_textView)?.text = toHighlight
@@ -314,12 +303,12 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
              * @param utteranceId The utterance ID of the utterance.
              */
             override fun onError(utteranceId: String?) {
-                Timber.e("Error saying: ${utterances[utteranceId!!.toInt()]}")
+                Timber.tag(this::class.java.simpleName).e("Error saying: ${utterances[utteranceId!!.toInt()]}")
             }
         })
 
         if (res == TextToSpeech.ERROR) {
-            Timber.e("TTS failed to set callbacks")
+            Timber.tag(this::class.java.simpleName).e("TTS failed to set callbacks")
             return false
         }
 
@@ -338,8 +327,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * Stop reading and uninitialize the [textToSpeech].
      */
     fun shutdown() {
-        val activity = activityReference.get()
-        activity?.saveCurrentUtterance(currentUtterance.toLong())
         initialized = false
         stopReading()
         textToSpeech.shutdown()
@@ -354,11 +341,11 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
     private fun startReading(): Boolean {
         isPaused = false
         if (initialized && configure()) {
-            if (utterancesCurrentIndex >= utterances.size) {
-                Timber.e("Invalid utterancesCurrentIndex value: $utterancesCurrentIndex . Expected less than $utterances.size")
+            if (currentUtterance >= utterances.size) {
+                Timber.tag(this::class.java.simpleName).e("Invalid currentUtterance value: $currentUtterance . Expected less than $utterances.size")
                 currentUtterance = 0
             }
-            val index = utterancesCurrentIndex
+            val index = currentUtterance
             for (i in index until utterances.size) {
                 if (!addToUtterancesQueue(utterances[i], i))
                     return false
@@ -395,7 +382,6 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      * start playing.
      */
     fun stopReading() {
-        activityReference.get()?.saveCurrentUtterance(currentUtterance.toLong())
         isPaused = false
         textToSpeech.stop()
     }
@@ -435,15 +421,17 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      *
      * @param speed: Float - The speech speed we wish to use with Android's [TextToSpeech].
      */
-    fun setSpeechSpeed(speed: Float): Boolean {
+    fun setSpeechSpeed(speed: Float, restart:Boolean): Boolean {
         try {
             if (textToSpeech.setSpeechRate(speed) == TextToSpeech.ERROR)
                 throw Exception("Failed to update speech speed")
 
-            pauseReading()
-            resumeReading()
+            if (restart) {
+                pauseReading()
+                resumeReading()
+            }
         } catch (e: Exception) {
-            Timber.e(e.toString())
+            Timber.tag(this::class.java.simpleName).e(e.toString())
             return false
         }
 
@@ -459,7 +447,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      */
     private fun playSentence(playSentence: PLAY_SENTENCE): Boolean {
         isPaused = false
-        val index = utterancesCurrentIndex + playSentence.value
+        val index = currentUtterance + playSentence.value
 
         if (index >= utterances.size || index < 0)
             return false
@@ -482,7 +470,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      */
     private fun addToUtterancesQueue(utterance: String, index: Int): Boolean {
         if (textToSpeech.speak(utterance, TextToSpeech.QUEUE_ADD, null, index.toString()) == TextToSpeech.ERROR) {
-            Timber.e("Error while adding utterance: $utterance to the TTS queue")
+            Timber.tag(this::class.java.simpleName).e("Error while adding utterance: $utterance to the TTS queue")
             return false
         }
 
@@ -496,7 +484,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
      */
     private fun flushUtterancesQueue(): Boolean {
         if (textToSpeech.speak("", TextToSpeech.QUEUE_FLUSH, null, null) == TextToSpeech.ERROR) {
-            Timber.e("Error while flushing TTS queue.")
+            Timber.tag(this::class.java.simpleName).e("Error while flushing TTS queue.")
             return false
         }
 
@@ -553,7 +541,7 @@ class R2ScreenReader(var context: Context, var publication: Publication, var por
                 splitParagraphAndAddToUtterances(elements)
 
             } catch (e: IOException) {
-                Timber.e(e.toString())
+                Timber.tag(this::class.java.simpleName).e(e.toString())
                 success = false
                 return@Runnable
             }

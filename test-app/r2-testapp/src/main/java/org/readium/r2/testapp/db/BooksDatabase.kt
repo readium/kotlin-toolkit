@@ -46,7 +46,6 @@ class Book(var id: Long? = null,
            val identifier: String,
            val cover: ByteArray? = null,
            val progression: String? = null,
-           val utterance: Long? = null,
            val ext: Publication.EXTENSION
 ) {
 
@@ -92,7 +91,7 @@ class BooksDatabase(context: Context) {
 class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "books_database", null, DATABASE_VERSION) {
     companion object {
         private var instance: BooksDatabaseOpenHelper? = null
-        private const val DATABASE_VERSION = 4
+        private const val DATABASE_VERSION = 3
 
         @Synchronized
         fun getInstance(ctx: Context): BooksDatabaseOpenHelper {
@@ -114,8 +113,7 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
                 BOOKSTable.COVER to BLOB,
                 BOOKSTable.EXTENSION to TEXT,
                 BOOKSTable.CREATION to INTEGER,
-                BOOKSTable.PROGRESSION to TEXT,
-                BOOKSTable.UTTERANCE to INTEGER)
+                BOOKSTable.PROGRESSION to TEXT)
 
     }
 
@@ -136,12 +134,6 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
                     }
                 } catch (e: SQLiteException) {
                 }
-                try {
-                    upgradeVersion4(db) {
-                    //done
-                }
-                } catch (e: SQLiteException) {
-                }
             }
             2 -> {
                 try {
@@ -150,18 +142,6 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
                     }
                 } catch (e: SQLiteException) {
                 }
-                try {
-                    upgradeVersion4(db) {
-                        //done
-                    }
-                } catch (e: SQLiteException) {
-                }
-            }
-            3 -> {
-                upgradeVersion4(db) {
-                    //done
-                }
-
             }
         }
     }
@@ -199,10 +179,6 @@ class BooksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "book
         }
         callback()
     }
-    private fun upgradeVersion4(db: SQLiteDatabase, callback: () -> Unit) {
-        db.execSQL("ALTER TABLE " + BOOKSTable.NAME + " ADD COLUMN " + BOOKSTable.UTTERANCE + " INTEGER DEFAULT 0;")
-        callback()
-    }
 
 }
 
@@ -217,8 +193,7 @@ object BOOKSTable {
     const val EXTENSION = "extension"
     const val CREATION = "creationDate"
     const val PROGRESSION = "progression"
-    const val UTTERANCE = "utterance"
-    var RESULT_COLUMNS = arrayOf(ID, IDENTIFIER, TITLE, AUTHOR, HREF, COVER, EXTENSION, CREATION, PROGRESSION, UTTERANCE)
+    var RESULT_COLUMNS = arrayOf(ID, IDENTIFIER, TITLE, AUTHOR, HREF, COVER, EXTENSION, CREATION, PROGRESSION)
 
 }
 
@@ -249,7 +224,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     private fun has(book: Book): List<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION, BOOKSTable.UTTERANCE)
+            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION)
                     .whereArgs("identifier = {identifier}", "identifier" to book.identifier)
                     .exec {
                         parseList(MyRowParser())
@@ -259,7 +234,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     fun has(identifier: String): List<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION, BOOKSTable.UTTERANCE)
+            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION)
                     .whereArgs("identifier = {identifier}", "identifier" to identifier)
                     .exec {
                         parseList(MyRowParser())
@@ -269,16 +244,17 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     private fun has(id: Long): List<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION, BOOKSTable.UTTERANCE)
+            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION)
                     .whereArgs("id = {id}", "id" to id)
                     .exec {
                         parseList(MyRowParser())
                     }
         }
     }
+
     fun currentLocator(id: Long): Locator? {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION, BOOKSTable.UTTERANCE)
+            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION)
                     .whereArgs("id = {id}", "id" to id)
                     .exec {
                         parseList(MyRowParser()).firstOrNull()?.progression?.let {
@@ -290,14 +266,6 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
         }
     }
 
-    fun getSavedUtterance(id: Long): Long? {
-        return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION, BOOKSTable.UTTERANCE).whereArgs("id = {id}", "id" to id).exec {
-                parseList(MyRowParser()).firstOrNull()?.utterance
-            }
-        }
-    }
-
     fun delete(book: Book): Int {
         return database.use {
             return@use delete(BOOKSTable.NAME, "id = {id}", "id" to book.id!!)
@@ -306,7 +274,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
 
     fun list(): MutableList<Book> {
         return database.use {
-            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION, BOOKSTable.UTTERANCE)
+            select(BOOKSTable.NAME, BOOKSTable.TITLE, BOOKSTable.AUTHOR, BOOKSTable.HREF, BOOKSTable.ID, BOOKSTable.IDENTIFIER, BOOKSTable.COVER, BOOKSTable.EXTENSION, BOOKSTable.CREATION, BOOKSTable.PROGRESSION)
                     .orderBy(BOOKSTable.CREATION, SqlOrderDirection.DESC)
                     .orderBy(BOOKSTable.TITLE, SqlOrderDirection.ASC)
                     .exec {
@@ -315,25 +283,13 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
         }
     }
 
-    fun saveCurrentUtterance(bookId: Long, utterance: Long): Boolean {
+    fun saveProgression(locator: Locator?, bookId: Long): Boolean {
         val exists = has(bookId)
         if (exists.isEmpty()) {
             return false
         }
         return database.use {
-            return@use update(BOOKSTable.NAME, BOOKSTable.UTTERANCE to utterance)
-                .whereArgs("${BOOKSTable.ID} = {id}", "id" to bookId)
-                .exec() > 0
-        }
-    }
-
-    fun saveProgression(locator: Locator?, bookId: Long) : Boolean {
-        val exists = has(bookId)
-        if (exists.isEmpty()) {
-            return false
-        }
-        return database.use {
-            return@use update(BOOKSTable.NAME,BOOKSTable.PROGRESSION to locator?.toJSON().toString())
+            return@use update(BOOKSTable.NAME, BOOKSTable.PROGRESSION to locator?.toJSON().toString())
                     .whereArgs("${BOOKSTable.ID} = {id}", "id" to bookId)
                     .exec() > 0
         }
@@ -378,11 +334,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
                 return@let it as String
             } ?: kotlin.run { return@run null }
 
-            val utterance = columns[9]?.let {
-                return@let it as Long
-            } ?: kotlin.run { return@run null }
-
-            return Book(id, creation as Long, href, title, author, identifier, cover, progression, utterance, Publication.EXTENSION.fromString(ext)!!)
+            return Book(id, creation as Long, href, title, author, identifier, cover, progression, Publication.EXTENSION.fromString(ext)!!)
         }
     }
 }

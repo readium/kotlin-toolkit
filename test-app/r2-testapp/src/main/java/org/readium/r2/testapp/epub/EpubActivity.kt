@@ -84,7 +84,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         booksDB.books.saveProgression(locator, bookId)
 
         if (locator.locations?.progression == 0.toDouble()) {
-            booksDB.books.saveCurrentUtterance(bookId, 0)
             screenReader.currentUtterance = 0
         }
     }
@@ -126,7 +125,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     private lateinit var searchResult: MutableList<SearchLocator>
 
     private var mode: ActionMode? = null
-    private var popupWindow:PopupWindow? = null
+    private var popupWindow: PopupWindow? = null
 
     /**
      * Manage activity creation.
@@ -136,7 +135,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
      *   - Initialize search.
      */
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (activitiesLaunched.incrementAndGet() > 1) { finish(); }
+        if (activitiesLaunched.incrementAndGet() > 1) {
+            finish(); }
         super.onCreate(savedInstanceState)
         bookmarksDB = BookmarksDatabase(this)
         booksDB = BooksDatabase(this)
@@ -196,10 +196,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             }
         }
         prev_chapter.setOnClickListener {
-           if (goBackward(false, completion = {})) {
-               screenReader.previousResource()
-               play_pause.setImageResource(android.R.drawable.ic_media_pause)
-           }
+            if (goBackward(false, completion = {})) {
+                screenReader.previousResource()
+                play_pause.setImageResource(android.R.drawable.ic_media_pause)
+            }
         }
 
 
@@ -234,21 +234,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     }
 
-    /**
-     * @param currentUtterance: Long - The utterance index inside the current resource to save inside the database for
-     *   [bookId].
-     */
-    fun saveCurrentUtterance(currentUtterance: Long) {
-        booksDB.books.saveCurrentUtterance(bookId, currentUtterance)
-    }
-
-    /**
-     * @return: Int? - Returns the first value from the column utterances for which the line's bookId matches [bookId],
-     *   or null if not found.
-     */
-    fun getCurrentUtterance(): Int? {
-        return booksDB.books.getSavedUtterance(bookId)?.toInt()
-    }
 
     /**
      * Pause the screenReader if view is paused.
@@ -272,7 +257,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
      *
      * @param speed: Float - The speech speed we wish to use with Android's [TextToSpeech].
      */
-    fun updateScreenReaderSpeed(speed: Float) {
+    fun updateScreenReaderSpeed(speed: Float, restart:Boolean) {
         var rSpeed = speed
 
         if (speed < 0.25) {
@@ -280,7 +265,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         } else if (speed > 3.0) {
             rSpeed = 3.0.toFloat()
         }
-        screenReader.setSpeechSpeed(rSpeed)
+        screenReader.setSpeechSpeed(rSpeed, restart)
     }
 
     /**
@@ -477,19 +462,19 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                     //Get user settings speed when opening the screen reader. Get a neutral percentage (corresponding to
                     //the normal speech speed) if no user settings exist.
                     val speed = preferences.getInt("reader_TTS_speed",
-                        (2.75 * 3.toDouble() / 11.toDouble() * 100).toInt())
+                            (2.75 * 3.toDouble() / 11.toDouble() * 100).toInt())
                     //Convert percentage to a float value between 0.25 and 3.0
                     val ttsSpeed = 0.25.toFloat() + (speed.toFloat() / 100.toFloat()) * 2.75.toFloat()
 
-                    updateScreenReaderSpeed(ttsSpeed)
+                    updateScreenReaderSpeed(ttsSpeed, false)
 
                     if (screenReader.goTo(resourcePager.currentItem)) {
+
                         item.title = resources.getString(R.string.epubactivity_read_aloud_stop)
                         tts_overlay.visibility = View.VISIBLE
                         play_pause.setImageResource(android.R.drawable.ic_media_pause)
                         allowToggleActionBar = false
-                    }
-                    else {
+                    } else {
                         Toast.makeText(applicationContext, "No further chapter contains text to read", Toast.LENGTH_LONG).show()
                     }
 
@@ -693,20 +678,20 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         val x = rect.left
         val y = if (rect.top > rect.height()) rect.top - rect.height() - 80 else rect.bottom
 
-        popupWindow?.showAtLocation(popupView, Gravity.NO_GRAVITY, x  , y)
+        popupWindow?.showAtLocation(popupView, Gravity.NO_GRAVITY, x, y)
 
         popupView.run {
             findViewById<View>(R.id.notch).run {
-                setX((rect.left*2).toFloat())
+                setX((rect.left * 2).toFloat())
             }
             findViewById<View>(R.id.red).setOnClickListener {
-                changeHighlightColor(highlight, Color.rgb(247, 124,124))
+                changeHighlightColor(highlight, Color.rgb(247, 124, 124))
             }
             findViewById<View>(R.id.green).setOnClickListener {
-                changeHighlightColor(highlight, Color.rgb(173, 247,123))
+                changeHighlightColor(highlight, Color.rgb(173, 247, 123))
             }
             findViewById<View>(R.id.blue).setOnClickListener {
-                changeHighlightColor(highlight, Color.rgb(124,198,247))
+                changeHighlightColor(highlight, Color.rgb(124, 198, 247))
             }
             findViewById<View>(R.id.yellow).setOnClickListener {
                 changeHighlightColor(highlight, Color.rgb(249, 239, 125))
@@ -740,8 +725,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             )
             showHighlight(navigatorHighlight)
             addHighlight(navigatorHighlight)
-        }
-        else {
+        } else {
             createHighlight(color) {
                 addHighlight(it)
             }
@@ -807,7 +791,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 if (note.text.isEmpty().not()) {
                     createAnnotation(highlight) {
                         addAnnotation(it, note.text.toString())
-                        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(note.applicationWindowToken,InputMethodManager.HIDE_NOT_ALWAYS);
+                        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(note.applicationWindowToken, InputMethodManager.HIDE_NOT_ALWAYS);
                     }
                 }
                 alert.dismiss()
@@ -818,13 +802,12 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 alert.dismiss()
                 mode?.finish()
                 popupWindow?.dismiss()
-                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(note.applicationWindowToken,InputMethodManager.HIDE_NOT_ALWAYS);
+                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(note.applicationWindowToken, InputMethodManager.HIDE_NOT_ALWAYS);
             }
             if (highlight != null) {
                 findViewById<TextView>(R.id.select_text).text = highlight.locator.text?.highlight
                 note.setText(annotation)
-            }
-            else {
+            } else {
                 currentSelection {
                     findViewById<TextView>(R.id.select_text).text = it?.text?.highlight
                 }
@@ -853,9 +836,9 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     private fun convertNavigationHighlight2Highlight(highlight: org.readium.r2.navigator.epub.Highlight, annotation: String? = null, annotationMarkStyle: String? = null): Highlight {
         val resourceIndex = resourcePager.currentItem.toLong()
         val resource = publication.readingOrder[resourcePager.currentItem]
-        val resourceHref = resource.href?: ""
-        val resourceType = resource.typeLink?: ""
-        val resourceTitle = resource.title?: ""
+        val resourceHref = resource.href ?: ""
+        val resourceType = resource.typeLink ?: ""
+        val resourceTitle = resource.title ?: ""
         val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocation?.locations?.progression!!)?.let {
             it
         }
