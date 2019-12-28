@@ -357,12 +357,12 @@ class OPDS1Parser {
                         newLink.properties.price = newPrice
                     }
                     rel?.let {
-                        if (rel == "collection" || rel == "http://opds-spec.org/group") {
-
-                        } else if (rel == "http://opds-spec.org/image" || rel == "http://opds-spec.org/image-thumbnail") {
-                            publication.images.add(newLink)
-                        } else {
-                            publication.links.add(newLink)
+                        if (rel != "collection" && rel != "http://opds-spec.org/group") {
+                            if (rel == "http://opds-spec.org/image" || rel == "http://opds-spec.org/image-thumbnail") {
+                                publication.images.add(newLink)
+                            } else {
+                                publication.links.add(newLink)
+                            }
                         }
                     }
                 }
