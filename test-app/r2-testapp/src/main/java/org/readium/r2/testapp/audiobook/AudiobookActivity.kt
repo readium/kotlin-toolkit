@@ -154,7 +154,7 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
 
     override fun onDestroy() {
         super.onDestroy()
-        activitiesLaunched.getAndDecrement();
+        activitiesLaunched.getAndDecrement()
     }
 
     override fun onStop() {

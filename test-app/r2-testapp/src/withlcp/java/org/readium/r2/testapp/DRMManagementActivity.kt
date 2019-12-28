@@ -41,6 +41,7 @@ import org.readium.r2.lcp.public.LCPLicense
 import org.readium.r2.lcp.public.LCPService
 import org.readium.r2.lcp.public.R2MakeLCPService
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.utils.color
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
@@ -70,11 +71,11 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
             license?.let {
                 drm.license = license
                 drmModel = DRMViewModel.make(drm, this)
-                Timber.e(error)
-                Timber.d(license.toString())
+                if (DEBUG) Timber.e(error)
+                if (DEBUG) Timber.d(license.toString())
             } ?: run {
                 error?.let {
-                    Timber.e(error)
+                    if (DEBUG) Timber.e(error)
                 }
             }
         }

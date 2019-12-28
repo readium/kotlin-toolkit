@@ -20,6 +20,7 @@ import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.navigator.IR2TTS
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.shared.Publication
+import org.readium.r2.testapp.BuildConfig.DEBUG
 import timber.log.Timber
 import java.io.IOException
 import java.util.*
@@ -64,7 +65,7 @@ class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigat
                 value < 0 -> 0
                 else -> value
             }
-            Timber.tag(this::class.java.simpleName).d("Current utterance index: $currentUtterance")
+            if (DEBUG) Timber.tag(this::class.java.simpleName).d("Current utterance index: $currentUtterance")
         }
 
     private var items = publication.readingOrder
@@ -93,7 +94,7 @@ class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigat
         textToSpeech = TextToSpeech(context,
                 TextToSpeech.OnInitListener { status ->
                     initialized = (status != TextToSpeech.ERROR)
-                    Timber.tag(this::class.java.simpleName).d("textToSpeech initialization status: $initialized")
+                    if (DEBUG) Timber.tag(this::class.java.simpleName).d("textToSpeech initialization status: $initialized")
                 })
     }
 
@@ -278,12 +279,12 @@ class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigat
              * @param utteranceId The utterance ID of the utterance.
              */
             override fun onError(utteranceId: String?) {
-                Timber.tag(this::class.java.simpleName).e("Error saying: ${utterances[utteranceId!!.toInt()]}")
+                if (DEBUG) Timber.tag(this::class.java.simpleName).e("Error saying: ${utterances[utteranceId!!.toInt()]}")
             }
         })
 
         if (res == TextToSpeech.ERROR) {
-            Timber.tag(this::class.java.simpleName).e("TTS failed to set callbacks")
+            if (DEBUG) Timber.tag(this::class.java.simpleName).e("TTS failed to set callbacks")
             return false
         }
 
@@ -317,7 +318,7 @@ class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigat
         isPaused = false
         if (initialized && configure()) {
             if (currentUtterance >= utterances.size) {
-                Timber.tag(this::class.java.simpleName).e("Invalid currentUtterance value: $currentUtterance . Expected less than $utterances.size")
+                if (DEBUG) Timber.tag(this::class.java.simpleName).e("Invalid currentUtterance value: $currentUtterance . Expected less than $utterances.size")
                 currentUtterance = 0
             }
             val index = currentUtterance
@@ -406,7 +407,7 @@ class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigat
                 resumeReading()
             }
         } catch (e: Exception) {
-            Timber.tag(this::class.java.simpleName).e(e.toString())
+            if (DEBUG) Timber.tag(this::class.java.simpleName).e(e.toString())
             return false
         }
 
@@ -445,7 +446,7 @@ class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigat
      */
     private fun addToUtterancesQueue(utterance: String, index: Int): Boolean {
         if (textToSpeech.speak(utterance, TextToSpeech.QUEUE_ADD, null, index.toString()) == TextToSpeech.ERROR) {
-            Timber.tag(this::class.java.simpleName).e("Error while adding utterance: $utterance to the TTS queue")
+            if (DEBUG) Timber.tag(this::class.java.simpleName).e("Error while adding utterance: $utterance to the TTS queue")
             return false
         }
 
@@ -459,7 +460,7 @@ class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigat
      */
     private fun flushUtterancesQueue(): Boolean {
         if (textToSpeech.speak("", TextToSpeech.QUEUE_FLUSH, null, null) == TextToSpeech.ERROR) {
-            Timber.tag(this::class.java.simpleName).e("Error while flushing TTS queue.")
+            if (DEBUG) Timber.tag(this::class.java.simpleName).e("Error while flushing TTS queue.")
             return false
         }
 
@@ -516,7 +517,7 @@ class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigat
                 splitParagraphAndAddToUtterances(elements)
 
             } catch (e: IOException) {
-                Timber.tag(this::class.java.simpleName).e(e.toString())
+                if (DEBUG) Timber.tag(this::class.java.simpleName).e(e.toString())
                 success = false
                 return@Runnable
             }

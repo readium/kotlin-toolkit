@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.longSnackbar
+import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.lcp.public.*
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.Publication
@@ -57,7 +58,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    lateinit var lcpService: LCPService
+    private lateinit var lcpService: LCPService
 
     private var currenProgressDialog: ProgressDialog? = null
 
@@ -67,7 +68,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
         listener = this
     }
 
-    internal var authenticationCallbacks: MutableMap<String, (String?) -> Unit> = mutableMapOf()
+    private var authenticationCallbacks: MutableMap<String, (String?) -> Unit> = mutableMapOf()
 
     override val brand: DRM.Brand
         get() = DRM.Brand.lcp
@@ -289,8 +290,8 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                             result?.let {
                                 val publication = result as DRMFulfilledPublication
 
-                                Timber.d(publication.localURL)
-                                Timber.d(publication.suggestedFilename)
+                                if (DEBUG) Timber.d(publication.localURL)
+                                if (DEBUG) Timber.d(publication.suggestedFilename)
                                 val file = File(publication.localURL)
                                 launch {
                                     val parser = EpubParser()
@@ -351,8 +352,8 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                     result?.let {
                         val publication = result as DRMFulfilledPublication
 
-                        Timber.d(result.localURL)
-                        Timber.d(result.suggestedFilename)
+                        if (DEBUG) Timber.d(result.localURL)
+                        if (DEBUG) Timber.d(result.suggestedFilename)
                         val file = File(result.localURL)
                         launch {
                             val parser = EpubParser()

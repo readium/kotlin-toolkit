@@ -7,6 +7,7 @@ import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.LocatorText
+import org.readium.r2.testapp.BuildConfig.DEBUG
 import timber.log.Timber
 
 
@@ -20,7 +21,7 @@ interface SearchInterface {
 /**
  * This is our custom Search Module, this class uses MarkJS library and implements SearchInterface
  */
-class MarkJSSearchEngine(var listener: IR2Activity) : SearchInterface {
+class MarkJSSearchEngine(private var listener: IR2Activity) : SearchInterface {
 
 
     override fun search(keyword: String, callback: (Pair<Boolean, MutableList<SearchLocator>>) -> Unit) {
@@ -34,7 +35,7 @@ class MarkJSSearchEngine(var listener: IR2Activity) : SearchInterface {
             val resourceTitle = resource.title ?: ""
             Handler().postDelayed({
                 fragment.webView.runJavaScript("markSearch('${keyword}', null, '$resourceHref', '$resourceType', '$resourceTitle')") { result ->
-                    Timber.tag("SEARCH").d("result $result")
+                    if (DEBUG) Timber.tag("SEARCH").d("result $result")
 
                     if (result != "null") {
                         val locatorsList = mutableListOf<SearchLocator>()
@@ -55,7 +56,7 @@ class MarkJSSearchEngine(var listener: IR2Activity) : SearchInterface {
                         }
                     }
 
-                    Timber.tag("SEARCH").d("resourceIndex $resourceIndex publication.readingOrder.size ${listener.publication.readingOrder.size}")
+                    if (DEBUG) Timber.tag("SEARCH").d("resourceIndex $resourceIndex publication.readingOrder.size ${listener.publication.readingOrder.size}")
                     if (resourceIndex == (listener.publication.readingOrder.size - 1)) {
                         callback(Pair(true, searchResult))
                     } else {

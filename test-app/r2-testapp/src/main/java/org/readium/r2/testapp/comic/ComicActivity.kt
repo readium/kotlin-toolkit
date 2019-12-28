@@ -100,7 +100,7 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
 
     override fun onDestroy() {
         super.onDestroy()
-        activitiesLaunched.getAndDecrement();
+        activitiesLaunched.getAndDecrement()
     }
 
 

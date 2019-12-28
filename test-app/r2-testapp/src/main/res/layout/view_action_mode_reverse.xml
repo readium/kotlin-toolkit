@@ -20,8 +20,8 @@
                 android:id="@+id/yellow"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:layout_marginLeft="14dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginTop="6dp"
                 android:layout_marginBottom="6dp"
                 android:button="@android:color/transparent"
@@ -31,7 +31,7 @@
                 android:id="@+id/green"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:button="@android:color/transparent"
                 android:background="@drawable/selector_green"/>
 
@@ -39,7 +39,7 @@
                 android:id="@+id/blue"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:button="@android:color/transparent"
                 android:background="@drawable/selector_blue"/>
 
@@ -47,7 +47,7 @@
                 android:id="@+id/red"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:button="@android:color/transparent"
                 android:background="@drawable/selector_red"/>
 
@@ -55,7 +55,7 @@
                 android:id="@+id/purple"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:button="@android:color/transparent"
                 android:background="@drawable/selector_purple"/>
 
@@ -65,7 +65,7 @@
             android:layout_width="0.5dp"
             android:layout_height="match_parent"
             android:background="#b9b9b9"
-            android:layout_marginLeft="4dp"/>
+            android:layout_marginStart="4dp"/>
 
         <ImageView
             android:id="@+id/annotation"
@@ -73,8 +73,8 @@
             android:layout_height="21dp"
             android:layout_marginTop="7.5dp"
             android:layout_marginBottom="7.5dp"
-            android:layout_marginLeft="9dp"
-            android:layout_marginRight="9.5dp"
+            android:layout_marginStart="9dp"
+            android:layout_marginEnd="9.5dp"
             android:src="@drawable/ic_pen"
             android:scaleType="fitXY"/>
 
@@ -89,8 +89,8 @@
             android:layout_height="20dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8.6dp"
-            android:layout_marginLeft="12.5dp"
-            android:layout_marginRight="13dp"
+            android:layout_marginStart="12.5dp"
+            android:layout_marginEnd="13dp"
             android:src="@drawable/ic_delete"
             android:scaleType="fitXY"/>
 

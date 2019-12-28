@@ -30,7 +30,7 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.color
 import java.io.File
 
-class UserSettings(var preferences: SharedPreferences, val context: Context, val UIPreset: MutableMap<ReadiumCSSName, Boolean>) {
+class UserSettings(var preferences: SharedPreferences, val context: Context, private val UIPreset: MutableMap<ReadiumCSSName, Boolean>) {
 
     lateinit var resourcePager: R2ViewPager
 
@@ -341,7 +341,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, val
 
         // Publisher defaults
         val publisherDefaultSwitch = layout.findViewById(R.id.publisher_default) as Switch
-        publisherDefaultSwitch.contentDescription = "\u00A0";
+        publisherDefaultSwitch.contentDescription = "\u00A0"
 
         publisherDefaultSwitch.isChecked = publisherDefault.on
         publisherDefaultSwitch.setOnCheckedChangeListener { _, b ->

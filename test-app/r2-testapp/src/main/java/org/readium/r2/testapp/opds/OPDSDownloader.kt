@@ -15,6 +15,7 @@ import com.github.kittinunf.fuel.Fuel
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import org.readium.r2.shared.promise
+import org.readium.r2.testapp.BuildConfig.DEBUG
 import timber.log.Timber
 import java.io.File
 import java.net.URL
@@ -31,23 +32,23 @@ class OPDSDownloader(context: Context) {
     }
 
     private fun useExternalDir(context: Context): Boolean {
-        val properties =  Properties();
-        val inputStream = context.assets.open("configs/config.properties");
-        properties.load(inputStream);
+        val properties =  Properties()
+        val inputStream = context.assets.open("configs/config.properties")
+        properties.load(inputStream)
         return properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
     }
 
     fun publicationUrl(url: String, parameters: List<Pair<String, Any?>>? = null): Promise<Pair<String, String>, Exception> {
         val fileName = UUID.randomUUID().toString()
-        Timber.i("download url %s", url)
+        if (DEBUG) Timber.i("download url %s", url)
 
         return Fuel.download(url).destination { _, request_url ->
-            Timber.i("request url %s", request_url.toString())
-            Timber.i("download destination %s %s %s", "%s%s", rootDir, fileName)
+            if (DEBUG) Timber.i("request url %s", request_url.toString())
+            if (DEBUG) Timber.i("download destination %s %s %s", "%s%s", rootDir, fileName)
             File(rootDir, fileName)
         }.promise() then {
             val (_, response, _) = it
-            Timber.i("response url %s", response.url.toString())
+            if (DEBUG) Timber.i("response url %s", response.url.toString())
             if (url == response.url.toString()) {
                 Pair(rootDir + fileName, fileName)
             } else {
@@ -58,12 +59,12 @@ class OPDSDownloader(context: Context) {
 
     private fun redirectedDownload(responseUrl: URL, fileName: String): Promise<Pair<String, String>, Exception> {
         return Fuel.download(responseUrl.toString()).destination { _, request_url ->
-            Timber.i("request url %s", request_url.toString())
-            Timber.i("download destination %s %s %s", "%s%s", rootDir, fileName)
+            if (DEBUG) Timber.i("request url %s", request_url.toString())
+            if (DEBUG) Timber.i("download destination %s %s %s", "%s%s", rootDir, fileName)
             File(rootDir, fileName)
         }.promise() then {
             val (_, response, _) = it
-            Timber.i("response url %s", response.url.toString())
+            if (DEBUG) Timber.i("response url %s", response.url.toString())
             Pair(rootDir + fileName, fileName)
         }
     }

@@ -262,13 +262,13 @@ class R2OutlineActivity : AppCompatActivity() {
         tabLandmarks.setContent(R.id.landmarks_tab)
 
 
-        when {
-            publication.type == Publication.TYPE.AUDIO -> {
+        when (publication.type) {
+            Publication.TYPE.AUDIO -> {
                 tabHost.addTab(tabTOC)
                 tabHost.addTab(tabBookmarks)
             }
-            publication.type == Publication.TYPE.DiViNa -> tabHost.addTab(tabTOC)
-            publication.type == Publication.TYPE.CBZ -> tabHost.addTab(tabTOC)
+            Publication.TYPE.DiViNa -> tabHost.addTab(tabTOC)
+            Publication.TYPE.CBZ -> tabHost.addTab(tabTOC)
             else -> {
                 tabHost.addTab(tabTOC)
                 tabHost.addTab(tabBookmarks)
