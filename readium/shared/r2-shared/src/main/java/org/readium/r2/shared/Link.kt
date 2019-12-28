@@ -79,9 +79,9 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link {
     }
     if (linkDict.has("href")) {
         feedUrl?.let {
-            link.href = getAbsolute(linkDict.getString("href")!!, feedUrl.toString())
+            link.href = getAbsolute(linkDict.getString("href"), feedUrl.toString())
         } ?: run {
-            link.href = linkDict.getString("href")!!
+            link.href = linkDict.getString("href")
         }
     }
     if (linkDict.has("type")) {
@@ -138,7 +138,7 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link {
         link.properties = properties
     }
     if (linkDict.has("children")) {
-        linkDict.get("children")?.let {
+        linkDict.get("children").let {
             val children = it as? JSONArray
                     ?: throw Exception(LinkError.InvalidLink.name)
             for (i in 0 until children.length()) {

@@ -214,7 +214,7 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
                                 subject.code = sub.getString("code")
                             }
                             if (sub.has("links")) {
-                                sub.get("links")?.let {
+                                sub.get("links").let {
                                     val links = it as? JSONArray
                                             ?: JSONArray()
                                     for (i in 0 until links.length()) {
@@ -238,16 +238,20 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
         val belongs = BelongsTo()
         if (belongsDict.has("series")) {
 
-            if (belongsDict.get("series") is JSONObject) {
-                belongs.series.add(parseCollection(belongsDict.getJSONObject("series")))
-            } else if (belongsDict.get("series") is JSONArray) {
-                val array = belongsDict.getJSONArray("series")
-                for (i in 0 until array.length()) {
-                    val seriesJsonObject = array.getJSONObject(i)
-                    belongs.series.add(parseCollection(seriesJsonObject))
+            when {
+                belongsDict.get("series") is JSONObject -> {
+                    belongs.series.add(parseCollection(belongsDict.getJSONObject("series")))
                 }
-            }else if (belongsDict.get("series") is String) {
-                belongs.series.add(Collection(belongsDict.getString("series")))
+                belongsDict.get("series") is JSONArray -> {
+                    val array = belongsDict.getJSONArray("series")
+                    for (i in 0 until array.length()) {
+                        val seriesJsonObject = array.getJSONObject(i)
+                        belongs.series.add(parseCollection(seriesJsonObject))
+                    }
+                }
+                belongsDict.get("series") is String -> {
+                    belongs.series.add(Collection(belongsDict.getString("series")))
+                }
             }
         }
 
