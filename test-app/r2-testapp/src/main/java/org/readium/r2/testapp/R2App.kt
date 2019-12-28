@@ -15,6 +15,7 @@ import android.content.ContentResolver
 import android.content.Context
 import nl.komponents.kovenant.android.startKovenant
 import nl.komponents.kovenant.android.stopKovenant
+import org.readium.r2.testapp.BuildConfig.DEBUG
 import timber.log.Timber
 
 class R2App : Application() {
@@ -24,9 +25,7 @@ class R2App : Application() {
         // Configure Kovenant with standard dispatchers
         // suitable for an Android environment.
         startKovenant()
-        if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
-        }
+        if (DEBUG) Timber.plant(Timber.DebugTree())
     }
 
     override fun onTerminate() {

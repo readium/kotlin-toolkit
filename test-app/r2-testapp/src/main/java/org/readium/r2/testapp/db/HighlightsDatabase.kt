@@ -174,7 +174,7 @@ class HIGHLIGHTS(private var database: HighlightsDatabaseOpenHelper) {
         return null
     }
 
-    fun has(highlight: Highlight): List<Highlight> {
+    private fun has(highlight: Highlight): List<Highlight> {
         return database.use {
 
             select(HIGHLIGHTSTable.NAME,

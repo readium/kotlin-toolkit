@@ -9,13 +9,15 @@
   ~ LICENSE file present in the project repository where this source code is maintained.
   -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
     android:layout_width="match_parent">
     <ImageView
         android:id="@+id/indentation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:contentDescription="TODO" />
+        android:contentDescription="TODO"
+        tools:ignore="Suspicious0dp" />
 
     <TextView
         android:id="@+id/navigation_textView"

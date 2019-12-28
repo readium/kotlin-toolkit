@@ -12,8 +12,7 @@ package org.readium.r2.testapp.utils
 
 import android.app.Activity
 import android.os.Bundle
-import org.readium.r2.testapp.BuildConfig
-
+import org.readium.r2.testapp.BuildConfig.DEBUG
 import timber.log.Timber
 
 /**
@@ -29,9 +28,7 @@ class R2DispatcherActivity : Activity() {
         try {
             mMapper.dispatchIntent(intent)
         } catch (iae: IllegalArgumentException) {
-            if (BuildConfig.DEBUG) {
-                Timber.e(iae, "Deep links  - Invalid URI")
-            }
+            if (DEBUG) Timber.e(iae, "Deep links  - Invalid URI")
         } finally {
             finish()
         }

@@ -27,6 +27,6 @@ class SingleClickListener(private val click: (v: View) -> Unit) : View.OnClickLi
     }
 }
 
-fun View.singleClick(l: (android.view.View) -> Unit) {
+fun View.singleClick(l: (View) -> Unit) {
     setOnClickListener(SingleClickListener(l))
 }

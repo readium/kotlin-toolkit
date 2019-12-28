@@ -17,6 +17,7 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.text.TextUtils
+import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.zeroturnaround.zip.commons.IOUtils
 import timber.log.Timber
 import java.io.*
@@ -49,7 +50,7 @@ object ContentResolverUtil {
             out = FileOutputStream(dst)
             IOUtils.copy(`in`, out)
         } catch (ioe: IOException) {
-            Timber.e(ioe)
+            if (DEBUG) Timber.e(ioe)
         } finally {
             IOUtils.closeQuietly(out)
             IOUtils.closeQuietly(`in`)

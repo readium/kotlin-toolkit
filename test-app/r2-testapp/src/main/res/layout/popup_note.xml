@@ -33,15 +33,15 @@
                 android:layout_width="4dp"
                 android:layout_height="match_parent"
                 android:background="#acd8ff"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="10dp"/>
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="10dp"/>
 
             <TextView
                 android:id="@+id/select_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginRight="30dp"
+                android:layout_marginEnd="30dp"
                 android:textSize="16sp"
                 android:textColor="#464646"
                 android:lineSpacingExtra="7sp"

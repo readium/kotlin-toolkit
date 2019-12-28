@@ -30,7 +30,7 @@ class SearchLocator(href: String,
 /**
  * This class is an adapter for Search results' list view
  */
-class SearchLocatorAdapter(private val activity: Activity, var results: List<SearchLocator>, private var itemListener: RecyclerViewClickListener) : RecyclerView.Adapter<SearchLocatorAdapter.ViewHolder>() {
+class SearchLocatorAdapter(private val activity: Activity, private var results: List<SearchLocator>, private var itemListener: RecyclerViewClickListener) : RecyclerView.Adapter<SearchLocatorAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = activity.applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -47,7 +47,7 @@ class SearchLocatorAdapter(private val activity: Activity, var results: List<Sea
         val title = tmpLocator.title
 
         viewHolder.chapterView.text = title
-        viewHolder.textView.setText(Html.fromHtml("$txtBefore<span style=\"background:yellow;\"><b>$highlight</b></span>$txtAfter"))
+        viewHolder.textView.text = Html.fromHtml("$txtBefore<span style=\"background:yellow;\"><b>$highlight</b></span>$txtAfter")
 
         viewHolder.itemView.singleClick { v->
             itemListener.recyclerViewListClicked(v, position)

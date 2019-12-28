@@ -188,7 +188,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
         return null
     }
 
-    fun has(bookmark: Bookmark): List<Bookmark> {
+    private fun has(bookmark: Bookmark): List<Bookmark> {
         return database.use {
             select(BOOKMARKSTable.NAME,
                     BOOKMARKSTable.ID,

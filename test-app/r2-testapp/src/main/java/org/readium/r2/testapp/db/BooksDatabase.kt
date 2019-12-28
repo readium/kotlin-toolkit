@@ -53,14 +53,14 @@ class Book(var id: Long? = null,
         get() {
             val url = URI(href)
             if (!url.scheme.isNullOrEmpty() && url.isAbsolute) {
-                val uri = Uri.parse(href);
+                val uri = Uri.parse(href)
                 return uri.lastPathSegment
             }
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val path = Paths.get(href)
                 path.fileName.toString()
             } else {
-                val uri = Uri.parse(href);
+                val uri = Uri.parse(href)
                 uri.lastPathSegment
             }
         }

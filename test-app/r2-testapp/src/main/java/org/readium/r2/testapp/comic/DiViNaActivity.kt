@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.divina.R2DiViNaActivity
 import org.readium.r2.shared.Locator
+import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
@@ -76,7 +77,7 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
         data ?: return
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             val locator = data.getSerializableExtra("locator") as Locator
-            Timber.d("locator href ${locator.href}")
+            if (DEBUG) Timber.d("locator href ${locator.href}")
 
             // Call the player's goTo function with the considered href
             divinaWebView.evaluateJavascript("if (player) { player.goTo('${locator.href}'); };", null)
@@ -85,7 +86,7 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
 
     override fun onDestroy() {
         super.onDestroy()
-        activitiesLaunched.getAndDecrement();
+        activitiesLaunched.getAndDecrement()
     }
 
 
