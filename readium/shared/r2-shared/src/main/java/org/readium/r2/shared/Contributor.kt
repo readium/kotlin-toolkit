@@ -95,15 +95,15 @@ fun parseContributor(cDict: JSONObject): Contributor {
         c.roles.add(cDict.getString("role"))
     }
     if (cDict.has("links")) {
-        cDict.get("links")?.let {
-        val links = it as? JSONArray
-                ?: JSONArray()
-        for (i in 0 until links.length()) {
-            val linkDict = links.getJSONObject(i)
-            val link = parseLink(linkDict)
-            c.links.add(link)
+        cDict.get("links").let {
+            val links = it as? JSONArray
+                    ?: JSONArray()
+            for (i in 0 until links.length()) {
+                val linkDict = links.getJSONObject(i)
+                val link = parseLink(linkDict)
+                c.links.add(link)
+            }
         }
-    }
     }
     return c
 }

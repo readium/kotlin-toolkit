@@ -19,7 +19,7 @@ data class DRM(val brand: Brand): Serializable  {
         lcp("lcp");
 
         companion object {
-            operator fun invoke(rawValue: String) = Brand.values().firstOrNull { it.rawValue == rawValue }
+            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
         }
     }
 
@@ -27,7 +27,7 @@ data class DRM(val brand: Brand): Serializable  {
         lcp("http://readium.org/2014/01/lcp");
 
         companion object {
-            operator fun invoke(rawValue: String) = Scheme.values().firstOrNull { it.rawValue == rawValue }
+            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
         }
     }
 

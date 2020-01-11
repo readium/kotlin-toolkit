@@ -83,7 +83,7 @@ class Publication : Serializable {
 
     // Navigator Type
     enum class TYPE {
-        EPUB, CBZ, FXL, WEBPUB, AUDIO
+        EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
     }
 
     open class EnumCompanion<T, V>(private val valueMap: Map<T, V>) {
@@ -94,7 +94,11 @@ class Publication : Serializable {
     enum class EXTENSION(var value: String) {
         EPUB(".epub"),
         CBZ(".cbz"),
-        JSON(".json");
+        JSON(".json"),
+        DIVINA(".divina"),
+        AUDIO(".audiobook"),
+        LCPL(".lcpl"),
+        UNKNOWN("");
 
         companion object : EnumCompanion<String, EXTENSION>(values().associateBy(EXTENSION::value))
     }
@@ -206,6 +210,7 @@ class Publication : Serializable {
     private fun findLinkInPublicationLinks(closure: (Link) -> Boolean) =
             resources.firstOrNull(closure) ?: readingOrder.firstOrNull(closure)
             ?: links.firstOrNull(closure) ?: pageList.firstOrNull(closure)
+            ?: images.firstOrNull(closure)
 
     fun addSelfLink(endPoint: String, baseURL: URL) {
         val publicationUrl: URL
@@ -233,7 +238,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
     val p = Publication()
 
     if (pubDict.has("metadata")) {
-        pubDict.get("metadata")?.let {
+        pubDict.get("metadata").let {
             val metadataDict = it as? JSONObject
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             val metadata = parseMetadata(metadataDict)
@@ -247,7 +252,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
     }
 
     if (pubDict.has("links")) {
-        pubDict.get("links")?.let {
+        pubDict.get("links").let {
             val links = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0 until links.length()) {
@@ -259,7 +264,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
     }
 
     if (pubDict.has("images")) {
-        pubDict.get("images")?.let {
+        pubDict.get("images").let {
             val links = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0 until links.length()) {
@@ -271,7 +276,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
     }
 
     if (pubDict.has("spine")) {
-        pubDict.get("spine")?.let {
+        pubDict.get("spine").let {
             val spine = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0 until spine.length()) {
@@ -283,7 +288,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
     }
 
     if (pubDict.has("readingOrder")) {
-        pubDict.get("readingOrder")?.let {
+        pubDict.get("readingOrder").let {
             val readingOrder = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0 until readingOrder.length()) {
@@ -295,7 +300,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
     }
 
     if (pubDict.has("resources")) {
-        pubDict.get("resources")?.let {
+        pubDict.get("resources").let {
             val resources = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0 until resources.length()) {
@@ -307,7 +312,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
     }
 
     if (pubDict.has("toc")) {
-        pubDict.get("toc")?.let {
+        pubDict.get("toc").let {
             val toc = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0 until toc.length()) {
@@ -319,7 +324,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
     }
 
     if (pubDict.has("page-list")) {
-        pubDict.get("page-list")?.let {
+        pubDict.get("page-list").let {
             val pageList = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0 until pageList.length()) {
@@ -331,7 +336,7 @@ fun parsePublication(pubDict: JSONObject): Publication {
     }
 
     if (pubDict.has("landmarks")) {
-        pubDict.get("landmarks")?.let {
+        pubDict.get("landmarks").let {
             val landmarks = it as? JSONArray
                     ?: throw Exception(Publication.PublicationError.InvalidPublication.name)
             for (i in 0 until landmarks.length()) {

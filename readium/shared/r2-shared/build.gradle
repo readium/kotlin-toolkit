@@ -14,15 +14,18 @@ apply plugin: 'com.github.dcendents.android-maven'
 group='com.github.readium'
 
 android {
-    flavorDimensions "testapp"
 
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 29
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
+    }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
     }
     buildTypes {
         release {
@@ -30,31 +33,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    productFlavors {
-        intTestapp {
-            dimension "testapp"
-        }
-        intTestappWithLcp {
-            dimension "testapp"
-        }
-        devTestapp {
-            dimension "testapp"
-        }
-        devTestappWithLcp {
-            dimension "testapp"
-        }
-    }
-
-    // default build flavour
-    defaultPublishConfig "intTestappDebug"
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.jakewharton.timber:timber:4.7.1'
-    implementation "androidx.appcompat:appcompat:1.1.0-beta01"
-    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation "androidx.appcompat:appcompat:1.2.0-alpha01"
+    implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.github.kittinunf.fuel:fuel:1.16.0'
     implementation 'com.github.kittinunf.fuel:fuel-android:1.16.0'
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
