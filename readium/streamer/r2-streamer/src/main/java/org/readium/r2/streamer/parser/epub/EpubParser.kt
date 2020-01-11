@@ -7,80 +7,123 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.parser
+package org.readium.r2.streamer.parser.epub
 
-import org.readium.r2.shared.ContentLayoutStyle
-import org.readium.r2.shared.Encryption
-import org.readium.r2.shared.LangType
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.*
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.streamer.BuildConfig.DEBUG
+import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
-import org.readium.r2.streamer.container.ContainerEpub
-import org.readium.r2.streamer.container.ContainerEpubDirectory
-import org.readium.r2.streamer.container.EpubContainer
-import org.readium.r2.streamer.fetcher.forceScrollPreset
-import org.readium.r2.streamer.fetcher.userSettingsUIPreset
-import org.readium.r2.streamer.parser.epub.EncryptionParser
-import org.readium.r2.streamer.parser.epub.NCXParser
-import org.readium.r2.streamer.parser.epub.NavigationDocumentParser
-import org.readium.r2.streamer.parser.epub.OPFParser
+import org.readium.r2.streamer.container.ContainerError
+import org.readium.r2.streamer.container.DirectoryContainer
+import org.readium.r2.streamer.parser.PubBox
+import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
 import java.io.File
 
-// Some constants useful to parse an Epub document
-const val defaultEpubVersion = 1.2
-const val containerDotXmlPath = "META-INF/container.xml"
-const val encryptionDotXmlPath = "META-INF/encryption.xml"
-const val lcplFilePath = "META-INF/license.lcpl"
-const val mimetype = "application/epub+zip"
-const val mimetypeOEBPS = "application/oebps-package+xml"
-const val mediaOverlayURL = "media-overlay?resource="
+class EPUBConstant {
+    companion object {
+        const val lcplFilePath: String = "META-INF/license.lcpl"
+        const val mimetype: String = "application/epub+zip"
+        const val mimetypeOEBPS: String = "application/oebps-package+xml"
+        const val mediaOverlayURL: String = "media-overlay?resource="
+        const val containerDotXmlPath = "META-INF/container.xml"
+        const val encryptionDotXmlPath = "META-INF/encryption.xml"
+        private val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+                ReadiumCSSName.ref("hyphens") to false,
+                ReadiumCSSName.ref("ligatures") to false
+        )
+
+        private val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+                ReadiumCSSName.ref("hyphens") to false,
+                ReadiumCSSName.ref("wordSpacing") to false,
+                ReadiumCSSName.ref("letterSpacing") to false,
+                ReadiumCSSName.ref("ligatures") to true
+        )
+
+        private val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+                ReadiumCSSName.ref("textAlignment") to false,
+                ReadiumCSSName.ref("hyphens") to false,
+                ReadiumCSSName.ref("paraIndent") to false,
+                ReadiumCSSName.ref("wordSpacing") to false,
+                ReadiumCSSName.ref("letterSpacing") to false
+        )
+
+        private val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+                ReadiumCSSName.ref("scroll") to true,
+                ReadiumCSSName.ref("columnCount") to false,
+                ReadiumCSSName.ref("textAlignment") to false,
+                ReadiumCSSName.ref("hyphens") to false,
+                ReadiumCSSName.ref("paraIndent") to false,
+                ReadiumCSSName.ref("wordSpacing") to false,
+                ReadiumCSSName.ref("letterSpacing") to false
+        )
+
+        val forceScrollPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+                ReadiumCSSName.ref("scroll") to true
+        )
+
+        val userSettingsUIPreset: MutableMap<ContentLayoutStyle, MutableMap<ReadiumCSSName, Boolean>> = mutableMapOf(
+                ContentLayoutStyle.layout("ltr") to ltrPreset,
+                ContentLayoutStyle.layout("rtl") to rtlPreset,
+                ContentLayoutStyle.layout("cjkv") to cjkVerticalPreset,
+                ContentLayoutStyle.layout("cjkh") to cjkHorizontalPreset
+        )
+    }
+}
+
+
+
 
 class EpubParser : PublicationParser {
+
+//    companion object {
+        // Some constants useful to parse an Epub document
+//        const val defaultEpubVersion = 1.2
+//        const val containerDotXmlPath = "META-INF/container.xml"
+//        const val encryptionDotXmlPath = "META-INF/encryption.xml"
+//        const val lcplFilePath = "META-INF/license.lcpl"
+//        const val mimetypeEpub = "application/epub+zip"
+//        const val mimetypeOEBPS = "application/oebps-package+xml"
+//        const val mediaOverlayURL = "media-overlay?resource="
+//    }
 
     private val opfParser = OPFParser()
     private val ndp = NavigationDocumentParser()
     private val ncxp = NCXParser()
     private val encp = EncryptionParser()
 
-    private fun generateContainerFrom(path: String): EpubContainer {
-        val isDirectory = File(path).isDirectory
-        val container: EpubContainer?
-
+    private fun generateContainerFrom(path: String): Container {
         if (!File(path).exists())
-            throw Exception("Missing File")
-        container = when (isDirectory) {
-            true -> ContainerEpubDirectory(path)
-            false -> ContainerEpub(path)
-        }
-        if (!container.successCreated)
-            throw Exception("Missing File")
-        return container
+            throw ContainerError.missingFile(path)
+
+        val isDirectory = File(path).isDirectory
+        return {
+            if (isDirectory) {
+                DirectoryContainer(path = path, mimetype = EPUBConstant.mimetype)
+            } else {
+                ArchiveContainer(path = path, mimetype = EPUBConstant.mimetype)
+            }
+        }()
     }
 
-    fun parseEncryption(container: Container, publication: Publication, drm: DRM?): Pair<Container, Publication> {
-        container.drm = drm
-        fillEncryptionProfile(publication, drm)
-
-        return Pair(container, publication)
-    }
 
     override fun parse(fileAtPath: String, title: String): PubBox? {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
-            Timber.e(e, "Could not generate container")
+            if (DEBUG) Timber.e(e, "Could not generate container")
             return null
         }
         val data = try {
-            container.data(containerDotXmlPath)
+            container.data(EPUBConstant.containerDotXmlPath)
         } catch (e: Exception) {
-            Timber.e(e, "Missing File : META-INF/container.xml")
+            if (DEBUG) Timber.e(e, "Missing File : ${EPUBConstant.containerDotXmlPath}")
             return null
         }
 
-        container.rootFile.mimetype = mimetype
+        container.rootFile.mimetype = EPUBConstant.mimetype
         container.rootFile.rootFilePath = getRootFilePath(data)
 
         val xmlParser = XmlParser()
@@ -88,7 +131,7 @@ class EpubParser : PublicationParser {
         val documentData = try {
             container.data(container.rootFile.rootFilePath)
         } catch (e: Exception) {
-            Timber.e(e, "Missing File : ${container.rootFile.rootFilePath}")
+            if (DEBUG) Timber.e(e, "Missing File : ${container.rootFile.rootFilePath}")
             return null
         }
 
@@ -98,11 +141,10 @@ class EpubParser : PublicationParser {
         val publication = opfParser.parseOpf(xmlParser, container.rootFile.rootFilePath, epubVersion)
                 ?: return null
 
-        val drm = container.scanForDrm()
+        val drm = scanForDRM(container)
 
         parseEncryption(container, publication, drm)
 
-//        val fetcher = Fetcher(publication, container)
         parseNavigationDocument(container, publication)
         parseNcxDocument(container, publication)
 
@@ -115,6 +157,17 @@ class EpubParser : PublicationParser {
 
         container.drm = drm
         return PubBox(publication, container)
+    }
+
+    private fun scanForDRM(container: Container): DRM? {
+        if (((try {
+                    container.data(relativePath = EPUBConstant.lcplFilePath)
+                } catch (e: Throwable) {
+                    null
+                }) != null)) {
+            return DRM(DRM.Brand.lcp)
+        }
+        return null
     }
 
     private fun getRootFilePath(data: ByteArray): String {
@@ -148,13 +201,20 @@ class EpubParser : PublicationParser {
 
         publication.cssStyle = contentLayoutStyle.name
 
-        userSettingsUIPreset[ContentLayoutStyle.layout(publication.cssStyle as String)]?.let {
+        EPUBConstant.userSettingsUIPreset[ContentLayoutStyle.layout(publication.cssStyle as String)]?.let {
             if (publication.type == Publication.TYPE.WEBPUB) {
-                publication.userSettingsUIPreset = forceScrollPreset
+                publication.userSettingsUIPreset = EPUBConstant.forceScrollPreset
             } else {
                 publication.userSettingsUIPreset = it
             }
         }
+    }
+
+    fun fillEncryption(container: Container, publication: Publication, drm: DRM?): Pair<Container, Publication> {
+        container.drm = drm
+        fillEncryptionProfile(publication, drm)
+
+        return Pair(container, publication)
     }
 
     private fun fillEncryptionProfile(publication: Publication, drm: DRM?): Publication {
@@ -173,9 +233,9 @@ class EpubParser : PublicationParser {
         return publication
     }
 
-    private fun parseEncryption(container: EpubContainer, publication: Publication, drm: DRM?) {
+    private fun parseEncryption(container: Container, publication: Publication, drm: DRM?) {
         val documentData = try {
-            container.data(encryptionDotXmlPath)
+            container.data(EPUBConstant.encryptionDotXmlPath)
         } catch (e: Exception) {
             return
         }
@@ -193,20 +253,20 @@ class EpubParser : PublicationParser {
         }
     }
 
-    private fun parseNavigationDocument(container: EpubContainer, publication: Publication) {
+    private fun parseNavigationDocument(container: Container, publication: Publication) {
         val navLink = publication.linkWithRel("contents") ?: return
 
         val navDocument = try {
-            container.xmlDocumentForResource(navLink)
+            xmlDocumentForResource(navLink, container)
         } catch (e: Exception) {
-            Timber.e(e)
+            if (DEBUG) Timber.e(e)
             return
         }
 
         val navByteArray = try {
-            container.xmlAsByteArray(navLink)
+            xmlAsByteArray(navLink, container)
         } catch (e: Exception) {
-            Timber.e(e)
+            if (DEBUG) Timber.e(e)
             return
         }
 
@@ -220,13 +280,13 @@ class EpubParser : PublicationParser {
         publication.pageList.plusAssign(ndp.pageList(navDocument))
     }
 
-    private fun parseNcxDocument(container: EpubContainer, publication: Publication) {
+    private fun parseNcxDocument(container: Container, publication: Publication) {
         val ncxLink = publication.resources.firstOrNull { it.typeLink == "application/x-dtbncx+xml" }
                 ?: return
         val ncxDocument = try {
-            container.xmlDocumentForResource(ncxLink)
+            xmlDocumentForResource(ncxLink, container)
         } catch (e: Exception) {
-            Timber.e(e)
+            if (DEBUG) Timber.e(e)
             return
         }
         ncxp.ncxDocumentPath = ncxLink.href ?: return
@@ -236,5 +296,25 @@ class EpubParser : PublicationParser {
             publication.pageList.plusAssign(ncxp.pageList(ncxDocument))
         return
     }
+
+    private fun xmlAsByteArray(link: Link?, container: Container): ByteArray {
+        var pathFile = link?.href ?: throw ContainerError.missingLink(link?.title)
+        if (pathFile.first() == '/')
+            pathFile = pathFile.substring(1)
+
+        return container.data(pathFile)
+    }
+
+    private fun xmlDocumentForResource(link: Link?, container: Container): XmlParser {
+        var pathFile = link?.href ?: throw ContainerError.missingLink(link?.title)
+        if (pathFile.first() == '/')
+            pathFile = pathFile.substring(1)
+
+        val containerData = container.data(pathFile)
+        val document = XmlParser()
+        document.parseXml(containerData.inputStream())
+        return document
+    }
+
 
 }

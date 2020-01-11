@@ -13,13 +13,11 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.*
 import org.readium.r2.streamer.container.Container
+import org.readium.r2.streamer.server.Resources
 import java.io.File
 import java.io.InputStream
 
 interface ContentFilters {
-    var fontDecoder: FontDecoder
-    var drmDecoder: DrmDecoder
-
     fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
         return input
     }
@@ -29,16 +27,13 @@ interface ContentFilters {
     }
 }
 
-class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilters {
-
-    override var fontDecoder = FontDecoder()
-    override var drmDecoder = DrmDecoder()
+class ContentFiltersEpub(private val userPropertiesPath: String?, private var customResources: Resources?) : ContentFilters {
 
     override fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
         publication.linkWithHref(path)?.let { resourceLink ->
 
-            var decodedInputStream = drmDecoder.decoding(input, resourceLink, container.drm)
-            decodedInputStream = fontDecoder.decoding(decodedInputStream, publication, path)
+            var decodedInputStream = DrmDecoder().decoding(input, resourceLink, container.drm)
+            decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
             if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")) {
                 decodedInputStream = if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && resourceLink.properties.layout == null
                         || resourceLink.properties.layout == "reflowable") {
@@ -58,8 +53,8 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
     override fun apply(input: ByteArray, publication: Publication, container: Container, path: String): ByteArray {
         publication.linkWithHref(path)?.let { resourceLink ->
             val inputStream = input.inputStream()
-            var decodedInputStream = drmDecoder.decoding(inputStream, resourceLink, container.drm)
-            decodedInputStream = fontDecoder.decoding(decodedInputStream, publication, path)
+            var decodedInputStream = DrmDecoder().decoding(inputStream, resourceLink, container.drm)
+            decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
             val baseUrl = publication.baseUrl()?.removeLastComponent()
             if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")
                     && baseUrl != null) {
@@ -79,7 +74,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
 
     private fun injectReflowableHtml(stream: InputStream, publication: Publication): InputStream {
         val data = stream.readBytes()
-        var resourceHtml = String(data)
+        var resourceHtml = String(data).trim()
         // Inject links to css and js files
         var beginHeadIndex = resourceHtml.indexOf("<head>", 0, false) + 6
         var endHeadIndex = resourceHtml.indexOf("</head>", 0, false)
@@ -92,12 +87,25 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         val beginIncludes = mutableListOf<String>()
         beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\" />")
 
-        beginIncludes.add(getHtmlLink("/styles/$cssStyle-before.css"))
-        beginIncludes.add(getHtmlLink("/styles/$cssStyle-default.css"))
-//        beginIncludes.add(getHtmlLink("/styles/transition.css"))
-        endIncludes.add(getHtmlLink("/styles/$cssStyle-after.css"))
-        endIncludes.add(getHtmlScript("/scripts/touchHandling.js"))
-        endIncludes.add(getHtmlScript("/scripts/utils.js"))
+        beginIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-before.css"))
+        beginIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-default.css"))
+        endIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-after.css"))
+        endIncludes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/touchHandling.js"))
+        endIncludes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/utils.js"))
+
+        customResources?.let {
+            // Inject all custom resourses
+            for ((key, value) in it.resources) {
+                if (value is Pair<*, *>) {
+                    val res = value as Pair<String, String>
+                    if (Injectable(res.second) == Injectable.Script) {
+                        endIncludes.add(getHtmlScript("/${Injectable.Script.rawValue}/$key"))
+                    } else if (Injectable(res.second) == Injectable.Style) {
+                        endIncludes.add(getHtmlLink("/${Injectable.Style.rawValue}/$key"))
+                    }
+                }
+            }
+        }
 
         for (element in beginIncludes) {
             resourceHtml = StringBuilder(resourceHtml).insert(beginHeadIndex, element).toString()
@@ -117,7 +125,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
             html?.let {
                 val match = Regex("""(style=("([^"]*)"[ >]))|(style='([^']*)'[ >])""").find(html.value, 0)
                 if (match != null) {
-                    val beginStyle = match.range.start + 7
+                    val beginStyle = match.range.first + 7
                     var newHtml = html.value
                     newHtml = StringBuilder(newHtml).insert(beginStyle, "${buildStringProperties(propertyPair)} ").toString()
                     resourceHtml = StringBuilder(resourceHtml).replace(Regex("""<html.*>"""), newHtml)
@@ -166,8 +174,8 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
         if (endHeadIndex == -1)
             return stream
         val includes = mutableListOf<String>()
-        includes.add(getHtmlScript("/scripts/touchHandling.js"))
-        includes.add(getHtmlScript("/scripts/utils.js"))
+        includes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/touchHandling.js"))
+        includes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/utils.js"))
         for (element in includes) {
             resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, element).toString()
         }
@@ -310,50 +318,6 @@ class ContentFiltersEpub(private val userPropertiesPath: String?) : ContentFilte
 
 }
 
-val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("ligatures") to false
-)
 
-val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false,
-        ReadiumCSSName.ref("ligatures") to true
-)
-
-val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("textAlignment") to false,
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("paraIndent") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false
-)
-
-val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("scroll") to true,
-        ReadiumCSSName.ref("columnCount") to false,
-        ReadiumCSSName.ref("textAlignment") to false,
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("paraIndent") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false
-)
-
-val forceScrollPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("scroll") to true
-)
-
-val userSettingsUIPreset: MutableMap<ContentLayoutStyle, MutableMap<ReadiumCSSName, Boolean>> = mutableMapOf(
-        ContentLayoutStyle.layout("ltr") to ltrPreset,
-        ContentLayoutStyle.layout("rtl") to rtlPreset,
-        ContentLayoutStyle.layout("cjkv") to cjkVerticalPreset,
-        ContentLayoutStyle.layout("cjkh") to cjkHorizontalPreset
-)
-
-
-class ContentFiltersCbz : ContentFilters {
-    override var fontDecoder: FontDecoder = FontDecoder()
-    override var drmDecoder: DrmDecoder = DrmDecoder()
-}
+class ContentFiltersCbz : ContentFilters
 

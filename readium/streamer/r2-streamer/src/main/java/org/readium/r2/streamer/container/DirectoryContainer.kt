@@ -9,12 +9,17 @@
 
 package org.readium.r2.streamer.container
 
+import org.readium.r2.shared.RootFile
+import org.readium.r2.shared.drm.DRM
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
 
-interface DirectoryContainer : Container {
+
+open class DirectoryContainer(path: String, mimetype: String) : Container {
+    override var rootFile: RootFile = RootFile(rootPath = path, mimetype = mimetype)
+    override var drm: DRM? = null
 
     override fun data(relativePath: String): ByteArray {
 
@@ -22,7 +27,7 @@ interface DirectoryContainer : Container {
         val file = File(decodedFilePath)
 
         if (!file.exists())
-            throw Exception("Missing File")
+            throw ContainerError.fileNotFound
 
         val outputStream = ByteArrayOutputStream()
         var readLength = 0
@@ -42,8 +47,10 @@ interface DirectoryContainer : Container {
     override fun dataInputStream(relativePath: String) =
             FileInputStream(File(rootFile.toString() + "/" + getDecodedRelativePath(relativePath)))
 
-    fun getDecodedRelativePath(relativePath: String): String {
-        return URI(relativePath).path
-    }
-}
 
+    private fun getDecodedRelativePath(relativePath: String): String {
+        val replacedPath = relativePath.replace(" ", "%20")
+        return URI(replacedPath).path
+    }
+
+}

@@ -11,6 +11,7 @@ package org.readium.r2.streamer.fetcher
 
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.streamer.BuildConfig.DEBUG
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -34,11 +35,11 @@ class DrmDecoder {
             if (scheme == drm.scheme) {
 
                 var data = decipher(input, drm) ?: return input
+                val padding = data[data.size - 1].toInt()
+                data = data.copyOfRange(0, data.size - padding)
 
                 if (resourceLink.properties.encryption?.compression == "deflate") {
 
-                    val padding = data[data.size - 1].toInt()
-                    data = data.copyOfRange(0, data.size - padding)
                     val inflater = Inflater(true)
                     inflater.setInput(data)
                     val output = ByteArrayOutputStream(data.size)
@@ -48,13 +49,13 @@ class DrmDecoder {
                             val count = inflater.inflate(buf)
                             output.write(buf, 0, count)
                         } catch (e: Exception) {
-                            Timber.e(e)
+                            if (DEBUG) Timber.e(e)
                         }
                     }
                     try {
                         output.close()
                     } catch (e: Exception) {
-                        Timber.e(e)
+                        if (DEBUG) Timber.e(e)
                     }
                     data = output.toByteArray()
                     

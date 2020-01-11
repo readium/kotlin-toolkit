@@ -11,9 +11,10 @@ package org.readium.r2.streamer.fetcher
 
 import org.readium.r2.shared.Publication
 import org.readium.r2.streamer.container.Container
+import org.readium.r2.streamer.server.Resources
 import java.io.InputStream
 
-class Fetcher(var publication: Publication, var container: Container, private val userPropertiesPath: String?) {
+class Fetcher(var publication: Publication, var container: Container, private val userPropertiesPath: String?, customResources: Resources? = null) {
     private var rootFileDirectory: String
     private var contentFilters: ContentFilters?
 
@@ -26,7 +27,7 @@ class Fetcher(var publication: Publication, var container: Container, private va
         } else {
             rootFileDirectory = ""
         }
-        contentFilters = getContentFilters(container.rootFile.mimetype)
+        contentFilters = getContentFilters(container.rootFile.mimetype, customResources)
     }
 
     fun data(path: String): ByteArray? {
@@ -49,9 +50,9 @@ class Fetcher(var publication: Publication, var container: Container, private va
         return container.dataLength(relativePath)
     }
 
-    private fun getContentFilters(mimeType: String?): ContentFilters {
+    private fun getContentFilters(mimeType: String?, customResources: Resources? = null): ContentFilters {
         return when (mimeType) {
-            "application/epub+zip", "application/oebps-package+xml" -> ContentFiltersEpub(userPropertiesPath)
+            "application/epub+zip", "application/oebps-package+xml" -> ContentFiltersEpub(userPropertiesPath, customResources)
             "application/vnd.comicbook+zip", "application/x-cbr" -> ContentFiltersCbz()
             else -> throw Exception("Missing container or MIMEtype")
         }
