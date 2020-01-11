@@ -93,7 +93,7 @@ class OPDS2Parser {
             }
 
             if (topLevelDict.has("links")) {
-                topLevelDict.get("links")?.let {
+                topLevelDict.get("links").let {
                     val links = it as? JSONArray
                             ?: throw Exception(OPDS2ParserError.InvalidLink.name)
                     parseLinks(feed, links)
@@ -101,28 +101,28 @@ class OPDS2Parser {
             }
 
             if (topLevelDict.has("facets")) {
-                topLevelDict.get("facets")?.let {
+                topLevelDict.get("facets").let {
                     val facets = it as? JSONArray
                             ?: throw Exception(OPDS2ParserError.InvalidLink.name)
                     parseFacets(feed, facets)
                 }
             }
             if (topLevelDict.has("publications")) {
-                topLevelDict.get("publications")?.let {
+                topLevelDict.get("publications").let {
                     val publications = it as? JSONArray
                             ?: throw Exception(OPDS2ParserError.InvalidLink.name)
                     parsePublications(feed, publications)
                 }
             }
             if (topLevelDict.has("navigation")) {
-                topLevelDict.get("navigation")?.let {
+                topLevelDict.get("navigation").let {
                     val navigation = it as? JSONArray
                             ?: throw Exception(OPDS2ParserError.InvalidLink.name)
                     parseNavigation(feed, navigation)
                 }
             }
             if (topLevelDict.has("groups")) {
-                topLevelDict.get("groups")?.let {
+                topLevelDict.get("groups").let {
                     val groups = it as? JSONArray
                             ?: throw Exception(OPDS2ParserError.InvalidLink.name)
                     parseGroups(feed, groups)
@@ -133,32 +133,32 @@ class OPDS2Parser {
 
         private fun parseFeedMetadata(opdsMetadata: OpdsMetadata, metadataDict: JSONObject) {
             if (metadataDict.has("title")) {
-                metadataDict.get("title")?.let {
+                metadataDict.get("title").let {
                     opdsMetadata.title = it.toString()
                 }
             }
             if (metadataDict.has("numberOfItems")) {
-                metadataDict.get("numberOfItems")?.let {
+                metadataDict.get("numberOfItems").let {
                     opdsMetadata.numberOfItems = it.toString().toInt()
                 }
             }
             if (metadataDict.has("itemsPerPage")) {
-                metadataDict.get("itemsPerPage")?.let {
+                metadataDict.get("itemsPerPage").let {
                     opdsMetadata.itemsPerPage = it.toString().toInt()
                 }
             }
             if (metadataDict.has("modified")) {
-                metadataDict.get("modified")?.let {
+                metadataDict.get("modified").let {
                     opdsMetadata.modified = DateTime(it.toString()).toDate()
                 }
             }
             if (metadataDict.has("@type")) {
-                metadataDict.get("@type")?.let {
+                metadataDict.get("@type").let {
                     opdsMetadata.rdfType = it.toString()
                 }
             }
             if (metadataDict.has("currentPage")) {
-                metadataDict.get("currentPage")?.let {
+                metadataDict.get("currentPage").let {
                     opdsMetadata.currentPage = it.toString().toInt()
                 }
             }
