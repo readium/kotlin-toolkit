@@ -11,6 +11,7 @@ package org.readium.r2.lcp.service
 
 import android.content.Context
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
 import org.readium.r2.lcp.license.container.EPUBLicenseContainer
@@ -18,6 +19,7 @@ import org.readium.r2.lcp.license.container.LCPLLicenseContainer
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.public.*
+import org.readium.r2.shared.Publication
 import timber.log.Timber
 
 
@@ -35,7 +37,7 @@ class LicensesService(private val licenses: LicensesRepository,
             retrieveLicense(container, authentication) { license ->
                 license?.let {
                     license.fetchPublication(context).success {
-                        val publication = LCPImportedPublication(localURL = it, suggestedFilename = "${license.license.id}.epub")
+                        val publication = LCPImportedPublication(localURL = it, suggestedFilename = "${license.license.id}${Publication.EXTENSION.EPUB.value}")
 
                         // is needed to be able to write the license in it's container
                         container.publication = publication.localURL
@@ -59,7 +61,7 @@ class LicensesService(private val licenses: LicensesRepository,
         val container = EPUBLicenseContainer(epub = publication)
         try {
             retrieveLicense(container, authentication) { license ->
-                Timber.d("license retrieved ${license?.license}")
+                if (DEBUG) Timber.d("license retrieved ${license?.license}")
                 completion(license, null)
             }
         } catch (e:Exception) {
@@ -70,25 +72,25 @@ class LicensesService(private val licenses: LicensesRepository,
     private fun retrieveLicense(container: LicenseContainer, authentication: LCPAuthenticating?, completion: (License?) -> Unit) {
 
         var initialData = container.read()
-        Timber.d("license ${LicenseDocument(data = initialData).json}")
+        if (DEBUG) Timber.d("license ${LicenseDocument(data = initialData).json}")
 
         val validation = LicenseValidation(authentication = authentication, crl = this.crl,
                 device = this.device, network = this.network, passphrases = this.passphrases, context = this.context) { licenseDocument ->
             try {
                 this.licenses.addLicense(licenseDocument)
             } catch (error: Error) {
-                Timber.d("Failed to add the LCP License to the local database: $error")
+                if (DEBUG) Timber.d("Failed to add the LCP License to the local database: $error")
             }
             if (!licenseDocument.data.contentEquals(initialData)) {
                 try {
                     container.write(licenseDocument)
-                    Timber.d("licenseDocument ${licenseDocument.json}")
+                    if (DEBUG) Timber.d("licenseDocument ${licenseDocument.json}")
 
                     initialData = container.read()
-                    Timber.d("license ${LicenseDocument(data = initialData).json}")
-                    Timber.d("Wrote updated License Document in container")
+                    if (DEBUG) Timber.d("license ${LicenseDocument(data = initialData).json}")
+                    if (DEBUG) Timber.d("Wrote updated License Document in container")
                 } catch (error: Error) {
-                    Timber.d("Failed to write updated License Document in container: $error")
+                    if (DEBUG) Timber.d("Failed to write updated License Document in container: $error")
                 }
             }
 
@@ -96,7 +98,7 @@ class LicensesService(private val licenses: LicensesRepository,
 
         validation.validate(LicenseValidation.Document.license(initialData)) { documents, error ->
             documents?.let {
-                Timber.d("validated documents $it")
+                if (DEBUG) Timber.d("validated documents $it")
                 try {
                     documents.getContext()
                     completion( License(documents = it, validation = validation, licenses = this.licenses, device = this.device, network = this.network) )

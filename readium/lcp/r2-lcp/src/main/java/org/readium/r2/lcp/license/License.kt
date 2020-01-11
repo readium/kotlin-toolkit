@@ -16,6 +16,7 @@ import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.readium.lcp.sdk.Lcp
+import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.public.*
@@ -56,7 +57,7 @@ class License(private var documents: ValidatedDocuments,
                     return charactersLeft
                 }
             } catch (error: Error) {
-                Timber.e(error)
+                if (DEBUG) Timber.e(error)
             }
             return null
         }
@@ -77,7 +78,7 @@ class License(private var documents: ValidatedDocuments,
             charactersLeft = maxOf(0, charactersLeft - result.length)
             licenses.setCopiesLeft(charactersLeft, license.id)
         } catch (error: Error) {
-            Timber.e(error)
+            if (DEBUG) Timber.e(error)
         }
         return result
     }
@@ -90,7 +91,7 @@ class License(private var documents: ValidatedDocuments,
                     return pagesLeft
                 }
             } catch (error: Error) {
-                Timber.e(error)
+                if (DEBUG) Timber.e(error)
             }
             return null
         }
@@ -106,7 +107,7 @@ class License(private var documents: ValidatedDocuments,
             pagesLeft = maxOf(0, pagesLeft - pagesCount)
             licenses.setPrintsLeft(pagesLeft, license.id)
         } catch (error: Error) {
-            Timber.e(error)
+            if (DEBUG) Timber.e(error)
         }
         return true
     }
@@ -161,7 +162,6 @@ class License(private var documents: ValidatedDocuments,
             if (link.type == "text/html") {
                 callHTML(url, params) {
                     validateStatusDocument(it)
-
                 }
             } else {
                 callPUT(url, params) {
@@ -171,7 +171,7 @@ class License(private var documents: ValidatedDocuments,
         } catch (e: LCPError) {
             completion(LCPError.wrap(e))
         }
-
+        completion(null)
     }
 
     override val canReturnPublication: Boolean
@@ -197,6 +197,7 @@ class License(private var documents: ValidatedDocuments,
             }
             completion(null)
         }
+        completion(null)
     }
 
     init {
@@ -209,7 +210,7 @@ class License(private var documents: ValidatedDocuments,
 
     fun moveLicense(archivePath: String, licenseData: ByteArray) {
         val pathInZip = "META-INF/license.lcpl"
-        Timber.i("LCP moveLicense")
+        if (DEBUG) Timber.i("LCP moveLicense")
         val source = File(archivePath)
         val tmpZip = File("$archivePath.tmp")
         tmpZip.delete()
@@ -227,16 +228,26 @@ class License(private var documents: ValidatedDocuments,
         val title = license.link(LicenseDocument.Rel.publication)?.title
         val url = license.url(LicenseDocument.Rel.publication)
 
-        val rootDir: String = context.getExternalFilesDir(null)?.path + "/"
+        val properties =  Properties()
+        val inputStream = context.assets.open("configs/config.properties")
+        properties.load(inputStream)
+        val useExternalFileDir = properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
+
+        val rootDir: String =  if (useExternalFileDir) {
+            context.getExternalFilesDir(null)?.path + "/"
+        } else {
+            context.filesDir.path + "/"
+        }
+
         val fileName = UUID.randomUUID().toString()
         return Fuel.download(url.toString()).destination { _, _ ->
-            Timber.i("LCP destination %s%s", rootDir, fileName)
+            if (DEBUG) Timber.i("LCP destination %s%s", rootDir, fileName)
             File(rootDir, fileName)
 
         }.promise() then {
             val (_, response, _) = it
-            Timber.i("LCP destination %s%s", rootDir, fileName)
-            Timber.i("LCP then  %s", response.url.toString())
+            if (DEBUG) Timber.i("LCP destination %s%s", rootDir, fileName)
+            if (DEBUG) Timber.i("LCP then  %s", response.url.toString())
 
             rootDir + fileName
 

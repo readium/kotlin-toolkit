@@ -12,6 +12,7 @@ package org.readium.r2.lcp.service
 import awaitByteArrayResponse
 import com.github.kittinunf.fuel.Fuel
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.lcp.BuildConfig.DEBUG
 import timber.log.Timber
 
 class NetworkService {
@@ -39,7 +40,7 @@ class NetworkService {
                     completion(response.statusCode, data)
                 },
                 { error ->
-                    Timber.e("An error of type ${error.exception} happened: ${error.message}")
+                    if (DEBUG) Timber.e("An error of type ${error.exception} happened: ${error.message}")
                     completion(error.response.statusCode, null)
                 }
         )

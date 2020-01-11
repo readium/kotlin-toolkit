@@ -14,16 +14,17 @@ apply plugin: 'com.github.dcendents.android-maven'
 group='com.github.readium'
 
 android {
-    flavorDimensions "testapp"
 
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 28
-
+        targetSdkVersion 29
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
+    }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
     }
     buildTypes {
         release {
@@ -31,23 +32,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    productFlavors {
-        intTestapp {
-            dimension "testapp"
-        }
-        intTestappWithLcp {
-            dimension "testapp"
-        }
-        devTestapp {
-            dimension "testapp"
-        }
-        devTestappWithLcp {
-            dimension "testapp"
-        }
-    }
-
-    // default build flavour
-    defaultPublishConfig "intTestappDebug"
 }
 
 dependencies {
@@ -58,10 +42,10 @@ dependencies {
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
     } else {
-        implementation "com.github.readium:r2-shared-kotlin:1.0.10"
+        implementation "com.github.readium:r2-shared-kotlin:1.1.6"
     }
 
-    implementation project(':liblcp')
+    implementation "readium:liblcp:1.0.0@aar"
 
     implementation('com.mcxiaoke.koi:core:0.5.5') {
         exclude module: 'support-v4'
@@ -84,7 +68,7 @@ dependencies {
     implementation 'nl.komponents.kovenant:kovenant-jvm:3.3.0'
     implementation 'nl.komponents.kovenant:kovenant-functional:3.3.0'
 
-    implementation 'org.zeroturnaround:zt-zip:1.12'
+    implementation 'org.zeroturnaround:zt-zip:1.13'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'

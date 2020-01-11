@@ -9,6 +9,7 @@
 package org.readium.r2.lcp.license.container
 
 import android.net.Uri
+import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.zeroturnaround.zip.ZipUtil
 import timber.log.Timber
@@ -34,7 +35,7 @@ class LCPLLicenseContainer(private val lcpl: String? = null, private val byteArr
     override fun write(license: LicenseDocument) {
         publication?.let {
             val pathInZip = "META-INF/license.lcpl"
-            Timber.i("LCP moveLicense")
+            if (DEBUG) Timber.i("LCP moveLicense")
             val source = File(publication)
             val tmpZip = File("$publication.tmp")
             tmpZip.delete()
