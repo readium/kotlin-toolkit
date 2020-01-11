@@ -25,10 +25,11 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:replace="android:allowBackup"
         android:usesCleartextTraffic="true"
+        tools:replace="android:allowBackup"
         tools:targetApi="m">
-        <activity android:name=".CatalogActivity">
+        <activity android:name=".CatalogActivity"
+            android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -36,49 +37,71 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".R2DispatcherActivity"
+            android:name=".utils.R2DispatcherActivity"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="content" />
-                <data android:scheme="file" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:scheme="app" />
-                <data android:host="*" />
-                <data android:pathPattern=".*\.epub" />
-                <data android:pathPattern=".*\.lcpl" />
-                <data android:pathPattern=".*\.cbz" />
-                <data android:mimeType="application/epub+zip" />
-                <data android:mimeType="application/x-cbz" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.epub" android:scheme="content"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:mimeType="application/epub+zip" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.epub"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:host="*" />
-                <data android:pathPattern=".*\.epub" />
-                <data android:pathPattern=".*\.lcpl" />
-                <data android:pathPattern=".*\.cbz" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.lcpl" android:scheme="content"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.lcpl"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.divina" android:scheme="content"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.divina"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.audiobook" android:scheme="content"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.audiobook"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.cbz" android:scheme="content" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="*" android:mimeType="*/*" android:pathPattern=".*\\.cbz"/>
+            </intent-filter>
+
         </activity>
         <activity
             android:name=".opds.OPDSCatalogActivity"
@@ -87,14 +110,20 @@
             android:name=".R2AboutActivity"
             android:label="@string/title_activity_r2_about" />
         <activity
-            android:name=".R2EpubActivity"
+            android:name=".epub.EpubActivity"
+            android:label="@string/title_activity_epub" />
+        <activity
+            android:name=".comic.DiViNaActivity"
+            android:label="@string/title_activity_epub" />
+        <activity
+            android:name=".comic.ComicActivity"
             android:label="@string/title_activity_epub" />
         <activity
             android:name=".DRMManagementActivity"
             android:label="DRM Management"
-            android:theme="@style/AppTheme"/>
+            android:theme="@style/AppTheme" />
         <activity
-            android:name=".R2OutlineActivity"
+            android:name=".outline.R2OutlineActivity"
             android:label="@string/title_activity_outline" />
         <activity
             android:name=".opds.OPDSListActivity"
@@ -102,8 +131,9 @@
         <activity
             android:name=".opds.OPDSDetailActivity"
             android:label="@string/title_activity_opds_detail" />
-        <activity android:name=".audiobook.AudiobookActivity" />
-
+        <activity
+            android:name=".audiobook.AudiobookActivity"
+            android:label="@string/title_activity_epub" />
     </application>
 
 </manifest>

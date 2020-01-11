@@ -188,7 +188,7 @@ class OPDSListActivity : AppCompatActivity() {
     }
 }
 
-private class OPDSViewAdapter(private val activity: Activity, private val list: MutableList<OPDSModel>) : androidx.recyclerview.widget.RecyclerView.Adapter<OPDSViewAdapter.ViewHolder>() {
+private class OPDSViewAdapter(private val activity: Activity, private val list: MutableList<OPDSModel>) : RecyclerView.Adapter<OPDSViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = activity.layoutInflater
@@ -221,7 +221,7 @@ private class OPDSViewAdapter(private val activity: Activity, private val list: 
         return list.size
     }
 
-    internal inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
+    internal inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val button: Button = view.findViewById<View>(R.id.button) as Button
 
     }

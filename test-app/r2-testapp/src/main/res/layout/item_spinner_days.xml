@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Module: r2-testapp-kotlin
+  ~ Developers: Aferdita Muriqi, Paul Stoica
+  ~
+  ~ Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
+  ~ Licensed to the Readium Foundation under one or more contributor license agreements.
+  ~ Use of this source code is governed by a BSD-style license which is detailed in the
+  ~ LICENSE file present in the project repository where this source code is maintained.
+  -->
+
+
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/days_spinner"
+    style="?android:attr/spinnerDropDownItemStyle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textAlignment="textEnd"
+    android:textSize="9pt" />
