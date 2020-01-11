@@ -9,7 +9,8 @@
 
 <resources>
 
-
     <string name="end_of_chapter">end of chapter</string>
     <string name="end_of_chapter_indicator">~ ~ ~</string>
+    <string name="zero">00:00</string>
+
 </resources>
