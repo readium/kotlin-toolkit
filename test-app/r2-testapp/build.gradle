@@ -18,7 +18,7 @@ group = 'com.github.readium'
 int major = 2
 int minor = 1
 int patch = 0
-int build = 22
+int build = 23
 String type = ""
 
 def version = "$major.$minor.$patch"
@@ -86,22 +86,22 @@ dependencies {
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
     } else {
-        implementation "com.github.readium:r2-shared-kotlin:1.1.5"
+        implementation "com.github.readium:r2-shared-kotlin:1.1.6"
     }
     if (findProject(':r2-navigator')) {
         implementation project(':r2-navigator')
     } else {
-        implementation "com.github.readium:r2-navigator-kotlin:1.1.4"
+        implementation "com.github.readium:r2-navigator-kotlin:1.1.5"
     }
     if (findProject(':r2-streamer')) {
         implementation project(':r2-streamer')
     } else {
-        implementation "com.github.readium:r2-streamer-kotlin:1.1.4"
+        implementation "com.github.readium:r2-streamer-kotlin:1.1.5"
     }
     if (findProject(':r2-opds')) {
         implementation project(':r2-opds')
     } else {
-        implementation "com.github.readium:r2-opds-kotlin:1.1.3"
+        implementation "com.github.readium:r2-opds-kotlin:1.1.4"
     }
     if (findProject(':r2-lcp')) {
         implementation project(':r2-lcp')
