@@ -27,6 +27,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
+import org.json.JSONArray
 import org.readium.r2.navigator.*
 import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.Locations
@@ -228,13 +229,24 @@ class R2EpubPageFragment : Fragment() {
 
         val locations = webView.navigator.currentLocation?.locations
 
-        locations?.fragment?.let {
-            var anchor = it
-            if (!anchor.startsWith("#")) {
-                anchor = "#$anchor"
+
+        locations?.fragment?.let { fragment ->
+
+            val fragments = JSONArray(fragment).getString(0).split(",").associate {
+                val (left, right) = it.split("=")
+                left to right.toInt()
             }
-            val href = resourceUrl + anchor
-            webView.loadUrl(href)
+//            val id = fragments.getValue("id")
+            if (fragments.isEmpty()) {
+                var anchor = fragment
+                if (!anchor.startsWith("#")) {
+                    anchor = "#$anchor"
+                }
+                val href = resourceUrl + anchor
+                webView.loadUrl(href)
+            } else {
+                webView.loadUrl(resourceUrl)
+            }
         } ?: run {
             webView.loadUrl(resourceUrl)
         }
