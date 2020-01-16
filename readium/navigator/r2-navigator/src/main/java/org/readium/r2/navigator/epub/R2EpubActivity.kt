@@ -24,6 +24,7 @@ import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.navigator.*
@@ -67,13 +68,24 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                         if (resourcePager.currentItem == resource.first) {
                             // reload webview if it has an anchor
                             val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-                            locator.locations?.fragment?.let {
-                                var anchor = it
-                                if (!anchor.startsWith("#")) {
-                                    anchor = "#$anchor"
+                            locator.locations?.fragment?.let { fragment ->
+
+                                val fragments = JSONArray(fragment).getString(0).split(",").associate {
+                                    val (left, right) = it.split("=")
+                                    left to right.toInt()
                                 }
-                                val goto = resource.second + anchor
-                                currentFragent?.webView?.loadUrl(goto)
+                                //            val id = fragments.getValue("id")
+                                if (fragments.isEmpty()) {
+                                    var anchor = fragment
+                                    if (!anchor.startsWith("#")) {
+                                        anchor = "#$anchor"
+                                    }
+                                    val goto = resource.second + anchor
+                                    currentFragent?.webView?.loadUrl(goto)
+                                } else {
+                                    currentFragent?.webView?.loadUrl(resource.second)
+                                }
+
                             } ?: run {
                                 currentFragent?.webView?.loadUrl(resource.second)
                             }
@@ -402,13 +414,24 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                                 if (resourcePager.currentItem == resource.first) {
                                     // reload webview if it has an anchor
                                     val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-                                    locator.locations?.fragment?.let {
-                                        var anchor = it
-                                        if (!anchor.startsWith("#")) {
-                                            anchor = "#$anchor"
+                                    locator.locations?.fragment?.let { fragment ->
+
+                                        val fragments = JSONArray(fragment).getString(0).split(",").associate {
+                                            val (left, right) = it.split("=")
+                                            left to right.toInt()
                                         }
-                                        val goto = resource.second + anchor
-                                        currentFragent?.webView?.loadUrl(goto)
+                                        //            val id = fragments.getValue("id")
+                                        if (fragments.isEmpty()) {
+                                            var anchor = fragment
+                                            if (!anchor.startsWith("#")) {
+                                                anchor = "#$anchor"
+                                            }
+                                            val goto = resource.second + anchor
+                                            currentFragent?.webView?.loadUrl(goto)
+                                        } else {
+                                            currentFragent?.webView?.loadUrl(resource.second)
+                                        }
+
                                     } ?: run {
                                         currentFragent?.webView?.loadUrl(resource.second)
                                     }
