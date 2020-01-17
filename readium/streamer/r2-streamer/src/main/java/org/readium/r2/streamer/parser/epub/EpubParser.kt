@@ -10,7 +10,9 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.*
+import org.readium.r2.shared.Link
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ArchiveContainer
@@ -74,8 +76,6 @@ class EPUBConstant {
 }
 
 
-
-
 class EpubParser : PublicationParser {
 
 //    companion object {
@@ -89,9 +89,8 @@ class EpubParser : PublicationParser {
 //        const val mediaOverlayURL = "media-overlay?resource="
 //    }
 
-    private val opfParser = OPFParser()
     private val ndp = NavigationDocumentParser()
-    private val ncxp = NCXParser()
+    private val ncxp = NcxParser()
     private val encp = EncryptionParser()
 
     private fun generateContainerFrom(path: String): Container {
@@ -126,8 +125,6 @@ class EpubParser : PublicationParser {
         container.rootFile.mimetype = EPUBConstant.mimetype
         container.rootFile.rootFilePath = getRootFilePath(data)
 
-        val xmlParser = XmlParser()
-
         val documentData = try {
             container.data(container.rootFile.rootFilePath)
         } catch (e: Exception) {
@@ -135,18 +132,21 @@ class EpubParser : PublicationParser {
             return null
         }
 
-        xmlParser.parseXml(documentData.inputStream())
-
-        val epubVersion = xmlParser.root().attributes["version"]!!.toDouble()
-        val publication = opfParser.parseOpf(xmlParser, container.rootFile.rootFilePath, epubVersion)
-                ?: return null
+        val packageXml = XmlParser().parse(documentData.inputStream())
+        val packageDocument = PackageDocumentParser.parse(packageXml, container.rootFile.rootFilePath)  ?: return null
+        val publication = packageDocument.toPublication()
+        publication.internalData["type"] = "epub"
+        publication.internalData["rootfile"] = container.rootFile.rootFilePath
 
         val drm = scanForDRM(container)
-
+        container.drm = drm
         parseEncryption(container, publication, drm)
 
-        parseNavigationDocument(container, publication)
-        parseNcxDocument(container, publication)
+        if (packageDocument.epubVersion == 2.0) {
+            parseNcxDocument(container, publication)
+        } else {
+            parseNavigationDocument(container, publication)
+        }
 
 
         /*
@@ -155,7 +155,6 @@ class EpubParser : PublicationParser {
          */
         setLayoutStyle(publication)
 
-        container.drm = drm
         return PubBox(publication, container)
     }
 
@@ -171,12 +170,10 @@ class EpubParser : PublicationParser {
     }
 
     private fun getRootFilePath(data: ByteArray): String {
-        val xmlParser = XmlParser()
-        xmlParser.parseXml(data.inputStream())
-        return xmlParser.getFirst("container")
-                ?.getFirst("rootfiles")
-                ?.getFirst("rootfile")
-                ?.attributes?.get("full-path")
+        val container = XmlParser().parse(data.inputStream())
+        return container?.getFirst("rootfiles", Namespaces.Opc)
+                ?.getFirst("rootfile", Namespaces.Opc)
+                ?.getAttr("full-path")
                 ?: "content.opf"
     }
 
@@ -239,15 +236,17 @@ class EpubParser : PublicationParser {
         } catch (e: Exception) {
             return
         }
-        val document = XmlParser()
-        document.parseXml(documentData.inputStream(), true)
-        val encryptedDataElements = document.getFirst("encryption")?.get("EncryptedData") ?: return
+        val document = XmlParser().parse(documentData.inputStream())
+        val encryptedDataElements = document.getFirst("encryption", Namespaces.Opc)
+                ?.get("EncryptedData", Namespaces.Enc) ?: return
         for (encryptedDataElement in encryptedDataElements) {
             val encryption = Encryption()
-            val keyInfoUri = encryptedDataElement.getFirst("KeyInfo")?.getFirst("RetrievalMethod")?.let { it.attributes["URI"] }
+            val keyInfoUri = encryptedDataElement.getFirst("KeyInfo", Namespaces.Sig)
+                    ?.getFirst("RetrievalMethod", Namespaces.Sig)?.getAttr("URI")
             if (keyInfoUri == "license.lcpl#/encryption/content_key" && drm?.brand == DRM.Brand.lcp)
                 encryption.scheme = DRM.Scheme.lcp
-            encryption.algorithm = encryptedDataElement.getFirst("EncryptionMethod")?.let { it.attributes["Algorithm"] }
+            encryption.algorithm = encryptedDataElement.getFirst("EncryptionMethod", Namespaces.Enc)
+                    ?.getAttr("Algorithm")
             encp.parseEncryptionProperties(encryptedDataElement, encryption)
             encp.add(encryption, publication, encryptedDataElement)
         }
@@ -281,6 +280,7 @@ class EpubParser : PublicationParser {
     }
 
     private fun parseNcxDocument(container: Container, publication: Publication) {
+
         val ncxLink = publication.resources.firstOrNull { it.typeLink == "application/x-dtbncx+xml" }
                 ?: return
         val ncxDocument = try {
@@ -297,6 +297,17 @@ class EpubParser : PublicationParser {
         return
     }
 
+    private fun parseMediaOverlays(container: Container, publication: Publication) {
+        val xmlParser = XmlParser()
+       publication.otherLinks.forEach {
+            val path = if (it.href?.first() == '/') it.href?.substring(1) else it.href
+            if (it.typeLink == "application/smil+xml" && path != null) {
+                it.mediaOverlays = xmlParser.parse(container.dataInputStream(path))?.let { SmilParser.parse(it, path) }
+                it.rel.add("media-overlay")
+            }
+        }
+    }
+
     private fun xmlAsByteArray(link: Link?, container: Container): ByteArray {
         var pathFile = link?.href ?: throw ContainerError.missingLink(link?.title)
         if (pathFile.first() == '/')
@@ -305,16 +316,12 @@ class EpubParser : PublicationParser {
         return container.data(pathFile)
     }
 
-    private fun xmlDocumentForResource(link: Link?, container: Container): XmlParser {
+    private fun xmlDocumentForResource(link: Link?, container: Container): ElementNode {
         var pathFile = link?.href ?: throw ContainerError.missingLink(link?.title)
         if (pathFile.first() == '/')
             pathFile = pathFile.substring(1)
 
         val containerData = container.data(pathFile)
-        val document = XmlParser()
-        document.parseXml(containerData.inputStream())
-        return document
+        return XmlParser().parse(containerData.inputStream())
     }
-
-
 }

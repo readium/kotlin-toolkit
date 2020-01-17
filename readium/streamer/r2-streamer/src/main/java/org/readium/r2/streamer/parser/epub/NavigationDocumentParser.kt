@@ -10,8 +10,7 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.Link
-import org.readium.r2.shared.parser.xml.Node
-import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
 import org.w3c.dom.NodeList
 import java.io.InputStream
@@ -44,28 +43,28 @@ class NavigationDocumentParser {
         return tableOfContents
     }
 
-    fun pageList(document: XmlParser) = nodeArray(document, "page-list")
-    fun landmarks(document: XmlParser) = nodeArray(document, "landmarks")
-    fun listOfIllustrations(document: XmlParser) = nodeArray(document, "loi")
-    fun listOfTables(document: XmlParser) = nodeArray(document, "lot")
-    fun listOfAudiofiles(document: XmlParser) = nodeArray(document, "loa")
-    fun listOfVideos(document: XmlParser) = nodeArray(document, "lov")
+    fun pageList(document: ElementNode) = nodeArray(document, "page-list")
+    fun landmarks(document: ElementNode) = nodeArray(document, "landmarks")
+    fun listOfIllustrations(document: ElementNode) = nodeArray(document, "loi")
+    fun listOfTables(document: ElementNode) = nodeArray(document, "lot")
+    fun listOfAudiofiles(document: ElementNode) = nodeArray(document, "loa")
+    fun listOfVideos(document: ElementNode) = nodeArray(document, "lov")
 
-    private fun nodeArray(document: XmlParser, navType: String): List<Link> {
-        var body = document.root().getFirst("body")
-        body?.getFirst("section")?.let { body = it }
-        val navPoint = body?.get("nav")?.firstOrNull { it.attributes["epub:type"] == navType }
-        val olElement = navPoint?.getFirst("ol") ?: return emptyList()
+    private fun nodeArray(document: ElementNode, navType: String): List<Link> {
+        var body = document.getFirst("body", Namespaces.Xhtml)
+        body?.getFirst("section", Namespaces.Xhtml)?.let { body = it }
+        val navPoint = body?.get("nav", Namespaces.Xhtml)?.firstOrNull { it.getAttrNs("type", Namespaces.Ops) == navType }
+        val olElement = navPoint?.getFirst("ol", Namespaces.Xhtml) ?: return emptyList()
         return nodeOl(olElement).children
     }
 
-    private fun nodeOl(element: Node): Link {
+    private fun nodeOl(element: ElementNode): Link {
         val newOlNode = Link()
-        val liElements = element.get("li") ?: return newOlNode
+        val liElements = element.get("li", Namespaces.Xhtml) ?: return newOlNode
         for (li in liElements) {
-            val spanText = li.getFirst("span")?.name
+            val spanText = li.getFirst("span", Namespaces.Xhtml)?.name
             if (spanText != null && spanText.isNotEmpty()) {
-                li.getFirst("ol")?.let {
+                li.getFirst("ol", Namespaces.Xhtml)?.let {
                     newOlNode.children.add(nodeOl(it))
                 }
             } else {
@@ -76,13 +75,13 @@ class NavigationDocumentParser {
         return newOlNode
     }
 
-    private fun nodeLi(element: Node): Link {
+    private fun nodeLi(element: ElementNode): Link {
         val newLiNode = Link()
-        val aNode = element.getFirst("a")!!
-        val title = (aNode.getFirst("span"))?.text ?: aNode.text ?: aNode.name
-        newLiNode.href = normalize(navigationDocumentPath, aNode.attributes["href"])
+        val aNode = element.getFirst("a", Namespaces.Xhtml)!!
+        val title = (aNode.getFirst("span", Namespaces.Xhtml))?.text ?: aNode.text ?: aNode.name
+        newLiNode.href = normalize(navigationDocumentPath, aNode.getAttr("href"))
         newLiNode.title = title
-        element.getFirst("ol")?.let { newLiNode.children.add(nodeOl(it)) }
+        element.getFirst("ol", Namespaces.Xhtml)?.let { newLiNode.children.add(nodeOl(it)) }
         return newLiNode
     }
 
@@ -106,8 +105,8 @@ class NameSpaceResolver : NamespaceContext {
     override fun getNamespaceURI(p0: String?): String {
         return when (p0) {
             null -> throw IllegalArgumentException("No prefix provided!")
-            "epub" -> "http://www.idpf.org/2007/ops"
-            "xhtml" -> "http://www.w3.org/1999/xhtml"
+            "epub" -> Namespaces.Ops
+            "xhtml" -> Namespaces.Xhtml
             else -> XMLConstants.DEFAULT_NS_PREFIX
         }
     }
