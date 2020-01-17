@@ -22,6 +22,11 @@ class Metadata : Serializable {
     /// The title of the publication.
     val title: String
         get() = multilanguageTitle?.singleString ?: ""
+    /// The subtitle of the publication in multiple languages.
+    var multilanguageSubtitle: MultilanguageString? = null
+    /// The subtitle of the publication.
+    val subtitle: String
+        get() = multilanguageSubtitle?.singleString ?: ""
 
     var languages: MutableList<String> = mutableListOf()
     var identifier: String? = null
@@ -53,7 +58,7 @@ class Metadata : Serializable {
 
     var belongsTo: BelongsTo? = null
 
-    var duration: Int? = null
+    var duration: Double? = null
 
     fun titleForLang(key: String): String? = multilanguageTitle?.multiString?.get(key)
 
@@ -270,7 +275,7 @@ fun parseMetadata(metadataDict: JSONObject): Metadata {
     }
 
     if (metadataDict.has("duration")) {
-        m.duration = metadataDict.getInt("duration")
+        m.duration = metadataDict.getDouble("duration")
     }
     
     if (metadataDict.has("language")) {

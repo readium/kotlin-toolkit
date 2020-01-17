@@ -18,12 +18,11 @@ enum class RenditionLayout(val value: String) : Serializable {
     companion object : Publication.EnumCompanion<String, RenditionLayout>(values().associateBy(RenditionLayout::value))
 }
 
-enum class RenditionFlow(val value: String) : Serializable {
+enum class RenditionOverflow(val value: String) : Serializable {
+    Auto("auto"),
     Paginated("paginated"),
-    Continuous("continuous"),
-    Document("document"),
-    Fixed("fixed");
-    companion object : Publication.EnumCompanion<String, RenditionFlow>(values().associateBy(RenditionFlow::value))
+    Scrolled("scrolled");
+    companion object : Publication.EnumCompanion<String, RenditionOverflow>(values().associateBy(RenditionOverflow::value))
 }
 
 enum class RenditionOrientation(val value: String) : Serializable {
@@ -43,7 +42,8 @@ enum class RenditionSpread(val value: String) : Serializable {
 }
 
 class Rendition : Serializable {
-    var flow: RenditionFlow? = null
+    var continuous: Boolean? = null
+    var flow: RenditionOverflow? = null
     var spread: RenditionSpread? = null
     var layout: RenditionLayout? = null
     var viewport: String? = null

@@ -38,7 +38,8 @@ class Link : JSONable, Serializable {
     var templated: Boolean? = false
     /// Indicate the bitrate for the link resource.
     var bitrate: Int? = null
-
+    // Alternate resources for the linked resource
+    var alternate:  MutableList<Link> = mutableListOf()
     //  The underlying nodes in a tree structure of Links
     var children: MutableList<Link> = mutableListOf()
     //  The MediaOverlays associated to the resource of the Link
@@ -63,6 +64,8 @@ class Link : JSONable, Serializable {
         json.putOpt("duration", duration)
         if (children.isNotEmpty())
             json.put("children", getJSONArray(children))
+        if (alternate.isNotEmpty())
+            json.put("alternate", getJSONArray(alternate))
         return json
     }
 
