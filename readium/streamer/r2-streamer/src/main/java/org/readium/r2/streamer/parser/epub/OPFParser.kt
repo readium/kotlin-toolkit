@@ -11,6 +11,7 @@ package org.readium.r2.streamer.parser.epub
 
 import android.annotation.SuppressLint
 import org.joda.time.DateTime
+import org.readium.r2.shared.PageProgressionDirection
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Metadata
 import org.readium.r2.shared.Properties
@@ -68,7 +69,7 @@ class OPFParser {
             metadata.rights = rightsMap.joinToString { " " }
         metadataParser.parseContributors(metadataElement, metadata, publication.version)
         document.root().getFirst("spine")?.attributes?.get("page-progression-direction")?.let {
-            metadata.direction = it
+            metadata.direction = PageProgressionDirection.valueOf("it")
         }
         metadataParser.parseRenditionProperties(metadataElement, metadata)
         metadata.otherMetadata = metadataParser.parseMediaDurations(metadataElement, metadata.otherMetadata)
