@@ -37,7 +37,7 @@ class Metadata : Serializable {
     var inkers: MutableList<Contributor> = mutableListOf()
     var narrators: MutableList<Contributor> = mutableListOf()
     var imprints: MutableList<Contributor> = mutableListOf()
-    var direction: String = PageProgressionDirection.default.name
+    var direction: PageProgressionDirection = PageProgressionDirection.default
     var subjects: MutableList<Subject> = mutableListOf()
     var publishers: MutableList<Contributor> = mutableListOf()
     var contributors: MutableList<Contributor> = mutableListOf()
@@ -84,26 +84,24 @@ class Metadata : Serializable {
         return obj
     }
 
-
-    fun contentLayoutStyle(langType: LangType, pageDirection: String?) : ContentLayoutStyle {
-
-        return when(langType) {
-            LangType.afh -> ContentLayoutStyle.rtl
-            LangType.cjk -> {
-                if (pageDirection == ContentLayoutStyle.rtl.name)
-                    ContentLayoutStyle.cjkv
-                else
-                    ContentLayoutStyle.cjkh
+    fun contentLayoutStyle(langType: LangType, pageDirection: PageProgressionDirection) : ContentLayoutStyle {
+        // epub 3.2 spec gives highest priority to author's choice with respect to page direction
+        // It should be decided according to the language only in the case of default value
+        return when (langType) {
+            LangType.cjk -> when(pageDirection) {
+                PageProgressionDirection.rtl -> ContentLayoutStyle.cjkv
+                else -> ContentLayoutStyle.cjkh
             }
-            else -> {
-                if (pageDirection == ContentLayoutStyle.rtl.name)
-                    ContentLayoutStyle.rtl
-                else
-                    ContentLayoutStyle.ltr
+            LangType.afh -> when(pageDirection) {
+                PageProgressionDirection.ltr -> ContentLayoutStyle.ltr
+                else -> ContentLayoutStyle.rtl
+            }
+            LangType.other -> when(pageDirection) {
+                PageProgressionDirection.rtl -> ContentLayoutStyle.rtl
+                else -> ContentLayoutStyle.ltr
             }
         }
     }
-
 }
 
 fun parseMetadata(metadataDict: JSONObject): Metadata {
