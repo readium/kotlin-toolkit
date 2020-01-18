@@ -146,6 +146,7 @@ class EpubParser : PublicationParser {
             parseNcxDocument(container, publication)
         } else {
             parseNavigationDocument(container, publication)
+            parseMediaOverlays(container, publication)
         }
 
 
