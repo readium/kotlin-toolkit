@@ -16,14 +16,16 @@ import java.io.IOException
 import java.io.InputStream
 import java.util.Stack
 
+val XmlNs = "http://www.w3.org/XML/1998/namespace"
+
 class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Boolean = true) {
     @Throws(XmlPullParserException::class, IOException::class)
     fun parse(stream: InputStream) : ElementNode {
         val parser = buildParser(isNamespaceAware)
         parser.setInput(stream, null) // let the parser try to determine input encoding
 
-        val stack = Stack<Pair<MutableList<Node>, AttributeMap>>()
-        stack.push(Pair(mutableListOf<Node>(), mutableMapOf()))
+        val stack = Stack<Triple<MutableList<Node>, AttributeMap, String?>>()
+        stack.push(Triple(mutableListOf<Node>(), mutableMapOf(), null))
         var text = ""
 
         while (parser.eventType != XmlPullParser.END_DOCUMENT) {
@@ -31,13 +33,20 @@ class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Bool
                 XmlPullParser.START_TAG -> {
                     maybeAddText(text, stack.peek().first)
                     text = ""
-                    stack.push(Pair(mutableListOf<Node>(), buildAttributeMap(parser)))
+                    val attributes =  buildAttributeMap(parser)
+                    val langAttr = if (isNamespaceAware) attributes[XmlNs]?.get("lang") else attributes[""]?.get("xml:lang")
+                    val lang = when(langAttr)  {
+                        "" -> null
+                        null -> stack.peek().third
+                        else -> langAttr
+                    }
+                    stack.push(Triple(mutableListOf<Node>(), attributes, lang))
                 }
                 XmlPullParser.END_TAG -> {
-                    val (children, attributes) = stack.pop()
+                    val (children, attributes, lang) = stack.pop()
                     maybeAddText(text, children)
                     text = ""
-                    val element = buildElement(parser, attributes, children)
+                    val element = buildElement(parser, attributes, children, lang)
                     stack.peek().first.add(element)
                 }
                 XmlPullParser.TEXT -> {
@@ -70,10 +79,10 @@ class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Bool
         }
     }
 
-    private fun buildElement(parser: XmlPullParser, attributes:AttributeMap, children: MutableList<Node>) : ElementNode {
+    private fun buildElement(parser: XmlPullParser, attributes:AttributeMap, children: MutableList<Node>, lang: String?) : ElementNode {
         val rawName = parser.name
         val name = if (isCaseSensitive) rawName else rawName.toLowerCase()
-        val node = ElementNode(parser.name, parser.namespace, attributes, children)
+        val node = ElementNode(parser.name, parser.namespace, attributes, children, lang)
         return node
     }
 
@@ -96,8 +105,6 @@ class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Bool
     }
 }
 
-val XmlNs = "http://www.w3.org/XML/1998/namespace"
-
 open class Node
 
 data class TextNode(val text: String) : Node()
@@ -110,7 +117,8 @@ data class ElementNode(
         val name: String,
         val namespace: String = "",
         val attributes: AttributeMap = mapOf(),
-        val children: List<Node> = listOf()) : Node() {
+        val children: List<Node> = listOf(),
+        val lang: String? = null) : Node() {
 
     // Text of the first child, if it is a TextNode, otherwise null
     val text: String?
@@ -119,10 +127,6 @@ data class ElementNode(
     // Id with fallback to XML namespace
     val id: String?
         get() = getAttr("id") ?: getAttrNs("id", XmlNs)
-
-    // Language with fallback to XML namespace
-    val lang: String?
-        get() = getAttr("lang") ?: getAttrNs("lang", XmlNs)
 
     // Get attribute in the same namespace as this ElementNode or in no namespace
     fun getAttr(name: String) = getAttrNs(name, namespace) ?: getAttrNs(name, "")
