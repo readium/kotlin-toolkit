@@ -17,36 +17,35 @@ class PropertiesTest {
 
     @Test
     fun `parse orientation`() {
-        assertEquals(Properties.Orientation.from("auto"), Properties.Orientation.AUTO)
-        assertEquals(Properties.Orientation.from("landscape"), Properties.Orientation.LANDSCAPE)
-        assertEquals(Properties.Orientation.from("portrait"), Properties.Orientation.PORTRAIT)
+        assertEquals(Properties.Orientation.AUTO, Properties.Orientation.from("auto"))
+        assertEquals(Properties.Orientation.LANDSCAPE, Properties.Orientation.from("landscape"))
+        assertEquals(Properties.Orientation.PORTRAIT, Properties.Orientation.from("portrait"))
         assertNull(Properties.Orientation.from("foobar"))
         assertNull(Properties.Orientation.from(null))
     }
 
     @Test
     fun `parse page`() {
-        assertEquals(Properties.Page.from("left"), Properties.Page.LEFT)
-        assertEquals(Properties.Page.from("right"), Properties.Page.RIGHT)
-        assertEquals(Properties.Page.from("center"), Properties.Page.CENTER)
+        assertEquals(Properties.Page.LEFT, Properties.Page.from("left"))
+        assertEquals(Properties.Page.RIGHT, Properties.Page.from("right"))
+        assertEquals(Properties.Page.CENTER, Properties.Page.from("center"))
         assertNull(Properties.Page.from("foobar"))
         assertNull(Properties.Page.from(null))
     }
 
     @Test
+    fun `parse null JSON`() {
+        assertEquals(Properties(), Properties.fromJSON(null))
+    }
+
+    @Test
     fun `parse minimal JSON`() {
-        assertEquals(Properties.fromJSON(JSONObject("{}")), Properties())
+        assertEquals(Properties(), Properties.fromJSON(JSONObject("{}")))
     }
 
     @Test
     fun `parse full JSON`() {
         assertEquals(
-            Properties.fromJSON(JSONObject("""{
-                "orientation": "auto",
-                "page": "left",
-                "other-property1": "value",
-                "other-property2": [42]
-            }""")),
             Properties(
                 orientation = Properties.Orientation.AUTO,
                 page = Properties.Page.LEFT,
@@ -54,19 +53,30 @@ class PropertiesTest {
                     "other-property1" to "value",
                     "other-property2" to listOf(42)
                 )
-            )
-
+            ),
+            Properties.fromJSON(JSONObject("""{
+                "orientation": "auto",
+                "page": "left",
+                "other-property1": "value",
+                "other-property2": [42]
+            }"""))
         )
     }
 
     @Test
     fun `get minimal JSON`() {
-        assertEquals(Properties().toJSON().toString(), "{}")
+        assertEquals("{}", Properties().toJSON().toString())
     }
 
     @Test
     fun `get full JSON`() {
         assertEquals(
+            JSONObject("""{
+                "orientation": "landscape",
+                "page": "right",
+                "other-property1": "value",
+                "other-property2": [42]
+            }""").toString(),
             Properties(
                 orientation = Properties.Orientation.LANDSCAPE,
                 page = Properties.Page.RIGHT,
@@ -74,13 +84,7 @@ class PropertiesTest {
                     "other-property1" to "value",
                     "other-property2" to listOf(42)
                 )
-            ).toJSON().toString(),
-            JSONObject("""{
-                "orientation": "landscape",
-                "page": "right",
-                "other-property1": "value",
-                "other-property2": [42]
-            }""").toString()
+            ).toJSON().toString()
         )
     }
 

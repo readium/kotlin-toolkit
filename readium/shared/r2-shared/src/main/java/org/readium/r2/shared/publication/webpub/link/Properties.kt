@@ -100,15 +100,17 @@ data class Properties(
 
     companion object {
 
-        fun fromJSON(jsonObject: JSONObject): Properties {
-            val json = jsonObject.toMutableMap()
+        fun fromJSON(json: JSONObject?): Properties {
+            json ?: return Properties()
+
             val orientation = json.remove("orientation") as? String
             val page = json.remove("page") as? String
+            val otherProperties = json.toMutableMap()
 
             return Properties(
                 orientation = Orientation.from(orientation),
                 page = Page.from(page),
-                otherProperties = json
+                otherProperties = otherProperties
             )
         }
 

@@ -11,15 +11,15 @@ package org.readium.r2.shared
 
 import java.net.URL
 
-class Clip {
-    var relativeUrl: URL? = null
-    var fragmentId: String? = null
-    var start: Double? = null
-    var end: Double? = null
+data class Clip(
+    var relativeUrl: URL? = null,
+    var fragmentId: String? = null,
+    var start: Double? = null,
+    var end: Double? = null,
     var duration: Double? = null
-}
+)
 
-class MediaOverlayNode(var text: String? = null, private var audio: String? = null) {
+data class MediaOverlayNode(var text: String? = null, private var audio: String? = null) {
 
     var role: MutableList<String> = mutableListOf()
     var children: MutableList<MediaOverlayNode> = mutableListOf()
