@@ -14,6 +14,8 @@ import org.json.JSONObject
 import java.io.Serializable
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.MediaOverlays
+import org.readium.r2.shared.Warning
+import org.readium.r2.shared.WarningLogger
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.publication.JSONParsingException
@@ -95,9 +97,16 @@ data class Link(
 
     companion object {
 
-        fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Link? {
+        fun fromJSON(
+            json: JSONObject?,
+            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
+            warnings: WarningLogger? = null
+        ): Link? {
             val href = json?.optNullableString("href")
-                ?: return null
+            if (href == null) {
+                warnings?.log(Warning.RwpmParsing(Link::class.java, "[href] is required", json))
+                return null
+            }
 
             return Link(
                 href = normalizeHref(href),
@@ -116,12 +125,16 @@ data class Link(
             )
         }
 
-        fun fromJSONArray(json: JSONArray?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): List<Link> {
+        fun fromJSONArray(
+            json: JSONArray?,
+            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
+            warnings: WarningLogger? = null
+        ): List<Link> {
             json ?: return emptyList()
 
             val links = mutableListOf<Link>()
             for (i in 0 until json.length()) {
-                val link = fromJSON(json.optJSONObject(i), normalizeHref)
+                val link = fromJSON(json.optJSONObject(i), normalizeHref, warnings)
                 if (link != null) {
                     links.add(link)
                 }

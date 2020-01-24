@@ -14,9 +14,9 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 
 /**
- * Unwraps recursively the [JSONObject] to a [MutableMap<String, Any>].
+ * Unwraps recursively the [JSONObject] to a [Map<String, Any>].
  */
-fun JSONObject.toMutableMap(): MutableMap<String, Any> {
+fun JSONObject.toMap(): Map<String, Any> {
     val map = mutableMapOf<String, Any>()
     for (key in keys()) {
         map[key] = unwrapJSON(get(key))
@@ -25,9 +25,9 @@ fun JSONObject.toMutableMap(): MutableMap<String, Any> {
 }
 
 /**
- * Unwraps recursively the [JSONArray] to a [MutableList<Any>].
+ * Unwraps recursively the [JSONArray] to a [List<Any>].
  */
-fun JSONArray.toMutableList(): MutableList<Any> {
+fun JSONArray.toList(): List<Any> {
     val list = mutableListOf<Any>()
     for (i in 0 until length()) {
         list.add(unwrapJSON(get(i)))
@@ -36,8 +36,8 @@ fun JSONArray.toMutableList(): MutableList<Any> {
 }
 
 private fun unwrapJSON(value: Any) = when (value) {
-    is JSONObject -> value.toMutableMap()
-    is JSONArray -> value.toMutableList()
+    is JSONObject -> value.toMap()
+    is JSONArray -> value.toList()
     else -> value
 }
 
@@ -106,7 +106,7 @@ fun JSONObject.optNullableString(name: String): String? {
 fun JSONObject.optStringsFromArrayOrSingle(name: String): List<String> {
     val array = optJSONArray(name)
     if (array != null) {
-        return array.toMutableList().filterIsInstance(String::class.java)
+        return array.toList().filterIsInstance(String::class.java)
     }
 
     val string = optNullableString(name)

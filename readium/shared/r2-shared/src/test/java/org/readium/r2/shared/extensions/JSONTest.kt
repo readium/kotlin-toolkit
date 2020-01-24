@@ -11,7 +11,7 @@ class JSONTest {
     fun `unpack an empty JSONObject`() {
         val sut = JSONObject("{}")
 
-        assertEquals(sut.toMutableMap(), mapOf<String, Any>())
+        assertEquals(sut.toMap(), mapOf<String, Any>())
     }
 
     @Test
@@ -22,7 +22,7 @@ class JSONTest {
             "c": true
         }""")
 
-        assertEquals(sut.toMutableMap(), mapOf(
+        assertEquals(sut.toMap(), mapOf(
             "a" to 1,
             "b" to "hello",
             "c" to true
@@ -37,7 +37,7 @@ class JSONTest {
             "c": [true, 42, "world"]
         }""")
 
-        assertEquals(sut.toMutableMap(), mapOf(
+        assertEquals(sut.toMap(), mapOf(
             "a" to 1,
             "b" to mapOf("b.1" to "hello"),
             "c" to listOf(true, 42, "world")
@@ -48,14 +48,14 @@ class JSONTest {
     fun `unpack an empty JSONArray`() {
         val sut = JSONArray("[]")
 
-        assertEquals(sut.toMutableList(), listOf<Any>())
+        assertEquals(sut.toList(), listOf<Any>())
     }
 
     @Test
     fun `unpack a JSONArray`() {
         val sut = JSONArray("[1, 'hello', true]")
 
-        assertEquals(sut.toMutableList(), listOf(1, "hello", true))
+        assertEquals(sut.toList(), listOf(1, "hello", true))
     }
 
     @Test
@@ -66,7 +66,7 @@ class JSONTest {
             [true, 42, "world"]
         ]""")
 
-        assertEquals(sut.toMutableList(), listOf(
+        assertEquals(sut.toList(), listOf(
             1,
             mapOf("b.1" to "hello"),
             listOf(true, 42, "world")
