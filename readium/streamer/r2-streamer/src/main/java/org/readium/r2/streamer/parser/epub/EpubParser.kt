@@ -132,9 +132,15 @@ class EpubParser : PublicationParser {
             return null
         }
 
-        val packageXml = XmlParser().parse(documentData.inputStream())
-        val packageDocument = PackageDocumentParser.parse(packageXml, container.rootFile.rootFilePath)  ?: return null
-        val publication = packageDocument.toPublication()
+        val packageDocument = try {
+            val packageXml = XmlParser().parse(documentData.inputStream())
+            PackageDocumentParser.parse(packageXml, container.rootFile.rootFilePath) ?: return null
+        } catch (e: Exception) {
+            if (DEBUG) Timber.e(e, "Invalid File : ${container.rootFile.rootFilePath}")
+            return null
+        }
+
+        val publication =  packageDocument.toPublication()
         publication.internalData["type"] = "epub"
         publication.internalData["rootfile"] = container.rootFile.rootFilePath
 
@@ -300,11 +306,16 @@ class EpubParser : PublicationParser {
 
     private fun parseMediaOverlays(container: Container, publication: Publication) {
         val xmlParser = XmlParser()
-       publication.otherLinks.forEach {
+        publication.otherLinks.forEach {
             val path = if (it.href?.first() == '/') it.href?.substring(1) else it.href
             if (it.typeLink == "application/smil+xml" && path != null) {
-                it.mediaOverlays = xmlParser.parse(container.dataInputStream(path)).let { SmilParser.parse(it, path) }
-                it.rel.add("media-overlay")
+                it.mediaOverlays = try {
+                    xmlParser.parse(container.dataInputStream(path)).let { SmilParser.parse(it, path) }
+                } catch (e: Exception) {
+                    if (DEBUG) Timber.e(e)
+                    null
+                }
+                if (it.mediaOverlays != null) it.rel.add("media-overlay")
             }
         }
     }
