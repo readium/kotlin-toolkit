@@ -11,7 +11,7 @@ package org.readium.r2.streamer.parser.epub
 
 data class MultiString(val main: String, val alt: Map<String, String>, val fileAs: String? = null)
 
-data class Title(val value: MultiString, val type: String? = null)
+data class Title(val value: MultiString, val type: String? = null, val displaySeq: Int? = null)
 
 data class Contributor(val name: MultiString, val roles: List<String> = listOf())
 

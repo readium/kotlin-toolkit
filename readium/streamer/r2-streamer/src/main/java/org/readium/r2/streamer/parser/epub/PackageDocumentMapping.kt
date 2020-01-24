@@ -88,23 +88,34 @@ private fun PackageDocument.getMaintitle() : MultilanguageString {
     val main =  titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
     multilangString.singleString = main?.value?.main
     main?.value?.alt?.let { multilangString.multiString.putAll(it) }
+    if ("" in multilangString.multiString.keys && metadata.generalMetadata.languages.isNotEmpty()) {
+        val v = multilangString.multiString.remove("") as String
+        val l = metadata.generalMetadata.languages.first()
+        multilangString.multiString[l] = v
+    }
     return multilangString
 }
 
 private fun PackageDocument.getSubtitle() : MultilanguageString {
     val multilangString = MultilanguageString()
     val titles = metadata.generalMetadata.titles
-    val sub =  titles.firstOrNull { it.type == "subtitle" }
+    val sub =  titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()
     multilangString.singleString = sub?.value?.main
     sub?.value?.alt?.let { multilangString.multiString.putAll(it) }
     return multilangString
 }
 
-private fun mapContributor(contributor: Contributor) : SharedContributor {
+private fun PackageDocument.mapContributor(contributor: Contributor) : SharedContributor {
     val pubContrib = org.readium.r2.shared.Contributor()
-    pubContrib.multilanguageName = MultilanguageString()
-    pubContrib.multilanguageName.singleString = contributor.name.main
-    pubContrib.multilanguageName.multiString = contributor.name.alt.toMutableMap()
+    val multilangString = MultilanguageString()
+    multilangString.singleString = contributor.name.main
+    multilangString.multiString = contributor.name.alt.toMutableMap()
+    if ("" in multilangString.multiString.keys && metadata.generalMetadata.languages.isNotEmpty()) {
+        val v = multilangString.multiString.remove("") as String
+        val l = metadata.generalMetadata.languages.first()
+        multilangString.multiString[l] = v
+    }
+    pubContrib.multilanguageName = multilangString
     pubContrib.sortAs = contributor.name.fileAs
     pubContrib.roles = contributor.roles.toMutableList()
     return pubContrib
@@ -114,14 +125,13 @@ private fun addContributors(contributors: List<SharedContributor>,
                             pubMetadata: SharedMetadata,
                             defaultRole: String? = null) {
     for (contributor in contributors) {
-        val roles = contributor.roles.toMutableList()
-        if (roles.isEmpty()) {
+        if (contributor.roles.isEmpty()) {
             if (defaultRole == null)
                 pubMetadata.contributors.add(contributor)
             else
-                roles.add(defaultRole)
+                contributor.roles.add(defaultRole)
         }
-        for (role in roles) {
+        for (role in contributor.roles) {
             when (role) {
                 "aut" -> pubMetadata.authors.add(contributor)
                 "trl" -> pubMetadata.translators.add(contributor)

@@ -128,9 +128,9 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
         val altTitles: MutableMap<String, String> = mutableMapOf()
         var type: String? = null
         var fileAs: String? = null
-        val lang = node.lang
-        if (lang != null)
-            altTitles[lang] = mainTitle
+        var displaySeq: Int? = null
+        val lang = node.lang ?: ""
+        altTitles[lang] = mainTitle
 
         if (epubVersion >= 3.0) {
             props?.forEach {
@@ -138,6 +138,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
                     DEFAULT_VOCAB.META.iri + "alternate-script" -> if (it.lang != null) altTitles[it.lang] = it.value
                     DEFAULT_VOCAB.META.iri + "file-as" -> fileAs = it.value
                     DEFAULT_VOCAB.META.iri + "title-type" -> type = it.value
+                    DEFAULT_VOCAB.META.iri + "display-seq" -> it.value.toIntOrNull()?.let { displaySeq = it }
                 }
             }
 
@@ -147,7 +148,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
              whose name is calibre:title_sort and content is the value to use."
               */
         }
-        return Title(MultiString(mainTitle, altTitles, fileAs), type)
+        return Title(MultiString(mainTitle, altTitles, fileAs), type, displaySeq)
     }
 
     private fun parseContributor(node: ElementNode, props: List<Property>?): Contributor? {
@@ -155,9 +156,8 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
         val altNames: MutableMap<String, String> = mutableMapOf()
         val roles: MutableList<String> = LinkedList()
         var fileAs: String? = null
-        val lang = node.lang
-        if (lang != null)
-            altNames[lang] = mainName
+        val lang = node.lang ?: ""
+        altNames[lang] = mainName
 
         if (epubVersion >= 3.0) {
             props?.forEach {
