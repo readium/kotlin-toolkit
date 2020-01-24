@@ -60,7 +60,7 @@ class NavigationDocumentParser {
 
     private fun nodeOl(element: ElementNode): Link {
         val newOlNode = Link()
-        val liElements = element.get("li", Namespaces.Xhtml) ?: return newOlNode
+        val liElements = element.get("li", Namespaces.Xhtml)
         for (li in liElements) {
             val spanText = li.getFirst("span", Namespaces.Xhtml)?.name
             if (spanText != null && spanText.isNotEmpty()) {

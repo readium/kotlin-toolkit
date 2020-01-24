@@ -172,7 +172,7 @@ class EpubParser : PublicationParser {
 
     private fun getRootFilePath(data: ByteArray): String {
         val container = XmlParser().parse(data.inputStream())
-        return container?.getFirst("rootfiles", Namespaces.Opc)
+        return container.getFirst("rootfiles", Namespaces.Opc)
                 ?.getFirst("rootfile", Namespaces.Opc)
                 ?.getAttr("full-path")
                 ?: "content.opf"
@@ -303,7 +303,7 @@ class EpubParser : PublicationParser {
        publication.otherLinks.forEach {
             val path = if (it.href?.first() == '/') it.href?.substring(1) else it.href
             if (it.typeLink == "application/smil+xml" && path != null) {
-                it.mediaOverlays = xmlParser.parse(container.dataInputStream(path))?.let { SmilParser.parse(it, path) }
+                it.mediaOverlays = xmlParser.parse(container.dataInputStream(path)).let { SmilParser.parse(it, path) }
                 it.rel.add("media-overlay")
             }
         }

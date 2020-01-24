@@ -21,8 +21,9 @@ interface PublicationParser {
 }
 
 fun normalize(base: String, href: String?): String {
-    if (href == null || href.isEmpty())
+    if (href.isNullOrEmpty())
         return ""
+
     val hrefComponents = href.split('/').filter { it.isNotEmpty() }
     var baseComponents = base.split('/').filter { it.isNotEmpty() }
 

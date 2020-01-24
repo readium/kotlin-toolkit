@@ -43,7 +43,7 @@ class NcxParser {
         val newNode = Link()
         newNode.href = normalize(ncxDocumentPath, element.getFirst("content", Namespaces.Ncx)?.getAttr(("src")))
         newNode.title = element.getFirst("navLabel", Namespaces.Ncx)!!.getFirst("text", Namespaces.Ncx)!!.text
-        element.get("navPoint", Namespaces.Ncx)?.let {
+        element.get("navPoint", Namespaces.Ncx).let {
             for (childNode in it) {
                 newNode.children.plusAssign(node(childNode, type))
             }

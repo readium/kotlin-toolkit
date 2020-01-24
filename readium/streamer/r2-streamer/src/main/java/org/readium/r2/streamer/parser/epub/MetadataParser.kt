@@ -90,7 +90,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
                 "publisher" -> parseContributor(it, props)?.let { publishers.add(it) }
                 "date" -> parseDate(it)?.let { dates.add(it) }
                 "description" ->  it.text?.let { description = it }
-                "subject" -> parseSubject(it, props)?.let { subjects.add(it) }
+                "subject" -> parseSubject(it, props).let { subjects.add(it) }
                 "rights" -> it.text?.let { rights = it }
                 "source" -> it.text?.let { source = it }
             }
