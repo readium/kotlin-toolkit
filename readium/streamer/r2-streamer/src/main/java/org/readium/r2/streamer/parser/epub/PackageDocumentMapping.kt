@@ -187,7 +187,7 @@ private fun PackageDocument.computeResources() : Pair<List<SharedLink>, List<Sha
     val itemrefByIdref = spine.itemrefs.associateBy(Itemref::idref)
     val links = manifest.map { computeLink(it, itemById, itemrefByIdref) }
     val linkById = links.associateBy { it.title as String }
-    if (epubVersion == 2.0) {
+    if (epubVersion < 3.0) {
         metadata.oldMeta["cover"]?.let { linkById[it] }?.rel?.add("cover")
     }
     // items in resources collection might be used only as fallback or not

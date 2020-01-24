@@ -17,7 +17,7 @@ object PackageDocumentParser {
         val packagePrefixes = if (prefixAttribute == null) mapOf() else parsePackagePrefixes(prefixAttribute)
         val prefixMap = RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
 
-        val epubVersion = document.getAttr("version")?.toDoubleOrNull() ?: return null
+        val epubVersion = document.getAttr("version")?.toDoubleOrNull() ?: 1.2
         val metadata = MetadataParser(epubVersion, prefixMap).parse(document) ?: return null
 
         val manifestElement = document.getFirst("manifest", Namespaces.Opf) ?: return null

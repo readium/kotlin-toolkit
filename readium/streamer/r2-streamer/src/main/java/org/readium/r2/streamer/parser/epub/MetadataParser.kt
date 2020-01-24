@@ -31,9 +31,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
         val rendition = parseRenditionProperties(globalProperties)
         val media = parseMediaProperties(globalProperties, otherProperties)
 
-        val oldMeta = if (epubVersion == 2.0) {
-            parseXhtmlMeta(metadataElement)
-        } else mapOf()
+        val oldMeta = if (epubVersion >= 3.0) mapOf() else parseXhtmlMeta(metadataElement)
 
         return Metadata(dcMetadata, media, rendition, links, oldMeta)
     }
@@ -134,12 +132,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
         if (lang != null)
             altTitles[lang] = mainTitle
 
-        if (epubVersion == 2.0) {
-            /* According to https://github.com/readium/architecture/blob/master/streamer/parser/metadata.md
-            "The string for fileAs should be the value of content in a meta
-            whose name is calibre:title_sort and content is the value to use."
-             */
-        } else {
+        if (epubVersion >= 3.0) {
             props?.forEach {
                 when (it.property) {
                     DEFAULT_VOCAB.META.iri + "alternate-script" -> if (it.lang != null) altTitles[it.lang] = it.value
@@ -147,6 +140,12 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
                     DEFAULT_VOCAB.META.iri + "title-type" -> type = it.value
                 }
             }
+
+        } else {
+            /* According to https://github.com/readium/architecture/blob/master/streamer/parser/metadata.md
+             "The string for fileAs should be the value of content in a meta
+             whose name is calibre:title_sort and content is the value to use."
+              */
         }
         return Title(MultiString(mainTitle, altTitles, fileAs), type)
     }
@@ -160,10 +159,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
         if (lang != null)
             altNames[lang] = mainName
 
-        if (epubVersion == 2.0) {
-            node.getAttrNs("role", Namespaces.Opf)?.let { roles.add(it) }
-            node.getAttrNs("file-as", Namespaces.Opf)?.let { fileAs = it }
-        } else {
+        if (epubVersion >= 3.0) {
             props?.forEach {
                 when (it.property) {
                     DEFAULT_VOCAB.META.iri + "alternate-script" -> if (it.lang != null) altNames[it.lang] = it.value
@@ -172,6 +168,9 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
                         if (it.scheme == RESERVED_PREFIXES["marc"] + "relators") roles.add(it.value)
                 }
             }
+        } else {
+            node.getAttrNs("role", Namespaces.Opf)?.let { roles.add(it) }
+            node.getAttrNs("file-as", Namespaces.Opf)?.let { fileAs = it }
         }
         return Contributor(MultiString(mainName, altNames, fileAs), roles)
     }

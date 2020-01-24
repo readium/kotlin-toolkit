@@ -142,7 +142,7 @@ class EpubParser : PublicationParser {
         container.drm = drm
         parseEncryption(container, publication, drm)
 
-        if (packageDocument.epubVersion == 2.0) {
+        if (packageDocument.epubVersion < 3.0) {
             parseNcxDocument(container, publication)
         } else {
             parseNavigationDocument(container, publication)
