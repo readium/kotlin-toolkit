@@ -21,6 +21,7 @@ import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.DirectoryContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
+import org.readium.r2.streamer.parser.normalize
 import timber.log.Timber
 import java.io.File
 
@@ -91,7 +92,6 @@ class EpubParser : PublicationParser {
 
     private val ndp = NavigationDocumentParser()
     private val ncxp = NcxParser()
-    private val encp = EncryptionParser()
 
     private fun generateContainerFrom(path: String): Container {
         if (!File(path).exists())
@@ -238,24 +238,16 @@ class EpubParser : PublicationParser {
     }
 
     private fun parseEncryption(container: Container, publication: Publication, drm: DRM?) {
-        val documentData = try {
-            container.data(EPUBConstant.encryptionDotXmlPath)
+        try {
+            val data = container.data(EPUBConstant.encryptionDotXmlPath)
+            val document = XmlParser().parse(data.inputStream())
+            val encryption = EncryptionParser.parse(document, drm)
+            encryption.forEach {
+                val resourceURI = normalize("/", it.key)
+                val link = publication.linkWithHref(resourceURI)
+                if (link != null) link.properties.encryption = it.value}
         } catch (e: Exception) {
-            return
-        }
-        val document = XmlParser().parse(documentData.inputStream())
-        val encryptedDataElements = document.getFirst("encryption", Namespaces.Opc)
-                ?.get("EncryptedData", Namespaces.Enc) ?: return
-        for (encryptedDataElement in encryptedDataElements) {
-            val encryption = Encryption()
-            val keyInfoUri = encryptedDataElement.getFirst("KeyInfo", Namespaces.Sig)
-                    ?.getFirst("RetrievalMethod", Namespaces.Sig)?.getAttr("URI")
-            if (keyInfoUri == "license.lcpl#/encryption/content_key" && drm?.brand == DRM.Brand.lcp)
-                encryption.scheme = DRM.Scheme.lcp
-            encryption.algorithm = encryptedDataElement.getFirst("EncryptionMethod", Namespaces.Enc)
-                    ?.getAttr("Algorithm")
-            encp.parseEncryptionProperties(encryptedDataElement, encryption)
-            encp.add(encryption, publication, encryptedDataElement)
+
         }
     }
 

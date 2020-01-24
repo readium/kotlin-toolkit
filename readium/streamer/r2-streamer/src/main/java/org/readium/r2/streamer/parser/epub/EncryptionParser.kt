@@ -1,6 +1,6 @@
 /*
  * Module: r2-streamer-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Developers: Aferdita Muriqi, Clément Baumann, Quentin Gliosca
  *
  * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -11,26 +11,53 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.Encryption
 import org.readium.r2.shared.Publication
+import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
 
-class EncryptionParser {
+object EncryptionParser {
+    fun parse(document: ElementNode, drm: DRM?) : Map<String, Encryption> =
+        document.get("EncryptedData", Namespaces.Enc)
+                .mapNotNull{ parseEncryptedData(it, drm) }
+                .associate{ it }
 
-    fun parseEncryptionProperties(encryptedDataElement: ElementNode, encryption: Encryption) {
-        val encryptionProperties = encryptedDataElement.getFirst("EncryptionProperties", Namespaces.Enc)
-                ?.get("EncryptionProperty", Namespaces.Enc)
-                ?: return
-        for (encryptionProperty in encryptionProperties) {
-            parseCompressionElement(encryptionProperty, encryption)
+    private fun parseEncryptedData(node: ElementNode, drm: DRM?) : Pair<String, Encryption>? {
+        val resourceURI = node.getFirst("CipherData", Namespaces.Enc)
+                ?.getFirst("CipherReference", Namespaces.Enc)?.getAttr("URI") ?: return null
+        val keyInfoUri = node.getFirst("KeyInfo", Namespaces.Sig)
+                ?.getFirst("RetrievalMethod", Namespaces.Sig)
+                ?.getAttr("URI")
+        val scheme = if (keyInfoUri == "license.lcpl#/encryption/content_key" && drm?.brand == DRM.Brand.lcp)
+            DRM.Scheme.lcp else null
+        val algorithm = node.getFirst("EncryptionMethod", Namespaces.Enc)
+                ?.getAttr("Algorithm")
+        val compression = node.getFirst("EncryptionProperties", Namespaces.Enc)?.let { parseEncryptionProperties(it) }
+        val originalLength = compression?.first
+        val compressionMethod = compression?.second
+        val enc = Encryption().apply {
+            this.scheme = scheme
+            this.algorithm = algorithm
+            this.compression = compressionMethod
+            this.originalLength = originalLength
         }
+        return Pair(resourceURI, enc)
     }
 
-    private fun parseCompressionElement(encryptionProperty: ElementNode, encryption: Encryption) {
-        val compressionElement = encryptionProperty.getFirst("Compression", Namespaces.Comp) ?: return
-        val originalLength = compressionElement.getAttr("OriginalLength")
-        encryption.originalLength = originalLength?.toInt()
-        val method = compressionElement.getAttr("Method") ?: return
-        encryption.compression = if (method == "8") "deflate" else "none"
+    private fun parseEncryptionProperties(encryptionProperties: ElementNode) : Pair<Int, String>? {
+        for (encryptionProperty in encryptionProperties.get("EncryptionProperty", Namespaces.Enc)) {
+            val compressionElement = encryptionProperty.getFirst("Compression", Namespaces.Comp)
+            if (compressionElement != null) {
+                return parseCompressionElement(compressionElement) ?: continue
+            }
+        }
+        return null
+    }
+
+    private fun parseCompressionElement(compressionElement: ElementNode) : Pair<Int, String>? {
+        val originalLength = compressionElement.getAttr("OriginalLength")?.toInt() ?: return null
+        val method = compressionElement.getAttr("Method") ?: return null
+        val compression = if (method == "8") "deflate" else "none"
+        return Pair(originalLength, compression)
     }
 
     fun add(encryption: Encryption, publication: Publication, encryptedDataElement: ElementNode) {
