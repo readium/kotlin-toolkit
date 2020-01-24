@@ -257,7 +257,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
         fun parse(metadataElement: ElementNode): Pair<List<Property>, Map<String, List<Property>>> {
             val metaElements = metadataElement.get("meta", Namespaces.Opf)
             val metadataExpr = metaElements.mapNotNull { parseExpression(it) }
-            val metadataProp = metadataExpr.map { Property(it.property, it.value, it.id, it.lang) }
+            val metadataProp = metadataExpr.map { Property(it.property, it.value, it.scheme, it.id, it.lang) }
 
             val itemById = metadataProp.associateBy(Property::id)
             val globalItems: MutableList<Property> = mutableListOf()
