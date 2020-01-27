@@ -4,20 +4,18 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
-import org.readium.r2.shared.publication.JSONParsingException
+import org.readium.r2.shared.toJSON
 
 class LinkTest {
 
-    @Test
-    fun `parse minimal JSON`() {
+    @Test fun `parse minimal JSON`() {
         assertEquals(
             Link(href = "http://href"),
             Link.fromJSON(JSONObject("{'href': 'http://href'}"))
         )
     }
 
-    @Test
-    fun `parse full JSON`() {
+    @Test fun `parse full JSON`() {
         assertEquals(
             Link(
                 href = "http://href",
@@ -66,69 +64,59 @@ class LinkTest {
         )
     }
 
-    @Test
-    fun `parse null JSON`() {
+    @Test fun `parse null JSON`() {
         assertNull(Link.fromJSON(null))
     }
 
-    @Test
-    fun `parse JSON {rel} as single string`() {
+    @Test fun `parse JSON {rel} as single string`() {
         assertEquals(
             Link.fromJSON(JSONObject("{'href': 'a', 'rel': 'publication'}")),
             Link(href = "a", rels = listOf("publication"))
         )
     }
 
-    @Test
-    fun `parse JSON {templated} defaults to false`() {
+    @Test fun `parse JSON {templated} defaults to false`() {
         val link = Link.fromJSON(JSONObject("{'href': 'a'}"))!!
         assertFalse(link.templated)
     }
 
-    @Test
-    fun `parse JSON {templated} as false when null`() {
+    @Test fun `parse JSON {templated} as false when null`() {
         val link = Link.fromJSON(JSONObject("{'href': 'a', 'templated': null}"))!!
         assertFalse(link.templated)
     }
 
-    @Test
-    fun `parse JSON multiple languages`() {
+    @Test fun `parse JSON multiple languages`() {
         assertEquals(
             Link.fromJSON(JSONObject("{'href': 'a', 'language': ['fr', 'en']}")),
             Link(href = "a", languages = listOf("fr", "en"))
         )
     }
 
-    fun `parse JSON requires href`() {
+    @Test fun `parse JSON requires href`() {
         assertNull(Link.fromJSON(JSONObject("{'type': 'application/pdf'}")))
     }
 
-    @Test
-    fun `parse JSON requires positive width`() {
+    @Test fun `parse JSON requires positive width`() {
         val link = Link.fromJSON(JSONObject("{'href': 'a', 'width': -20}"))!!
         assertNull(link.width)
     }
 
-    @Test
-    fun `parse JSON requires positive height`() {
+    @Test fun `parse JSON requires positive height`() {
         val link = Link.fromJSON(JSONObject("{'href': 'a', 'height': -20}"))!!
         assertNull(link.height)
     }
 
-    @Test
-    fun `parse JSON requires positive bitrate`() {
+    @Test fun `parse JSON requires positive bitrate`() {
         val link = Link.fromJSON(JSONObject("{'href': 'a', 'bitrate': -20}"))!!
         assertNull(link.bitrate)
     }
 
-    @Test
-    fun `parse JSON requires positive duration`() {
+    @Test fun `parse JSON requires positive duration`() {
         val link = Link.fromJSON(JSONObject("{'href': 'a', 'duration': -20}"))!!
         assertNull(link.duration)
     }
 
-    @Test
-    fun `parse JSON array`() {
+    @Test fun `parse JSON array`() {
         assertEquals(
             listOf(
                 Link(href = "http://child1"),
@@ -141,13 +129,11 @@ class LinkTest {
         )
     }
 
-    @Test
-    fun `parse null JSON array`() {
+    @Test fun `parse null JSON array`() {
         assertEquals(emptyList<Link>(), Link.fromJSONArray(null))
     }
 
-    @Test
-    fun `parse JSON array ignores invalid links`() {
+    @Test fun `parse JSON array ignores invalid links`() {
         assertEquals(
             listOf(
                 Link(href = "http://child2")
@@ -159,16 +145,14 @@ class LinkTest {
         )
     }
 
-    @Test
-    fun `get minimal JSON`() {
+    @Test fun `get minimal JSON`() {
         assertEquals(
             JSONObject("{'href': 'http://href', 'templated': false}").toString(),
             Link(href = "http://href").toJSON().toString()
         )
     }
 
-    @Test
-    fun `get full JSON`() {
+    @Test fun `get full JSON`() {
         assertEquals(
             JSONObject("""{
                 "href": "http://href",
@@ -217,8 +201,7 @@ class LinkTest {
         )
     }
 
-    @Test
-    fun `get JSON array`() {
+    @Test fun `get JSON array`() {
         assertEquals(
             JSONArray("""[
                 {'href': 'http://child1', 'templated': false},

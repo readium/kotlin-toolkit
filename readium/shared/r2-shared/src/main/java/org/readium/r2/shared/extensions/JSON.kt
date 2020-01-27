@@ -42,20 +42,6 @@ private fun unwrapJSON(value: Any) = when (value) {
 }
 
 /**
- * Maps [name] to [collection] after wrapping it in a [JSONArray], clobbering any existing
- * name/value mapping with the same name. If the collection is empty, any existing mapping
- * for [name] is removed.
- */
-internal fun JSONObject.putIfNotEmpty(name: String, collection: Collection<*>) {
-    if (collection.isEmpty()) {
-        remove(name)
-        return
-    }
-
-    put(name, JSONArray(collection))
-}
-
-/**
  * Maps [name] to [jsonable] after converting it to a [JSONObject], clobbering any existing
  * name/value mapping with the same name. If the [JSONObject] is empty, any existing mapping
  * for [name] is removed.
@@ -68,6 +54,34 @@ fun JSONObject.putIfNotEmpty(name: String, jsonable: JSONable) {
     }
 
     put(name, json)
+}
+
+/**
+ * Maps [name] to [collection] after wrapping it in a [JSONArray], clobbering any existing
+ * name/value mapping with the same name. If the collection is empty, any existing mapping
+ * for [name] is removed.
+ * If the objects in [collection] are [JSONable], then they are converted to [JSONObject] first.
+ */
+internal fun JSONObject.putIfNotEmpty(name: String, collection: Collection<*>) {
+    val collection = collection.mapNotNull {
+        if (it !is JSONable) {
+            return@mapNotNull it
+        }
+
+        val json = it.toJSON()
+        if (json.length() == 0) {
+            return@mapNotNull null
+        }
+
+        return@mapNotNull json
+    }
+
+    if (collection.isEmpty()) {
+        remove(name)
+        return
+    }
+
+    put(name, JSONArray(collection))
 }
 
 /**
@@ -98,6 +112,28 @@ fun JSONObject.optNullableString(name: String): String? {
 }
 
 /**
+ * Returns the value mapped by [name] if it exists, coercing it if necessary, or [null] if no such
+ * mapping exists.
+ */
+fun JSONObject.optNullableInt(name: String): Int? {
+    if (!has(name)) {
+        return null
+    }
+    return optInt(name)
+}
+
+/**
+ * Returns the value mapped by [name] if it exists, coercing it if necessary, or [null] if no such
+ * mapping exists.
+ */
+fun JSONObject.optNullableDouble(name: String): Double? {
+    if (!has(name)) {
+        return null
+    }
+    return optDouble(name)
+}
+
+/**
  * Returns the value mapped by [name] if it exists and is either a [JSONArray] of [String] or a
  * single [String] value, or an empty list otherwise.
  *
@@ -115,4 +151,23 @@ fun JSONObject.optStringsFromArrayOrSingle(name: String): List<String> {
     }
 
     return emptyList()
+}
+
+/**
+ * Parses a [JSONArray] of [JSONObject] into a [List] of models using the given [factory].
+ */
+internal fun <T> JSONArray?.parseObjects(factory: (JSONObject) -> T?): List<T> {
+    this ?: return emptyList()
+
+    val models = mutableListOf<T>()
+    for (i in 0 until length()) {
+        val jsonObject = optJSONObject(i)
+        if (jsonObject != null) {
+            val model = factory(jsonObject)
+            if (model != null) {
+                models.add(model)
+            }
+        }
+    }
+    return models
 }

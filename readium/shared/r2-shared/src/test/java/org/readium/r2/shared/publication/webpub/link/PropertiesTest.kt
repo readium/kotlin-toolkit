@@ -15,18 +15,15 @@ import org.junit.Test
 
 class PropertiesTest {
 
-    @Test
-    fun `parse null JSON`() {
+    @Test fun `parse null JSON`() {
         assertEquals(Properties(), Properties.fromJSON(null))
     }
 
-    @Test
-    fun `parse minimal JSON`() {
+    @Test fun `parse minimal JSON`() {
         assertEquals(Properties(), Properties.fromJSON(JSONObject("{}")))
     }
 
-    @Test
-    fun `parse full JSON`() {
+    @Test fun `parse full JSON`() {
         assertEquals(
             Properties(
                 otherProperties = mapOf<String, Any>(
@@ -41,13 +38,11 @@ class PropertiesTest {
         )
     }
 
-    @Test
-    fun `get minimal JSON`() {
+    @Test fun `get minimal JSON`() {
         assertEquals("{}", Properties().toJSON().toString())
     }
 
-    @Test
-    fun `get full JSON`() {
+    @Test fun `get full JSON`() {
         assertEquals(
             JSONObject("""{
                 "other-property1": "value",

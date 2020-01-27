@@ -7,9 +7,16 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.shared.publication
+package org.readium.r2.shared.extensions
 
-import java.lang.IllegalArgumentException
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
+import java.util.*
 
-class JSONParsingException(type: Class<*>, message: String):
-    IllegalArgumentException("Error parsing ${type.name}: $message")
+fun String.toIso8601Date(): Date? {
+    try {
+        return DateTime(this, DateTimeZone.UTC).toDate()
+    } catch (e: Exception) {
+        return null
+    }
+}

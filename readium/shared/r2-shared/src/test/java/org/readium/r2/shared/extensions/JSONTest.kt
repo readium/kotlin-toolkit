@@ -7,15 +7,13 @@ import org.junit.Test
 
 class JSONTest {
 
-    @Test
-    fun `unpack an empty JSONObject`() {
+    @Test fun `unpack an empty JSONObject`() {
         val sut = JSONObject("{}")
 
         assertEquals(sut.toMap(), mapOf<String, Any>())
     }
 
-    @Test
-    fun `unpack a JSONObject`() {
+    @Test fun `unpack a JSONObject`() {
         val sut = JSONObject("""{
             "a": 1,
             "b": "hello",
@@ -29,8 +27,7 @@ class JSONTest {
         ))
     }
 
-    @Test
-    fun `unpack a nested JSONObject`() {
+    @Test fun `unpack a nested JSONObject`() {
         val sut = JSONObject("""{
             "a": 1,
             "b": { "b.1": "hello" },
@@ -44,22 +41,19 @@ class JSONTest {
         ))
     }
 
-    @Test
-    fun `unpack an empty JSONArray`() {
+    @Test fun `unpack an empty JSONArray`() {
         val sut = JSONArray("[]")
 
         assertEquals(sut.toList(), listOf<Any>())
     }
 
-    @Test
-    fun `unpack a JSONArray`() {
+    @Test fun `unpack a JSONArray`() {
         val sut = JSONArray("[1, 'hello', true]")
 
         assertEquals(sut.toList(), listOf(1, "hello", true))
     }
 
-    @Test
-    fun `unpack a nested JSONArray`() {
+    @Test fun `unpack a nested JSONArray`() {
         val sut = JSONArray("""[
             1,
             { "b.1": "hello" },

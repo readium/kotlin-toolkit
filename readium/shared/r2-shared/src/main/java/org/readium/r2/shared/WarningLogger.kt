@@ -33,19 +33,18 @@ sealed class Warning {
     abstract val message: String
 
     /**
-     * Warning raised when the parsing of a Readium Web Publication Manifest model object from its
-     * JSON representation fails.
+     * Warning raised when parsing a model object from its JSON representation fails.
      *
      * @param type Class of the model object to be parsed.
      * @param reason Details about the failure
      * @param json Source [JSONObject]
      */
-    data class RwpmParsing(
+    data class JsonParsing(
         val type: Class<*>,
         val reason: String,
         val json: JSONObject? = null
     ) : Warning() {
-        override val message: String get() = "Failed parsing RWPM model ${type.name}: $reason"
+        override val message: String get() = "Failed parsing JSON model ${type.name}: $reason"
     }
 
 }

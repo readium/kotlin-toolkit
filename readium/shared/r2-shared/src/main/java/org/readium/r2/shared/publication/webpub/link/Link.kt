@@ -18,7 +18,6 @@ import org.readium.r2.shared.Warning
 import org.readium.r2.shared.WarningLogger
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
-import org.readium.r2.shared.publication.JSONParsingException
 
 /**
  * Function used to recursively transform the [href] of a [Link] when parsing its JSON
@@ -69,6 +68,9 @@ data class Link(
     var mediaOverlays: MediaOverlays = MediaOverlays()
 ) : JSONable, Serializable {
 
+    /**
+     * Serializes a [Link] to its RWPM JSON representation.
+     */
     override fun toJSON(): JSONObject = JSONObject().apply {
         put("href", href)
         put("type", type)
@@ -81,8 +83,8 @@ data class Link(
         put("bitrate", bitrate)
         put("duration", duration)
         putIfNotEmpty("language", languages)
-        putIfNotEmpty("alternate", alternates.map(Link::toJSON))
-        putIfNotEmpty("children", children.map(Link::toJSON))
+        putIfNotEmpty("alternate", alternates)
+        putIfNotEmpty("children", children)
     }
 
     @Deprecated(message = "Use `type` instead", replaceWith = ReplaceWith(expression = "type"))
@@ -97,6 +99,12 @@ data class Link(
 
     companion object {
 
+        /**
+         * Creates an [Link] from its RWPM JSON representation.
+         * It's [href] and its children's recursively will be normalized using the provided
+         * [normalizeHref] closure.
+         * If the link can't be parsed, a warning will be logged with [warnings].
+         */
         fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
@@ -104,7 +112,7 @@ data class Link(
         ): Link? {
             val href = json?.optNullableString("href")
             if (href == null) {
-                warnings?.log(Warning.RwpmParsing(Link::class.java, "[href] is required", json))
+                warnings?.log(Warning.JsonParsing(Link::class.java, "[href] is required", json))
                 return null
             }
 
@@ -125,113 +133,20 @@ data class Link(
             )
         }
 
+        /**
+         * Creates a list of [Link] from its RWPM JSON representation.
+         * It's [href] and its children's recursively will be normalized using the provided
+         * [normalizeHref] closure.
+         * If a link can't be parsed, a warning will be logged with [warnings].
+         */
         fun fromJSONArray(
             json: JSONArray?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Link> {
-            json ?: return emptyList()
-
-            val links = mutableListOf<Link>()
-            for (i in 0 until json.length()) {
-                val link = fromJSON(json.optJSONObject(i), normalizeHref, warnings)
-                if (link != null) {
-                    links.add(link)
-                }
-            }
-            return links
+            return json.parseObjects { fromJSON(it, normalizeHref, warnings) }
         }
 
     }
 
 }
-
-/**
- * Converts a list of [Link] into a [JSONArray].
- */
-fun List<Link>.toJSON(): JSONArray = JSONArray(map(Link::toJSON))
-
-/*
-enum class LinkError(var v: String) {
-    InvalidLink("Invalid link"),
-}
-
-fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link {
-    val link = Link()
-    if (linkDict.has("title")) {
-        link.title = linkDict.getString("title")
-    }
-    if (linkDict.has("href")) {
-        feedUrl?.let {
-            link.href = getAbsolute(linkDict.getString("href"), feedUrl.toString())
-        } ?: run {
-            link.href = linkDict.getString("href")
-        }
-    }
-    if (linkDict.has("type")) {
-        link.typeLink = linkDict.getString("type")
-    }
-    if (linkDict.has("rel")) {
-        if (linkDict.get("rel") is String) {
-            link.rel.add(linkDict.getString("rel"))
-        } else if (linkDict.get("rel") is JSONArray) {
-            val array = linkDict.getJSONArray("rel")
-            for (i in 0 until array.length()) {
-                val string = array.getString(i)
-                link.rel.add(string)
-            }
-        }
-    }
-    if (linkDict.has("height")) {
-        link.height = linkDict.getInt("height")
-    }
-    if (linkDict.has("width")) {
-        link.width = linkDict.getInt("width")
-    }
-    if (linkDict.has("bitrate")) {
-        link.bitrate = linkDict.getInt("bitrate")
-    }
-    if (linkDict.has("duration")) {
-        link.duration = linkDict.getDouble("duration")
-    }
-    if (linkDict.has("properties")) {
-        val properties = Properties()
-        val propertiesDict = linkDict.getJSONObject("properties")
-        if (propertiesDict.has("numberOfItems")) {
-            properties.numberOfItems = propertiesDict.getInt("numberOfItems")
-        }
-        if (propertiesDict.has("indirectAcquisition")) {
-            val acquisitions = propertiesDict.getJSONArray("indirectAcquisition")
-                ?: throw Exception(LinkError.InvalidLink.name)
-            for (i in 0 until acquisitions.length()) {
-                val acquisition = acquisitions.getJSONObject(i)
-                val indirectAcquisition = parseIndirectAcquisition(indirectAcquisitionDict = acquisition)
-                properties.indirectAcquisition.add(indirectAcquisition)
-            }
-        }
-        if (propertiesDict.has("price")) {
-            val priceDict = propertiesDict.getJSONObject("price")
-            val currency = priceDict["currency"] as? String
-            val value = priceDict["value"] as? Double
-            if (priceDict == null || currency == null || value == null) {
-                throw Exception(LinkError.InvalidLink.name)
-            }
-            val price = Price(currency = currency, value = value)
-            properties.price = price
-        }
-        link.properties = properties
-    }
-    if (linkDict.has("children")) {
-        linkDict.get("children").let {
-            val children = it as? JSONArray
-                ?: throw Exception(LinkError.InvalidLink.name)
-            for (i in 0 until children.length()) {
-                val childLinkDict = children.getJSONObject(i)
-                val childLink = parseLink(childLinkDict)
-                link.children.add(childLink)
-            }
-        }
-    }
-    return link
-}
-*/
