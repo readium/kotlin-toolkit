@@ -156,14 +156,14 @@ fun JSONObject.optStringsFromArrayOrSingle(name: String): List<String> {
 /**
  * Parses a [JSONArray] of [JSONObject] into a [List] of models using the given [factory].
  */
-internal fun <T> JSONArray?.parseObjects(factory: (JSONObject) -> T?): List<T> {
+internal fun <T> JSONArray?.parseObjects(factory: (Any) -> T?): List<T> {
     this ?: return emptyList()
 
     val models = mutableListOf<T>()
     for (i in 0 until length()) {
-        val jsonObject = optJSONObject(i)
-        if (jsonObject != null) {
-            val model = factory(jsonObject)
+        val obj = opt(i)
+        if (obj != null) {
+            val model = factory(obj)
             if (model != null) {
                 models.add(model)
             }

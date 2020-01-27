@@ -66,7 +66,7 @@ data class OpdsAcquisition(
             json: JSONArray?,
             warnings: WarningLogger? = null
         ): List<OpdsAcquisition> {
-            return json.parseObjects { fromJSON(it, warnings) }
+            return json.parseObjects { fromJSON(it as? JSONObject, warnings) }
         }
 
     }

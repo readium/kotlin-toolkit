@@ -144,7 +144,7 @@ data class Link(
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Link> {
-            return json.parseObjects { fromJSON(it, normalizeHref, warnings) }
+            return json.parseObjects { fromJSON(it as? JSONObject, normalizeHref, warnings) }
         }
 
     }
