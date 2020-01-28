@@ -89,13 +89,13 @@ data class Subject(
                 return null
             }
 
-            val json = (json as? JSONObject) ?: JSONObject()
+            val jsonObject = (json as? JSONObject) ?: JSONObject()
             return Subject(
                 localizedName = localizedName,
-                sortAs = json.optNullableString("sortAs"),
-                scheme = json.optNullableString("scheme"),
-                code = json.optNullableString("code"),
-                links = Link.fromJSONArray(json.optJSONArray("links"), normalizeHref, warnings)
+                sortAs = jsonObject.optNullableString("sortAs"),
+                scheme = jsonObject.optNullableString("scheme"),
+                code = jsonObject.optNullableString("code"),
+                links = Link.fromJSONArray(jsonObject.optJSONArray("links"), normalizeHref, warnings)
             )
         }
 

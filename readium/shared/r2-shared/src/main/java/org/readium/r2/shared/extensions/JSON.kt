@@ -192,6 +192,38 @@ fun JSONObject.optStringsFromArrayOrSingle(name: String, remove: Boolean = false
 }
 
 /**
+ * Returns a list containing the results of applying the given transform function to each element
+ * in the original [JSONObject].
+ * If the tranform returns [null], it is not included in the output list.
+ */
+fun <T> JSONObject.mapNotNull(transform: (Pair<String, Any>) -> T?): List<T> {
+    val result = mutableListOf<T>()
+    for (key in keys()) {
+        val transformedValue = transform(Pair(key, get(key)))
+        if (transformedValue != null) {
+            result.add(transformedValue)
+        }
+    }
+    return result
+}
+
+/**
+ * Returns a list containing the results of applying the given transform function to each element
+ * in the original [JSONArray].
+ * If the tranform returns [null], it is not included in the output list.
+ */
+fun <T> JSONArray.mapNotNull(transform: (Any) -> T?): List<T> {
+    val result = mutableListOf<T>()
+    for (i in 0 until length()) {
+        val transformedValue = transform(get(i))
+        if (transformedValue != null) {
+            result.add(transformedValue)
+        }
+    }
+    return result
+}
+
+/**
  * Parses a [JSONArray] of [JSONObject] into a [List] of models using the given [factory].
  */
 internal fun <T> JSONArray?.parseObjects(factory: (Any) -> T?): List<T> {
@@ -199,12 +231,9 @@ internal fun <T> JSONArray?.parseObjects(factory: (Any) -> T?): List<T> {
 
     val models = mutableListOf<T>()
     for (i in 0 until length()) {
-        val obj = opt(i)
-        if (obj != null) {
-            val model = factory(obj)
-            if (model != null) {
-                models.add(model)
-            }
+        val model = factory(get(i))
+        if (model != null) {
+            models.add(model)
         }
     }
     return models
