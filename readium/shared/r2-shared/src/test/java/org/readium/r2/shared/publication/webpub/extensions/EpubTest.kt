@@ -3,7 +3,10 @@ package org.readium.r2.shared.publication.webpub.extensions
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.publication.webpub.LocalizedString
 import org.readium.r2.shared.publication.webpub.link.Properties
+import org.readium.r2.shared.publication.webpub.metadata.Metadata
 
 class EpubTest {
 
@@ -21,6 +24,11 @@ class EpubTest {
         assertEquals(EpubLayout.FIXED, EpubLayout.fromEpub("pre-paginated"))
         assertEquals(EpubLayout.REFLOWABLE, EpubLayout.fromEpub("foobar"))
         assertEquals(EpubLayout.FIXED, EpubLayout.fromEpub("foobar", fallback = EpubLayout.FIXED))
+    }
+
+    @Test fun `get layout value`() {
+        assertEquals("fixed", EpubLayout.FIXED.value)
+        assertEquals("reflowable", EpubLayout.REFLOWABLE.value)
     }
 
 
@@ -61,29 +69,46 @@ class EpubTest {
     }
 
     @Test fun `get minimal JSON`() {
-        assertEquals(
-            JSONObject("{'algorithm': 'http://algo'}").toString(),
-            EpubEncryption(algorithm = "http://algo").toJSON().toString()
+        assertJSONEquals(
+            JSONObject("{'algorithm': 'http://algo'}"),
+            EpubEncryption(algorithm = "http://algo").toJSON()
         )
     }
 
     @Test fun `get full JSON`() {
-        assertEquals(
+        assertJSONEquals(
             JSONObject("""{
                 "algorithm": "http://algo",
                 "compression": "gzip",
                 "original-length": 42099,
                 "profile": "http://profile",
                 "scheme": "http://scheme"
-            }""").toString(),
+            }"""),
             EpubEncryption(
                 algorithm = "http://algo",
                 compression = "gzip",
                 originalLength = 42099,
                 profile = "http://profile",
                 scheme = "http://scheme"
-            ).toJSON().toString()
+            ).toJSON()
         )
+    }
+
+
+    // EPUB extensions for [Metadata].
+
+    @Test fun `get Metadata {layout} when available`() {
+        assertEquals(
+            EpubLayout.FIXED,
+            Metadata(
+                localizedTitle = LocalizedString("Title"),
+                otherMetadata = mapOf("layout" to "fixed")
+            ).layout
+        )
+    }
+
+    @Test fun `get Metadata {layout} when missing`() {
+        assertNull(Metadata(localizedTitle = LocalizedString("Title")).layout)
     }
 
 

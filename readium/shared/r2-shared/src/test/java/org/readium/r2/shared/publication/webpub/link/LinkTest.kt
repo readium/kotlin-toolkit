@@ -4,6 +4,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.toJSON
 
 class LinkTest {
@@ -146,14 +147,14 @@ class LinkTest {
     }
 
     @Test fun `get minimal JSON`() {
-        assertEquals(
-            JSONObject("{'href': 'http://href', 'templated': false}").toString(),
-            Link(href = "http://href").toJSON().toString()
+        assertJSONEquals(
+            JSONObject("{'href': 'http://href', 'templated': false}"),
+            Link(href = "http://href").toJSON()
         )
     }
 
     @Test fun `get full JSON`() {
-        assertEquals(
+        assertJSONEquals(
             JSONObject("""{
                 "href": "http://href",
                 "type": "application/pdf",
@@ -176,7 +177,7 @@ class LinkTest {
                     {"href": "http://child1", "templated": false},
                     {"href": "http://child2", "templated": false}
                 ]
-            }""").toString(),
+            }"""),
             Link(
                 href = "http://href",
                 type = "application/pdf",
@@ -197,20 +198,20 @@ class LinkTest {
                     Link(href = "http://child1"),
                     Link(href = "http://child2")
                 )
-            ).toJSON().toString()
+            ).toJSON()
         )
     }
 
     @Test fun `get JSON array`() {
-        assertEquals(
+        assertJSONEquals(
             JSONArray("""[
                 {'href': 'http://child1', 'templated': false},
                 {'href': 'http://child2', 'templated': false},
-            ]""").toString(),
+            ]"""),
             listOf(
                 Link(href = "http://child1"),
                 Link(href = "http://child2")
-            ).toJSON().toString()
+            ).toJSON()
         )
     }
 

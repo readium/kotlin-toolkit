@@ -3,7 +3,10 @@ package org.readium.r2.shared.publication.webpub.extensions
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.publication.webpub.LocalizedString
 import org.readium.r2.shared.publication.webpub.link.Properties
+import org.readium.r2.shared.publication.webpub.metadata.Metadata
 
 class PresentationTest {
 
@@ -44,34 +47,34 @@ class PresentationTest {
     }
 
     @Test fun `get minimal JSON`() {
-        assertEquals(
+        assertJSONEquals(
             JSONObject("""{
                 "continuous": true,
                 "fit": "contain",
                 "orientation": "auto",
                 "overflow": "auto",
                 "spread": "auto"
-            }""").toString(),
-            Presentation().toJSON().toString()
+            }"""),
+            Presentation().toJSON()
         )
     }
 
     @Test fun `get full JSON`() {
-        assertEquals(
+        assertJSONEquals(
             JSONObject("""{
                 "continuous": false,
                 "fit": "cover",
                 "orientation": "landscape",
                 "overflow": "paginated",
                 "spread": "both"
-            }""").toString(),
+            }"""),
             Presentation(
                 continuous = false,
                 fit = Presentation.Fit.COVER,
                 orientation = Presentation.Orientation.LANDSCAPE,
                 overflow = Presentation.Overflow.PAGINATED,
                 spread = Presentation.Spread.BOTH
-            ).toJSON().toString()
+            ).toJSON()
         )
     }
 
@@ -159,6 +162,27 @@ class PresentationTest {
         assertEquals("landscape", Presentation.Spread.LANDSCAPE.value)
     }
 
+    // Presentation extensions for [Metadata]
+
+    @Test fun `get Metadata {presentation} when available`() {
+        assertEquals(
+            Presentation(continuous = false, orientation = Presentation.Orientation.LANDSCAPE),
+            Metadata(
+                localizedTitle = LocalizedString("Title"),
+                otherMetadata = mapOf("presentation" to mapOf(
+                    "continuous" to false,
+                    "orientation" to "landscape"
+                ))
+            ).presentation
+        )
+    }
+
+    @Test fun `get Metadata {presentation} when missing`() {
+        assertEquals(
+            Presentation(),
+            Metadata(localizedTitle = LocalizedString("Title")).presentation
+        )
+    }
 
     // Presentation extensions for link [Properties].
 

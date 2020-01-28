@@ -13,6 +13,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.extensions.toIso8601Date
 import org.readium.r2.shared.publication.webpub.link.Properties
 import org.readium.r2.shared.toJSON
@@ -102,14 +103,14 @@ class OpdsTest {
     }
 
     @Test fun `get minimal JSON acquisition`() {
-        assertEquals(
-            JSONObject("{'type': 'acquisition-type'}").toString(),
-            OpdsAcquisition(type = "acquisition-type").toJSON().toString()
+        assertJSONEquals(
+            JSONObject("{'type': 'acquisition-type'}"),
+            OpdsAcquisition(type = "acquisition-type").toJSON()
         )
     }
 
     @Test fun `get full JSON acquisition`() {
-        assertEquals(
+        assertJSONEquals(
             JSONObject("""{
                 "type": "acquisition-type",
                 "child": [
@@ -121,7 +122,7 @@ class OpdsTest {
                         ]
                     }
                 ]
-            }""").toString(),
+            }"""),
             OpdsAcquisition(
                 type = "acquisition-type",
                 children = listOf(
@@ -133,20 +134,20 @@ class OpdsTest {
                         )
                     )
                 )
-            ).toJSON().toString()
+            ).toJSON()
         )
     }
 
     @Test fun `get JSON acquisition array`() {
-        assertEquals(
+        assertJSONEquals(
             JSONArray("""[
                 { "type": "acq1" },
                 { "type": "acq2" }
-            ]""").toString(),
+            ]"""),
             listOf(
                 OpdsAcquisition(type = "acq1"),
                 OpdsAcquisition(type = "acq2")
-            ).toJSON().toString()
+            ).toJSON()
         )
     }
 
@@ -181,9 +182,9 @@ class OpdsTest {
     }
 
     @Test fun `get JSON price`() {
-        assertEquals(
-            JSONObject("{'currency': 'EUR', 'value': 4.65}").toString(),
-            OpdsPrice(currency = "EUR", value = 4.65).toJSON().toString()
+        assertJSONEquals(
+            JSONObject("{'currency': 'EUR', 'value': 4.65}"),
+            OpdsPrice(currency = "EUR", value = 4.65).toJSON()
         )
     }
 
@@ -223,16 +224,16 @@ class OpdsTest {
     }
 
     @Test fun `get minimal JSON holds`() {
-        assertEquals(
-            JSONObject("{}").toString(),
-            OpdsHolds(total = null, position = null).toJSON().toString()
+        assertJSONEquals(
+            JSONObject("{}"),
+            OpdsHolds(total = null, position = null).toJSON()
         )
     }
 
     @Test fun `get full JSON holds`() {
-        assertEquals(
-            JSONObject("{'total': 5, 'position': 6}").toString(),
-            OpdsHolds(total = 5, position = 6).toJSON().toString()
+        assertJSONEquals(
+            JSONObject("{'total': 5, 'position': 6}"),
+            OpdsHolds(total = 5, position = 6).toJSON()
         )
     }
 
@@ -272,16 +273,16 @@ class OpdsTest {
     }
 
     @Test fun `get minimal JSON copies`() {
-        assertEquals(
-            JSONObject("{}").toString(),
-            OpdsCopies(total = null, available = null).toJSON().toString()
+        assertJSONEquals(
+            JSONObject("{}"),
+            OpdsCopies(total = null, available = null).toJSON()
         )
     }
 
     @Test fun `get full JSON copies`() {
-        assertEquals(
-            JSONObject("{'total': 5, 'available': 6}").toString(),
-            OpdsCopies(total = 5, available = 6).toJSON().toString()
+        assertJSONEquals(
+            JSONObject("{'total': 5, 'available': 6}"),
+            OpdsCopies(total = 5, available = 6).toJSON()
         )
     }
 
@@ -326,17 +327,17 @@ class OpdsTest {
     }
 
     @Test fun `get full JSON availability`() {
-        assertEquals(
+        assertJSONEquals(
             JSONObject("""{
                 'state': 'available',
                 'since': '2001-01-01T12:36:27.000Z',
                 'until': '2001-02-01T12:36:27.000Z'
-            }""").toString(),
+            }"""),
             OpdsAvailability(
                 state = OpdsAvailability.State.AVAILABLE,
                 since = "2001-01-01T12:36:27.000Z".toIso8601Date(),
                 until = "2001-02-01T12:36:27.000Z".toIso8601Date()
-            ).toJSON().toString()
+            ).toJSON()
         )
     }
 

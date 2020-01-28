@@ -42,11 +42,27 @@ private fun unwrapJSON(value: Any) = when (value) {
 }
 
 /**
+ * Maps [name] to [jsonObject], clobbering any existing name/value mapping with the same name. If
+ * the [JSONObject] is empty, any existing mapping for [name] is removed.
+ */
+fun JSONObject.putIfNotEmpty(name: String, jsonObject: JSONObject?) {
+    jsonObject ?: return
+    if (jsonObject.length() == 0) {
+        remove(name)
+        return
+    }
+
+    put(name, jsonObject)
+}
+
+/**
  * Maps [name] to [jsonable] after converting it to a [JSONObject], clobbering any existing
  * name/value mapping with the same name. If the [JSONObject] is empty, any existing mapping
  * for [name] is removed.
  */
-fun JSONObject.putIfNotEmpty(name: String, jsonable: JSONable) {
+fun JSONObject.putIfNotEmpty(name: String, jsonable: JSONable?) {
+    jsonable ?: return
+
     val json = jsonable.toJSON()
     if (json.length() == 0) {
         remove(name)
@@ -87,70 +103,92 @@ internal fun JSONObject.putIfNotEmpty(name: String, collection: Collection<*>) {
 /**
  * Returns the value mapped by [name] if it exists and is a positive integer or can be coerced to a
  * positive integer, or [fallback] otherwise.
+ * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optPositiveInt(name: String, fallback: Int = -1): Int? {
+fun JSONObject.optPositiveInt(name: String, fallback: Int = -1, remove: Boolean = false): Int? {
     val int = optInt(name, fallback)
-    return if (int > 0) int else null
+    val value = if (int > 0) int else null
+    if (remove) {
+        this.remove(name)
+    }
+    return value
 }
 
 /**
  * Returns the value mapped by [name] if it exists and is a positive double or can be coerced to a
  * positive double, or [fallback] otherwise.
+ * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optPositiveDouble(name: String, fallback: Double = -1.0): Double? {
+fun JSONObject.optPositiveDouble(name: String, fallback: Double = -1.0, remove: Boolean = false): Double? {
     val double = optDouble(name, fallback)
-    return if (double > 0) double else null
+    val value = if (double > 0) double else null
+    if (remove) {
+        this.remove(name)
+    }
+    return value
 }
 
 /**
  * Returns the value mapped by [name] if it exists, coercing it if necessary, or [null] if no such
  * mapping exists.
+ * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optNullableString(name: String): String? {
+fun JSONObject.optNullableString(name: String, remove: Boolean = false): String? {
     val string = optString(name)
-    return if (string != "") string else null
+    val value = if (string != "") string else null
+    if (remove) {
+        this.remove(name)
+    }
+    return value
 }
 
 /**
  * Returns the value mapped by [name] if it exists, coercing it if necessary, or [null] if no such
  * mapping exists.
+ * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optNullableInt(name: String): Int? {
+fun JSONObject.optNullableInt(name: String, remove: Boolean = false): Int? {
     if (!has(name)) {
         return null
     }
-    return optInt(name)
+    val value = optInt(name)
+    if (remove) {
+        this.remove(name)
+    }
+    return value
 }
 
 /**
  * Returns the value mapped by [name] if it exists, coercing it if necessary, or [null] if no such
  * mapping exists.
+ * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optNullableDouble(name: String): Double? {
+fun JSONObject.optNullableDouble(name: String, remove: Boolean = false): Double? {
     if (!has(name)) {
         return null
     }
-    return optDouble(name)
+    val value = optDouble(name)
+    if (remove) {
+        this.remove(name)
+    }
+    return value
 }
 
 /**
  * Returns the value mapped by [name] if it exists and is either a [JSONArray] of [String] or a
  * single [String] value, or an empty list otherwise.
+ * If [remove] is true, then the mapping will be removed from the [JSONObject].
  *
  * E.g. ["a", "b"] or "a"
  */
-fun JSONObject.optStringsFromArrayOrSingle(name: String): List<String> {
-    val array = optJSONArray(name)
-    if (array != null) {
-        return array.toList().filterIsInstance(String::class.java)
-    }
+fun JSONObject.optStringsFromArrayOrSingle(name: String, remove: Boolean = false): List<String> {
+    val value = if (remove) this.remove(name) else opt(name)
 
-    val string = optNullableString(name)
-    if (string != null) {
-        return listOf(string)
+    return when (value) {
+        is JSONArray -> value.toList().filterIsInstance(String::class.java)
+        is String -> listOf(value)
+        else -> emptyList()
     }
-
-    return emptyList()
 }
 
 /**

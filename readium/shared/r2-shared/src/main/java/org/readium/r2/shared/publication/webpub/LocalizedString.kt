@@ -28,6 +28,23 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
     )
 
     /**
+     * Shortcut to create a [LocalizedString] using a single string, without a language.
+     */
+    constructor(string: String): this(
+        translations = setOf(Translation(string = string))
+    )
+
+    /**
+     * Shortcut to create a [LocalizedString] using a map of translations indexed by the BCP 47
+     * language tag.
+     */
+    constructor(strings: Map<String, String>): this(
+        translations = strings
+            .map { (language, string) -> Translation(language = language, string = string) }
+            .toSet()
+    )
+
+    /**
      * The default translation for this localized string.
      */
     val defaultTranslation: Translation
@@ -51,11 +68,14 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
      */
     fun findTranslationByLanguage(language: String?): Translation? {
         fun find(code: String?) =
-            translations.firstOrNull { it.language?.toLowerCase(Locale.ROOT) == code}
+            translations.firstOrNull {
+                it.language?.toLowerCase(Locale.ROOT) == code?.toLowerCase(Locale.ROOT)
+            }
 
         return find(language)
             ?: find(Locale.getDefault().toLanguageTag())
             ?: find(null)
+            ?: find(UNDEFINED_LANGUAGE)
             ?: find("en")
             ?: translations.firstOrNull()
     }
@@ -68,16 +88,6 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
         for (translation in translations) {
             put(translation.language ?: UNDEFINED_LANGUAGE, translation.string)
         }
-    }
-
-    /**
-     * Copies the [LocalizedString] and add the given translation to the copy.
-     * This is a shortcut to facilitate the creation of a [LocalizedString].
-     */
-    fun withTranslation(string: String, language: String? = null): LocalizedString {
-        return copy(translations.toMutableSet().apply {
-            add(Translation(language = language, string = string))
-        })
     }
 
     companion object {

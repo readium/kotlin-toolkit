@@ -13,22 +13,25 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.mockito.internal.debugging.Localized
+import org.readium.r2.shared.assertJSONEquals
 import java.util.*
 
 class LocalizedStringTest {
 
     @Test fun `parse JSON string`() {
         assertEquals(
-            LocalizedString().withTranslation(string = "a string", language = null),
+            LocalizedString("a string"),
             LocalizedString.fromJSON("a string")
         )
     }
 
     @Test fun `parse JSON localized strings`() {
         assertEquals(
-            LocalizedString()
-                .withTranslation("a string", "en")
-                .withTranslation("une chaîne", "fr"),
+            LocalizedString(mapOf(
+                "en" to "a string",
+                "fr" to "une chaîne"
+            )),
             LocalizedString.fromJSON(JSONObject("""{
                 "en": "a string",
                 "fr": "une chaîne"
@@ -45,58 +48,56 @@ class LocalizedStringTest {
     }
 
     @Test fun `get JSON with one translation and no language`() {
-        assertEquals(
-            LocalizedString()
-                .withTranslation("a string")
-                .toJSON().toString(),
+        assertJSONEquals(
+            LocalizedString("a string").toJSON(),
             JSONObject("""{
                 "UND": "a string"
-            }""").toString()
+            }""")
         )
     }
 
     @Test fun `get JSON`() {
-        assertEquals(
-            LocalizedString()
-                .withTranslation("a string", "en")
-                .withTranslation("une chaîne", "fr")
-                .withTranslation("Surgh")
-                .toJSON().toString(),
+        assertJSONEquals(
+            LocalizedString(mapOf(
+                "en" to "a string",
+                "fr" to "une chaîne",
+                LocalizedString.UNDEFINED_LANGUAGE to "Surgh"
+            )).toJSON(),
             JSONObject("""{
                 "en": "a string",
                 "fr": "une chaîne",
                 "UND": "Surgh"
-            }""").toString()
+            }""")
         )
     }
 
     @Test fun `get the default translation`() {
         assertEquals(
             LocalizedString.Translation("en", "a string"),
-            LocalizedString()
-                .withTranslation("a string", "en")
-                .withTranslation("une chaîne", "fr")
-                .defaultTranslation
+            LocalizedString(mapOf(
+                "en" to "a string",
+                "fr" to "une chaîne"
+            )).defaultTranslation
         )
     }
 
     @Test fun `get the default translation's string`() {
         assertEquals(
             "a string",
-            LocalizedString()
-                .withTranslation("a string", "en")
-                .withTranslation("une chaîne", "fr")
-                .string
+            LocalizedString(mapOf(
+                "en" to "a string",
+                "fr" to "une chaîne"
+            )).string
         )
     }
 
     @Test fun `find translation by language`() {
         assertEquals(
             LocalizedString.Translation("fr", "une chaîne"),
-            LocalizedString()
-                .withTranslation("a string", "en")
-                .withTranslation("une chaîne", "fr")
-                .findTranslationByLanguage("fr")
+            LocalizedString(mapOf(
+                "en" to "a string",
+                "fr" to "une chaîne"
+            )).findTranslationByLanguage("fr")
         )
     }
 
@@ -104,40 +105,51 @@ class LocalizedStringTest {
         val language = Locale.getDefault().toLanguageTag()
         assertEquals(
             LocalizedString.Translation(language, "a string"),
-            LocalizedString()
-                .withTranslation(language, "a string")
-                .withTranslation("une chaîne", "foobar")
-                .findTranslationByLanguage(null)
+            LocalizedString(mapOf(
+                language to "a string",
+                "foobar" to "une chaîne"
+            )).findTranslationByLanguage(null)
+        )
+    }
+
+    @Test fun `find translation by language defaults to null`() {
+        assertEquals(
+            LocalizedString.Translation(language = null, string = "Surgh"),
+            LocalizedString(setOf(
+                LocalizedString.Translation("foo", "a string"),
+                LocalizedString.Translation("bar", "une chaîne"),
+                LocalizedString.Translation(language = null, string = "Surgh")
+            )).findTranslationByLanguage(null)
         )
     }
 
     @Test fun `find translation by language defaults to undefined`() {
         assertEquals(
-            LocalizedString.Translation(string = "Surgh"),
-            LocalizedString()
-                .withTranslation("a string", "en")
-                .withTranslation("une chaîne", "fr")
-                .withTranslation(string = "Surgh")
-                .findTranslationByLanguage(null)
+            LocalizedString.Translation(language = LocalizedString.UNDEFINED_LANGUAGE, string = "Surgh"),
+            LocalizedString(mapOf(
+                "foo" to "a string",
+                "bar" to "une chaîne",
+                LocalizedString.UNDEFINED_LANGUAGE to "Surgh"
+            )).findTranslationByLanguage(null)
         )
     }
 
     @Test fun `find translation by language defaults to English`() {
         assertEquals(
             LocalizedString.Translation("en", "a string"),
-            LocalizedString()
-                .withTranslation("a string", "en")
-                .withTranslation("une chaîne", "fr")
-                .findTranslationByLanguage(null)
+            LocalizedString(mapOf(
+                "en" to "a string",
+                "fr" to "une chaîne"
+            )).findTranslationByLanguage(null)
         )
     }
 
     @Test fun `find translation by language defaults to the first found translation`() {
         assertEquals(
             LocalizedString.Translation("fr", "une chaîne"),
-            LocalizedString()
-                .withTranslation("une chaîne", "fr")
-                .findTranslationByLanguage(null)
+            LocalizedString(mapOf(
+                "fr" to "une chaîne"
+            )).findTranslationByLanguage(null)
         )
     }
 

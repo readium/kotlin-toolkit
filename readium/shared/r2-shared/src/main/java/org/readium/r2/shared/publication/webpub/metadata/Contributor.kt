@@ -14,8 +14,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.Warning
 import org.readium.r2.shared.WarningLogger
-import org.readium.r2.shared.extensions.optNullableString
-import org.readium.r2.shared.extensions.parseObjects
+import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.publication.webpub.LocalizedString
 import org.readium.r2.shared.publication.webpub.link.Link
@@ -24,23 +23,27 @@ import org.readium.r2.shared.publication.webpub.link.LinkHrefNormalizerIdentity
 import java.io.Serializable
 
 /**
- * https://github.com/readium/webpub-manifest/tree/master/contexts/default#subjects
+ * https://readium.org/webpub-manifest/schema/contributor-object.schema.json
  *
- * @param sortAs Provides a string that a machine can sort.
- * @param scheme EPUB 3.1 opf:authority.
- * @param code EPUB 3.1 opf:term.
- * @param links Used to retrieve similar publications for the given subjects.
+ * @param localizedName The name of the contributor.
+ * @param identifier An unambiguous reference to this contributor.
+ * @param sortAs The string used to sort the name of the contributor.
+ * @param roles The roles of the contributor in the publication making.
+ * @param position The position of the publication in this collection/series,
+ *     when the contributor represents a collection.
+ * @param links Used to retrieve similar publications for the given contributor.
  */
-data class Subject(
+data class Contributor(
     val localizedName: LocalizedString,
+    val identifier: String? = null,
     val sortAs: String? = null,
-    val scheme: String? = null,
-    val code: String? = null,
+    val roles: Set<String> = emptySet(),
+    val position: Double? = null,
     val links: List<Link> = emptyList()
 ) : JSONable, Serializable {
 
     /**
-     * Shortcut to create a [Subject] using a string as [name].
+     * Shortcut to create a [Contributor] using a string as [name].
      */
     constructor(name: String): this(
         localizedName = LocalizedString(name)
@@ -56,27 +59,28 @@ data class Subject(
      */
     override fun toJSON() = JSONObject().apply {
         putIfNotEmpty("name", localizedName)
+        put("identifier", identifier)
         put("sortAs", sortAs)
-        put("scheme", scheme)
-        put("code", code)
+        putIfNotEmpty("role", roles)
+        put("position", position)
         putIfNotEmpty("links", links)
     }
 
     companion object {
 
         /**
-         * Parses a [Subject] from its RWPM JSON representation.
+         * Parses a [Contributor] from its RWPM JSON representation.
          *
-         * A subject can be parsed from a single string, or a full-fledged object.
+         * A contributor can be parsed from a single string, or a full-fledged object.
          * The [links]' [href] and their children's recursively will be normalized using the
          * provided [normalizeHref] closure.
-         * If the subject can't be parsed, a warning will be logged with [warnings].
+         * If the contributor can't be parsed, a warning will be logged with [warnings].
          */
         fun fromJSON(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
-        ): Subject? {
+        ): Contributor? {
             json ?: return null
 
             val localizedName: LocalizedString? = when(json) {
@@ -85,32 +89,33 @@ data class Subject(
                 else -> null
             }
             if (localizedName == null) {
-                warnings?.log(Warning.JsonParsing(Subject::class.java, "[name] is required"))
+                warnings?.log(Warning.JsonParsing(Contributor::class.java, "[name] is required"))
                 return null
             }
 
             val json = (json as? JSONObject) ?: JSONObject()
-            return Subject(
+            return Contributor(
                 localizedName = localizedName,
+                identifier = json.optNullableString("identifier"),
                 sortAs = json.optNullableString("sortAs"),
-                scheme = json.optNullableString("scheme"),
-                code = json.optNullableString("code"),
-                links = Link.fromJSONArray(json.optJSONArray("links"), normalizeHref, warnings)
+                roles = json.optStringsFromArrayOrSingle("role").toSet(),
+                position = json.optNullableDouble("scheme"),
+                links = Link.fromJSONArray(json.optJSONArray("links"), normalizeHref)
             )
         }
 
         /**
-         * Creates a list of [Subject] from its RWPM JSON representation.
+         * Creates a list of [Contributor] from its RWPM JSON representation.
          *
          * The [links]' [href] and their children's recursively will be normalized using the
          * provided [normalizeHref] closure.
-         * If a subject can't be parsed, a warning will be logged with [warnings].
+         * If a contributor can't be parsed, a warning will be logged with [warnings].
          */
         fun fromJSONArray(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
-        ): List<Subject> {
+        ): List<Contributor> {
             return when(json) {
                 is String, is JSONObject ->
                     listOf(json).mapNotNull { fromJSON(it, normalizeHref, warnings) }

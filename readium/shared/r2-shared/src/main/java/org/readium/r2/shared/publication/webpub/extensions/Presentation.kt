@@ -11,6 +11,7 @@ package org.readium.r2.shared.publication.webpub.extensions
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.publication.webpub.link.Properties
+import org.readium.r2.shared.publication.webpub.metadata.Metadata
 import java.io.Serializable
 
 /**
@@ -145,7 +146,16 @@ data class Presentation(
 }
 
 
-// Presentation extensions for link [Properties].
+// Presentation extensions for [Metadata]
+
+val Metadata.presentation: Presentation
+    get() = Presentation.fromJSON(
+        (this["presentation"] as? Map<*, *>)
+            ?.let { JSONObject(it) }
+    )
+
+
+// Presentation extensions for link [Properties]
 
 /**
  * Suggested method for constraining a resource inside the viewport.

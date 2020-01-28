@@ -12,6 +12,7 @@ package org.readium.r2.shared.publication.webpub.link
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.readium.r2.shared.assertJSONEquals
 
 class PropertiesTest {
 
@@ -39,21 +40,21 @@ class PropertiesTest {
     }
 
     @Test fun `get minimal JSON`() {
-        assertEquals("{}", Properties().toJSON().toString())
+        assertJSONEquals(JSONObject(), Properties().toJSON())
     }
 
     @Test fun `get full JSON`() {
-        assertEquals(
+        assertJSONEquals(
             JSONObject("""{
                 "other-property1": "value",
                 "other-property2": [42]
-            }""").toString(),
+            }"""),
             Properties(
                 otherProperties = mapOf<String, Any>(
                     "other-property1" to "value",
                     "other-property2" to listOf(42)
                 )
-            ).toJSON().toString()
+            ).toJSON()
         )
     }
 

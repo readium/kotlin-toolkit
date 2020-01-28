@@ -6,12 +6,14 @@
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
+
 package org.readium.r2.shared.publication.webpub.metadata
 
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.publication.webpub.LocalizedString
 import org.readium.r2.shared.publication.webpub.link.Link
 import org.readium.r2.shared.toJSON
@@ -20,14 +22,14 @@ class SubjectTest {
 
     @Test fun `parse JSON string`() {
         assertEquals(
-            Subject(localizedName = LocalizedString().withTranslation("Fantasy")),
+            Subject(localizedName = LocalizedString("Fantasy")),
             Subject.fromJSON("Fantasy")
         )
     }
 
     @Test fun `parse minimal JSON`() {
         assertEquals(
-            Subject(localizedName = LocalizedString().withTranslation("Science Fiction")),
+            Subject(localizedName = LocalizedString("Science Fiction")),
             Subject.fromJSON(JSONObject("{'name': 'Science Fiction'}"))
         )
     }
@@ -35,7 +37,7 @@ class SubjectTest {
     @Test fun `parse full JSON`() {
         assertEquals(
             Subject(
-                localizedName = LocalizedString().withTranslation("Science Fiction"),
+                localizedName = LocalizedString("Science Fiction"),
                 sortAs = "science-fiction",
                 scheme = "http://scheme",
                 code = "CODE",
@@ -68,9 +70,9 @@ class SubjectTest {
     @Test fun `parse JSON array`() {
         assertEquals(
             listOf(
-                Subject(localizedName = LocalizedString().withTranslation("Fantasy")),
+                Subject(localizedName = LocalizedString("Fantasy")),
                 Subject(
-                    localizedName = LocalizedString().withTranslation("Science Fiction"),
+                    localizedName = LocalizedString("Science Fiction"),
                     scheme = "http://scheme"
                 )
             ),
@@ -91,7 +93,7 @@ class SubjectTest {
     @Test fun `parse JSON array ignores invalid subjects`() {
         assertEquals(
             listOf(
-                Subject(localizedName = LocalizedString().withTranslation("Fantasy"))
+                Subject(localizedName = LocalizedString("Fantasy"))
             ),
             Subject.fromJSONArray(JSONArray("""[
                 "Fantasy",
@@ -104,14 +106,14 @@ class SubjectTest {
 
     @Test fun `parse array from string`() {
         assertEquals(
-            listOf(Subject(localizedName = LocalizedString().withTranslation("Fantasy"))),
+            listOf(Subject(localizedName = LocalizedString("Fantasy"))),
             Subject.fromJSONArray("Fantasy")
         )
     }
 
     @Test fun `parse array from single object`() {
         assertEquals(
-            listOf(Subject(localizedName = LocalizedString().withTranslation("Fantasy"), code = "CODE")),
+            listOf(Subject(localizedName = LocalizedString("Fantasy"), code = "CODE")),
             Subject.fromJSONArray(JSONObject("""{
                 "name": "Fantasy",
                 "code": "CODE"
@@ -122,24 +124,24 @@ class SubjectTest {
     @Test fun `get name from the default translation`() {
         assertEquals(
             "Hello world",
-            Subject(localizedName = LocalizedString()
-                .withTranslation("Hello world", "en")
-                .withTranslation("Salut le monde", "fr")
-            ).name
+            Subject(localizedName = LocalizedString(mapOf(
+                "en" to "Hello world",
+                "fr" to "Salut le monde"
+            ))).name
         )
 
     }
 
     @Test fun `get minimal JSON`() {
-        assertEquals(
-            JSONObject("{'name': {'UND': 'Science Fiction'}}").toString(),
-            Subject(localizedName = LocalizedString().withTranslation("Science Fiction"))
-                .toJSON().toString()
+        assertJSONEquals(
+            JSONObject("{'name': {'UND': 'Science Fiction'}}"),
+            Subject(localizedName = LocalizedString("Science Fiction"))
+                .toJSON()
         )
     }
 
     @Test fun `get full JSON`() {
-        assertEquals(
+        assertJSONEquals(
             JSONObject("""{
                 "name": {"UND": "Science Fiction"},
                 "sortAs": "science-fiction",
@@ -149,9 +151,9 @@ class SubjectTest {
                     {"href": "pub1", "templated": false},
                     {"href": "pub2", "templated": false}
                 ]
-            }""").toString(),
+            }"""),
             Subject(
-                localizedName = LocalizedString().withTranslation("Science Fiction"),
+                localizedName = LocalizedString("Science Fiction"),
                 sortAs = "science-fiction",
                 scheme = "http://scheme",
                 code = "CODE",
@@ -159,12 +161,12 @@ class SubjectTest {
                     Link(href = "pub1"),
                     Link(href = "pub2")
                 )
-            ).toJSON().toString()
+            ).toJSON()
         )
     }
 
     @Test fun `get JSON array`() {
-        assertEquals(
+        assertJSONEquals(
             JSONArray("""[
                 {
                     "name": {"UND": "Fantasy"},
@@ -173,14 +175,14 @@ class SubjectTest {
                     "name": {"UND": "Science Fiction"},
                     "scheme": "http://scheme"
                 }
-            ]""").toString(),
+            ]"""),
             listOf(
-                Subject(localizedName = LocalizedString().withTranslation("Fantasy")),
+                Subject(localizedName = LocalizedString("Fantasy")),
                 Subject(
-                    localizedName = LocalizedString().withTranslation("Science Fiction"),
+                    localizedName = LocalizedString("Science Fiction"),
                     scheme = "http://scheme"
                 )
-            ).toJSON().toString()
+            ).toJSON()
         )
     }
 

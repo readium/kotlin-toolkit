@@ -16,6 +16,7 @@ import org.readium.r2.shared.WarningLogger
 import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.publication.webpub.link.Properties
+import org.readium.r2.shared.publication.webpub.metadata.Metadata
 import java.io.Serializable
 
 /**
@@ -101,7 +102,18 @@ data class EpubEncryption(
 }
 
 
+// EPUB extensions for [Metadata].
+// https://readium.org/webpub-manifest/schema/extensions/epub/metadata.schema.json
+
+/**
+ * Hints how the layout of the resource should be presented.
+ */
+val Metadata.layout: EpubLayout?
+    get() = EpubLayout.from(this["layout"] as? String)
+
+
 // EPUB extensions for link [Properties].
+// https://readium.org/webpub-manifest/schema/extensions/epub/properties.schema.json
 
 /**
  * Identifies content contained in the linked resource, that cannot be strictly identified using a
