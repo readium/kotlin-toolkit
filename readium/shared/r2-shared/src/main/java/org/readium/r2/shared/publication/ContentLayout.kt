@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.publication
 
-import org.readium.r2.shared.publication.webpub.ReadingProgression
 import java.util.*
 
 /**

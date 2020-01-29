@@ -17,14 +17,6 @@ import java.net.URL
 import java.net.URLDecoder
 
 
-fun URL.removeLastComponent(): URL {
-    var str = this.toString()
-    val i = str.lastIndexOf('/', 0, true)
-    if (i != -1)
-        str = str.substring(0, i)
-    return URL(str)
-}
-
 fun getJSONArray(list: List<JSONable>): JSONArray {
     val array = JSONArray()
     for (i in list) {
