@@ -34,7 +34,9 @@ import java.io.Serializable
 interface WebPublicationInterface {
     val context: List<String>
     val metadata: Metadata
-    val links: List<Link>
+    // FIXME: Currently Readium requires to set the [Link] with [rel] "self" when adding it to the
+    //     server. So we need to keep [links] as a mutable property.
+    var links: List<Link>
     val readingOrder: List<Link>
     val resources: List<Link>
     val tableOfContents: List<Link>
@@ -44,7 +46,7 @@ interface WebPublicationInterface {
 data class WebPublication(
     override val context: List<String> = emptyList(),
     override val metadata: Metadata,
-    override val links: List<Link> = emptyList(),
+    override var links: List<Link> = emptyList(),
     override val readingOrder: List<Link> = emptyList(),
     override val resources: List<Link> = emptyList(),
     override val tableOfContents: List<Link> = emptyList(),
@@ -63,6 +65,13 @@ data class WebPublication(
         putIfNotEmpty("toc", tableOfContents)
         otherCollections.appendToJSONObject(this)
     }
+
+    /**
+     * Returns the [links] of the first child [PublicationCollection] with the given role, or an
+     * empty list.
+     */
+    internal fun WebPublication.linksWithRole(role: String): List<Link> =
+        otherCollections.firstWithRole(role)?.links ?: emptyList()
 
     companion object {
 

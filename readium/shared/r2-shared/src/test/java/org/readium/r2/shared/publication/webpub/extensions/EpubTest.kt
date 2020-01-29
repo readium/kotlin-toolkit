@@ -5,6 +5,10 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.publication.webpub.LocalizedString
+import org.readium.r2.shared.publication.webpub.PublicationCollection
+import org.readium.r2.shared.publication.webpub.ReadingProgression
+import org.readium.r2.shared.publication.webpub.WebPublication
+import org.readium.r2.shared.publication.webpub.link.Link
 import org.readium.r2.shared.publication.webpub.link.Properties
 import org.readium.r2.shared.publication.webpub.metadata.Metadata
 
@@ -53,7 +57,7 @@ class EpubTest {
             EpubEncryption.fromJSON(JSONObject("""{
                 "algorithm": "http://algo",
                 "compression": "gzip",
-                "original-length": 42099,
+                "originalLength": 42099,
                 "profile": "http://profile",
                 "scheme": "http://scheme"
             }"""))
@@ -80,7 +84,7 @@ class EpubTest {
             JSONObject("""{
                 "algorithm": "http://algo",
                 "compression": "gzip",
-                "original-length": 42099,
+                "originalLength": 42099,
                 "profile": "http://profile",
                 "scheme": "http://scheme"
             }"""),
@@ -92,6 +96,100 @@ class EpubTest {
                 scheme = "http://scheme"
             ).toJSON()
         )
+    }
+
+
+    // EPUB extensions for [WebPublication].
+
+    private fun createWebPublication(
+        otherCollections: List<PublicationCollection> = emptyList()
+    ) = WebPublication(
+        metadata = Metadata(localizedTitle = LocalizedString("Title")),
+        otherCollections = otherCollections
+    )
+
+    @Test fun `get {pageList}`() {
+        val links = listOf(Link(href = "/page1.html"))
+        assertEquals(
+            links,
+            createWebPublication(otherCollections = listOf(
+                PublicationCollection(role = "page-list", links = links)
+            )).pageList
+        )
+    }
+
+    @Test fun `get {pageList} when missing`() {
+        assertEquals(0, createWebPublication().pageList.size)
+    }
+
+    @Test fun `get {landmarks}`() {
+        val links = listOf(Link(href = "/landmark.html"))
+        assertEquals(
+            links,
+            createWebPublication(otherCollections = listOf(
+                PublicationCollection(role = "landmarks", links = links)
+            )).landmarks
+        )
+    }
+
+    @Test fun `get {landmarks} when missing`() {
+        assertEquals(0, createWebPublication().landmarks.size)
+    }
+
+    @Test fun `get {listOfAudioClips}`() {
+        val links = listOf(Link(href = "/audio.mp3"))
+        assertEquals(
+            links,
+            createWebPublication(otherCollections = listOf(
+                PublicationCollection(role = "loa", links = links)
+            )).listOfAudioClips
+        )
+    }
+
+    @Test fun `get {listOfAudioClips} when missing`() {
+        assertEquals(0, createWebPublication().listOfAudioClips.size)
+    }
+
+    @Test fun `get {listOfIllustrations}`() {
+        val links = listOf(Link(href = "/image.jpg"))
+        assertEquals(
+            links,
+            createWebPublication(otherCollections = listOf(
+                PublicationCollection(role = "loi", links = links)
+            )).listOfIllustrations
+        )
+    }
+
+    @Test fun `get {listOfIllustrations} when missing`() {
+        assertEquals(0, createWebPublication().listOfIllustrations.size)
+    }
+
+    @Test fun `get {listOfTables}`() {
+        val links = listOf(Link(href = "/table.html"))
+        assertEquals(
+            links,
+            createWebPublication(otherCollections = listOf(
+                PublicationCollection(role = "lot", links = links)
+            )).listOfTables
+        )
+    }
+
+    @Test fun `get {listOfTables} when missing`() {
+        assertEquals(0, createWebPublication().listOfTables.size)
+    }
+
+    @Test fun `get {listOfVideoClips}`() {
+        val links = listOf(Link(href = "/video.mov"))
+        assertEquals(
+            links,
+            createWebPublication(otherCollections = listOf(
+                PublicationCollection(role = "lov", links = links)
+            )).listOfVideoClips
+        )
+    }
+
+    @Test fun `get {listOfVideoClips} when missing`() {
+        assertEquals(0, createWebPublication().listOfVideoClips.size)
     }
 
 

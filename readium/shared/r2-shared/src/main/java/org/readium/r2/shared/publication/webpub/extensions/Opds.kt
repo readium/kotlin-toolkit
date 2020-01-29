@@ -17,6 +17,8 @@ import org.readium.r2.shared.WarningLogger
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.parseObjects
 import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.publication.webpub.WebPublication
+import org.readium.r2.shared.publication.webpub.link.Link
 import org.readium.r2.shared.publication.webpub.link.Properties
 import java.io.Serializable
 import java.util.*
@@ -243,6 +245,11 @@ data class OpdsAvailability(
     }
 
 }
+
+
+// OPDS extensions for [WebPublication]
+
+val WebPublication.images: List<Link> get() = linksWithRole("images")
 
 
 // OPDS extensions for link [Properties].

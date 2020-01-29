@@ -15,6 +15,9 @@ import org.readium.r2.shared.Warning
 import org.readium.r2.shared.WarningLogger
 import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.publication.webpub.WebPublication
+import org.readium.r2.shared.publication.webpub.firstWithRole
+import org.readium.r2.shared.publication.webpub.link.Link
 import org.readium.r2.shared.publication.webpub.link.Properties
 import org.readium.r2.shared.publication.webpub.metadata.Metadata
 import java.io.Serializable
@@ -71,7 +74,7 @@ data class EpubEncryption(
     override fun toJSON() = JSONObject().apply {
         put("algorithm", algorithm)
         put("compression", compression)
-        put("original-length", originalLength)
+        put("originalLength", originalLength)
         put("profile", profile)
         put("scheme", scheme)
     }
@@ -92,7 +95,10 @@ data class EpubEncryption(
             return EpubEncryption(
                 algorithm = algorithm,
                 compression = json.optNullableString("compression"),
-                originalLength = json.optNullableInt("original-length"),
+                // Fallback on [original-length] for legacy reasons
+                // See https://github.com/readium/webpub-manifest/pull/43
+                originalLength = json.optNullableInt("originalLength")
+                    ?: json.optNullableInt("original-length"),
                 profile = json.optNullableString("profile"),
                 scheme = json.optNullableString("scheme")
             )
@@ -100,6 +106,28 @@ data class EpubEncryption(
 
     }
 }
+
+
+// EPUB extensions for [WebPublication].
+// https://readium.org/webpub-manifest/schema/extensions/epub/subcollections.schema.json
+// https://idpf.github.io/epub-vocabs/structure/#navigation
+
+/**
+ * Provides navigation to positions in the Publication content that correspond to the locations of
+ * page boundaries present in a print source being represented by this EPUB Publication.
+ */
+val WebPublication.pageList: List<Link> get() = linksWithRole("page-list")
+
+/**
+ * Identifies fundamental structural components of the publication in order to enable Reading
+ * Systems to provide the User efficient access to them.
+ */
+val WebPublication.landmarks: List<Link> get() = linksWithRole("landmarks")
+
+val WebPublication.listOfAudioClips: List<Link> get() = linksWithRole("loa")
+val WebPublication.listOfIllustrations: List<Link> get() = linksWithRole("loi")
+val WebPublication.listOfTables: List<Link> get() = linksWithRole("lot")
+val WebPublication.listOfVideoClips: List<Link> get() = linksWithRole("lov")
 
 
 // EPUB extensions for [Metadata].

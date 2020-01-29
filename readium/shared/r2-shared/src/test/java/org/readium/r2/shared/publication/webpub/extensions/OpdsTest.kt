@@ -15,7 +15,12 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.extensions.toIso8601Date
+import org.readium.r2.shared.publication.webpub.LocalizedString
+import org.readium.r2.shared.publication.webpub.PublicationCollection
+import org.readium.r2.shared.publication.webpub.WebPublication
+import org.readium.r2.shared.publication.webpub.link.Link
 import org.readium.r2.shared.publication.webpub.link.Properties
+import org.readium.r2.shared.publication.webpub.metadata.Metadata
 import org.readium.r2.shared.toJSON
 
 class OpdsTest {
@@ -358,6 +363,30 @@ class OpdsTest {
         assertEquals("ready", OpdsAvailability.State.READY.value)
         assertEquals("reserved", OpdsAvailability.State.RESERVED.value)
         assertEquals("unavailable", OpdsAvailability.State.UNAVAILABLE.value)
+    }
+
+
+    // EPUB extensions for [WebPublication].
+
+    private fun createWebPublication(
+        otherCollections: List<PublicationCollection> = emptyList()
+    ) = WebPublication(
+        metadata = Metadata(localizedTitle = LocalizedString("Title")),
+        otherCollections = otherCollections
+    )
+
+    @Test fun `get {images}`() {
+        val links = listOf(Link(href = "/image.png"))
+        assertEquals(
+            links,
+            createWebPublication(otherCollections = listOf(
+                PublicationCollection(role = "images", links = links)
+            )).images
+        )
+    }
+
+    @Test fun `get {images} when missing`() {
+        assertEquals(0, createWebPublication().images.size)
     }
 
 
