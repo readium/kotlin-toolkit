@@ -32,6 +32,11 @@ enum class EpubLayout(val value: String) {
             }
         }
 
+        @Deprecated("Renamed to [FIXED]", ReplaceWith("FIXED"))
+        val Fixed: EpubLayout get() = FIXED
+        @Deprecated("Renamed to [REFLOWABLE]", ReplaceWith("REFLOWABLE"))
+        val Reflowable: EpubLayout get() = REFLOWABLE
+
     }
 
 }

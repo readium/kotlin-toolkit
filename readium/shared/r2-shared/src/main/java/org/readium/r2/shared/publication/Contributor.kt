@@ -46,7 +46,7 @@ data class Contributor(
     )
 
     /**
-     * Returns the default translation string for the [name].
+     * Returns the default translation string for the [localizedName].
      */
     val name: String get() = localizedName.string
 

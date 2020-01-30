@@ -103,6 +103,13 @@ data class Presentation(
         companion object {
             fun from(value: String?): Orientation =
                 Orientation.values().firstOrNull { it.value == value } ?: AUTO
+
+            @Deprecated("Renamed to [AUTO]", ReplaceWith("AUTO"))
+            val Auto: Orientation get() = AUTO
+            @Deprecated("Renamed to [LANDSCAPE]", ReplaceWith("LANDSCAPE"))
+            val Landscape: Orientation get() = LANDSCAPE
+            @Deprecated("Renamed to [PORTRAIT]", ReplaceWith("PORTRAIT"))
+            val Portrait: Orientation get() = PORTRAIT
         }
     }
 
@@ -118,6 +125,13 @@ data class Presentation(
         companion object {
             fun from(value: String?): Overflow =
                 Overflow.values().firstOrNull { it.value == value } ?: AUTO
+
+            @Deprecated("Renamed to [PAGINATED]", ReplaceWith("PAGINATED"))
+            val Paginated: Overflow get() = PAGINATED
+            @Deprecated("Renamed to [SCROLLED_CONTINUOUS]", ReplaceWith("SCROLLED_CONTINUOUS"))
+            val Continuous: Overflow get() = SCROLLED_CONTINUOUS
+            @Deprecated("Renamed to [SCROLLED]", ReplaceWith("SCROLLED"))
+            val Document: Overflow get() = SCROLLED
         }
     }
 
@@ -149,6 +163,17 @@ data class Presentation(
         companion object {
             fun from(value: String?): Spread =
                 Spread.values().firstOrNull { it.value == value } ?: AUTO
+
+            @Deprecated("Renamed to [AUTO]", ReplaceWith("AUTO"))
+            val Auto: Spread get() = AUTO
+            @Deprecated("Renamed to [LANDSCAPE]", ReplaceWith("LANDSCAPE"))
+            val Landscape: Spread get() = LANDSCAPE
+            @Deprecated("Renamed to [BOTH]", ReplaceWith("BOTH"))
+            val Portrait: Spread get() = BOTH
+            @Deprecated("Renamed to [BOTH]", ReplaceWith("BOTH"))
+            val Both: Spread get() = BOTH
+            @Deprecated("Renamed to [NONE]", ReplaceWith("NONE"))
+            val None: Spread get() = NONE
         }
     }
 

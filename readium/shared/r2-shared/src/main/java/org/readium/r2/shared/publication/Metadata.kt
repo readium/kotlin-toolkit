@@ -62,6 +62,11 @@ data class Metadata(
 ) : JSONable, Serializable {
 
     /**
+     * Returns the default translation string for the [localizedTitle].
+     */
+    val title: String get() = localizedTitle.string
+
+    /**
      * Serializes a [Metadata] to its RWPM JSON representation.
      */
     override fun toJSON() = JSONObject(otherMetadata).apply {
@@ -205,7 +210,7 @@ data class Metadata(
     val publicationDate: String?
         get() = published?.toIso8601String()
 
-    @Deprecated("Use [presentation] instead", ReplaceWith("presentation", "org.readium.r2.shared.publication.presentation.getPresentation"))
+    @Deprecated("Use [presentation] instead", ReplaceWith("presentation", "org.readium.r2.shared.publication.presentation.presentation"))
     val rendition: Presentation
         get() = presentation
 
