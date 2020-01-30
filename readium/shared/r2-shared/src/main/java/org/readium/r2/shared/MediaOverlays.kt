@@ -11,14 +11,13 @@ package org.readium.r2.shared
 
 import java.io.Serializable
 
-
-class MediaOverlays(private val nodes: List<MediaOverlayNode> = listOf()) : Serializable {
+data class MediaOverlays(private val nodes: List<MediaOverlayNode> = listOf()) : Serializable {
     fun clip(ref: String): Clip? {
         val fragmentNode = nodeForFragment(ref)
         return fragmentNode?.clip
     }
 
-    private fun nodeForFragment(ref: String?): MediaOverlayNode? = findNode(ref, this.nodes)
+    fun nodeForFragment(ref: String?): MediaOverlayNode? = findNode(ref, this.nodes)
 
     private fun findNode(ref: String?, inNodes: List<MediaOverlayNode>): MediaOverlayNode? {
         for (node in inNodes) {

@@ -18,7 +18,7 @@ data class Clip (
         val end: Double? = null
 )
 
-class MediaOverlayNode (
+data class MediaOverlayNode (
     val text : String, // an URI possibly finishing by a fragment (textFile#id)
     val audio : String?, // an URI possibly finishing by a simple timer (audioFile#t=start,end)
     val children: List<MediaOverlayNode> = listOf(),
