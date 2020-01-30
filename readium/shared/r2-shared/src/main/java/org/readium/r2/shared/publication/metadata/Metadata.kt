@@ -17,6 +17,8 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.extensions.Presentation
+import org.readium.r2.shared.publication.extensions.presentation
 import org.readium.r2.shared.publication.link.LinkHrefNormalizer
 import org.readium.r2.shared.publication.link.LinkHrefNormalizerIdentity
 import java.io.Serializable
@@ -187,5 +189,42 @@ data class Metadata(
         }
 
     }
+
+    @Deprecated("Use [type] instead", ReplaceWith("type"))
+    val rdfType: String? get() = type
+
+    @Deprecated("Use [localizeTitle] instead.", ReplaceWith("localizedTitle"))
+    val multilanguageTitle: LocalizedString?
+        get() = localizedTitle
+
+    @Deprecated("Use [localizedTitle.translationForLanguage] instead", ReplaceWith("localizedTitle.translationForLanguage(key)?.string"))
+    fun titleForLang(key: String): String? =
+        localizedTitle.translationForLanguage(key)?.string
+
+    @Deprecated("Use [readingProgression] instead.", ReplaceWith("readingProgression.value"))
+    val direction: String
+        get() = readingProgression.value
+
+    @Deprecated("Use [published] instead", ReplaceWith("published?.toIso8601String()"))
+    val publicationDate: String?
+        get() = published?.toIso8601String()
+
+    @Deprecated("Use [presentation] instead", ReplaceWith("presentation", "org.readium.r2.shared.publication.extensions.presentation"))
+    val rendition: Presentation
+        get() = presentation
+
+    @Deprecated("Access from [otherMetadata] instead", ReplaceWith("otherMetadata[\"source\"] as? String"))
+    val source: String?
+        get() = otherMetadata["source"] as? String
+
+    @Deprecated("Not used anymore", ReplaceWith("null"))
+    val rights: String? get() = null
+
+    @Deprecated("Use either [belongsToCollections] or [belongsToSeries] instead", ReplaceWith("belongsToCollections"))
+    val belongsTo: Unit
+        get() = Unit
+
+    @Deprecated("Renamed into [toJSON]", ReplaceWith("toJSON()"))
+    fun writeJSON(): JSONObject = toJSON()
 
 }

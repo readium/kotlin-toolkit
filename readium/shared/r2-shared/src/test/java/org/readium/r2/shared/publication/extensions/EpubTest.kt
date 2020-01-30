@@ -138,23 +138,6 @@ class EpubTest {
     }
 
 
-    // EPUB extensions for [Metadata].
-
-    @Test fun `get Metadata {layout} when available`() {
-        assertEquals(
-            EpubLayout.FIXED,
-            Metadata(
-                localizedTitle = LocalizedString("Title"),
-                otherMetadata = mapOf("layout" to "fixed")
-            ).layout
-        )
-    }
-
-    @Test fun `get Metadata {layout} when missing`() {
-        assertNull(Metadata(localizedTitle = LocalizedString("Title")).layout)
-    }
-
-
     // EPUB extensions for link [Properties].
 
     @Test fun `get Properties {contains} when available`() {

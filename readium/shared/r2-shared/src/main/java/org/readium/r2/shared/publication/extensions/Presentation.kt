@@ -28,13 +28,15 @@ import java.io.Serializable
  * @param overflow Suggested method for handling overflow while displaying the linked resource.
  * @param spread Indicates the condition to be met for the linked resource to be rendered within a
  *     synthetic spread.
+ * @param layout Hints how the layout of the resource should be presented (EPUB extension).
  */
 data class Presentation(
     val continuous: Boolean = true,
     val fit: Fit = Fit.CONTAIN,
     val orientation: Orientation = Orientation.AUTO,
     val overflow: Overflow = Overflow.AUTO,
-    val spread: Spread = Spread.AUTO
+    val spread: Spread = Spread.AUTO,
+    val layout: EpubLayout? = null
 ) : JSONable, Serializable {
 
     /**
@@ -46,6 +48,7 @@ data class Presentation(
         put("orientation", orientation.value)
         put("overflow", overflow.value)
         put("spread", spread.value)
+        put("layout", layout?.value)
     }
 
     companion object {
@@ -62,7 +65,8 @@ data class Presentation(
                 fit = Fit.from(json.optString("fit")),
                 orientation = Orientation.from(json.optString("orientation")),
                 overflow = Overflow.from(json.optString("overflow")),
-                spread = Spread.from(json.optString("spread"))
+                spread = Spread.from(json.optString("spread")),
+                layout = EpubLayout.from(json.optString("layout"))
             )
         }
 
@@ -142,6 +146,12 @@ data class Presentation(
                 Spread.values().firstOrNull { it.value == value } ?: AUTO
         }
     }
+
+    @Deprecated("Use [toJSON] instead", ReplaceWith("toJSON()"))
+    fun getJSON(): JSONObject = toJSON()
+
+    @Deprecated("Use [overflow] instead", ReplaceWith("overflow"))
+    var flow: Overflow? = overflow
 
 }
 

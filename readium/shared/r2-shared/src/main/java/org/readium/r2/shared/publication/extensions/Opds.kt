@@ -284,6 +284,10 @@ val Properties.indirectAcquisitions: List<OpdsAcquisition>
         }
         ?: emptyList()
 
+@Deprecated(message = "Use [indirectAcquisitions] instead.", replaceWith = ReplaceWith(expression = "indirectAcquisitions"))
+val Properties.indirectAcquisition: List<OpdsAcquisition>
+    get() = indirectAcquisitions
+
 /**
  * Library-specific features when a specific book is unavailable but provides a hold list.
  */

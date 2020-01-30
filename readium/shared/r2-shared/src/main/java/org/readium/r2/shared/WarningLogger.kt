@@ -12,6 +12,15 @@ package org.readium.r2.shared
 import org.json.JSONObject
 
 /**
+ * Interface to be implemented by third-party apps if they want to observe raised warnings.
+ */
+interface WarningLogger {
+
+    fun log(warning: Warning, level: Warning.Level = Warning.Level.WARNING)
+
+}
+
+/**
  * Represents a non-fatal warning message that can be raised by a Readium library.
  *
  * For example, while parsing an EPUB we might want to report issues in the publication without
@@ -36,24 +45,30 @@ sealed class Warning {
      * Warning raised when parsing a model object from its JSON representation fails.
      *
      * @param type Class of the model object to be parsed.
-     * @param reason Details about the failure
-     * @param json Source [JSONObject]
+     * @param reason Details about the failure.
+     * @param json Source [JSONObject].
      */
     data class JsonParsing(
         val type: Class<*>,
         val reason: String,
         val json: JSONObject? = null
     ) : Warning() {
-        override val message: String get() = "Failed parsing JSON model ${type.name}: $reason"
+        override val message: String get() = "${javaClass.name} ${type.name}: $reason"
     }
 
-}
-
-/**
- * Interface to be implemented by third-party apps if they want to observe raised warnings.
- */
-interface WarningLogger {
-
-    fun log(warning: Warning, level: Warning.Level = Warning.Level.WARNING)
+    /**
+     * Warning raised when parsing a model object from an EPUB package.
+     *
+     * @param type Class of the model object to be parsed.
+     * @param reason Details about the failure.
+     * @param source Data used for the parsing (eg. XML).
+     */
+    data class EpubParsing(
+        val type: Class<*>,
+        val reason: String,
+        val source: String? = null
+    ) : Warning() {
+        override val message: String get() = "${javaClass.name} ${type.name}: $reason"
+    }
 
 }

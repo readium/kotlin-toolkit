@@ -21,7 +21,8 @@ class PresentationTest {
                 fit = Presentation.Fit.CONTAIN,
                 orientation = Presentation.Orientation.AUTO,
                 overflow = Presentation.Overflow.AUTO,
-                spread = Presentation.Spread.AUTO
+                spread = Presentation.Spread.AUTO,
+                layout = null
             ),
             Presentation.fromJSON(JSONObject("{}"))
         )
@@ -34,14 +35,16 @@ class PresentationTest {
                 fit = Presentation.Fit.COVER,
                 orientation = Presentation.Orientation.LANDSCAPE,
                 overflow = Presentation.Overflow.PAGINATED,
-                spread = Presentation.Spread.BOTH
+                spread = Presentation.Spread.BOTH,
+                layout = EpubLayout.FIXED
             ),
             Presentation.fromJSON(JSONObject("""{
                 "continuous": false,
                 "fit": "cover",
                 "orientation": "landscape",
                 "overflow": "paginated",
-                "spread": "both"
+                "spread": "both",
+                "layout": "fixed"
             }"""))
         )
     }
@@ -66,14 +69,16 @@ class PresentationTest {
                 "fit": "cover",
                 "orientation": "landscape",
                 "overflow": "paginated",
-                "spread": "both"
+                "spread": "both",
+                "layout": "fixed"
             }"""),
             Presentation(
                 continuous = false,
                 fit = Presentation.Fit.COVER,
                 orientation = Presentation.Orientation.LANDSCAPE,
                 overflow = Presentation.Overflow.PAGINATED,
-                spread = Presentation.Spread.BOTH
+                spread = Presentation.Spread.BOTH,
+                layout = EpubLayout.FIXED
             ).toJSON()
         )
     }

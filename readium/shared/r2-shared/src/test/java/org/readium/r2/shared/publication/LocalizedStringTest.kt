@@ -96,7 +96,7 @@ class LocalizedStringTest {
             LocalizedString(mapOf(
                 "en" to "a string",
                 "fr" to "une chaîne"
-            )).findTranslationByLanguage("fr")
+            )).translationForLanguage("fr")
         )
     }
 
@@ -107,7 +107,7 @@ class LocalizedStringTest {
             LocalizedString(mapOf(
                 language to "a string",
                 "foobar" to "une chaîne"
-            )).findTranslationByLanguage(null)
+            )).translationForLanguage(null)
         )
     }
 
@@ -118,7 +118,7 @@ class LocalizedStringTest {
                 LocalizedString.Translation("foo", "a string"),
                 LocalizedString.Translation("bar", "une chaîne"),
                 LocalizedString.Translation(language = null, string = "Surgh")
-            )).findTranslationByLanguage(null)
+            )).translationForLanguage(null)
         )
     }
 
@@ -129,7 +129,7 @@ class LocalizedStringTest {
                 "foo" to "a string",
                 "bar" to "une chaîne",
                 LocalizedString.UNDEFINED_LANGUAGE to "Surgh"
-            )).findTranslationByLanguage(null)
+            )).translationForLanguage(null)
         )
     }
 
@@ -139,7 +139,7 @@ class LocalizedStringTest {
             LocalizedString(mapOf(
                 "en" to "a string",
                 "fr" to "une chaîne"
-            )).findTranslationByLanguage(null)
+            )).translationForLanguage(null)
         )
     }
 
@@ -148,7 +148,7 @@ class LocalizedStringTest {
             LocalizedString.Translation("fr", "une chaîne"),
             LocalizedString(mapOf(
                 "fr" to "une chaîne"
-            )).findTranslationByLanguage(null)
+            )).translationForLanguage(null)
         )
     }
 

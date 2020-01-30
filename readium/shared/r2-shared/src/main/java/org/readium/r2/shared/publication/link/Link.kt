@@ -18,6 +18,7 @@ import org.readium.r2.shared.Warning
 import org.readium.r2.shared.WarningLogger
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.publication.extensions.encryption
 
 /**
  * Function used to recursively transform the [href] of a [Link] when parsing its JSON
@@ -139,11 +140,11 @@ data class Link(
 
     }
 
-    @Deprecated(message = "Use [type] instead", replaceWith = ReplaceWith(expression = "type"))
+    @Deprecated("Use [type] instead", ReplaceWith("type"))
     val typeLink: String?
         get() = type
 
-    @Deprecated(message = "Use [rels] instead.", replaceWith = ReplaceWith(expression = "rels"))
+    @Deprecated("Use [rels] instead.", ReplaceWith("rels"))
     val rel: List<String>
         get() = rels
 

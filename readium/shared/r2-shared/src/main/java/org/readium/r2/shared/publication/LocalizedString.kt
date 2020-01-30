@@ -48,7 +48,7 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
      * The default translation for this localized string.
      */
     val defaultTranslation: Translation
-        get() = findTranslationByLanguage(null)
+        get() = translationForLanguage(null)
             ?: Translation(string = "")
 
     /**
@@ -66,7 +66,7 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
      *    3. on the English language
      *    4. the first translation in the set
      */
-    fun findTranslationByLanguage(language: String?): Translation? {
+    fun translationForLanguage(language: String?): Translation? {
         fun find(code: String?) =
             translations.firstOrNull {
                 it.language?.toLowerCase(Locale.ROOT) == code?.toLowerCase(Locale.ROOT)
@@ -146,5 +146,16 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
         }
 
     }
+
+    @Deprecated("Use [string] instead.", ReplaceWith("string"))
+    val singleString: String?
+        get() = string.ifEmpty { null }
+
+    @Deprecated("Use [translationForLanguage] instead.", ReplaceWith("translationForLanguage()"))
+    val multiString: Map<String, String>
+        get() = translations.associateBy(
+            keySelector = { it.language ?: UNDEFINED_LANGUAGE },
+            valueTransform = { it.string }
+        )
 
 }

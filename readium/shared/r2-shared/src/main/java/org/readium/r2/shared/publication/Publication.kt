@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.publication
 
+import android.net.Uri
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
@@ -18,6 +19,8 @@ import org.readium.r2.shared.WarningLogger
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.removeLastComponent
+import org.readium.r2.shared.publication.extensions.listOfAudioClips
+import org.readium.r2.shared.publication.extensions.listOfVideoClips
 import org.readium.r2.shared.publication.link.Link
 import org.readium.r2.shared.publication.link.LinkHrefNormalizer
 import org.readium.r2.shared.publication.link.LinkHrefNormalizerIdentity
@@ -29,12 +32,10 @@ import java.util.*
 /**
  * Shared model for a Readium Publication.
  *
- * @param format Format of the publication, if specified.
- * @param formatVersion Version of the publication's format, eg. 3 for EPUB 3.
+ * @param type The kind of publication it is ( Epub, Cbz, ... )
+ * @param version The version of the publication, if the type needs any.
  */
 data class Publication(
-    val format: Format = Format.UNKNOWN,
-    val formatVersion: String? = null,
     val context: List<String> = emptyList(),
     val metadata: Metadata,
     // FIXME: Currently Readium requires to set the [Link] with [rel] "self" when adding it to the
@@ -46,59 +47,35 @@ data class Publication(
     val otherCollections: List<PublicationCollection> = emptyList()
 ) : JSONable, Serializable {
 
-    enum class Format {
-        // Formats natively supported by Readium.
-        CBZ, EPUB, PDF, WEBPUB, AUDIOBOOK,
-        // Default value when the format is not specified.
-        UNKNOWN;
+    // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
+    var type: TYPE = TYPE.EPUB
+    var version: Double = 0.0
+
+    enum class TYPE {
+        EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
+    }
+
+    enum class EXTENSION(var value: String) {
+        EPUB(".epub"),
+        CBZ(".cbz"),
+        JSON(".json"),
+        DIVINA(".divina"),
+        AUDIO(".audiobook"),
+        LCPL(".lcpl"),
+        UNKNOWN("");
 
         companion object {
-
-            /**
-             * Finds the format for the given [mimetype] or fallback on a [fileExtension].
-             */
-            fun from(mimetype: String?, fileExtension: String? = null): Format =
-                from(listOfNotNull(mimetype), fileExtension)
-
-            /**
-             * Finds the format from a list of possible [mimetypes] or fallback on a [fileExtension].
-             */
-            fun from(mimetypes: List<String>, fileExtension: String? = null): Format {
-                for (mimetype in mimetypes) {
-                    when (mimetype) {
-                        "application/epub+zip", "application/oebps-package+xml" ->
-                            return EPUB
-
-                        "application/x-cbr" ->
-                            return CBZ
-
-                        "application/pdf", "application/pdf+lcp" ->
-                            return PDF
-
-                        "application/webpub+json" ->
-                            return WEBPUB
-
-                        "application/audiobook+zip", "application/audiobook+json" ->
-                            return AUDIOBOOK
-                    }
-                }
-
-                return when (fileExtension?.toLowerCase(Locale.ROOT)) {
-                    "epub" -> EPUB
-                    "cbz" -> CBZ
-                    "pdf", "lcpdf" -> PDF
-                    "json" -> WEBPUB
-                    "audiobook" -> AUDIOBOOK
-                    else -> UNKNOWN
-                }
-            }
-
+            fun fromString(type: String): EXTENSION? =
+                EXTENSION.values().firstOrNull { it.value == type }
         }
     }
 
     // FIXME: To refactor after specifying the User and Rendition Settings API
     var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf()
     var cssStyle: String? = null
+
+    // FIXME: This is not specified and need to be refactored
+    var internalData: MutableMap<String, String> = mutableMapOf()
 
     /**
      * Returns the RWPM JSON representation for this manifest, as a string.
@@ -121,7 +98,7 @@ data class Publication(
     fun setSelfLink(href: String) {
         links = links.toMutableList().apply {
             removeAll { it.rels.contains("self") }
-            add(Link(href = href, rels = listOf("self")))
+            add(Link(href = href, type = "application/webpub+json", rels = listOf("self")))
         }
     }
 
@@ -163,15 +140,19 @@ data class Publication(
      * Finds the first [Link] having the given [href] in the publications's links.
      */
     fun linkWithHref(href: String): Link? =
-        link { it.href == href }
+        link { it.hasHref(href) }
 
     /**
      * Finds the first resource [Link] (asset or [readingOrder] item) at the given relative path.
      */
     fun resourceWithHref(href: String): Link? {
-        return readingOrder.find { it.href == href }
-            ?: resources.find { it.href == href }
+        return readingOrder.find { it.hasHref(href) }
+            ?: resources.find { it.hasHref(href) }
     }
+
+    // FIXME: Why do we need to check if there's a / at the beginning? Hrefs should be normalized everywhere
+    private fun Link.hasHref(href: String) =
+        this.href == href || this.href == "/$href"
 
     /**
      * Finds the first [Link] to the publication's cover ([rel] = cover).
@@ -250,4 +231,30 @@ data class Publication(
         }
 
     }
+
+    @Deprecated("Renamed to [listOfAudioClips]", ReplaceWith("listOfAudioClips"))
+    val listOfAudioFiles: List<Link> = listOfAudioClips
+
+    @Deprecated("Renamed to [listOfVideoClips]", ReplaceWith("listOfVideoClips"))
+    val listOfVideos: List<Link> = listOfVideoClips
+
+    @Deprecated("Renamed to [resourceWithHref]", ReplaceWith("resourceWithHref(href)"))
+    fun resource(href: String): Link? = resourceWithHref(href)
+
+    @Deprecated("Refactored as a property", ReplaceWith("baseUrl"))
+    fun baseUrl(): URL? = baseUrl
+
+    @Deprecated("Refactored as a property", ReplaceWith("manifest"))
+    fun manifest(): String = manifest
+
+    @Deprecated("Use [setSelfLink] instead", ReplaceWith("setSelfLink"))
+    fun addSelfLink(endPoint: String, baseURL: URL) {
+        setSelfLink(Uri.parse(baseURL.toString())
+            .buildUpon()
+            .appendEncodedPath("$endPoint/manifest.json")
+            .build()
+            .toString()
+        )
+    }
+
 }
