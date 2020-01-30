@@ -1,3 +1,12 @@
+/*
+ * Module: r2-shared-kotlin
+ * Developers: Mickaël Menu
+ *
+ * Copyright (c) 2020. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
 package org.readium.r2.shared.publication.extensions
 
 import org.json.JSONObject
@@ -32,69 +41,6 @@ class EpubTest {
     @Test fun `get layout value`() {
         assertEquals("fixed", EpubLayout.FIXED.value)
         assertEquals("reflowable", EpubLayout.REFLOWABLE.value)
-    }
-
-
-    // EpubEncryption
-
-    @Test fun `parse minimal JSON`() {
-        assertEquals(
-            EpubEncryption(algorithm = "http://algo"),
-            EpubEncryption.fromJSON(JSONObject("{'algorithm': 'http://algo'}"))
-        )
-    }
-
-    @Test fun `parse full JSON`() {
-        assertEquals(
-            EpubEncryption(
-                algorithm = "http://algo",
-                compression = "gzip",
-                originalLength = 42099,
-                profile = "http://profile",
-                scheme = "http://scheme"
-            ),
-            EpubEncryption.fromJSON(JSONObject("""{
-                "algorithm": "http://algo",
-                "compression": "gzip",
-                "originalLength": 42099,
-                "profile": "http://profile",
-                "scheme": "http://scheme"
-            }"""))
-        )
-    }
-
-    @Test fun `parse null JSON`() {
-        assertNull(EpubEncryption.fromJSON(null))
-    }
-
-    @Test fun `parse JSON requires {algorithm}`() {
-        assertNull(EpubEncryption.fromJSON(JSONObject("{'compression': 'gzip'}")))
-    }
-
-    @Test fun `get minimal JSON`() {
-        assertJSONEquals(
-            JSONObject("{'algorithm': 'http://algo'}"),
-            EpubEncryption(algorithm = "http://algo").toJSON()
-        )
-    }
-
-    @Test fun `get full JSON`() {
-        assertJSONEquals(
-            JSONObject("""{
-                "algorithm": "http://algo",
-                "compression": "gzip",
-                "originalLength": 42099,
-                "profile": "http://profile",
-                "scheme": "http://scheme"
-            }"""),
-            EpubEncryption(
-                algorithm = "http://algo",
-                compression = "gzip",
-                originalLength = 42099,
-                profile = "http://profile",
-                scheme = "http://scheme"
-            ).toJSON()
-        )
     }
 
 
@@ -256,24 +202,6 @@ class EpubTest {
 
     @Test fun `get Properties {mediaOverlay} when missing`() {
         assertNull(Properties().mediaOverlay)
-    }
-
-    @Test fun `get Properties {encryption} when available`() {
-        assertEquals(
-            EpubEncryption(algorithm = "http://algo", compression = "gzip"),
-            Properties(otherProperties = mapOf("encrypted" to mapOf(
-                "algorithm" to "http://algo",
-                "compression" to "gzip"
-            ))).encryption
-        )
-    }
-
-    @Test fun `get Properties {encryption} when missing`() {
-        assertNull(Properties().encryption)
-    }
-
-    @Test fun `get Properties {encryption} when not valid`() {
-        assertNull(Properties(otherProperties = mapOf("encrypted" to "invalid")).encryption)
     }
 
 }

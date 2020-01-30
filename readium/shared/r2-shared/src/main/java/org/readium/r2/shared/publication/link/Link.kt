@@ -52,20 +52,20 @@ val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
  *     WARNING: Media overlays are in beta and the API is subject to change in the future.
  */
 data class Link(
-    var href: String,
-    var type: String? = null,
-    var templated: Boolean = false,
-    var title: String? = null,
-    var rels: List<String> = listOf(),
-    var properties: Properties = Properties(),
-    var height: Int? = null,
-    var width: Int? = null,
-    var bitrate: Double? = null,
-    var duration: Double? = null,
-    var languages: List<String> = listOf(),
-    var alternates: List<Link> = listOf(),
-    var children: List<Link> = listOf(),
-    var mediaOverlays: MediaOverlays = MediaOverlays()
+    val href: String,
+    val type: String? = null,
+    val templated: Boolean = false,
+    val title: String? = null,
+    val rels: List<String> = listOf(),
+    val properties: Properties = Properties(),
+    val height: Int? = null,
+    val width: Int? = null,
+    val bitrate: Double? = null,
+    val duration: Double? = null,
+    val languages: List<String> = listOf(),
+    val alternates: List<Link> = listOf(),
+    val children: List<Link> = listOf(),
+    val mediaOverlays: MediaOverlays? = null
 ) : JSONable, Serializable {
 
     /**
@@ -86,16 +86,6 @@ data class Link(
         putIfNotEmpty("alternate", alternates)
         putIfNotEmpty("children", children)
     }
-
-    @Deprecated(message = "Use `type` instead", replaceWith = ReplaceWith(expression = "type"))
-    var typeLink: String?
-        get() = type
-        set(value) { type = value }
-
-    @Deprecated(message = "Use `rels` instead.", replaceWith = ReplaceWith(expression = "rels"))
-    var rel: List<String>
-        get() = rels
-        set(value) { rels = value }
 
     companion object {
 
@@ -148,5 +138,13 @@ data class Link(
         }
 
     }
+
+    @Deprecated(message = "Use [type] instead", replaceWith = ReplaceWith(expression = "type"))
+    val typeLink: String?
+        get() = type
+
+    @Deprecated(message = "Use [rels] instead.", replaceWith = ReplaceWith(expression = "rels"))
+    val rel: List<String>
+        get() = rels
 
 }

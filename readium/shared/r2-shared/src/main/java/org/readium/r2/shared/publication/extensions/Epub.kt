@@ -10,16 +10,10 @@
 package org.readium.r2.shared.publication.extensions
 
 import org.json.JSONObject
-import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.Warning
-import org.readium.r2.shared.WarningLogger
-import org.readium.r2.shared.extensions.optNullableInt
-import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.link.Link
 import org.readium.r2.shared.publication.link.Properties
 import org.readium.r2.shared.publication.metadata.Metadata
-import java.io.Serializable
 
 /**
  * Hints how the layout of the resource should be presented.
@@ -46,64 +40,6 @@ enum class EpubLayout(val value: String) {
 
     }
 
-}
-
-/**
- * Indicates that a resource is encrypted/obfuscated and provides relevant information for
- * decryption.
- *
- * @param algorithm Identifies the algorithm used to encrypt the resource (URI).
- * @param compression Compression method used on the resource.
- * @param originalLength Original length of the resource in bytes before compression and/or
- *     encryption.
- * @param profile Identifies the encryption profile used to encrypt the resource (URI).
- * @param scheme Identifies the encryption scheme used to encrypt the resource (URI).
- */
-data class EpubEncryption(
-    val algorithm: String,
-    val compression: String? = null,
-    val originalLength: Int? = null,
-    val profile: String? = null,
-    val scheme: String? = null
-) : JSONable, Serializable {
-
-    /**
-     * Serializes an [EpubEncryption] to its RWPM JSON representation.
-     */
-    override fun toJSON() = JSONObject().apply {
-        put("algorithm", algorithm)
-        put("compression", compression)
-        put("originalLength", originalLength)
-        put("profile", profile)
-        put("scheme", scheme)
-    }
-
-    companion object {
-
-        /**
-         * Creates an [EpubEncryption] from its RWPM JSON representation.
-         * If the encryption can't be parsed, a warning will be logged with [warnings].
-         */
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): EpubEncryption? {
-            val algorithm = json?.optNullableString("algorithm")
-            if (algorithm.isNullOrEmpty()) {
-                warnings?.log(Warning.JsonParsing(EpubEncryption::class.java, "[algorithm] is required", json))
-                return null
-            }
-
-            return EpubEncryption(
-                algorithm = algorithm,
-                compression = json.optNullableString("compression"),
-                // Fallback on [original-length] for legacy reasons
-                // See https://github.com/readium/webpub-manifest/pull/43
-                originalLength = json.optNullableInt("originalLength")
-                    ?: json.optNullableInt("original-length"),
-                profile = json.optNullableString("profile"),
-                scheme = json.optNullableString("scheme")
-            )
-        }
-
-    }
 }
 
 
@@ -163,11 +99,3 @@ val Properties.layout: EpubLayout?
  */
 val Properties.mediaOverlay: String?
     get() = this["mediaOverlay"] as? String
-
-/**
- * Indicates that a resource is encrypted/obfuscated and provides relevant information for
- * decryption.
- */
-val Properties.encryption: EpubEncryption?
-    get() = (this["encrypted"] as? Map<*, *>)
-        ?.let { EpubEncryption.fromJSON(JSONObject(it)) }
