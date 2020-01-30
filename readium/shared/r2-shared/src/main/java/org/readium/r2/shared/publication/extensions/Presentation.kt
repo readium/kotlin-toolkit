@@ -21,6 +21,8 @@ import java.io.Serializable
  * https://readium.org/webpub-manifest/extensions/presentation.html
  * https://readium.org/webpub-manifest/schema/extensions/presentation/metadata.schema.json
  *
+ * @param clipped Specifies whether or not the parts of a linked resource that flow out of the
+ *     viewport are clipped.
  * @param continuous Indicates how the progression between resources from the [readingOrder] should
  *     be handled.
  * @param fit Suggested method for constraining a resource inside the viewport.
@@ -31,6 +33,7 @@ import java.io.Serializable
  * @param layout Hints how the layout of the resource should be presented (EPUB extension).
  */
 data class Presentation(
+    val clipped: Boolean = false,
     val continuous: Boolean = true,
     val fit: Fit = Fit.CONTAIN,
     val orientation: Orientation = Orientation.AUTO,
@@ -43,6 +46,7 @@ data class Presentation(
      * Serializes a [Presentation] to its RWPM JSON representation.
      */
     override fun toJSON() = JSONObject().apply {
+        put("clipped", clipped)
         put("continuous", continuous)
         put("fit", fit.value)
         put("orientation", orientation.value)
@@ -61,6 +65,7 @@ data class Presentation(
                 return Presentation()
             }
             return Presentation(
+                clipped = json.optBoolean("clipped", false),
                 continuous = json.optBoolean("continuous", true),
                 fit = Fit.from(json.optString("fit")),
                 orientation = Orientation.from(json.optString("orientation")),
@@ -166,6 +171,13 @@ val Metadata.presentation: Presentation
 
 
 // Presentation extensions for link [Properties]
+
+/**
+ * Specifies whether or not the parts of a linked resource that flow out of the viewport are
+ * clipped.
+ */
+val Properties.clipped: Boolean
+    get() = (this["clipped"] as? Boolean) ?: false
 
 /**
  * Suggested method for constraining a resource inside the viewport.

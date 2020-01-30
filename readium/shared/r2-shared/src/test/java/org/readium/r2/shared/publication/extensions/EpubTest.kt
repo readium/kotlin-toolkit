@@ -176,15 +176,4 @@ class EpubTest {
         assertNull(Properties().layout)
     }
 
-    @Test fun `get Properties {mediaOverlay} when available`() {
-        assertEquals(
-            "http://media-overlay",
-            Properties(otherProperties = mapOf("mediaOverlay" to "http://media-overlay")).mediaOverlay
-        )
-    }
-
-    @Test fun `get Properties {mediaOverlay} when missing`() {
-        assertNull(Properties().mediaOverlay)
-    }
-
 }

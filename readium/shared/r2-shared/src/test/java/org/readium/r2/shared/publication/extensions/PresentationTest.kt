@@ -17,6 +17,7 @@ class PresentationTest {
     @Test fun `parse minimal JSON`() {
         assertEquals(
             Presentation(
+                clipped = false,
                 continuous = true,
                 fit = Presentation.Fit.CONTAIN,
                 orientation = Presentation.Orientation.AUTO,
@@ -31,6 +32,7 @@ class PresentationTest {
     @Test fun `parse full JSON`() {
         assertEquals(
             Presentation(
+                clipped = true,
                 continuous = false,
                 fit = Presentation.Fit.COVER,
                 orientation = Presentation.Orientation.LANDSCAPE,
@@ -39,6 +41,7 @@ class PresentationTest {
                 layout = EpubLayout.FIXED
             ),
             Presentation.fromJSON(JSONObject("""{
+                "clipped": true,
                 "continuous": false,
                 "fit": "cover",
                 "orientation": "landscape",
@@ -52,6 +55,7 @@ class PresentationTest {
     @Test fun `get minimal JSON`() {
         assertJSONEquals(
             JSONObject("""{
+                "clipped": false,
                 "continuous": true,
                 "fit": "contain",
                 "orientation": "auto",
@@ -65,6 +69,7 @@ class PresentationTest {
     @Test fun `get full JSON`() {
         assertJSONEquals(
             JSONObject("""{
+                "clipped": true,
                 "continuous": false,
                 "fit": "cover",
                 "orientation": "landscape",
@@ -73,6 +78,7 @@ class PresentationTest {
                 "layout": "fixed"
             }"""),
             Presentation(
+                clipped = true,
                 continuous = false,
                 fit = Presentation.Fit.COVER,
                 orientation = Presentation.Orientation.LANDSCAPE,
@@ -190,6 +196,14 @@ class PresentationTest {
     }
 
     // Presentation extensions for link [Properties].
+
+    @Test fun `get Properties {clipped} when available`() {
+        assertTrue(Properties(otherProperties = mapOf("clipped" to true)).clipped)
+    }
+
+    @Test fun `get Properties {clipped} when missing`() {
+        assertFalse(Properties().clipped)
+    }
 
     @Test fun `get Properties {fit} when available`() {
         assertEquals(

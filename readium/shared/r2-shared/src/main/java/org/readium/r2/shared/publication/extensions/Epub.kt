@@ -93,9 +93,3 @@ val Properties.contains: Set<String>
  */
 val Properties.layout: EpubLayout?
     get() = EpubLayout.from(this["layout"] as? String)
-
-/**
- * Location of a media-overlay for the resource referenced in the Link Object.
- */
-val Properties.mediaOverlay: String?
-    get() = this["mediaOverlay"] as? String
