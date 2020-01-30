@@ -13,6 +13,14 @@ package org.readium.r2.shared
 
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.removeLastComponent
+import org.readium.r2.shared.publication.Collection
+import org.readium.r2.shared.publication.Contributor
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.Subject
+import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.publication.presentation.Presentation
 import java.net.URL
 
 
@@ -28,41 +36,41 @@ typealias PageProgressionDirection = org.readium.r2.shared.publication.ReadingPr
 @Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.Publication"))
 typealias Publication = org.readium.r2.shared.publication.Publication
 
-@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.link.Link"))
-typealias Link = org.readium.r2.shared.publication.link.Link
+@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.Link"))
+typealias Link = Link
 
-@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.link.Properties"))
-typealias Properties = org.readium.r2.shared.publication.link.Properties
+@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.Properties"))
+typealias Properties = Properties
 
-@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.metadata.Metadata"))
-typealias Metadata = org.readium.r2.shared.publication.metadata.Metadata
+@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.Metadata"))
+typealias Metadata = Metadata
 
-@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.metadata.Contributor"))
-typealias Contributor = org.readium.r2.shared.publication.metadata.Contributor
+@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.Contributor"))
+typealias Contributor = Contributor
 
-@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.metadata.Collection"))
-typealias Collection = org.readium.r2.shared.publication.metadata.Collection
+@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.Collection"))
+typealias Collection = Collection
 
-@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.metadata.Subject"))
-typealias Subject = org.readium.r2.shared.publication.metadata.Subject
+@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.Subject"))
+typealias Subject = Subject
 
-@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.extensions.Encryption"))
-typealias Encryption = org.readium.r2.shared.publication.extensions.Encryption
+@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.encryption.Encryption"))
+typealias Encryption = Encryption
 
-@Deprecated("Refactored into [Presentation]", ReplaceWith("org.readium.r2.shared.publication.extensions.Presentation"))
-typealias Rendition = org.readium.r2.shared.publication.extensions.Presentation
+@Deprecated("Refactored into [Presentation]", ReplaceWith("org.readium.r2.shared.publication.presentation.Presentation"))
+typealias Rendition = Presentation
 
-@Deprecated("Refactored into [EpubLayout]", ReplaceWith("org.readium.r2.shared.publication.extensions.EpubLayout"))
-typealias RenditionLayout = org.readium.r2.shared.publication.extensions.EpubLayout
+@Deprecated("Refactored into [EpubLayout]", ReplaceWith("org.readium.r2.shared.publication.epub.EpubLayout"))
+typealias RenditionLayout = org.readium.r2.shared.publication.epub.EpubLayout
 
-@Deprecated("Refactored into [Presentation.Overflow]", ReplaceWith("org.readium.r2.shared.publication.extensions.Presentation.Overflow"))
-typealias RenditionFlow = org.readium.r2.shared.publication.extensions.Presentation.Overflow
+@Deprecated("Refactored into [Presentation.Overflow]", ReplaceWith("org.readium.r2.shared.publication.presentation.Presentation.Overflow"))
+typealias RenditionFlow = Presentation.Overflow
 
-@Deprecated("Refactored into [Presentation.Orientation]", ReplaceWith("org.readium.r2.shared.publication.extensions.Presentation.Orientation"))
-typealias RenditionOrientation = org.readium.r2.shared.publication.extensions.Presentation.Orientation
+@Deprecated("Refactored into [Presentation.Orientation]", ReplaceWith("org.readium.r2.shared.publication.presentation.Presentation.Orientation"))
+typealias RenditionOrientation = Presentation.Orientation
 
-@Deprecated("Refactored into [Presentation.Spread]", ReplaceWith("org.readium.r2.shared.publication.extensions.Presentation.Spread"))
-typealias RenditionSpread = org.readium.r2.shared.publication.extensions.Presentation.Spread
+@Deprecated("Refactored into [Presentation.Spread]", ReplaceWith("org.readium.r2.shared.publication.presentation.Presentation.Spread"))
+typealias RenditionSpread = Presentation.Spread
 
 @Deprecated("Use [Publication::fromJSON] instead")
 fun parsePublication(pubDict: JSONObject): org.readium.r2.shared.publication.Publication {
@@ -70,15 +78,15 @@ fun parsePublication(pubDict: JSONObject): org.readium.r2.shared.publication.Pub
         ?: throw Exception("Invalid publiation")
 }
 
-@Deprecated("Use [Link::fromJSON] instead", ReplaceWith("Link.fromJSON", "org.readium.r2.shared.publication.link.Link"))
-fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): org.readium.r2.shared.publication.link.Link =
-    org.readium.r2.shared.publication.link.Link.fromJSON(linkDict, normalizeHref = {
+@Deprecated("Use [Link::fromJSON] instead", ReplaceWith("Link.fromJSON", "org.readium.r2.shared.publication.Link"))
+fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link =
+    Link.fromJSON(linkDict, normalizeHref = {
         if (feedUrl == null) {
             it
         } else {
             getAbsolute(it, feedUrl.toString())
         }
-    }) ?: org.readium.r2.shared.publication.link.Link(href = "#")
+    }) ?: Link(href = "#")
 
 @Deprecated("Moved to another package", ReplaceWith("removeLastComponent()", "org.readium.r2.shared.extensions.removeLastComponent"))
 fun URL.removeLastComponent(): URL = removeLastComponent()

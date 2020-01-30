@@ -19,15 +19,10 @@ import org.readium.r2.shared.WarningLogger
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.removeLastComponent
-import org.readium.r2.shared.publication.extensions.listOfAudioClips
-import org.readium.r2.shared.publication.extensions.listOfVideoClips
-import org.readium.r2.shared.publication.link.Link
-import org.readium.r2.shared.publication.link.LinkHrefNormalizer
-import org.readium.r2.shared.publication.link.LinkHrefNormalizerIdentity
-import org.readium.r2.shared.publication.metadata.Metadata
+import org.readium.r2.shared.publication.epub.listOfAudioClips
+import org.readium.r2.shared.publication.epub.listOfVideoClips
 import java.io.Serializable
 import java.net.URL
-import java.util.*
 
 /**
  * Shared model for a Readium Publication.

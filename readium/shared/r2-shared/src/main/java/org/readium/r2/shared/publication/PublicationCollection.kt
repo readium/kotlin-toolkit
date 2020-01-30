@@ -17,9 +17,6 @@ import org.readium.r2.shared.WarningLogger
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.publication.link.Link
-import org.readium.r2.shared.publication.link.LinkHrefNormalizer
-import org.readium.r2.shared.publication.link.LinkHrefNormalizerIdentity
 import java.io.Serializable
 
 /**

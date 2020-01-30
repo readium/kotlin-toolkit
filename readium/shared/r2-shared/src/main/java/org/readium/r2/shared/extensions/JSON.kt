@@ -79,6 +79,7 @@ fun JSONObject.putIfNotEmpty(name: String, jsonable: JSONable?) {
  * If the objects in [collection] are [JSONable], then they are converted to [JSONObject] first.
  */
 internal fun JSONObject.putIfNotEmpty(name: String, collection: Collection<*>) {
+    @Suppress("NAME_SHADOWING")
     val collection = collection.mapNotNull {
         if (it !is JSONable) {
             return@mapNotNull it

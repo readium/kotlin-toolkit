@@ -13,7 +13,6 @@ import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.assertJSONEquals
-import org.readium.r2.shared.publication.link.Link
 
 class PublicationCollectionTest {
 
