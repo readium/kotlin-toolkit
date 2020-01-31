@@ -9,8 +9,8 @@
 
 package org.readium.r2.shared.opds
 
-import org.readium.r2.shared.Link
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
 import java.io.Serializable
 import java.net.URL
 
@@ -25,7 +25,7 @@ data class Feed(val title: String, val type: Int, val href: URL) : Serializable 
     var context: MutableList<String> = mutableListOf()
 
     internal fun getSearchLinkHref(): String? {
-        val searchLink = links.firstOrNull { it.rel.contains("search") }
+        val searchLink = links.firstOrNull { it.rels.contains("search") }
         return searchLink?.href
     }
 }

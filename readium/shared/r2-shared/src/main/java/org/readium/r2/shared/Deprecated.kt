@@ -72,13 +72,13 @@ typealias RenditionOrientation = Presentation.Orientation
 @Deprecated("Refactored into [Presentation.Spread]", ReplaceWith("org.readium.r2.shared.publication.presentation.Presentation.Spread"))
 typealias RenditionSpread = Presentation.Spread
 
-@Deprecated("Use [Publication::fromJSON] instead")
+@Deprecated("Use [Publication::fromJSON] instead", ReplaceWith("Publication.fromJSON(pubDict)", "org.readium.r2.shared.publication.Publication"))
 fun parsePublication(pubDict: JSONObject): org.readium.r2.shared.publication.Publication {
     return org.readium.r2.shared.publication.Publication.fromJSON(pubDict)
         ?: throw Exception("Invalid publiation")
 }
 
-@Deprecated("Use [Link::fromJSON] instead", ReplaceWith("Link.fromJSON", "org.readium.r2.shared.publication.Link"))
+@Deprecated("Use [Link::fromJSON] instead", ReplaceWith("Link.fromJSON(linkDict)", "org.readium.r2.shared.publication.Link"))
 fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link =
     Link.fromJSON(linkDict, normalizeHref = {
         if (feedUrl == null) {

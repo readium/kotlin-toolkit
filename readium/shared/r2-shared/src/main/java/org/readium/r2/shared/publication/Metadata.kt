@@ -203,7 +203,7 @@ data class Metadata(
     fun titleForLang(key: String): String? =
         localizedTitle.translationForLanguage(key)?.string
 
-    @Deprecated("Use [readingProgression] instead.", ReplaceWith("readingProgression.value"))
+    @Deprecated("Use [readingProgression] instead.", ReplaceWith("readingProgression"))
     val direction: String
         get() = readingProgression.value
 
