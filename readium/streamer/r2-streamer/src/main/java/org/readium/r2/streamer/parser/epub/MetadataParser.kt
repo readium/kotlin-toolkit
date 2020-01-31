@@ -23,7 +23,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
 
         val uniqueIdentifierId = document.getAttr("unique-identifier")
         val dcElements = metadataElement.getAll().filter { it.namespace == Namespaces.Dc }
-        val modified : java.util.Date? = globalProperties.firstOrNull { it.property == RESERVED_PREFIXES["dcterms"] + "modified" }
+        val modified : java.util.Date? = globalProperties.firstOrNull { it.property == PACKAGE_RESERVED_PREFIXES["dcterms"] + "modified" }
                     ?.value?.let { parseModified(it) }
 
         val links = parseLinks(metadataElement.get("link", Namespaces.Opf), prefixMap)
@@ -165,7 +165,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
                     DEFAULT_VOCAB.META.iri + "alternate-script" -> if (it.lang != null) altNames[it.lang] = it.value
                     DEFAULT_VOCAB.META.iri + "file-as" -> fileAs = it.value
                     DEFAULT_VOCAB.META.iri + "role" ->
-                        if (it.scheme == RESERVED_PREFIXES["marc"] + "relators") roles.add(it.value)
+                        if (it.scheme == PACKAGE_RESERVED_PREFIXES["marc"] + "relators") roles.add(it.value)
                 }
             }
         } else {
@@ -191,16 +191,16 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
 
         properties.forEach {
             when (it.property) {
-                RESERVED_PREFIXES["rendition"] + "flow" ->
+                PACKAGE_RESERVED_PREFIXES["rendition"] + "flow" ->
                     if (it.value in RenditionMetadata.Flow.names)
                         flow = RenditionMetadata.Flow.get(it.value)
-                RESERVED_PREFIXES["rendition"] + "layout" ->
+                PACKAGE_RESERVED_PREFIXES["rendition"] + "layout" ->
                     if (it.value in RenditionMetadata.Layout.names)
                         layout = RenditionMetadata.Layout.get(it.value)
-                RESERVED_PREFIXES["rendition"] + "orientation" ->
+                PACKAGE_RESERVED_PREFIXES["rendition"] + "orientation" ->
                     if (it.value in RenditionMetadata.Orientation.names)
                         orientation = RenditionMetadata.Orientation.get(it.value)
-                RESERVED_PREFIXES["rendition"] + "spread" -> {
+                PACKAGE_RESERVED_PREFIXES["rendition"] + "spread" -> {
                     val value = if (it.value == "portrait") "both" else it.value
                     if (value in RenditionMetadata.Spread.names)
                         spread = RenditionMetadata.Spread.get(value)
@@ -219,13 +219,13 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
 
         globalProperties.forEach {
             when (it.property) {
-                RESERVED_PREFIXES["media"] + "active-class" ->
+                PACKAGE_RESERVED_PREFIXES["media"] + "active-class" ->
                     activeClass = it.value
-                RESERVED_PREFIXES["media"] + "playback-active-class" ->
+                PACKAGE_RESERVED_PREFIXES["media"] + "playback-active-class" ->
                     playbackActiveClass = it.value
-                RESERVED_PREFIXES["media"] + "duration" ->
+                PACKAGE_RESERVED_PREFIXES["media"] + "duration" ->
                     duration = ClockValueParser.parse(it.value)
-                RESERVED_PREFIXES["media"] + "narrator" -> {
+                PACKAGE_RESERVED_PREFIXES["media"] + "narrator" -> {
                     val altNames = it.children.filter { c -> c.property == "alternate-script" && c.lang != null }
                             .associate { Pair(it.lang as String, it.value) }
                     val fileAs = it.children.firstOrNull { c -> c.property == "file-as" }?.value
@@ -237,7 +237,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
         @Suppress("Unchecked_cast")
         val durationById = propertyById
                 .mapValues { v->
-                    v.value.firstOrNull { it.property == RESERVED_PREFIXES["media"] + "duration" }
+                    v.value.firstOrNull { it.property == PACKAGE_RESERVED_PREFIXES["media"] + "duration" }
                             ?.value?.let { ClockValueParser.parse(it) }
                 }
                 .filterValues { it != null } as Map<String, Double>

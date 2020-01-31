@@ -259,41 +259,41 @@ private fun parseItemrefProperties(properties: List<String>, link: SharedLink) {
     for (property in properties) {
         //  Page
         when (property) {
-            RESERVED_PREFIXES["rendition"] + "page-spread-center" -> "center"
-            RESERVED_PREFIXES["rendition"] + "page-spread-left",
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "page-spread-center" -> "center"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "page-spread-left",
             DEFAULT_VOCAB.ITEMREF.iri + "page-spread-left" -> "left"
-            RESERVED_PREFIXES["rendition"] + "page-spread-right",
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "page-spread-right",
             DEFAULT_VOCAB.ITEMREF.iri + "page-spread-left" -> "right"
             else -> null
         }?.let { link.properties.page = it }
         //  Spread
         when (property) {
-            RESERVED_PREFIXES["rendition"] + "spread-node" -> "none"
-            RESERVED_PREFIXES["rendition"] + "spread-auto" -> "auto"
-            RESERVED_PREFIXES["rendition"] + "spread-landscape" -> "landscape"
-            RESERVED_PREFIXES["rendition"] + "spread-portrait" -> "both"
-            RESERVED_PREFIXES["rendition"] + "spread-both" -> "both"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-node" -> "none"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-auto" -> "auto"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-landscape" -> "landscape"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-portrait" -> "both"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-both" -> "both"
             else -> null
         }?.let { link.properties.spread = it }
         //  Layout
         when (property) {
-            RESERVED_PREFIXES["rendition"] + "layout-reflowable" -> "reflowable"
-            RESERVED_PREFIXES["rendition"] + "layout-pre-paginated" -> "fixed"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "layout-reflowable" -> "reflowable"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "layout-pre-paginated" -> "fixed"
             else -> null
         }?.let { link.properties.layout = it }
         //  Orientation
         when (property) {
-            RESERVED_PREFIXES["rendition"] + "orientation-auto" -> "auto"
-            RESERVED_PREFIXES["rendition"] + "orientation-landscape" -> "landscape"
-            RESERVED_PREFIXES["rendition"] + "orientation-portrait" -> "portrait"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "orientation-auto" -> "auto"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "orientation-landscape" -> "landscape"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "orientation-portrait" -> "portrait"
             else -> null
         }?.let { link.properties.orientation = it }
         //  Overflow
         when (property) {
-            RESERVED_PREFIXES["rendition"] + "flow-auto" -> "auto"
-            RESERVED_PREFIXES["rendition"] + "flow-paginated" -> "paginated"
-            RESERVED_PREFIXES["rendition"] + "flow-scrolled-continuous" -> "scrolled"
-            RESERVED_PREFIXES["rendition"] + "flow-scrolled-doc" -> "scrolled"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-auto" -> "auto"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-paginated" -> "paginated"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-scrolled-continuous" -> "scrolled"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-scrolled-doc" -> "scrolled"
             else -> null
         }?.let { link.properties.overflow = it }
     }

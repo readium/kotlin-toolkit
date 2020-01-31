@@ -25,74 +25,57 @@ import org.readium.r2.streamer.parser.normalize
 import timber.log.Timber
 import java.io.File
 
-class EPUBConstant {
-    companion object {
-        const val lcplFilePath: String = "META-INF/license.lcpl"
-        const val mimetype: String = "application/epub+zip"
-        const val mimetypeOEBPS: String = "application/oebps-package+xml"
-        const val mediaOverlayURL: String = "media-overlay?resource="
-        const val containerDotXmlPath = "META-INF/container.xml"
-        const val encryptionDotXmlPath = "META-INF/encryption.xml"
-        private val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-                ReadiumCSSName.ref("hyphens") to false,
-                ReadiumCSSName.ref("ligatures") to false
-        )
+object EPUBConstant {
+    const val lcplFilePath: String = "META-INF/license.lcpl"
+    const val mimetype: String = "application/epub+zip"
+    const val mimetypeOEBPS: String = "application/oebps-package+xml"
+    const val mediaOverlayURL: String = "media-overlay?resource="
+    const val containerDotXmlPath = "META-INF/container.xml"
+    const val encryptionDotXmlPath = "META-INF/encryption.xml"
+    private val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+            ReadiumCSSName.ref("hyphens") to false,
+            ReadiumCSSName.ref("ligatures") to false
+    )
 
-        private val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-                ReadiumCSSName.ref("hyphens") to false,
-                ReadiumCSSName.ref("wordSpacing") to false,
-                ReadiumCSSName.ref("letterSpacing") to false,
-                ReadiumCSSName.ref("ligatures") to true
-        )
+    private val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+            ReadiumCSSName.ref("hyphens") to false,
+            ReadiumCSSName.ref("wordSpacing") to false,
+            ReadiumCSSName.ref("letterSpacing") to false,
+            ReadiumCSSName.ref("ligatures") to true
+    )
 
-        private val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-                ReadiumCSSName.ref("textAlignment") to false,
-                ReadiumCSSName.ref("hyphens") to false,
-                ReadiumCSSName.ref("paraIndent") to false,
-                ReadiumCSSName.ref("wordSpacing") to false,
-                ReadiumCSSName.ref("letterSpacing") to false
-        )
+    private val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+            ReadiumCSSName.ref("textAlignment") to false,
+            ReadiumCSSName.ref("hyphens") to false,
+            ReadiumCSSName.ref("paraIndent") to false,
+            ReadiumCSSName.ref("wordSpacing") to false,
+            ReadiumCSSName.ref("letterSpacing") to false
+    )
 
-        private val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-                ReadiumCSSName.ref("scroll") to true,
-                ReadiumCSSName.ref("columnCount") to false,
-                ReadiumCSSName.ref("textAlignment") to false,
-                ReadiumCSSName.ref("hyphens") to false,
-                ReadiumCSSName.ref("paraIndent") to false,
-                ReadiumCSSName.ref("wordSpacing") to false,
-                ReadiumCSSName.ref("letterSpacing") to false
-        )
+    private val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+            ReadiumCSSName.ref("scroll") to true,
+            ReadiumCSSName.ref("columnCount") to false,
+            ReadiumCSSName.ref("textAlignment") to false,
+            ReadiumCSSName.ref("hyphens") to false,
+            ReadiumCSSName.ref("paraIndent") to false,
+            ReadiumCSSName.ref("wordSpacing") to false,
+            ReadiumCSSName.ref("letterSpacing") to false
+    )
 
-        val forceScrollPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-                ReadiumCSSName.ref("scroll") to true
-        )
+    val forceScrollPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+            ReadiumCSSName.ref("scroll") to true
+    )
 
-        val userSettingsUIPreset: MutableMap<ContentLayoutStyle, MutableMap<ReadiumCSSName, Boolean>> = mutableMapOf(
-                ContentLayoutStyle.layout("ltr") to ltrPreset,
-                ContentLayoutStyle.layout("rtl") to rtlPreset,
-                ContentLayoutStyle.layout("cjkv") to cjkVerticalPreset,
-                ContentLayoutStyle.layout("cjkh") to cjkHorizontalPreset
-        )
-    }
+    val userSettingsUIPreset: MutableMap<ContentLayoutStyle, MutableMap<ReadiumCSSName, Boolean>> = mutableMapOf(
+            ContentLayoutStyle.layout("ltr") to ltrPreset,
+            ContentLayoutStyle.layout("rtl") to rtlPreset,
+            ContentLayoutStyle.layout("cjkv") to cjkVerticalPreset,
+            ContentLayoutStyle.layout("cjkh") to cjkHorizontalPreset
+    )
 }
 
 
 class EpubParser : PublicationParser {
-
-//    companion object {
-        // Some constants useful to parse an Epub document
-//        const val defaultEpubVersion = 1.2
-//        const val containerDotXmlPath = "META-INF/container.xml"
-//        const val encryptionDotXmlPath = "META-INF/encryption.xml"
-//        const val lcplFilePath = "META-INF/license.lcpl"
-//        const val mimetypeEpub = "application/epub+zip"
-//        const val mimetypeOEBPS = "application/oebps-package+xml"
-//        const val mediaOverlayURL = "media-overlay?resource="
-//    }
-
-    private val ndp = NavigationDocumentParser()
-    private val ncxp = NcxParser()
-
     private fun generateContainerFrom(path: String): Container {
         if (!File(path).exists())
             throw ContainerError.missingFile(path)
@@ -149,9 +132,17 @@ class EpubParser : PublicationParser {
         parseEncryption(container, publication, drm)
 
         if (packageDocument.epubVersion < 3.0) {
-            parseNcxDocument(container, publication)
+            val ncxItem = packageDocument.manifest.firstOrNull { it.mediaType == "application/x-dtbncx+xml" }
+            if (ncxItem != null) {
+                val ncxPath = normalize(packageDocument.path, ncxItem.href)
+                parseNcxDocument(ncxPath, container, publication)
+            }
         } else {
-            parseNavigationDocument(container, publication)
+            val navItem = packageDocument.manifest.firstOrNull { it.properties.contains("nav") }
+            if (navItem != null) {
+                val navPath = normalize(packageDocument.path, navItem.href)
+                parseNavigationDocument(navPath, container, publication)
+            }
             parseMediaOverlays(container, publication)
         }
 
@@ -237,63 +228,44 @@ class EpubParser : PublicationParser {
         return publication
     }
 
-    private fun parseEncryption(container: Container, publication: Publication, drm: DRM?) {
+    private fun parseXmlDocument(path: String, container: Container) : ElementNode? =
         try {
-            val data = container.data(EPUBConstant.encryptionDotXmlPath)
-            val document = XmlParser().parse(data.inputStream())
-            val encryption = EncryptionParser.parse(document, drm)
-            encryption.forEach {
-                val resourceURI = normalize("/", it.key)
-                val link = publication.linkWithHref(resourceURI)
-                if (link != null) link.properties.encryption = it.value}
+            val data = container.data(path)
+            XmlParser().parse(data.inputStream())
         } catch (e: Exception) {
+            null
+        }
 
+    private fun parseEncryption(container: Container, publication: Publication, drm: DRM?) {
+        val document = parseXmlDocument(EPUBConstant.encryptionDotXmlPath, container) ?: return
+        val encryption = EncryptionParser.parse(document, drm)
+        encryption.forEach {
+            val resourceURI = normalize("/", it.key)
+            val link = publication.linkWithHref(resourceURI)
+            if (link != null) link.properties.encryption = it.value}
+    }
+
+    private fun parseNavigationDocument(navPath: String, container: Container, publication: Publication) {
+        val document = parseXmlDocument(navPath, container) ?: return
+        val navDoc = NavigationDocumentParser.parse(document, navPath)
+        if (navDoc != null) {
+            publication.tableOfContents = navDoc.toc.toMutableList()
+            publication.landmarks = navDoc.landmarks.toMutableList()
+            publication.listOfAudioFiles = navDoc.loa.toMutableList()
+            publication.listOfIllustrations = navDoc.loi.toMutableList ()
+            publication.listOfTables = navDoc.lot.toMutableList()
+            publication.listOfVideos = navDoc.lov.toMutableList()
+            publication.pageList = navDoc.pageList.toMutableList()
         }
     }
 
-    private fun parseNavigationDocument(container: Container, publication: Publication) {
-        val navLink = publication.linkWithRel("contents") ?: return
-
-        val navDocument = try {
-            xmlDocumentForResource(navLink, container)
-        } catch (e: Exception) {
-            if (DEBUG) Timber.e(e)
-            return
+    private fun parseNcxDocument(ncxPath: String, container: Container, publication: Publication) {
+        val document = parseXmlDocument(ncxPath, container) ?: return
+        val ncx = NcxParser.parse(document, ncxPath)
+        if (ncx != null) {
+            publication.tableOfContents = ncx.toc.toMutableList()
+            publication.pageList = ncx.pageList.toMutableList()
         }
-
-        val navByteArray = try {
-            xmlAsByteArray(navLink, container)
-        } catch (e: Exception) {
-            if (DEBUG) Timber.e(e)
-            return
-        }
-
-        ndp.navigationDocumentPath = navLink.href ?: return
-        publication.tableOfContents.plusAssign(ndp.tableOfContent(navByteArray))
-        publication.landmarks.plusAssign(ndp.landmarks(navDocument))
-        publication.listOfAudioFiles.plusAssign(ndp.listOfAudiofiles(navDocument))
-        publication.listOfIllustrations.plusAssign(ndp.listOfIllustrations(navDocument))
-        publication.listOfTables.plusAssign(ndp.listOfTables(navDocument))
-        publication.listOfVideos.plusAssign(ndp.listOfVideos(navDocument))
-        publication.pageList.plusAssign(ndp.pageList(navDocument))
-    }
-
-    private fun parseNcxDocument(container: Container, publication: Publication) {
-
-        val ncxLink = publication.resources.firstOrNull { it.typeLink == "application/x-dtbncx+xml" }
-                ?: return
-        val ncxDocument = try {
-            xmlDocumentForResource(ncxLink, container)
-        } catch (e: Exception) {
-            if (DEBUG) Timber.e(e)
-            return
-        }
-        ncxp.ncxDocumentPath = ncxLink.href ?: return
-        if (publication.tableOfContents.isEmpty())
-            publication.tableOfContents.plusAssign(ncxp.tableOfContents(ncxDocument))
-        if (publication.pageList.isEmpty())
-            publication.pageList.plusAssign(ncxp.pageList(ncxDocument))
-        return
     }
 
     private fun parseMediaOverlays(container: Container, publication: Publication) {
@@ -310,22 +282,5 @@ class EpubParser : PublicationParser {
                 if (it.mediaOverlays != null) it.rel.add("media-overlay")
             }
         }
-    }
-
-    private fun xmlAsByteArray(link: Link?, container: Container): ByteArray {
-        var pathFile = link?.href ?: throw ContainerError.missingLink(link?.title)
-        if (pathFile.first() == '/')
-            pathFile = pathFile.substring(1)
-
-        return container.data(pathFile)
-    }
-
-    private fun xmlDocumentForResource(link: Link?, container: Container): ElementNode {
-        var pathFile = link?.href ?: throw ContainerError.missingLink(link?.title)
-        if (pathFile.first() == '/')
-            pathFile = pathFile.substring(1)
-
-        val containerData = container.data(pathFile)
-        return XmlParser().parse(containerData.inputStream())
     }
 }

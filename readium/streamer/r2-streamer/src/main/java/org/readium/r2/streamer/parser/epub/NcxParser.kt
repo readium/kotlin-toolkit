@@ -9,46 +9,52 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import android.sax.Element
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
 
-class NcxParser {
+internal data class Ncx(
+        val toc: List<Link>,
+        val pageList: List<Link>
+)
 
-    lateinit var ncxDocumentPath: String
-
-    fun tableOfContents(document: ElementNode): List<Link> {
-        val navMapElement = document.getFirst("navMap", Namespaces.Ncx)
-        return nodeArray(navMapElement, "navPoint")
+internal object NcxParser {
+    fun parse(document: ElementNode, filePath: String): Ncx? {
+        val toc = document.getFirst("navMap", Namespaces.Ncx)?.let { parseNavMapElement(it, filePath) }
+                ?: emptyList()
+        val pageList = document.getFirst("pageList", Namespaces.Ncx)?.let { parsePageListElement(it, filePath) }
+                ?: emptyList()
+        return Ncx(toc, pageList)
     }
 
-    fun pageList(document: ElementNode): List<Link> {
-        val pageListElement = document.getFirst("pageList", Namespaces.Ncx)
-        return nodeArray(pageListElement, "pageTarget")
-    }
+    private fun parseNavMapElement(element: ElementNode, filePath: String): List<Link> =
+            element.get("navPoint", Namespaces.Ncx).map { parseNavPointElement(it, filePath) }
 
-    private fun nodeArray(element: ElementNode?, type: String): List<Link> {
-        // The "to be returned" node array.
-        val newNodeArray: MutableList<Link> = mutableListOf()
-
-        // Find the elements of `type` in the XML element.
-        val elements = element?.get(type, Namespaces.Ncx) ?: return emptyList()
-        // For each element create a new node of type `type`.
-        for (newNode in elements.map { node(it, type) })
-            newNodeArray.plusAssign(newNode)
-        return newNodeArray
-    }
-
-    private fun node(element: ElementNode, type: String): Link {
-        val newNode = Link()
-        newNode.href = normalize(ncxDocumentPath, element.getFirst("content", Namespaces.Ncx)?.getAttr(("src")))
-        newNode.title = element.getFirst("navLabel", Namespaces.Ncx)!!.getFirst("text", Namespaces.Ncx)!!.text
-        element.get("navPoint", Namespaces.Ncx).let {
-            for (childNode in it) {
-                newNode.children.plusAssign(node(childNode, type))
+    private fun parsePageListElement(element: ElementNode, filePath: String): List<Link> =
+            element.get("pageTarget", Namespaces.Ncx).map {
+                Link().apply {
+                    title = extractTitle(element)
+                    href = extractHref(element, filePath)
+                }
             }
-        }
-        return newNode
+
+    private fun extractTitle(element: ElementNode) =
+            element.getFirst("navLabel", Namespaces.Ncx)?.getFirst("text", Namespaces.Ncx)?.text
+
+    private fun extractHref(element: ElementNode, filePath: String): String? {
+        val href = element.getFirst("content", Namespaces.Ncx)?.getAttr("src") ?: return null
+        return normalize(filePath, href)
     }
 
+    private fun parseNavPointElement(element: ElementNode, filePath: String): Link {
+        val title = extractTitle(element)
+        val href = extractHref(element, filePath)
+        val children = element.get("navPoint", Namespaces.Ncx).map { parseNavPointElement(it, filePath) }
+        return Link().apply {
+            this.title = title
+            this.href = href
+            this.children = children.toMutableList()
+        }
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * Module: r2-streamer-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Developers: Quentin Gliosca
  *
  * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -12,111 +12,67 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
-import org.w3c.dom.NodeList
-import java.io.InputStream
-import javax.xml.XMLConstants
-import javax.xml.namespace.NamespaceContext
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.xpath.XPathConstants
-import javax.xml.xpath.XPathFactory
 
-class NavigationDocumentParser {
+internal data class NavigationDocument(
+        val toc: List<Link>,
+        val pageList: List<Link>,
+        val landmarks: List<Link>,
+        val loi: List<Link>,
+        val lot: List<Link>,
+        val loa: List<Link>,
+        val lov: List<Link>
+)
 
-    var navigationDocumentPath: String = ""
+internal object NavigationDocumentParser {
+    fun parse(document: ElementNode, filePath: String) : NavigationDocument? {
+        val prefixAttribute = document.getAttrNs("prefix", Namespaces.Ops)
+        val packagePrefixes = if (prefixAttribute == null) mapOf() else parsePrefixes(prefixAttribute)
+        val prefixMap = CONTENT_RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
+        val body = document.getFirst("body", Namespaces.Xhtml) ?: return null
 
-    fun tableOfContent(xml: ByteArray) : MutableList<Link> {
-        val tableOfContents = mutableListOf<Link>()
-        val document = xml.inputStream()
+        var toc: List<Link> = listOf()
+        var pageList: List<Link> = listOf()
+        var landmarks: List<Link> = listOf()
+        var loi: List<Link> = listOf()
+        var lot: List<Link> = listOf()
+        var loa: List<Link> = listOf()
+        var lov: List<Link> = listOf()
 
-        val xpath = "/xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc']//xhtml:a" + "|/xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc']//xhtml:span"
-        val nodes = evaluateXpath(xpath, document)
-
-        for (i in 0 until nodes.length) {
-            nodes.item(i).attributes.getNamedItem("href")?.let {
-                val link = Link()
-                link.href = normalize(navigationDocumentPath, it.nodeValue)
-                link.title = nodes.item(i).textContent
-                tableOfContents.add(link)
+        for (nav in body.get("nav", Namespaces.Xhtml)) {
+            val typeAttr = nav.getAttrNs("type", Namespaces.Ops) ?: continue
+            val type = resolveProperty(typeAttr, prefixMap, DEFAULT_VOCAB.TYPE)
+            val links = parseNavElement(nav, filePath) ?: continue
+            when (type) {
+                DEFAULT_VOCAB.TYPE.iri + "toc" ->  toc = links
+                DEFAULT_VOCAB.TYPE.iri + "page-list" -> pageList = links
+                DEFAULT_VOCAB.TYPE.iri + "landmarks" -> landmarks = links
+                DEFAULT_VOCAB.TYPE.iri + "loi" -> loi = links
+                DEFAULT_VOCAB.TYPE.iri + "lot" -> lot = links
+                DEFAULT_VOCAB.TYPE.iri + "loa" -> loa = links
+                DEFAULT_VOCAB.TYPE.iri + "lov" -> lov = links
             }
         }
 
-        return tableOfContents
+        return NavigationDocument(toc, pageList, landmarks, loi, lot, loa, lov)
     }
 
-    fun pageList(document: ElementNode) = nodeArray(document, "page-list")
-    fun landmarks(document: ElementNode) = nodeArray(document, "landmarks")
-    fun listOfIllustrations(document: ElementNode) = nodeArray(document, "loi")
-    fun listOfTables(document: ElementNode) = nodeArray(document, "lot")
-    fun listOfAudiofiles(document: ElementNode) = nodeArray(document, "loa")
-    fun listOfVideos(document: ElementNode) = nodeArray(document, "lov")
+    private fun parseNavElement(nav: ElementNode, filePath: String) : List<Link>? =
+        nav.getFirst("ol", Namespaces.Xhtml)?.let { parseOlElement(it, filePath) }
 
-    private fun nodeArray(document: ElementNode, navType: String): List<Link> {
-        var body = document.getFirst("body", Namespaces.Xhtml)
-        body?.getFirst("section", Namespaces.Xhtml)?.let { body = it }
-        val navPoint = body?.get("nav", Namespaces.Xhtml)?.firstOrNull { it.getAttrNs("type", Namespaces.Ops) == navType }
-        val olElement = navPoint?.getFirst("ol", Namespaces.Xhtml) ?: return emptyList()
-        return nodeOl(olElement).children
-    }
+    private fun parseOlElement(element: ElementNode, filePath: String): List<Link> =
+        element.get("li", Namespaces.Xhtml).mapNotNull {  parseLiElement(it, filePath) }
 
-    private fun nodeOl(element: ElementNode): Link {
-        val newOlNode = Link()
-        val liElements = element.get("li", Namespaces.Xhtml)
-        for (li in liElements) {
-            val spanText = li.getFirst("span", Namespaces.Xhtml)?.name
-            if (spanText != null && spanText.isNotEmpty()) {
-                li.getFirst("ol", Namespaces.Xhtml)?.let {
-                    newOlNode.children.add(nodeOl(it))
-                }
-            } else {
-                val childLiNode = nodeLi(li)
-                newOlNode.children.add(childLiNode)
-            }
-        }
-        return newOlNode
-    }
-
-    private fun nodeLi(element: ElementNode): Link {
-        val newLiNode = Link()
-        val aNode = element.getFirst("a", Namespaces.Xhtml)!!
-        val title = (aNode.getFirst("span", Namespaces.Xhtml))?.text ?: aNode.text ?: aNode.name
-        newLiNode.href = normalize(navigationDocumentPath, aNode.getAttr("href"))
-        newLiNode.title = title
-        element.getFirst("ol", Namespaces.Xhtml)?.let { newLiNode.children.add(nodeOl(it)) }
-        return newLiNode
-    }
-
-    private fun evaluateXpath(expression: String, doc: InputStream): NodeList {
-
-        val dbFactory = DocumentBuilderFactory.newInstance()
-        dbFactory.isNamespaceAware = true
-        
-        val docBuilder  = dbFactory.newDocumentBuilder()
-
-        val document = docBuilder.parse(doc)
-
-        val xPath = XPathFactory.newInstance().newXPath()
-        xPath.namespaceContext = NameSpaceResolver()
-
-        return xPath.evaluate(expression, document, XPathConstants.NODESET) as NodeList
-    }
-}
-
-class NameSpaceResolver : NamespaceContext {
-    override fun getNamespaceURI(p0: String?): String {
-        return when (p0) {
-            null -> throw IllegalArgumentException("No prefix provided!")
-            "epub" -> Namespaces.Ops
-            "xhtml" -> Namespaces.Xhtml
-            else -> XMLConstants.DEFAULT_NS_PREFIX
-        }
-    }
-
-    override fun getPrefix(p0: String?): String? {
-        return null
-    }
-
-    override fun getPrefixes(p0: String?): MutableIterator<Any?>? {
-        return null
+    private fun parseLiElement(element: ElementNode, filePath: String): Link? {
+        val first = element.getAll().firstOrNull() ?: return null // should be <a>,  <span>, or <ol>
+        val title = if (first.name == "ol") null else first.text
+        val rawHref = first.getAttr("href")
+        val href = if (first.name == "a" && rawHref != null) normalize(filePath, rawHref) else null
+        val children = element.getFirst("ol", Namespaces.Xhtml)?.let { parseOlElement(it, filePath) } ?: emptyList()
+        return Link().apply {
+            this.title = title
+            this.href = href
+            this.children = children.toMutableList()
+       }
     }
 }
 

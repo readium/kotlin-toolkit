@@ -14,8 +14,8 @@ import org.readium.r2.shared.parser.xml.ElementNode
 object PackageDocumentParser {
     fun parse(document: ElementNode, filePath: String) : PackageDocument? {
         val prefixAttribute = document.getAttr("prefix")
-        val packagePrefixes = if (prefixAttribute == null) mapOf() else parsePackagePrefixes(prefixAttribute)
-        val prefixMap = RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
+        val packagePrefixes = if (prefixAttribute == null) mapOf() else parsePrefixes(prefixAttribute)
+        val prefixMap = PACKAGE_RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
 
         val epubVersion = document.getAttr("version")?.toDoubleOrNull() ?: 1.2
         val metadata = MetadataParser(epubVersion, prefixMap).parse(document) ?: return null
@@ -31,18 +31,6 @@ object PackageDocumentParser {
 
         return PackageDocument(filePath, epubVersion, metadata, manifest, spine)
     }
-
-    private fun parsePrefixEntry(entry: String): Pair<String, String>? {
-        val splitted = entry.split(":", limit = 2)
-        return if (splitted.size == 1)
-            null
-        else {
-            Pair(splitted[0].trim(), splitted[1].trim())
-        }
-    }
-
-    private fun parsePackagePrefixes(prefixes: String): Map<String, String> =
-            prefixes.split(" ").mapNotNull { parsePrefixEntry(it) }.toMap()
 
     private fun parseItem(element: ElementNode) : Item? {
         val id = element.id ?: return null
