@@ -14,6 +14,7 @@ import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
@@ -61,11 +62,11 @@ object EPUBConstant {
             ReadiumCSSName.ref("scroll") to true
     )
 
-    val userSettingsUIPreset: MutableMap<ContentLayoutStyle, MutableMap<ReadiumCSSName, Boolean>> = mutableMapOf(
-            ContentLayoutStyle.layout("ltr") to ltrPreset,
-            ContentLayoutStyle.layout("rtl") to rtlPreset,
-            ContentLayoutStyle.layout("cjkv") to cjkVerticalPreset,
-            ContentLayoutStyle.layout("cjkh") to cjkHorizontalPreset
+    val userSettingsUIPreset: MutableMap<ContentLayout, MutableMap<ReadiumCSSName, Boolean>> = mutableMapOf(
+            ContentLayout.LTR to ltrPreset,
+            ContentLayout.RTL to rtlPreset,
+            ContentLayout.CJK_VERTICAL to cjkVerticalPreset,
+            ContentLayout.CJK_HORIZONTAL to cjkHorizontalPreset
     )
 }
 
@@ -171,27 +172,8 @@ class EpubParser : PublicationParser {
     }
 
     private fun setLayoutStyle(publication: Publication) {
-        var langType = LangType.other
-
-        langTypeLoop@ for (lang in publication.metadata.languages) {
-            when (lang) {
-                "zh", "ja", "ko" -> {
-                    langType = LangType.cjk
-                    break@langTypeLoop
-                }
-                "ar", "fa", "he" -> {
-                    langType = LangType.afh
-                    break@langTypeLoop
-                }
-            }
-        }
-
-        val pageDirection = publication.metadata.direction
-        val contentLayoutStyle = publication.metadata.contentLayoutStyle(langType, pageDirection)
-
-        publication.cssStyle = contentLayoutStyle.name
-
-        EPUBConstant.userSettingsUIPreset[ContentLayoutStyle.layout(publication.cssStyle as String)]?.let {
+        publication.cssStyle = publication.contentLayout.name
+        EPUBConstant.userSettingsUIPreset[publication.contentLayout]?.let {
             if (publication.type == Publication.TYPE.WEBPUB) {
                 publication.userSettingsUIPreset = EPUBConstant.forceScrollPreset
             } else {
