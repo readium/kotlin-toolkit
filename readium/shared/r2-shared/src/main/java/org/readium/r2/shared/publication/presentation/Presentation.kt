@@ -119,8 +119,7 @@ data class Presentation(
     enum class Overflow(val value: String) {
         AUTO("auto"),
         PAGINATED("paginated"),
-        SCROLLED("scrolled"),
-        SCROLLED_CONTINUOUS("scrolled-continuous");
+        SCROLLED("scrolled");
 
         companion object {
             fun from(value: String?): Overflow =
@@ -128,8 +127,8 @@ data class Presentation(
 
             @Deprecated("Renamed to [PAGINATED]", ReplaceWith("PAGINATED"))
             val Paginated: Overflow get() = PAGINATED
-            @Deprecated("Renamed to [SCROLLED_CONTINUOUS]", ReplaceWith("SCROLLED_CONTINUOUS"))
-            val Continuous: Overflow get() = SCROLLED_CONTINUOUS
+            @Deprecated("Use [presentation.continuous] instead", ReplaceWith("presentation.continuous"))
+            val Continuous: Overflow get() = SCROLLED
             @Deprecated("Renamed to [SCROLLED]", ReplaceWith("SCROLLED"))
             val Document: Overflow get() = SCROLLED
         }

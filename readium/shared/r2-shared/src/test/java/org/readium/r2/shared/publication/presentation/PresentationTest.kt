@@ -134,7 +134,6 @@ class PresentationTest {
         assertEquals(Presentation.Overflow.AUTO, Presentation.Overflow.from("auto"))
         assertEquals(Presentation.Overflow.PAGINATED, Presentation.Overflow.from("paginated"))
         assertEquals(Presentation.Overflow.SCROLLED, Presentation.Overflow.from("scrolled"))
-        assertEquals(Presentation.Overflow.SCROLLED_CONTINUOUS, Presentation.Overflow.from("scrolled-continuous"))
 
         // fallbacks
         assertEquals(Presentation.Overflow.AUTO, Presentation.Overflow.from("foobar"))
@@ -145,7 +144,6 @@ class PresentationTest {
         assertEquals("auto", Presentation.Overflow.AUTO.value)
         assertEquals("paginated", Presentation.Overflow.PAGINATED.value)
         assertEquals("scrolled", Presentation.Overflow.SCROLLED.value)
-        assertEquals("scrolled-continuous", Presentation.Overflow.SCROLLED_CONTINUOUS.value)
     }
 
     @Test fun `parse page from JSON value`() {
