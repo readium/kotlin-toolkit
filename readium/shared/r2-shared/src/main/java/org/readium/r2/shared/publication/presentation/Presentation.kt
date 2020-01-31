@@ -10,6 +10,7 @@ package org.readium.r2.shared.publication.presentation
 
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.extensions.optNullableBoolean
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.Properties
 import java.io.Serializable
@@ -20,6 +21,10 @@ import java.io.Serializable
  *
  * https://readium.org/webpub-manifest/extensions/presentation.html
  * https://readium.org/webpub-manifest/schema/extensions/presentation/metadata.schema.json
+ *
+ * These properties are nullable to avoid having default values when it doesn't make sense for a
+ * given [Publication]. If a navigator needs a default value when not specified,
+ * Presentation.DEFAULT_X and Presentation.X.DEFAULT can be used.
  *
  * @param clipped Specifies whether or not the parts of a linked resource that flow out of the
  *     viewport are clipped.
@@ -33,12 +38,12 @@ import java.io.Serializable
  * @param layout Hints how the layout of the resource should be presented (EPUB extension).
  */
 data class Presentation(
-    val clipped: Boolean = false,
-    val continuous: Boolean = true,
-    val fit: Fit = Fit.CONTAIN,
-    val orientation: Orientation = Orientation.AUTO,
-    val overflow: Overflow = Overflow.AUTO,
-    val spread: Spread = Spread.AUTO,
+    val clipped: Boolean? = null,
+    val continuous: Boolean? = null,
+    val fit: Fit? = null,
+    val orientation: Orientation? = null,
+    val overflow: Overflow? = null,
+    val spread: Spread? = null,
     val layout: EpubLayout? = null
 ) : JSONable, Serializable {
 
@@ -48,14 +53,24 @@ data class Presentation(
     override fun toJSON() = JSONObject().apply {
         put("clipped", clipped)
         put("continuous", continuous)
-        put("fit", fit.value)
-        put("orientation", orientation.value)
-        put("overflow", overflow.value)
-        put("spread", spread.value)
+        put("fit", fit?.value)
+        put("orientation", orientation?.value)
+        put("overflow", overflow?.value)
+        put("spread", spread?.value)
         put("layout", layout?.value)
     }
 
     companion object {
+
+        /**
+         * Default value for [clipped], if not specified.
+         */
+        const val DEFAULT_CLIPPED = false
+
+        /**
+         * Default value for [continuous], if not specified.
+         */
+        const val DEFAULT_CONTINUOUS = true
 
         /**
          * Creates a [Properties] from its RWPM JSON representation.
@@ -65,8 +80,8 @@ data class Presentation(
                 return Presentation()
             }
             return Presentation(
-                clipped = json.optBoolean("clipped", false),
-                continuous = json.optBoolean("continuous", true),
+                clipped = json.optNullableBoolean("clipped"),
+                continuous = json.optNullableBoolean("continuous"),
                 fit = Fit.from(json.optString("fit")),
                 orientation = Orientation.from(json.optString("orientation")),
                 overflow = Overflow.from(json.optString("overflow")),
@@ -87,8 +102,14 @@ data class Presentation(
         COVER("cover");
 
         companion object {
-            fun from(value: String?): Fit =
-                Fit.values().firstOrNull { it.value == value } ?: CONTAIN
+
+            /**
+             * Default value for [Fit], if not specified.
+             */
+            val DEFAULT = CONTAIN
+
+            fun from(value: String?): Fit? =
+                Fit.values().firstOrNull { it.value == value }
         }
     }
 
@@ -101,15 +122,21 @@ data class Presentation(
         PORTRAIT("portrait");
 
         companion object {
-            fun from(value: String?): Orientation =
-                Orientation.values().firstOrNull { it.value == value } ?: AUTO
+
+            /**
+             * Default value for [Orientation], if not specified.
+             */
+            val DEFAULT = AUTO
+
+            fun from(value: String?): Orientation? =
+                Orientation.values().firstOrNull { it.value == value }
 
             @Deprecated("Renamed to [AUTO]", ReplaceWith("AUTO"))
-            val Auto: Orientation get() = AUTO
+            val Auto: Orientation = AUTO
             @Deprecated("Renamed to [LANDSCAPE]", ReplaceWith("LANDSCAPE"))
-            val Landscape: Orientation get() = LANDSCAPE
+            val Landscape: Orientation = LANDSCAPE
             @Deprecated("Renamed to [PORTRAIT]", ReplaceWith("PORTRAIT"))
-            val Portrait: Orientation get() = PORTRAIT
+            val Portrait: Orientation = PORTRAIT
         }
     }
 
@@ -122,15 +149,21 @@ data class Presentation(
         SCROLLED("scrolled");
 
         companion object {
-            fun from(value: String?): Overflow =
-                Overflow.values().firstOrNull { it.value == value } ?: AUTO
+
+            /**
+             * Default value for [Overflow], if not specified.
+             */
+            val DEFAULT = AUTO
+
+            fun from(value: String?): Overflow? =
+                Overflow.values().firstOrNull { it.value == value }
 
             @Deprecated("Renamed to [PAGINATED]", ReplaceWith("PAGINATED"))
-            val Paginated: Overflow get() = PAGINATED
+            val Paginated: Overflow = PAGINATED
             @Deprecated("Use [presentation.continuous] instead", ReplaceWith("presentation.continuous"))
-            val Continuous: Overflow get() = SCROLLED
+            val Continuous: Overflow = SCROLLED
             @Deprecated("Renamed to [SCROLLED]", ReplaceWith("SCROLLED"))
-            val Document: Overflow get() = SCROLLED
+            val Document: Overflow = SCROLLED
         }
     }
 
@@ -160,19 +193,25 @@ data class Presentation(
         LANDSCAPE("landscape");
 
         companion object {
-            fun from(value: String?): Spread =
-                Spread.values().firstOrNull { it.value == value } ?: AUTO
+
+            /**
+             * Default value for [Spread], if not specified.
+             */
+            val DEFAULT = AUTO
+
+            fun from(value: String?): Spread? =
+                Spread.values().firstOrNull { it.value == value }
 
             @Deprecated("Renamed to [AUTO]", ReplaceWith("AUTO"))
-            val Auto: Spread get() = AUTO
+            val Auto: Spread = AUTO
             @Deprecated("Renamed to [LANDSCAPE]", ReplaceWith("LANDSCAPE"))
-            val Landscape: Spread get() = LANDSCAPE
+            val Landscape: Spread = LANDSCAPE
             @Deprecated("Renamed to [BOTH]", ReplaceWith("BOTH"))
-            val Portrait: Spread get() = BOTH
+            val Portrait: Spread = BOTH
             @Deprecated("Renamed to [BOTH]", ReplaceWith("BOTH"))
-            val Both: Spread get() = BOTH
+            val Both: Spread = BOTH
             @Deprecated("Renamed to [NONE]", ReplaceWith("NONE"))
-            val None: Spread get() = NONE
+            val None: Spread = NONE
         }
     }
 

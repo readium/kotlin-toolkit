@@ -16,11 +16,11 @@ import org.readium.r2.shared.publication.Properties
 class PropertiesTest {
 
     @Test fun `get Properties {clipped} when available`() {
-        assertTrue(Properties(otherProperties = mapOf("clipped" to true)).clipped)
+        assertEquals(true, Properties(otherProperties = mapOf("clipped" to true)).clipped)
     }
 
     @Test fun `get Properties {clipped} when missing`() {
-        assertFalse(Properties().clipped)
+        assertNull(Properties().clipped)
     }
 
     @Test fun `get Properties {fit} when available`() {
@@ -31,7 +31,7 @@ class PropertiesTest {
     }
 
     @Test fun `get Properties {fit} when missing`() {
-        assertEquals(Presentation.Fit.CONTAIN, Properties().fit)
+        assertNull(Properties().fit)
     }
 
     @Test fun `get Properties {orientation} when available`() {
@@ -42,7 +42,7 @@ class PropertiesTest {
     }
 
     @Test fun `get Properties {orientation} when missing`() {
-        assertEquals(Presentation.Orientation.AUTO, Properties().orientation)
+        assertNull(Properties().orientation)
     }
 
     @Test fun `get Properties {overflow} when available`() {
@@ -53,7 +53,7 @@ class PropertiesTest {
     }
 
     @Test fun `get Properties {overflow} when missing`() {
-        assertEquals(Presentation.Overflow.AUTO, Properties().overflow)
+        assertNull(Properties().overflow)
     }
 
     @Test fun `get Properties {page} when available`() {
@@ -75,7 +75,7 @@ class PropertiesTest {
     }
 
     @Test fun `get Properties {spread} when missing`() {
-        assertEquals(Presentation.Spread.AUTO, Properties().spread)
+        assertNull(Properties().spread)
     }
 
 }

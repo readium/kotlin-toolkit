@@ -148,6 +148,22 @@ fun JSONObject.optNullableString(name: String, remove: Boolean = false): String?
  * mapping exists.
  * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
+fun JSONObject.optNullableBoolean(name: String, remove: Boolean = false): Boolean? {
+    if (!has(name)) {
+        return null
+    }
+    val value = optBoolean(name)
+    if (remove) {
+        this.remove(name)
+    }
+    return value
+}
+
+/**
+ * Returns the value mapped by [name] if it exists, coercing it if necessary, or [null] if no such
+ * mapping exists.
+ * If [remove] is true, then the mapping will be removed from the [JSONObject].
+ */
 fun JSONObject.optNullableInt(name: String, remove: Boolean = false): Int? {
     if (!has(name)) {
         return null

@@ -16,25 +16,25 @@ import org.readium.r2.shared.publication.Properties
  * Specifies whether or not the parts of a linked resource that flow out of the viewport are
  * clipped.
  */
-val Properties.clipped: Boolean
-    get() = (this["clipped"] as? Boolean) ?: false
+val Properties.clipped: Boolean?
+    get() = this["clipped"] as? Boolean
 
 /**
  * Suggested method for constraining a resource inside the viewport.
  */
-val Properties.fit: Presentation.Fit
+val Properties.fit: Presentation.Fit?
     get() = Presentation.Fit.from(this["fit"] as? String)
 
 /**
  * Suggested orientation for the device when displaying the linked resource.
  */
-val Properties.orientation: Presentation.Orientation
+val Properties.orientation: Presentation.Orientation?
     get() = Presentation.Orientation.from(this["orientation"] as? String)
 
 /**
  * Suggested method for handling overflow while displaying the linked resource.
  */
-val Properties.overflow: Presentation.Overflow
+val Properties.overflow: Presentation.Overflow?
     get() = Presentation.Overflow.from(this["overflow"] as? String)
 
 /**
@@ -48,5 +48,5 @@ val Properties.page: Presentation.Page?
  * Indicates the condition to be met for the linked resource to be rendered within a synthetic
  * spread.
  */
-val Properties.spread: Presentation.Spread
+val Properties.spread: Presentation.Spread?
     get() = Presentation.Spread.from(this["spread"] as? String)

@@ -24,12 +24,12 @@ class PresentationTest {
     @Test fun `parse minimal JSON`() {
         assertEquals(
             Presentation(
-                clipped = false,
-                continuous = true,
-                fit = Presentation.Fit.CONTAIN,
-                orientation = Presentation.Orientation.AUTO,
-                overflow = Presentation.Overflow.AUTO,
-                spread = Presentation.Spread.AUTO,
+                clipped = null,
+                continuous = null,
+                fit = null,
+                orientation = null,
+                overflow = null,
+                spread = null,
                 layout = null
             ),
             Presentation.fromJSON(JSONObject("{}"))
@@ -61,14 +61,7 @@ class PresentationTest {
 
     @Test fun `get minimal JSON`() {
         assertJSONEquals(
-            JSONObject("""{
-                "clipped": false,
-                "continuous": true,
-                "fit": "contain",
-                "orientation": "auto",
-                "overflow": "auto",
-                "spread": "auto"
-            }"""),
+            JSONObject("{}"),
             Presentation().toJSON()
         )
     }
@@ -101,10 +94,8 @@ class PresentationTest {
         assertEquals(Presentation.Fit.HEIGHT, Presentation.Fit.from("height"))
         assertEquals(Presentation.Fit.CONTAIN, Presentation.Fit.from("contain"))
         assertEquals(Presentation.Fit.COVER, Presentation.Fit.from("cover"))
-
-        // fallbacks
-        assertEquals(Presentation.Fit.CONTAIN, Presentation.Fit.from("foobar"))
-        assertEquals(Presentation.Fit.CONTAIN, Presentation.Fit.from(null))
+        assertNull(Presentation.Fit.from("foobar"))
+        assertNull(Presentation.Fit.from(null))
     }
 
     @Test fun `get fit JSON value`() {
@@ -118,10 +109,8 @@ class PresentationTest {
         assertEquals(Presentation.Orientation.AUTO, Presentation.Orientation.from("auto"))
         assertEquals(Presentation.Orientation.LANDSCAPE, Presentation.Orientation.from("landscape"))
         assertEquals(Presentation.Orientation.PORTRAIT, Presentation.Orientation.from("portrait"))
-
-        // fallbacks
-        assertEquals(Presentation.Orientation.AUTO, Presentation.Orientation.from("foobar"))
-        assertEquals(Presentation.Orientation.AUTO, Presentation.Orientation.from(null))
+        assertNull(Presentation.Orientation.from("foobar"))
+        assertNull(Presentation.Orientation.from(null))
     }
 
     @Test fun `get orientation JSON value`() {
@@ -134,10 +123,8 @@ class PresentationTest {
         assertEquals(Presentation.Overflow.AUTO, Presentation.Overflow.from("auto"))
         assertEquals(Presentation.Overflow.PAGINATED, Presentation.Overflow.from("paginated"))
         assertEquals(Presentation.Overflow.SCROLLED, Presentation.Overflow.from("scrolled"))
-
-        // fallbacks
-        assertEquals(Presentation.Overflow.AUTO, Presentation.Overflow.from("foobar"))
-        assertEquals(Presentation.Overflow.AUTO, Presentation.Overflow.from(null))
+        assertNull(Presentation.Overflow.from("foobar"))
+        assertNull(Presentation.Overflow.from(null))
     }
 
     @Test fun `get overflow JSON value`() {
@@ -165,10 +152,8 @@ class PresentationTest {
         assertEquals(Presentation.Spread.BOTH, Presentation.Spread.from("both"))
         assertEquals(Presentation.Spread.NONE, Presentation.Spread.from("none"))
         assertEquals(Presentation.Spread.LANDSCAPE, Presentation.Spread.from("landscape"))
-
-        // fallbacks
-        assertEquals(Presentation.Spread.AUTO, Presentation.Spread.from("foobar"))
-        assertEquals(Presentation.Spread.AUTO, Presentation.Spread.from(null))
+        assertNull(Presentation.Spread.from("foobar"))
+        assertNull(Presentation.Spread.from(null))
     }
 
     @Test fun `get spread JSON value`() {
