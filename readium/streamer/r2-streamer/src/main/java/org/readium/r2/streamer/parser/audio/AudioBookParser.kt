@@ -10,8 +10,7 @@
 package org.readium.r2.streamer.parser.audio
 
 import org.json.JSONObject
-import org.readium.r2.shared.Publication
-import org.readium.r2.shared.parsePublication
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
@@ -77,21 +76,19 @@ class AudioBookParser : PublicationParser {
         val json = JSONObject(stringManifest)
 
         //Parsing manifest.json & building publication object
-        val publication = parsePublication(json)
-
-        //Modifying path of links
-        for ((index, link) in publication.readingOrder.withIndex()) {
-            val uri: String = if (URI(link.href).isAbsolute) {
-                link.href!!
+        val hrefNormalizer = { href: String ->
+            if (URI(href).isAbsolute) {
+            href
             } else {
-                fileAtPath + "/" + link.href
+                fileAtPath + "/" + href
             }
-            publication.readingOrder[index].href = uri
         }
 
-        publication.type = Publication.TYPE.AUDIO
+        val publication = Publication.fromJSON(json, hrefNormalizer)
 
-        return PubBox(publication, container)
+        publication?.type = Publication.TYPE.AUDIO
+
+        return publication?.let { PubBox(it, container) }
 
     }
 }

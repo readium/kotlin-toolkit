@@ -9,7 +9,7 @@
 
 package org.readium.r2.streamer.parser
 
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.container.Container
 
 data class PubBox(var publication: Publication, var container: Container)

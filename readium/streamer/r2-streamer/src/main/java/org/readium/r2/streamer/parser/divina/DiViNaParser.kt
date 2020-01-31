@@ -10,8 +10,7 @@
 package org.readium.r2.streamer.parser.divina
 
 import org.json.JSONObject
-import org.readium.r2.shared.Publication
-import org.readium.r2.shared.parsePublication
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
@@ -90,17 +89,19 @@ class DiViNaParser : PublicationParser {
         val json = JSONObject(stringManifest)
 
         //Parsing manifest.json & building publication object
-        val publication = parsePublication(json)
-        publication.type = Publication.TYPE.DiViNa
+        val publication = Publication.fromJSON(json)
+        publication?.type = Publication.TYPE.DiViNa
 
+        /* FIXME: this cannot be done any more with the immutability of Publication
         // Add href as title if title is missing (this is used to display the TOC)
         for (link in publication.readingOrder) {
             if (link.title == null || link.title!!.isEmpty()) {
                 link.title = link.href
             }
         }
+        */
 
-        return PubBox(publication, container)
+        return publication?.let {  PubBox(it, container) }
     }
 
     private fun InputStream.toFile(path: String) {

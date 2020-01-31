@@ -13,8 +13,10 @@ import android.net.Uri
 import android.os.Build
 import android.text.TextUtils
 import android.webkit.MimeTypeMap
-import org.readium.r2.shared.Link
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
@@ -98,36 +100,27 @@ class CBZParser : PublicationParser {
             return null
         }
 
-        val publication = Publication()
-
-        listFiles.forEach {
-            val link = Link()
-
-            link.typeLink = getMimeType(it)
-            link.href = it
-
-            if (!it.startsWith("_") && !it.startsWith(".")) {
-                if (link.typeLink == CBZConstant.mimetypeJPEG || link.typeLink == CBZConstant.mimetypePNG) {
-                    publication.images.add(link)
-                } else {
-                    publication.resources.add(link)
-                }
-            }
-
-        }
         val hash = fileToMD5(fileAtPath)
-        publication.images.first().rel.add("cover")
+        val metadata = Metadata(identifier = hash, localizedTitle = LocalizedString(title))
 
-        // Add href as title if title is missing (this is used to display the TOC)
-        for (link in publication.images) {
-            if (link.title == null || link.title!!.isEmpty()) {
-                link.title = link.href
-            }
+
+        val readingOrder = listFiles.mapIndexedNotNull { index, path ->
+            if (path.startsWith("_") || path.startsWith("."))
+                null // FIXME: why skip theses files?
+            else
+                Link(
+                        href = path,
+                        title = path,  // Add href as title (this is used to display the TOC)
+                        type = getMimeType(path),
+                        rels = if (index == 0) listOf("cover") else emptyList()
+                )
         }
+        val publication = Publication(metadata = metadata, readingOrder = readingOrder)
 
+        /* FIXME: what was this for?
         publication.images = publication.images.sortedWith(compareBy { it.href }).toMutableList()
+        */
 
-        publication.metadata.identifier = hash!!
         publication.type = Publication.TYPE.CBZ
         return PubBox(publication, container)
     }
