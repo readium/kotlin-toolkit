@@ -13,20 +13,19 @@ import com.github.kittinunf.fuel.Fuel
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import org.joda.time.DateTime
-import org.readium.r2.shared.*
+import org.readium.r2.shared.extensions.toList
+import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.opds.*
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.shared.promise
+import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.toJSON
 import java.net.URL
 
-enum class OPDSParserError(var v: String) {
-    MissingTitle("The title is missing from the feed."),
-    DocumentNotFound("Document is not found")
-}
-
-enum class OPDSParserOpenSearchHelperError(var v: String) {
-    SearchLinkNotFound("Search link not found in feed"),
-    SearchDocumentIsInvalid("OpenSearch document is invalid")
+enum class OPDSParserError {
+    MissingTitle
 }
 
 data class MimeTypeParameters(
@@ -35,12 +34,12 @@ data class MimeTypeParameters(
 )
 
 object Namespaces {
-    val Opds = "http://opds-spec.org/2010/catalog"
-    val Dc = "http://purl.org/dc/elements/1.1/"
-    val Dcterms = "http://purl.org/dc/terms/"
-    val Atom = "http://www.w3.org/2005/Atom"
-    val Search = "http://a9.com/-/spec/opensearch/1.1/"
-    val Thread = "http://purl.org/syndication/thread/1.0"
+    const val Opds = "http://opds-spec.org/2010/catalog"
+    const val Dc = "http://purl.org/dc/elements/1.1/"
+    const val Dcterms = "http://purl.org/dc/terms/"
+    const val Atom = "http://www.w3.org/2005/Atom"
+    const val Search = "http://a9.com/-/spec/opensearch/1.1/"
+    const val Thread = "http://purl.org/syndication/thread/1.0"
 }
 
 class OPDS1Parser {
@@ -55,7 +54,8 @@ class OPDS1Parser {
             }
         }
 
-        fun parseURL(headers: MutableMap<String,String>,url: URL): Promise<ParseData, Exception> {
+        @Suppress("unused")
+        fun parseURL(headers: MutableMap<String,String>, url: URL): Promise<ParseData, Exception> {
             return Fuel.get(url.toString(), null).header(headers).promise() then {
                 val (_, _, result) = it
                 this.parse(xmlData = result, url = url)
@@ -72,9 +72,9 @@ class OPDS1Parser {
 
         private fun parseFeed(xmlData: ByteArray, url: URL): Feed {
             val root = XmlParser().parse(xmlData.inputStream())
-            val title = root.getFirst("title", Namespaces.Atom)?.text
+            val feedTitle = root.getFirst("title", Namespaces.Atom)?.text
                     ?: throw Exception(OPDSParserError.MissingTitle.name)
-            feed = Feed(title, 1, url)
+            feed = Feed(feedTitle, 1, url)
             val tmpDate = root.getFirst("updated", Namespaces.Atom)?.text
             feed.metadata.modified = tmpDate?.let { DateTime(it).toDate() }
 
@@ -90,52 +90,54 @@ class OPDS1Parser {
             // Parse entries
             for (entry in root.get("entry", Namespaces.Atom)) {
                 var isNavigation = true
-                val collectionLink = Link()
+                var collectionLink: Link? = null
                 val links = entry.get("link", Namespaces.Opds)
                 for (link in links) {
+                    val href = link.getAttr("href")
                     val rel = link.getAttr("rel")
-                    rel?.let {
-                        if (rel.contains("http://opds-spec.org/acquisition")) {
+                    if (rel != null) {
+                        if (rel == "http://opds-spec.org/acquisition") {
                             isNavigation = false
                         }
-                        if (rel == "collection" || rel == "http://opds-spec.org/group") {
-                            collectionLink.rel.add("collection")
-                            collectionLink.href = getAbsolute(link.getAttr("href")!!, feed.href.toString())
-                            collectionLink.title = link.getAttr("title")
+                        if (href != null && (rel == "collection" || rel == "http://opds-spec.org/group")) {
+                            collectionLink = Link(
+                                href = getAbsolute(href, feed.href.toString()),
+                                title = link.getAttr("title"),
+                                rels = listOf("collection")
+                            )
                         }
                     }
                 }
                 if ((!isNavigation)) {
                     val publication = parseEntry(entry)
-                    if (collectionLink.href != null) {
-                        addPublicationInGroup(feed, publication, collectionLink)
-                    } else {
-                        feed.publications.add(publication)
+                    if (publication != null) {
+                        collectionLink?.let {
+                            addPublicationInGroup(feed, publication, it)
+                        } ?: run {
+                            feed.publications.add(publication)
+                        }
                     }
                 } else {
-                    val newLink = Link()
-                    val entryTitle = entry.getFirst("title", Namespaces.Atom)
-                    entryTitle?.let {
-                        newLink.title = entryTitle.text
-                    }
-
                     val link = entry.getFirst("link", Namespaces.Atom)
-                    link?.let {
-                        val rel = link.getAttr("rel")
-                        if (rel != null) {
-                            newLink.rel.add(rel)
+                    val href = link?.getAttr("href")
+                    if (href != null) {
+                        val otherProperties = mutableMapOf<String, Any>()
+                        val facetElementCount = link.getAttrNs("count", Namespaces.Thread)?.toInt()
+                        if (facetElementCount != null) {
+                            otherProperties["numberOfItems"] = facetElementCount
                         }
-                        val facetElementCountStr = link.getAttrNs("count", Namespaces.Thread)
-                        facetElementCountStr?.let { s ->
-                            val facetElementCount = s.toInt()
-                            newLink.properties.numberOfItems = facetElementCount
-                        }
-                        newLink.typeLink = link.getAttr("type")
-                        newLink.href = getAbsolute(link.getAttr("href")!!, feed.href.toString())
 
-                        if (collectionLink.href != null) {
-                            addNavigationInGroup(feed, newLink, collectionLink)
-                        } else {
+                        val newLink = Link(
+                            href = getAbsolute(href, feed.href.toString()),
+                            type = link.getAttr("type"),
+                            title = entry.getFirst("title", Namespaces.Atom)?.text,
+                            rels = listOfNotNull(link.getAttr("rel")),
+                            properties = Properties(otherProperties = otherProperties)
+                        )
+
+                        collectionLink?.let {
+                            addNavigationInGroup(feed, newLink, it)
+                        } ?: run {
                             feed.navigation.add(newLink)
                         }
                     }
@@ -144,30 +146,29 @@ class OPDS1Parser {
             }
             // Parse links
             for (link in root.get("link", Namespaces.Atom)) {
-                val newLink = Link()
-                newLink.href = getAbsolute(link.getAttr("href")!!, feed.href.toString())
-                newLink.title = link.getAttr("title")
-                newLink.typeLink = link.getAttr("type")
-                val rel = link.getAttr("rel")
-                if (rel != null) {
-                    newLink.rel.add(rel)
-                }
+                val hrefAttr = link.getAttr("href") ?: continue
+                val href = getAbsolute(hrefAttr, feed.href.toString())
+                val title = link.getAttr("title")
+                val type = link.getAttr("type")
+                val rels = listOfNotNull(link.getAttr("rel"))
+
                 val facetGroupName = link.getAttrNs("facetGroup", Namespaces.Opds)
-                if (facetGroupName != null && newLink.rel.contains("http://opds-spec.org/facet")) {
-                    val facetElementCountStr = link.getAttrNs("count", Namespaces.Thread)
-                    facetElementCountStr?.let { s ->
-                        val facetElementCount = s.toInt()
-                        newLink.properties.numberOfItems = facetElementCount
+                if (facetGroupName != null && rels.contains("http://opds-spec.org/facet")) {
+                    val otherProperties = mutableMapOf<String, Any>()
+                    val facetElementCount = link.getAttrNs("count", Namespaces.Thread)?.toInt()
+                    if (facetElementCount != null) {
+                        otherProperties["numberOfItems"] = facetElementCount
                     }
+                    val newLink = Link(href = href, type = type, title = title, rels = rels, properties = Properties(otherProperties = otherProperties))
                     addFacet(feed, newLink, facetGroupName)
                 } else {
-                    feed.links.add(newLink)
+                    feed.links.add(Link(href = href, type = type, title = title, rels = rels))
                 }
             }
             return feed
         }
 
-        private fun parseEntry(xmlData: ByteArray): Publication {
+        private fun parseEntry(xmlData: ByteArray): Publication? {
             val document = XmlParser().parse(xmlData.inputStream())
             return parseEntry(entry = document)
         }
@@ -185,22 +186,22 @@ class OPDS1Parser {
             return MimeTypeParameters(type = type, parameters = params)
         }
 
+        @Suppress("unused")
         fun fetchOpenSearchTemplate(feed: Feed): Promise<String?, Exception> {
 
             var openSearchURL: URL? = null
             var selfMimeType: String? = null
 
             for (link in feed.links) {
-                if (link.rel[0] == "self") {
-                    link.typeLink?.let {
-                        selfMimeType = it
+                if (link.rels.contains("self")) {
+                    if (link.type != null) {
+                        selfMimeType = link.type
                     }
-                } else if (link.rel[0] == "search") {
-                    link.href?.let {
-                        openSearchURL = URL(it)
-                    }
+                } else if (link.rels.contains("search")) {
+                    openSearchURL = URL(link.href)
                 }
             }
+
             val unwrappedURL = openSearchURL?.let {
                 return@let it
             }
@@ -242,112 +243,106 @@ class OPDS1Parser {
 
         }
 
-        private fun parseEntry(entry: ElementNode): Publication {
-            val publication = Publication()
-            val metadata = Metadata()
-            publication.metadata = metadata
-            val entryTitle = entry.getFirst("title", Namespaces.Atom)
-            entryTitle?.let {
-                if (metadata.multilanguageTitle == null) {
-                    metadata.multilanguageTitle = MultilanguageString()
-                }
-                metadata.multilanguageTitle?.singleString = entryTitle.text
-            }
-            var identifier = entry.getFirst("identifier", Namespaces.Dc)
-            identifier?.let {
-                metadata.identifier = it.text.toString()
-            } ?: run {
-                identifier = entry.getFirst("id", Namespaces.Atom)
-                identifier?.let {
-                    metadata.identifier = it.text.toString()
-                }
-            }
-            val languages = entry.get("language", Namespaces.Dcterms)
-            metadata.languages = languages.map { it.text.toString() }.toMutableList()
-            val tmpDate = entry.getFirst("updated", Namespaces.Atom)
-            tmpDate?.let {
-                val date = DateTime(tmpDate.text).toDate()
-                metadata.modified = date
-            }
-            val published = entry.getFirst("published", Namespaces.Atom)
-            published?.let {
-                metadata.publicationDate = published.text
-            }
-            val rights = entry.get("rights", Namespaces.Atom)
-            metadata.rights = rights.map { it.text }.joinToString(" ")
-            val publishers = entry.get("publisher", Namespaces.Dcterms)
-            for(publisher in publishers) {
-                val contributor = Contributor()
-                contributor.multilanguageName.singleString = publisher.text
-                metadata.publishers.add(contributor)
-            }
-            val categories = entry.get("category", Namespaces.Atom)
-            for (category in categories) {
-                val subject = Subject()
-                subject.code = category.getAttr("term")
-                subject.name = category.getAttr("label")
-                subject.scheme = category.getAttr("scheme")
-                metadata.subjects.add(subject)
-            }
-            val authors = entry.get("author", Namespaces.Atom)
-            for (author in authors) {
-                val contributor = Contributor()
-                val uri = author.getFirst("uri", Namespaces.Atom)
-                if (uri != null) {
-                    val link = Link()
-                    link.href = uri.toString()
-                    contributor.links.add(link)
-                }
-                contributor.multilanguageName.singleString = author.getFirst("name", Namespaces.Atom)?.text
-                metadata.authors.add(contributor)
-            }
-            val content = entry.getFirst("content", Namespaces.Atom)
-            content?.let {
-                metadata.description = content.text
-            } ?: run {
-                val summary = entry.getFirst("summary", Namespaces.Atom)
-                summary?.let {
-                    metadata.description = summary.text
-                }
-            }
-            val links = entry.get("link", Namespaces.Atom)
+        private fun parseEntry(entry: ElementNode): Publication? {
+            // A title is mandatory
+            val title = entry.getFirst("title", Namespaces.Atom)?.text
+                ?: return null
 
-            for (link in links) {
-                val newLink = Link()
-                newLink.href = getAbsolute(link.getAttr("href")!!, feed.href.toString())
-                newLink.title = link.getAttr("title")
-                newLink.typeLink = link.getAttr("type")
-                val rel = link.getAttr("rel")
-                rel?.let {
-                    newLink.rel.add(rel)
-                }
-                val indirectAcquisitions = link.get("indirectAcquisition", Namespaces.Opds)
-                if (indirectAcquisitions.isNotEmpty()) {
-                    newLink.properties.indirectAcquisition = parseIndirectAcquisition(indirectAcquisitions.toMutableList())
-                }
-                val price = link.getFirst("price", Namespaces.Opds)
-                var priceDouble: Double?
-                var currency: String?
-                price?.let {
-                    priceDouble = price.text.toString().toDouble()
-                    currency = price.getAttr("currencyCode")
-                    if (currency == null) {
-                        currency = price.getAttr("currencycode")
+            var links = entry.get("link", Namespaces.Atom)
+                .mapNotNull { element ->
+                    val href = element.getAttr("href")
+                    val rel = element.getAttr("rel")
+                    if (href == null || rel == "collection" || rel == "http://opds-spec.org/group") {
+                        return@mapNotNull null
                     }
-                    val newPrice = Price(currency = currency!!, value = priceDouble!!)
-                    newLink.properties.price = newPrice
-                }
-                rel?.let {
-                    if (rel != "collection" && rel != "http://opds-spec.org/group") {
-                        if (rel == "http://opds-spec.org/image" || rel == "http://opds-spec.org/image-thumbnail") {
-                            publication.images.add(newLink)
-                        } else {
-                            publication.links.add(newLink)
+
+                    val properties = mutableMapOf<String, Any>()
+                    val acquisitions = Acquisition.fromXML(element)
+                    if (acquisitions.isNotEmpty()) {
+                        properties["indirectAcquisition"] = acquisitions.toJSON().toList()
+                    }
+
+                    element.getFirst("price", Namespaces.Opds)?.let {
+                        val value = it.text?.toDouble()
+                        val currency = it.getAttr("currencyCode")
+                            ?: it.getAttr("currencycode")
+                        if (value != null && currency != null) {
+                            properties["price"] = Price(currency = currency, value = value)
+                                .toJSON().toMap()
                         }
+
                     }
+
+                    Link(
+                        href = getAbsolute(href, feed.href.toString()),
+                        type = element.getAttr("type"),
+                        title = element.getAttr("title"),
+                        rels = listOfNotNull(rel),
+                        properties = Properties(otherProperties = properties)
+                    )
                 }
+
+            val images = links.filter {
+                it.rels.contains("http://opds-spec.org/image") || it.rels.contains("http://opds-spec.org/image-thumbnail")
             }
-            return publication
+
+            links = links - images
+
+            return Publication(
+                metadata = Metadata(
+                    identifier = entry.getFirst("identifier", Namespaces.Dc)?.text
+                        ?: entry.getFirst("id", Namespaces.Atom)?.text,
+
+                    localizedTitle = LocalizedString(title),
+
+                    modified = entry.getFirst("updated", Namespaces.Atom)
+                        ?.let { DateTime(it.text).toDate() },
+
+                    published = entry.getFirst("published", Namespaces.Atom)
+                        ?. let { DateTime(it.text).toDate() },
+
+                    languages = entry.get("language", Namespaces.Dcterms)
+                        .mapNotNull { it.text },
+
+                    publishers = entry.get("publisher", Namespaces.Dcterms)
+                        .mapNotNull {
+                            it.text?.let { name -> Contributor(localizedName = LocalizedString(name)) }
+                        },
+
+                    subjects = entry.get("category", Namespaces.Atom)
+                        .mapNotNull { element ->
+                            element.getAttr("label")?.let { name ->
+                                Subject(
+                                    localizedName = LocalizedString(name),
+                                    scheme = element.getAttr("scheme"),
+                                    code = element.getAttr("term")
+                                )
+                            }
+                        },
+
+                    authors = entry.get("author", Namespaces.Atom)
+                        .mapNotNull { element ->
+                            element.getFirst("name", Namespaces.Atom)?.text?.let { name ->
+                                Contributor(
+                                    localizedName = LocalizedString(name),
+                                    links = listOfNotNull(
+                                        element.getFirst("uri", Namespaces.Atom)?.text
+                                            ?.let { Link(href = it) }
+                                    )
+                                )
+                            }
+                        },
+
+                    description = entry.getFirst("content", Namespaces.Atom)?.text
+                        ?: entry.getFirst("summary", Namespaces.Atom)?.text
+                ),
+
+                links = links,
+                otherCollections = listOfNotNull(
+                    images.takeIf { it.isNotEmpty() }
+                        ?.let { PublicationCollection(role = "images", links = it) }
+                )
+            )
         }
 
         private fun addFacet(feed: Feed, link: Link, title: String) {
@@ -373,11 +368,10 @@ class OPDS1Parser {
             }
             val title = collectionLink.title
             if (title != null) {
+                val selfLink = collectionLink.copy(
+                    rels = collectionLink.rels + "self"
+                )
                 val newGroup = Group(title = title)
-                val selfLink = Link()
-                selfLink.href = collectionLink.href
-                selfLink.title = collectionLink.title
-                selfLink.rel.add("self")
                 newGroup.links.add(selfLink)
                 newGroup.publications.add(publication)
                 feed.groups.add(newGroup)
@@ -395,31 +389,27 @@ class OPDS1Parser {
             }
             val title = collectionLink.title
             if (title != null) {
+                val selfLink = collectionLink.copy(
+                    rels = collectionLink.rels + "self"
+                )
                 val newGroup = Group(title = title)
-                val selfLink = Link()
-                selfLink.href = collectionLink.href
-                selfLink.title = collectionLink.title
-                selfLink.rel.add("self")
                 newGroup.links.add(selfLink)
                 newGroup.navigation.add(link)
                 feed.groups.add(newGroup)
             }
         }
 
-        private fun parseIndirectAcquisition(children: MutableList<ElementNode>): MutableList<IndirectAcquisition> {
-            val ret = mutableListOf<IndirectAcquisition>()
-            for (child in children) {
-                val typeAcquisition = child.getAttr("type")
-                if (typeAcquisition != null) {
-                    val newIndAcq = IndirectAcquisition(typeAcquisition = typeAcquisition)
-                    val grandChildren = child.get("indirectAcquisition", Namespaces.Opds).toMutableList()
-                    if (grandChildren.isNotEmpty()) {
-                        newIndAcq.child = parseIndirectAcquisition(grandChildren)
-                    }
-                    ret.add(newIndAcq)
-                }
+        private fun Acquisition.Companion.fromXML(element: ElementNode): List<Acquisition> =
+            element.get("indirectAcquisition", Namespaces.Opds).mapNotNull { child ->
+                val type = child.getAttr("type")
+                    ?: return@mapNotNull null
+
+                Acquisition(
+                    type = type,
+                    children = fromXML(child)
+                )
             }
-            return ret
-        }
+
     }
+
 }
