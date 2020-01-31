@@ -14,10 +14,12 @@ import org.json.JSONObject
 import java.io.Serializable
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.MediaOverlays
-import org.readium.r2.shared.Warning
-import org.readium.r2.shared.WarningLogger
+import org.readium.r2.shared.util.logging.Warning
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.log
 
 /**
  * Function used to recursively transform the [href] of a [Link] when parsing its JSON
@@ -98,11 +100,11 @@ data class Link(
         fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger<JsonWarning>? = null
         ): Link? {
             val href = json?.optNullableString("href")
             if (href == null) {
-                warnings?.log(Warning.JsonParsing(Link::class.java, "[href] is required", json))
+                warnings?.log(Link::class.java, "[href] is required", json)
                 return null
             }
 
@@ -132,7 +134,7 @@ data class Link(
         fun fromJSONArray(
             json: JSONArray?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger<JsonWarning>? = null
         ): List<Link> {
             return json.parseObjects { fromJSON(it as? JSONObject, normalizeHref, warnings) }
         }

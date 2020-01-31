@@ -11,12 +11,13 @@ package org.readium.r2.shared.publication
 
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.Warning
-import org.readium.r2.shared.WarningLogger
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.log
 import java.io.Serializable
 import java.util.*
 
@@ -118,12 +119,12 @@ data class Metadata(
         fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger<JsonWarning>? = null
         ): Metadata? {
             json ?: return null
             val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)
             if (localizedTitle == null) {
-                warnings?.log(Warning.JsonParsing(Metadata::class.java, "[title] is required", json))
+                warnings?.log(Metadata::class.java, "[title] is required", json)
                 return null
             }
 

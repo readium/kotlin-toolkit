@@ -11,9 +11,10 @@ package org.readium.r2.shared.publication
 
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.Warning
-import org.readium.r2.shared.WarningLogger
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.log
 import java.io.Serializable
 import java.util.*
 
@@ -118,25 +119,25 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
          *   }
          * ]
          */
-        fun fromJSON(json: Any?, warnings: WarningLogger? = null): LocalizedString? {
+        fun fromJSON(json: Any?, warnings: WarningLogger<JsonWarning>? = null): LocalizedString? {
             json ?: return null
 
             return when (json) {
                 is String -> LocalizedString(setOf(Translation(string = json)))
                 is JSONObject -> fromJSONObject(json, warnings)
                 else -> {
-                    warnings?.log(Warning.JsonParsing(LocalizedString::class.java, "invalid localized string object"))
+                    warnings?.log(LocalizedString::class.java, "invalid localized string object")
                     null
                 }
             }
         }
 
-        private fun fromJSONObject(json: JSONObject, warnings: WarningLogger?): LocalizedString? {
+        private fun fromJSONObject(json: JSONObject, warnings: WarningLogger<JsonWarning>?): LocalizedString? {
             val translations = mutableSetOf<Translation>()
             for (key in json.keys()) {
                 val string = json.optNullableString(key)
                 if (string == null) {
-                    warnings?.log(Warning.JsonParsing(LocalizedString::class.java, "invalid localized string object", json))
+                    warnings?.log(LocalizedString::class.java, "invalid localized string object", json)
                 } else {
                     translations.add(Translation(key, string))
                 }

@@ -14,13 +14,14 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.Warning
-import org.readium.r2.shared.WarningLogger
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
+import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.log
 import java.io.Serializable
 import java.net.URL
 
@@ -186,7 +187,7 @@ data class Publication(
         fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger<JsonWarning>? = null
         ): Publication? {
             json ?: return null
 
@@ -194,7 +195,7 @@ data class Publication(
 
             val metadata = Metadata.fromJSON(json.remove("metadata") as? JSONObject, normalizeHref, warnings)
             if (metadata == null) {
-                warnings?.log(Warning.JsonParsing(Publication::class.java, "[metadata] is required", json))
+                warnings?.log(Publication::class.java, "[metadata] is required", json)
                 return null
             }
 

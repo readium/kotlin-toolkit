@@ -11,10 +11,11 @@ package org.readium.r2.shared.publication.encryption
 
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.Warning
-import org.readium.r2.shared.WarningLogger
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.log
 import java.io.Serializable
 
 /**
@@ -53,10 +54,10 @@ data class Encryption(
          * Creates an [Encryption] from its RWPM JSON representation.
          * If the encryption can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Encryption? {
+        fun fromJSON(json: JSONObject?, warnings: WarningLogger<JsonWarning>? = null): Encryption? {
             val algorithm = json?.optNullableString("algorithm")
             if (algorithm.isNullOrEmpty()) {
-                warnings?.log(Warning.JsonParsing(Encryption::class.java, "[algorithm] is required", json))
+                warnings?.log(Encryption::class.java, "[algorithm] is required", json)
                 return null
             }
 

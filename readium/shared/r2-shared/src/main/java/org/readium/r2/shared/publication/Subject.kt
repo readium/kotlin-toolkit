@@ -12,11 +12,12 @@ package org.readium.r2.shared.publication
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.Warning
-import org.readium.r2.shared.WarningLogger
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.parseObjects
 import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.log
 import java.io.Serializable
 
 /**
@@ -71,7 +72,7 @@ data class Subject(
         fun fromJSON(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger<JsonWarning>? = null
         ): Subject? {
             json ?: return null
 
@@ -81,7 +82,7 @@ data class Subject(
                 else -> null
             }
             if (localizedName == null) {
-                warnings?.log(Warning.JsonParsing(Subject::class.java, "[name] is required"))
+                warnings?.log(Subject::class.java, "[name] is required")
                 return null
             }
 
@@ -105,7 +106,7 @@ data class Subject(
         fun fromJSONArray(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger<JsonWarning>? = null
         ): List<Subject> {
             return when(json) {
                 is String, is JSONObject ->

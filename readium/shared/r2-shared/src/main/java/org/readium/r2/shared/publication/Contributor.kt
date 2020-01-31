@@ -12,10 +12,11 @@ package org.readium.r2.shared.publication
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.Warning
-import org.readium.r2.shared.WarningLogger
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.log
 import java.io.Serializable
 
 /**
@@ -75,7 +76,7 @@ data class Contributor(
         fun fromJSON(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger<JsonWarning>? = null
         ): Contributor? {
             json ?: return null
 
@@ -85,7 +86,7 @@ data class Contributor(
                 else -> null
             }
             if (localizedName == null) {
-                warnings?.log(Warning.JsonParsing(Contributor::class.java, "[name] is required"))
+                warnings?.log(Contributor::class.java, "[name] is required")
                 return null
             }
 
@@ -110,7 +111,7 @@ data class Contributor(
         fun fromJSONArray(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger<JsonWarning>? = null
         ): List<Contributor> {
             return when(json) {
                 is String, is JSONObject ->

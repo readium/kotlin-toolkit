@@ -12,11 +12,12 @@ package org.readium.r2.shared.publication
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.Warning
-import org.readium.r2.shared.WarningLogger
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.log
 import java.io.Serializable
 
 /**
@@ -58,7 +59,7 @@ data class PublicationCollection(
             role: String,
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger<JsonWarning>? = null
         ): PublicationCollection? {
             json ?: return null
 
@@ -80,13 +81,13 @@ data class PublicationCollection(
                 }
 
                 else -> {
-                    warnings?.log(Warning.JsonParsing(PublicationCollection::class.java, "core collection not valid"))
+                    warnings?.log(PublicationCollection::class.java, "core collection not valid")
                     return null
                 }
             }
 
             if (links.isEmpty()) {
-                warnings?.log(Warning.JsonParsing(PublicationCollection::class.java, "core collection's [links] must not be empty"))
+                warnings?.log(PublicationCollection::class.java, "core collection's [links] must not be empty")
                 return null
             }
 
@@ -108,7 +109,7 @@ data class PublicationCollection(
         fun collectionsFromJSON(
             json: JSONObject,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger? = null
+            warnings: WarningLogger<JsonWarning>? = null
         ): List<PublicationCollection> {
             val collections = mutableListOf<PublicationCollection>()
             for (role in json.keys().asSequence().sorted()) {

@@ -11,11 +11,12 @@ package org.readium.r2.shared.opds
 
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.Warning
-import org.readium.r2.shared.WarningLogger
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.toIso8601Date
 import org.readium.r2.shared.extensions.toIso8601String
+import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.log
 import java.io.Serializable
 import java.util.*
 
@@ -59,10 +60,10 @@ data class Availability(
          * Creates an [Availability] from its JSON representation.
          * If the availability can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Availability? {
+        fun fromJSON(json: JSONObject?, warnings: WarningLogger<JsonWarning>? = null): Availability? {
             val state = State.from(json?.optNullableString("state"))
             if (state == null) {
-                warnings?.log(Warning.JsonParsing(Availability::class.java, "[state] is required", json))
+                warnings?.log(Availability::class.java, "[state] is required", json)
                 return null
             }
 

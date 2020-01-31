@@ -11,10 +11,11 @@ package org.readium.r2.shared.opds
 
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.Warning
-import org.readium.r2.shared.WarningLogger
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.optPositiveDouble
+import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.log
 import java.io.Serializable
 
 /**
@@ -45,11 +46,11 @@ data class Price(
          * Creates an [Price] from its JSON representation.
          * If the price can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Price? {
+        fun fromJSON(json: JSONObject?, warnings: WarningLogger<JsonWarning>? = null): Price? {
             val currency = json?.optNullableString("currency")
             val value = json?.optPositiveDouble("value")
             if (currency == null || value == null) {
-                warnings?.log(Warning.JsonParsing(Price::class.java, "[currency] and [value] are required", json))
+                warnings?.log(Price::class.java, "[currency] and [value] are required", json)
                 return null
             }
 
