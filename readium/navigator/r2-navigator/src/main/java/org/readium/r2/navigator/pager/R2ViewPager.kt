@@ -13,7 +13,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import org.readium.r2.navigator.BuildConfig.DEBUG
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
 
 class R2ViewPager : R2RTLViewPager {

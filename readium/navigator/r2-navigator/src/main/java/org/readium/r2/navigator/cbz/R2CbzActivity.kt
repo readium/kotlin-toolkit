@@ -23,10 +23,12 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.Link
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.opds.images
 import kotlin.coroutines.CoroutineContext
 
 
@@ -94,7 +96,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         title = publication.metadata.title
 
         for (link in publication.images) {
-            resources.add(link.href.toString())
+            resources.add(link.href)
         }
 
         adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
@@ -118,8 +120,8 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     override fun onPause() {
         super.onPause()
         val resource = publication.images[resourcePager.currentItem]
-        val resourceHref = resource.href ?: ""
-        val resourceType = resource.typeLink ?: ""
+        val resourceHref = resource.href
+        val resourceType = resource.type ?: ""
 
         navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
     }
@@ -134,8 +136,8 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
                 resourcePager.currentItem = resourcePager.currentItem + 1
             }
             val resource = publication.images[resourcePager.currentItem]
-            val resourceHref = resource.href ?: ""
-            val resourceType = resource.typeLink ?: ""
+            val resourceHref = resource.href
+            val resourceType = resource.type ?: ""
 
             navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
         }
@@ -151,8 +153,8 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
                 resourcePager.currentItem = resourcePager.currentItem - 1
             }
             val resource = publication.images[resourcePager.currentItem]
-            val resourceHref = resource.href ?: ""
-            val resourceType = resource.typeLink ?: ""
+            val resourceHref = resource.href
+            val resourceType = resource.type ?: ""
 
             navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
         }
@@ -218,4 +220,3 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     }
 
 }
-

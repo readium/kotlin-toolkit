@@ -15,10 +15,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.BuildConfig.*
-import org.readium.r2.shared.Link
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
@@ -158,7 +159,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
             })
 
-            play_pause!!.setOnClickListener { view ->
+            play_pause!!.setOnClickListener {
                 mediaPlayer?.let {
                     if (it.isPlaying) {
                         it.pause()
@@ -190,11 +191,11 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 }
             }
 
-            next_chapter!!.setOnClickListener { view ->
+            next_chapter!!.setOnClickListener {
                 goForward(false) {}
             }
 
-            prev_chapter!!.setOnClickListener { view ->
+            prev_chapter!!.setOnClickListener {
                 goBackward(false) {}
             }
 
@@ -247,8 +248,8 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         seekBar!!.progress = startTime.toInt()
 
         val resource = publication.readingOrder[currentResource]
-        val resourceHref = resource.href ?: ""
-        val resourceType = resource.typeLink ?: ""
+        val resourceHref = resource.href
+        val resourceType = resource.type ?: ""
 
         navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = seekBar!!.progress.toDouble())))
 
@@ -314,8 +315,8 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 seekBar!!.progress = startTime.toInt()
 
                 val resource = publication.readingOrder[currentResource]
-                val resourceHref = resource.href ?: ""
-                val resourceType = resource.typeLink ?: ""
+                val resourceHref = resource.href
+                val resourceType = resource.type ?: ""
 
                 navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = seekBar!!.progress.toDouble())))
 
@@ -362,7 +363,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
                 var index = 0
                 for (resource in publication.readingOrder) {
-                    if (resource.href!!.endsWith(href)) {
+                    if (resource.href.endsWith(href)) {
                         currentResource = index
                         break
                     }

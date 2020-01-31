@@ -7,11 +7,11 @@ import android.net.Uri
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.readium.r2.shared.Link
+import org.readium.r2.shared.publication.Link
 import java.io.IOException
 
 
-class R2MediaPlayer(private var items: MutableList<Link>, private var callback: MediaPlayerCallback) : OnPreparedListener {
+class R2MediaPlayer(private var items: List<Link>, private var callback: MediaPlayerCallback) : OnPreparedListener {
 
     private val uiScope = CoroutineScope(Dispatchers.Main)
 

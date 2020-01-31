@@ -434,7 +434,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             }
         } else {
             val ii = infoForPosition(mCurItem)
-            val scrollOffset: Float = if (ii != null) min(ii.offset, mLastOffset) else 0.0F
+            val scrollOffset: Float = min(ii.offset, mLastOffset)
             val scrollPos = (scrollOffset * (width - paddingLeft - paddingRight)).toInt()
             if (scrollPos != scrollX) {
                 completeScroll(false)
@@ -461,8 +461,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             val child = getChildAt(i)
             if (child.visibility != View.GONE) {
                 val lp = child.layoutParams as LayoutParams
-                var childLeft = 0
-                var childTop = 0
+                var childLeft: Int
+                var childTop: Int
                 if (lp.isDecor) {
                     val hgrav = lp.gravity and Gravity.HORIZONTAL_GRAVITY_MASK
                     val vgrav = lp.gravity and Gravity.VERTICAL_GRAVITY_MASK
@@ -581,7 +581,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 if (!lp.isDecor) continue
 
                 val hgrav = lp.gravity and Gravity.HORIZONTAL_GRAVITY_MASK
-                var childLeft = 0
+                var childLeft: Int
                 when (hgrav) {
                     Gravity.START -> {
                         childLeft = paddingLeft
@@ -780,18 +780,12 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     }
 
     private fun determineTargetPage(currentPage: Int, pageOffset: Float, velocity: Int, deltaX: Int): Int {
-        val targetPage: Int
-        val d = abs(deltaX)
-        val v = abs(velocity)
-
-        targetPage = if (abs(deltaX) > mFlingDistance && abs(velocity) > mMinimumVelocity) {
+        return if (abs(deltaX) > mFlingDistance && abs(velocity) > mMinimumVelocity) {
             if (velocity > 0) currentPage else currentPage + 1
         } else {
             val truncator = if (currentPage >= mCurItem) 0.4f else 0.6f
             currentPage + (pageOffset + truncator).toInt()
         }
-
-        return targetPage
     }
 
 
