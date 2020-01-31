@@ -10,235 +10,300 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.readium.r2.shared.Publication
-import org.readium.r2.shared.MultilanguageString
-import org.readium.r2.shared.Rendition
-import org.readium.r2.shared.RenditionOverflow
-import org.readium.r2.shared.RenditionLayout
-import org.readium.r2.shared.RenditionOrientation
-import org.readium.r2.shared.RenditionSpread
-import org.readium.r2.shared.Metadata as SharedMetadata
-import org.readium.r2.shared.Link as SharedLink
-import org.readium.r2.shared.Contributor as SharedContributor
-import org.readium.r2.shared.PageProgressionDirection as SharedDirection
-import org.readium.r2.shared.Subject as SharedSubject
+import org.joda.time.DateTime
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.publication.Metadata as SharedMetadata
+import org.readium.r2.shared.publication.Link as SharedLink
+import org.readium.r2.shared.publication.Contributor as SharedContributor
+import org.readium.r2.shared.publication.ReadingProgression as SharedDirection
+import org.readium.r2.shared.publication.Subject as SharedSubject
+import org.readium.r2.shared.extensions.toMap
 
 import org.readium.r2.streamer.parser.normalize
+import java.lang.Exception
 
 fun PackageDocument.toPublication() : Publication {
-    val publication = Publication()
-    publication.type = Publication.TYPE.EPUB
-    publication.version = epubVersion
-    publication.links.addAll(metadata.links.mapNotNull(::mapLink))
-    publication.metadata = computeMetadata()
     val (readingOrder, resources) = computeResources()
-    val (mediaOverlays, otherResources) = resources.partition { it.typeLink == "application/smil+xml" }
-    publication.otherLinks.addAll(mediaOverlays)
-    publication.resources.addAll(otherResources)
-    publication.readingOrder.addAll(readingOrder)
-    return publication
+    // FIXME: mediaOverlays aren't included into the Publication
+    val (mediaOverlays, otherResources) = resources.partition { it.type == "application/smil+xml" }
+    return Publication(
+            metadata = computeMetadata(),
+            links = metadata.links.mapNotNull(::mapLink),
+            readingOrder = readingOrder,
+            resources = otherResources
+        ).apply {
+            type = Publication.TYPE.EPUB
+            version = epubVersion
+        }
 }
 
 private fun mapLink(link: Link) : SharedLink? {
-    val sharedLink =  SharedLink()
-    sharedLink.href = link.href
-    sharedLink.rel.addAll(link.rel)
-    sharedLink.typeLink = link.mediaType
+    val contains: MutableList<String> = mutableListOf()
     if (link.rel.contains(DEFAULT_VOCAB.LINK.iri + "record")) {
         if (link.properties.contains(DEFAULT_VOCAB.LINK.iri + "onix"))
-            sharedLink.properties.contains.add("onix")
+            contains.add("onix")
         if (link.properties.contains(DEFAULT_VOCAB.LINK.iri + "xmp"))
-            sharedLink.properties.contains.add("xmp")
+            contains.add("xmp")
     }
-    return sharedLink
+    return SharedLink(
+            href = link.href,
+            type = link.mediaType,
+            rels = link.rel,
+            properties = Properties(mapOf("contains" to contains))
+    )
 }
+
+private data class ContributorsByRole(
+        val authors: MutableList<SharedContributor> = mutableListOf(),
+        val translators: MutableList<SharedContributor> = mutableListOf(),
+        val editors: MutableList<SharedContributor> = mutableListOf(),
+        val artists: MutableList<SharedContributor> = mutableListOf(),
+        val illustrators: MutableList<SharedContributor> = mutableListOf(),
+        val letterers: MutableList<SharedContributor> = mutableListOf(),
+        val pencilers: MutableList<SharedContributor> = mutableListOf(),
+        val colorists: MutableList<SharedContributor> = mutableListOf(),
+        val inkers: MutableList<SharedContributor> = mutableListOf(),
+        val narrators: MutableList<SharedContributor> = mutableListOf(),
+        val publishers: MutableList<SharedContributor> = mutableListOf(),
+        val imprints: MutableList<SharedContributor> = mutableListOf(),
+        val others: MutableList<SharedContributor> = mutableListOf()
+)
 
 private fun PackageDocument.computeMetadata() : SharedMetadata {
     val generalMetadata = metadata.generalMetadata
-    val pubMetadata = org.readium.r2.shared.Metadata()
 
     // Contributors
-    addContributors(generalMetadata.publishers.map(::mapContributor), pubMetadata, "pbl")
-    addContributors(generalMetadata.creators.map(::mapContributor), pubMetadata, "aut")
-    addContributors(generalMetadata.contributors.map(::mapContributor), pubMetadata)
-
-    // Titles
-    pubMetadata.multilanguageTitle = getMaintitle()
-    pubMetadata.multilanguageSubtitle = getSubtitle()
+    val contributorsByRole = ContributorsByRole()
+    addContributors(generalMetadata.publishers.map { mapContributor(it, "pbl") }, contributorsByRole)
+    addContributors(generalMetadata.creators.map { mapContributor(it, "aut") }, contributorsByRole)
+    addContributors(generalMetadata.contributors.map { mapContributor(it) }, contributorsByRole)
 
     // Miscellaneous
-    pubMetadata.publicationDate = generalMetadata.date
-    pubMetadata.identifier = generalMetadata.uniqueIdentifier
-    pubMetadata.modified = generalMetadata.modified
-    pubMetadata.languages.addAll(generalMetadata.languages)
-    pubMetadata.duration = metadata.mediaMetadata.duration
-    pubMetadata.rendition = mapRendition(metadata.renditionMetadata)
-    pubMetadata.direction = mapDirection(spine.direction)
-    pubMetadata.subjects.addAll(generalMetadata.subjects.map(::mapSubject))
-    pubMetadata.description = generalMetadata.description
-    pubMetadata.rights = generalMetadata.rights
-    pubMetadata.source = generalMetadata.source
+    val published =   try {
+        DateTime(generalMetadata.date).toDate()
+    } catch(e: Exception) {
+        null
+    }
 
-    return pubMetadata
+    // Other Metadata
+    val otherMetadata: MutableMap<String, Any> = mutableMapOf()
+    otherMetadata["presentation"] =  mapRendition(metadata.renditionMetadata).toJSON().toMap()
+    generalMetadata.rights?.let { otherMetadata["http://purl.org/dc/elements/1.1/rights"] = it }
+    generalMetadata.source?.let { otherMetadata["http://purl.org/dc/elements/1.1/source"] = it }
+
+    return org.readium.r2.shared.publication.Metadata(
+            identifier = generalMetadata.uniqueIdentifier,
+            modified = generalMetadata.modified,
+            published = published,
+            languages = generalMetadata.languages,
+            localizedTitle = getMaintitle(),
+            localizedSubtitle = getSubtitle(),
+            duration = metadata.mediaMetadata.duration,
+            subjects = generalMetadata.subjects.map(::mapSubject),
+            description = generalMetadata.description,
+            readingProgression = mapDirection(spine.direction),
+            otherMetadata = otherMetadata,
+
+            authors = contributorsByRole.authors,
+            translators = contributorsByRole.translators,
+            editors = contributorsByRole.editors,
+            artists = contributorsByRole.artists,
+            illustrators = contributorsByRole.illustrators,
+            letterers = contributorsByRole.letterers,
+            pencilers = contributorsByRole.pencilers,
+            colorists = contributorsByRole.colorists,
+            inkers = contributorsByRole.inkers,
+            narrators = contributorsByRole.narrators,
+            publishers = contributorsByRole.publishers,
+            contributors = contributorsByRole.others
+    )
 }
 
-private fun PackageDocument.getMaintitle() : MultilanguageString {
-    val multilangString = MultilanguageString()
+private fun PackageDocument.getMaintitle() : LocalizedString {
     val titles = metadata.generalMetadata.titles
     val main =  titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
-    multilangString.singleString = main?.value?.main
-    main?.value?.alt?.let { multilangString.multiString.putAll(it) }
-    if ("" in multilangString.multiString.keys && metadata.generalMetadata.languages.isNotEmpty()) {
-        val v = multilangString.multiString.remove("") as String
+    val translations = main?.value?.alt?.toMutableMap() ?: mutableMapOf()
+
+    if ("" in translations.keys && metadata.generalMetadata.languages.isNotEmpty()) {
+        val v = translations.remove("") as String
         val l = metadata.generalMetadata.languages.first()
-        multilangString.multiString[l] = v
+        translations[l] = v
     }
-    return multilangString
+    return LocalizedString(translations)
 }
 
-private fun PackageDocument.getSubtitle() : MultilanguageString {
-    val multilangString = MultilanguageString()
+private fun PackageDocument.getSubtitle() : LocalizedString {
     val titles = metadata.generalMetadata.titles
     val sub =  titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()
-    multilangString.singleString = sub?.value?.main
-    sub?.value?.alt?.let { multilangString.multiString.putAll(it) }
-    return multilangString
-}
+    val translations = sub?.value?.alt?.toMutableMap() ?: mutableMapOf()
 
-private fun PackageDocument.mapContributor(contributor: Contributor) : SharedContributor {
-    val pubContrib = org.readium.r2.shared.Contributor()
-    val multilangString = MultilanguageString()
-    multilangString.singleString = contributor.name.main
-    multilangString.multiString = contributor.name.alt.toMutableMap()
-    if ("" in multilangString.multiString.keys && metadata.generalMetadata.languages.isNotEmpty()) {
-        val v = multilangString.multiString.remove("") as String
+    if ("" in translations.keys && metadata.generalMetadata.languages.isNotEmpty()) {
+        val v = translations.remove("") as String
         val l = metadata.generalMetadata.languages.first()
-        multilangString.multiString[l] = v
+        translations[l] = v
     }
-    pubContrib.multilanguageName = multilangString
-    pubContrib.sortAs = contributor.name.fileAs
-    pubContrib.roles = contributor.roles.toMutableList()
-    return pubContrib
+    return LocalizedString(translations)
 }
 
-private fun addContributors(contributors: List<SharedContributor>,
-                            pubMetadata: SharedMetadata,
-                            defaultRole: String? = null) {
+private fun PackageDocument.mapContributor(contributor: Contributor, defaultRole: String? = null) : SharedContributor {
+    val translations = contributor.name.alt.toMutableMap()
+    if ("" in translations.keys && metadata.generalMetadata.languages.isNotEmpty()) {
+        val v = translations.remove("") as String
+        val l = metadata.generalMetadata.languages.first()
+        translations[l] = v
+    }
+    val roles = contributor.roles.toMutableSet()
+    if (roles.isEmpty() && defaultRole != null) roles.add(defaultRole)
+
+    return SharedContributor(
+            localizedName = LocalizedString(translations),
+            sortAs = contributor.name.fileAs,
+            roles = roles
+    )
+}
+
+private fun addContributors(contributors: List<SharedContributor>, byRole: ContributorsByRole) {
     for (contributor in contributors) {
-        if (contributor.roles.isEmpty()) {
-            if (defaultRole == null)
-                pubMetadata.contributors.add(contributor)
-            else
-                contributor.roles.add(defaultRole)
-        }
         for (role in contributor.roles) {
             when (role) {
-                "aut" -> pubMetadata.authors.add(contributor)
-                "trl" -> pubMetadata.translators.add(contributor)
-                "art" -> pubMetadata.artists.add(contributor)
-                "edt" -> pubMetadata.editors.add(contributor)
-                "ill" -> pubMetadata.illustrators.add(contributor)
-                "clr" -> pubMetadata.colorists.add(contributor)
-                "nrt" -> pubMetadata.narrators.add(contributor)
-                "pbl" -> pubMetadata.publishers.add(contributor)
-                else -> pubMetadata.contributors.add(contributor)
+                "aut" -> byRole.authors.add(contributor)
+                "trl" -> byRole.translators.add(contributor)
+                "art" -> byRole.artists.add(contributor)
+                "edt" -> byRole.editors.add(contributor)
+                "ill" -> byRole.illustrators.add(contributor)
+                "clr" -> byRole.colorists.add(contributor)
+                "nrt" -> byRole.narrators.add(contributor)
+                "pbl" -> byRole.publishers.add(contributor)
+                else -> byRole.others.add(contributor)
             }
         }
     }
 }
 
 private fun mapSubject(subject: Subject) : SharedSubject =
-        SharedSubject().apply {
-            name = subject.value
-            scheme = subject.authority
+        SharedSubject(
+            localizedName = LocalizedString(subject.value),
+            scheme = subject.authority,
             code = subject.term
-        }
+        )
 
-private fun mapRendition(renditionMetadata: RenditionMetadata) : Rendition {
-    val rendition = Rendition()
+private fun mapRendition(renditionMetadata: RenditionMetadata) : Presentation {
     val (overflow, continuous) = when(renditionMetadata.flow) {
-        RenditionMetadata.Flow.Auto ->  Pair(RenditionOverflow.Auto, false)
-        RenditionMetadata.Flow.Paginated -> Pair(RenditionOverflow.Paginated, false)
-        RenditionMetadata.Flow.Continuous -> Pair(RenditionOverflow.Scrolled, true)
-        RenditionMetadata.Flow.Document -> Pair(RenditionOverflow.Scrolled, false)
-    }
-    rendition.flow = overflow
-    rendition.continuous = continuous
-
-    rendition.layout = when(renditionMetadata.layout) {
-        RenditionMetadata.Layout.Reflowable -> RenditionLayout.Reflowable
-        RenditionMetadata.Layout.PrePaginated -> RenditionLayout.Fixed
+        RenditionMetadata.Flow.Auto ->  Pair(Presentation.Overflow.AUTO, false)
+        RenditionMetadata.Flow.Paginated -> Pair(Presentation.Overflow.PAGINATED, false)
+        RenditionMetadata.Flow.Continuous -> Pair(Presentation.Overflow.SCROLLED, true)
+        RenditionMetadata.Flow.Document -> Pair(Presentation.Overflow.SCROLLED, false)
     }
 
-    rendition.orientation = when(renditionMetadata.orientation) {
-        RenditionMetadata.Orientation.Auto -> RenditionOrientation.Auto
-        RenditionMetadata.Orientation.Landscape -> RenditionOrientation.Landscape
-        RenditionMetadata.Orientation.Portait -> RenditionOrientation.Portrait
+    val layout = when(renditionMetadata.layout) {
+        RenditionMetadata.Layout.Reflowable -> EpubLayout.REFLOWABLE
+        RenditionMetadata.Layout.PrePaginated -> EpubLayout.FIXED
     }
 
-    rendition.spread = when(renditionMetadata.spread) {
-        RenditionMetadata.Spread.Auto -> RenditionSpread.Auto
-        RenditionMetadata.Spread.None -> RenditionSpread.None
-        RenditionMetadata.Spread.Landscape -> RenditionSpread.Landscape
-        RenditionMetadata.Spread.Both -> RenditionSpread.Both
+    val orientation = when(renditionMetadata.orientation) {
+        RenditionMetadata.Orientation.Auto -> Presentation.Orientation.AUTO
+        RenditionMetadata.Orientation.Landscape -> Presentation.Orientation.LANDSCAPE
+        RenditionMetadata.Orientation.Portait -> Presentation.Orientation.PORTRAIT
     }
-    return rendition
+
+    val spread = when(renditionMetadata.spread) {
+        RenditionMetadata.Spread.Auto -> Presentation.Spread.AUTO
+        RenditionMetadata.Spread.None -> Presentation.Spread.NONE
+        RenditionMetadata.Spread.Landscape -> Presentation.Spread.LANDSCAPE
+        RenditionMetadata.Spread.Both -> Presentation.Spread.BOTH
+    }
+    return Presentation(
+            overflow = overflow,
+            continuous = continuous,
+            layout = layout,
+            orientation = orientation,
+            spread = spread
+    )
 }
 
 private fun mapDirection(direction: Direction) : SharedDirection =
     when(direction) {
-        Direction.Default -> SharedDirection.default
-        Direction.Ltr -> SharedDirection.ltr
-        Direction.Rtl -> SharedDirection.rtl
+        Direction.Default -> SharedDirection.AUTO
+        Direction.Ltr -> SharedDirection.LTR
+        Direction.Rtl -> SharedDirection.RTL
     }
 
 private fun PackageDocument.computeResources() : Pair<List<SharedLink>, List<SharedLink>> {
     val itemById = manifest.associateBy(Item::id)
     val itemrefByIdref = spine.itemrefs.associateBy(Itemref::idref)
     val links = manifest.map { computeLink(it, itemById, itemrefByIdref) }
-    val linkById = links.associateBy { it.title as String }
-    if (epubVersion < 3.0) {
-        metadata.oldMeta["cover"]?.let { linkById[it] }?.rel?.add("cover")
-    }
-    // items in resources collection might be used only as fallback or not
-    // so there might me duplicated elements in readingOrder alternate links and resources
-    linkById.values.forEach { // ensure id unicity for links with fallback
-        val fallbackId = itemById[it.title as String]?.fallback
-        val fallbackLink = linkById[fallbackId]
-        if (fallbackLink != null)
-        it.alternate.add(fallbackLink) }
-    links.forEach{ checkFallbackChain(it) } // ensure there is no cycle in fallback chains using id unicity
     return links.partition {
         itemrefByIdref.containsKey(it.title) && (itemrefByIdref[it.title] as Itemref).linear  }
 }
 
-private fun PackageDocument.computeLink(item: Item, itemById: Map<String, Item>, itemrefByIdref: Map<String, Itemref>) : SharedLink {
-    val link = SharedLink().apply {
-        title = item.id
-        href = normalize(path, item.href)
-        typeLink = item.mediaType
-        duration = metadata.mediaMetadata.durationById[item.id]
+private fun PackageDocument.computeLink(
+        item: Item,
+        itemById: Map<String, Item>,
+        itemrefByIdref: Map<String, Itemref>,
+        fallbackChain: Set<String> = emptySet()) : SharedLink {
+
+    val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
+    val alternates = computeAlternates(item, itemById, itemrefByIdref, fallbackChain)
+
+    return SharedLink(
+            title = item.id,
+            href = normalize(path, item.href),
+            type = item.mediaType,
+            duration = metadata.mediaMetadata.durationById[item.id],
+            rels = rels,
+            properties = properties,
+            alternates = alternates
+    )
+}
+
+private fun PackageDocument.computePropertiesAndRels(item: Item, itemref: Itemref?) : Pair<List<String>, Properties> {
+    val properties: MutableMap<String, Any> = mutableMapOf()
+    val contains: MutableList<String> = mutableListOf()
+    val rels: MutableList<String> = mutableListOf()
+
+    parseItemProperties(item.properties, contains, rels)
+    if (contains.isNotEmpty()) {
+        properties["contains"] = contains
     }
 
-    parseItemProperties(item.properties, link)
-
-    val itemref = itemrefByIdref[item.id]
     if (itemref != null) {
-        parseItemrefProperties(itemref.properties, link)
+        parseItemrefProperties(itemref.properties, properties)
     }
-    if (item.mediaOverlay != null) {
-        link.properties.mediaOverlay = normalize(path, itemById[item.mediaOverlay]?.href )
+
+    if (epubVersion < 3.0) {
+        val coverId = metadata.oldMeta["cover"]
+        if (coverId != null && item.id == coverId) rels.add("cover")
     }
-    return link
+
+    return Pair(rels, Properties(properties))
 }
 
-private fun checkFallbackChain(link: SharedLink, alreadySeen: MutableSet<String> = mutableSetOf()) {
-    alreadySeen.add(link.title as String)
-    link.alternate = link.alternate.filterNot { alreadySeen.contains(it.title) }.toMutableList()
-    link.alternate.forEach { checkFallbackChain(it) }
+private fun PackageDocument.computeAlternates(
+        item: Item,
+        itemById: Map<String, Item>,
+        itemrefByIdref: Map<String, Itemref>,
+        fallbackChain: Set<String>) : List<SharedLink> {
+
+    val fallback = item.fallback?.let { id ->
+        if (id in fallbackChain) null else
+            itemById[id]?.let {
+                computeLink(it, itemById, itemrefByIdref, fallbackChain.plus(item.id) ) }
+    }
+    val mediaOverlays = item.mediaOverlay?.let { id ->
+        itemById[id]?.let {
+            computeLink(it, itemById, itemrefByIdref) }
+    }
+    return listOf(fallback, mediaOverlays).filterNotNull()
 }
 
-private fun parseItemProperties(properties: List<String>, link: SharedLink) {
+private fun parseItemProperties(properties: List<String>,
+                                linkContains: MutableList<String>,
+                                linkRels: MutableList<String>) {
+
     for (property in properties) {
         when (property) {
             DEFAULT_VOCAB.ITEM.iri + "scripted" -> "js"
@@ -247,15 +312,15 @@ private fun parseItemProperties(properties: List<String>, link: SharedLink) {
             DEFAULT_VOCAB.ITEM.iri + "xmp-record" -> "xmp"
             DEFAULT_VOCAB.ITEM.iri + "remote-resources" -> "remote-resources"
             else -> null
-        }?.let { link.properties.contains.add(it) }
+        }?.let { linkContains.add(it) }
         when (property) {
-            "nav" -> link.rel.add("contents")
-            "cover-image" -> link.rel.add("cover")
+            "nav" -> linkRels.add("contents")
+            "cover-image" -> linkRels.add("cover")
         }
     }
 }
 
-private fun parseItemrefProperties(properties: List<String>, link: SharedLink) {
+private fun parseItemrefProperties(properties: List<String>, linkProperties: MutableMap<String, Any>) {
     for (property in properties) {
         //  Page
         when (property) {
@@ -265,7 +330,7 @@ private fun parseItemrefProperties(properties: List<String>, link: SharedLink) {
             PACKAGE_RESERVED_PREFIXES["rendition"] + "page-spread-right",
             DEFAULT_VOCAB.ITEMREF.iri + "page-spread-left" -> "right"
             else -> null
-        }?.let { link.properties.page = it }
+        }?.let { linkProperties["page"] = it }
         //  Spread
         when (property) {
             PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-node" -> "none"
@@ -274,20 +339,20 @@ private fun parseItemrefProperties(properties: List<String>, link: SharedLink) {
             PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-portrait" -> "both"
             PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-both" -> "both"
             else -> null
-        }?.let { link.properties.spread = it }
+        }?.let { linkProperties["spread"] = it }
         //  Layout
         when (property) {
             PACKAGE_RESERVED_PREFIXES["rendition"] + "layout-reflowable" -> "reflowable"
             PACKAGE_RESERVED_PREFIXES["rendition"] + "layout-pre-paginated" -> "fixed"
             else -> null
-        }?.let { link.properties.layout = it }
+        }?.let { linkProperties["layout"] = it }
         //  Orientation
         when (property) {
             PACKAGE_RESERVED_PREFIXES["rendition"] + "orientation-auto" -> "auto"
             PACKAGE_RESERVED_PREFIXES["rendition"] + "orientation-landscape" -> "landscape"
             PACKAGE_RESERVED_PREFIXES["rendition"] + "orientation-portrait" -> "portrait"
             else -> null
-        }?.let { link.properties.orientation = it }
+        }?.let { linkProperties["orientation"] = it }
         //  Overflow
         when (property) {
             PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-auto" -> "auto"
@@ -295,6 +360,6 @@ private fun parseItemrefProperties(properties: List<String>, link: SharedLink) {
             PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-scrolled-continuous" -> "scrolled"
             PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-scrolled-doc" -> "scrolled"
             else -> null
-        }?.let { link.properties.overflow = it }
+        }?.let { linkProperties["overflow"] = it }
     }
 }

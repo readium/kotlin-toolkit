@@ -11,7 +11,8 @@ package org.readium.r2.streamer.fetcher
 
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import timber.log.Timber
 import java.io.ByteArrayInputStream
@@ -37,7 +38,7 @@ class FontDecoder {
         val publicationIdentifier = publication.metadata.identifier!!
         val link = publication.linkWithHref(path) ?: return input
         val encryption = link.properties.encryption ?: return input
-        val algorithm = encryption.algorithm ?: return input
+        val algorithm = encryption.algorithm
         val type = decoders[link.properties.encryption?.algorithm] ?: return input
         if (!decodableAlgorithms.values.contains(algorithm)) {
             if (DEBUG) Timber.e("Error $path is encrypted, but can't handle it")

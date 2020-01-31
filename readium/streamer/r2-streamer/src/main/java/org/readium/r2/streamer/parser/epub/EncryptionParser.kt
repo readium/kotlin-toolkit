@@ -9,37 +9,33 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.readium.r2.shared.Encryption
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.streamer.parser.normalize
 
 object EncryptionParser {
-    fun parse(document: ElementNode, drm: DRM?) : Map<String, Encryption> =
+    fun parse(document: ElementNode) : Map<String, Encryption> =
         document.get("EncryptedData", Namespaces.Enc)
-                .mapNotNull{ parseEncryptedData(it, drm) }
+                .mapNotNull{ parseEncryptedData(it) }
                 .associate{ it }
 
-    private fun parseEncryptedData(node: ElementNode, drm: DRM?) : Pair<String, Encryption>? {
+    private fun parseEncryptedData(node: ElementNode) : Pair<String, Encryption>? {
         val resourceURI = node.getFirst("CipherData", Namespaces.Enc)
                 ?.getFirst("CipherReference", Namespaces.Enc)?.getAttr("URI") ?: return null
-        val keyInfoUri = node.getFirst("KeyInfo", Namespaces.Sig)
+        val scheme = node.getFirst("KeyInfo", Namespaces.Sig)
                 ?.getFirst("RetrievalMethod", Namespaces.Sig)
                 ?.getAttr("URI")
-        val scheme = if (keyInfoUri == "license.lcpl#/encryption/content_key" && drm?.brand == DRM.Brand.lcp)
-            DRM.Scheme.lcp else null
         val algorithm = node.getFirst("EncryptionMethod", Namespaces.Enc)
-                ?.getAttr("Algorithm")
+                ?.getAttr("Algorithm") ?: return null
         val compression = node.getFirst("EncryptionProperties", Namespaces.Enc)?.let { parseEncryptionProperties(it) }
         val originalLength = compression?.first
         val compressionMethod = compression?.second
-        val enc = Encryption().apply {
-            this.scheme = scheme
-            this.algorithm = algorithm
-            this.compression = compressionMethod
-            this.originalLength = originalLength
-        }
+        val enc = Encryption(
+            scheme = scheme,
+            algorithm = algorithm,
+            compression = compressionMethod,
+            originalLength = originalLength
+        )
         return Pair(resourceURI, enc)
     }
 
@@ -59,14 +55,4 @@ object EncryptionParser {
         val compression = if (method == "8") "deflate" else "none"
         return Pair(originalLength, compression)
     }
-
-    fun add(encryption: Encryption, publication: Publication, encryptedDataElement: ElementNode) {
-        var resourceURI = encryptedDataElement.getFirst("CipherData", Namespaces.Enc)
-                ?.getFirst("CipherReference", Namespaces.Enc)?.getAttr("URI")
-                ?: return
-        resourceURI = normalize("/", resourceURI)
-        val link = publication.linkWithHref(resourceURI) ?: return
-        link.properties.encryption = encryption
-    }
-
 }

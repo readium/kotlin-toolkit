@@ -9,8 +9,9 @@
 
 package org.readium.r2.streamer.fetcher
 
-import org.readium.r2.shared.Link
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import timber.log.Timber
 import java.io.ByteArrayInputStream
@@ -32,7 +33,7 @@ class DrmDecoder {
 
         drm?.let {
 
-            if (scheme == drm.scheme) {
+            if (scheme == drm.scheme.rawValue) {
 
                 var data = decipher(input, drm) ?: return input
                 val padding = data[data.size - 1].toInt()

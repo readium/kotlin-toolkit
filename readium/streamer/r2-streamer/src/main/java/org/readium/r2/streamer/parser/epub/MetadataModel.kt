@@ -13,14 +13,14 @@ data class MultiString(val main: String, val alt: Map<String, String>, val fileA
 
 data class Title(val value: MultiString, val type: String? = null, val displaySeq: Int? = null)
 
-data class Contributor(val name: MultiString, val roles: List<String> = listOf())
+data class Contributor(val name: MultiString, val roles: Set<String> = setOf())
 
 data class Link(val rel: List<String>, val href: String,
                 val mediaType: String?, val refines: String?, val properties: List<String> = listOf())
 
 data class Date(val value: String, val event: String? = null)
 
-data class Subject (val value: String?, val authority: String?, val term: String?)
+data class Subject (val value: String, val authority: String?, val term: String?)
 
 data class Metadata(
         val generalMetadata: GeneralMetadata,

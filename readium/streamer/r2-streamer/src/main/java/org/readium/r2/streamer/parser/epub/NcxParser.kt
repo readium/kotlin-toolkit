@@ -9,8 +9,7 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import android.sax.Element
-import org.readium.r2.shared.Link
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
 
@@ -29,14 +28,11 @@ internal object NcxParser {
     }
 
     private fun parseNavMapElement(element: ElementNode, filePath: String): List<Link> =
-            element.get("navPoint", Namespaces.Ncx).map { parseNavPointElement(it, filePath) }
+            element.get("navPoint", Namespaces.Ncx).mapNotNull { parseNavPointElement(it, filePath) }
 
     private fun parsePageListElement(element: ElementNode, filePath: String): List<Link> =
-            element.get("pageTarget", Namespaces.Ncx).map {
-                Link().apply {
-                    title = extractTitle(element)
-                    href = extractHref(element, filePath)
-                }
+            element.get("pageTarget", Namespaces.Ncx).mapNotNull {
+                extractHref(element, filePath)?.let { Link(title = extractTitle(element), href = it) }
             }
 
     private fun extractTitle(element: ElementNode) =
@@ -47,14 +43,10 @@ internal object NcxParser {
         return normalize(filePath, href)
     }
 
-    private fun parseNavPointElement(element: ElementNode, filePath: String): Link {
+    private fun parseNavPointElement(element: ElementNode, filePath: String): Link? {
         val title = extractTitle(element)
-        val href = extractHref(element, filePath)
-        val children = element.get("navPoint", Namespaces.Ncx).map { parseNavPointElement(it, filePath) }
-        return Link().apply {
-            this.title = title
-            this.href = href
-            this.children = children.toMutableList()
-        }
+        val href = extractHref(element, filePath) ?: return null
+        val children = element.get("navPoint", Namespaces.Ncx).mapNotNull { parseNavPointElement(it, filePath) }
+        return Link(title = title, href = href, children = children)
     }
 }

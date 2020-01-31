@@ -90,7 +90,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
                 "publisher" -> parseContributor(it, props)?.let { publishers.add(it) }
                 "date" -> parseDate(it)?.let { dates.add(it) }
                 "description" ->  it.text?.let { description = it }
-                "subject" -> parseSubject(it, props).let { subjects.add(it) }
+                "subject" -> parseSubject(it, props)?.let { subjects.add(it) }
                 "rights" -> it.text?.let { rights = it }
                 "source" -> it.text?.let { source = it }
             }
@@ -154,7 +154,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
     private fun parseContributor(node: ElementNode, props: List<Property>?): Contributor? {
         val mainName = node.text ?: return null
         val altNames: MutableMap<String, String> = mutableMapOf()
-        val roles: MutableList<String> = LinkedList()
+        val roles: MutableSet<String> = mutableSetOf()
         var fileAs: String? = null
         val lang = node.lang ?: ""
         altNames[lang] = mainName
@@ -181,7 +181,12 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
             }
 
     private fun parseSubject(node: ElementNode, props: List<Property>?) =
-        Subject(node.text, props?.firstOrNull{ it.property == "authority" }?.value, props?.firstOrNull{ it.property == "term" } ?.value )
+        node.text?.let {
+            Subject(it,
+                    props?.firstOrNull { it.property == "authority" }?.value,
+                    props?.firstOrNull { it.property == "term" }?.value
+            )
+        }
 
     private fun parseRenditionProperties(properties: Collection<Property>): RenditionMetadata {
         var flow: RenditionMetadata.Flow = RenditionMetadata.Flow.default

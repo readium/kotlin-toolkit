@@ -12,6 +12,9 @@ package org.readium.r2.streamer.fetcher
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.*
+import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.epub.layout
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.server.Resources
 import java.io.File
@@ -34,9 +37,9 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, private var cu
 
             var decodedInputStream = DrmDecoder().decoding(input, resourceLink, container.drm)
             decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
-            if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")) {
-                decodedInputStream = if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && resourceLink.properties.layout == null
-                        || resourceLink.properties.layout == "reflowable") {
+            if ((resourceLink.type == "application/xhtml+xml" || resourceLink.type == "text/html")) {
+                decodedInputStream = if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE && resourceLink.properties.layout == null
+                        || resourceLink.properties.layout == EpubLayout.REFLOWABLE) {
                     injectReflowableHtml(decodedInputStream, publication)
                 } else {
                     injectFixedLayoutHtml(decodedInputStream)
@@ -59,8 +62,8 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, private var cu
             if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")
                     && baseUrl != null) {
                 decodedInputStream =
-                        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && (resourceLink.properties.layout == null
-                                        || resourceLink.properties.layout == "reflowable")) {
+                        if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE && (resourceLink.properties.layout == null
+                                        || resourceLink.properties.layout == EpubLayout.REFLOWABLE)) {
                             injectReflowableHtml(decodedInputStream, publication)
                         } else {
                             injectFixedLayoutHtml(decodedInputStream)
@@ -159,7 +162,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, private var cu
             }
         }
 
-        if (publication.cssStyle == PageProgressionDirection.rtl.name) {
+        if (publication.cssStyle == "rtl") {
             resourceHtml1 = addRTLDir("html", resourceHtml1)
             resourceHtml1 = addRTLDir("body", resourceHtml1)
         }

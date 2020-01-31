@@ -175,7 +175,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
     fun addEpub(publication: Publication, container: Container, fileName: String, userPropertiesPath: String?) {
         val fetcher = Fetcher(publication, container, userPropertiesPath, customResources)
 
-        addLinks(publication, fileName)
+        // addLinks(publication, fileName)
 
         publication.addSelfLink(fileName, URL("$BASE_URL:$port"))
 
@@ -190,7 +190,8 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
         addRoute(FONT_HANDLE, FontHandler::class.java, fonts)
     }
 
-    private fun addLinks(publication: Publication, filePath: String) {
+    /* FIXME: otherLinks?
+         private fun addLinks(publication: Publication, filePath: String) {
         containsMediaOverlay = false
         for (link in publication.otherLinks) {
             if (link.rel.contains("media-overlay")) {
@@ -198,7 +199,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
                 link.href = link.href?.replace("port", "127.0.0.1:$listeningPort$filePath")
             }
         }
-    }
+    } */
 
     private fun InputStream.toFile(path: String) {
         use { input ->
