@@ -10,8 +10,8 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.*
-import org.readium.r2.shared.Link
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.streamer.BuildConfig.DEBUG
@@ -26,12 +26,7 @@ import timber.log.Timber
 import java.io.File
 
 object EPUBConstant {
-    const val lcplFilePath: String = "META-INF/license.lcpl"
     const val mimetype: String = "application/epub+zip"
-    const val mimetypeOEBPS: String = "application/oebps-package+xml"
-    const val mediaOverlayURL: String = "media-overlay?resource="
-    const val containerDotXmlPath = "META-INF/container.xml"
-    const val encryptionDotXmlPath = "META-INF/encryption.xml"
     private val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
             ReadiumCSSName.ref("hyphens") to false,
             ReadiumCSSName.ref("ligatures") to false
@@ -99,9 +94,9 @@ class EpubParser : PublicationParser {
             return null
         }
         val data = try {
-            container.data(EPUBConstant.containerDotXmlPath)
+            container.data(Paths.container)
         } catch (e: Exception) {
-            if (DEBUG) Timber.e(e, "Missing File : ${EPUBConstant.containerDotXmlPath}")
+            if (DEBUG) Timber.e(e, "Missing File : ${Paths.container}")
             return null
         }
 
@@ -129,7 +124,7 @@ class EpubParser : PublicationParser {
 
         val drm = scanForDRM(container)
         container.drm = drm
-        parseEncryption(container, publication, drm)
+        parseEncryption(container, publication)
 
         if (packageDocument.epubVersion < 3.0) {
             val ncxItem = packageDocument.manifest.firstOrNull { it.mediaType == "application/x-dtbncx+xml" }
@@ -158,7 +153,7 @@ class EpubParser : PublicationParser {
 
     private fun scanForDRM(container: Container): DRM? {
         if (((try {
-                    container.data(relativePath = EPUBConstant.lcplFilePath)
+                    container.data(relativePath = Paths.lcpl)
                 } catch (e: Throwable) {
                     null
                 }) != null)) {
@@ -236,9 +231,9 @@ class EpubParser : PublicationParser {
             null
         }
 
-    private fun parseEncryption(container: Container, publication: Publication, drm: DRM?) {
-        val document = parseXmlDocument(EPUBConstant.encryptionDotXmlPath, container) ?: return
-        val encryption = EncryptionParser.parse(document, drm)
+    private fun parseEncryption(container: Container, publication: Publication) {
+        val document = parseXmlDocument(Paths.encryption, container) ?: return
+        val encryption = EncryptionParser.parse(document)
         encryption.forEach {
             val resourceURI = normalize("/", it.key)
             val link = publication.linkWithHref(resourceURI)

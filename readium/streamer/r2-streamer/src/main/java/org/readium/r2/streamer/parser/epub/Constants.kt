@@ -9,7 +9,18 @@
 
 package org.readium.r2.streamer.parser.epub
 
-object Namespaces {
+internal object Paths {
+    const val lcpl: String = "META-INF/license.lcpl"
+    const val container = "META-INF/container.xml"
+    const val encryption = "META-INF/encryption.xml"
+}
+
+internal object Mimetypes {
+    const val Epub = "application/epub+zip"
+    const val Oebps = "application/oebps-package+xml"
+}
+
+internal object Namespaces {
     const val Opc = "urn:oasis:names:tc:opendocument:xmlns:container"
     const val Enc = "http://www.w3.org/2001/04/xmlenc#"
     const val Sig = "http://www.w3.org/2000/09/xmldsig#"
@@ -21,3 +32,6 @@ object Namespaces {
     const val Smil = "http://www.w3.org/ns/SMIL"
     const val Ncx = "http://www.daisy.org/z3986/2005/ncx/"
 }
+
+
+
