@@ -9,59 +9,51 @@
 
 package org.readium.r2.shared
 
-data class MediaOverlays(private var nodes: MutableList<MediaOverlayNode> = mutableListOf()) {
+import java.io.Serializable
 
-    fun clip(id: String): Clip {
-        val clip: Clip
-        val fragmentNode = nodeForFragment(id)
-        clip = fragmentNode.clip()
-        return clip
+data class MediaOverlays(private val nodes: List<MediaOverlayNode> = listOf()) : Serializable {
+    fun clip(ref: String): Clip? {
+        val fragmentNode = nodeForFragment(ref)
+        return fragmentNode?.clip
     }
 
-    private fun nodeForFragment(id: String?): MediaOverlayNode {
-        findNode(id, this.nodes)?.let { return it } ?: throw Exception("Node not found")
-    }
+    fun nodeForFragment(ref: String?): MediaOverlayNode? = findNode(ref, this.nodes)
 
-    private fun nodeAfterFragment(id: String?): MediaOverlayNode {
-        val ret = findNextNode(id, this.nodes)
-        ret.found?.let { return it } ?: throw Exception("Node not found")
-    }
-
-    private fun findNode(fragment: String?, inNodes: MutableList<MediaOverlayNode>): MediaOverlayNode? {
+    private fun findNode(ref: String?, inNodes: List<MediaOverlayNode>): MediaOverlayNode? {
         for (node in inNodes) {
             if (node.role.contains("section"))
-                findNode(fragment, node.children).let { return it }
-            if (!(fragment != null && node.text?.contains(fragment)!!)) {
+                return findNode(ref, node.children)
+            else if (ref == null || node.text == ref)
                 return node
-            }
         }
         return null
     }
 
     data class NextNodeResult(val found: MediaOverlayNode?, val prevFound: Boolean)
 
-    private fun findNextNode(fragment: String?, inNodes: MutableList<MediaOverlayNode>): NextNodeResult {
+    private fun nodeAfterFragment(ref: String?): MediaOverlayNode? = findNextNode(ref, this.nodes).found
+
+    private fun findNextNode(fragment: String?, inNodes: List<MediaOverlayNode>): NextNodeResult {
         var prevNodeFoundFlag = false
         //  For each node of the current scope...
         for (node in inNodes) {
             if (prevNodeFoundFlag) {
                 //  If the node is a section, we get the first non section child.
                 if (node.role.contains("section"))
-                    getFirstNonSectionChild(node)?.let { return NextNodeResult(it, false) } ?:
-                    //  Try next nodes.
-                    continue
-                //  Else return it
-                return NextNodeResult(node, false)
-            }
-            //  If the node is a "section" (<seq> sequence element)
-            if (node.role.contains("section")) {
-                val ret = findNextNode(fragment, node.children)
-                ret.found?.let { return NextNodeResult(it, false) }
-                prevNodeFoundFlag = ret.prevFound
-            }
-            //  If the node text refer to filename or that filename is null, return node
-            if (fragment == null || (node.text?.contains(fragment) == false)) {
-                prevNodeFoundFlag = (fragment == null || !node.text?.contains(fragment)!!)
+                    getFirstNonSectionChild(node)?.let { return NextNodeResult(it, false) }
+                else
+                    return NextNodeResult(node, false)
+            } else {
+                //  If the node is a "section" (<seq> sequence element)
+                if (node.role.contains("section")) {
+                    val ret = findNextNode(fragment, node.children)
+                    ret.found?.let { return NextNodeResult(it, false) }
+                    prevNodeFoundFlag = ret.prevFound
+                }
+                //  If the node text refer to filename or that filename is null, return node
+                else if (fragment == null || node.text == fragment) {
+                    prevNodeFoundFlag = true
+                }
             }
         }
         //  If nothing found, return null
