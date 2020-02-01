@@ -13,16 +13,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
 
-internal data class NavigationDocument(
-        val toc: List<Link>,
-        val pageList: List<Link>,
-        val landmarks: List<Link>,
-        val loi: List<Link>,
-        val lot: List<Link>,
-        val loa: List<Link>,
-        val lov: List<Link>
-)
-
 internal object NavigationDocumentParser {
     fun parse(document: ElementNode, filePath: String) : NavigationDocument? {
         val prefixAttribute = document.getAttrNs("prefix", Namespaces.Ops)

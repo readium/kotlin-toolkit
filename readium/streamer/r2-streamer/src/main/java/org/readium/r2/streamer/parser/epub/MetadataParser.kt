@@ -14,10 +14,11 @@ import org.joda.time.DateTime
 import org.readium.r2.shared.parser.xml.ElementNode
 import java.lang.Exception
 import java.util.*
+import org.readium.r2.streamer.parser.normalize
 
 
 class MetadataParser (private val epubVersion: Double, private val prefixMap: Map<String, String>) {
-    fun parse(document: ElementNode): Metadata? {
+    fun parse(document: ElementNode, filePath: String) : Metadata? {
         val metadataElement = document.getFirst("metadata", Namespaces.Opf) ?: return null
         val (globalProperties, otherProperties) = MetadataExpressionParser(prefixMap).parse(metadataElement)
 
@@ -26,7 +27,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
         val modified : java.util.Date? = globalProperties.firstOrNull { it.property == PACKAGE_RESERVED_PREFIXES["dcterms"] + "modified" }
                     ?.value?.let { parseModified(it) }
 
-        val links = parseLinks(metadataElement.get("link", Namespaces.Opf), prefixMap)
+        val links = parseLinks(metadataElement.get("link", Namespaces.Opf), prefixMap, filePath)
         val dcMetadata = parseDcElements(dcElements, otherProperties, uniqueIdentifierId, modified)
         val rendition = parseRenditionProperties(globalProperties)
         val media = parseMediaProperties(globalProperties, otherProperties)
@@ -43,7 +44,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
             null
         }
 
-    private fun parseLinks(elements: List<ElementNode>, prefixMap: Map<String, String>) : List<Link> =
+    private fun parseLinks(elements: List<ElementNode>, prefixMap: Map<String, String>, filePath: String) : List<Link> =
         elements.mapNotNull {
             val href = it.getAttr("href")
             val rel = it.getAttr("rel")?.split("""\\s+""".toRegex())
@@ -52,7 +53,7 @@ class MetadataParser (private val epubVersion: Double, private val prefixMap: Ma
                 val properties = it.getAttr("properties")?.split("""\\s+""".toRegex())
                         ?.mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
                         ?: listOf()
-                Link(rel, href, it.getAttr("media-type"), it.getAttr("refines"), properties)
+                Link(rel, normalize(filePath, href), it.getAttr("media-type"), it.getAttr("refines"), properties)
             } else null
         }
 

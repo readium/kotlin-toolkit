@@ -18,6 +18,8 @@ internal object Paths {
 internal object Mimetypes {
     const val Epub = "application/epub+zip"
     const val Oebps = "application/oebps-package+xml"
+    const val Ncx = "application/x-dtbncx+xml"
+    const val Smil = "application/smil+xml"
 }
 
 internal object Namespaces {

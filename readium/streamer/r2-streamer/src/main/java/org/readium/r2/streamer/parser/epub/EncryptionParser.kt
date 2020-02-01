@@ -9,17 +9,18 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.streamer.parser.normalize
 import org.readium.r2.shared.parser.xml.ElementNode
 
 object EncryptionParser {
-    fun parse(document: ElementNode) : Map<String, Encryption> =
+    fun parse(document: ElementNode, drm: DRM?) : Map<String, Encryption> =
         document.get("EncryptedData", Namespaces.Enc)
-                .mapNotNull{ parseEncryptedData(it) }
+                .mapNotNull{ parseEncryptedData(it, drm) }
                 .associate{ it }
 
-    private fun parseEncryptedData(node: ElementNode) : Pair<String, Encryption>? {
+    private fun parseEncryptedData(node: ElementNode, drm: DRM?) : Pair<String, Encryption>? {
         val resourceURI = node.getFirst("CipherData", Namespaces.Enc)
                 ?.getFirst("CipherReference", Namespaces.Enc)?.getAttr("URI") ?: return null
         val scheme = node.getFirst("KeyInfo", Namespaces.Sig)
@@ -31,12 +32,13 @@ object EncryptionParser {
         val originalLength = compression?.first
         val compressionMethod = compression?.second
         val enc = Encryption(
-            scheme = scheme,
-            algorithm = algorithm,
-            compression = compressionMethod,
-            originalLength = originalLength
+                scheme = scheme,
+                profile = drm?.license?.encryptionProfile,
+                algorithm = algorithm,
+                compression = compressionMethod,
+                originalLength = originalLength
         )
-        return Pair(resourceURI, enc)
+        return Pair(normalize("/", resourceURI), enc)
     }
 
     private fun parseEncryptionProperties(encryptionProperties: ElementNode) : Pair<Int, String>? {

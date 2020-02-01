@@ -9,6 +9,8 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.encryption.Encryption
 import java.lang.IllegalArgumentException
 
 open class EnumCompanion<T, V>(val default: V, private val map: Map<T, V>) {
@@ -56,4 +58,29 @@ data class PackageDocument(
         val metadata: Metadata,
         val manifest: Manifest,
         val spine: Spine
+)
+
+typealias EncryptionData = Map<String, Encryption>
+
+sealed class NavigationData
+
+data class NavigationDocument(
+        val toc: List<Link>,
+        val pageList: List<Link>,
+        val landmarks: List<Link>,
+        val loi: List<Link>,
+        val lot: List<Link>,
+        val loa: List<Link>,
+        val lov: List<Link>
+) : NavigationData()
+
+data class Ncx(
+        val toc: List<Link>,
+        val pageList: List<Link>
+) : NavigationData()
+
+data class Epub(
+        val packageDocument: PackageDocument,
+        val navigationData: NavigationData?,
+        val encryptionData: EncryptionData?
 )

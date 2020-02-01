@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.parser.xml.ElementNode
+import org.readium.r2.streamer.parser.normalize
 
 object PackageDocumentParser {
     fun parse(document: ElementNode, filePath: String) : PackageDocument? {
@@ -18,10 +19,10 @@ object PackageDocumentParser {
         val prefixMap = PACKAGE_RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
 
         val epubVersion = document.getAttr("version")?.toDoubleOrNull() ?: 1.2
-        val metadata = MetadataParser(epubVersion, prefixMap).parse(document) ?: return null
+        val metadata = MetadataParser(epubVersion, prefixMap).parse(document, filePath) ?: return null
 
         val manifestElement = document.getFirst("manifest", Namespaces.Opf) ?: return null
-        val manifest = manifestElement.get("item", Namespaces.Opf).mapNotNull { parseItem(it) }
+        val manifest = manifestElement.get("item", Namespaces.Opf).mapNotNull { parseItem(it, filePath) }
         val spineElement = document.getFirst("spine", Namespaces.Opf) ?: return null
         val itemrefs = spineElement.get("itemref", Namespaces.Opf).mapNotNull { parseItemref(it) }
         val pageProgressionDirection = spineElement.getAttr("page-progression-direction")?.let {
@@ -32,9 +33,9 @@ object PackageDocumentParser {
         return PackageDocument(filePath, epubVersion, metadata, manifest, spine)
     }
 
-    private fun parseItem(element: ElementNode) : Item? {
+    private fun parseItem(element: ElementNode, filePath: String) : Item? {
         val id = element.id ?: return null
-        val href = element.getAttr("href") ?: return null
+        val href = element.getAttr("href")?.let { normalize(filePath, it) } ?: return null
         val fallback = element.getAttr("fallback")
         val mediaOverlay = element.getAttr("media-overlay")
         val mediaType = element.getAttr("media-type")

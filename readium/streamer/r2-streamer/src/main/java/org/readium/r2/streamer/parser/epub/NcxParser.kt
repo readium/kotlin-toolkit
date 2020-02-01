@@ -13,10 +13,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
 
-internal data class Ncx(
-        val toc: List<Link>,
-        val pageList: List<Link>
-)
 
 internal object NcxParser {
     fun parse(document: ElementNode, filePath: String): Ncx? {
