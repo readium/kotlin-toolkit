@@ -10,7 +10,6 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.encryption.Encryption
 import java.lang.IllegalArgumentException
 
 internal open class EnumCompanion<T, V>(val default: V, private val map: Map<T, V>) {
@@ -39,16 +38,11 @@ internal data class Itemref(
         val properties: List<String> = listOf()
 )
 
-internal enum class Direction(val value: String) {
-    Default("default"), Ltr("ltr"), Rtl("rtl");
-
-    companion object : EnumCompanion<String, Direction>(
-            Direction.Default, values().associateBy(Direction::value))
-}
+typealias ReadingProgression = org.readium.r2.shared.publication.ReadingProgression
 
 internal data class Spine(
         val itemrefs: List<Itemref>,
-        val direction: Direction = Direction.Default,
+        val direction: ReadingProgression = ReadingProgression.AUTO,
         val toc: String? = null
 )
 
@@ -59,6 +53,8 @@ internal data class PackageDocument(
         val manifest: Manifest,
         val spine: Spine
 )
+
+internal typealias Encryption = org.readium.r2.shared.publication.encryption.Encryption
 
 internal typealias EncryptionData = Map<String, Encryption>
 

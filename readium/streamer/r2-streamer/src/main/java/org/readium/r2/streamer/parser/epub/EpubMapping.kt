@@ -19,8 +19,6 @@ import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.Metadata as SharedMetadata
 import org.readium.r2.shared.publication.Link as SharedLink
 import org.readium.r2.shared.publication.Contributor as SharedContributor
-import org.readium.r2.shared.publication.ReadingProgression as SharedDirection
-import org.readium.r2.shared.publication.Subject as SharedSubject
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.shared.publication.encryption.Encryption
@@ -150,9 +148,9 @@ private fun Epub.computeMetadata() : SharedMetadata {
             localizedTitle = getMaintitle(),
             localizedSubtitle = getSubtitle(),
             duration = packageDocument.metadata.mediaMetadata.duration,
-            subjects = generalMetadata.subjects.map(::mapSubject),
+            subjects = generalMetadata.subjects,
             description = generalMetadata.description,
-            readingProgression = mapDirection(packageDocument.spine.direction),
+            readingProgression = packageDocument.spine.direction,
             otherMetadata = otherMetadata,
 
             authors = contributorsByRole.authors,
@@ -174,7 +172,7 @@ private fun Epub.getMaintitle() : LocalizedString {
     val metadata = packageDocument.metadata.generalMetadata
     val titles = metadata.titles
     val main =  titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
-    val translations = main?.value?.alt?.toMutableMap() ?: mutableMapOf()
+    val translations = main?.value?.toMutableMap() ?: mutableMapOf()
 
     if ("" in translations.keys && metadata.languages.isNotEmpty()) {
         val v = translations.remove("") as String
@@ -188,7 +186,7 @@ private fun Epub.getSubtitle() : LocalizedString {
     val metadata = packageDocument.metadata.generalMetadata
     val titles = metadata.titles
     val sub =  titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()
-    val translations = sub?.value?.alt?.toMutableMap() ?: mutableMapOf()
+    val translations = sub?.value?.toMutableMap() ?: mutableMapOf()
 
     if ("" in translations.keys && metadata.languages.isNotEmpty()) {
         val v = translations.remove("") as String
@@ -200,7 +198,7 @@ private fun Epub.getSubtitle() : LocalizedString {
 
 private fun Epub.mapContributor(contributor: Contributor, defaultRole: String? = null) : SharedContributor {
     val metadata = packageDocument.metadata.generalMetadata
-    val translations = contributor.name.alt.toMutableMap()
+    val translations = contributor.name.toMutableMap()
     if ("" in translations.keys && metadata.languages.isNotEmpty()) {
         val v = translations.remove("") as String
         val l = metadata.languages.first()
@@ -211,7 +209,7 @@ private fun Epub.mapContributor(contributor: Contributor, defaultRole: String? =
 
     return SharedContributor(
             localizedName = LocalizedString(translations),
-            sortAs = contributor.name.fileAs,
+            sortAs = contributor.fileAs,
             roles = roles
     )
 }
@@ -233,13 +231,6 @@ private fun addContributors(contributors: List<SharedContributor>, byRole: Contr
         }
     }
 }
-
-private fun mapSubject(subject: Subject) : SharedSubject =
-        SharedSubject(
-            localizedName = LocalizedString(subject.value),
-            scheme = subject.authority,
-            code = subject.term
-        )
 
 private fun mapRendition(renditionMetadata: RenditionMetadata) : Presentation {
     val (overflow, continuous) = when(renditionMetadata.flow) {
@@ -274,13 +265,6 @@ private fun mapRendition(renditionMetadata: RenditionMetadata) : Presentation {
             spread = spread
     )
 }
-
-private fun mapDirection(direction: Direction) : SharedDirection =
-    when(direction) {
-        Direction.Default -> SharedDirection.AUTO
-        Direction.Ltr -> SharedDirection.LTR
-        Direction.Rtl -> SharedDirection.RTL
-    }
 
 private fun Epub.computeLink(
         item: Item,

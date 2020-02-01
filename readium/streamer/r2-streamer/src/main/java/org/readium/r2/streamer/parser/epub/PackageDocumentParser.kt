@@ -25,8 +25,11 @@ internal object PackageDocumentParser {
         val manifest = manifestElement.get("item", Namespaces.Opf).mapNotNull { parseItem(it, filePath) }
         val spineElement = document.getFirst("spine", Namespaces.Opf) ?: return null
         val itemrefs = spineElement.get("itemref", Namespaces.Opf).mapNotNull { parseItemref(it) }
-        val pageProgressionDirection = spineElement.getAttr("page-progression-direction")?.let {
-            Direction.getOrNull(it)} ?: Direction.default
+        val pageProgressionDirection = when(spineElement.getAttr("page-progression-direction")) {
+            "rtl" -> ReadingProgression.RTL
+            "ltr" -> ReadingProgression.LTR
+            else -> ReadingProgression.AUTO // null or "default"
+        }
         val ncx = if (epubVersion >= 3.0) spineElement.getAttr("toc") else null
         val spine = Spine(itemrefs, pageProgressionDirection, ncx)
 
