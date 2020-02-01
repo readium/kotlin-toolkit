@@ -33,9 +33,8 @@ internal fun Epub.toPublication() : Publication {
     val itemById = packageDocument.manifest.associateBy(Item::id)
     val itemrefByIdref = packageDocument.spine.itemrefs.associateBy(Itemref::idref)
     val links = packageDocument.manifest.map { computeLink(it, itemById, itemrefByIdref) }
-    val (readingOrder, resources) = links.partition {
-        itemrefByIdref.containsKey(it.title) && (itemrefByIdref[it.title] as Itemref).linear
-    }
+    val readingOrderIds = computeReadingOrderIds(links, itemrefByIdref)
+    val (readingOrder, resources) = links.partition { it.title in readingOrderIds }
 
     // Compute toc and otherCollections
     val toc = navigationData?.let { when(navigationData) {
@@ -68,6 +67,25 @@ internal fun Epub.toPublication() : Publication {
             type = Publication.TYPE.EPUB
             version = packageDocument.epubVersion
         }
+}
+
+private fun computeReadingOrderIds(links: List<SharedLink>, itemrefByIdref: Map<String, Itemref>) : Set<String> {
+    val ids: MutableSet<String> = mutableSetOf()
+    for (l in links) {
+        if (itemrefByIdref.containsKey(l.title) && (itemrefByIdref[l.title] as Itemref).linear) {
+            ids.addAll(computeIdChain(l))
+        }
+    }
+    return ids
+}
+
+private fun computeIdChain(link: SharedLink) : Set<String> {
+    // The termination has already been checked while computing links
+    val ids: MutableSet<String> = mutableSetOf( link.title as String )
+    for (a in link.alternates) {
+        ids.addAll(computeIdChain(a))
+    }
+    return ids
 }
 
 private fun mapLink(link: Link) : SharedLink? {
