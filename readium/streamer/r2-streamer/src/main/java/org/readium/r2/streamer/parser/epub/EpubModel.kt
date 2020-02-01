@@ -77,6 +77,6 @@ internal data class Ncx(
 
 internal data class Epub(
         val packageDocument: PackageDocument,
-        val navigationData: NavigationData?,
-        val encryptionData: EncryptionData?
+        val navigationData: NavigationData? = null,
+        val encryptionData: EncryptionData? = null
 )

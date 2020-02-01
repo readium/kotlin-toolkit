@@ -7,7 +7,7 @@
         Type="http://www.w3.org/2001/04/xmlenc#EncryptedKey"/>
     </ds:KeyInfo>
     <enc:CipherData>
-      <enc:CipherReference URI="images/image.jpeg"/>
+      <enc:CipherReference URI="OEBPS/images/image.jpeg"/>
     </enc:CipherData>
   </enc:EncryptedData>
   <enc:EncryptedData Id="ED2">
@@ -17,7 +17,7 @@
         Type="http://www.w3.org/2001/04/xmlenc#EncryptedKey"/>
     </ds:KeyInfo>
     <enc:CipherData>
-      <enc:CipherReference URI="html/chapter.html"/>
+      <enc:CipherReference URI="OEBPS/xhtml/chapter.xhtml"/>
     </enc:CipherData>
     <enc:EncryptionProperties>
       <enc:EncryptionProperty xmlns="http://www.w3.org/2001/04/xmlenc#">

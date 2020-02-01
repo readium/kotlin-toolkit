@@ -23,9 +23,10 @@ internal object EncryptionParser {
     private fun parseEncryptedData(node: ElementNode, drm: DRM?) : Pair<String, Encryption>? {
         val resourceURI = node.getFirst("CipherData", Namespaces.Enc)
                 ?.getFirst("CipherReference", Namespaces.Enc)?.getAttr("URI") ?: return null
-        val scheme = node.getFirst("KeyInfo", Namespaces.Sig)
-                ?.getFirst("RetrievalMethod", Namespaces.Sig)
-                ?.getAttr("URI")
+        val retrievalMethod = node.getFirst("KeyInfo", Namespaces.Sig)
+                ?.getFirst("RetrievalMethod", Namespaces.Sig)?.getAttr("URI")
+        val scheme = if (retrievalMethod == "license.lcpl#/encryption/content_key" && drm?.brand == DRM.Brand.lcp)
+            DRM.Scheme.lcp.rawValue else null
         val algorithm = node.getFirst("EncryptionMethod", Namespaces.Enc)
                 ?.getAttr("Algorithm") ?: return null
         val compression = node.getFirst("EncryptionProperties", Namespaces.Enc)?.let { parseEncryptionProperties(it) }

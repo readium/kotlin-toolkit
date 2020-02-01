@@ -6,7 +6,7 @@
       <ds:RetrievalMethod URI="license.lcpl#/encryption/content_key" Type="http://readium.org/2014/01/lcp#EncryptedContentKey"></ds:RetrievalMethod>
     </ds:KeyInfo>
     <encrypt:CipherData>
-      <encrypt:CipherReference URI="chapter01.xhtml"></encrypt:CipherReference>
+      <encrypt:CipherReference URI="OEBPS/xhtml/chapter01.xhtml"></encrypt:CipherReference>
     </encrypt:CipherData>
     <encrypt:EncryptionProperties>
       <encrypt:EncryptionProperty>
@@ -20,7 +20,7 @@
       <ds:RetrievalMethod URI="license.lcpl#/encryption/content_key" Type="http://readium.org/2014/01/lcp#EncryptedContentKey"></ds:RetrievalMethod>
     </ds:KeyInfo>
     <encrypt:CipherData>
-      <encrypt:CipherReference URI="dir/chapter02.xhtml"></encrypt:CipherReference>
+      <encrypt:CipherReference URI="OEBPS/xhtml/chapter02.xhtml"></encrypt:CipherReference>
     </encrypt:CipherData>
     <encrypt:EncryptionProperties>
       <encrypt:EncryptionProperty>
