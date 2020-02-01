@@ -17,7 +17,7 @@ import java.util.*
 import org.readium.r2.streamer.parser.normalize
 
 
-class MetadataParser (private val epubVersion: Double, private val prefixMap: Map<String, String>) {
+internal class MetadataParser (private val epubVersion: Double, private val prefixMap: Map<String, String>) {
     fun parse(document: ElementNode, filePath: String) : Metadata? {
         val metadataElement = document.getFirst("metadata", Namespaces.Opf) ?: return null
         val (globalProperties, otherProperties) = MetadataExpressionParser(prefixMap).parse(metadataElement)

@@ -9,20 +9,20 @@
 
 package org.readium.r2.streamer.parser.epub
 
-data class MultiString(val main: String, val alt: Map<String, String>, val fileAs: String? = null)
+internal data class MultiString(val main: String, val alt: Map<String, String>, val fileAs: String? = null)
 
-data class Title(val value: MultiString, val type: String? = null, val displaySeq: Int? = null)
+internal data class Title(val value: MultiString, val type: String? = null, val displaySeq: Int? = null)
 
-data class Contributor(val name: MultiString, val roles: Set<String> = setOf())
+internal data class Contributor(val name: MultiString, val roles: Set<String> = setOf())
 
-data class Link(val rel: List<String>, val href: String,
+internal data class Link(val rel: List<String>, val href: String,
                 val mediaType: String?, val refines: String?, val properties: List<String> = listOf())
 
-data class Date(val value: String, val event: String? = null)
+internal data class Date(val value: String, val event: String? = null)
 
-data class Subject (val value: String, val authority: String?, val term: String?)
+internal data class Subject (val value: String, val authority: String?, val term: String?)
 
-data class Metadata(
+internal data class Metadata(
         val generalMetadata: GeneralMetadata,
         val mediaMetadata: MediaMetadata,
         val renditionMetadata: RenditionMetadata,
@@ -30,7 +30,7 @@ data class Metadata(
         val oldMeta: Map<String, String>
 )
 
-data class GeneralMetadata(
+internal data class GeneralMetadata(
         val uniqueIdentifier: String?,
         val titles: List<Title>,
         val languages: List<String>,
@@ -44,7 +44,7 @@ data class GeneralMetadata(
         val contributors: List<Contributor>,
         val publishers: List<Contributor>)
 
-data class MediaMetadata(
+internal data class MediaMetadata(
         val duration: Double? = null,
         val durationById: Map<String, Double> = mapOf(),
         val activeClass: String? = null,
@@ -52,7 +52,7 @@ data class MediaMetadata(
         val narrators: List<Contributor> = listOf()
 )
 
-data class RenditionMetadata(
+internal data class RenditionMetadata(
         val flow: Flow,
         val layout: Layout,
         val orientation: Orientation,

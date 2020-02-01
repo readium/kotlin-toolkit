@@ -14,7 +14,7 @@ import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.streamer.parser.normalize
 import org.readium.r2.shared.parser.xml.ElementNode
 
-object EncryptionParser {
+internal object EncryptionParser {
     fun parse(document: ElementNode, drm: DRM?) : Map<String, Encryption> =
         document.get("EncryptedData", Namespaces.Enc)
                 .mapNotNull{ parseEncryptedData(it, drm) }

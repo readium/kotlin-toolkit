@@ -13,7 +13,7 @@ package org.readium.r2.streamer.parser.epub
  * Parse clock values as defined by
  * https://www.w3.org/TR/SMIL/smil-timing.html#q22
  */
-object ClockValueParser {
+internal object ClockValueParser {
     fun parse(rawValue: String) : Double? {
         val value = rawValue.trim()
         return if (":" in value) {

@@ -15,7 +15,7 @@ import org.readium.r2.shared.MediaOverlays
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
 
-object SmilParser {
+ internal object SmilParser {
     /* According to https://www.w3.org/publishing/epub3/epub-mediaoverlays.html#sec-overlays-content-conf
        a Media Overlay Document MAY refer to more than one EPUB Content Document
        This might be possible only using Canonical Fragment Identifiers

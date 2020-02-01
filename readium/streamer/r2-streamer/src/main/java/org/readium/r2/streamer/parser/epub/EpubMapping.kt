@@ -28,7 +28,7 @@ import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.streamer.parser.normalize
 import java.lang.Exception
 
-fun Epub.toPublication() : Publication {
+internal fun Epub.toPublication() : Publication {
     // Compute links
     val itemById = packageDocument.manifest.associateBy(Item::id)
     val itemrefByIdref = packageDocument.spine.itemrefs.associateBy(Itemref::idref)

@@ -12,7 +12,7 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
 
-object PackageDocumentParser {
+internal object PackageDocumentParser {
     fun parse(document: ElementNode, filePath: String) : PackageDocument? {
         val prefixAttribute = document.getAttr("prefix")
         val packagePrefixes = if (prefixAttribute == null) mapOf() else parsePrefixes(prefixAttribute)
