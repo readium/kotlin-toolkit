@@ -15,8 +15,7 @@ import org.xmlpull.v1.XmlPullParserFactory
 import java.io.IOException
 import java.io.InputStream
 import java.util.Stack
-
-val XmlNs = "http://www.w3.org/XML/1998/namespace"
+import javax.xml.XMLConstants
 
 class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Boolean = true) {
     @Throws(XmlPullParserException::class, IOException::class)
@@ -24,8 +23,8 @@ class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Bool
         val parser = buildParser(isNamespaceAware)
         parser.setInput(stream, null) // let the parser try to determine input encoding
 
-        val stack = Stack<Triple<MutableList<Node>, AttributeMap, String?>>()
-        stack.push(Triple(mutableListOf<Node>(), mutableMapOf(), null))
+        val stack = Stack<Triple<MutableList<Node>, AttributeMap, String>>()
+        stack.push(Triple(mutableListOf(), mutableMapOf(), ""))
         var text = ""
 
         while (parser.eventType != XmlPullParser.END_DOCUMENT) {
@@ -34,13 +33,9 @@ class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Bool
                     maybeAddText(text, stack.peek().first)
                     text = ""
                     val attributes =  buildAttributeMap(parser)
-                    val langAttr = if (isNamespaceAware) attributes[XmlNs]?.get("lang") else attributes[""]?.get("xml:lang")
-                    val lang = when(langAttr)  {
-                        "" -> null
-                        null -> stack.peek().third
-                        else -> langAttr
-                    }
-                    stack.push(Triple(mutableListOf<Node>(), attributes, lang))
+                    val langAttr = if (isNamespaceAware) attributes[XMLConstants.XML_NS_URI]?.get("lang")
+                    else attributes[""]?.get("xml:lang")
+                    stack.push(Triple(mutableListOf(), attributes, langAttr ?: stack.peek().third))
                 }
                 XmlPullParser.END_TAG -> {
                     val (children, attributes, lang) = stack.pop()
@@ -58,7 +53,7 @@ class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Bool
 
         stream.close()
         assert(stack.size == 1)
-        val (children, attributes) = stack.peek()
+        val children = stack.peek().first
         val roots = children.filterIsInstance<ElementNode>()
         if (roots.size == 1) {
             return roots.first()
@@ -79,10 +74,10 @@ class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Bool
         }
     }
 
-    private fun buildElement(parser: XmlPullParser, attributes:AttributeMap, children: MutableList<Node>, lang: String?) : ElementNode {
+    private fun buildElement(parser: XmlPullParser, attributes:AttributeMap, children: MutableList<Node>, lang: String) : ElementNode {
         val rawName = parser.name
         val name = if (isCaseSensitive) rawName else rawName.toLowerCase()
-        val node = ElementNode(parser.name, parser.namespace, attributes, children, lang)
+        val node = ElementNode(parser.name, parser.namespace,  lang, attributes, children)
         return node
     }
 
@@ -90,8 +85,7 @@ class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Bool
         with(parser) {
             val rawName = getAttributeName(index)
             val name = if (isCaseSensitive) rawName else rawName.toLowerCase()
-            val namespace = getAttributeNamespace(index)
-            return Attribute(getAttributeName(index),
+            return Attribute(name,
                     getAttributeNamespace(index),
                     getAttributeValue(index))
         }
@@ -100,8 +94,8 @@ class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Bool
     private fun buildAttributeMap(parser: XmlPullParser) : AttributeMap {
         val attributes = (0 until parser.attributeCount).map { buildAttribute(parser, it) }
         val namespaces = attributes.map(Attribute::namespace).distinct()
-        return namespaces.associate { ns -> Pair(ns, attributes
-                .filter{ it.namespace == ns }.associate { Pair(it.name, it.value) }) }
+        return namespaces.associateWith { ns -> attributes
+                .filter{ it.namespace == ns }.associate { Pair(it.name, it.value) } }
     }
 }
 
@@ -116,9 +110,9 @@ typealias AttributeMap = Map<String,Map<String,String>>
 data class ElementNode(
         val name: String,
         val namespace: String = "",
+        val lang: String = "",
         val attributes: AttributeMap = mapOf(),
-        val children: List<Node> = listOf(),
-        val lang: String? = null) : Node() {
+        val children: List<Node> = listOf()) : Node() {
 
     // Text of the first child, if it is a TextNode, otherwise null
     val text: String?
@@ -126,13 +120,13 @@ data class ElementNode(
 
     // Id with fallback to XML namespace
     val id: String?
-        get() = getAttr("id") ?: getAttrNs("id", XmlNs)
+        get() = getAttr("id") ?: getAttrNs("id", XMLConstants.XML_NS_URI)
 
     // Get attribute in the same namespace as this ElementNode or in no namespace
     fun getAttr(name: String) = getAttrNs(name, namespace) ?: getAttrNs(name, "")
 
     // Get attribute in a specific namespace
-    fun getAttrNs(name: String, namespace: String) = attributes.get(namespace)?.get(name)
+    fun getAttrNs(name: String, namespace: String) = attributes[namespace]?.get(name)
 
     // Get all ElementNode children
     fun getAll() = children.filterIsInstance<ElementNode>()
@@ -141,4 +135,24 @@ data class ElementNode(
     fun get(name: String, namespace: String) = getAll().filter { it.name == name && it.namespace == namespace}
 
     fun getFirst(name: String, namespace: String) = get(name, namespace).firstOrNull()
+
+    fun collect(name: String, namespace: String) : List<ElementNode> {
+        val founded: MutableList<ElementNode> = mutableListOf()
+        for (c in getAll()) {
+            if (c.name == name && c.namespace == namespace) founded.add(c)
+            founded.addAll(c.collect(name, namespace))
+        }
+        return founded
+    }
+
+    fun collectText() : String {
+        val text = StringBuilder()
+        for (c in children) {
+            when(c) {
+                is TextNode -> text.append(c.text)
+                is ElementNode -> text.append(c.collectText())
+            }
+        }
+        return text.toString()
+    }
 }
