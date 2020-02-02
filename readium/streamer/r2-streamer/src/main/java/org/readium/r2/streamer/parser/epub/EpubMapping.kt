@@ -168,17 +168,14 @@ private fun Epub.computeMetadata() : SharedMetadata {
     )
 }
 
+private fun withDefaultLanguage(translations: Map<String, String>, languages: List<String>) =
+        translations.mapKeys { if (it.key == "" && languages.isNotEmpty()) languages.first() else it.key }
+
 private fun Epub.getMaintitle() : LocalizedString {
     val metadata = packageDocument.metadata.generalMetadata
     val titles = metadata.titles
     val main =  titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
-    val translations = main?.value?.toMutableMap() ?: mutableMapOf()
-
-    if ("" in translations.keys && metadata.languages.isNotEmpty()) {
-        val v = translations.remove("") as String
-        val l = metadata.languages.first()
-        translations[l] = v
-    }
+    val translations = withDefaultLanguage(main?.value ?: mapOf(), metadata.languages)
     return LocalizedString(translations)
 }
 
@@ -186,24 +183,13 @@ private fun Epub.getSubtitle() : LocalizedString {
     val metadata = packageDocument.metadata.generalMetadata
     val titles = metadata.titles
     val sub =  titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()
-    val translations = sub?.value?.toMutableMap() ?: mutableMapOf()
-
-    if ("" in translations.keys && metadata.languages.isNotEmpty()) {
-        val v = translations.remove("") as String
-        val l = metadata.languages.first()
-        translations[l] = v
-    }
+    val translations = withDefaultLanguage(sub?.value ?: mapOf(), metadata.languages)
     return LocalizedString(translations)
 }
 
 private fun Epub.mapContributor(contributor: Contributor, defaultRole: String? = null) : SharedContributor {
     val metadata = packageDocument.metadata.generalMetadata
-    val translations = contributor.name.toMutableMap()
-    if ("" in translations.keys && metadata.languages.isNotEmpty()) {
-        val v = translations.remove("") as String
-        val l = metadata.languages.first()
-        translations[l] = v
-    }
+    val translations = withDefaultLanguage(contributor.name, metadata.languages)
     val roles = contributor.roles.toMutableSet()
     if (roles.isEmpty() && defaultRole != null) roles.add(defaultRole)
 
