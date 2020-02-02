@@ -11,6 +11,7 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.parser.xml.ElementNode
+import org.readium.r2.shared.parser.xml.TextNode
 import org.readium.r2.streamer.parser.normalize
 
 internal object NavigationDocumentParser {
@@ -28,7 +29,7 @@ internal object NavigationDocumentParser {
         var loa: List<Link> = listOf()
         var lov: List<Link> = listOf()
 
-        for (nav in body.get("nav", Namespaces.Xhtml)) {
+        for (nav in body.collect("nav", Namespaces.Xhtml)) {
             val typeAttr = nav.getAttrNs("type", Namespaces.Ops) ?: continue
             val type = resolveProperty(typeAttr, prefixMap, DEFAULT_VOCAB.TYPE)
             val links = parseNavElement(nav, filePath) ?: continue
@@ -54,15 +55,18 @@ internal object NavigationDocumentParser {
 
     private fun parseLiElement(element: ElementNode, filePath: String): Link? {
         val first = element.getAll().firstOrNull() ?: return null // should be <a>,  <span>, or <ol>
-        val title = if (first.name == "ol") null else first.text
+        val title = if (first.name == "ol") "" else first.collectText().replace("\\s+".toRegex(), " ").trim()
         val rawHref = first.getAttr("href")
-        val href = if (first.name == "a" && rawHref != null) normalize(filePath, rawHref) else null
+        val href = if (first.name == "a" && rawHref != null) normalize(filePath, rawHref) else "#"
         val children = element.getFirst("ol", Namespaces.Xhtml)?.let { parseOlElement(it, filePath) } ?: emptyList()
-        return Link(
-            title = title,
-            href = href ?: "#",
-            children = children
-        )
+        return if (children.isEmpty() && (href == "#" || title == ""))
+            null
+        else
+            Link(
+                title = title,
+                href = href,
+                children = children
+            )
     }
 }
 
