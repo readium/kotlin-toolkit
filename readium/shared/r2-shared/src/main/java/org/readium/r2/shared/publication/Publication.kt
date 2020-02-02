@@ -121,9 +121,9 @@ data class Publication(
      * properties: [resources], [readingOrder] and [links].
      */
     fun link(predicate: (Link) -> Boolean): Link? {
-        return resources.find(predicate)
-            ?: readingOrder.find(predicate)
-            ?: links.find(predicate)
+        return deepFind(resources, predicate)
+            ?: deepFind(readingOrder, predicate)
+            ?: deepFind(links, predicate)
     }
 
     /**
@@ -142,9 +142,23 @@ data class Publication(
      * Finds the first resource [Link] (asset or [readingOrder] item) at the given relative path.
      */
     fun resourceWithHref(href: String): Link? {
-        return readingOrder.find { it.hasHref(href) }
-            ?: resources.find { it.hasHref(href) }
+        return deepFind(readingOrder) { it.hasHref(href) }
+            ?: deepFind(resources) { it.hasHref(href) }
     }
+
+    /**
+     * Finds the first [Link] in [collection] that satisfies the given [predicate]
+     */
+    private fun deepFind(collection: List<Link>, predicate: (Link) -> Boolean) : Link? {
+        for (l in collection) {
+            if (predicate(l))
+                return l
+            else
+                deepFind(l.alternates, predicate)?.let { return it }
+        }
+        return null
+    }
+
 
     // FIXME: Why do we need to check if there's a / at the beginning? Hrefs should be normalized everywhere
     private fun Link.hasHref(href: String) =
