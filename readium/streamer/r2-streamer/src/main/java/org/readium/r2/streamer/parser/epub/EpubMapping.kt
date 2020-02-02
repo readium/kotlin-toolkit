@@ -44,14 +44,14 @@ internal fun Epub.toPublication() : Publication {
         is NavigationDocument -> navigationData.pageList
     }}
     val navigationDocument = navigationData as? NavigationDocument
-    val otherCollections = listOf(
+    val otherCollections = listOfNotNull(
             pageList?.let { PublicationCollection(links = it, role= "page-list") },
             navigationDocument?.landmarks?.let { PublicationCollection(links = it, role = "landmarks") },
             navigationDocument?.loa?.let { PublicationCollection(links = it, role = "loa") },
             navigationDocument?.loi?.let { PublicationCollection(links = it, role = "loi") },
             navigationDocument?.lot?.let { PublicationCollection(links = it, role = "lot") },
             navigationDocument?.lov?.let { PublicationCollection(links = it, role = "lov") }
-    ).filterNotNull()
+    )
 
     // Build Publication object
     return Publication(
@@ -326,7 +326,7 @@ private fun Epub.computeAlternates(
         itemById[id]?.let {
             computeLink(it, itemById, itemrefByIdref) }
     }
-    return listOf(fallback, mediaOverlays).filterNotNull()
+    return listOfNotNull(fallback, mediaOverlays)
 }
 
 private fun parseItemProperties(properties: List<String>,

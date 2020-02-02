@@ -127,7 +127,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
 
     private fun parseTitle(node: ElementNode, props: List<Property>?): Title? {
         val values: MutableMap<String, String> = mutableMapOf()
-        values[node.lang ?: ""] = node.text ?: return null
+        values[node.lang] = node.text ?: return null
         var type: String? = null
         var fileAs: String? = null
         var displaySeq: Int? = null
@@ -138,12 +138,12 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
                     DEFAULT_VOCAB.META.iri + "alternate-script" -> if (it.lang != null) values[it.lang] = it.value
                     DEFAULT_VOCAB.META.iri + "file-as" -> fileAs = it.value
                     DEFAULT_VOCAB.META.iri + "title-type" -> type = it.value
-                    DEFAULT_VOCAB.META.iri + "display-seq" -> it.value.toIntOrNull()?.let { displaySeq = it }
+                    DEFAULT_VOCAB.META.iri + "display-seq" -> it.value.toIntOrNull()?.let { v -> displaySeq = v }
                 }
             }
 
         } else {
-            /* According to https://github.com/readium/architecture/blob/master/streamer/parser/metadata.md
+            /* TODO: According to https://github.com/readium/architecture/blob/master/streamer/parser/metadata.md
              "The string for fileAs should be the value of content in a meta
              whose name is calibre:title_sort and content is the value to use."
               */
@@ -153,7 +153,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
 
     private fun parseContributor(node: ElementNode, props: List<Property>?): Contributor? {
         val names: MutableMap<String, String> = mutableMapOf()
-        names[node.lang ?: ""] = node.text ?: return null
+        names[node.lang] = node.text ?: return null
         val roles: MutableSet<String> = mutableSetOf()
         var fileAs: String? = null
 
@@ -180,7 +180,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
 
     private fun parseSubject(node: ElementNode, props: List<Property>?) : Subject? {
         val values: MutableMap<String, String> = mutableMapOf()
-        node.text?.let { values[node.lang ?: ""] = it }
+        node.text?.let { values[node.lang] = it }
         var authority: String? = null
         var term: String? = null
 
