@@ -126,7 +126,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
     }
 
     private fun parseTitle(node: ElementNode, props: List<Property>?): Title? {
-        val values: MutableMap<String, String> = mutableMapOf()
+        val values: MutableMap<String?, String> = mutableMapOf()
         values[node.lang] = node.text ?: return null
         var type: String? = null
         var fileAs: String? = null
@@ -148,11 +148,11 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
              whose name is calibre:title_sort and content is the value to use."
               */
         }
-        return Title(values, fileAs, type, displaySeq)
+        return Title(LocalizedString.fromStrings(values), fileAs, type, displaySeq)
     }
 
     private fun parseContributor(node: ElementNode, props: List<Property>?): Contributor? {
-        val names: MutableMap<String, String> = mutableMapOf()
+        val names: MutableMap<String?, String> = mutableMapOf()
         names[node.lang] = node.text ?: return null
         val roles: MutableSet<String> = mutableSetOf()
         var fileAs: String? = null
@@ -170,7 +170,10 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
             node.getAttrNs("role", Namespaces.Opf)?.let { roles.add(it) }
             node.getAttrNs("file-as", Namespaces.Opf)?.let { fileAs = it }
         }
-        return Contributor(names, fileAs, roles)
+        return Contributor(
+                localizedName = LocalizedString.fromStrings(names),
+                sortAs = fileAs,
+                roles = roles)
     }
 
     private fun parseDate(node: ElementNode) : Date? =
@@ -179,7 +182,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
             }
 
     private fun parseSubject(node: ElementNode, props: List<Property>?) : Subject? {
-        val values: MutableMap<String, String> = mutableMapOf()
+        val values: MutableMap<String?, String> = mutableMapOf()
         node.text?.let { values[node.lang] = it }
         var authority: String? = null
         var term: String? = null
@@ -194,7 +197,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
 
         return if (values.isNotEmpty() || (authority != null && term != null))
             Subject(
-                LocalizedString(values),
+                LocalizedString.fromStrings(values),
                 authority,
                 term
 
@@ -244,10 +247,10 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
                 PACKAGE_RESERVED_PREFIXES["media"] + "duration" ->
                     duration = ClockValueParser.parse(it.value)
                 PACKAGE_RESERVED_PREFIXES["media"] + "narrator" -> {
-                    val names = it.children.filter { c -> c.property == "alternate-script" && c.lang != null }
+                    val names: Map<String?, String> = it.children.filter { c -> c.property == "alternate-script" && c.lang != null }
                             .associate { Pair(it.lang as String, it.value) }
                     val fileAs = it.children.firstOrNull { c -> c.property == "file-as" }?.value
-                    narrators.add(Contributor(names, fileAs, setOf("nrt")))
+                    narrators.add(Contributor( localizedName = LocalizedString.fromStrings(names), sortAs = fileAs, roles = setOf("nrt")))
                 }
             }
         }

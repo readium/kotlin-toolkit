@@ -12,13 +12,11 @@ package org.readium.r2.streamer.parser.epub
 
 import org.joda.time.DateTime
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.Metadata as SharedMetadata
 import org.readium.r2.shared.publication.Link as SharedLink
-import org.readium.r2.shared.publication.Contributor as SharedContributor
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.shared.publication.encryption.Encryption
@@ -103,19 +101,19 @@ private fun mapLink(link: Link) : SharedLink? {
 }
 
 private data class ContributorsByRole(
-        val authors: MutableList<SharedContributor> = mutableListOf(),
-        val translators: MutableList<SharedContributor> = mutableListOf(),
-        val editors: MutableList<SharedContributor> = mutableListOf(),
-        val artists: MutableList<SharedContributor> = mutableListOf(),
-        val illustrators: MutableList<SharedContributor> = mutableListOf(),
-        val letterers: MutableList<SharedContributor> = mutableListOf(),
-        val pencilers: MutableList<SharedContributor> = mutableListOf(),
-        val colorists: MutableList<SharedContributor> = mutableListOf(),
-        val inkers: MutableList<SharedContributor> = mutableListOf(),
-        val narrators: MutableList<SharedContributor> = mutableListOf(),
-        val publishers: MutableList<SharedContributor> = mutableListOf(),
-        val imprints: MutableList<SharedContributor> = mutableListOf(),
-        val others: MutableList<SharedContributor> = mutableListOf()
+        val authors: MutableList<Contributor> = mutableListOf(),
+        val translators: MutableList<Contributor> = mutableListOf(),
+        val editors: MutableList<Contributor> = mutableListOf(),
+        val artists: MutableList<Contributor> = mutableListOf(),
+        val illustrators: MutableList<Contributor> = mutableListOf(),
+        val letterers: MutableList<Contributor> = mutableListOf(),
+        val pencilers: MutableList<Contributor> = mutableListOf(),
+        val colorists: MutableList<Contributor> = mutableListOf(),
+        val inkers: MutableList<Contributor> = mutableListOf(),
+        val narrators: MutableList<Contributor> = mutableListOf(),
+        val publishers: MutableList<Contributor> = mutableListOf(),
+        val imprints: MutableList<Contributor> = mutableListOf(),
+        val others: MutableList<Contributor> = mutableListOf()
 )
 
 private fun Epub.computeMetadata() : SharedMetadata {
@@ -148,7 +146,7 @@ private fun Epub.computeMetadata() : SharedMetadata {
             localizedTitle = getMaintitle(),
             localizedSubtitle = getSubtitle(),
             duration = packageDocument.metadata.mediaMetadata.duration,
-            subjects = generalMetadata.subjects,
+            subjects = generalMetadata.subjects.map(::mapSubject),
             description = generalMetadata.description,
             readingProgression = packageDocument.spine.direction,
             otherMetadata = otherMetadata,
@@ -168,39 +166,52 @@ private fun Epub.computeMetadata() : SharedMetadata {
     )
 }
 
-private fun withDefaultLanguage(translations: Map<String, String>, languages: List<String>) =
-        translations.mapKeys { if (it.key == "" && languages.isNotEmpty()) languages.first() else it.key }
+private fun mapLocalizedString(lstring: LocalizedString, languages: List<String>) : LocalizedString {
+    check(null !in lstring.translations.keys)
+    return lstring.mapLanguages {
+        if (it.key == "") {
+            if (languages.isEmpty())
+                null
+            else languages.first()
+        } else it.key
+    }
+}
 
 private fun Epub.getMaintitle() : LocalizedString {
     val metadata = packageDocument.metadata.generalMetadata
     val titles = metadata.titles
     val main =  titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
-    val translations = withDefaultLanguage(main?.value ?: mapOf(), metadata.languages)
-    return LocalizedString(translations)
+    val lstring = main?.value?.let { mapLocalizedString( it , metadata.languages) }
+    return lstring ?: LocalizedString(mapOf())
 }
 
 private fun Epub.getSubtitle() : LocalizedString {
     val metadata = packageDocument.metadata.generalMetadata
     val titles = metadata.titles
     val sub =  titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()
-    val translations = withDefaultLanguage(sub?.value ?: mapOf(), metadata.languages)
-    return LocalizedString(translations)
+    val lstring = sub?.value?.let { mapLocalizedString( it , metadata.languages) }
+    return lstring ?: LocalizedString(mapOf())
 }
 
-private fun Epub.mapContributor(contributor: Contributor, defaultRole: String? = null) : SharedContributor {
+private fun Epub.mapSubject(subject: Subject) : Subject {
+    val localizedName = mapLocalizedString(subject.localizedName, packageDocument.metadata.generalMetadata.languages)
+    return subject.copy(localizedName = localizedName)
+}
+
+private fun Epub.mapContributor(contributor: Contributor, defaultRole: String? = null) : Contributor {
     val metadata = packageDocument.metadata.generalMetadata
-    val translations = withDefaultLanguage(contributor.name, metadata.languages)
+    val lstring = mapLocalizedString(contributor.localizedName, metadata.languages)
     val roles = contributor.roles.toMutableSet()
     if (roles.isEmpty() && defaultRole != null) roles.add(defaultRole)
 
-    return SharedContributor(
-            localizedName = LocalizedString(translations),
-            sortAs = contributor.fileAs,
+    return Contributor(
+            localizedName = lstring,
+            sortAs = contributor.sortAs,
             roles = roles
     )
 }
 
-private fun addContributors(contributors: List<SharedContributor>, byRole: ContributorsByRole) {
+private fun addContributors(contributors: List<Contributor>, byRole: ContributorsByRole) {
     for (contributor in contributors) {
         for (role in contributor.roles) {
             when (role) {

@@ -9,11 +9,13 @@
 
 package org.readium.r2.streamer.parser.epub
 
+internal typealias LocalizedString = org.readium.r2.shared.publication.LocalizedString
+
 internal typealias Subject = org.readium.r2.shared.publication.Subject
 
-internal data class Title(val value: Map<String, String>, val fileAs: String? = null, val type: String? = null, val displaySeq: Int? = null)
+internal typealias Contributor = org.readium.r2.shared.publication.Contributor
 
-internal data class Contributor(val name: Map<String, String>, val fileAs: String? = null, val roles: Set<String> = setOf())
+internal data class Title(val value: LocalizedString, val fileAs: String? = null, val type: String? = null, val displaySeq: Int? = null)
 
 internal data class Link(val rel: List<String>, val href: String,
                 val mediaType: String?, val refines: String?, val properties: List<String> = listOf())
