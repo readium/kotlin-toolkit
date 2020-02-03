@@ -27,7 +27,7 @@ class LocalizedStringTest {
 
     @Test fun `parse JSON localized strings`() {
         assertEquals(
-            LocalizedString(mapOf(
+            LocalizedString.fromStrings(mapOf(
                 "en" to "a string",
                 "fr" to "une chaîne"
             )),
@@ -57,7 +57,7 @@ class LocalizedStringTest {
 
     @Test fun `get JSON`() {
         assertJSONEquals(
-            LocalizedString(mapOf(
+            LocalizedString.fromStrings(mapOf(
                 "en" to "a string",
                 "fr" to "une chaîne",
                 LocalizedString.UNDEFINED_LANGUAGE to "Surgh"
@@ -72,8 +72,8 @@ class LocalizedStringTest {
 
     @Test fun `get the default translation`() {
         assertEquals(
-            LocalizedString.Translation("en", "a string"),
-            LocalizedString(mapOf(
+            LocalizedString.Translation("a string"),
+            LocalizedString.fromStrings(mapOf(
                 "en" to "a string",
                 "fr" to "une chaîne"
             )).defaultTranslation
@@ -83,7 +83,7 @@ class LocalizedStringTest {
     @Test fun `get the default translation's string`() {
         assertEquals(
             "a string",
-            LocalizedString(mapOf(
+            LocalizedString.fromStrings(mapOf(
                 "en" to "a string",
                 "fr" to "une chaîne"
             )).string
@@ -92,63 +92,111 @@ class LocalizedStringTest {
 
     @Test fun `find translation by language`() {
         assertEquals(
-            LocalizedString.Translation("fr", "une chaîne"),
-            LocalizedString(mapOf(
+            LocalizedString.Translation("une chaîne"),
+            LocalizedString.fromStrings(mapOf(
                 "en" to "a string",
                 "fr" to "une chaîne"
-            )).translationForLanguage("fr")
+            ))["fr"]
         )
     }
 
     @Test fun `find translation by language defaults to the default Locale`() {
         val language = Locale.getDefault().toLanguageTag()
         assertEquals(
-            LocalizedString.Translation(language, "a string"),
-            LocalizedString(mapOf(
+            LocalizedString.Translation("a string"),
+            LocalizedString.fromStrings(mapOf(
                 language to "a string",
                 "foobar" to "une chaîne"
-            )).translationForLanguage(null)
+            ))[null]
         )
     }
 
     @Test fun `find translation by language defaults to null`() {
         assertEquals(
-            LocalizedString.Translation(language = null, string = "Surgh"),
-            LocalizedString(setOf(
-                LocalizedString.Translation("foo", "a string"),
-                LocalizedString.Translation("bar", "une chaîne"),
-                LocalizedString.Translation(language = null, string = "Surgh")
-            )).translationForLanguage(null)
+            LocalizedString.Translation("Surgh"),
+            LocalizedString.fromStrings(mapOf(
+                "foo" to "a string",
+                "bar" to "une chaîne",
+                null to "Surgh"
+            ))[null]
         )
     }
 
     @Test fun `find translation by language defaults to undefined`() {
         assertEquals(
-            LocalizedString.Translation(language = LocalizedString.UNDEFINED_LANGUAGE, string = "Surgh"),
-            LocalizedString(mapOf(
+            LocalizedString.Translation(string = "Surgh"),
+            LocalizedString.fromStrings(mapOf(
                 "foo" to "a string",
                 "bar" to "une chaîne",
                 LocalizedString.UNDEFINED_LANGUAGE to "Surgh"
-            )).translationForLanguage(null)
+            ))[null]
         )
     }
 
     @Test fun `find translation by language defaults to English`() {
         assertEquals(
-            LocalizedString.Translation("en", "a string"),
-            LocalizedString(mapOf(
+            LocalizedString.Translation("a string"),
+            LocalizedString.fromStrings(mapOf(
                 "en" to "a string",
                 "fr" to "une chaîne"
-            )).translationForLanguage(null)
+            ))[null]
         )
     }
 
     @Test fun `find translation by language defaults to the first found translation`() {
         assertEquals(
-            LocalizedString.Translation("fr", "une chaîne"),
-            LocalizedString(mapOf(
+            LocalizedString.Translation("une chaîne"),
+            LocalizedString.fromStrings(mapOf(
                 "fr" to "une chaîne"
-            )).translationForLanguage(null)
+            ))[null]
+        )
+    }
+
+    @Test fun `maps the languages`() {
+        assertEquals(
+            LocalizedString.fromStrings(mapOf(
+                "en" to "a string",
+                "fr" to "une chaîne"
+            )),
+            LocalizedString.fromStrings(mapOf(
+                null to "a string",
+                "fr" to "une chaîne"
+            )).mapLanguages { (language, translation) ->
+                if (translation.string == "a string")
+                    "en"
+                else
+                    language
+            }
+        )
+    }
+
+    @Test fun `maps the translations`() {
+        assertEquals(
+            LocalizedString.fromStrings(mapOf(
+                "en" to "a string",
+                "fr" to "une chaîne"
+            )),
+            LocalizedString.fromStrings(mapOf(
+                "en" to "Surgh",
+                "fr" to "une chaîne"
+            )).mapTranslations { (language, translation) ->
+                if (language == "en")
+                    translation.copy(string = "a string")
+                else
+                    translation
+            }
+        )
+    }
+
+    @Test fun `add or replace a new translation`() {
+        assertEquals(
+            LocalizedString.fromStrings(mapOf(
+                "en" to "a string",
+                "fr" to "une chaîne"
+            )),
+            LocalizedString.fromStrings(mapOf(
+                "en" to "a string"
+            )).withString("fr", "une chaîne")
         )
     }
 

@@ -199,9 +199,9 @@ data class Metadata(
     val multilanguageTitle: LocalizedString?
         get() = localizedTitle
 
-    @Deprecated("Use [localizedTitle.translationForLanguage] instead", ReplaceWith("localizedTitle.translationForLanguage(key)?.string"))
+    @Deprecated("Use [localizedTitle.get] instead", ReplaceWith("localizedTitle.translationForLanguage(key)?.string"))
     fun titleForLang(key: String): String? =
-        localizedTitle.translationForLanguage(key)?.string
+        localizedTitle[key]?.string
 
     @Deprecated("Use [readingProgression] instead.", ReplaceWith("readingProgression"))
     val direction: String

@@ -84,7 +84,7 @@ class ContributorTest {
             listOf(
                 Contributor(localizedName = LocalizedString("Thom Yorke")),
                 Contributor(
-                    localizedName = LocalizedString(mapOf(
+                    localizedName = LocalizedString.fromStrings(mapOf(
                         "en" to "Jonny Greenwood",
                         "fr" to "Jean Boisvert"
                     )),
@@ -129,7 +129,7 @@ class ContributorTest {
     @Test fun `parse array from single object`() {
         assertEquals(
             listOf(Contributor(
-                localizedName = LocalizedString(mapOf(
+                localizedName = LocalizedString.fromStrings(mapOf(
                     "en" to "Jonny Greenwood",
                     "fr" to "Jean Boisvert"
                 )),
@@ -145,7 +145,7 @@ class ContributorTest {
     @Test fun `get name from the default translation`() {
         assertEquals(
             "Jonny Greenwood",
-            Contributor(localizedName = LocalizedString(mapOf(
+            Contributor(localizedName = LocalizedString.fromStrings(mapOf(
                 "en" to "Jonny Greenwood",
                 "fr" to "Jean Boisvert"
             ))).name
@@ -202,7 +202,7 @@ class ContributorTest {
             listOf(
                 Contributor(localizedName = LocalizedString("Thom Yorke")),
                 Contributor(
-                    localizedName = LocalizedString(mapOf(
+                    localizedName = LocalizedString.fromStrings(mapOf(
                         "en" to "Jonny Greenwood",
                         "fr" to "Jean Boisvert"
                     )),

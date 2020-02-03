@@ -122,7 +122,7 @@ class SubjectTest {
     @Test fun `get name from the default translation`() {
         assertEquals(
             "Hello world",
-            Subject(localizedName = LocalizedString(mapOf(
+            Subject(localizedName = LocalizedString.fromStrings(mapOf(
                 "en" to "Hello world",
                 "fr" to "Salut le monde"
             ))).name

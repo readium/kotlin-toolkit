@@ -21,10 +21,9 @@ import java.util.*
 /**
  * Represents a string with multiple [translations] indexed by a BCP 47 language tag.
  */
-data class LocalizedString(val translations: Set<Translation> = emptySet()): JSONable, Serializable {
+data class LocalizedString(val translations: Map<String?, Translation> = emptyMap()): JSONable, Serializable {
 
     data class Translation(
-        val language: String? = null,
         val string: String
     )
 
@@ -32,24 +31,14 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
      * Shortcut to create a [LocalizedString] using a single string, without a language.
      */
     constructor(string: String): this(
-        translations = setOf(Translation(string = string))
-    )
-
-    /**
-     * Shortcut to create a [LocalizedString] using a map of translations indexed by the BCP 47
-     * language tag.
-     */
-    constructor(strings: Map<String, String>): this(
-        translations = strings
-            .map { (language, string) -> Translation(language = language, string = string) }
-            .toSet()
+        translations = mapOf(null to Translation(string = string))
     )
 
     /**
      * The default translation for this localized string.
      */
     val defaultTranslation: Translation
-        get() = translationForLanguage(null)
+        get() = this[null]
             ?: Translation(string = "")
 
     /**
@@ -65,29 +54,42 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
      *    1. on the default [Locale]
      *    2. on the undefined language
      *    3. on the English language
-     *    4. the first translation in the set
+     *    4. the first translation found
      */
-    fun translationForLanguage(language: String?): Translation? {
-        fun find(code: String?) =
-            translations.firstOrNull {
-                it.language?.toLowerCase(Locale.ROOT) == code?.toLowerCase(Locale.ROOT)
-            }
-
-        return find(language)
-            ?: find(Locale.getDefault().toLanguageTag())
-            ?: find(null)
-            ?: find(UNDEFINED_LANGUAGE)
-            ?: find("en")
-            ?: translations.firstOrNull()
+    operator fun get(language: String?): Translation? {
+        return translations[language]
+            ?: translations[Locale.getDefault().toLanguageTag()]
+            ?: translations[null]
+            ?: translations[UNDEFINED_LANGUAGE]
+            ?: translations["en"]
+            ?: translations.keys.firstOrNull()?.let { translations[it] }
     }
 
+    /**
+     * Returns a new [LocalizedString] after adding (or replacing) the translation with the given
+     * [language].
+     */
+    fun withString(language: String?, string: String): LocalizedString =
+        copy(translations = translations + Pair(language, Translation(string = string)))
+
+    /**
+     * Returns a new [LocalizedString] after applying the [transform] function to each language.
+     */
+    fun mapLanguages(transform: (Map.Entry<String?, Translation>) -> String?): LocalizedString =
+        copy(translations = translations.mapKeys(transform))
+
+    /**
+     * Returns a new [LocalizedString] after applying the [transform] function to each translation.
+     */
+    fun mapTranslations(transform: (Map.Entry<String?, Translation>) -> Translation): LocalizedString =
+        copy(translations = translations.mapValues(transform))
 
     /**
      * Serializes a [LocalizedString] to its RWPM JSON representation.
      */
     override fun toJSON() = JSONObject().apply {
-        for (translation in translations) {
-            put(translation.language ?: UNDEFINED_LANGUAGE, translation.string)
+        for ((language, translation) in translations) {
+            put(language ?: UNDEFINED_LANGUAGE, translation.string)
         }
     }
 
@@ -97,6 +99,15 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
          * BCP-47 tag for an undefined language.
          */
         const val UNDEFINED_LANGUAGE = "UND"
+
+        /**
+         * Shortcut to create a [LocalizedString] using a map of translations indexed by the BCP 47
+         * language tag.
+         */
+        fun fromStrings(strings: Map<String?, String>): LocalizedString = LocalizedString(
+            translations = strings
+                .mapValues { (_, string) -> Translation(string = string) }
+        )
 
         /**
          * Parses a [LocalizedString] from its RWPM JSON representation.
@@ -123,7 +134,7 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
             json ?: return null
 
             return when (json) {
-                is String -> LocalizedString(setOf(Translation(string = json)))
+                is String -> LocalizedString(json)
                 is JSONObject -> fromJSONObject(json, warnings)
                 else -> {
                     warnings?.log(LocalizedString::class.java, "invalid localized string object")
@@ -133,13 +144,13 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
         }
 
         private fun fromJSONObject(json: JSONObject, warnings: WarningLogger<JsonWarning>?): LocalizedString? {
-            val translations = mutableSetOf<Translation>()
+            val translations = mutableMapOf<String?, Translation>()
             for (key in json.keys()) {
                 val string = json.optNullableString(key)
                 if (string == null) {
                     warnings?.log(LocalizedString::class.java, "invalid localized string object", json)
                 } else {
-                    translations.add(Translation(key, string))
+                    translations[key] = Translation(string = string)
                 }
             }
 
@@ -152,11 +163,8 @@ data class LocalizedString(val translations: Set<Translation> = emptySet()): JSO
     val singleString: String?
         get() = string.ifEmpty { null }
 
-    @Deprecated("Use [translationForLanguage] instead.", ReplaceWith("translationForLanguage()"))
-    val multiString: Map<String, String>
-        get() = translations.associateBy(
-            keySelector = { it.language ?: UNDEFINED_LANGUAGE },
-            valueTransform = { it.string }
-        )
+    @Deprecated("Use [get] instead.", ReplaceWith("()"))
+    val multiString: Map<String?, String>
+        get() = translations.mapValues { (_, translation) -> translation.string }
 
 }

@@ -29,11 +29,11 @@ class MetadataTest {
             Metadata(
                 identifier = "1234",
                 type = "epub",
-                localizedTitle = LocalizedString(mapOf(
+                localizedTitle = LocalizedString.fromStrings(mapOf(
                     "en" to "Title",
                     "fr" to "Titre"
                 )),
-                localizedSubtitle = LocalizedString(mapOf(
+                localizedSubtitle = LocalizedString.fromStrings(mapOf(
                     "en" to "Subtitle",
                     "fr" to "Sous-titre"
                 )),
@@ -190,11 +190,11 @@ class MetadataTest {
             Metadata(
                 identifier = "1234",
                 type = "epub",
-                localizedTitle = LocalizedString(mapOf(
+                localizedTitle = LocalizedString.fromStrings(mapOf(
                     "en" to "Title",
                     "fr" to "Titre"
                 )),
-                localizedSubtitle = LocalizedString(mapOf(
+                localizedSubtitle = LocalizedString.fromStrings(mapOf(
                     "en" to "Subtitle",
                     "fr" to "Sous-titre"
                 )),
