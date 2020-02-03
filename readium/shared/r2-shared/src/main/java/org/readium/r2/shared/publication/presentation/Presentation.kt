@@ -131,11 +131,11 @@ data class Presentation(
             fun from(value: String?): Orientation? =
                 Orientation.values().firstOrNull { it.value == value }
 
-            @Deprecated("Renamed to [AUTO]", ReplaceWith("AUTO"))
+            @Deprecated("Renamed to [AUTO]", ReplaceWith("Orientation.AUTO"))
             val Auto: Orientation = AUTO
-            @Deprecated("Renamed to [LANDSCAPE]", ReplaceWith("LANDSCAPE"))
+            @Deprecated("Renamed to [LANDSCAPE]", ReplaceWith("Orientation.LANDSCAPE"))
             val Landscape: Orientation = LANDSCAPE
-            @Deprecated("Renamed to [PORTRAIT]", ReplaceWith("PORTRAIT"))
+            @Deprecated("Renamed to [PORTRAIT]", ReplaceWith("Orientation.PORTRAIT"))
             val Portrait: Orientation = PORTRAIT
         }
     }
@@ -158,11 +158,11 @@ data class Presentation(
             fun from(value: String?): Overflow? =
                 Overflow.values().firstOrNull { it.value == value }
 
-            @Deprecated("Renamed to [PAGINATED]", ReplaceWith("PAGINATED"))
+            @Deprecated("Renamed to [PAGINATED]", ReplaceWith("Overflow.PAGINATED"))
             val Paginated: Overflow = PAGINATED
             @Deprecated("Use [presentation.continuous] instead", ReplaceWith("presentation.continuous"))
             val Continuous: Overflow = SCROLLED
-            @Deprecated("Renamed to [SCROLLED]", ReplaceWith("SCROLLED"))
+            @Deprecated("Renamed to [SCROLLED]", ReplaceWith("Overflow.SCROLLED"))
             val Document: Overflow = SCROLLED
         }
     }
@@ -202,15 +202,15 @@ data class Presentation(
             fun from(value: String?): Spread? =
                 Spread.values().firstOrNull { it.value == value }
 
-            @Deprecated("Renamed to [AUTO]", ReplaceWith("AUTO"))
+            @Deprecated("Renamed to [AUTO]", ReplaceWith("Spread.AUTO"))
             val Auto: Spread = AUTO
-            @Deprecated("Renamed to [LANDSCAPE]", ReplaceWith("LANDSCAPE"))
+            @Deprecated("Renamed to [LANDSCAPE]", ReplaceWith("Spread.LANDSCAPE"))
             val Landscape: Spread = LANDSCAPE
-            @Deprecated("Renamed to [BOTH]", ReplaceWith("BOTH"))
+            @Deprecated("Renamed to [BOTH]", ReplaceWith("Spread.BOTH"))
             val Portrait: Spread = BOTH
-            @Deprecated("Renamed to [BOTH]", ReplaceWith("BOTH"))
+            @Deprecated("Renamed to [BOTH]", ReplaceWith("Spread.BOTH"))
             val Both: Spread = BOTH
-            @Deprecated("Renamed to [NONE]", ReplaceWith("NONE"))
+            @Deprecated("Renamed to [NONE]", ReplaceWith("Spread.NONE"))
             val None: Spread = NONE
         }
     }

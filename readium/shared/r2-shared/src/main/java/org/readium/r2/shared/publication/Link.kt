@@ -13,8 +13,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.Serializable
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.MediaOverlays
-import org.readium.r2.shared.util.logging.Warning
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
@@ -50,8 +48,6 @@ val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
  * @param alternates Alternate resources for the linked resource.
  * @param children Resources that are children of the linked resource, in the context of a given
  *     collection role.
- * @param mediaOverlays The MediaOverlays associated to the resource of the `Link`.
- *     WARNING: Media overlays are in beta and the API is subject to change in the future.
  */
 data class Link(
     val href: String,
@@ -66,8 +62,7 @@ data class Link(
     val duration: Double? = null,
     val languages: List<String> = listOf(),
     val alternates: List<Link> = listOf(),
-    val children: List<Link> = listOf(),
-    val mediaOverlays: MediaOverlays? = null
+    val children: List<Link> = listOf()
 ) : JSONable, Serializable {
 
     /**

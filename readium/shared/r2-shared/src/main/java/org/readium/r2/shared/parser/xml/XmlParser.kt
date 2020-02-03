@@ -77,7 +77,7 @@ class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Bool
     private fun buildElement(parser: XmlPullParser, attributes:AttributeMap, children: MutableList<Node>, lang: String) : ElementNode {
         val rawName = parser.name
         val name = if (isCaseSensitive) rawName else rawName.toLowerCase()
-        val node = ElementNode(parser.name, parser.namespace,  lang, attributes, children)
+        val node = ElementNode(name, parser.namespace,  lang, attributes, children)
         return node
     }
 

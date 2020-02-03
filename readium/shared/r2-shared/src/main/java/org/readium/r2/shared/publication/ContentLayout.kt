@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.publication
 
+import org.readium.r2.shared.publication.presentation.Presentation
 import java.util.*
 
 /**
@@ -59,6 +60,15 @@ enum class ContentLayout(val key: String) {
                 else -> if (isRTLProgression) RTL else LTR
             }
         }
+
+        @Deprecated("Renamed to [RTL]", ReplaceWith("ContentLayout.RTL"))
+        val rtl: ContentLayout = RTL
+        @Deprecated("Renamed to [LTR]", ReplaceWith("ContentLayout.LTR"))
+        val ltr: ContentLayout = LTR
+        @Deprecated("Renamed to [CJK_VERTICAL]", ReplaceWith("ContentLayout.CJK_VERTICAL"))
+        val cjkv: ContentLayout = CJK_VERTICAL
+        @Deprecated("Renamed to [CJK_HORIZONTAL]", ReplaceWith("ContentLayout.CJK_HORIZONTAL"))
+        val cjkh: ContentLayout = CJK_HORIZONTAL
 
     }
 
