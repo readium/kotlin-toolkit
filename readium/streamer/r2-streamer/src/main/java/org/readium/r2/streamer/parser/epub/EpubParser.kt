@@ -85,7 +85,6 @@ class EpubParser : PublicationParser {
         return container
     }
 
-
     override fun parse(fileAtPath: String, title: String): PubBox? {
         val container = try {
             generateContainerFrom(fileAtPath)
@@ -169,4 +168,10 @@ class EpubParser : PublicationParser {
         }
         return document
     }
+
+    @Deprecated("This is done automatically in [parse], you can remove the call to [fillEncryption]", ReplaceWith(""))
+    fun fillEncryption(container: Container, publication: Publication, drm: DRM?): Pair<Container, Publication> {
+        return Pair(container, publication)
+    }
+
 }

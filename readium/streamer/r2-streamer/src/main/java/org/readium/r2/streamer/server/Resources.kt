@@ -26,11 +26,9 @@ class Resources {
         return resources[key] ?: ""
     }
 
-    fun get(key: String): String {
-        return if(resources[key] is Pair<*,*>) {
-            (resources[key] as Pair<String, String>).first
-        } else {
-            (resources[key] ?: "") as String
-        }
-    }
+    fun get(key: String): String =
+        when (val resource = resources[key]) {
+            is Pair<*, *> -> resource.first as? String
+            else -> resource as? String
+        } ?: ""
 }

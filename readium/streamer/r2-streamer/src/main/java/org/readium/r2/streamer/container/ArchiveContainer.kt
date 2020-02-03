@@ -35,7 +35,7 @@ open class ArchiveContainer(path: String, mimetype: String) : Container {
         val zipEntry = getEntry(relativePath)// ?: return ByteArray(0)
         val inputStream = archive.getInputStream(zipEntry)
         val outputStream = ByteArrayOutputStream()
-        var readLength = 0
+        var readLength: Int
         val buffer = ByteArray(16384)
 
         while (inputStream.read(buffer).let { readLength = it; it != -1 })

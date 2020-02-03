@@ -13,7 +13,7 @@ import android.content.Context
 import android.content.res.AssetManager
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.Injectable
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.fetcher.Fetcher
@@ -177,7 +177,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
 
         // addLinks(publication, fileName)
 
-        publication.addSelfLink(fileName, URL("$BASE_URL:$port"))
+        publication.setSelfLink("$BASE_URL:$port/$fileName/manifest.json")
 
         if (containsMediaOverlay) {
             addRoute(fileName + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)

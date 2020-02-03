@@ -11,7 +11,10 @@ package org.readium.r2.streamer.fetcher
 
 import org.json.JSONArray
 import org.json.JSONObject
-import org.readium.r2.shared.*
+import org.readium.r2.shared.Injectable
+import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.extensions.removeLastComponent
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layout
 import org.readium.r2.shared.publication.presentation.presentation
@@ -58,8 +61,8 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, private var cu
             val inputStream = input.inputStream()
             var decodedInputStream = DrmDecoder().decoding(inputStream, resourceLink, container.drm)
             decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
-            val baseUrl = publication.baseUrl()?.removeLastComponent()
-            if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")
+            val baseUrl = publication.baseUrl?.removeLastComponent()
+            if ((resourceLink.type == "application/xhtml+xml" || resourceLink.type == "text/html")
                     && baseUrl != null) {
                 decodedInputStream =
                         if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE && (resourceLink.properties.layout == null

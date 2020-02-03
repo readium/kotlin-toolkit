@@ -30,7 +30,7 @@ open class DirectoryContainer(path: String, mimetype: String) : Container {
             throw ContainerError.fileNotFound
 
         val outputStream = ByteArrayOutputStream()
-        var readLength = 0
+        var readLength: Int
         val buffer = ByteArray(16384)
         val inputStream = FileInputStream(file)
 
