@@ -329,20 +329,26 @@ class PublicationTest {
     @Test fun `find the first {Link} matching the given predicate`() {
         val link1 = Link(href = "href1", title = "link1")
         val link2 = Link(href = "href2", title = "link2")
-        val link3 = Link(href = "href3", title = "link3")
+        val link3 = Link(href = "href3", title = "link3", alternates = listOf(link2))
+        val link4 = Link(href = "href4", title = "link4")
+        val link5 = Link(href = "href5", title = "link5")
+        val link6 = Link(href = "href6", title = "link6", alternates = listOf(link4, link5))
 
         val publication = createPublication(
-            links = listOf(Link(href = "other"), link1),
-            readingOrder = listOf(Link(href = "other"), link2),
-            resources = listOf(Link(href = "other"), link3)
+                links = listOf(Link(href = "other"), link1),
+                readingOrder = listOf(Link(href = "other"), link2, link6),
+                resources = listOf(Link(href = "other"), link3)
         )
 
         fun predicate(title: String) =
-            { link: Link -> link.title == title}
+                { link: Link -> link.title == title}
 
         assertEquals(link1, publication.link(predicate("link1")))
         assertEquals(link2, publication.link(predicate("link2")))
         assertEquals(link3, publication.link(predicate("link3")))
+        assertEquals(link4, publication.link(predicate("link4")))
+        assertEquals(link5, publication.link(predicate("link5")))
+        assertEquals(link6, publication.link(predicate("link6")))
     }
 
     @Test fun `find the first {Link} with the given predicate when not found`() {
