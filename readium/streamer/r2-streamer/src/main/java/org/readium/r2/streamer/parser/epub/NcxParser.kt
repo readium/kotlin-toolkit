@@ -15,12 +15,12 @@ import org.readium.r2.streamer.parser.normalize
 
 
 internal object NcxParser {
-    fun parse(document: ElementNode, filePath: String): Ncx? {
+    fun parse(document: ElementNode, filePath: String): NavigationData? {
         val toc = document.getFirst("navMap", Namespaces.Ncx)?.let { parseNavMapElement(it, filePath) }
                 ?: emptyList()
         val pageList = document.getFirst("pageList", Namespaces.Ncx)?.let { parsePageListElement(it, filePath) }
                 ?: emptyList()
-        return Ncx(toc, pageList)
+        return NavigationData(toc, pageList)
     }
 
     private fun parseNavMapElement(element: ElementNode, filePath: String): List<Link> =
@@ -29,7 +29,7 @@ internal object NcxParser {
     private fun parsePageListElement(element: ElementNode, filePath: String): List<Link> =
             element.get("pageTarget", Namespaces.Ncx).mapNotNull {
                 val href = extractHref(it, filePath)
-                if (href == null) null else Link(title = extractTitle(it), href = href)
+                if (href == "#") null else Link(title = extractTitle(it), href = href)
             }
 
     private fun extractTitle(element: ElementNode) =

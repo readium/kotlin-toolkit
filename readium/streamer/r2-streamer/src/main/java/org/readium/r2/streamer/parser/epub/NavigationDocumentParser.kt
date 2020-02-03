@@ -15,7 +15,7 @@ import org.readium.r2.shared.parser.xml.TextNode
 import org.readium.r2.streamer.parser.normalize
 
 internal object NavigationDocumentParser {
-    fun parse(document: ElementNode, filePath: String) : NavigationDocument? {
+    fun parse(document: ElementNode, filePath: String) : NavigationData? {
         val prefixAttribute = document.getAttrNs("prefix", Namespaces.Ops)
         val packagePrefixes = if (prefixAttribute == null) mapOf() else parsePrefixes(prefixAttribute)
         val prefixMap = CONTENT_RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
@@ -44,7 +44,7 @@ internal object NavigationDocumentParser {
             }
         }
 
-        return NavigationDocument(toc, pageList, landmarks, loi, lot, loa, lov)
+        return NavigationData(toc, pageList, landmarks, loi, lot, loa, lov)
     }
 
     private fun parseNavElement(nav: ElementNode, filePath: String) : List<Link>? =

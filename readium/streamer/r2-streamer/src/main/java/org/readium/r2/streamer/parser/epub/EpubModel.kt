@@ -58,22 +58,15 @@ internal typealias Encryption = org.readium.r2.shared.publication.encryption.Enc
 
 internal typealias EncryptionData = Map<String, Encryption>
 
-internal sealed class NavigationData
-
-internal data class NavigationDocument(
+internal data class NavigationData(
         val toc: List<Link>,
         val pageList: List<Link>,
-        val landmarks: List<Link>,
-        val loi: List<Link>,
-        val lot: List<Link>,
-        val loa: List<Link>,
-        val lov: List<Link>
-) : NavigationData()
-
-internal data class Ncx(
-        val toc: List<Link>,
-        val pageList: List<Link>
-) : NavigationData()
+        val landmarks: List<Link> = emptyList(),
+        val loi: List<Link> = emptyList(),
+        val lot: List<Link> = emptyList(),
+        val loa: List<Link> = emptyList(),
+        val lov: List<Link> = emptyList()
+)
 
 internal data class Epub(
         val packageDocument: PackageDocument,

@@ -9,7 +9,7 @@ import org.readium.r2.shared.publication.Link
 import kotlin.test.assertNotNull
 
 class NavigationDocumentParserTest {
-    private fun parseNavigationDocument(path: String) : NavigationDocument {
+    private fun parseNavigationDocument(path: String) : NavigationData {
         val res = NavigationDocumentParser::class.java.getResourceAsStream(path)
         check(res != null)
         val document = XmlParser().parse(res)

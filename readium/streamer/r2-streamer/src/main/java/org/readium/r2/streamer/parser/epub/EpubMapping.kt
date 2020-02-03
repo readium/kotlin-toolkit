@@ -33,22 +33,15 @@ internal fun Epub.toPublication() : Publication {
     val (readingOrder, resources) = links.partition { it.title in readingOrderIds }
 
     // Compute toc and otherCollections
-    val toc = navigationData?.let { when(navigationData) {
-        is Ncx -> navigationData.toc
-        is NavigationDocument -> navigationData.toc
-    }} ?: emptyList()
-    val pageList = navigationData?.let { when(navigationData) {
-        is Ncx -> navigationData.pageList
-        is NavigationDocument -> navigationData.pageList
-    }}
-    val navigationDocument = navigationData as? NavigationDocument
+    val toc = navigationData?.toc ?: emptyList()
+    val pageList = navigationData?.pageList
     val otherCollections = listOfNotNull(
             pageList?.let { PublicationCollection(links = it, role= "page-list") },
-            navigationDocument?.landmarks?.let { PublicationCollection(links = it, role = "landmarks") },
-            navigationDocument?.loa?.let { PublicationCollection(links = it, role = "loa") },
-            navigationDocument?.loi?.let { PublicationCollection(links = it, role = "loi") },
-            navigationDocument?.lot?.let { PublicationCollection(links = it, role = "lot") },
-            navigationDocument?.lov?.let { PublicationCollection(links = it, role = "lov") }
+            navigationData?.landmarks?.let { PublicationCollection(links = it, role = "landmarks") },
+            navigationData?.loa?.let { PublicationCollection(links = it, role = "loa") },
+            navigationData?.loi?.let { PublicationCollection(links = it, role = "loi") },
+            navigationData?.lot?.let { PublicationCollection(links = it, role = "lot") },
+            navigationData?.lov?.let { PublicationCollection(links = it, role = "lov") }
     )
 
     // Build Publication object
