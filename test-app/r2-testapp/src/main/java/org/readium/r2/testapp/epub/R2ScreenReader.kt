@@ -19,7 +19,7 @@ import org.jsoup.select.Elements
 import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.navigator.IR2TTS
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import timber.log.Timber
 import java.io.IOException
@@ -169,7 +169,7 @@ class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigat
      * Inner function that sets the Text To Speech language.
      */
     private fun setTTSLanguage() {
-        val language = textToSpeech.setLanguage(Locale(publication.metadata.languages.firstOrNull()))
+        val language = textToSpeech.setLanguage(Locale(publication.metadata.languages.firstOrNull() ?: ""))
 
         if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
             Toast.makeText(context.applicationContext, "There was an error with the TTS language, switching "

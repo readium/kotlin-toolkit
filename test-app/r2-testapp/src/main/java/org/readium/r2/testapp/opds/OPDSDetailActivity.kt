@@ -27,7 +27,8 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.support.v4.nestedScrollView
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Book
 import org.readium.r2.testapp.db.BooksDatabase
@@ -103,11 +104,11 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
                                     val stream = ByteArrayOutputStream()
 
                                     publication.coverLink?.let { link ->
-                                        val bitmap = getBitmapFromURL(link.href!!)
+                                        val bitmap = getBitmapFromURL(link.href)
                                         bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
                                     } ?: run {
                                         if (publication.images.isNotEmpty()) {
-                                            val bitmap = getBitmapFromURL(publication.images.first().href!!)
+                                            val bitmap = getBitmapFromURL(publication.images.first().href)
                                             bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
                                         }
                                     }
@@ -142,7 +143,7 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
                                                     }
                                                     val bCancel = getButton(AlertDialog.BUTTON_NEGATIVE)
                                                     bCancel.setOnClickListener {
-                                                        File(book.url).delete()
+                                                        File(book.url!!).delete()
                                                         duplicateAlert.dismiss()
                                                     }
                                                 }
@@ -166,11 +167,9 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
         val links = publication.links
         for (link in links) {
             val href = link.href
-            if (href != null) {
-                if (href.contains(Publication.EXTENSION.EPUB.value) || href.contains(Publication.EXTENSION.LCPL.value)) {
-                    url = URL(href)
-                    break
-                }
+            if (href.contains(Publication.EXTENSION.EPUB.value) || href.contains(Publication.EXTENSION.LCPL.value)) {
+                url = URL(href)
+                break
             }
         }
         return url

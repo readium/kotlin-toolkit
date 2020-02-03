@@ -14,13 +14,13 @@ import android.text.Html
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.Link
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.testapp.db.PositionsDatabase
 import java.net.URI
 import java.net.URL
 
 
-class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private val bookID: Long, private val publicationIdentifier: String) : AsyncTask<Triple<String, String, MutableList<Link>>, String, MutableList<Position>>() {
+class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private val bookID: Long, private val publicationIdentifier: String) : AsyncTask<Triple<String, String, List<Link>>, String, MutableList<Position>>() {
 
     private val syntheticPageList = mutableListOf<Position>()
     private var pageNumber: Long = 0
@@ -29,13 +29,11 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
         positionsDB.positions.init(bookID)
     }
 
-    override fun doInBackground(vararg p0: Triple<String, String, MutableList<Link>>): MutableList<Position> {
+    override fun doInBackground(vararg p0: Triple<String, String, List<Link>>): MutableList<Position> {
 
         for (uri in p0) {
             for (i in 0 until uri.third.size) {
-                uri.third[i].href?.let {
-                    createSyntheticPages(uri.first, uri.second, uri.third[i])
-                }
+                createSyntheticPages(uri.first, uri.second, uri.third[i])
 
                 if (isCancelled) {
                     positionsDB.positions.delete(bookID)
@@ -55,7 +53,7 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
         val resourceURL: URL
 
         val resourceHref = link.href
-        val resourceType = link.typeLink
+        val resourceType = link.type
 
         resourceURL = if (URI(resourceHref).isAbsolute) {
             URL(resourceHref)

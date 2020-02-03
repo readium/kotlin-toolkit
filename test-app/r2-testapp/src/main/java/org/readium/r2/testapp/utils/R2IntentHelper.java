@@ -14,7 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
-import org.readium.r2.shared.Publication;
+import org.readium.r2.shared.publication.Publication;
 import org.readium.r2.testapp.CatalogActivity;
 
 /**

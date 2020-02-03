@@ -54,11 +54,14 @@ import org.json.JSONObject
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Injectable
-import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.parsePublication
 import org.readium.r2.shared.promise
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.Publication.Companion
+import org.readium.r2.shared.publication.epub.pageList
+import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.audio.AudioBookConstant
@@ -363,7 +366,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 val publicationIdentifier = publication.metadata.identifier!!
                 val author = authorName(publication)
                 task {
-                    getBitmapFromURL(publication.images.first().href!!)
+                    getBitmapFromURL(publication.images.first().href)
                 }.then {
                     val bitmap = it
                     val stream = ByteArrayOutputStream()
@@ -538,11 +541,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val links = publication.links
         for (link in links) {
             val href = link.href
-            if (href != null) {
-                if (href.contains(Publication.EXTENSION.EPUB.value) || href.contains(Publication.EXTENSION.LCPL.value)) {
-                    url = URL(href)
-                    break
-                }
+            if (href.contains(Publication.EXTENSION.EPUB.value) || href.contains(Publication.EXTENSION.LCPL.value)) {
+                url = URL(href)
+                break
             }
         }
         return url
@@ -992,9 +993,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         } then { json ->
 
             json?.let {
-                val externalPub = parsePublication(json)
-                val externalURIBase = externalPub.linkWithRel("self")!!.href!!.substring(0, externalManifest.lastIndexOf("/") + 1)
-                val externalURIFileName = externalPub.linkWithRel("self")!!.href!!.substring(externalManifest.lastIndexOf("/") + 1)
+                val externalPub = Publication.fromJSON(json)
+                    ?: throw Exception("Invalid Publication")
+                val externalURIBase = externalPub.linkWithRel("self")!!.href.substring(0, externalManifest.lastIndexOf("/") + 1)
+                val externalURIFileName = externalPub.linkWithRel("self")!!.href.substring(externalManifest.lastIndexOf("/") + 1)
 
                 var book: Book? = null
 

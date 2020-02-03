@@ -21,6 +21,7 @@ import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.cbz.R2CbzActivity
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
+import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.BooksDatabase
 import org.readium.r2.testapp.library.activitiesLaunched
@@ -44,8 +45,8 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
                 it
             } ?: run {
                 val resource = publication.images[resourcePager.currentItem]
-                val resourceHref = resource.href ?: ""
-                val resourceType = resource.typeLink ?: ""
+                val resourceHref = resource.href
+                val resourceType = resource.type ?: ""
                 Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0))
             }
         }

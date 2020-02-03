@@ -13,7 +13,7 @@ package org.readium.r2.testapp.utils
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Publication
 
 
 /**
@@ -53,7 +53,6 @@ class R2IntentMapper(private val mContext: Context, private val mIntents: R2Inte
             if (uri.toString().contains(".")) {
 
                 val extension = when (uri.toString().substring(uri.toString().lastIndexOf("."))) {
-
                     Publication.EXTENSION.EPUB.value -> Publication.EXTENSION.EPUB
                     Publication.EXTENSION.JSON.value -> Publication.EXTENSION.JSON
                     Publication.EXTENSION.AUDIO.value -> Publication.EXTENSION.AUDIO

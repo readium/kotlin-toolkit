@@ -30,8 +30,8 @@ class MarkJSSearchEngine(private var listener: IR2Activity) : SearchInterface {
         for (resourceIndex in 0 until listener.publication.readingOrder.size) {
             val fragment = ((listener.resourcePager?.adapter as R2PagerAdapter).mFragments.get((listener.resourcePager?.adapter as R2PagerAdapter).getItemId(resourceIndex))) as R2EpubPageFragment
             val resource = listener.publication.readingOrder[resourceIndex]
-            val resourceHref = resource.href ?: ""
-            val resourceType = resource.typeLink ?: ""
+            val resourceHref = resource.href
+            val resourceType = resource.type ?: ""
             val resourceTitle = resource.title ?: ""
             Handler().postDelayed({
                 fragment.webView.runJavaScript("markSearch('${keyword}', null, '$resourceHref', '$resourceType', '$resourceTitle')") { result ->

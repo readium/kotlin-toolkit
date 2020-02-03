@@ -171,7 +171,6 @@ class HIGHLIGHTS(private var database: HighlightsDatabaseOpenHelper) {
                 return@use null
             }
         }
-        return null
     }
 
     private fun has(highlight: Highlight): List<Highlight> {
