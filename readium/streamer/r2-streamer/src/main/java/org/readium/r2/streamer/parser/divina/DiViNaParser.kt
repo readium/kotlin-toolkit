@@ -52,9 +52,6 @@ class DiViNaParser : PublicationParser {
         return container
     }
 
-    /**
-     *
-     */
     override fun parse(fileAtPath: String, title: String): PubBox? {
 
         val container = try {
@@ -91,15 +88,6 @@ class DiViNaParser : PublicationParser {
         //Parsing manifest.json & building publication object
         val publication = Publication.fromJSON(json)
         publication?.type = Publication.TYPE.DiViNa
-
-        /* FIXME: this cannot be done any more with the immutability of Publication
-        // Add href as title if title is missing (this is used to display the TOC)
-        for (link in publication.readingOrder) {
-            if (link.title == null || link.title!!.isEmpty()) {
-                link.title = link.href
-            }
-        }
-        */
 
         return publication?.let {  PubBox(it, container) }
     }

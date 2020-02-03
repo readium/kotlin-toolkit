@@ -94,7 +94,7 @@ class CBZParser : PublicationParser {
             return null
         }
         val listFiles = try {
-            container.files
+            container.files.sorted()
         } catch (e: Exception) {
             if (DEBUG) Timber.e(e, "Missing File : META-INF/container.xml")
             return null
@@ -103,23 +103,17 @@ class CBZParser : PublicationParser {
         val hash = fileToMD5(fileAtPath)
         val metadata = Metadata(identifier = hash, localizedTitle = LocalizedString(title))
 
-
         val readingOrder = listFiles.mapIndexedNotNull { index, path ->
-            if (path.startsWith("_") || path.startsWith("."))
-                null // FIXME: why skip theses files?
+            if (path.startsWith("."))
+                null
             else
                 Link(
                         href = path,
-                        title = path,  // Add href as title (this is used to display the TOC)
                         type = getMimeType(path),
                         rels = if (index == 0) listOf("cover") else emptyList()
                 )
         }
         val publication = Publication(metadata = metadata, readingOrder = readingOrder)
-
-        /* FIXME: what was this for?
-        publication.images = publication.images.sortedWith(compareBy { it.href }).toMutableList()
-        */
 
         publication.type = Publication.TYPE.CBZ
         return PubBox(publication, container)

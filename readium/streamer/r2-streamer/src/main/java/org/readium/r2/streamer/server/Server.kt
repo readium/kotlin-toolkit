@@ -190,7 +190,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
         addRoute(FONT_HANDLE, FontHandler::class.java, fonts)
     }
 
-    /* FIXME: otherLinks?
+    /* FIXME: To review once the media-overlays will be supported in the Publication model
          private fun addLinks(publication: Publication, filePath: String) {
         containsMediaOverlay = false
         for (link in publication.otherLinks) {
