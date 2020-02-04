@@ -20,7 +20,7 @@ import java.io.InputStream
 import kotlin.experimental.xor
 
 
-class FontDecoder {
+internal class FontDecoder {
 
     private val adobe = 1024
     private val idpf = 1040

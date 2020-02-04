@@ -20,7 +20,7 @@ import java.io.InputStream
 import java.util.zip.Inflater
 
 
-class DrmDecoder {
+internal class DrmDecoder {
 
 
     fun decoding(input: InputStream, resourceLink: Link, drm: DRM?): InputStream {

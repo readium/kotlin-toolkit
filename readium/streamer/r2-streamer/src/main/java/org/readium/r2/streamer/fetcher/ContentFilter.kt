@@ -23,7 +23,7 @@ import org.readium.r2.streamer.server.Resources
 import java.io.File
 import java.io.InputStream
 
-interface ContentFilters {
+internal interface ContentFilters {
     fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
         return input
     }
@@ -33,7 +33,7 @@ interface ContentFilters {
     }
 }
 
-class ContentFiltersEpub(private val userPropertiesPath: String?, private var customResources: Resources?) : ContentFilters {
+internal class ContentFiltersEpub(private val userPropertiesPath: String?, private var customResources: Resources?) : ContentFilters {
 
     override fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
         publication.linkWithHref(path)?.let { resourceLink ->
@@ -325,5 +325,5 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, private var cu
 }
 
 
-class ContentFiltersCbz : ContentFilters
+internal class ContentFiltersCbz : ContentFilters
 
