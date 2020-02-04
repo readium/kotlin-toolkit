@@ -9,6 +9,9 @@
 
 package org.readium.r2.shared.publication
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -18,7 +21,6 @@ import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
-import java.io.Serializable
 import java.util.*
 
 /**
@@ -30,6 +32,7 @@ import java.util.*
  *     the declared direction and the language.
  * @param otherMetadata Additional metadata for extensions, as a JSON dictionary.
  */
+@Parcelize
 data class Metadata(
     val identifier: String? = null, // URI
     val type: String? = null, // URI (@type)
@@ -59,8 +62,8 @@ data class Metadata(
     val numberOfPages: Int? = null,
     val belongsToCollections: List<Collection> = emptyList(),
     val belongsToSeries: List<Collection> = emptyList(),
-    val otherMetadata: Map<String, Any> = mapOf()
-) : JSONable, Serializable {
+    val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
+) : JSONable, Parcelable {
 
     /**
      * Returns the default translation string for the [localizedTitle].

@@ -9,16 +9,19 @@
 
 package org.readium.r2.shared.publication
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.WriteWith
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
-import java.io.Serializable
 
 /**
  * Core Collection Model
@@ -28,12 +31,13 @@ import java.io.Serializable
  *
  * @param role JSON key used to reference this collection in its parent.
  */
+@Parcelize
 data class PublicationCollection(
     val role: String,
-    val metadata: Map<String, Any> = emptyMap(),
+    val metadata: @WriteWith<JSONParceler> Map<String, Any> = emptyMap(),
     val links: List<Link> = emptyList(),
     val otherCollections: List<PublicationCollection> = emptyList()
-) : JSONable, Serializable {
+) : JSONable, Parcelable {
 
     /**
      * Serializes a [PublicationCollection] to its RWPM JSON representation.

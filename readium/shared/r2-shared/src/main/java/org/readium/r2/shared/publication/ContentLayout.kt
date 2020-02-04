@@ -9,7 +9,8 @@
 
 package org.readium.r2.shared.publication
 
-import org.readium.r2.shared.publication.presentation.Presentation
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import java.util.*
 
 /**
@@ -21,7 +22,8 @@ import java.util.*
  *
  * @param key Identifier for this layout style, shared with ReadiumCSS.
  */
-enum class ContentLayout(val key: String) {
+@Parcelize
+enum class ContentLayout(val key: String) : Parcelable {
     // Right to left
     RTL("rtl"),
     // Left to right

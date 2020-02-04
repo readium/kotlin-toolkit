@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.opds
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
@@ -18,17 +20,17 @@ import org.readium.r2.shared.extensions.parseObjects
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
-import java.io.Serializable
 
 /**
  * OPDS Acquisition Object.
  *
  * https://drafts.opds.io/schema/acquisition-object.schema.json
  */
+@Parcelize
 data class Acquisition(
     val type: String,
     val children: List<Acquisition> = emptyList()
-) : JSONable, Serializable {
+) : JSONable, Parcelable {
 
     /**
      * Serializes an [Acquisition] to its JSON representation.

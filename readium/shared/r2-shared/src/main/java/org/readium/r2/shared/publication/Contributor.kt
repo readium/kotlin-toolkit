@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.publication
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
@@ -17,7 +19,6 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
-import java.io.Serializable
 
 /**
  * https://readium.org/webpub-manifest/schema/contributor-object.schema.json
@@ -30,6 +31,7 @@ import java.io.Serializable
  *     when the contributor represents a collection.
  * @param links Used to retrieve similar publications for the given contributor.
  */
+@Parcelize
 data class Contributor(
     val localizedName: LocalizedString,
     val identifier: String? = null,
@@ -37,7 +39,7 @@ data class Contributor(
     val roles: Set<String> = emptySet(),
     val position: Double? = null,
     val links: List<Link> = emptyList()
-) : JSONable, Serializable {
+) : JSONable, Parcelable {
 
     /**
      * Shortcut to create a [Contributor] using a string as [name].

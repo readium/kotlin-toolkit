@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.publication.encryption
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -16,7 +18,6 @@ import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
-import java.io.Serializable
 
 /**
  * Indicates that a resource is encrypted/obfuscated and provides relevant information for
@@ -29,13 +30,14 @@ import java.io.Serializable
  * @param profile Identifies the encryption profile used to encrypt the resource (URI).
  * @param scheme Identifies the encryption scheme used to encrypt the resource (URI).
  */
+@Parcelize
 data class Encryption(
     val algorithm: String,
     val compression: String? = null,
     val originalLength: Int? = null,
     val profile: String? = null,
     val scheme: String? = null
-) : JSONable, Serializable {
+) : JSONable, Parcelable {
 
     /**
      * Serializes an [Encryption] to its RWPM JSON representation.

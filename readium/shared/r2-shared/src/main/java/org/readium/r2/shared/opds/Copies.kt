@@ -9,20 +9,22 @@
 
 package org.readium.r2.shared.opds
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optPositiveInt
-import java.io.Serializable
 
 /**
  * Library-specific feature that contains information about the copies that a library has acquired.
  *
  * https://drafts.opds.io/schema/properties.schema.json
  */
+@Parcelize
 data class Copies(
     val total: Int? = null,
     val available: Int? = null
-) : JSONable, Serializable {
+) : JSONable, Parcelable {
 
     /**
      * Serializes an [Copies] to its JSON representation.

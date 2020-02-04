@@ -8,12 +8,13 @@
  */
 package org.readium.r2.shared.publication.presentation
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableBoolean
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.Properties
-import java.io.Serializable
 
 /**
  * The Presentation Hints extension defines a number of hints for User Agents about the way content
@@ -37,6 +38,7 @@ import java.io.Serializable
  *     synthetic spread.
  * @param layout Hints how the layout of the resource should be presented (EPUB extension).
  */
+@Parcelize
 data class Presentation(
     val clipped: Boolean? = null,
     val continuous: Boolean? = null,
@@ -45,7 +47,7 @@ data class Presentation(
     val overflow: Overflow? = null,
     val spread: Spread? = null,
     val layout: EpubLayout? = null
-) : JSONable, Serializable {
+) : JSONable, Parcelable {
 
     /**
      * Serializes a [Presentation] to its RWPM JSON representation.
@@ -95,7 +97,8 @@ data class Presentation(
     /**
      * Suggested method for constraining a resource inside the viewport.
      */
-    enum class Fit(val value: String) {
+    @Parcelize
+    enum class Fit(val value: String) : Parcelable {
         WIDTH("width"),
         HEIGHT("height"),
         CONTAIN("contain"),
@@ -116,7 +119,8 @@ data class Presentation(
     /**
      * Suggested orientation for the device when displaying the linked resource.
      */
-    enum class Orientation(val value: String) {
+    @Parcelize
+    enum class Orientation(val value: String) : Parcelable {
         AUTO("auto"),
         LANDSCAPE("landscape"),
         PORTRAIT("portrait");
@@ -143,7 +147,8 @@ data class Presentation(
     /**
      * Suggested method for handling overflow while displaying the linked resource.
      */
-    enum class Overflow(val value: String) {
+    @Parcelize
+    enum class Overflow(val value: String) : Parcelable {
         AUTO("auto"),
         PAGINATED("paginated"),
         SCROLLED("scrolled");
@@ -171,7 +176,8 @@ data class Presentation(
      * Indicates how the linked resource should be displayed in a reading environment that displays
      * synthetic spreads.
      */
-    enum class Page(val value: String) {
+    @Parcelize
+    enum class Page(val value: String) : Parcelable {
         LEFT("left"),
         RIGHT("right"),
         CENTER("center");
@@ -186,7 +192,8 @@ data class Presentation(
      * Indicates the condition to be met for the linked resource to be rendered within a synthetic
      * spread.
      */
-    enum class Spread(val value: String) {
+    @Parcelize
+    enum class Spread(val value: String) : Parcelable {
         AUTO("auto"),
         BOTH("both"),
         NONE("none"),
@@ -219,6 +226,6 @@ data class Presentation(
     fun getJSON(): JSONObject = toJSON()
 
     @Deprecated("Use [overflow] instead", ReplaceWith("overflow"))
-    var flow: Overflow? = overflow
+    val flow: Overflow? get() = overflow
 
 }

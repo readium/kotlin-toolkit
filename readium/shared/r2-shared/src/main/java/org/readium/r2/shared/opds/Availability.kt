@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.opds
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -17,7 +19,6 @@ import org.readium.r2.shared.extensions.toIso8601Date
 import org.readium.r2.shared.extensions.toIso8601String
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
-import java.io.Serializable
 import java.util.*
 
 /**
@@ -28,11 +29,12 @@ import java.util.*
  * @param since Timestamp for the previous state change.
  * @param until Timestamp for the next state change.
  */
+@Parcelize
 data class Availability(
     val state: State,
     val since: Date? = null,
     val until: Date? = null
-) : JSONable, Serializable {
+) : JSONable, Parcelable {
 
     enum class State(val value: String) {
         AVAILABLE("available"),

@@ -9,9 +9,12 @@
 
 package org.readium.r2.shared.extensions
 
+import android.os.Parcel
+import kotlinx.android.parcel.Parceler
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
+import timber.log.Timber
 
 /**
  * Unwraps recursively the [JSONObject] to a [Map<String, Any>].
@@ -254,4 +257,29 @@ internal fun <T> JSONArray?.parseObjects(factory: (Any) -> T?): List<T> {
         }
     }
     return models
+}
+
+/**
+ * Implementation of a [Parceler] to be used with [@Parcelize] to serialize JSON objects.
+ */
+object JSONParceler : Parceler<Map<String, Any>> {
+
+    override fun create(parcel: Parcel): Map<String, Any> =
+        try {
+            parcel.readString()?.let {
+                JSONObject(it).toMap()
+            } ?: emptyMap()
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to read a JSON map from a Parcel")
+            emptyMap()
+        }
+
+    override fun Map<String, Any>.write(parcel: Parcel, flags: Int) {
+        try {
+            parcel.writeString(JSONObject(this).toString())
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to write a JSON map into a Parcel")
+        }
+    }
+
 }

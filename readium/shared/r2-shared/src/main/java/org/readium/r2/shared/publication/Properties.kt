@@ -9,10 +9,14 @@
 
 package org.readium.r2.shared.publication
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.extensions.toMap
-import java.io.Serializable
+import java.io.ObjectOutputStream
 
 /**
  * Properties associated to the linked resource.
@@ -20,9 +24,10 @@ import java.io.Serializable
  * This is opened for extensions.
  * https://readium.org/webpub-manifest/schema/link.schema.json
  */
+@Parcelize
 data class Properties(
-    val otherProperties: Map<String, Any> = mapOf()
-) : JSONable, Serializable {
+    val otherProperties: @WriteWith<JSONParceler> Map<String, Any> = emptyMap()
+) : JSONable, Parcelable {
 
     /**
      * Serializes a [Properties] to its RWPM JSON representation.
@@ -34,6 +39,16 @@ data class Properties(
      * `properties["price"] == properties.otherProperties["price"]`
      */
     operator fun get(key: String): Any? = otherProperties[key]
+
+    private fun writeObject(oos: ObjectOutputStream) {
+        oos.defaultWriteObject()
+        oos.writeUTF(JSONObject(otherProperties).toString())
+    }
+
+    private fun readObject(ois: java.io.ObjectInputStream) {
+        ois.defaultReadObject()
+        ois.readUTF()
+    }
 
     companion object {
 

@@ -9,11 +9,15 @@
 
 package org.readium.r2.shared.publication.epub
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
 /**
  * Hints how the layout of the resource should be presented.
  * https://readium.org/webpub-manifest/schema/extensions/epub/metadata.schema.json
  */
-enum class EpubLayout(val value: String) {
+@Parcelize
+enum class EpubLayout(val value: String) : Parcelable {
     FIXED("fixed"),
     REFLOWABLE("reflowable");
 

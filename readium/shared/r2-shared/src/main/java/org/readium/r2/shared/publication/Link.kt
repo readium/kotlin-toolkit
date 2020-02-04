@@ -9,9 +9,10 @@
 
 package org.readium.r2.shared.publication
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.Serializable
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.*
@@ -49,6 +50,7 @@ val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
  * @param children Resources that are children of the linked resource, in the context of a given
  *     collection role.
  */
+@Parcelize
 data class Link(
     val href: String,
     val type: String? = null,
@@ -63,7 +65,7 @@ data class Link(
     val languages: List<String> = listOf(),
     val alternates: List<Link> = listOf(),
     val children: List<Link> = listOf()
-) : JSONable, Serializable {
+) : JSONable, Parcelable {
 
     /**
      * Serializes a [Link] to its RWPM JSON representation.

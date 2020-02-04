@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.publication
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
@@ -18,7 +20,6 @@ import org.readium.r2.shared.extensions.parseObjects
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
-import java.io.Serializable
 
 /**
  * https://github.com/readium/webpub-manifest/tree/master/contexts/default#subjects
@@ -28,13 +29,14 @@ import java.io.Serializable
  * @param code EPUB 3.1 opf:term.
  * @param links Used to retrieve similar publications for the given subjects.
  */
+@Parcelize
 data class Subject(
     val localizedName: LocalizedString,
     val sortAs: String? = null,
     val scheme: String? = null,
     val code: String? = null,
     val links: List<Link> = emptyList()
-) : JSONable, Serializable {
+) : JSONable, Parcelable {
 
     /**
      * Shortcut to create a [Subject] using a string as [name].

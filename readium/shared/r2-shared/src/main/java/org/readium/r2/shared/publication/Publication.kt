@@ -10,6 +10,8 @@
 package org.readium.r2.shared.publication
 
 import android.net.Uri
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
@@ -22,7 +24,6 @@ import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
-import java.io.Serializable
 import java.net.URL
 
 /**
@@ -31,6 +32,7 @@ import java.net.URL
  * @param type The kind of publication it is ( Epub, Cbz, ... )
  * @param version The version of the publication, if the type needs any.
  */
+@Parcelize
 data class Publication(
     val context: List<String> = emptyList(),
     val metadata: Metadata,
@@ -40,18 +42,28 @@ data class Publication(
     val readingOrder: List<Link> = emptyList(),
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
-    val otherCollections: List<PublicationCollection> = emptyList()
-) : JSONable, Serializable {
+    val otherCollections: List<PublicationCollection> = emptyList(),
 
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
-    var type: TYPE = TYPE.EPUB
-    var version: Double = 0.0
+    var type: TYPE = TYPE.EPUB,
+    var version: Double = 0.0,
 
-    enum class TYPE {
+    // FIXME: To refactor after specifying the User and Rendition Settings API
+    var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
+    var cssStyle: String? = null,
+
+    // FIXME: This is not specified and need to be refactored
+    var internalData: MutableMap<String, String> = mutableMapOf()
+
+) : JSONable, Parcelable {
+
+    @Parcelize
+    enum class TYPE : Parcelable {
         EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
     }
 
-    enum class EXTENSION(var value: String) {
+    @Parcelize
+    enum class EXTENSION(var value: String) : Parcelable {
         EPUB(".epub"),
         CBZ(".cbz"),
         JSON(".json"),
@@ -65,13 +77,6 @@ data class Publication(
                 EXTENSION.values().firstOrNull { it.value == type }
         }
     }
-
-    // FIXME: To refactor after specifying the User and Rendition Settings API
-    var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf()
-    var cssStyle: String? = null
-
-    // FIXME: This is not specified and need to be refactored
-    var internalData: MutableMap<String, String> = mutableMapOf()
 
     /**
      * Returns the RWPM JSON representation for this manifest, as a string.

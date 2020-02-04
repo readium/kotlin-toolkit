@@ -9,9 +9,12 @@
 
 package org.readium.r2.shared.publication
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import java.util.*
 
-enum class ReadingProgression(val value: String) {
+@Parcelize
+enum class ReadingProgression(val value: String) : Parcelable {
     /** Right to left */
     RTL("rtl"),
     /** Left to right */

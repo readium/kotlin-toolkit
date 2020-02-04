@@ -9,23 +9,26 @@
 
 package org.readium.r2.shared.publication
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
-import java.io.Serializable
 import java.util.*
 
 /**
  * Represents a string with multiple [translations] indexed by a BCP 47 language tag.
  */
-data class LocalizedString(val translations: Map<String?, Translation> = emptyMap()): JSONable, Serializable {
+@Parcelize
+data class LocalizedString(val translations: Map<String?, Translation> = emptyMap()) : JSONable, Parcelable {
 
+    @Parcelize
     data class Translation(
         val string: String
-    )
+    ) : Parcelable
 
     /**
      * Shortcut to create a [LocalizedString] using a single string, without a language.

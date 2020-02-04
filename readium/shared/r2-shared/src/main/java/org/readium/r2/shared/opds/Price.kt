@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.opds
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -16,7 +18,6 @@ import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.optPositiveDouble
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
-import java.io.Serializable
 
 /**
  * The price of a publication in an OPDS link.
@@ -27,10 +28,11 @@ import java.io.Serializable
  * @param value Price value, should only be used for display purposes, because of precision issues
  *     inherent with Double and the JSON parsing.
  */
+@Parcelize
 data class Price(
     val currency: String,
     val value: Double
-) : JSONable, Serializable {
+) : JSONable, Parcelable {
 
     /**
      * Serializes an [Price] to its JSON representation.

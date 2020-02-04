@@ -9,20 +9,22 @@
 
 package org.readium.r2.shared.opds
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optPositiveInt
-import java.io.Serializable
 
 /**
  * Library-specific features when a specific book is unavailable but provides a hold list.
  *
  * https://drafts.opds.io/schema/properties.schema.json
  */
+@Parcelize
 data class Holds(
     val total: Int? = null,
     val position: Int? = null
-) : JSONable, Serializable {
+) : JSONable, Parcelable {
 
     /**
      * Serializes an [Holds] to its JSON representation.
