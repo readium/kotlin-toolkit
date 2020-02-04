@@ -28,7 +28,6 @@ import org.readium.r2.shared.Locator
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.opds.images
 import kotlin.coroutines.CoroutineContext
 
 
@@ -75,7 +74,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     override lateinit var publicationFileName: String
     override var bookId: Long = -1
 
-    var resources = arrayListOf<String>()
+    var resources: List<String> = emptyList()
     lateinit var adapter: R2PagerAdapter
 
     var currentPagerPosition: Int = 0
@@ -91,13 +90,11 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
-        publication = intent.getSerializableExtra("publication") as Publication
+        publication = intent.getParcelableExtra("publication") as Publication
         publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title
 
-        for (link in publication.images) {
-            resources.add(link.href)
-        }
+        resources = publication.readingOrder.map { it.href }
 
         adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
 
@@ -119,7 +116,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
     override fun onPause() {
         super.onPause()
-        val resource = publication.images[resourcePager.currentItem]
+        val resource = publication.readingOrder[resourcePager.currentItem]
         val resourceHref = resource.href
         val resourceType = resource.type ?: ""
 
@@ -135,7 +132,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
                 // The view has LTR layout
                 resourcePager.currentItem = resourcePager.currentItem + 1
             }
-            val resource = publication.images[resourcePager.currentItem]
+            val resource = publication.readingOrder[resourcePager.currentItem]
             val resourceHref = resource.href
             val resourceType = resource.type ?: ""
 
@@ -152,7 +149,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
                 // The view has LTR layout
                 resourcePager.currentItem = resourcePager.currentItem - 1
             }
-            val resource = publication.images[resourcePager.currentItem]
+            val resource = publication.readingOrder[resourcePager.currentItem]
             val resourceHref = resource.href
             val resourceType = resource.type ?: ""
 
@@ -192,7 +189,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
                 // Set the progression fetched
                 navigatorDelegate?.locationDidChange(locator = locator)
 
-                fun setCurrent(resources: ArrayList<*>) {
+                fun setCurrent(resources: List<String>) {
                     for (index in 0 until resources.count()) {
                         val resource = resources[index] as String
                         if (resource.endsWith(locator.href!!)) {

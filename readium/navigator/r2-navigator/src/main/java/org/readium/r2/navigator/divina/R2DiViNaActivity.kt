@@ -56,7 +56,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
 
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
-        publication = intent.getSerializableExtra("publication") as Publication
+        publication = intent.getParcelableExtra("publication") as Publication
 
         publicationIdentifier = publication.metadata.identifier ?: ""
         title = publication.metadata.title
