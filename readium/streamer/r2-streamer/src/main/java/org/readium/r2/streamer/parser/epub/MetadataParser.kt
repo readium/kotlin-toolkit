@@ -62,7 +62,6 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
                                 metaProperties: Map<String, List<Property>>,
                                 uniqueIdentifierId: String?,
                                 dctermsModified: java.util.Date?): GeneralMetadata {
-        var uniqueIdentifier: String? = null
         val titles: MutableList<Title> = LinkedList()
         val languages: MutableList<String> = LinkedList()
 
@@ -71,32 +70,30 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
         val publishers: MutableList<Contributor> = LinkedList()
 
         val dates: MutableList<Date> = mutableListOf()
+        val identifiers: MutableMap<String?, String> = mutableMapOf()
         val subjects: MutableList<Subject> = mutableListOf()
         var description: String? = null
         var rights: String? = null
         var source: String? = null
 
-        dcElements.forEach {
-            val props = metaProperties[it.id]
-            when (it.name) {
-                "identifier" -> {
-                    val id = it.text
-                    if (id != null && (it.id == uniqueIdentifierId || uniqueIdentifier == null)) {
-                        uniqueIdentifier = id
-                    }
-                }
-                "title" -> parseTitle(it, props)?.let { titles.add(it) }
-                "language" -> it.text?.let { languages.add(it) }
-                "creator" -> parseContributor(it, props)?.let { creators.add(it) }
-                "contributor" -> parseContributor(it, props)?.let { contributors.add(it) }
-                "publisher" -> parseContributor(it, props)?.let { publishers.add(it) }
-                "date" -> parseDate(it)?.let { dates.add(it) }
-                "description" ->  it.text?.let { description = it }
-                "subject" -> parseSubject(it, props)?.let { subjects.add(it) }
-                "rights" -> it.text?.let { rights = it }
-                "source" -> it.text?.let { source = it }
+        dcElements.forEach { el ->
+            val props = metaProperties[el.id]
+            when (el.name) {
+                "identifier" -> el.text?.let { identifiers[el.id] = it }
+                "title" -> parseTitle(el, props)?.let { titles.add(it) }
+                "language" -> el.text?.trim()?.let { languages.add(it) }
+                "creator" -> parseContributor(el, props)?.let { creators.add(it) }
+                "contributor" -> parseContributor(el, props)?.let { contributors.add(it) }
+                "publisher" -> parseContributor(el, props)?.let { publishers.add(it) }
+                "date" -> parseDate(el)?.let { dates.add(it) }
+                "description" ->  el.text?.let { description = it }
+                "subject" -> parseSubject(el, props)?.let { subjects.add(it) }
+                "rights" -> el.text?.let { rights = it }
+                "source" -> el.text?.let { source = it }
             }
         }
+
+        val uniqueIdentifier = identifiers[uniqueIdentifierId] ?: identifiers.values.firstOrNull()
 
         val modified = if (epubVersion >= 3.0)
             dctermsModified
@@ -106,7 +103,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
         val date = if (epubVersion >= 3.0)
             dates.firstOrNull()?.value
         else
-            dates.firstOrNull { it.event == "publication"}?.value ?: dates.firstOrNull { it.event == null}?.value
+            dates.firstOrNull { it.event == "publication"}?.value ?: dates.firstOrNull { it.event == null }?.value
 
 
         return GeneralMetadata(
@@ -127,7 +124,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
 
     private fun parseTitle(node: ElementNode, props: List<Property>?): Title? {
         val values: MutableMap<String?, String> = mutableMapOf()
-        values[node.lang] = node.text ?: return null
+        values[node.lang] = node.text?.trim()?.ifEmpty { null } ?: return null
         var type: String? = null
         var fileAs: String? = null
         var displaySeq: Int? = null
@@ -141,19 +138,13 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
                     DEFAULT_VOCAB.META.iri + "display-seq" -> it.value.toIntOrNull()?.let { v -> displaySeq = v }
                 }
             }
-
-        } else {
-            /* TODO: According to https://github.com/readium/architecture/blob/master/streamer/parser/metadata.md
-             "The string for fileAs should be the value of content in a meta
-             whose name is calibre:title_sort and content is the value to use."
-              */
         }
         return Title(LocalizedString.fromStrings(values), fileAs, type, displaySeq)
     }
 
     private fun parseContributor(node: ElementNode, props: List<Property>?): Contributor? {
         val names: MutableMap<String?, String> = mutableMapOf()
-        names[node.lang] = node.text ?: return null
+        names[node.lang] = node.text?.trim()?.ifEmpty{ null } ?: return null
         val roles: MutableSet<String> = mutableSetOf()
         var fileAs: String? = null
 
@@ -162,8 +153,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
                 when (it.property) {
                     DEFAULT_VOCAB.META.iri + "alternate-script" -> if (it.lang != null) names[it.lang] = it.value
                     DEFAULT_VOCAB.META.iri + "file-as" -> fileAs = it.value
-                    DEFAULT_VOCAB.META.iri + "role" ->
-                        if (it.scheme == PACKAGE_RESERVED_PREFIXES["marc"] + "relators") roles.add(it.value)
+                    DEFAULT_VOCAB.META.iri + "role" -> roles.add(it.value)
                 }
             }
         } else {
@@ -177,31 +167,34 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
     }
 
     private fun parseDate(node: ElementNode) : Date? =
-            node.text?.let {
-                Date(it, node.getAttr("event"))
+            node.text?.trim()?.let {
+                Date(it, node.getAttrNs("event", Namespaces.Opf))
             }
 
     private fun parseSubject(node: ElementNode, props: List<Property>?) : Subject? {
         val values: MutableMap<String?, String> = mutableMapOf()
-        node.text?.let { values[node.lang] = it }
+        node.text?.trim()?.let { values[node.lang] = it }
         var authority: String? = null
         var term: String? = null
+        var fileAs: String? = null
 
         props?.forEach {
             when (it.property) {
                 DEFAULT_VOCAB.META.iri + "alternate-script" -> if (it.lang != null) values[it.lang] = it.value
                 DEFAULT_VOCAB.META.iri + "authority" -> authority = it.value
                 DEFAULT_VOCAB.META.iri + "term" -> term = it.value
+                DEFAULT_VOCAB.META.iri + "file-as" -> fileAs = it.value
             }
         }
 
         return if (values.isNotEmpty() || (authority != null && term != null))
             Subject(
-                LocalizedString.fromStrings(values),
-                authority,
-                term
-
-        ) else null
+                    LocalizedString.fromStrings(values),
+                    fileAs,
+                    authority,
+                    term
+                )
+        else null
     }
 
     private fun parseRenditionProperties(properties: Collection<Property>): RenditionMetadata {
@@ -247,10 +240,14 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
                 PACKAGE_RESERVED_PREFIXES["media"] + "duration" ->
                     duration = ClockValueParser.parse(it.value)
                 PACKAGE_RESERVED_PREFIXES["media"] + "narrator" -> {
-                    val names: Map<String?, String> = it.children.filter { c -> c.property == "alternate-script" && c.lang != null }
+                    val altNames: Map<String?, String> = it.children.filter { c ->
+                        c.property == DEFAULT_VOCAB.META.iri + "alternate-script" && c.lang != null }
                             .associate { Pair(it.lang as String, it.value) }
-                    val fileAs = it.children.firstOrNull { c -> c.property == "file-as" }?.value
-                    narrators.add(Contributor( localizedName = LocalizedString.fromStrings(names), sortAs = fileAs, roles = setOf("nrt")))
+                    val fileAs = it.children.firstOrNull { c -> c.property == DEFAULT_VOCAB.META.iri + "file-as" }?.value
+                    narrators.add(Contributor(
+                            localizedName = LocalizedString.fromStrings(altNames + Pair(it.lang, it.value)),
+                            sortAs = fileAs,
+                            roles = setOf("nrt")))
                 }
             }
         }
@@ -300,7 +297,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
 
         private fun parseExpression(element: ElementNode): MetaExpression? {
             val propName = element.getAttr("property") ?: return null
-            val propValue = element.text ?: return null
+            val propValue = element.text?.trim()?.ifEmpty{ null } ?: return null
             val resolvedProp = resolveProperty(propName, prefixMap, DEFAULT_VOCAB.META)
                     ?: return null
             val resolvedScheme = element.getAttr("scheme")?.let { resolveProperty(it, prefixMap) }
@@ -315,8 +312,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
             .mapNotNull {
                 val name = it.getAttr("name")
                 val content =  it.getAttr("content")
-                if (name != null && content != null) Pair(name, content)
-                else null }
+                if (name != null && content != null) Pair(name, content) else null }
              .associate { it }
 }
 

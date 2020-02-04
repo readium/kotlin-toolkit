@@ -124,6 +124,8 @@ private fun Epub.computeMetadata() : SharedMetadata {
     } catch(e: Exception) {
         null
     }
+    val (title, sortAs) = getMaintitle()
+    val mediaNarrators = packageDocument.metadata.mediaMetadata.narrators.map { mapContributor(it, "nrt") }
 
     // Other Metadata
     val otherMetadata: MutableMap<String, Any> = mutableMapOf()
@@ -136,10 +138,11 @@ private fun Epub.computeMetadata() : SharedMetadata {
             modified = generalMetadata.modified,
             published = published,
             languages = generalMetadata.languages,
-            localizedTitle = getMaintitle(),
+            localizedTitle = title ?: LocalizedString(),
+            sortAs = sortAs,
             localizedSubtitle = getSubtitle(),
             duration = packageDocument.metadata.mediaMetadata.duration,
-            subjects = generalMetadata.subjects.map(::mapSubject),
+            subjects = mapSubjects(generalMetadata.subjects),
             description = generalMetadata.description,
             readingProgression = packageDocument.spine.direction,
             otherMetadata = otherMetadata,
@@ -153,16 +156,15 @@ private fun Epub.computeMetadata() : SharedMetadata {
             pencilers = contributorsByRole.pencilers,
             colorists = contributorsByRole.colorists,
             inkers = contributorsByRole.inkers,
-            narrators = contributorsByRole.narrators,
+            narrators = contributorsByRole.narrators + mediaNarrators,
             publishers = contributorsByRole.publishers,
             contributors = contributorsByRole.others
     )
 }
 
 private fun mapLocalizedString(lstring: LocalizedString, languages: List<String>) : LocalizedString {
-    check(null !in lstring.translations.keys)
     return lstring.mapLanguages {
-        if (it.key == "") {
+        if (it.key.isNullOrEmpty()) {
             if (languages.isEmpty())
                 null
             else languages.first()
@@ -170,25 +172,42 @@ private fun mapLocalizedString(lstring: LocalizedString, languages: List<String>
     }
 }
 
-private fun Epub.getMaintitle() : LocalizedString {
+private fun Epub.getMaintitle() : Pair<LocalizedString?, String?> {
     val metadata = packageDocument.metadata.generalMetadata
     val titles = metadata.titles
     val main =  titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
     val lstring = main?.value?.let { mapLocalizedString( it , metadata.languages) }
-    return lstring ?: LocalizedString(mapOf())
+    val sortAs = if (packageDocument.epubVersion >= 3.0) main?.fileAs else packageDocument.metadata.oldMeta["calibre:title_sort"]
+    return Pair(lstring, sortAs)
 }
 
-private fun Epub.getSubtitle() : LocalizedString {
+private fun Epub.getSubtitle() : LocalizedString? {
     val metadata = packageDocument.metadata.generalMetadata
     val titles = metadata.titles
     val sub =  titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()
     val lstring = sub?.value?.let { mapLocalizedString( it , metadata.languages) }
-    return lstring ?: LocalizedString(mapOf())
+    return lstring
 }
 
-private fun Epub.mapSubject(subject: Subject) : Subject {
-    val localizedName = mapLocalizedString(subject.localizedName, packageDocument.metadata.generalMetadata.languages)
-    return subject.copy(localizedName = localizedName)
+private fun Epub.mapSubjects(subjects: List<Subject>) : List<Subject> {
+    val languages = packageDocument.metadata.generalMetadata.languages
+    return if (subjects.size == 1 && subjects.first().run {
+                localizedName.translations.size == 1 && code == null && scheme == null && sortAs == null}) {
+        with (subjects.first()) {
+            val lang = localizedName.translations.keys.first()
+            localizedName.translations.values.first().string.split(",", ";")
+                    .map(String::trim).filter(String::isNotEmpty)
+                    .map {
+                        val newName = LocalizedString.fromStrings( mapOf (lang to it))
+                        Subject(localizedName = mapLocalizedString(newName, languages))
+                    }
+        }
+    } else {
+        subjects.map {
+            val localizedName = mapLocalizedString(it.localizedName, languages)
+            it.copy(localizedName = localizedName)
+        }
+    }
 }
 
 private fun Epub.mapContributor(contributor: Contributor, defaultRole: String? = null) : Contributor {
@@ -206,6 +225,8 @@ private fun Epub.mapContributor(contributor: Contributor, defaultRole: String? =
 
 private fun addContributors(contributors: List<Contributor>, byRole: ContributorsByRole) {
     for (contributor in contributors) {
+        if (contributor.roles.isEmpty())
+            byRole.others.add(contributor)
         for (role in contributor.roles) {
             when (role) {
                 "aut" -> byRole.authors.add(contributor)
