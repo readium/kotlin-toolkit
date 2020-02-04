@@ -53,7 +53,7 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
         val database = BooksDatabase(this)
 
         val opdsDownloader = OPDSDownloader(this)
-        val publication: Publication = intent.getSerializableExtra("publication") as Publication
+        val publication: Publication = intent.getParcelableExtra("publication") as Publication
         nestedScrollView {
             fitsSystemWindows = true
             lparams(width = matchParent, height = matchParent)

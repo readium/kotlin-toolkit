@@ -55,7 +55,7 @@ class R2OutlineActivity : AppCompatActivity() {
         val tabHost = findViewById<TabHost>(R.id.tabhost)
         tabHost.setup()
 
-        val publication = intent.getSerializableExtra("publication") as Publication
+        val publication = intent.getParcelableExtra("publication") as Publication
 
         title = publication.metadata.title
 

@@ -44,7 +44,7 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
             return booksDB.books.currentLocator(bookId)?.let {
                 it
             } ?: run {
-                val resource = publication.images[resourcePager.currentItem]
+                val resource = publication.readingOrder[resourcePager.currentItem]
                 val resourceHref = resource.href
                 val resourceType = resource.type ?: ""
                 Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0))
@@ -74,7 +74,7 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
         navigatorDelegate = this
         bookId = intent.getLongExtra("bookId", -1)
 
-        currentPagerPosition = publication.images.indexOfFirst { it.href == currentLocation?.href }
+        currentPagerPosition = publication.readingOrder.indexOfFirst { it.href == currentLocation?.href }
         resourcePager.currentItem = currentPagerPosition
 
         toggleActionBar()
