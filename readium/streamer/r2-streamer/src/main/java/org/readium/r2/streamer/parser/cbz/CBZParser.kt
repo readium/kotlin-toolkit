@@ -13,10 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.text.TextUtils
 import android.webkit.MimeTypeMap
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.LocalizedString
-import org.readium.r2.shared.publication.Metadata
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.*
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
@@ -113,7 +110,13 @@ class CBZParser : PublicationParser {
                         rels = if (index == 0) listOf("cover") else emptyList()
                 )
         }
-        val publication = Publication(metadata = metadata, readingOrder = readingOrder)
+        val publication = Publication(
+            metadata = metadata,
+            readingOrder = readingOrder,
+            otherCollections = listOf(
+                PublicationCollection(role = "images", links = readingOrder)
+            )
+        )
 
         publication.type = Publication.TYPE.CBZ
         return PubBox(publication, container)

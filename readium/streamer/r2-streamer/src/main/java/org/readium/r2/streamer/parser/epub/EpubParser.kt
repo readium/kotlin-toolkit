@@ -97,7 +97,11 @@ class EpubParser : PublicationParser {
         container.rootFile.mimetype = EPUBConstant.mimetype
         container.rootFile.rootFilePath = getRootFilePath(containerXml)
 
-        val encryptionData = parseXmlDocument(Paths.encryption, container)?.let { EncryptionParser.parse(it, container.drm) }
+        val encryptionData =
+            if (container.contains(Paths.encryption))
+                parseXmlDocument(Paths.encryption, container)?.let { EncryptionParser.parse(it, container.drm) }
+            else
+                null
 
         val packageXml = parseXmlDocument(container.rootFile.rootFilePath, container) ?: return null
         val packageDocument = PackageDocumentParser.parse(packageXml, container.rootFile.rootFilePath) ?: return null

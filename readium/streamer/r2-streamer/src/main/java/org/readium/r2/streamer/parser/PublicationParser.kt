@@ -12,6 +12,7 @@ package org.readium.r2.streamer.parser
 import android.net.Uri
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.container.Container
+import java.io.File
 import java.net.URI
 import java.net.URLDecoder
 
@@ -19,7 +20,7 @@ data class PubBox(var publication: Publication, var container: Container)
 
 interface PublicationParser {
 
-    fun parse(fileAtPath: String, title: String = fileAtPath): PubBox?
+    fun parse(fileAtPath: String, title: String = File(fileAtPath).name): PubBox?
 
 }
 

@@ -46,8 +46,11 @@ open class ArchiveContainer(path: String, mimetype: String) : Container {
 
     }
 
+    override fun contains(relativePath: String): Boolean =
+        getEntry(relativePath) != null
+
     override fun dataLength(relativePath: String): Long {
-        return archive.size().toLong()
+        return getEntry(relativePath)?.size ?: 0
     }
 
     override fun dataInputStream(relativePath: String): InputStream {
@@ -55,12 +58,15 @@ open class ArchiveContainer(path: String, mimetype: String) : Container {
     }
     
     private fun getEntry(relativePath: String): ZipEntry? {
-
-        val path: String = try {
+        var path: String = try {
             URI(relativePath).path
         } catch (e: Exception) {
             relativePath
         }
+
+        // [ZipFile] doesn't expect a / at the beginning of relative paths, but [Link]'s [href]
+        // have them.
+        path = path.removePrefix("/")
 
         var zipEntry = archive.getEntry(path)
         if (zipEntry != null)
@@ -75,5 +81,6 @@ open class ArchiveContainer(path: String, mimetype: String) : Container {
 
         return null
     }
+
 }
 
