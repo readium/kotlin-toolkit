@@ -44,7 +44,7 @@ class XmlParser (val isNamespaceAware: Boolean = true, val isCaseSensitive: Bool
                     val element = buildElement(parser, attributes, children, lang)
                     stack.peek().first.add(element)
                 }
-                XmlPullParser.TEXT -> {
+                XmlPullParser.TEXT, XmlPullParser.ENTITY_REF -> {
                     text += parser.text
                 }
             }
