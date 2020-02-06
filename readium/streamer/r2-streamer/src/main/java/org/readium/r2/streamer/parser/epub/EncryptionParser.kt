@@ -17,8 +17,7 @@ import org.readium.r2.shared.parser.xml.ElementNode
 internal object EncryptionParser {
     fun parse(document: ElementNode, drm: DRM?) : Map<String, Encryption> =
         document.get("EncryptedData", Namespaces.Enc)
-                .mapNotNull{ parseEncryptedData(it, drm) }
-                .associate{ it }
+                .mapNotNull{ parseEncryptedData(it, drm) }.toMap()
 
     private fun parseEncryptedData(node: ElementNode, drm: DRM?) : Pair<String, Encryption>? {
         val resourceURI = node.getFirst("CipherData", Namespaces.Enc)
@@ -46,14 +45,14 @@ internal object EncryptionParser {
         for (encryptionProperty in encryptionProperties.get("EncryptionProperty", Namespaces.Enc)) {
             val compressionElement = encryptionProperty.getFirst("Compression", Namespaces.Comp)
             if (compressionElement != null) {
-                return parseCompressionElement(compressionElement) ?: continue
+                parseCompressionElement(compressionElement)?.let { return it }
             }
         }
         return null
     }
 
     private fun parseCompressionElement(compressionElement: ElementNode) : Pair<Int, String>? {
-        val originalLength = compressionElement.getAttr("OriginalLength")?.toInt() ?: return null
+        val originalLength = compressionElement.getAttr("OriginalLength")?.toIntOrNull() ?: return null
         val method = compressionElement.getAttr("Method") ?: return null
         val compression = if (method == "8") "deflate" else "none"
         return Pair(originalLength, compression)

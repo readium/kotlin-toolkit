@@ -22,7 +22,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
     fun parse(document: ElementNode, filePath: String) : EpubMetadata? {
         val metadataElement = document.getFirst("metadata", Namespaces.Opf) ?: return null
         val links = metadataElement.get("link", Namespaces.Opf).mapNotNull{ parseLink(it, prefixMap, filePath) }
-        val (globalProperties, otherProperties) = MetadataExpressionParser(prefixMap).parse(metadataElement)
+        val (globalProperties, otherProperties) = parseMetaElements(metadataElement)
 
         val uniqueIdentifierId = document.getAttr("unique-identifier")
         val dcElements = metadataElement.getAll().filter { it.namespace == Namespaces.Dc }
@@ -33,7 +33,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
         val rendition = parseRenditionProperties(globalProperties)
         val media = parseMediaProperties(globalProperties, otherProperties)
 
-        val oldMeta = if (epubVersion >= 3.0) mapOf() else parseXhtmlMeta(metadataElement)
+        val oldMeta = if (epubVersion >= 3.0) emptyMap() else parseXhtmlMeta(metadataElement)
 
         return EpubMetadata(dcMetadata, media, rendition, links, oldMeta)
     }
@@ -264,44 +264,39 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
                 narrators)
     }
 
-    private class MetadataExpressionParser(val prefixMap: Map<String, String>) {
-        private data class MetaExpression(val property: String, val value: String, val scheme: String? = null,
-                                          val refines: String? = null, val id: String? = null, val lang: String? = null)
+    private fun parseMetaElements(metadataElement: ElementNode): Pair<List<Property>, Map<String, List<Property>>> {
+        val metaElements = metadataElement.get("meta", Namespaces.Opf)
+        val metadataExpr = metaElements.mapNotNull { parseMetaExpression(it) }
+        val metadataProp = metadataExpr.map { Property(it.property, it.value, it.scheme, it.id, it.lang) }
 
-        fun parse(metadataElement: ElementNode): Pair<List<Property>, Map<String, List<Property>>> {
-            val metaElements = metadataElement.get("meta", Namespaces.Opf)
-            val metadataExpr = metaElements.mapNotNull { parseExpression(it) }
-            val metadataProp = metadataExpr.map { Property(it.property, it.value, it.scheme, it.id, it.lang) }
-
-            val itemById = metadataProp.associateBy(Property::id)
-            val globalItems: MutableList<Property> = mutableListOf()
-            val mainItems: MutableMap<String, MutableList<Property>> = mutableMapOf()
-            metadataExpr.zip(metadataProp).forEach {
-                val refinedId = it.first.refines?.removePrefix("#")
-                val refinedProp = refinedId?.let { itemById[it] }
-                when {
-                    refinedProp != null -> refinedProp.children.add(it.second) //  subexpression refining subexpression
-                    refinedId != null -> { // subexpression refining primary expression
-                        if (!mainItems.containsKey(refinedId)) mainItems[refinedId] = mutableListOf()
-                        mainItems[refinedId]?.add(it.second)
-                    }
-                    else -> globalItems.add(it.second) // primary expression
+        val itemById = metadataProp.associateBy(Property::id)
+        val globalItems: MutableList<Property> = mutableListOf()
+        val mainItems: MutableMap<String, MutableList<Property>> = mutableMapOf()
+        metadataExpr.zip(metadataProp).forEach {
+            val refinedId = it.first.refines?.removePrefix("#")
+            val refinedProp = refinedId?.let { itemById[it] }
+            when {
+                refinedProp != null -> refinedProp.children.add(it.second) //  subexpression refining meta expression
+                refinedId != null -> { // subexpression refining other element
+                    if (!mainItems.containsKey(refinedId)) mainItems[refinedId] = mutableListOf()
+                    mainItems[refinedId]?.add(it.second)
                 }
+                else -> globalItems.add(it.second) // primary expression
             }
-            return Pair(globalItems, mainItems)
         }
+        return Pair(globalItems, mainItems)
+    }
 
-        private fun parseExpression(element: ElementNode): MetaExpression? {
-            val propName = element.getAttr("property")?.trim()?.ifEmpty { null } ?: return null
-            val propValue = element.text?.trim()?.ifEmpty{ null } ?: return null
-            val resolvedProp = resolveProperty(propName, prefixMap, DEFAULT_VOCAB.META)
-                    ?: return null
-            val resolvedScheme = element.getAttr("scheme")?.trim()?.ifEmpty { null }
-                    ?.let { resolveProperty(it, prefixMap) }
-            val refines = element.getAttr("refines")
-            val lang = element.lang
-            return MetaExpression(resolvedProp, propValue, resolvedScheme, refines, element.id, lang)
-        }
+    private fun parseMetaExpression(element: ElementNode): MetaExpression? {
+        val propName = element.getAttr("property")?.trim()?.ifEmpty { null } ?: return null
+        val propValue = element.text?.trim()?.ifEmpty{ null } ?: return null
+        val resolvedProp = resolveProperty(propName, prefixMap, DEFAULT_VOCAB.META)
+                ?: return null
+        val resolvedScheme = element.getAttr("scheme")?.trim()?.ifEmpty { null }
+                ?.let { resolveProperty(it, prefixMap) }
+        val refines = element.getAttr("refines")
+        val lang = element.lang
+        return MetaExpression(resolvedProp, propValue, resolvedScheme, refines, element.id, lang)
     }
 
     private fun parseXhtmlMeta(metadataElement: ElementNode) : Map<String, String> =
@@ -312,6 +307,15 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
                 if (name != null && content != null) Pair(name, content) else null }
              .associate { it }
 }
+
+private data class MetaExpression(
+        val property: String,
+        val value: String,
+        val scheme: String? = null,
+        val refines: String? = null,
+        val id: String? = null,
+        val lang: String? = null)
+
 
 private data class Property(
         val property: String,

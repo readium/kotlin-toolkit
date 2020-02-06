@@ -24,15 +24,15 @@ internal object ClockValueParser {
             if (metricStart == -1) {
                 parseTimecount(value.toDouble(), "")
             } else {
-                val count = value.substring(0 until metricStart).toDouble()
+                val count = value.substring(0 until metricStart).toDoubleOrNull() ?: return null
                 val metric = value.substring(metricStart until value.length)
                 parseTimecount(count, metric)
             }
         }
     }
 
-    private fun parseClockvalue(value: String) : Double {
-        val parts = value.split(":").map {it.toDouble()}
+    private fun parseClockvalue(value: String) : Double? {
+        val parts = value.split(":").map { it.toDoubleOrNull() ?: return null}
         val min_sec = parts.last() + parts[parts.size-2] * 60
         return if (parts.size > 2) min_sec + parts[parts.size-3] * 3600 else min_sec
     }

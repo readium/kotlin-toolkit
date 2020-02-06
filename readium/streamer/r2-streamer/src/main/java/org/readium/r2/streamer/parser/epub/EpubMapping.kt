@@ -23,7 +23,7 @@ import java.lang.Exception
 
 internal fun Epub.toPublication() : Publication {
     // Compute links
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("Unchecked_cast")
     val itemById = packageDocument.manifest.filter { it.id != null }.associateBy(Item::id) as Map<String, Item>
     val itemrefByIdref = packageDocument.spine.itemrefs.associateBy(Itemref::idref)
     val links = packageDocument.manifest.map { computeLink(it, itemById, itemrefByIdref) }
