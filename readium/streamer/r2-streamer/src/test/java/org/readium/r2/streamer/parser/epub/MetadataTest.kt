@@ -1,10 +1,11 @@
-/* Module: r2-streamer-kotlin
-* Developers: Quentin Gliosca
-*
-* Copyright (c) 2018. Readium Foundation. All rights reserved.
-* Use of this source code is governed by a BSD-style license which is detailed in the
-* LICENSE file present in the project repository where this source code is maintained.
-*/
+/*
+ * Module: r2-streamer-kotlin
+ * Developers: Quentin Gliosca
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
 
 package org.readium.r2.streamer.parser.epub
 
@@ -206,7 +207,6 @@ class TitleTest {
 
     @Test
     fun `Subtitle is rightly parsed (epub3 only)`() {
-        val subtitle = LocalizedString("Alice returns to the magical world from her childhood adventure")
         assertThat(epub3Metadata.localizedSubtitle).isEqualTo( LocalizedString.fromStrings( mapOf(
                 "en-GB" to "Alice returns to the magical world from her childhood adventure",
                 "fr" to "Alice retourne dans le monde magique des aventures de son enfance"
@@ -299,7 +299,7 @@ class DateTest {
     }
 }
 
-class MiscTest {
+class MetadataMiscTest {
     @Test
     fun `Cover link is rightly identified`() {
         val expected = SharedLink(
@@ -316,16 +316,6 @@ class MiscTest {
     fun `Unique identifier is rightly parsed`() {
         val expected = "urn:uuid:2"
         assertThat(parsePackageDocument("package/identifier-unique.opf").metadata.identifier).isEqualTo(expected)
-    }
-
-
-    @Test
-    fun `Version is rightly parsed`() {
-        SoftAssertions().apply {
-            assertThat(parsePackageDocument("package/version-epub2.opf").version).isEqualTo(2.0)
-            assertThat(parsePackageDocument("package/version-epub3.opf").version).isEqualTo(3.0)
-            assertThat(parsePackageDocument("package/version-default.opf").version).isEqualTo(1.2)
-        }
     }
 
     @Test

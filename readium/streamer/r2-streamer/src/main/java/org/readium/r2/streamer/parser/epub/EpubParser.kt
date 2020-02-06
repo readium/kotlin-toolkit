@@ -174,6 +174,7 @@ class EpubParser : PublicationParser {
     }
 
     @Deprecated("This is done automatically in [parse], you can remove the call to [fillEncryption]", ReplaceWith(""))
+    @Suppress("UNUSED_PARAMETER")
     fun fillEncryption(container: Container, publication: Publication, drm: DRM?): Pair<Container, Publication> {
         return Pair(container, publication)
     }

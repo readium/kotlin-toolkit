@@ -26,23 +26,18 @@ import java.lang.Exception
 
 internal fun Epub.toPublication() : Publication {
     // Compute links
-    val itemById = packageDocument.manifest.associateBy(Item::id)
+    @Suppress("UNCHECKED_CAST")
+    val itemById = packageDocument.manifest.filter { it.id != null }.associateBy(Item::id) as Map<String, Item>
     val itemrefByIdref = packageDocument.spine.itemrefs.associateBy(Itemref::idref)
     val links = packageDocument.manifest.map { computeLink(it, itemById, itemrefByIdref) }
     val readingOrderIds = computeReadingOrderIds(links, itemrefByIdref)
     val (readingOrder, resources) = links.partition { it.title in readingOrderIds }
 
     // Compute toc and otherCollections
-    val toc = navigationData?.toc ?: emptyList()
-    val pageList = navigationData?.pageList
-    val otherCollections = listOfNotNull(
-            pageList?.let { PublicationCollection(links = it, role= "page-list") },
-            navigationData?.landmarks?.let { PublicationCollection(links = it, role = "landmarks") },
-            navigationData?.loa?.let { PublicationCollection(links = it, role = "loa") },
-            navigationData?.loi?.let { PublicationCollection(links = it, role = "loi") },
-            navigationData?.lot?.let { PublicationCollection(links = it, role = "lot") },
-            navigationData?.lov?.let { PublicationCollection(links = it, role = "lov") }
-    )
+    val toc = navigationData?.get("toc").orEmpty()
+    val otherCollections = navigationData?.minus("toc")
+            ?.map {PublicationCollection(links = it.value, role= it.key) }
+            .orEmpty()
 
     // Build Publication object
     return Publication(
@@ -331,7 +326,8 @@ private fun Epub.computeAlternates(
     val fallback = item.fallback?.let { id ->
         if (id in fallbackChain) null else
             itemById[id]?.let {
-                computeLink(it, itemById, itemrefByIdref, fallbackChain.plus(item.id) ) }
+                val updatedChain = if (item.id != null) fallbackChain + item.id else fallbackChain
+                computeLink(it, itemById, itemrefByIdref, updatedChain) }
     }
     val mediaOverlays = item.mediaOverlay?.let { id ->
         itemById[id]?.let {

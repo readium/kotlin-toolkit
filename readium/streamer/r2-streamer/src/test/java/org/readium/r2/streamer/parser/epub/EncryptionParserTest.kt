@@ -19,7 +19,7 @@ import org.readium.r2.shared.parser.xml.XmlParser
 class EncryptionParserTest {
     fun parseEncryption(path: String, drm: DRM? = null) : Map<String, Encryption> {
         val res = EncryptionParserTest::class.java.getResourceAsStream(path)
-        check(res != null)
+        checkNotNull(res)
         val document = XmlParser().parse(res)
         return EncryptionParser.parse(document, drm)
     }
@@ -33,7 +33,6 @@ class EncryptionParserTest {
         profile = null,
         scheme = "http://readium.org/2014/01/lcp"
     ))
-
 
     val lcpChap2 =  entry("/OEBPS/xhtml/chapter02.xhtml", Encryption(
         algorithm = "http://www.w3.org/2001/04/xmlenc#aes256-cbc",

@@ -37,13 +37,15 @@ internal object PackageDocumentParser {
     }
 
     private fun parseItem(element: ElementNode, filePath: String) : Item? {
-        val id = element.id ?: return null
         val href = element.getAttr("href")?.let { normalize(filePath, it) } ?: return null
-        val fallback = element.getAttr("fallback")
-        val mediaOverlay = element.getAttr("media-overlay")
-        val mediaType = element.getAttr("media-type")
-        val properties = parseProperties(element)
-        return Item(id, href, fallback, mediaOverlay, mediaType, properties)
+        return Item(
+                href,
+                element.id,
+                element.getAttr("fallback"),
+                element.getAttr("media-overlay"),
+                element.getAttr("media-type"),
+                parseProperties(element)
+        )
     }
 
     private fun parseItemref(element: ElementNode) : Itemref? {
@@ -54,6 +56,6 @@ internal object PackageDocumentParser {
     }
 
     private fun parseProperties(element: ElementNode) : List<String> =
-            element.getAttr("properties")?.split("""\\s+""".toRegex()) ?: listOf()
+            element.getAttr("properties")?.split("""\\s+""".toRegex()).orEmpty()
 
 }

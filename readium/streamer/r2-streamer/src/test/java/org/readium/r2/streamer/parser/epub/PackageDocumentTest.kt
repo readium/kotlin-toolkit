@@ -1,14 +1,16 @@
-/* Module: r2-streamer-kotlin
-* Developers: Quentin Gliosca
-*
-* Copyright (c) 2018. Readium Foundation. All rights reserved.
-* Use of this source code is governed by a BSD-style license which is detailed in the
-* LICENSE file present in the project repository where this source code is maintained.
-*/
+/*
+ * Module: r2-streamer-kotlin
+ * Developers: Quentin Gliosca
+ *
+ * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
 
 package org.readium.r2.streamer.parser.epub
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions
 import org.junit.Test
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Publication
@@ -19,7 +21,7 @@ fun parsePackageDocument(path: String) : Publication {
             ?.let { PackageDocumentParser.parse(it, "OEBPS/content.opf") }
             ?.let { Epub(it) }
             ?.toPublication()
-    check (pub != null)
+    checkNotNull(pub)
     return pub
 }
 
@@ -46,5 +48,14 @@ class ReadingProgressionTest {
     fun `Rtl page progression direction is rightly parsed`() {
         assertThat(parsePackageDocument("package/progression-rtl.opf").metadata.readingProgression)
                 .isEqualTo(ReadingProgression.RTL)
+    }
+}
+
+class PackageMiscTest {
+    @Test
+    fun `Version is rightly parsed`() {
+        assertThat(parsePackageDocument("package/version-epub2.opf").version).isEqualTo(2.0)
+        assertThat(parsePackageDocument("package/version-epub3.opf").version).isEqualTo(3.0)
+        assertThat(parsePackageDocument("package/version-default.opf").version).isEqualTo(1.2)
     }
 }

@@ -22,8 +22,8 @@ internal open class EnumCompanion<T, V>(val default: V, private val map: Map<T, 
 }
 
 internal data class Item(
-        val id: String,
         val href: String,
+        val id: String? = null,
         val fallback: String? = null,
         val mediaOverlay: String? = null,
         val mediaType: String? = null,
@@ -58,15 +58,7 @@ internal typealias Encryption = org.readium.r2.shared.publication.encryption.Enc
 
 internal typealias EncryptionData = Map<String, Encryption>
 
-internal data class NavigationData(
-        val toc: List<Link>,
-        val pageList: List<Link>,
-        val landmarks: List<Link> = emptyList(),
-        val loi: List<Link> = emptyList(),
-        val lot: List<Link> = emptyList(),
-        val loa: List<Link> = emptyList(),
-        val lov: List<Link> = emptyList()
-)
+internal typealias NavigationData = Map<String, List<Link>>
 
 internal data class Epub(
         val packageDocument: PackageDocument,

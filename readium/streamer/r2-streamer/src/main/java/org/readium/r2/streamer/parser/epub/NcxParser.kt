@@ -16,11 +16,11 @@ import org.readium.r2.streamer.parser.normalize
 
 internal object NcxParser {
     fun parse(document: ElementNode, filePath: String): NavigationData? {
-        val toc = document.getFirst("navMap", Namespaces.Ncx)?.let { parseNavMapElement(it, filePath) }
-                ?: emptyList()
-        val pageList = document.getFirst("pageList", Namespaces.Ncx)?.let { parsePageListElement(it, filePath) }
-                ?: emptyList()
-        return NavigationData(toc, pageList)
+        val toc = document.getFirst("navMap", Namespaces.Ncx)
+                ?.let { parseNavMapElement(it, filePath) }?.let { Pair("toc", it) }
+        val pageList = document.getFirst("pageList", Namespaces.Ncx)
+                ?.let { parsePageListElement(it, filePath) }?.let { Pair("page-list", it) }
+        return listOfNotNull(toc, pageList).toMap()
     }
 
     private fun parseNavMapElement(element: ElementNode, filePath: String): List<Link> =
@@ -29,25 +29,27 @@ internal object NcxParser {
     private fun parsePageListElement(element: ElementNode, filePath: String): List<Link> =
             element.get("pageTarget", Namespaces.Ncx).mapNotNull {
                 val href = extractHref(it, filePath)
-                if (href == "#") null else Link(title = extractTitle(it), href = href)
+                val title = extractTitle(it)
+                if (href.isNullOrBlank() || title.isNullOrBlank())
+                    null
+                else Link(title = title, href = href)
             }
-
-    private fun extractTitle(element: ElementNode) =
-            element.getFirst("navLabel", Namespaces.Ncx)?.getFirst("text", Namespaces.Ncx)
-                    ?.text?.replace("\\s+".toRegex(), " ")?.trim() ?: ""
-
-    private fun extractHref(element: ElementNode, filePath: String): String {
-        val rawHref = element.getFirst("content", Namespaces.Ncx)?.getAttr("src")
-        return if (rawHref != null) normalize(filePath, rawHref) else "#"
-    }
 
     private fun parseNavPointElement(element: ElementNode, filePath: String): Link? {
         val title = extractTitle(element)
         val href = extractHref(element, filePath)
         val children = element.get("navPoint", Namespaces.Ncx).mapNotNull { parseNavPointElement(it, filePath) }
-        return if (children.isEmpty() && (href == "#" || title == ""))
+        return if (children.isEmpty() && (href == null || title == null))
             null
         else
-            Link(title = title, href = href, children = children)
+            Link(title = title, href = href ?: "#", children = children)
     }
+
+    private fun extractTitle(element: ElementNode) =
+            element.getFirst("navLabel", Namespaces.Ncx)?.getFirst("text", Namespaces.Ncx)
+                    ?.text?.replace("\\s+".toRegex(), " ")?.trim()?.ifBlank { null }
+
+    private fun extractHref(element: ElementNode, filePath: String) =
+            element.getFirst("content", Namespaces.Ncx)?.getAttr("src")
+                    ?.ifBlank { null }?.let { normalize(filePath, it) }
 }
