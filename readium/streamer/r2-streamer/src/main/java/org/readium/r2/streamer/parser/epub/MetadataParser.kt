@@ -33,7 +33,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
         val rendition = parseRenditionProperties(globalProperties)
         val media = parseMediaProperties(globalProperties, otherProperties)
 
-        val oldMeta = if (epubVersion >= 3.0) emptyMap() else parseXhtmlMeta(metadataElement)
+        val oldMeta = if (epubVersion >= 3.0) emptyMap() else parseXhtmlMetas(metadataElement)
 
         return EpubMetadata(dcMetadata, media, rendition, links, oldMeta)
     }
@@ -55,7 +55,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
     }
 
     private fun parseDcElements(dcElements: List<ElementNode>,
-                                metaProperties: Map<String, List<Property>>,
+                                metaProperties: Map<String, List<MetaItem>>,
                                 uniqueIdentifierId: String?,
                                 dctermsModified: java.util.Date?): GeneralMetadata {
         val titles: MutableList<Title> = LinkedList()
@@ -118,7 +118,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
         )
     }
 
-    private fun parseTitle(node: ElementNode, props: List<Property>?): Title? {
+    private fun parseTitle(node: ElementNode, props: List<MetaItem>?): Title? {
         val values: MutableMap<String?, String> = mutableMapOf()
         values[node.lang] = node.text?.trim()?.ifEmpty { null } ?: return null
         var type: String? = null
@@ -138,7 +138,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
         return Title(LocalizedString.fromStrings(values), fileAs, type, displaySeq)
     }
 
-    private fun parseContributor(node: ElementNode, props: List<Property>?): Contributor? {
+    private fun parseContributor(node: ElementNode, props: List<MetaItem>?): Contributor? {
         val names: MutableMap<String?, String> = mutableMapOf()
         names[node.lang] = node.text?.trim()?.ifEmpty{ null } ?: return null
         val roles: MutableSet<String> = mutableSetOf()
@@ -167,7 +167,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
                 Date(it, node.getAttrNs("event", Namespaces.Opf))
             }
 
-    private fun parseSubject(node: ElementNode, props: List<Property>?) : Subject? {
+    private fun parseSubject(node: ElementNode, props: List<MetaItem>?) : Subject? {
         val values: MutableMap<String?, String> = mutableMapOf()
         node.text?.trim()?.let { values[node.lang] = it }
         var authority: String? = null
@@ -193,7 +193,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
         else null
     }
 
-    private fun parseRenditionProperties(properties: Collection<Property>): RenditionMetadata {
+    private fun parseRenditionProperties(properties: Collection<MetaItem>): RenditionMetadata {
         var flow: RenditionMetadata.Flow = RenditionMetadata.Flow.default
         var layout: RenditionMetadata.Layout = RenditionMetadata.Layout.default
         var orientation: RenditionMetadata.Orientation = RenditionMetadata.Orientation.default
@@ -220,8 +220,8 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
         return RenditionMetadata(flow, layout, orientation, spread)
     }
 
-    private fun parseMediaProperties(globalProperties: Collection<Property>,
-                                     propertyById: Map<String, List<Property>>): MediaMetadata {
+    private fun parseMediaProperties(globalProperties: Collection<MetaItem>,
+                                     propertyById: Map<String, List<MetaItem>>): MediaMetadata {
         var activeClass: String? = null
         var playbackActiveClass: String? = null
         val narrators: MutableList<Contributor> = LinkedList()
@@ -264,14 +264,14 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
                 narrators)
     }
 
-    private fun parseMetaElements(metadataElement: ElementNode): Pair<List<Property>, Map<String, List<Property>>> {
+    private fun parseMetaElements(metadataElement: ElementNode): Pair<List<MetaItem>, Map<String, List<MetaItem>>> {
         val metaElements = metadataElement.get("meta", Namespaces.Opf)
         val metadataExpr = metaElements.mapNotNull { parseMetaExpression(it) }
-        val metadataProp = metadataExpr.map { Property(it.property, it.value, it.scheme, it.id, it.lang) }
+        val metadataProp = metadataExpr.map { MetaItem(it.property, it.value, it.scheme, it.id, it.lang) }
 
-        val itemById = metadataProp.associateBy(Property::id)
-        val globalItems: MutableList<Property> = mutableListOf()
-        val mainItems: MutableMap<String, MutableList<Property>> = mutableMapOf()
+        val itemById = metadataProp.associateBy(MetaItem::id)
+        val globalItems: MutableList<MetaItem> = mutableListOf()
+        val mainItems: MutableMap<String, MutableList<MetaItem>> = mutableMapOf()
         metadataExpr.zip(metadataProp).forEach {
             val refinedId = it.first.refines?.removePrefix("#")
             val refinedProp = refinedId?.let { itemById[it] }
@@ -299,7 +299,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
         return MetaExpression(resolvedProp, propValue, resolvedScheme, refines, element.id, lang)
     }
 
-    private fun parseXhtmlMeta(metadataElement: ElementNode) : Map<String, String> =
+    private fun parseXhtmlMetas(metadataElement: ElementNode) : Map<String, String> =
             metadataElement.get("meta", Namespaces.Opf)
             .mapNotNull {
                 val name = it.getAttr("name")
@@ -314,14 +314,5 @@ private data class MetaExpression(
         val scheme: String? = null,
         val refines: String? = null,
         val id: String? = null,
-        val lang: String? = null)
-
-
-private data class Property(
-        val property: String,
-        val value: String,
-        val scheme: String? = null,
-        val id: String? = null,
-        val lang: String? = null,
-        val children: MutableList<Property> = mutableListOf()
+        val lang: String? = null
 )

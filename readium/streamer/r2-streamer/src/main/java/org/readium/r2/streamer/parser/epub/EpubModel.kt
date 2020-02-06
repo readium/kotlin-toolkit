@@ -57,9 +57,9 @@ internal typealias Encryption = org.readium.r2.shared.publication.encryption.Enc
 
 internal typealias EncryptionData = Map<String, Encryption>
 
-internal typealias SharedLink = org.readium.r2.shared.publication.Link
+internal typealias Link = org.readium.r2.shared.publication.Link
 
-internal typealias NavigationData = Map<String, List<SharedLink>>
+internal typealias NavigationData = Map<String, List<Link>>
 
 internal data class Epub(
         val packageDocument: PackageDocument,

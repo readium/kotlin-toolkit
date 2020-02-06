@@ -125,12 +125,12 @@ class LinkTest {
     @Test
     fun `readingOrder is rightly computed`() {
         assertThat(resourcesPub.readingOrder).containsExactly(
-                SharedLink(
+                Link(
                         href = "/titlepage.xhtml",
                         title = "titlepage",
                         type = "application/xhtml+xml"
                 ),
-                SharedLink(
+                Link(
                         href = "/OEBPS/chapter01.xhtml",
                         title = "chapter01",
                         type = "application/xhtml+xml"
@@ -141,50 +141,50 @@ class LinkTest {
     @Test
     fun `resources are rightly computed`() {
         assertThat(resourcesPub.resources).containsExactlyInAnyOrder(
-                SharedLink(
+                Link(
                         href = "/OEBPS/fonts/MinionPro.otf",
                         title = "font0",
                         type = "application/vnd.ms-opentype"
                 ),
-                SharedLink(
+                Link(
                         href = "/OEBPS/nav.xhtml",
                         title = "nav",
                         type = "application/xhtml+xml",
                         rels = listOf("contents")
                 ),
-                SharedLink(
+                Link(
                         href = "/style.css",
                         title = "css",
                         type = "text/css"
                 ),
-                SharedLink(
+                Link(
                         href = "/OEBPS/chapter01.smil",
                         title = "chapter01_smil",
                         type = "application/smil+xml"
                 ),
-                SharedLink(
+                Link(
                         href = "/OEBPS/chapter02.smil",
                         title = "chapter02_smil",
                         type = "application/smil+xml",
                         duration = 1949.0
                 ),
-                SharedLink(
+                Link(
                         href = "/OEBPS/images/alice01a.png",
                         title = "img01a",
                         type = "image/png",
                         rels = listOf("cover")
                 ),
-                SharedLink(
+                Link(
                         href = "/OEBPS/images/alice02a.gif",
                         title = "img02a",
                         type = "image/gif"
                 ),
-                SharedLink(
+                Link(
                         href = "/OEBPS/chapter02.xhtml",
                         title = "chapter02",
                         type = "application/xhtml+xml"
                 ),
-                SharedLink(
+                Link(
                         href = "/OEBPS/nomediatype.txt",
                         title = "nomediatype"
                 )

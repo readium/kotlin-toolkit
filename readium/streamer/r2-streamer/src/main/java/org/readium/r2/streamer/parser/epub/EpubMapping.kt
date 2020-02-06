@@ -50,7 +50,7 @@ internal fun Epub.toPublication() : Publication {
         }
 }
 
-private fun computeReadingOrderIds(links: List<SharedLink>, itemrefByIdref: Map<String, Itemref>) : Set<String> {
+private fun computeReadingOrderIds(links: List<Link>, itemrefByIdref: Map<String, Itemref>) : Set<String> {
     val ids: MutableSet<String> = mutableSetOf()
     for (l in links) {
         if (itemrefByIdref.containsKey(l.title) && (itemrefByIdref[l.title] as Itemref).linear) {
@@ -60,7 +60,7 @@ private fun computeReadingOrderIds(links: List<SharedLink>, itemrefByIdref: Map<
     return ids
 }
 
-private fun computeIdChain(link: SharedLink) : Set<String> {
+private fun computeIdChain(link: Link) : Set<String> {
     // The termination has already been checked while computing links
     val ids: MutableSet<String> = mutableSetOf( link.title as String )
     for (a in link.alternates) {
@@ -69,7 +69,7 @@ private fun computeIdChain(link: SharedLink) : Set<String> {
     return ids
 }
 
-private fun mapLink(link: EpubLink) : SharedLink? {
+private fun mapLink(link: EpubLink) : Link? {
     val contains: MutableList<String> = mutableListOf()
     if (link.rel.contains(DEFAULT_VOCAB.LINK.iri + "record")) {
         if (link.properties.contains(DEFAULT_VOCAB.LINK.iri + "onix"))
@@ -77,7 +77,7 @@ private fun mapLink(link: EpubLink) : SharedLink? {
         if (link.properties.contains(DEFAULT_VOCAB.LINK.iri + "xmp"))
             contains.add("xmp")
     }
-    return SharedLink(
+    return Link(
             href = link.href,
             type = link.mediaType,
             rels = link.rel,
@@ -273,12 +273,12 @@ private fun Epub.computeLink(
         item: Item,
         itemById: Map<String, Item>,
         itemrefByIdref: Map<String, Itemref>,
-        fallbackChain: Set<String> = emptySet()) : SharedLink {
+        fallbackChain: Set<String> = emptySet()) : Link {
 
     val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
     val alternates = computeAlternates(item, itemById, itemrefByIdref, fallbackChain)
 
-    return SharedLink(
+    return Link(
             title = item.id,
             href = normalize(packageDocument.path, item.href),
             type = item.mediaType,
@@ -320,7 +320,7 @@ private fun Epub.computeAlternates(
         item: Item,
         itemById: Map<String, Item>,
         itemrefByIdref: Map<String, Itemref>,
-        fallbackChain: Set<String>) : List<SharedLink> {
+        fallbackChain: Set<String>) : List<Link> {
 
     val fallback = item.fallback?.let { id ->
         if (id in fallbackChain) null else
