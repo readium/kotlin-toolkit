@@ -16,11 +16,8 @@ import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.Metadata as SharedMetadata
-import org.readium.r2.shared.publication.Link as SharedLink
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.PublicationCollection
-import org.readium.r2.shared.publication.encryption.Encryption
-
 import org.readium.r2.streamer.parser.normalize
 import java.lang.Exception
 
@@ -34,9 +31,9 @@ internal fun Epub.toPublication() : Publication {
     val (readingOrder, resources) = links.partition { it.title in readingOrderIds }
 
     // Compute toc and otherCollections
-    val toc = navigationData?.get("toc").orEmpty()
-    val otherCollections = navigationData?.minus("toc")
-            ?.map {PublicationCollection(links = it.value, role= it.key) }
+    val toc = navigationData["toc"].orEmpty()
+    val otherCollections = navigationData.minus("toc")
+            .map {PublicationCollection(links = it.value, role= it.key) }
             .orEmpty()
 
     // Build Publication object
@@ -72,7 +69,7 @@ private fun computeIdChain(link: SharedLink) : Set<String> {
     return ids
 }
 
-private fun mapLink(link: Link) : SharedLink? {
+private fun mapLink(link: EpubLink) : SharedLink? {
     val contains: MutableList<String> = mutableListOf()
     if (link.rel.contains(DEFAULT_VOCAB.LINK.iri + "record")) {
         if (link.properties.contains(DEFAULT_VOCAB.LINK.iri + "onix"))
@@ -124,7 +121,7 @@ private fun Epub.computeMetadata() : SharedMetadata {
 
     // Other Metadata
     val otherMetadata: MutableMap<String, Any> = mutableMapOf()
-    otherMetadata["presentation"] =  mapRendition(packageDocument.metadata.renditionMetadata).toJSON().toMap()
+    otherMetadata["presentation"] = mapRendition(packageDocument.metadata.renditionMetadata).toJSON().toMap()
     generalMetadata.rights?.let { otherMetadata["http://purl.org/dc/elements/1.1/rights"] = it }
     generalMetadata.source?.let { otherMetadata["http://purl.org/dc/elements/1.1/source"] = it }
 
@@ -293,15 +290,18 @@ private fun Epub.computeLink(
 }
 
 private fun Epub.computePropertiesAndRels(item: Item, itemref: Itemref?) : Pair<List<String>, Properties> {
-    val rels: MutableList<String> = mutableListOf()
     val properties: MutableMap<String, Any> = mutableMapOf()
-    val contains: MutableList<String> = mutableListOf()
-    parseItemProperties(item.properties, contains, rels)
+    val rels: MutableList<String> = mutableListOf()
+    val (manifestRels, contains, others) = parseItemProperties(item.properties)
+    rels.addAll(manifestRels)
     if (contains.isNotEmpty()) {
         properties["contains"] = contains
     }
+    if (others.isNotEmpty()) {
+        properties["others"] = others
+    }
     if (itemref != null) {
-        parseItemrefProperties(itemref.properties, properties)
+        properties.putAll(parseItemrefProperties(itemref.properties))
     }
 
     if (packageDocument.epubVersion < 3.0) {
@@ -309,9 +309,8 @@ private fun Epub.computePropertiesAndRels(item: Item, itemref: Itemref?) : Pair<
         if (coverId != null && item.id == coverId) rels.add("cover")
     }
 
-    val encryption: Encryption? = encryptionData?.let { it[item.href] }
-    if (encryption != null) {
-        properties["encrypted"] = encryption
+    encryptionData[item.href]?.let {
+        properties["encrypted"] = it
     }
 
     return Pair(rels, Properties(properties))
@@ -336,27 +335,27 @@ private fun Epub.computeAlternates(
     return listOfNotNull(fallback, mediaOverlays)
 }
 
-private fun parseItemProperties(properties: List<String>,
-                                linkContains: MutableList<String>,
-                                linkRels: MutableList<String>) {
-
+private fun parseItemProperties(properties: List<String>) : Triple<List<String>, List<String>, List<String>> {
+    val rels: MutableList<String> = mutableListOf()
+    val contains: MutableList<String> = mutableListOf()
+    val others: MutableList<String> = mutableListOf()
     for (property in properties) {
         when (property) {
-            DEFAULT_VOCAB.ITEM.iri + "scripted" -> "js"
-            DEFAULT_VOCAB.ITEM.iri + "mathml" -> "onix-record"
-            DEFAULT_VOCAB.ITEM.iri + "svg" -> "svg"
-            DEFAULT_VOCAB.ITEM.iri + "xmp-record" -> "xmp"
-            DEFAULT_VOCAB.ITEM.iri + "remote-resources" -> "remote-resources"
-            else -> null
-        }?.let { linkContains.add(it) }
-        when (property) {
-            "nav" -> linkRels.add("contents")
-            "cover-image" -> linkRels.add("cover")
+            DEFAULT_VOCAB.ITEM.iri + "scripted" -> contains.add("js")
+            DEFAULT_VOCAB.ITEM.iri + "mathml" -> contains.add("mathml")
+            DEFAULT_VOCAB.ITEM.iri + "svg" -> contains.add("svg")
+            DEFAULT_VOCAB.ITEM.iri + "xmp-record" -> contains.add("xmp")
+            DEFAULT_VOCAB.ITEM.iri + "remote-resources" -> contains.add("remote-resources")
+            DEFAULT_VOCAB.ITEM.iri + "nav" -> rels.add("contents")
+            DEFAULT_VOCAB.ITEM.iri + "cover-image" -> rels.add("cover")
+            else -> others.add(property)
         }
     }
+    return Triple(rels, contains, others)
 }
 
-private fun parseItemrefProperties(properties: List<String>, linkProperties: MutableMap<String, Any>) {
+private fun parseItemrefProperties(properties: List<String>) : Map<String, String> {
+    val linkProperties: MutableMap<String, String> = mutableMapOf()
     for (property in properties) {
         //  Page
         when (property) {
@@ -372,7 +371,7 @@ private fun parseItemrefProperties(properties: List<String>, linkProperties: Mut
             PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-node" -> "none"
             PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-auto" -> "auto"
             PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-landscape" -> "landscape"
-            PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-portrait" -> "both"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-portrait",
             PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-both" -> "both"
             else -> null
         }?.let { linkProperties["spread"] = it }
@@ -393,9 +392,10 @@ private fun parseItemrefProperties(properties: List<String>, linkProperties: Mut
         when (property) {
             PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-auto" -> "auto"
             PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-paginated" -> "paginated"
-            PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-scrolled-continuous" -> "scrolled"
+            PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-scrolled-continuous",
             PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-scrolled-doc" -> "scrolled"
             else -> null
         }?.let { linkProperties["overflow"] = it }
     }
+    return linkProperties
 }

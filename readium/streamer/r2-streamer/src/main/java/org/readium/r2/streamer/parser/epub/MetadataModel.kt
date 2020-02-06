@@ -17,16 +17,16 @@ internal typealias Contributor = org.readium.r2.shared.publication.Contributor
 
 internal data class Title(val value: LocalizedString, val fileAs: String? = null, val type: String? = null, val displaySeq: Int? = null)
 
-internal data class Link(val rel: List<String>, val href: String,
-                val mediaType: String?, val refines: String?, val properties: List<String> = listOf())
+internal data class EpubLink(val href: String, val rel: List<String>,
+                             val mediaType: String?, val refines: String?, val properties: List<String> = listOf())
 
 internal data class Date(val value: String, val event: String? = null)
 
-internal data class Metadata(
+internal data class EpubMetadata(
         val generalMetadata: GeneralMetadata,
         val mediaMetadata: MediaMetadata,
         val renditionMetadata: RenditionMetadata,
-        val links: List<Link>,
+        val links: List<EpubLink>,
         val oldMeta: Map<String, String>
 )
 

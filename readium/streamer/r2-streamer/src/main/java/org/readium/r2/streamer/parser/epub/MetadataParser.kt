@@ -19,9 +19,9 @@ import org.readium.r2.streamer.parser.normalize
 
 
 internal class MetadataParser (private val epubVersion: Double, private val prefixMap: Map<String, String>) {
-    fun parse(document: ElementNode, filePath: String) : Metadata? {
+    fun parse(document: ElementNode, filePath: String) : EpubMetadata? {
         val metadataElement = document.getFirst("metadata", Namespaces.Opf) ?: return null
-        val links = parseLinks(metadataElement.get("link", Namespaces.Opf), prefixMap, filePath)
+        val links = metadataElement.get("link", Namespaces.Opf).mapNotNull{ parseLink(it, prefixMap, filePath) }
         val (globalProperties, otherProperties) = MetadataExpressionParser(prefixMap).parse(metadataElement)
 
         val uniqueIdentifierId = document.getAttr("unique-identifier")
@@ -35,7 +35,7 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
 
         val oldMeta = if (epubVersion >= 3.0) mapOf() else parseXhtmlMeta(metadataElement)
 
-        return Metadata(dcMetadata, media, rendition, links, oldMeta)
+        return EpubMetadata(dcMetadata, media, rendition, links, oldMeta)
     }
 
     private fun parseModified(date: String) =
@@ -45,18 +45,14 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
             null
         }
 
-    private fun parseLinks(elements: List<ElementNode>, prefixMap: Map<String, String>, filePath: String) : List<Link> =
-        elements.mapNotNull {
-            val href = it.getAttr("href")
-            val rel = it.getAttr("rel")?.split("""\\s+""".toRegex())
-                    ?.mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
-            if (href != null && rel != null) {
-                val properties = it.getAttr("properties")?.split("""\\s+""".toRegex())
-                        ?.mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
-                        ?: listOf()
-                Link(rel, normalize(filePath, href), it.getAttr("media-type"), it.getAttr("refines"), properties)
-            } else null
-        }
+    private fun parseLink(element: ElementNode, prefixMap: Map<String, String>, filePath: String) : EpubLink? {
+        val href = element.getAttr("href") ?: return null
+        val relAttr = element.getAttr("rel").orEmpty()
+        val rel = parseProperties(relAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
+        val propAttr = element.getAttr("properties").orEmpty()
+        val properties = parseProperties(propAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
+        return EpubLink(normalize(filePath, href), rel, element.getAttr("media-type"), element.getAttr("refines"), properties)
+    }
 
     private fun parseDcElements(dcElements: List<ElementNode>,
                                 metaProperties: Map<String, List<Property>>,
@@ -296,11 +292,12 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
         }
 
         private fun parseExpression(element: ElementNode): MetaExpression? {
-            val propName = element.getAttr("property") ?: return null
+            val propName = element.getAttr("property")?.trim()?.ifEmpty { null } ?: return null
             val propValue = element.text?.trim()?.ifEmpty{ null } ?: return null
             val resolvedProp = resolveProperty(propName, prefixMap, DEFAULT_VOCAB.META)
                     ?: return null
-            val resolvedScheme = element.getAttr("scheme")?.let { resolveProperty(it, prefixMap) }
+            val resolvedScheme = element.getAttr("scheme")?.trim()?.ifEmpty { null }
+                    ?.let { resolveProperty(it, prefixMap) }
             val refines = element.getAttr("refines")
             val lang = element.lang
             return MetaExpression(resolvedProp, propValue, resolvedScheme, refines, element.id, lang)

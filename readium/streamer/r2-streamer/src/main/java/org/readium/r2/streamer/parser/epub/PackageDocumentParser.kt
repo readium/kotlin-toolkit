@@ -14,17 +14,16 @@ import org.readium.r2.streamer.parser.normalize
 
 internal object PackageDocumentParser {
     fun parse(document: ElementNode, filePath: String) : PackageDocument? {
-        val prefixAttribute = document.getAttr("prefix")
-        val packagePrefixes = if (prefixAttribute == null) mapOf() else parsePrefixes(prefixAttribute)
+        val packagePrefixes = document.getAttr("prefix")?.let { parsePrefixes(it) }.orEmpty()
         val prefixMap = PACKAGE_RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
 
         val epubVersion = document.getAttr("version")?.toDoubleOrNull() ?: 1.2
         val metadata = MetadataParser(epubVersion, prefixMap).parse(document, filePath) ?: return null
 
         val manifestElement = document.getFirst("manifest", Namespaces.Opf) ?: return null
-        val manifest = manifestElement.get("item", Namespaces.Opf).mapNotNull { parseItem(it, filePath) }
+        val manifest = manifestElement.get("item", Namespaces.Opf).mapNotNull { parseItem(it, filePath, prefixMap) }
         val spineElement = document.getFirst("spine", Namespaces.Opf) ?: return null
-        val itemrefs = spineElement.get("itemref", Namespaces.Opf).mapNotNull { parseItemref(it) }
+        val itemrefs = spineElement.get("itemref", Namespaces.Opf).mapNotNull { parseItemref(it, prefixMap) }
         val pageProgressionDirection = when(spineElement.getAttr("page-progression-direction")) {
             "rtl" -> ReadingProgression.RTL
             "ltr" -> ReadingProgression.LTR
@@ -36,26 +35,25 @@ internal object PackageDocumentParser {
         return PackageDocument(filePath, epubVersion, metadata, manifest, spine)
     }
 
-    private fun parseItem(element: ElementNode, filePath: String) : Item? {
+    private fun parseItem(element: ElementNode, filePath: String, prefixMap: Map<String, String>) : Item? {
         val href = element.getAttr("href")?.let { normalize(filePath, it) } ?: return null
+        val propAttr = element.getAttr("properties").orEmpty()
+        val properties = parseProperties(propAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEM ) }
         return Item(
                 href,
                 element.id,
                 element.getAttr("fallback"),
                 element.getAttr("media-overlay"),
                 element.getAttr("media-type"),
-                parseProperties(element)
+                properties
         )
     }
 
-    private fun parseItemref(element: ElementNode) : Itemref? {
+    private fun parseItemref(element: ElementNode, prefixMap: Map<String, String>) : Itemref? {
         val idref = element.getAttr("idref") ?: return null
         val notLinear = element.getAttr("linear") == "no"
-        val properties = parseProperties(element)
+        val propAttr = element.getAttr("properties").orEmpty()
+        val properties = parseProperties(propAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEMREF ) }
         return Itemref(idref, !notLinear, properties)
     }
-
-    private fun parseProperties(element: ElementNode) : List<String> =
-            element.getAttr("properties")?.split("""\\s+""".toRegex()).orEmpty()
-
 }

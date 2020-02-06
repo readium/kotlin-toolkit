@@ -14,25 +14,25 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
 
 internal object NavigationDocumentParser {
-    fun parse(document: ElementNode, filePath: String) : NavigationData? {
-        val prefixAttribute = document.getAttrNs("prefix", Namespaces.Ops)
-        val docPrefixes = if (prefixAttribute == null) emptyMap() else parsePrefixes(prefixAttribute)
+    fun parse(document: ElementNode, filePath: String) : NavigationData {
+        val docPrefixes = document.getAttrNs("prefix", Namespaces.Ops)?.let {  parsePrefixes(it) }.orEmpty()
         val prefixMap = CONTENT_RESERVED_PREFIXES + docPrefixes // prefix element overrides reserved prefixes
-        val body = document.getFirst("body", Namespaces.Xhtml) ?: return null
 
-        return  body.collect("nav", Namespaces.Xhtml).flatMap { nav ->
-           val types = nav.getAttrNs("type", Namespaces.Ops)?.trim()?.split("\\s+".toRegex())
-                   ?.mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.TYPE) }
-           val links = parseNavElement(nav, filePath)
-           if (types != null && links != null) types.map {  Pair(it, links) } else emptyList()
-        }.toMap().filterValues { it.isNotEmpty() }.mapKeys {
+        val body = document.getFirst("body", Namespaces.Xhtml) ?: return emptyMap()
+        val navs = body.collect("nav", Namespaces.Xhtml).mapNotNull { parseNavElement(it, filePath, prefixMap) }
+        val navMap = navs.flatMap { nav -> nav.first.map { type -> Pair(type, nav.second) } }.toMap()
+        return  navMap.mapKeys {
             val suffix = it.key.removePrefix(DEFAULT_VOCAB.TYPE.iri)
             if (suffix in listOf("toc", "page-list", "landmarks", "lot", "loi", "loa", "lov")) suffix else it.key
         }
     }
 
-    private fun parseNavElement(nav: ElementNode, filePath: String) : List<Link>? =
-        nav.getFirst("ol", Namespaces.Xhtml)?.let { parseOlElement(it, filePath) }
+    private fun parseNavElement(nav: ElementNode, filePath: String, prefixMap: Map<String, String>) : Pair<List<String>, List<Link>>? {
+        val typeAttr = nav.getAttrNs("type", Namespaces.Ops) ?: return null
+        val types = parseProperties(typeAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.TYPE) }
+        val links = nav.getFirst("ol", Namespaces.Xhtml)?.let { parseOlElement(it, filePath) }
+        return if (types.isNotEmpty() && !links.isNullOrEmpty()) Pair(types, links) else null
+    }
 
     private fun parseOlElement(element: ElementNode, filePath: String): List<Link> =
         element.get("li", Namespaces.Xhtml).mapNotNull {  parseLiElement(it, filePath) }

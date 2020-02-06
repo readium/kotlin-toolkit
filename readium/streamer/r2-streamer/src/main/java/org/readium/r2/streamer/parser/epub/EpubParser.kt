@@ -75,13 +75,12 @@ class EpubParser : PublicationParser {
         if (!File(path).exists())
             throw ContainerError.missingFile(path)
 
-        val isDirectory = File(path).isDirectory
-        val container = if (isDirectory) {
+        val container = if (File(path).isDirectory) {
                 DirectoryContainer(path = path, mimetype = EPUBConstant.mimetype)
             } else {
                 ArchiveContainer(path = path, mimetype = EPUBConstant.mimetype)
             }
-        container.drm = getDRM(container)
+        container.drm =  if (container.contains(relativePath = Paths.lcpl)) DRM(DRM.Brand.lcp) else null
         return container
     }
 
@@ -99,9 +98,9 @@ class EpubParser : PublicationParser {
 
         val encryptionData =
             if (container.contains(Paths.encryption))
-                parseXmlDocument(Paths.encryption, container)?.let { EncryptionParser.parse(it, container.drm) }
+                parseXmlDocument(Paths.encryption, container)?.let { EncryptionParser.parse(it, container.drm) }.orEmpty()
             else
-                null
+                emptyMap()
 
         val packageXml = parseXmlDocument(container.rootFile.rootFilePath, container) ?: return null
         val packageDocument = PackageDocumentParser.parse(packageXml, container.rootFile.rootFilePath) ?: return null
@@ -113,12 +112,12 @@ class EpubParser : PublicationParser {
                 parseXmlDocument(ncxPath, container)?.let { NcxParser.parse(it, ncxPath) }
             }
         } else {
-            val navItem = packageDocument.manifest.firstOrNull { it.properties.contains("nav") }
+            val navItem = packageDocument.manifest.firstOrNull { it.properties.contains(DEFAULT_VOCAB.ITEM.iri + "nav") }
             navItem?.let {
                 val navPath = normalize(packageDocument.path, navItem.href)
                 parseXmlDocument(navPath, container)?.let { NavigationDocumentParser.parse(it, navPath) }
             }
-        }
+        }.orEmpty()
 
         val publication = Epub(packageDocument, navigationData, encryptionData).toPublication()
         publication.internalData["type"] = "epub"
@@ -132,14 +131,6 @@ class EpubParser : PublicationParser {
 
         return PubBox(publication, container)
     }
-
-    private fun getDRM(container: Container): DRM? =
-            try {
-                    container.data(relativePath = Paths.lcpl)
-                    DRM(DRM.Brand.lcp)
-                } catch (e: Throwable) {
-                    null
-                }
 
     private fun getRootFilePath(document: ElementNode): String =
             document.getFirst("rootfiles", Namespaces.Opc)
