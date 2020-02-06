@@ -56,6 +56,11 @@ class ParsePrefixesTest {
             assertThat(prefixes).hasSize(2)
         }
     }
+
+    @Test
+    fun `Empty string is rightly handled`() {
+        assertThat(parsePrefixes("")).isEmpty()
+    }
 }
 
 class TestResolveProperty {
@@ -75,5 +80,30 @@ class TestResolveProperty {
     fun `Return null when the prefix is unknown`() {
         assertThat(resolveProperty("unknown:narrator", PACKAGE_RESERVED_PREFIXES, DEFAULT_VOCAB.META))
                 .isNull()
+    }
+
+    @Test
+    fun `Empty string is rightly handled`() {
+        assertThat(resolveProperty("", mapOf())).isNull()
+    }
+}
+
+class ParsePropertiesTest {
+    @Test
+    fun `Various white spaces are accepted`() {
+        val properties = """
+            rendition:flow-auto        rendition:layout-pre-paginated             
+                 rendition:orientation-auto
+        """
+        assertThat(parseProperties(properties)).containsExactly(
+                "rendition:flow-auto",
+                "rendition:layout-pre-paginated",
+                "rendition:orientation-auto"
+        )
+    }
+
+    @Test
+    fun `Empty string is rightly handled`() {
+        assertThat(parseProperties("")).isEmpty()
     }
 }

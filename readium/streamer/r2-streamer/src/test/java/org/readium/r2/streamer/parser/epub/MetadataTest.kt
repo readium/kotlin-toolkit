@@ -301,18 +301,6 @@ class DateTest {
 
 class MetadataMiscTest {
     @Test
-    fun `Cover link is rightly identified`() {
-        val expected = SharedLink(
-                title = "cover",
-                href = "/OEBPS/cover.jpg",
-                type = "image/jpeg",
-                rels = listOf("cover")
-        )
-        assertThat(parsePackageDocument("package/cover-epub2.opf").coverLink).isEqualTo(expected)
-        assertThat(parsePackageDocument("package/cover-epub3.opf").coverLink).isEqualTo(expected)
-    }
-
-    @Test
     fun `Unique identifier is rightly parsed`() {
         val expected = "urn:uuid:2"
         assertThat(parsePackageDocument("package/identifier-unique.opf").metadata.identifier).isEqualTo(expected)
@@ -326,5 +314,17 @@ class MetadataMiscTest {
         assertThat(presentation.spread).isEqualTo(Presentation.Spread.BOTH)
         assertThat(presentation.orientation).isEqualTo(Presentation.Orientation.LANDSCAPE)
         assertThat(presentation.layout).isEqualTo(EpubLayout.FIXED)
+    }
+
+    @Test
+    fun `Cover link is rightly identified`() {
+        val expected = SharedLink(
+                title = "cover",
+                href = "/OEBPS/cover.jpg",
+                type = "image/jpeg",
+                rels = listOf("cover")
+        )
+        assertThat(parsePackageDocument("package/cover-epub2.opf").coverLink).isEqualTo(expected)
+        assertThat(parsePackageDocument("package/cover-epub3.opf").coverLink).isEqualTo(expected)
     }
 }
