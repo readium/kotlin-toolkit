@@ -50,17 +50,24 @@ enum class ContentLayout(val key: String) : Parcelable {
          * [readingProgression].
          * Defaults to [LTR].
          */
-        fun from(language: String, readingProgression: ReadingProgression? = null): ContentLayout {
+        fun from(language: String, readingProgression: ReadingProgression = ReadingProgression.AUTO): ContentLayout {
             // Removes the region from the BCP 47 tag
             @Suppress("NAME_SHADOWING")
             val language = language.split("-").firstOrNull() ?: language
 
-            val isRTLProgression = (readingProgression == ReadingProgression.RTL)
+            fun ReadingProgression.getContentLayoutOrDefault(default: ContentLayout, isCjk: Boolean = false): ContentLayout =
+                when (this) {
+                    ReadingProgression.RTL, ReadingProgression.BTT ->
+                        if (isCjk) CJK_VERTICAL else RTL
+                    ReadingProgression.LTR, ReadingProgression.TTB ->
+                        if (isCjk) CJK_HORIZONTAL else LTR
+                    ReadingProgression.AUTO -> default
+                }
 
             return when (language.toLowerCase(Locale.ROOT)) {
-                "ar", "fa", "he" -> RTL
-                "zh", "ja", "ko" -> if (isRTLProgression) CJK_VERTICAL else CJK_HORIZONTAL
-                else -> if (isRTLProgression) RTL else LTR
+                "ar", "fa", "he" -> readingProgression.getContentLayoutOrDefault(RTL)
+                "zh", "ja", "ko" -> readingProgression.getContentLayoutOrDefault(CJK_HORIZONTAL, isCjk = true)
+                else -> readingProgression.getContentLayoutOrDefault(LTR)
             }
         }
 

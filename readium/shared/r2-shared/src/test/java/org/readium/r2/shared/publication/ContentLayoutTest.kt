@@ -26,6 +26,7 @@ class ContentLayoutTest {
         assertEquals(ContentLayout.RTL, ContentLayout.from("AR"))
         assertEquals(ContentLayout.RTL, ContentLayout.from("FA"))
         assertEquals(ContentLayout.RTL, ContentLayout.from("HE"))
+        assertEquals(ContentLayout.LTR, ContentLayout.from("HE", ReadingProgression.LTR))
     }
 
     @Test fun `parse from CJK language`() {
