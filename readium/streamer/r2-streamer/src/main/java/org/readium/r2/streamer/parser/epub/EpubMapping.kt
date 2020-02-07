@@ -7,19 +7,12 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-
 package org.readium.r2.streamer.parser.epub
 
-import org.joda.time.DateTime
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.publication.Metadata as SharedMetadata
-import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.streamer.parser.normalize
-import java.lang.Exception
 
 internal fun Epub.toPublication() : Publication {
     // Compute links
@@ -32,9 +25,7 @@ internal fun Epub.toPublication() : Publication {
 
     // Compute toc and otherCollections
     val toc = navigationData["toc"].orEmpty()
-    val otherCollections = navigationData.minus("toc")
-            .map {PublicationCollection(links = it.value, role= it.key) }
-            .orEmpty()
+    val otherCollections = navigationData.minus("toc").map {PublicationCollection(links = it.value, role= it.key) }
 
     // Build Publication object
     return Publication(
@@ -48,6 +39,22 @@ internal fun Epub.toPublication() : Publication {
             type = Publication.TYPE.EPUB
             version = packageDocument.epubVersion
         }
+}
+
+private fun mapLink(link: EpubLink) : Link? {
+    val contains: MutableList<String> = mutableListOf()
+    if (link.rel.contains(DEFAULT_VOCAB.LINK.iri + "record")) {
+        if (link.properties.contains(DEFAULT_VOCAB.LINK.iri + "onix"))
+            contains.add("onix")
+        if (link.properties.contains(DEFAULT_VOCAB.LINK.iri + "xmp"))
+            contains.add("xmp")
+    }
+    return Link(
+            href = link.href,
+            type = link.mediaType,
+            rels = link.rel,
+            properties = Properties(mapOf("contains" to contains))
+    )
 }
 
 private fun computeReadingOrderIds(links: List<Link>, itemrefByIdref: Map<String, Itemref>) : Set<String> {
@@ -69,206 +76,6 @@ private fun computeIdChain(link: Link) : Set<String> {
     return ids
 }
 
-private fun mapLink(link: EpubLink) : Link? {
-    val contains: MutableList<String> = mutableListOf()
-    if (link.rel.contains(DEFAULT_VOCAB.LINK.iri + "record")) {
-        if (link.properties.contains(DEFAULT_VOCAB.LINK.iri + "onix"))
-            contains.add("onix")
-        if (link.properties.contains(DEFAULT_VOCAB.LINK.iri + "xmp"))
-            contains.add("xmp")
-    }
-    return Link(
-            href = link.href,
-            type = link.mediaType,
-            rels = link.rel,
-            properties = Properties(mapOf("contains" to contains))
-    )
-}
-
-private data class ContributorsByRole(
-        val authors: MutableList<Contributor> = mutableListOf(),
-        val translators: MutableList<Contributor> = mutableListOf(),
-        val editors: MutableList<Contributor> = mutableListOf(),
-        val artists: MutableList<Contributor> = mutableListOf(),
-        val illustrators: MutableList<Contributor> = mutableListOf(),
-        val letterers: MutableList<Contributor> = mutableListOf(),
-        val pencilers: MutableList<Contributor> = mutableListOf(),
-        val colorists: MutableList<Contributor> = mutableListOf(),
-        val inkers: MutableList<Contributor> = mutableListOf(),
-        val narrators: MutableList<Contributor> = mutableListOf(),
-        val publishers: MutableList<Contributor> = mutableListOf(),
-        val imprints: MutableList<Contributor> = mutableListOf(),
-        val others: MutableList<Contributor> = mutableListOf()
-)
-
-private fun Epub.computeMetadata() : SharedMetadata {
-    val generalMetadata = packageDocument.metadata.generalMetadata
-
-    // Contributors
-    val contributorsByRole = ContributorsByRole()
-    addContributors(generalMetadata.publishers.map { mapContributor(it, "pbl") }, contributorsByRole)
-    addContributors(generalMetadata.creators.map { mapContributor(it, "aut") }, contributorsByRole)
-    addContributors(generalMetadata.contributors.map { mapContributor(it) }, contributorsByRole)
-
-    // Miscellaneous
-    val published =   try {
-        DateTime(generalMetadata.date).toDate()
-    } catch(e: Exception) {
-        null
-    }
-    val (title, sortAs) = getMaintitle()
-    val mediaNarrators = packageDocument.metadata.mediaMetadata.narrators.map { mapContributor(it, "nrt") }
-
-    // Other Metadata
-    val otherMetadata: MutableMap<String, Any> = mutableMapOf()
-    otherMetadata["presentation"] = mapRendition(packageDocument.metadata.renditionMetadata).toJSON().toMap()
-    generalMetadata.rights?.let { otherMetadata["http://purl.org/dc/elements/1.1/rights"] = it }
-    generalMetadata.source?.let { otherMetadata["http://purl.org/dc/elements/1.1/source"] = it }
-
-    return org.readium.r2.shared.publication.Metadata(
-            identifier = generalMetadata.uniqueIdentifier,
-            modified = generalMetadata.modified,
-            published = published,
-            languages = generalMetadata.languages,
-            localizedTitle = title ?: LocalizedString(),
-            sortAs = sortAs,
-            localizedSubtitle = getSubtitle(),
-            duration = packageDocument.metadata.mediaMetadata.duration,
-            subjects = mapSubjects(generalMetadata.subjects),
-            description = generalMetadata.description,
-            readingProgression = packageDocument.spine.direction,
-            otherMetadata = otherMetadata,
-
-            authors = contributorsByRole.authors,
-            translators = contributorsByRole.translators,
-            editors = contributorsByRole.editors,
-            artists = contributorsByRole.artists,
-            illustrators = contributorsByRole.illustrators,
-            letterers = contributorsByRole.letterers,
-            pencilers = contributorsByRole.pencilers,
-            colorists = contributorsByRole.colorists,
-            inkers = contributorsByRole.inkers,
-            narrators = contributorsByRole.narrators + mediaNarrators,
-            publishers = contributorsByRole.publishers,
-            contributors = contributorsByRole.others
-    )
-}
-
-private fun mapLocalizedString(lstring: LocalizedString, languages: List<String>) : LocalizedString {
-    return lstring.mapLanguages {
-        if (it.key.isNullOrEmpty()) {
-            if (languages.isEmpty())
-                null
-            else languages.first()
-        } else it.key
-    }
-}
-
-private fun Epub.getMaintitle() : Pair<LocalizedString?, String?> {
-    val metadata = packageDocument.metadata.generalMetadata
-    val titles = metadata.titles
-    val main =  titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
-    val lstring = main?.value?.let { mapLocalizedString( it , metadata.languages) }
-    val sortAs = if (packageDocument.epubVersion >= 3.0) main?.fileAs else packageDocument.metadata.oldMeta["calibre:title_sort"]
-    return Pair(lstring, sortAs)
-}
-
-private fun Epub.getSubtitle() : LocalizedString? {
-    val metadata = packageDocument.metadata.generalMetadata
-    val titles = metadata.titles
-    val sub =  titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()
-    val lstring = sub?.value?.let { mapLocalizedString( it , metadata.languages) }
-    return lstring
-}
-
-private fun Epub.mapSubjects(subjects: List<Subject>) : List<Subject> {
-    val languages = packageDocument.metadata.generalMetadata.languages
-    return if (subjects.size == 1 && subjects.first().run {
-                localizedName.translations.size == 1 && code == null && scheme == null && sortAs == null}) {
-        with (subjects.first()) {
-            val lang = localizedName.translations.keys.first()
-            localizedName.translations.values.first().string.split(",", ";")
-                    .map(String::trim).filter(String::isNotEmpty)
-                    .map {
-                        val newName = LocalizedString.fromStrings( mapOf (lang to it))
-                        Subject(localizedName = mapLocalizedString(newName, languages))
-                    }
-        }
-    } else {
-        subjects.map {
-            val localizedName = mapLocalizedString(it.localizedName, languages)
-            it.copy(localizedName = localizedName)
-        }
-    }
-}
-
-private fun Epub.mapContributor(contributor: Contributor, defaultRole: String? = null) : Contributor {
-    val metadata = packageDocument.metadata.generalMetadata
-    val lstring = mapLocalizedString(contributor.localizedName, metadata.languages)
-    val roles = contributor.roles.toMutableSet()
-    if (roles.isEmpty() && defaultRole != null) roles.add(defaultRole)
-
-    return Contributor(
-            localizedName = lstring,
-            sortAs = contributor.sortAs,
-            roles = roles
-    )
-}
-
-private fun addContributors(contributors: List<Contributor>, byRole: ContributorsByRole) {
-    for (contributor in contributors) {
-        if (contributor.roles.isEmpty())
-            byRole.others.add(contributor)
-        for (role in contributor.roles) {
-            when (role) {
-                "aut" -> byRole.authors.add(contributor)
-                "trl" -> byRole.translators.add(contributor)
-                "art" -> byRole.artists.add(contributor)
-                "edt" -> byRole.editors.add(contributor)
-                "ill" -> byRole.illustrators.add(contributor)
-                "clr" -> byRole.colorists.add(contributor)
-                "nrt" -> byRole.narrators.add(contributor)
-                "pbl" -> byRole.publishers.add(contributor)
-                else -> byRole.others.add(contributor)
-            }
-        }
-    }
-}
-
-private fun mapRendition(renditionMetadata: RenditionMetadata) : Presentation {
-    val (overflow, continuous) = when(renditionMetadata.flow) {
-        RenditionMetadata.Flow.Auto ->  Pair(Presentation.Overflow.AUTO, false)
-        RenditionMetadata.Flow.Paginated -> Pair(Presentation.Overflow.PAGINATED, false)
-        RenditionMetadata.Flow.Continuous -> Pair(Presentation.Overflow.SCROLLED, true)
-        RenditionMetadata.Flow.Document -> Pair(Presentation.Overflow.SCROLLED, false)
-    }
-
-    val layout = when(renditionMetadata.layout) {
-        RenditionMetadata.Layout.Reflowable -> EpubLayout.REFLOWABLE
-        RenditionMetadata.Layout.PrePaginated -> EpubLayout.FIXED
-    }
-
-    val orientation = when(renditionMetadata.orientation) {
-        RenditionMetadata.Orientation.Auto -> Presentation.Orientation.AUTO
-        RenditionMetadata.Orientation.Landscape -> Presentation.Orientation.LANDSCAPE
-        RenditionMetadata.Orientation.Portait -> Presentation.Orientation.PORTRAIT
-    }
-
-    val spread = when(renditionMetadata.spread) {
-        RenditionMetadata.Spread.Auto -> Presentation.Spread.AUTO
-        RenditionMetadata.Spread.None -> Presentation.Spread.NONE
-        RenditionMetadata.Spread.Landscape -> Presentation.Spread.LANDSCAPE
-        RenditionMetadata.Spread.Both -> Presentation.Spread.BOTH
-    }
-    return Presentation(
-            overflow = overflow,
-            continuous = continuous,
-            layout = layout,
-            orientation = orientation,
-            spread = spread
-    )
-}
-
 private fun Epub.computeLink(
         item: Item,
         itemById: Map<String, Item>,
@@ -277,12 +84,15 @@ private fun Epub.computeLink(
 
     val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
     val alternates = computeAlternates(item, itemById, itemrefByIdref, fallbackChain)
+    val duration = packageDocument.metadata.metas[item.id]
+            ?.firstOrNull { it.property == PACKAGE_RESERVED_PREFIXES["media"] + "duration" }
+            ?.value?.let { ClockValueParser.parse(it) }
 
     return Link(
             title = item.id,
             href = normalize(packageDocument.path, item.href),
             type = item.mediaType,
-            duration = packageDocument.metadata.mediaMetadata.durationById[item.id],
+            duration = duration,
             rels = rels,
             properties = properties,
             alternates = alternates
@@ -305,7 +115,7 @@ private fun Epub.computePropertiesAndRels(item: Item, itemref: Itemref?) : Pair<
     }
 
     if (packageDocument.epubVersion < 3.0) {
-        val coverId = packageDocument.metadata.oldMeta["cover"]
+        val coverId = packageDocument.metadata.metas[null]?.firstOrNull { it.property == "cover" }?.value
         if (coverId != null && item.id == coverId) rels.add("cover")
     }
 
@@ -399,3 +209,4 @@ private fun parseItemrefProperties(properties: List<String>) : Map<String, Strin
     }
     return linkProperties
 }
+

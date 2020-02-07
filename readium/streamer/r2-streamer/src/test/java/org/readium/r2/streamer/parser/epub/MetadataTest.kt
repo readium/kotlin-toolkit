@@ -10,7 +10,6 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.SoftAssertions
 import org.joda.time.DateTime
 import org.junit.Test
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -326,5 +325,24 @@ class MetadataMiscTest {
         )
         assertThat(parsePackageDocument("package/cover-epub2.opf").coverLink).isEqualTo(expected)
         assertThat(parsePackageDocument("package/cover-epub3.opf").coverLink).isEqualTo(expected)
+    }
+
+    @Test(timeout=PARSE_PUB_TIMEOUT)
+    fun `Building of MetaItems terminates even if metadata contain cross refinings`() {
+        parsePackageDocument("package/meta-termination.opf")
+    }
+
+    @Test
+    fun `otherMetadata is rightly filled`() {
+        assertThat(parsePackageDocument("package/meta-unknown.opf").metadata.otherMetadata["http://my.url/#property0"])
+                .isEqualTo( mapOf(
+                        "@value" to "refines0",
+                        "http://my.url/#property1" to mapOf(
+                                "@value" to "refines1",
+                                "http://my.url/#property2" to "refines2",
+                                "http://my.url/#property3" to "refines3"
+                                )
+                        )
+                )
     }
 }

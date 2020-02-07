@@ -20,25 +20,22 @@ internal data class Title(val value: LocalizedString, val fileAs: String? = null
 internal data class EpubLink(val href: String, val rel: List<String>,
                              val mediaType: String?, val refines: String?, val properties: List<String> = emptyList())
 
-internal data class MetaItem(val property: String, val value: String, val scheme: String? = null,
-                             val id: String? = null, val lang: String? = null, val children: MutableList<MetaItem> = mutableListOf()
+internal data class MetaItem(val property: String, val value: String,
+                             val scheme: String? = null, val refines: String? = null,
+                             val lang: String? = null, val children: List<MetaItem> = emptyList()
 )
 
-internal data class Date(val value: String, val event: String? = null)
-
 internal data class EpubMetadata(
-        val generalMetadata: GeneralMetadata,
-        val mediaMetadata: MediaMetadata,
-        val renditionMetadata: RenditionMetadata,
+        val general: GeneralMetadata,
         val links: List<EpubLink>,
-        val oldMeta: Map<String, String>
+        val metas: Map<String?, List<MetaItem>>
 )
 
 internal data class GeneralMetadata(
         val uniqueIdentifier: String?,
         val titles: List<Title>,
         val languages: List<String>,
-        val date: String?,
+        val date: java.util.Date?,
         val modified: java.util.Date?,
         val description: String?,
         val rights: String?,
@@ -46,60 +43,12 @@ internal data class GeneralMetadata(
         val subjects: List<Subject>,
         val creators: List<Contributor>,
         val contributors: List<Contributor>,
-        val publishers: List<Contributor>)
-
-internal data class MediaMetadata(
-        val duration: Double? = null,
-        val durationById: Map<String, Double> = mapOf(),
-        val activeClass: String? = null,
-        val playbackActiveClass: String? = null,
-        val narrators: List<Contributor> = listOf()
+        val publishers: List<Contributor>
 )
 
-internal data class RenditionMetadata(
-        val flow: Flow,
-        val layout: Layout,
-        val orientation: Orientation,
-        val spread: Spread) {
-
-    enum class Flow(val value: String) {
-        Auto("auto"),
-        Paginated("paginated"),
-        Continuous("scrolled-continuous"),
-        Document("scrolled-doc");
-
-        companion object : EnumCompanion<String, Flow>(
-                Flow.Auto, values().associateBy(Flow::value)
-        )
-    }
-
-    enum class Layout(val value: String) {
-        Reflowable("reflowable"),
-        PrePaginated("pre-paginated");
-
-        companion object : EnumCompanion<String, Layout>(
-                Layout.Reflowable, values().associateBy(Layout::value)
-        )
-    }
-
-    enum class Orientation(val value: String) {
-        Auto("auto"),
-        Landscape("landscape"),
-        Portait("portrait");
-
-        companion object : EnumCompanion<String, Orientation>(
-                Orientation.Auto, values().associateBy(Orientation::value)
-        )
-    }
-
-    enum class Spread(val value: String) {
-        Auto("auto"),
-        None("none"),
-        Landscape("landscape"),
-        Both("both");
-
-        companion object : EnumCompanion<String, Spread>(
-                Spread.Auto, values().associateBy(Spread::value)
-        )
-    }
-}
+internal data class MediaMetadata(
+        val duration: Double?,
+        val activeClass: String?,
+        val playbackActiveClass: String?,
+        val narrators: List<Contributor>
+)

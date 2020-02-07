@@ -9,39 +9,32 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import java.lang.IllegalArgumentException
+internal typealias ReadingProgression = org.readium.r2.shared.publication.ReadingProgression
 
-internal open class EnumCompanion<T, V>(val default: V, private val map: Map<T, V>) {
-    val names: Set<T>
-        get() = map.keys
+internal typealias Encryption = org.readium.r2.shared.publication.encryption.Encryption
 
-    fun get(name: T) = map[name] ?: throw IllegalArgumentException("Invalid name $name")
-    fun getOrNull(name: T) = map[name]
-    fun getOrDefault(name: T) = map[name] ?: default
-}
+internal typealias Link = org.readium.r2.shared.publication.Link
 
 internal data class Item(
         val href: String,
-        val id: String? = null,
-        val fallback: String? = null,
-        val mediaOverlay: String? = null,
-        val mediaType: String? = null,
-        val properties: List<String> = listOf()
+        val id: String?,
+        val fallback: String?,
+        val mediaOverlay: String?,
+        val mediaType: String?,
+        val properties: List<String>
 )
-
-internal typealias Manifest = List<Item>
 
 internal data class Itemref(
         val idref: String,
         val linear: Boolean,
-        val properties: List<String> = listOf()
+        val properties: List<String>
 )
 
-typealias ReadingProgression = org.readium.r2.shared.publication.ReadingProgression
+internal typealias Manifest = List<Item>
 
 internal data class Spine(
         val itemrefs: List<Itemref>,
-        val direction: ReadingProgression = ReadingProgression.AUTO,
+        val direction: ReadingProgression,
         val toc: String? = null
 )
 
@@ -53,11 +46,7 @@ internal data class PackageDocument(
         val spine: Spine
 )
 
-internal typealias Encryption = org.readium.r2.shared.publication.encryption.Encryption
-
 internal typealias EncryptionData = Map<String, Encryption>
-
-internal typealias Link = org.readium.r2.shared.publication.Link
 
 internal typealias NavigationData = Map<String, List<Link>>
 

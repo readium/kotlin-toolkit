@@ -28,6 +28,8 @@ fun parsePackageDocument(path: String) : Publication {
     return pub
 }
 
+const val PARSE_PUB_TIMEOUT = 1000L // milliseconds
+
 class ReadingProgressionTest {
     @Test
     fun `No page progression direction is mapped to default`() {
@@ -120,7 +122,7 @@ class LinkPropertyTest {
 }
 
 class LinkTest {
-    private val resourcesPub = parsePackageDocument("package/links-resources.opf")
+    private val resourcesPub = parsePackageDocument("package/links.opf")
 
     @Test
     fun `readingOrder is rightly computed`() {
@@ -189,5 +191,32 @@ class LinkTest {
                         title = "nomediatype"
                 )
         )
+    }
+}
+
+class LinkMiscTest {
+    fun `Fallbacks are mapped to alternates`() {
+        assertThat(parsePackageDocument("package/fallbacks.opf")).isEqualTo(
+                Link(
+                        href = "/OEBPS/chap1_docbook.xml",
+                        title = "item1",
+                        type = "application/docbook+xml",
+                        alternates = listOf ( Link(
+                                href = "/OEBPS/chap1.xml",
+                                title = "fall1",
+                                type = "application/z3998-auth+xml",
+                                alternates = listOf ( Link(
+                                        href = "/OEBPS/chap1.xhtml",
+                                        title = "fall2",
+                                        type = "application/xhtml+xml"
+                                ))
+                        ))
+                )
+        )
+    }
+
+    @Test(timeout=PARSE_PUB_TIMEOUT)
+    fun `Fallback computing terminates even if there are crossed dependencies`() {
+        parsePackageDocument("package/fallbacks-termination.opf")
     }
 }
