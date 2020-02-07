@@ -84,7 +84,7 @@ private fun Epub.computeLink(
 
     val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
     val alternates = computeAlternates(item, itemById, itemrefByIdref, fallbackChain)
-    val duration = packageDocument.metadata.metas[item.id]
+    val duration = packageDocument.metadata.refineMetas[item.id]
             ?.firstOrNull { it.property == PACKAGE_RESERVED_PREFIXES["media"] + "duration" }
             ?.value?.let { ClockValueParser.parse(it) }
 
@@ -115,7 +115,7 @@ private fun Epub.computePropertiesAndRels(item: Item, itemref: Itemref?) : Pair<
     }
 
     if (packageDocument.epubVersion < 3.0) {
-        val coverId = packageDocument.metadata.metas[null]?.firstOrNull { it.property == "cover" }?.value
+        val coverId = packageDocument.metadata.globalMetas.firstOrNull { it.property == "cover" }?.value
         if (coverId != null && item.id == coverId) rels.add("cover")
     }
 

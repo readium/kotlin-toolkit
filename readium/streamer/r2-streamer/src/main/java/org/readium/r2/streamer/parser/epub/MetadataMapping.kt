@@ -9,30 +9,26 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import java.util.LinkedList
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
-import java.util.LinkedList
 
 internal fun Epub.computeMetadata() : Metadata {
-    val metadata = packageDocument.metadata.general
-    val globalMetas = packageDocument.metadata.metas[null].orEmpty()
-
-    val (media, mediaRemainder) = parseMediaProperties(globalMetas)
+    val (media, mediaRemainder) = parseMediaProperties(packageDocument.metadata.globalMetas)
     val (presentation, presRemainder) = parseRenditionProperties(mediaRemainder)
     val otherMetadata: MutableMap<String, Any> = mutableMapOf()
     otherMetadata["presentation"] = presentation.toJSON().toMap()
-    metadata.rights?.let { otherMetadata["http://purl.org/dc/elements/1.1/rights"] = it }
-    metadata.source?.let { otherMetadata["http://purl.org/dc/elements/1.1/source"] = it }
     presRemainder.forEach { otherMetadata[it.property] = it.toMap() }
 
     val (title, sortAs) = getMaintitle()
+    val metadata = packageDocument.metadata.general
     val contributorsByRole = ContributorsByRole()
+    addContributors(metadata.narrators.map { mapContributor(it, "nrt") }, contributorsByRole)
     addContributors(metadata.publishers.map { mapContributor(it, "pbl") }, contributorsByRole)
     addContributors(metadata.creators.map { mapContributor(it, "aut") }, contributorsByRole)
     addContributors(metadata.contributors.map { mapContributor(it) }, contributorsByRole)
-    addContributors(media.narrators.map { mapContributor(it, "nrt") }, contributorsByRole)
 
     return Metadata(
             identifier = metadata.uniqueIdentifier,
@@ -91,39 +87,23 @@ private fun Epub.getSubtitle() : LocalizedString? {
 
 private fun Epub.mapSubjects(subjects: List<Subject>) : List<Subject> {
     val languages = packageDocument.metadata.general.languages
-    return if (subjects.size == 1 && subjects.first().run {
-                localizedName.translations.size == 1 && code == null && scheme == null && sortAs == null}) {
-        with (subjects.first()) {
-            val lang = localizedName.translations.keys.first()
-            localizedName.translations.values.first().string.split(",", ";")
-                    .map(String::trim).filter(String::isNotEmpty)
-                    .map {
-                        val newName = LocalizedString.fromStrings( mapOf (lang to it))
-                        Subject(localizedName = mapLocalizedString(newName, languages))
-                    }
-        }
-    } else {
-        subjects.map {
-            val localizedName = mapLocalizedString(it.localizedName, languages)
-            it.copy(localizedName = localizedName)
-        }
+    val newSubjects = subjects.map {
+        val localizedName = mapLocalizedString(it.localizedName, languages)
+        it.copy(localizedName=localizedName)
     }
+    val hasToSplit = subjects.size == 1 && subjects.first().run {
+                localizedName.translations.size == 1 && code == null && scheme == null && sortAs == null}
+    return if (hasToSplit) splitSubject(newSubjects.first()) else newSubjects
 }
 
-private fun parseMediaNarrator(meta: MetaItem) : Contributor {
-    val names: MutableMap<String?, String> = mutableMapOf(meta.lang to meta.value)
-    var fileAs: String? = null
-
-    for (c in meta.children) {
-        when (c.property) {
-            DEFAULT_VOCAB.META.iri + "alternate-script" -> names[c.lang] = c.value
-            DEFAULT_VOCAB.META.iri + "file-as" -> fileAs = c.value
-        }
+private fun splitSubject(subject: Subject) : List<Subject> {
+    val lang = subject.localizedName.translations.keys.first()
+    val names = subject.localizedName.translations.values.first().string.split(",", ";")
+            .map(kotlin.String::trim).filter(kotlin.String::isNotEmpty)
+    return names.map {
+        val newName = LocalizedString.fromStrings(mapOf(lang to it))
+        Subject(localizedName=newName)
     }
-    return Contributor(
-            localizedName = LocalizedString.fromStrings(names),
-            sortAs = fileAs
-    )
 }
 
 private fun Epub.mapContributor(contributor: Contributor, defaultRole: String? = null) : Contributor {
@@ -132,10 +112,7 @@ private fun Epub.mapContributor(contributor: Contributor, defaultRole: String? =
     val roles = contributor.roles.toMutableSet()
     if (roles.isEmpty() && defaultRole != null) roles.add(defaultRole)
 
-    return Contributor(
-            localizedName = lstring,
-            sortAs = contributor.sortAs,
-            roles = roles
+    return Contributor(localizedName=lstring, sortAs=contributor.sortAs, roles=roles
     )
 }
 
@@ -176,18 +153,17 @@ private fun addContributors(contributors: List<Contributor>, byRole: Contributor
 }
 
 private fun parseMediaProperties(metas: List<MetaItem>): Pair<MediaMetadata, List<MetaItem>> {
+    val remainder: MutableList<MetaItem> = mutableListOf()
     var activeClass: String? = null
     var playbackActiveClass: String? = null
     var duration: Double? = null
     val narrators: MutableList<Contributor> = LinkedList()
-    var remainder: MutableList<MetaItem> = mutableListOf()
 
     for (meta in metas) {
         when (meta.property) {
             PACKAGE_RESERVED_PREFIXES["media"] + "active-class" -> activeClass = meta.value
             PACKAGE_RESERVED_PREFIXES["media"] + "playback-active-class" -> playbackActiveClass = meta.value
             PACKAGE_RESERVED_PREFIXES["media"] + "duration" -> duration = ClockValueParser.parse(meta.value)
-            PACKAGE_RESERVED_PREFIXES["media"] + "narrator" -> narrators.add(parseMediaNarrator(meta))
             else -> remainder.add(meta)
         }
     }
@@ -196,11 +172,11 @@ private fun parseMediaProperties(metas: List<MetaItem>): Pair<MediaMetadata, Lis
 }
 
 private fun parseRenditionProperties(metaItems: List<MetaItem>) : Pair<Presentation, List<MetaItem>> {
+    val remainder: MutableList<MetaItem> = mutableListOf()
     var flowProp: String? = null
     var spreadProp: String? = null
     var orientationProp: String? = null
     var layoutProp: String? = null
-    var remainder: MutableList<MetaItem> = mutableListOf()
 
     for (meta in metaItems) {
         when (meta.property) {
@@ -249,3 +225,10 @@ internal fun MetaItem.toMap() : Any {
         mappedChildren + Pair("@value", value)
     }
 }
+
+internal data class MediaMetadata(
+        val duration: Double?,
+        val activeClass: String?,
+        val playbackActiveClass: String?,
+        val narrators: List<Contributor>
+)

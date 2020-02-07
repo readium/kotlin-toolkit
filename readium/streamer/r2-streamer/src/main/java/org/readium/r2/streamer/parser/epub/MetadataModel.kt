@@ -20,15 +20,16 @@ internal data class Title(val value: LocalizedString, val fileAs: String? = null
 internal data class EpubLink(val href: String, val rel: List<String>,
                              val mediaType: String?, val refines: String?, val properties: List<String> = emptyList())
 
-internal data class MetaItem(val property: String, val value: String,
+internal data class MetaItem(val property: String, val value: String, val lang: String,
                              val scheme: String? = null, val refines: String? = null,
-                             val lang: String? = null, val children: List<MetaItem> = emptyList()
+                             val id: String?, val children: List<MetaItem> = emptyList()
 )
 
 internal data class EpubMetadata(
         val general: GeneralMetadata,
         val links: List<EpubLink>,
-        val metas: Map<String?, List<MetaItem>>
+        val globalMetas: List<MetaItem>,
+        val refineMetas: Map<String, List<MetaItem>>
 )
 
 internal data class GeneralMetadata(
@@ -38,17 +39,9 @@ internal data class GeneralMetadata(
         val date: java.util.Date?,
         val modified: java.util.Date?,
         val description: String?,
-        val rights: String?,
-        val source: String?,
         val subjects: List<Subject>,
         val creators: List<Contributor>,
         val contributors: List<Contributor>,
-        val publishers: List<Contributor>
-)
-
-internal data class MediaMetadata(
-        val duration: Double?,
-        val activeClass: String?,
-        val playbackActiveClass: String?,
+        val publishers: List<Contributor>,
         val narrators: List<Contributor>
 )

@@ -29,6 +29,7 @@ internal object Namespaces {
     const val Comp = "http://www.idpf.org/2016/encryption#compression"
     const val Opf = "http://www.idpf.org/2007/opf"
     const val Dc = "http://purl.org/dc/elements/1.1/"
+    const val Dcterms = "http://purl.org/dc/terms/"
     const val Ops = "http://www.idpf.org/2007/ops"
     const val Xhtml = "http://www.w3.org/1999/xhtml"
     const val Smil = "http://www.w3.org/ns/SMIL"
