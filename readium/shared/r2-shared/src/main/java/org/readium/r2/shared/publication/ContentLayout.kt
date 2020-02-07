@@ -11,6 +11,7 @@ package org.readium.r2.shared.publication
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
+import org.readium.r2.shared.util.KeyMapperWithDefault
 import java.util.*
 
 /**
@@ -42,7 +43,7 @@ enum class ContentLayout(val key: String) : Parcelable {
             LTR, CJK_HORIZONTAL -> ReadingProgression.LTR
         }
 
-    companion object {
+    companion object : KeyMapperWithDefault<String, ContentLayout>(values(), ContentLayout::key, LTR) {
 
         /**
          * Determines the [ContentLayout] for the given BCP 47 language code and

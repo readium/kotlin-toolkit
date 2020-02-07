@@ -8,13 +8,14 @@ class ReadingProgressionTest {
 
     @Test
     fun `parse reading progression`() {
-        assertEquals(ReadingProgression.LTR, ReadingProgression.from("ltr"))
-        assertEquals(ReadingProgression.RTL, ReadingProgression.from("rtl"))
-        assertEquals(ReadingProgression.TTB, ReadingProgression.from("ttb"))
-        assertEquals(ReadingProgression.BTT, ReadingProgression.from("btt"))
-        assertEquals(ReadingProgression.AUTO, ReadingProgression.from("auto"))
-        assertEquals(ReadingProgression.AUTO, ReadingProgression.from("foobar"))
-        assertEquals(ReadingProgression.AUTO, ReadingProgression.from(null))
+        assertEquals(ReadingProgression.LTR, ReadingProgression("LTR"))
+        assertEquals(ReadingProgression.LTR, ReadingProgression("ltr"))
+        assertEquals(ReadingProgression.RTL, ReadingProgression("rtl"))
+        assertEquals(ReadingProgression.TTB, ReadingProgression("ttb"))
+        assertEquals(ReadingProgression.BTT, ReadingProgression("btt"))
+        assertEquals(ReadingProgression.AUTO, ReadingProgression("auto"))
+        assertEquals(ReadingProgression.AUTO, ReadingProgression("foobar"))
+        assertEquals(ReadingProgression.AUTO, ReadingProgression(null))
     }
 
     @Test fun `get reading progression value`() {

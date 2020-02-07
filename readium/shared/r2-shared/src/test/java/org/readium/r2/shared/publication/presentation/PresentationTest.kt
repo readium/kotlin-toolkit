@@ -90,12 +90,12 @@ class PresentationTest {
     }
 
     @Test fun `parse fit from JSON value`() {
-        assertEquals(Presentation.Fit.WIDTH, Presentation.Fit.from("width"))
-        assertEquals(Presentation.Fit.HEIGHT, Presentation.Fit.from("height"))
-        assertEquals(Presentation.Fit.CONTAIN, Presentation.Fit.from("contain"))
-        assertEquals(Presentation.Fit.COVER, Presentation.Fit.from("cover"))
-        assertNull(Presentation.Fit.from("foobar"))
-        assertNull(Presentation.Fit.from(null))
+        assertEquals(Presentation.Fit.WIDTH, Presentation.Fit("width"))
+        assertEquals(Presentation.Fit.HEIGHT, Presentation.Fit("height"))
+        assertEquals(Presentation.Fit.CONTAIN, Presentation.Fit("contain"))
+        assertEquals(Presentation.Fit.COVER, Presentation.Fit("cover"))
+        assertNull(Presentation.Fit("foobar"))
+        assertNull(Presentation.Fit(null))
     }
 
     @Test fun `get fit JSON value`() {
@@ -106,11 +106,11 @@ class PresentationTest {
     }
 
     @Test fun `parse orientation from JSON value`() {
-        assertEquals(Presentation.Orientation.AUTO, Presentation.Orientation.from("auto"))
-        assertEquals(Presentation.Orientation.LANDSCAPE, Presentation.Orientation.from("landscape"))
-        assertEquals(Presentation.Orientation.PORTRAIT, Presentation.Orientation.from("portrait"))
-        assertNull(Presentation.Orientation.from("foobar"))
-        assertNull(Presentation.Orientation.from(null))
+        assertEquals(Presentation.Orientation.AUTO, Presentation.Orientation("auto"))
+        assertEquals(Presentation.Orientation.LANDSCAPE, Presentation.Orientation("landscape"))
+        assertEquals(Presentation.Orientation.PORTRAIT, Presentation.Orientation("portrait"))
+        assertNull(Presentation.Orientation("foobar"))
+        assertNull(Presentation.Orientation(null))
     }
 
     @Test fun `get orientation JSON value`() {
@@ -120,11 +120,11 @@ class PresentationTest {
     }
 
     @Test fun `parse overflow from JSON value`() {
-        assertEquals(Presentation.Overflow.AUTO, Presentation.Overflow.from("auto"))
-        assertEquals(Presentation.Overflow.PAGINATED, Presentation.Overflow.from("paginated"))
-        assertEquals(Presentation.Overflow.SCROLLED, Presentation.Overflow.from("scrolled"))
-        assertNull(Presentation.Overflow.from("foobar"))
-        assertNull(Presentation.Overflow.from(null))
+        assertEquals(Presentation.Overflow.AUTO, Presentation.Overflow("auto"))
+        assertEquals(Presentation.Overflow.PAGINATED, Presentation.Overflow("paginated"))
+        assertEquals(Presentation.Overflow.SCROLLED, Presentation.Overflow("scrolled"))
+        assertNull(Presentation.Overflow("foobar"))
+        assertNull(Presentation.Overflow(null))
     }
 
     @Test fun `get overflow JSON value`() {
@@ -134,11 +134,11 @@ class PresentationTest {
     }
 
     @Test fun `parse page from JSON value`() {
-        assertEquals(Presentation.Page.LEFT, Presentation.Page.from("left"))
-        assertEquals(Presentation.Page.RIGHT, Presentation.Page.from("right"))
-        assertEquals(Presentation.Page.CENTER, Presentation.Page.from("center"))
-        assertNull(Presentation.Page.from("foobar"))
-        assertNull(Presentation.Page.from(null))
+        assertEquals(Presentation.Page.LEFT, Presentation.Page("left"))
+        assertEquals(Presentation.Page.RIGHT, Presentation.Page("right"))
+        assertEquals(Presentation.Page.CENTER, Presentation.Page("center"))
+        assertNull(Presentation.Page("foobar"))
+        assertNull(Presentation.Page(null))
     }
 
     @Test fun `get page JSON value`() {
@@ -148,12 +148,12 @@ class PresentationTest {
     }
 
     @Test fun `parse spread from JSON value`() {
-        assertEquals(Presentation.Spread.AUTO, Presentation.Spread.from("auto"))
-        assertEquals(Presentation.Spread.BOTH, Presentation.Spread.from("both"))
-        assertEquals(Presentation.Spread.NONE, Presentation.Spread.from("none"))
-        assertEquals(Presentation.Spread.LANDSCAPE, Presentation.Spread.from("landscape"))
-        assertNull(Presentation.Spread.from("foobar"))
-        assertNull(Presentation.Spread.from(null))
+        assertEquals(Presentation.Spread.AUTO, Presentation.Spread("auto"))
+        assertEquals(Presentation.Spread.BOTH, Presentation.Spread("both"))
+        assertEquals(Presentation.Spread.NONE, Presentation.Spread("none"))
+        assertEquals(Presentation.Spread.LANDSCAPE, Presentation.Spread("landscape"))
+        assertNull(Presentation.Spread("foobar"))
+        assertNull(Presentation.Spread(null))
     }
 
     @Test fun `get spread JSON value`() {

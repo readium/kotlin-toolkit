@@ -15,6 +15,8 @@ import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableBoolean
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.KeyMapper
+import org.readium.r2.shared.util.KeyMapperWithDefault
 
 /**
  * The Presentation Hints extension defines a number of hints for User Agents about the way content
@@ -84,11 +86,11 @@ data class Presentation(
             return Presentation(
                 clipped = json.optNullableBoolean("clipped"),
                 continuous = json.optNullableBoolean("continuous"),
-                fit = Fit.from(json.optString("fit")),
-                orientation = Orientation.from(json.optString("orientation")),
-                overflow = Overflow.from(json.optString("overflow")),
-                spread = Spread.from(json.optString("spread")),
-                layout = EpubLayout.from(json.optString("layout"))
+                fit = Fit(json.optString("fit")),
+                orientation = Orientation(json.optString("orientation")),
+                overflow = Overflow(json.optString("overflow")),
+                spread = Spread(json.optString("spread")),
+                layout = EpubLayout(json.optString("layout"))
             )
         }
 
@@ -104,15 +106,12 @@ data class Presentation(
         CONTAIN("contain"),
         COVER("cover");
 
-        companion object {
+        companion object : KeyMapper<String, Fit>(values(), Fit::value) {
 
             /**
              * Default value for [Fit], if not specified.
              */
             val DEFAULT = CONTAIN
-
-            fun from(value: String?): Fit? =
-                Fit.values().firstOrNull { it.value == value }
         }
     }
 
@@ -125,15 +124,12 @@ data class Presentation(
         LANDSCAPE("landscape"),
         PORTRAIT("portrait");
 
-        companion object {
+        companion object : KeyMapper<String, Orientation>(values(), Orientation::value) {
 
             /**
              * Default value for [Orientation], if not specified.
              */
             val DEFAULT = AUTO
-
-            fun from(value: String?): Orientation? =
-                Orientation.values().firstOrNull { it.value == value }
 
             @Deprecated("Renamed to [AUTO]", ReplaceWith("Orientation.AUTO"))
             val Auto: Orientation = AUTO
@@ -153,15 +149,12 @@ data class Presentation(
         PAGINATED("paginated"),
         SCROLLED("scrolled");
 
-        companion object {
+        companion object : KeyMapper<String, Overflow>(values(), Overflow::value) {
 
             /**
              * Default value for [Overflow], if not specified.
              */
             val DEFAULT = AUTO
-
-            fun from(value: String?): Overflow? =
-                Overflow.values().firstOrNull { it.value == value }
 
             @Deprecated("Renamed to [PAGINATED]", ReplaceWith("Overflow.PAGINATED"))
             val Paginated: Overflow = PAGINATED
@@ -182,10 +175,7 @@ data class Presentation(
         RIGHT("right"),
         CENTER("center");
 
-        companion object {
-            fun from(value: String?): Page? =
-                Page.values().firstOrNull { it.value == value }
-        }
+        companion object : KeyMapper<String, Page>(values(), Page::value)
     }
 
     /**
@@ -199,15 +189,12 @@ data class Presentation(
         NONE("none"),
         LANDSCAPE("landscape");
 
-        companion object {
+        companion object : KeyMapper<String, Spread>(values(), Spread::value) {
 
             /**
              * Default value for [Spread], if not specified.
              */
             val DEFAULT = AUTO
-
-            fun from(value: String?): Spread? =
-                Spread.values().firstOrNull { it.value == value }
 
             @Deprecated("Renamed to [AUTO]", ReplaceWith("Spread.AUTO"))
             val Auto: Spread = AUTO

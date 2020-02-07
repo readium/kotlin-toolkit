@@ -9,12 +9,12 @@ import org.readium.r2.shared.extensions.toIso8601Date
 class AvailabilityTest {
 
     @Test fun `parse JSON availability state`() {
-        assertEquals(Availability.State.AVAILABLE, Availability.State.from("available"))
-        assertEquals(Availability.State.READY, Availability.State.from("ready"))
-        assertEquals(Availability.State.RESERVED, Availability.State.from("reserved"))
-        assertEquals(Availability.State.UNAVAILABLE, Availability.State.from("unavailable"))
-        assertNull(Availability.State.from("foobar"))
-        assertNull(Availability.State.from(null))
+        assertEquals(Availability.State.AVAILABLE, Availability.State("available"))
+        assertEquals(Availability.State.READY, Availability.State("ready"))
+        assertEquals(Availability.State.RESERVED, Availability.State("reserved"))
+        assertEquals(Availability.State.UNAVAILABLE, Availability.State("unavailable"))
+        assertNull(Availability.State("foobar"))
+        assertNull(Availability.State(null))
     }
 
     @Test fun `get JSON availability state`() {

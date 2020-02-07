@@ -17,6 +17,7 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.toIso8601Date
 import org.readium.r2.shared.extensions.toIso8601String
+import org.readium.r2.shared.util.KeyMapper
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
 import java.util.*
@@ -42,9 +43,8 @@ data class Availability(
         RESERVED("reserved"),
         READY("ready");
 
-        companion object {
-            fun from(value: String?) = State.values().firstOrNull { it.value == value }
-        }
+        companion object : KeyMapper<String, State>(values(), State::value)
+
     }
 
     /**
@@ -63,7 +63,7 @@ data class Availability(
          * If the availability can't be parsed, a warning will be logged with [warnings].
          */
         fun fromJSON(json: JSONObject?, warnings: WarningLogger<JsonWarning>? = null): Availability? {
-            val state = State.from(json?.optNullableString("state"))
+            val state = State(json?.optNullableString("state"))
             if (state == null) {
                 warnings?.log(Availability::class.java, "[state] is required", json)
                 return null

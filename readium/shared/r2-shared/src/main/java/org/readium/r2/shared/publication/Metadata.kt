@@ -152,7 +152,7 @@ data class Metadata(
             val contributors = Contributor.fromJSONArray(json.remove("contributor"), normalizeHref, warnings)
             val publishers = Contributor.fromJSONArray(json.remove("publisher"), normalizeHref, warnings)
             val imprints = Contributor.fromJSONArray(json.remove("imprint"), normalizeHref, warnings)
-            val readingProgression = ReadingProgression.from(json.remove("readingProgression") as? String)
+            val readingProgression = ReadingProgression(json.remove("readingProgression") as? String)
             val description = json.remove("description") as? String
             val duration = json.optPositiveDouble("duration", remove = true)
             val numberOfPages = json.optPositiveInt("numberOfPages", remove = true)
