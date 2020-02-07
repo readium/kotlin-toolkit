@@ -23,9 +23,8 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Locator
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import kotlin.coroutines.CoroutineContext
@@ -120,7 +119,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         val resourceHref = resource.href
         val resourceType = resource.type ?: ""
 
-        navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
+        navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title))
     }
 
     override fun nextResource(v: View?) {
@@ -136,7 +135,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
             val resourceHref = resource.href
             val resourceType = resource.type ?: ""
 
-            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
+            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title))
         }
     }
 
@@ -153,7 +152,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
             val resourceHref = resource.href
             val resourceType = resource.type ?: ""
 
-            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
+            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title))
         }
     }
 
@@ -184,15 +183,15 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
 
-                val locator = data.getSerializableExtra("locator") as Locator
+                val locator = data.getParcelableExtra("locator") as Locator
 
                 // Set the progression fetched
                 navigatorDelegate?.locationDidChange(locator = locator)
 
                 fun setCurrent(resources: List<String>) {
                     for (index in 0 until resources.count()) {
-                        val resource = resources[index] as String
-                        if (resource.endsWith(locator.href!!)) {
+                        val resource = resources[index]
+                        if (resource.endsWith(locator.href)) {
                             resourcePager.currentItem = index
                             break
                         }

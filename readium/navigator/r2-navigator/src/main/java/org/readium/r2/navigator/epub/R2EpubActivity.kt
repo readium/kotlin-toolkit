@@ -33,8 +33,11 @@ import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.*
+import org.readium.r2.shared.COLUMN_COUNT_REF
+import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -46,9 +49,9 @@ import kotlin.coroutines.CoroutineContext
 open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator {
 
     override fun progressionDidChange(progression: Double) {
-        val locator = currentLocation
-        locator?.locations?.progression = progression
-        navigatorDelegate?.locationDidChange(locator = locator!!)
+        currentLocation?.withProgression(progression)?.let {
+            navigatorDelegate?.locationDidChange(locator = it)
+        }
     }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
@@ -61,7 +64,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         // href is the link to the page in the toc
         var href = locator.href
 
-        if (href!!.indexOf("#") > 0) {
+        if (href.indexOf("#") > 0) {
             href = href.substring(0, href.indexOf("#"))
         }
 
@@ -73,7 +76,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                         if (resourcePager.currentItem == resource.first) {
                             // reload webview if it has an anchor
                             val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-                            locator.locations?.fragment?.let { fragment ->
+                            locator.locations.fragments.firstOrNull()?.let { fragment ->
 
                                 val fragments = JSONArray(fragment).getString(0).split(",").associate {
                                     val (left, right) = it.split("=")
@@ -172,8 +175,12 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                 val resourceHref = resource.href
                 val resourceType = resource.type ?: ""
 
-                navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = currentFragment?.webView?.progression)))
-
+                navigatorDelegate?.locationDidChange(locator = Locator(
+                    href = resourceHref,
+                    type = resourceType,
+                    title = publication.metadata.title,
+                    locations = Locator.Locations(progression = currentFragment?.webView?.progression)
+                ))
             }
         }
         return true
@@ -205,8 +212,12 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                 val resourceHref = resource.href
                 val resourceType = resource.type ?: ""
 
-                navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = currentFragment?.webView?.progression)))
-
+                navigatorDelegate?.locationDidChange(locator = Locator(
+                    href = resourceHref,
+                    type = resourceType,
+                    title = publication.metadata.title,
+                    locations = Locator.Locations(progression = currentFragment?.webView?.progression)
+                ))
             }
         }
         return true
@@ -395,7 +406,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
                 pagerPosition = 0
 
-                val locator = data.getSerializableExtra("locator") as Locator
+                val locator = data.getParcelableExtra("locator") as Locator
 
                 // Set the progression fetched
                 navigatorDelegate?.locationDidChange(locator = locator)
@@ -403,7 +414,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                 // href is the link to the page in the toc
                 var href = locator.href
 
-                if (href!!.indexOf("#") > 0) {
+                if (href.indexOf("#") > 0) {
                     href = href.substring(0, href.indexOf("#"))
                 }
 
@@ -415,7 +426,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                                 if (resourcePager.currentItem == resource.first) {
                                     // reload webview if it has an anchor
                                     val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-                                    locator.locations?.fragment?.let { fragment ->
+                                    locator.locations.fragments.firstOrNull()?.let { fragment ->
 
                                         val fragments = JSONArray(fragment).getString(0).split(",").associate {
                                             val (left, right) = it.split("=")
@@ -514,14 +525,14 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
             val resource = publication.readingOrder[resourcePager.currentItem]
             val resourceHref = resource.href
             val resourceType = resource.type ?: ""
-            val locations = Locations.fromJSON(selection.getJSONObject("locations"))
-            val text = LocatorText.fromJSON(selection.getJSONObject("text"))
+            val locations = Locator.Locations.fromJSON(selection.getJSONObject("locations"))
+            val text = Locator.Text.fromJSON(selection.getJSONObject("text"))
 
             val locator = Locator(
-                    resourceHref,
-                    resourceType,
-                    locations = locations,
-                    text = text
+                href = resourceHref,
+                type = resourceType,
+                locations = locations,
+                text = text
             )
             callback(locator)
         }

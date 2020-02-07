@@ -10,7 +10,7 @@
 package org.readium.r2.navigator.epub
 
 import android.graphics.Rect
-import org.readium.r2.shared.Locator
+import org.readium.r2.shared.publication.Locator
 
 interface IR2Highlightable {
     fun showHighlight(highlight: Highlight)
@@ -33,11 +33,11 @@ interface IR2Highlightable {
 }
 
 data class Highlight(
-        val id: String,
-        val locator: Locator,
-        val color: Int,
-        val style: Style,
-        val annotationMarkStyle: String? = null
+    val id: String,
+    val locator: Locator,
+    val color: Int,
+    val style: Style,
+    val annotationMarkStyle: String? = null
 )
 
 enum class Style {

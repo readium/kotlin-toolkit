@@ -30,8 +30,8 @@ import androidx.webkit.WebViewClientCompat
 import org.json.JSONArray
 import org.readium.r2.navigator.*
 import org.readium.r2.shared.APPEARANCE_REF
-import org.readium.r2.shared.Locations
 import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.publication.Locator
 import java.io.IOException
 import java.io.InputStream
 
@@ -153,11 +153,11 @@ class R2EpubPageFragment : Fragment() {
                     if (url!!.indexOf("#") > 0) {
                         val id = url.substring(url.indexOf('#'))
                         webView.loadUrl("javascript:scrollAnchor($id);")
-                        locations = Locations(fragment = id)
+                        locations = Locator.Locations(fragments = listOf(id))
                     }
 
-                    if (locations?.fragment == null) {
-                        locations?.progression?.let { progression ->
+                    if (locations != null && locations.fragments.isEmpty()) {
+                        locations.progression?.let { progression ->
                             currentFragment.webView.progression = progression
 
                             if (webView.listener.preferences.getBoolean(SCROLL_REF, false)) {
@@ -230,7 +230,7 @@ class R2EpubPageFragment : Fragment() {
         val locations = webView.navigator.currentLocation?.locations
 
 
-        locations?.fragment?.let { fragment ->
+        locations?.fragments?.firstOrNull()?.let { fragment ->
 
             val fragments = JSONArray(fragment).getString(0).split(",").associate {
                 val (left, right) = it.split("=")
