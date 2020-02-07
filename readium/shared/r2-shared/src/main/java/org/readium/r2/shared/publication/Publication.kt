@@ -11,6 +11,7 @@ package org.readium.r2.shared.publication
 
 import android.net.Uri
 import android.os.Parcelable
+import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
@@ -24,13 +25,20 @@ import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
+import java.io.Serializable
 import java.net.URL
+
+typealias PositionListFactory = (Publication) -> List<Locator>
 
 /**
  * Shared model for a Readium Publication.
  *
  * @param type The kind of publication it is ( Epub, Cbz, ... )
  * @param version The version of the publication, if the type needs any.
+ * @param positionListFactory Factory used to build lazily the [positionList]. By default, a parser
+ *        will set this to parse the [positionList] from the publication, but the host app might
+ *        want to overwrite this with a custom closure to implement, for example, a caching
+ *        mechanism.
  */
 @Parcelize
 data class Publication(
@@ -43,6 +51,9 @@ data class Publication(
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
     val otherCollections: List<PublicationCollection> = emptyList(),
+    // FIXME: This is a Serializable to be able to use Parcelize, but this should be changed once we moved away from Activity – see https://github.com/readium/r2-navigator-kotlin/issues/115
+    // Should be a [PositionListFactory]
+    val positionListFactory: Serializable = { emptyList<Locator>() } as Serializable,
 
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
     var type: TYPE = TYPE.EPUB,
@@ -76,6 +87,22 @@ data class Publication(
             fun fromString(type: String): EXTENSION? =
                 EXTENSION.values().firstOrNull { it.value == type }
         }
+    }
+
+    /**
+     * List of all the positions in the publication.
+     */
+    @IgnoredOnParcel
+    val positionList: List<Locator> by lazy {
+        (positionListFactory as? PositionListFactory)?.invoke(this) ?: emptyList()
+    }
+
+    /**
+     * List of all the positions in each resource, indexed by their [href].
+     */
+    @IgnoredOnParcel
+    val positionListByResource: Map<String, List<Locator>> by lazy {
+        positionList.groupBy { it.href }
     }
 
     /**
@@ -247,9 +274,11 @@ data class Publication(
 
     }
 
+    @IgnoredOnParcel
     @Deprecated("Renamed to [listOfAudioClips]", ReplaceWith("listOfAudioClips"))
     val listOfAudioFiles: List<Link> = listOfAudioClips
 
+    @IgnoredOnParcel
     @Deprecated("Renamed to [listOfVideoClips]", ReplaceWith("listOfVideoClips"))
     val listOfVideos: List<Link> = listOfVideoClips
 
