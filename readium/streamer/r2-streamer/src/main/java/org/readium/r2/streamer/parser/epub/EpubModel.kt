@@ -15,6 +15,42 @@ internal typealias Encryption = org.readium.r2.shared.publication.encryption.Enc
 
 internal typealias Link = org.readium.r2.shared.publication.Link
 
+internal typealias LocalizedString = org.readium.r2.shared.publication.LocalizedString
+
+internal typealias Subject = org.readium.r2.shared.publication.Subject
+
+internal typealias Contributor = org.readium.r2.shared.publication.Contributor
+
+internal data class Title(
+        val value: LocalizedString,
+        val fileAs: String? = null,
+        val type: String? = null,
+        val displaySeq: Int? = null
+)
+
+internal data class EpubLink(
+        val href: String,
+        val rel: List<String>,
+        val mediaType: String?, val refines: String?,
+        val properties: List<String> = emptyList()
+)
+
+internal data class MetaItem(
+        val property: String,
+        val value: String, val lang: String,
+        val scheme: String? = null,
+        val refines: String? = null,
+        val id: String?,
+        val children: List<MetaItem> = emptyList()
+)
+
+internal data class EpubMetadata(
+        val uniqueIdentifierId: String?,
+        val globalItems: List<MetaItem>,
+        val refineItems: Map<String, List<MetaItem>>,
+        val links: List<EpubLink>
+)
+
 internal data class Item(
         val href: String,
         val id: String?,

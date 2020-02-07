@@ -9,23 +9,18 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import java.util.Date
-import java.util.LinkedList
-import org.joda.time.DateTime
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.streamer.parser.normalize
 
 internal class MetadataParser (private val epubVersion: Double, private val prefixMap: Map<String, String>) {
     fun parse(document: ElementNode, filePath: String) : EpubMetadata? {
-        val metadataElement = document.getFirst("metadata", Namespaces.Opf) ?: return null
-        val (metas, links) = parseElements(metadataElement, filePath)
-        val (globalMetas, refineMetas) = resolveMetaHierarchy(metas).partition { it.refines == null }
+        val metadata = document.getFirst("metadata", Namespaces.Opf) ?: return null
         val uniqueIdentifierId = document.getAttr("unique-identifier")
-        val (metadata, remainder) = computeMetadata(globalMetas, uniqueIdentifierId)
+        val (metas, links) = parseElements(metadata, filePath)
+        val (globalMetas, refineMetas) = resolveMetaHierarchy(metas).partition { it.refines == null }
         @Suppress("Unchecked_cast")
         val refineMap = refineMetas.groupBy(MetaItem::refines) as Map<String, List<MetaItem>>
-        return EpubMetadata(metadata, links, remainder, refineMap)
+        return EpubMetadata(uniqueIdentifierId, globalMetas, refineMap, links)
     }
 
     private fun parseElements(metadataElement: ElementNode, filePath: String) : Pair<List<MetaItem>, List<EpubLink>> {
@@ -108,106 +103,4 @@ internal class MetadataParser (private val epubVersion: Double, private val pref
         val newChildren = refinedBy.map { computeMetaItem(it, metas, updatedChain) }
         return expr.copy(children=expr.children + newChildren)
     }
-
-    private fun computeMetadata(metas: List<MetaItem>, uniqueIdentifierId: String?): Pair<GeneralMetadata, List<MetaItem>> {
-        val remainder: MutableList<MetaItem> = LinkedList()
-        val titles: MutableList<Title> = LinkedList()
-        val languages: MutableList<String> = LinkedList()
-        val subjects: MutableList<Subject> = LinkedList()
-        val identifiers: MutableMap<String?, String> = mutableMapOf()
-
-        val creators: MutableList<Contributor> = LinkedList()
-        val contributors: MutableList<Contributor> = LinkedList()
-        val publishers: MutableList<Contributor> = LinkedList()
-        val narrators: MutableList<Contributor> = LinkedList()
-
-        var description: String? = null
-        var published: Date? = null
-        var modified: Date? = null
-
-        for (meta in metas) {
-            when (meta.property) {
-                Namespaces.Dcterms + "identifier" -> identifiers[meta.id] = meta.value
-                Namespaces.Dcterms + "title" -> titles.add(parseTitle(meta, metas))
-                Namespaces.Dcterms + "language" -> languages.add(meta.value)
-                Namespaces.Dcterms + "creator"  -> creators.add(parseContributor(meta))
-                Namespaces.Dcterms + "contributor" -> contributors.add(parseContributor(meta))
-                Namespaces.Dcterms + "publisher" -> publishers.add(parseContributor(meta))
-                PACKAGE_RESERVED_PREFIXES["media"] + "narrator" -> narrators.add(parseContributor((meta)))
-                Namespaces.Dcterms + "date" -> meta.value.toDateOrNull()?.let { if (published == null) published = it }
-                Namespaces.Dcterms + "modified" -> modified = meta.value.toDateOrNull()
-                Namespaces.Dcterms + "description" -> description = meta.value
-                Namespaces.Dcterms + "subject" -> subjects.add(parseSubject(meta))
-                else -> remainder.add(meta)
-            }
-        }
-
-        val uniqueIdentifier = identifiers[uniqueIdentifierId] ?: identifiers.values.firstOrNull()
-        val metadata = GeneralMetadata(
-                uniqueIdentifier, titles, languages,
-                published, modified, description, subjects,
-                creators, contributors, publishers, narrators
-        )
-        return Pair(metadata, remainder)
-    }
-
-    private fun parseTitle(item: MetaItem, others: List<MetaItem>) : Title {
-        val values: MutableMap<String?, String> = mutableMapOf(item.lang to item.value)
-        var type: String? = null
-        var fileAs: String? = null
-        var displaySeq: Int? = null
-
-        if (epubVersion < 3.0)
-            fileAs = others.firstOrNull { it.property == "calibre:title_sort" }?.value
-        else {
-            for (child in item.children) {
-                when (child.property) {
-                    DEFAULT_VOCAB.META.iri + "alternate-script" -> if (child.lang != item.lang) values[child.lang] = child.value
-                    DEFAULT_VOCAB.META.iri + "file-as" -> fileAs = child.value
-                    DEFAULT_VOCAB.META.iri + "title-type" -> type = child.value
-                    DEFAULT_VOCAB.META.iri + "display-seq" -> child.value.toIntOrNull()?.let { displaySeq = it }
-                }
-            }
-        }
-        return Title(LocalizedString.fromStrings(values), fileAs, type, displaySeq)
-    }
-
-    private fun parseContributor(item: MetaItem): Contributor {
-        val names: MutableMap<String?, String> = mutableMapOf(item.lang to item.value)
-        val roles: MutableSet<String> = mutableSetOf()
-        var fileAs: String? = null
-
-        for (child in item.children) {
-            when (child.property) {
-                DEFAULT_VOCAB.META.iri + "alternate-script" -> if (child.lang != item.lang) names[child.lang] = child.value
-                DEFAULT_VOCAB.META.iri + "file-as" -> fileAs = child.value
-                DEFAULT_VOCAB.META.iri + "role" -> roles.add(child.value)
-            }
-        }
-        return Contributor(localizedName=LocalizedString.fromStrings(names), sortAs=fileAs, roles=roles)
-    }
-
-    private fun parseSubject(item: MetaItem) : Subject {
-        val values: MutableMap<String?, String> = mutableMapOf(item.lang to item.value)
-        var authority: String? = null
-        var term: String? = null
-        var fileAs: String? = null
-
-        for (child in item.children) {
-            when (child.property) {
-                DEFAULT_VOCAB.META.iri + "alternate-script" -> if (child.lang != item.lang) values[child.lang] = child.value
-                DEFAULT_VOCAB.META.iri + "authority" -> authority = child.value
-                DEFAULT_VOCAB.META.iri + "term" -> term = child.value
-                DEFAULT_VOCAB.META.iri + "file-as" -> fileAs = child.value
-            }
-        }
-        return Subject(LocalizedString.fromStrings(values), fileAs, authority, term)
-    }
 }
-
-private fun String.toDateOrNull() =
-    try {
-        DateTime(this).toDate()
-    } catch(e: Exception) {
-        null
-    }
