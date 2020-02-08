@@ -22,7 +22,7 @@ internal object NavigationDocumentParser {
         val navs = body.collect("nav", Namespaces.Xhtml).mapNotNull { parseNavElement(it, filePath, prefixMap) }
         val navMap = navs.flatMap { nav -> nav.first.map { type -> Pair(type, nav.second) } }.toMap()
         return  navMap.mapKeys {
-            val suffix = it.key.removePrefix(DEFAULT_VOCAB.TYPE.iri)
+            val suffix = it.key.removePrefix(Vocabularies.Type)
             if (suffix in listOf("toc", "page-list", "landmarks", "lot", "loi", "loa", "lov")) suffix else it.key
         }
     }

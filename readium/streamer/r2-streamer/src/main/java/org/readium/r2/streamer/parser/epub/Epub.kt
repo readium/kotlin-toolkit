@@ -55,10 +55,10 @@ internal data class Epub(
 
     private fun mapLink(link: EpubLink) : Link? {
         val contains: MutableList<String> = mutableListOf()
-        if (link.rel.contains(DEFAULT_VOCAB.LINK.iri + "record")) {
-            if (link.properties.contains(DEFAULT_VOCAB.LINK.iri + "onix"))
+        if (link.rel.contains(Vocabularies.Link + "record")) {
+            if (link.properties.contains(Vocabularies.Link + "onix"))
                 contains.add("onix")
-            if (link.properties.contains(DEFAULT_VOCAB.LINK.iri + "xmp"))
+            if (link.properties.contains(Vocabularies.Link + "xmp"))
                 contains.add("xmp")
         }
         return Link(
@@ -161,13 +161,13 @@ internal data class Epub(
         val others: MutableList<String> = mutableListOf()
         for (property in properties) {
             when (property) {
-                DEFAULT_VOCAB.ITEM.iri + "scripted" -> contains.add("js")
-                DEFAULT_VOCAB.ITEM.iri + "mathml" -> contains.add("mathml")
-                DEFAULT_VOCAB.ITEM.iri + "svg" -> contains.add("svg")
-                DEFAULT_VOCAB.ITEM.iri + "xmp-record" -> contains.add("xmp")
-                DEFAULT_VOCAB.ITEM.iri + "remote-resources" -> contains.add("remote-resources")
-                DEFAULT_VOCAB.ITEM.iri + "nav" -> rels.add("contents")
-                DEFAULT_VOCAB.ITEM.iri + "cover-image" -> rels.add("cover")
+                Vocabularies.Item + "scripted" -> contains.add("js")
+                Vocabularies.Item + "mathml" -> contains.add("mathml")
+                Vocabularies.Item + "svg" -> contains.add("svg")
+                Vocabularies.Item + "xmp-record" -> contains.add("xmp")
+                Vocabularies.Item + "remote-resources" -> contains.add("remote-resources")
+                Vocabularies.Item + "nav" -> rels.add("contents")
+                Vocabularies.Item + "cover-image" -> rels.add("cover")
                 else -> others.add(property)
             }
         }
@@ -179,41 +179,41 @@ internal data class Epub(
         for (property in properties) {
             //  Page
             when (property) {
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "page-spread-center" -> "center"
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "page-spread-left",
-                DEFAULT_VOCAB.ITEMREF.iri + "page-spread-left" -> "left"
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "page-spread-right",
-                DEFAULT_VOCAB.ITEMREF.iri + "page-spread-left" -> "right"
+                Vocabularies.Rendition + "page-spread-center" -> "center"
+                Vocabularies.Rendition + "page-spread-left",
+                Vocabularies.Itemref + "page-spread-left" -> "left"
+                Vocabularies.Rendition + "page-spread-right",
+                Vocabularies.Itemref + "page-spread-right" -> "right"
                 else -> null
             }?.let { linkProperties["page"] = it }
             //  Spread
             when (property) {
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-node" -> "none"
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-auto" -> "auto"
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-landscape" -> "landscape"
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-portrait",
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "spread-both" -> "both"
+                Vocabularies.Rendition + "spread-node" -> "none"
+                Vocabularies.Rendition + "spread-auto" -> "auto"
+                Vocabularies.Rendition + "spread-landscape" -> "landscape"
+                Vocabularies.Rendition + "spread-portrait",
+                Vocabularies.Rendition + "spread-both" -> "both"
                 else -> null
             }?.let { linkProperties["spread"] = it }
             //  Layout
             when (property) {
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "layout-reflowable" -> "reflowable"
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "layout-pre-paginated" -> "fixed"
+                Vocabularies.Rendition + "layout-reflowable" -> "reflowable"
+                Vocabularies.Rendition + "layout-pre-paginated" -> "fixed"
                 else -> null
             }?.let { linkProperties["layout"] = it }
             //  Orientation
             when (property) {
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "orientation-auto" -> "auto"
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "orientation-landscape" -> "landscape"
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "orientation-portrait" -> "portrait"
+                Vocabularies.Rendition + "orientation-auto" -> "auto"
+                Vocabularies.Rendition + "orientation-landscape" -> "landscape"
+                Vocabularies.Rendition + "orientation-portrait" -> "portrait"
                 else -> null
             }?.let { linkProperties["orientation"] = it }
             //  Overflow
             when (property) {
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-auto" -> "auto"
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-paginated" -> "paginated"
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-scrolled-continuous",
-                PACKAGE_RESERVED_PREFIXES["rendition"] + "flow-scrolled-doc" -> "scrolled"
+                Vocabularies.Rendition + "flow-auto" -> "auto"
+                Vocabularies.Rendition + "flow-paginated" -> "paginated"
+                Vocabularies.Rendition + "flow-scrolled-continuous",
+                Vocabularies.Rendition + "flow-scrolled-doc" -> "scrolled"
                 else -> null
             }?.let { linkProperties["overflow"] = it }
         }

@@ -340,7 +340,7 @@ class MetadataMiscTest {
     fun `otherMetadata is rightly filled`() {
         val otherMetadata = parsePackageDocument("package/meta-others.opf").metadata.otherMetadata
         assertThat(otherMetadata).contains(
-                entry(Namespaces.Dcterms + "source", "Wonderland"),
+                entry(Vocabularies.Dcterms + "source", "Wonderland"),
                 entry("http://my.url/#property0", mapOf(
                         "@value" to "refines0",
                         "http://my.url/#property1" to mapOf(
@@ -351,7 +351,7 @@ class MetadataMiscTest {
                 ))
         )
         assertThat(otherMetadata).containsOnlyKeys(
-                Namespaces.Dcterms + "source",
+                Vocabularies.Dcterms + "source",
                 "presentation",
                 "http://my.url/#property0"
         )

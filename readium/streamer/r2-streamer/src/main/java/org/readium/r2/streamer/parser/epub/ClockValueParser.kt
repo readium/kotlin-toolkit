@@ -10,7 +10,7 @@
 package org.readium.r2.streamer.parser.epub
 
 /**
- * Parse clock values as defined by
+ * Parse clock values as defined in
  * https://www.w3.org/TR/SMIL/smil-timing.html#q22
  */
 internal object ClockValueParser {
