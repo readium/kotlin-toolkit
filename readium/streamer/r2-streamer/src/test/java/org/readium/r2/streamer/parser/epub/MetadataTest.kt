@@ -13,6 +13,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
 import org.joda.time.DateTime
 import org.junit.Test
+import org.readium.r2.shared.publication.Contributor
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Subject
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
@@ -335,7 +338,8 @@ class MetadataMiscTest {
 
     @Test
     fun `otherMetadata is rightly filled`() {
-        assertThat(parsePackageDocument("package/meta-others.opf").metadata.otherMetadata).contains(
+        val otherMetadata = parsePackageDocument("package/meta-others.opf").metadata.otherMetadata
+        assertThat(otherMetadata).contains(
                 entry(Namespaces.Dcterms + "source", "Wonderland"),
                 entry("http://my.url/#property0", mapOf(
                         "@value" to "refines0",
@@ -345,6 +349,11 @@ class MetadataMiscTest {
                                 "http://my.url/#property3" to "refines3"
                         )
                 ))
+        )
+        assertThat(otherMetadata).containsOnlyKeys(
+                Namespaces.Dcterms + "source",
+                "presentation",
+                "http://my.url/#property0"
         )
     }
 }

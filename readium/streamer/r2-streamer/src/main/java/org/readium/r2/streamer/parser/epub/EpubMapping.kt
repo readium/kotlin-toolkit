@@ -15,6 +15,10 @@ import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.streamer.parser.normalize
 
 internal fun Epub.toPublication() : Publication {
+    val metadata = with(packageDocument) {
+        metadata.globalItems.toMetadata(metadata.uniqueIdentifierId, spine.direction)
+    }
+
     // Compute links
     @Suppress("Unchecked_cast")
     val itemById = packageDocument.manifest.filter { it.id != null }.associateBy(Item::id) as Map<String, Item>
@@ -25,11 +29,11 @@ internal fun Epub.toPublication() : Publication {
 
     // Compute toc and otherCollections
     val toc = navigationData["toc"].orEmpty()
-    val otherCollections = navigationData.minus("toc").map {PublicationCollection(links = it.value, role= it.key) }
+    val otherCollections = navigationData.minus("toc").map { PublicationCollection(links=it.value, role=it.key) }
 
     // Build Publication object
     return Publication(
-            metadata = computeMetadata(),
+            metadata = metadata,
             links = packageDocument.metadata.links.mapNotNull(::mapLink),
             readingOrder = readingOrder,
             resources = resources,
@@ -84,9 +88,7 @@ private fun Epub.computeLink(
 
     val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
     val alternates = computeAlternates(item, itemById, itemrefByIdref, fallbackChain)
-    val duration = packageDocument.metadata.refineItems[item.id]
-            ?.firstOrNull { it.property == PACKAGE_RESERVED_PREFIXES["media"] + "duration" }
-            ?.value?.let { ClockValueParser.parse(it) }
+    val duration = packageDocument.metadata.refineItems[item.id]?.duration()
 
     return Link(
             title = item.id,
@@ -115,7 +117,7 @@ private fun Epub.computePropertiesAndRels(item: Item, itemref: Itemref?) : Pair<
     }
 
     if (packageDocument.epubVersion < 3.0) {
-        val coverId = packageDocument.metadata.globalItems.firstOrNull { it.property == "cover" }?.value
+        val coverId = packageDocument.metadata.globalItems.cover()
         if (coverId != null && item.id == coverId) rels.add("cover")
     }
 
