@@ -26,6 +26,7 @@ internal data class Epub(
         val metadata = with(packageDocument) {
             metadata.globalItems.toMetadata(metadata.uniqueIdentifierId, spine.direction)
         }
+        val metadataLinks = packageDocument.metadata.links.mapNotNull(::mapLink)
 
         // Compute links
         @Suppress("Unchecked_cast")
@@ -42,7 +43,7 @@ internal data class Epub(
         // Build Publication object
         return Publication(
                 metadata = metadata,
-                links = packageDocument.metadata.links.mapNotNull(::mapLink),
+                links = metadataLinks,
                 readingOrder = readingOrder,
                 resources = resources,
                 tableOfContents = toc,

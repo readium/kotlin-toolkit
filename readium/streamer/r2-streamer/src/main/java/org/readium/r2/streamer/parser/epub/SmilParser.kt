@@ -30,11 +30,11 @@ import org.readium.r2.streamer.parser.normalize
 
     private fun parseSeq(node: ElementNode, filePath: String) : List<MediaOverlayNode>? {
         val children: MutableList<MediaOverlayNode> = mutableListOf()
-        node.getAll().forEach {
-            if (it.name == "par" && it.namespace == Namespaces.Smil)
-                parsePar(it, filePath)?.let { children.add(it) }
-            else if (it.name == "seq" && it.namespace == Namespaces.Smil)
-                parseSeq(it, filePath)?.let{ children.addAll(it) }
+        for(child in node.getAll()) {
+            if (child.name == "par" && child.namespace == Namespaces.Smil)
+                parsePar(child, filePath)?.let { children.add(it) }
+            else if (child.name == "seq" && child.namespace == Namespaces.Smil)
+                parseSeq(child, filePath)?.let{ children.addAll(it) }
         }
 
         /* No wrapping media overlay can be created unless:
@@ -51,10 +51,10 @@ import org.readium.r2.streamer.parser.normalize
 
     private fun parsePar(node: ElementNode, filePath: String) : MediaOverlayNode? {
         val text = node.getFirst("text", Namespaces.Smil)?.getAttr("src") ?: return null
-        val audio = node.getFirst("audio", Namespaces.Smil)?.let {
-            val src = it.getAttr("src")
-            val begin = it.getAttr("clipBegin")?.let { ClockValueParser.parse(it) } ?: ""
-            val end = it.getAttr("clipEnd")?.let { ClockValueParser.parse(it) } ?: ""
+        val audio = node.getFirst("audio", Namespaces.Smil)?.let { audioNode ->
+            val src = audioNode.getAttr("src")
+            val begin = audioNode.getAttr("clipBegin")?.let { ClockValueParser.parse(it) } ?: ""
+            val end = audioNode.getAttr("clipEnd")?.let { ClockValueParser.parse(it) } ?: ""
             "$src#t=$begin,$end"
         }
         return MediaOverlayNode(normalize(filePath, text), normalize(filePath, audio))

@@ -345,11 +345,15 @@ internal  data class Title(
 )
 
 private fun <K, V> List<V>.distributeBy(classes: Set<K>, transform: (V) -> Collection<K>) : Map<K?, List<V>> {
-    val map: MutableMap<K?, MutableList<V>> = mutableMapOf<K?, MutableList<V>>()
+    /* Map all elements with [transform] and compute a [Map] with keys [null] and elements from [classes] and,
+     as values, lists of elements whose transformed values contain the key.
+     If a transformed element is in no class, it is assumed to be in [null] class. */
+
+    val map: MutableMap<K?, MutableList<V>> = mutableMapOf()
     for (element in this) {
         val transformed = transform(element).filter { it in classes }
         if (transformed.isEmpty())
-            map.getOrPut(null) { mutableListOf<V>() }.add(element)
+            map.getOrPut(null) { mutableListOf() }.add(element)
         for (v in transformed)
             map.getOrPut(v) { mutableListOf() }.add(element)
     }

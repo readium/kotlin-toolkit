@@ -156,16 +156,15 @@ class EpubParser : PublicationParser {
             Timber.e(e, "Missing File : $path")
             return null
         }
-        val document = try {
+        return try {
             XmlParser().parse(data.inputStream())
         } catch (e: Exception) {
             null
         }
-        return document
     }
 
     @Deprecated("This is done automatically in [parse], you can remove the call to [fillEncryption]", ReplaceWith(""))
-    @Suppress("UNUSED_PARAMETER")
+    @Suppress("Unused_parameter")
     fun fillEncryption(container: Container, publication: Publication, drm: DRM?): Pair<Container, Publication> {
         return Pair(container, publication)
     }
