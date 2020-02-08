@@ -28,44 +28,44 @@ import java.io.File
 object EPUBConstant {
     const val mimetype: String = "application/epub+zip"
     private val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-            ReadiumCSSName.ref("hyphens") to false,
-            ReadiumCSSName.ref("ligatures") to false
+        ReadiumCSSName.ref("hyphens") to false,
+        ReadiumCSSName.ref("ligatures") to false
     )
 
     private val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-            ReadiumCSSName.ref("hyphens") to false,
-            ReadiumCSSName.ref("wordSpacing") to false,
-            ReadiumCSSName.ref("letterSpacing") to false,
-            ReadiumCSSName.ref("ligatures") to true
+        ReadiumCSSName.ref("hyphens") to false,
+        ReadiumCSSName.ref("wordSpacing") to false,
+        ReadiumCSSName.ref("letterSpacing") to false,
+        ReadiumCSSName.ref("ligatures") to true
     )
 
     private val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-            ReadiumCSSName.ref("textAlignment") to false,
-            ReadiumCSSName.ref("hyphens") to false,
-            ReadiumCSSName.ref("paraIndent") to false,
-            ReadiumCSSName.ref("wordSpacing") to false,
-            ReadiumCSSName.ref("letterSpacing") to false
+        ReadiumCSSName.ref("textAlignment") to false,
+        ReadiumCSSName.ref("hyphens") to false,
+        ReadiumCSSName.ref("paraIndent") to false,
+        ReadiumCSSName.ref("wordSpacing") to false,
+        ReadiumCSSName.ref("letterSpacing") to false
     )
 
     private val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-            ReadiumCSSName.ref("scroll") to true,
-            ReadiumCSSName.ref("columnCount") to false,
-            ReadiumCSSName.ref("textAlignment") to false,
-            ReadiumCSSName.ref("hyphens") to false,
-            ReadiumCSSName.ref("paraIndent") to false,
-            ReadiumCSSName.ref("wordSpacing") to false,
-            ReadiumCSSName.ref("letterSpacing") to false
+        ReadiumCSSName.ref("scroll") to true,
+        ReadiumCSSName.ref("columnCount") to false,
+        ReadiumCSSName.ref("textAlignment") to false,
+        ReadiumCSSName.ref("hyphens") to false,
+        ReadiumCSSName.ref("paraIndent") to false,
+        ReadiumCSSName.ref("wordSpacing") to false,
+        ReadiumCSSName.ref("letterSpacing") to false
     )
 
     val forceScrollPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-            ReadiumCSSName.ref("scroll") to true
+        ReadiumCSSName.ref("scroll") to true
     )
 
     val userSettingsUIPreset: MutableMap<ContentLayout, MutableMap<ReadiumCSSName, Boolean>> = mutableMapOf(
-            ContentLayout.LTR to ltrPreset,
-            ContentLayout.RTL to rtlPreset,
-            ContentLayout.CJK_VERTICAL to cjkVerticalPreset,
-            ContentLayout.CJK_HORIZONTAL to cjkHorizontalPreset
+        ContentLayout.LTR to ltrPreset,
+        ContentLayout.RTL to rtlPreset,
+        ContentLayout.CJK_VERTICAL to cjkVerticalPreset,
+        ContentLayout.CJK_HORIZONTAL to cjkHorizontalPreset
     )
 }
 
@@ -76,11 +76,11 @@ class EpubParser : PublicationParser {
             throw ContainerError.missingFile(path)
 
         val container = if (File(path).isDirectory) {
-                DirectoryContainer(path = path, mimetype = EPUBConstant.mimetype)
-            } else {
-                ArchiveContainer(path = path, mimetype = EPUBConstant.mimetype)
-            }
-        container.drm =  if (container.contains(relativePath = Paths.lcpl)) DRM(DRM.Brand.lcp) else null
+            DirectoryContainer(path = path, mimetype = EPUBConstant.mimetype)
+        } else {
+            ArchiveContainer(path = path, mimetype = EPUBConstant.mimetype)
+        }
+        container.drm = if (container.contains(relativePath = Paths.lcpl)) DRM(DRM.Brand.lcp) else null
         return container
     }
 
@@ -98,7 +98,12 @@ class EpubParser : PublicationParser {
 
         val encryptionData =
             if (container.contains(Paths.encryption))
-                parseXmlDocument(Paths.encryption, container)?.let { EncryptionParser.parse(it, container.drm) }.orEmpty()
+                parseXmlDocument(Paths.encryption, container)?.let {
+                    EncryptionParser.parse(
+                        it,
+                        container.drm
+                    )
+                }.orEmpty()
             else
                 emptyMap()
 
@@ -133,10 +138,10 @@ class EpubParser : PublicationParser {
     }
 
     private fun getRootFilePath(document: ElementNode): String =
-            document.getFirst("rootfiles", Namespaces.Opc)
-                    ?.getFirst("rootfile", Namespaces.Opc)
-                    ?.getAttr("full-path")
-                    ?: "content.opf"
+        document.getFirst("rootfiles", Namespaces.Opc)
+            ?.getFirst("rootfile", Namespaces.Opc)
+            ?.getAttr("full-path")
+            ?: "content.opf"
 
     private fun setLayoutStyle(publication: Publication) {
         publication.cssStyle = publication.contentLayout.name

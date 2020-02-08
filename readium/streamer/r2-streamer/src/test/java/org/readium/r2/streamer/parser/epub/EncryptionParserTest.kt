@@ -17,7 +17,7 @@ import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.parser.xml.XmlParser
 
 class EncryptionParserTest {
-    fun parseEncryption(path: String, drm: DRM? = null) : Map<String, Encryption> {
+    fun parseEncryption(path: String, drm: DRM? = null): Map<String, Encryption> {
         val res = EncryptionParserTest::class.java.getResourceAsStream(path)
         checkNotNull(res)
         val document = XmlParser().parse(res)
@@ -26,21 +26,25 @@ class EncryptionParserTest {
 
     val lcpDrm = DRM(DRM.Brand.lcp)
 
-    val lcpChap1 = entry("/OEBPS/xhtml/chapter01.xhtml", Encryption(
-        algorithm = "http://www.w3.org/2001/04/xmlenc#aes256-cbc",
-        compression = "deflate",
-        originalLength = 13291,
-        profile = null,
-        scheme = "http://readium.org/2014/01/lcp"
-    ))
+    val lcpChap1 = entry(
+        "/OEBPS/xhtml/chapter01.xhtml", Encryption(
+            algorithm = "http://www.w3.org/2001/04/xmlenc#aes256-cbc",
+            compression = "deflate",
+            originalLength = 13291,
+            profile = null,
+            scheme = "http://readium.org/2014/01/lcp"
+        )
+    )
 
-    val lcpChap2 =  entry("/OEBPS/xhtml/chapter02.xhtml", Encryption(
-        algorithm = "http://www.w3.org/2001/04/xmlenc#aes256-cbc",
-        compression = "none",
-        originalLength = 12914,
-        profile = null,
-        scheme = "http://readium.org/2014/01/lcp"
-    ))
+    val lcpChap2 = entry(
+        "/OEBPS/xhtml/chapter02.xhtml", Encryption(
+            algorithm = "http://www.w3.org/2001/04/xmlenc#aes256-cbc",
+            compression = "none",
+            originalLength = 12914,
+            profile = null,
+            scheme = "http://readium.org/2014/01/lcp"
+        )
+    )
 
     @Test
     fun `Check EncryptionParser with namespace prefixes`() {
@@ -55,19 +59,24 @@ class EncryptionParserTest {
     @Test
     fun `Check EncryptionParser with unknown retrieval method`() {
         assertThat(parseEncryption("encryption/encryption-unknown-method.xml")).contains(
-            entry("/OEBPS/xhtml/chapter.xhtml", Encryption(
-                algorithm = "http://www.w3.org/2001/04/xmlenc#kw-aes128",
-                compression = "deflate",
-                originalLength = 12914,
-                profile = null,
-                scheme = null )),
-            entry("/OEBPS/images/image.jpeg", Encryption(
-                algorithm = "http://www.w3.org/2001/04/xmlenc#kw-aes128",
-                compression = null,
-                originalLength = null,
-                profile = null,
-                scheme = null
-            ))
+            entry(
+                "/OEBPS/xhtml/chapter.xhtml", Encryption(
+                    algorithm = "http://www.w3.org/2001/04/xmlenc#kw-aes128",
+                    compression = "deflate",
+                    originalLength = 12914,
+                    profile = null,
+                    scheme = null
+                )
+            ),
+            entry(
+                "/OEBPS/images/image.jpeg", Encryption(
+                    algorithm = "http://www.w3.org/2001/04/xmlenc#kw-aes128",
+                    compression = null,
+                    originalLength = null,
+                    profile = null,
+                    scheme = null
+                )
+            )
         )
     }
 }

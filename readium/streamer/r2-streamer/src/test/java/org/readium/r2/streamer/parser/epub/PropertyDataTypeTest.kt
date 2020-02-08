@@ -18,7 +18,7 @@ class ParsePrefixesTest {
     fun `A single prefix is rightly parsed`() {
         val prefixes = parsePrefixes("foaf: http://xmlns.com/foaf/spec/")
         assertThat(prefixes).contains(
-                entry("foaf", "http://xmlns.com/foaf/spec/")
+            entry("foaf", "http://xmlns.com/foaf/spec/")
         )
         assertThat(prefixes).hasSize(1)
     }
@@ -27,8 +27,8 @@ class ParsePrefixesTest {
     fun `Space between prefixes and iris can be ommited`() {
         val prefixes = parsePrefixes("foaf: http://xmlns.com/foaf/spec/ dbp:http://dbpedia.org/ontology/")
         assertThat(prefixes).contains(
-                entry("foaf", "http://xmlns.com/foaf/spec/"),
-                entry("dbp", "http://dbpedia.org/ontology/")
+            entry("foaf", "http://xmlns.com/foaf/spec/"),
+            entry("dbp", "http://dbpedia.org/ontology/")
         )
         assertThat(prefixes).hasSize(2)
     }
@@ -37,8 +37,8 @@ class ParsePrefixesTest {
     fun `Multiple prefixes are rightly parsed`() {
         val prefixes = parsePrefixes("foaf: http://xmlns.com/foaf/spec/ dbp: http://dbpedia.org/ontology/")
         assertThat(prefixes).contains(
-                entry("foaf", "http://xmlns.com/foaf/spec/"),
-                entry("dbp", "http://dbpedia.org/ontology/")
+            entry("foaf", "http://xmlns.com/foaf/spec/"),
+            entry("dbp", "http://dbpedia.org/ontology/")
         )
         assertThat(prefixes).hasSize(2)
     }
@@ -47,11 +47,13 @@ class ParsePrefixesTest {
     fun `Different prefixes can be separated by new lines`() {
         @Test
         fun `Multiple prefixes are rightly parsed`() {
-            val prefixes = parsePrefixes("""foaf: http://xmlns.com/foaf/spec/
-                dbp: http://dbpedia.org/ontology/""")
+            val prefixes = parsePrefixes(
+                """foaf: http://xmlns.com/foaf/spec/
+                dbp: http://dbpedia.org/ontology/"""
+            )
             assertThat(prefixes).contains(
-                    entry("foaf", "http://xmlns.com/foaf/spec/"),
-                    entry("dbp", "http://dbpedia.org/ontology/")
+                entry("foaf", "http://xmlns.com/foaf/spec/"),
+                entry("dbp", "http://dbpedia.org/ontology/")
             )
             assertThat(prefixes).hasSize(2)
         }
@@ -67,19 +69,19 @@ class TestResolveProperty {
     @Test
     fun `Default vocabularies are used`() {
         assertThat(resolveProperty("nav", PACKAGE_RESERVED_PREFIXES, DEFAULT_VOCAB.ITEM))
-                .isEqualTo("http://idpf.org/epub/vocab/package/item/#nav")
+            .isEqualTo("http://idpf.org/epub/vocab/package/item/#nav")
     }
 
     @Test
     fun `The prefix map has highest priority`() {
         assertThat(resolveProperty("media:narrator", PACKAGE_RESERVED_PREFIXES, DEFAULT_VOCAB.META))
-                .isEqualTo("http://www.idpf.org/epub/vocab/overlays/#narrator")
+            .isEqualTo("http://www.idpf.org/epub/vocab/overlays/#narrator")
     }
 
     @Test
     fun `Return null when the prefix is unknown`() {
         assertThat(resolveProperty("unknown:narrator", PACKAGE_RESERVED_PREFIXES, DEFAULT_VOCAB.META))
-                .isNull()
+            .isNull()
     }
 
     @Test
@@ -96,9 +98,9 @@ class ParsePropertiesTest {
                  rendition:orientation-auto
         """
         assertThat(parseProperties(properties)).containsExactly(
-                "rendition:flow-auto",
-                "rendition:layout-pre-paginated",
-                "rendition:orientation-auto"
+            "rendition:flow-auto",
+            "rendition:layout-pre-paginated",
+            "rendition:orientation-auto"
         )
     }
 

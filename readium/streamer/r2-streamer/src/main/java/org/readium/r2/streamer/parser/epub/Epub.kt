@@ -18,11 +18,11 @@ import org.readium.r2.streamer.parser.normalize
 
 
 internal data class Epub(
-        val packageDocument: PackageDocument,
-        val navigationData: Map<String, List<Link>> = emptyMap(),
-        val encryptionData: Map<String, Encryption> = emptyMap()
+    val packageDocument: PackageDocument,
+    val navigationData: Map<String, List<Link>> = emptyMap(),
+    val encryptionData: Map<String, Encryption> = emptyMap()
 ) {
-    fun toPublication() : Publication {
+    fun toPublication(): Publication {
         val metadata = with(packageDocument) {
             metadata.globalItems.toMetadata(metadata.uniqueIdentifierId, spine.direction)
         }
@@ -38,23 +38,24 @@ internal data class Epub(
 
         // Compute toc and otherCollections
         val toc = navigationData["toc"].orEmpty()
-        val otherCollections = navigationData.minus("toc").map { PublicationCollection(links=it.value, role=it.key) }
+        val otherCollections =
+            navigationData.minus("toc").map { PublicationCollection(links = it.value, role = it.key) }
 
         // Build Publication object
         return Publication(
-                metadata = metadata,
-                links = metadataLinks,
-                readingOrder = readingOrder,
-                resources = resources,
-                tableOfContents = toc,
-                otherCollections = otherCollections
+            metadata = metadata,
+            links = metadataLinks,
+            readingOrder = readingOrder,
+            resources = resources,
+            tableOfContents = toc,
+            otherCollections = otherCollections
         ).apply {
             type = Publication.TYPE.EPUB
             version = packageDocument.epubVersion
         }
     }
 
-    private fun mapLink(link: EpubLink) : Link? {
+    private fun mapLink(link: EpubLink): Link? {
         val contains: MutableList<String> = mutableListOf()
         if (link.rel.contains(Vocabularies.Link + "record")) {
             if (link.properties.contains(Vocabularies.Link + "onix"))
@@ -63,14 +64,14 @@ internal data class Epub(
                 contains.add("xmp")
         }
         return Link(
-                href = link.href,
-                type = link.mediaType,
-                rels = link.rel,
-                properties = Properties(mapOf("contains" to contains))
+            href = link.href,
+            type = link.mediaType,
+            rels = link.rel,
+            properties = Properties(mapOf("contains" to contains))
         )
     }
 
-    private fun computeReadingOrderIds(links: List<Link>, itemrefByIdref: Map<String, Itemref>) : Set<String> {
+    private fun computeReadingOrderIds(links: List<Link>, itemrefByIdref: Map<String, Itemref>): Set<String> {
         val ids: MutableSet<String> = mutableSetOf()
         for (l in links) {
             if (itemrefByIdref.containsKey(l.title) && (itemrefByIdref[l.title] as Itemref).linear) {
@@ -80,9 +81,9 @@ internal data class Epub(
         return ids
     }
 
-    private fun computeIdChain(link: Link) : Set<String> {
+    private fun computeIdChain(link: Link): Set<String> {
         // The termination has already been checked while computing links
-        val ids: MutableSet<String> = mutableSetOf( link.title as String )
+        val ids: MutableSet<String> = mutableSetOf(link.title as String)
         for (a in link.alternates) {
             ids.addAll(computeIdChain(a))
         }
@@ -90,27 +91,28 @@ internal data class Epub(
     }
 
     private fun computeLink(
-            item: Item,
-            itemById: Map<String, Item>,
-            itemrefByIdref: Map<String, Itemref>,
-            fallbackChain: Set<String> = emptySet()) : Link {
+        item: Item,
+        itemById: Map<String, Item>,
+        itemrefByIdref: Map<String, Itemref>,
+        fallbackChain: Set<String> = emptySet()
+    ): Link {
 
         val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
         val alternates = computeAlternates(item, itemById, itemrefByIdref, fallbackChain)
         val duration = packageDocument.metadata.refineItems[item.id]?.duration()
 
         return Link(
-                title = item.id,
-                href = normalize(packageDocument.path, item.href),
-                type = item.mediaType,
-                duration = duration,
-                rels = rels,
-                properties = properties,
-                alternates = alternates
+            title = item.id,
+            href = normalize(packageDocument.path, item.href),
+            type = item.mediaType,
+            duration = duration,
+            rels = rels,
+            properties = properties,
+            alternates = alternates
         )
     }
 
-    private fun computePropertiesAndRels(item: Item, itemref: Itemref?) : Pair<List<String>, Properties> {
+    private fun computePropertiesAndRels(item: Item, itemref: Itemref?): Pair<List<String>, Properties> {
         val properties: MutableMap<String, Any> = mutableMapOf()
         val rels: MutableList<String> = mutableListOf()
         val (manifestRels, contains, others) = parseItemProperties(item.properties)
@@ -138,25 +140,28 @@ internal data class Epub(
     }
 
     private fun computeAlternates(
-            item: Item,
-            itemById: Map<String, Item>,
-            itemrefByIdref: Map<String, Itemref>,
-            fallbackChain: Set<String>) : List<Link> {
+        item: Item,
+        itemById: Map<String, Item>,
+        itemrefByIdref: Map<String, Itemref>,
+        fallbackChain: Set<String>
+    ): List<Link> {
 
         val fallback = item.fallback?.let { id ->
             if (id in fallbackChain) null else
                 itemById[id]?.let {
                     val updatedChain = if (item.id != null) fallbackChain + item.id else fallbackChain
-                    computeLink(it, itemById, itemrefByIdref, updatedChain) }
+                    computeLink(it, itemById, itemrefByIdref, updatedChain)
+                }
         }
         val mediaOverlays = item.mediaOverlay?.let { id ->
             itemById[id]?.let {
-                computeLink(it, itemById, itemrefByIdref) }
+                computeLink(it, itemById, itemrefByIdref)
+            }
         }
         return listOfNotNull(fallback, mediaOverlays)
     }
 
-    private fun parseItemProperties(properties: List<String>) : Triple<List<String>, List<String>, List<String>> {
+    private fun parseItemProperties(properties: List<String>): Triple<List<String>, List<String>, List<String>> {
         val rels: MutableList<String> = mutableListOf()
         val contains: MutableList<String> = mutableListOf()
         val others: MutableList<String> = mutableListOf()
@@ -175,7 +180,7 @@ internal data class Epub(
         return Triple(rels, contains, others)
     }
 
-    private fun parseItemrefProperties(properties: List<String>) : Map<String, String> {
+    private fun parseItemrefProperties(properties: List<String>): Map<String, String> {
         val linkProperties: MutableMap<String, String> = mutableMapOf()
         for (property in properties) {
             //  Page

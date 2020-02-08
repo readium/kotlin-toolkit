@@ -14,12 +14,11 @@ package org.readium.r2.streamer.parser.epub
  * https://www.w3.org/TR/SMIL/smil-timing.html#q22
  */
 internal object ClockValueParser {
-    fun parse(rawValue: String) : Double? {
+    fun parse(rawValue: String): Double? {
         val value = rawValue.trim()
         return if (":" in value) {
             parseClockvalue(value)
-        }
-        else {
+        } else {
             val metricStart = value.indexOfFirst(Char::isLetter)
             if (metricStart == -1) {
                 parseTimecount(value.toDouble(), "")
@@ -31,18 +30,18 @@ internal object ClockValueParser {
         }
     }
 
-    private fun parseClockvalue(value: String) : Double? {
-        val parts = value.split(":").map { it.toDoubleOrNull() ?: return null}
-        val min_sec = parts.last() + parts[parts.size-2] * 60
-        return if (parts.size > 2) min_sec + parts[parts.size-3] * 3600 else min_sec
+    private fun parseClockvalue(value: String): Double? {
+        val parts = value.split(":").map { it.toDoubleOrNull() ?: return null }
+        val min_sec = parts.last() + parts[parts.size - 2] * 60
+        return if (parts.size > 2) min_sec + parts[parts.size - 3] * 3600 else min_sec
     }
 
-    private fun parseTimecount(value: Double, metric: String) : Double? =
+    private fun parseTimecount(value: Double, metric: String): Double? =
         when (metric) {
-        "h" -> value * 3600
-        "min" -> value * 60
-        "s", "" -> value
-        "ms" -> value / 1000
-        else -> null
-    }
+            "h" -> value * 3600
+            "min" -> value * 60
+            "s", "" -> value
+            "ms" -> value / 1000
+            else -> null
+        }
 }

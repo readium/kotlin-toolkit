@@ -39,8 +39,8 @@ class ContributorParsingTest {
     @Test
     fun `dc_publisher is by default a publisher`() {
         val contributor = Contributor(
-                localizedName = LocalizedString("Publisher 1"),
-                roles = setOf("pbl")
+            localizedName = LocalizedString("Publisher 1"),
+            roles = setOf("pbl")
         )
         assertThat(epub2Metadata.publishers).contains(contributor)
         assertThat(epub3Metadata.publishers).contains(contributor)
@@ -68,42 +68,46 @@ class ContributorParsingTest {
     }
 
     @Test
-    fun `file-as is parsed`(){
-        val contributor = Contributor(localizedName = LocalizedString("Contributor 3") , sortAs = "Sorting Key")
+    fun `file-as is parsed`() {
+        val contributor = Contributor(localizedName = LocalizedString("Contributor 3"), sortAs = "Sorting Key")
         assertThat(epub2Metadata.contributors).contains(contributor)
         assertThat(epub3Metadata.contributors).contains(contributor)
     }
 
     @Test
-    fun `Localized contributors are rightly parsed (epub3 only)`(){
-        val contributor = Contributor( localizedName = LocalizedString.fromStrings( mapOf(
-                null to "Contributor 4",
-                "fr" to "Contributeur 4 en français"
-        )))
+    fun `Localized contributors are rightly parsed (epub3 only)`() {
+        val contributor = Contributor(
+            localizedName = LocalizedString.fromStrings(
+                mapOf(
+                    null to "Contributor 4",
+                    "fr" to "Contributeur 4 en français"
+                )
+            )
+        )
         assertThat(epub3Metadata.contributors).contains(contributor)
     }
 
     @Test
-    fun `Multiple roles are all parsed (epub3 only)`(){
+    fun `Multiple roles are all parsed (epub3 only)`() {
         val contributor = Contributor(
-                localizedName =  LocalizedString("Cameleon"),
-                roles = setOf("aut", "pbl")
+            localizedName = LocalizedString("Cameleon"),
+            roles = setOf("aut", "pbl")
         )
         assertThat(epub3Metadata.authors).contains(contributor)
         assertThat(epub3Metadata.publishers).contains(contributor)
     }
 
     @Test
-    fun `Media Overlays narrators are rightly parsed (epub3 only)`(){
-        val contributor = Contributor( localizedName = LocalizedString("Media Overlays Narrator"), roles = setOf("nrt"))
+    fun `Media Overlays narrators are rightly parsed (epub3 only)`() {
+        val contributor = Contributor(localizedName = LocalizedString("Media Overlays Narrator"), roles = setOf("nrt"))
         assertThat(epub3Metadata.narrators).contains(contributor)
     }
 
     @Test
     fun `Author is rightly parsed`() {
         val contributor = Contributor(
-                localizedName = LocalizedString("Author 3"),
-                roles = setOf("aut")
+            localizedName = LocalizedString("Author 3"),
+            roles = setOf("aut")
         )
         assertThat(epub2Metadata.authors).contains(contributor)
         assertThat(epub3Metadata.authors).contains(contributor)
@@ -112,8 +116,8 @@ class ContributorParsingTest {
     @Test
     fun `Publisher is rightly parsed`() {
         val contributor = Contributor(
-                localizedName =  LocalizedString("Publisher 2"),
-                roles = setOf("pbl")
+            localizedName = LocalizedString("Publisher 2"),
+            roles = setOf("pbl")
         )
         assertThat(epub2Metadata.publishers).contains(contributor)
         assertThat(epub3Metadata.publishers).contains(contributor)
@@ -122,8 +126,8 @@ class ContributorParsingTest {
     @Test
     fun `Translator is rightly parsed`() {
         val contributor = Contributor(
-                localizedName = LocalizedString("Translator"),
-                roles = setOf("trl")
+            localizedName = LocalizedString("Translator"),
+            roles = setOf("trl")
         )
         assertThat(epub2Metadata.translators).contains(contributor)
         assertThat(epub3Metadata.translators).contains(contributor)
@@ -132,8 +136,8 @@ class ContributorParsingTest {
     @Test
     fun `Artist is rightly parsed`() {
         val contributor = Contributor(
-                localizedName = LocalizedString("Artist"),
-                roles = setOf("art")
+            localizedName = LocalizedString("Artist"),
+            roles = setOf("art")
         )
         assertThat(epub2Metadata.artists).contains(contributor)
         assertThat(epub3Metadata.artists).contains(contributor)
@@ -142,8 +146,8 @@ class ContributorParsingTest {
     @Test
     fun `Illustrator is rightly parsed`() {
         val contributor = Contributor(
-                localizedName = LocalizedString("Illustrator"),
-                roles = setOf("ill")
+            localizedName = LocalizedString("Illustrator"),
+            roles = setOf("ill")
         )
         assertThat(epub2Metadata.illustrators).contains(contributor)
         assertThat(epub3Metadata.illustrators).contains(contributor)
@@ -152,8 +156,8 @@ class ContributorParsingTest {
     @Test
     fun `Colorist is rightly parsed`() {
         val contributor = Contributor(
-                localizedName = LocalizedString("Colorist"),
-                roles = setOf("clr")
+            localizedName = LocalizedString("Colorist"),
+            roles = setOf("clr")
         )
         assertThat(epub2Metadata.colorists).contains(contributor)
         assertThat(epub3Metadata.colorists).contains(contributor)
@@ -162,8 +166,8 @@ class ContributorParsingTest {
     @Test
     fun `Narrator is rightly parsed`() {
         val contributor = Contributor(
-                localizedName = LocalizedString("Narrator"),
-                roles = setOf("nrt")
+            localizedName = LocalizedString("Narrator"),
+            roles = setOf("nrt")
         )
         assertThat(epub2Metadata.narrators).contains(contributor)
         assertThat(epub3Metadata.narrators).contains(contributor)
@@ -199,21 +203,33 @@ class TitleTest {
 
     @Test
     fun `Title is rightly parsed`() {
-        assertThat(epub2Metadata.localizedTitle).isEqualTo( LocalizedString.fromStrings( mapOf(
-                "en" to "Alice's Adventures in Wonderland"
-        )))
-        assertThat(epub3Metadata.localizedTitle).isEqualTo( LocalizedString.fromStrings( mapOf(
-                "en" to "Alice's Adventures in Wonderland",
-                "fr" to "Les Aventures d'Alice au pays des merveilles"
-        )))
+        assertThat(epub2Metadata.localizedTitle).isEqualTo(
+            LocalizedString.fromStrings(
+                mapOf(
+                    "en" to "Alice's Adventures in Wonderland"
+                )
+            )
+        )
+        assertThat(epub3Metadata.localizedTitle).isEqualTo(
+            LocalizedString.fromStrings(
+                mapOf(
+                    "en" to "Alice's Adventures in Wonderland",
+                    "fr" to "Les Aventures d'Alice au pays des merveilles"
+                )
+            )
+        )
     }
 
     @Test
     fun `Subtitle is rightly parsed (epub3 only)`() {
-        assertThat(epub3Metadata.localizedSubtitle).isEqualTo( LocalizedString.fromStrings( mapOf(
-                "en-GB" to "Alice returns to the magical world from her childhood adventure",
-                "fr" to "Alice retourne dans le monde magique des aventures de son enfance"
-        )))
+        assertThat(epub3Metadata.localizedSubtitle).isEqualTo(
+            LocalizedString.fromStrings(
+                mapOf(
+                    "en-GB" to "Alice returns to the magical world from her childhood adventure",
+                    "fr" to "Alice retourne dans le monde magique des aventures de son enfance"
+                )
+            )
+        )
     }
 
     @Test
@@ -231,21 +247,25 @@ class TitleTest {
     @Test
     fun `The selected subtitle has the lowest display-seq property (epub3 only)`() {
         val metadata = parsePackageDocument("package/title-multiple-subtitles.opf").metadata
-        assertThat(metadata.localizedSubtitle).isEqualTo(LocalizedString.fromStrings(mapOf( "en" to "Subtitle 2")))
+        assertThat(metadata.localizedSubtitle).isEqualTo(LocalizedString.fromStrings(mapOf("en" to "Subtitle 2")))
     }
 }
 
 class SubjectTest {
     private val complexMetadata = parsePackageDocument("package/subjects-complex.opf").metadata // epub3 only
 
-   @Test
+    @Test
     fun `Localized subjects are rightly parsed (epub3 only)`() {
         val subject = complexMetadata.subjects.first()
         assertNotNull(subject)
-        assertThat(subject.localizedName).isEqualTo(LocalizedString.fromStrings( mapOf(
-                "en" to "FICTION / Occult & Supernatural",
-                "fr" to "FICTION / Occulte & Surnaturel"
-        )))
+        assertThat(subject.localizedName).isEqualTo(
+            LocalizedString.fromStrings(
+                mapOf(
+                    "en" to "FICTION / Occult & Supernatural",
+                    "fr" to "FICTION / Occulte & Surnaturel"
+                )
+            )
+        )
     }
 
     @Test
@@ -267,9 +287,9 @@ class SubjectTest {
     fun `Comma separated single subject is splitted`() {
         val subjects = parsePackageDocument("package/subjects-single.opf").metadata.subjects
         assertThat(subjects).contains(
-                Subject(localizedName = LocalizedString("apple")),
-                Subject(localizedName = LocalizedString("banana")),
-                Subject(localizedName = LocalizedString("pear"))
+            Subject(localizedName = LocalizedString("apple")),
+            Subject(localizedName = LocalizedString("banana")),
+            Subject(localizedName = LocalizedString("pear"))
         )
     }
 
@@ -277,8 +297,8 @@ class SubjectTest {
     fun `Comma separated multiple subjects are not splitted`() {
         val subjects = parsePackageDocument("package/subjects-multiple.opf").metadata.subjects
         assertThat(subjects).contains(
-                Subject(localizedName = LocalizedString("fiction")),
-                Subject(localizedName = LocalizedString("apple; banana,  pear"))
+            Subject(localizedName = LocalizedString("fiction")),
+            Subject(localizedName = LocalizedString("apple; banana,  pear"))
         )
     }
 }
@@ -322,16 +342,16 @@ class MetadataMiscTest {
     @Test
     fun `Cover link is rightly identified`() {
         val expected = SharedLink(
-                title = "cover",
-                href = "/OEBPS/cover.jpg",
-                type = "image/jpeg",
-                rels = listOf("cover")
+            title = "cover",
+            href = "/OEBPS/cover.jpg",
+            type = "image/jpeg",
+            rels = listOf("cover")
         )
         assertThat(parsePackageDocument("package/cover-epub2.opf").coverLink).isEqualTo(expected)
         assertThat(parsePackageDocument("package/cover-epub3.opf").coverLink).isEqualTo(expected)
     }
 
-    @Test(timeout=PARSE_PUB_TIMEOUT)
+    @Test(timeout = PARSE_PUB_TIMEOUT)
     fun `Building of MetaItems terminates even if metadata contain cross refinings`() {
         parsePackageDocument("package/meta-termination.opf")
     }
@@ -340,20 +360,22 @@ class MetadataMiscTest {
     fun `otherMetadata is rightly filled`() {
         val otherMetadata = parsePackageDocument("package/meta-others.opf").metadata.otherMetadata
         assertThat(otherMetadata).contains(
-                entry(Vocabularies.Dcterms + "source", "Wonderland"),
-                entry("http://my.url/#property0", mapOf(
-                        "@value" to "refines0",
-                        "http://my.url/#property1" to mapOf(
-                                "@value" to "refines1",
-                                "http://my.url/#property2" to "refines2",
-                                "http://my.url/#property3" to "refines3"
-                        )
-                ))
+            entry(Vocabularies.Dcterms + "source", "Wonderland"),
+            entry(
+                "http://my.url/#property0", mapOf(
+                    "@value" to "refines0",
+                    "http://my.url/#property1" to mapOf(
+                        "@value" to "refines1",
+                        "http://my.url/#property2" to "refines2",
+                        "http://my.url/#property3" to "refines3"
+                    )
+                )
+            )
         )
         assertThat(otherMetadata).containsOnlyKeys(
-                Vocabularies.Dcterms + "source",
-                "presentation",
-                "http://my.url/#property0"
+            Vocabularies.Dcterms + "source",
+            "presentation",
+            "http://my.url/#property0"
         )
     }
 }

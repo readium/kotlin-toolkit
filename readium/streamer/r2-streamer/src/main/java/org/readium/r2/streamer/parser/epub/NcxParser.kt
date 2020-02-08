@@ -17,23 +17,23 @@ import org.readium.r2.streamer.parser.normalize
 internal object NcxParser {
     fun parse(document: ElementNode, filePath: String): Map<String, List<Link>> {
         val toc = document.getFirst("navMap", Namespaces.Ncx)
-                ?.let { parseNavMapElement(it, filePath) }?.let { Pair("toc", it) }
+            ?.let { parseNavMapElement(it, filePath) }?.let { Pair("toc", it) }
         val pageList = document.getFirst("pageList", Namespaces.Ncx)
-                ?.let { parsePageListElement(it, filePath) }?.let { Pair("page-list", it) }
+            ?.let { parsePageListElement(it, filePath) }?.let { Pair("page-list", it) }
         return listOfNotNull(toc, pageList).toMap()
     }
 
     private fun parseNavMapElement(element: ElementNode, filePath: String): List<Link> =
-            element.get("navPoint", Namespaces.Ncx).mapNotNull { parseNavPointElement(it, filePath) }
+        element.get("navPoint", Namespaces.Ncx).mapNotNull { parseNavPointElement(it, filePath) }
 
     private fun parsePageListElement(element: ElementNode, filePath: String): List<Link> =
-            element.get("pageTarget", Namespaces.Ncx).mapNotNull {
-                val href = extractHref(it, filePath)
-                val title = extractTitle(it)
-                if (href.isNullOrBlank() || title.isNullOrBlank())
-                    null
-                else Link(title = title, href = href)
-            }
+        element.get("pageTarget", Namespaces.Ncx).mapNotNull {
+            val href = extractHref(it, filePath)
+            val title = extractTitle(it)
+            if (href.isNullOrBlank() || title.isNullOrBlank())
+                null
+            else Link(title = title, href = href)
+        }
 
     private fun parseNavPointElement(element: ElementNode, filePath: String): Link? {
         val title = extractTitle(element)
@@ -46,10 +46,10 @@ internal object NcxParser {
     }
 
     private fun extractTitle(element: ElementNode) =
-            element.getFirst("navLabel", Namespaces.Ncx)?.getFirst("text", Namespaces.Ncx)
-                    ?.text?.replace("\\s+".toRegex(), " ")?.trim()?.ifBlank { null }
+        element.getFirst("navLabel", Namespaces.Ncx)?.getFirst("text", Namespaces.Ncx)
+            ?.text?.replace("\\s+".toRegex(), " ")?.trim()?.ifBlank { null }
 
     private fun extractHref(element: ElementNode, filePath: String) =
-            element.getFirst("content", Namespaces.Ncx)?.getAttr("src")
-                    ?.ifBlank { null }?.let { normalize(filePath, it) }
+        element.getFirst("content", Namespaces.Ncx)?.getAttr("src")
+            ?.ifBlank { null }?.let { normalize(filePath, it) }
 }

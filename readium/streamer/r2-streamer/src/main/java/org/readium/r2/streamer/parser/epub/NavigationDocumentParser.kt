@@ -14,20 +14,24 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
 
 internal object NavigationDocumentParser {
-    fun parse(document: ElementNode, filePath: String) : Map<String, List<Link>> {
-        val docPrefixes = document.getAttrNs("prefix", Namespaces.Ops)?.let {  parsePrefixes(it) }.orEmpty()
+    fun parse(document: ElementNode, filePath: String): Map<String, List<Link>> {
+        val docPrefixes = document.getAttrNs("prefix", Namespaces.Ops)?.let { parsePrefixes(it) }.orEmpty()
         val prefixMap = CONTENT_RESERVED_PREFIXES + docPrefixes // prefix element overrides reserved prefixes
 
         val body = document.getFirst("body", Namespaces.Xhtml) ?: return emptyMap()
         val navs = body.collect("nav", Namespaces.Xhtml).mapNotNull { parseNavElement(it, filePath, prefixMap) }
         val navMap = navs.flatMap { nav -> nav.first.map { type -> Pair(type, nav.second) } }.toMap()
-        return  navMap.mapKeys {
+        return navMap.mapKeys {
             val suffix = it.key.removePrefix(Vocabularies.Type)
             if (suffix in listOf("toc", "page-list", "landmarks", "lot", "loi", "loa", "lov")) suffix else it.key
         }
     }
 
-    private fun parseNavElement(nav: ElementNode, filePath: String, prefixMap: Map<String, String>) : Pair<List<String>, List<Link>>? {
+    private fun parseNavElement(
+        nav: ElementNode,
+        filePath: String,
+        prefixMap: Map<String, String>
+    ): Pair<List<String>, List<Link>>? {
         val typeAttr = nav.getAttrNs("type", Namespaces.Ops) ?: return null
         val types = parseProperties(typeAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.TYPE) }
         val links = nav.getFirst("ol", Namespaces.Xhtml)?.let { parseOlElement(it, filePath) }
@@ -35,7 +39,7 @@ internal object NavigationDocumentParser {
     }
 
     private fun parseOlElement(element: ElementNode, filePath: String): List<Link> =
-        element.get("li", Namespaces.Xhtml).mapNotNull {  parseLiElement(it, filePath) }
+        element.get("li", Namespaces.Xhtml).mapNotNull { parseLiElement(it, filePath) }
 
     private fun parseLiElement(element: ElementNode, filePath: String): Link? {
         val first = element.getAll().firstOrNull() ?: return null // should be <a>,  <span>, or <ol>

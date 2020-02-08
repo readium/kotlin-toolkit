@@ -20,12 +20,12 @@ import org.readium.r2.shared.publication.epub.contains
 import org.readium.r2.shared.publication.epub.layout
 import org.readium.r2.shared.publication.presentation.*
 
-fun parsePackageDocument(path: String) : Publication {
+fun parsePackageDocument(path: String): Publication {
     val pub = PackageDocument::class.java.getResourceAsStream(path)
-            ?.let { XmlParser().parse(it) }
-            ?.let { PackageDocument.parse(it, "OEBPS/content.opf") }
-            ?.let { Epub(it) }
-            ?.toPublication()
+        ?.let { XmlParser().parse(it) }
+        ?.let { PackageDocument.parse(it, "OEBPS/content.opf") }
+        ?.let { Epub(it) }
+        ?.toPublication()
     checkNotNull(pub)
     return pub
 }
@@ -36,25 +36,25 @@ class ReadingProgressionTest {
     @Test
     fun `No page progression direction is mapped to default`() {
         assertThat(parsePackageDocument("package/progression-none.opf").metadata.readingProgression)
-                .isEqualTo(ReadingProgression.AUTO)
+            .isEqualTo(ReadingProgression.AUTO)
     }
 
     @Test
     fun `Default page progression direction is rightly parsed`() {
         assertThat(parsePackageDocument("package/progression-default.opf").metadata.readingProgression)
-                .isEqualTo(ReadingProgression.AUTO)
+            .isEqualTo(ReadingProgression.AUTO)
     }
 
     @Test
     fun `Ltr page progression direction is rightly parsed`() {
         assertThat(parsePackageDocument("package/progression-ltr.opf").metadata.readingProgression)
-                .isEqualTo(ReadingProgression.LTR)
+            .isEqualTo(ReadingProgression.LTR)
     }
 
     @Test
     fun `Rtl page progression direction is rightly parsed`() {
         assertThat(parsePackageDocument("package/progression-rtl.opf").metadata.readingProgression)
-                .isEqualTo(ReadingProgression.RTL)
+            .isEqualTo(ReadingProgression.RTL)
     }
 }
 
@@ -129,69 +129,69 @@ class LinkTest {
     @Test
     fun `readingOrder is rightly computed`() {
         assertThat(resourcesPub.readingOrder).containsExactly(
-                Link(
-                        href = "/titlepage.xhtml",
-                        title = "titlepage",
-                        type = "application/xhtml+xml"
-                ),
-                Link(
-                        href = "/OEBPS/chapter01.xhtml",
-                        title = "chapter01",
-                        type = "application/xhtml+xml"
-                )
+            Link(
+                href = "/titlepage.xhtml",
+                title = "titlepage",
+                type = "application/xhtml+xml"
+            ),
+            Link(
+                href = "/OEBPS/chapter01.xhtml",
+                title = "chapter01",
+                type = "application/xhtml+xml"
+            )
         )
     }
 
     @Test
     fun `resources are rightly computed`() {
         assertThat(resourcesPub.resources).containsExactlyInAnyOrder(
-                Link(
-                        href = "/OEBPS/fonts/MinionPro.otf",
-                        title = "font0",
-                        type = "application/vnd.ms-opentype"
-                ),
-                Link(
-                        href = "/OEBPS/nav.xhtml",
-                        title = "nav",
-                        type = "application/xhtml+xml",
-                        rels = listOf("contents")
-                ),
-                Link(
-                        href = "/style.css",
-                        title = "css",
-                        type = "text/css"
-                ),
-                Link(
-                        href = "/OEBPS/chapter01.smil",
-                        title = "chapter01_smil",
-                        type = "application/smil+xml"
-                ),
-                Link(
-                        href = "/OEBPS/chapter02.smil",
-                        title = "chapter02_smil",
-                        type = "application/smil+xml",
-                        duration = 1949.0
-                ),
-                Link(
-                        href = "/OEBPS/images/alice01a.png",
-                        title = "img01a",
-                        type = "image/png",
-                        rels = listOf("cover")
-                ),
-                Link(
-                        href = "/OEBPS/images/alice02a.gif",
-                        title = "img02a",
-                        type = "image/gif"
-                ),
-                Link(
-                        href = "/OEBPS/chapter02.xhtml",
-                        title = "chapter02",
-                        type = "application/xhtml+xml"
-                ),
-                Link(
-                        href = "/OEBPS/nomediatype.txt",
-                        title = "nomediatype"
-                )
+            Link(
+                href = "/OEBPS/fonts/MinionPro.otf",
+                title = "font0",
+                type = "application/vnd.ms-opentype"
+            ),
+            Link(
+                href = "/OEBPS/nav.xhtml",
+                title = "nav",
+                type = "application/xhtml+xml",
+                rels = listOf("contents")
+            ),
+            Link(
+                href = "/style.css",
+                title = "css",
+                type = "text/css"
+            ),
+            Link(
+                href = "/OEBPS/chapter01.smil",
+                title = "chapter01_smil",
+                type = "application/smil+xml"
+            ),
+            Link(
+                href = "/OEBPS/chapter02.smil",
+                title = "chapter02_smil",
+                type = "application/smil+xml",
+                duration = 1949.0
+            ),
+            Link(
+                href = "/OEBPS/images/alice01a.png",
+                title = "img01a",
+                type = "image/png",
+                rels = listOf("cover")
+            ),
+            Link(
+                href = "/OEBPS/images/alice02a.gif",
+                title = "img02a",
+                type = "image/gif"
+            ),
+            Link(
+                href = "/OEBPS/chapter02.xhtml",
+                title = "chapter02",
+                type = "application/xhtml+xml"
+            ),
+            Link(
+                href = "/OEBPS/nomediatype.txt",
+                title = "nomediatype"
+            )
         )
     }
 }
@@ -199,25 +199,29 @@ class LinkTest {
 class LinkMiscTest {
     fun `Fallbacks are mapped to alternates`() {
         assertThat(parsePackageDocument("package/fallbacks.opf")).isEqualTo(
-                Link(
-                        href = "/OEBPS/chap1_docbook.xml",
-                        title = "item1",
-                        type = "application/docbook+xml",
-                        alternates = listOf ( Link(
-                                href = "/OEBPS/chap1.xml",
-                                title = "fall1",
-                                type = "application/z3998-auth+xml",
-                                alternates = listOf ( Link(
-                                        href = "/OEBPS/chap1.xhtml",
-                                        title = "fall2",
-                                        type = "application/xhtml+xml"
-                                ))
-                        ))
+            Link(
+                href = "/OEBPS/chap1_docbook.xml",
+                title = "item1",
+                type = "application/docbook+xml",
+                alternates = listOf(
+                    Link(
+                        href = "/OEBPS/chap1.xml",
+                        title = "fall1",
+                        type = "application/z3998-auth+xml",
+                        alternates = listOf(
+                            Link(
+                                href = "/OEBPS/chap1.xhtml",
+                                title = "fall2",
+                                type = "application/xhtml+xml"
+                            )
+                        )
+                    )
                 )
+            )
         )
     }
 
-    @Test(timeout=PARSE_PUB_TIMEOUT)
+    @Test(timeout = PARSE_PUB_TIMEOUT)
     fun `Fallback computing terminates even if there are crossed dependencies`() {
         parsePackageDocument("package/fallbacks-termination.opf")
     }
