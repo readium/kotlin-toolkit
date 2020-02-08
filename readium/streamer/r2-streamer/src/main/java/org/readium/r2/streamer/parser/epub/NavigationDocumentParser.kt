@@ -14,7 +14,7 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.streamer.parser.normalize
 
 internal object NavigationDocumentParser {
-    fun parse(document: ElementNode, filePath: String) : NavigationData {
+    fun parse(document: ElementNode, filePath: String) : Map<String, List<Link>> {
         val docPrefixes = document.getAttrNs("prefix", Namespaces.Ops)?.let {  parsePrefixes(it) }.orEmpty()
         val prefixMap = CONTENT_RESERVED_PREFIXES + docPrefixes // prefix element overrides reserved prefixes
 

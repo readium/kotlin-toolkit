@@ -12,6 +12,7 @@ package org.readium.r2.streamer.parser.epub
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -20,9 +21,9 @@ import org.readium.r2.shared.publication.epub.layout
 import org.readium.r2.shared.publication.presentation.*
 
 fun parsePackageDocument(path: String) : Publication {
-    val pub = PackageDocumentParser::class.java.getResourceAsStream(path)
+    val pub = PackageDocument::class.java.getResourceAsStream(path)
             ?.let { XmlParser().parse(it) }
-            ?.let { PackageDocumentParser.parse(it, "OEBPS/content.opf") }
+            ?.let { PackageDocument.parse(it, "OEBPS/content.opf") }
             ?.let { Epub(it) }
             ?.toPublication()
     checkNotNull(pub)

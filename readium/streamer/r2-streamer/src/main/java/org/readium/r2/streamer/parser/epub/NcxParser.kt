@@ -1,6 +1,6 @@
 /*
  * Module: r2-streamer-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Developers: Quentin Gliosca
  *
  * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -15,7 +15,7 @@ import org.readium.r2.streamer.parser.normalize
 
 
 internal object NcxParser {
-    fun parse(document: ElementNode, filePath: String): NavigationData? {
+    fun parse(document: ElementNode, filePath: String): Map<String, List<Link>> {
         val toc = document.getFirst("navMap", Namespaces.Ncx)
                 ?.let { parseNavMapElement(it, filePath) }?.let { Pair("toc", it) }
         val pageList = document.getFirst("pageList", Namespaces.Ncx)

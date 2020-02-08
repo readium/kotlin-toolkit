@@ -103,7 +103,7 @@ class EpubParser : PublicationParser {
                 emptyMap()
 
         val packageXml = parseXmlDocument(container.rootFile.rootFilePath, container) ?: return null
-        val packageDocument = PackageDocumentParser.parse(packageXml, container.rootFile.rootFilePath) ?: return null
+        val packageDocument = PackageDocument.parse(packageXml, container.rootFile.rootFilePath) ?: return null
 
         val navigationData = if (packageDocument.epubVersion < 3.0) {
             val ncxItem = packageDocument.manifest.firstOrNull { it.mediaType == Mimetypes.Ncx }

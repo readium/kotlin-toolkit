@@ -16,7 +16,7 @@ import org.readium.r2.shared.publication.Link
 import kotlin.test.assertNotNull
 
 class NcxParserTest {
-    private fun parseNavigationDocument(path: String) : NavigationData {
+    private fun parseNavigationDocument(path: String) : Map<String, List<Link>> {
         val res = NcxParser::class.java.getResourceAsStream(path)
         checkNotNull(res)
         val document = XmlParser().parse(res)
