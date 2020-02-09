@@ -10,9 +10,11 @@
 package org.readium.r2.shared.publication
 
 import android.net.Uri
+import android.os.Parcel
 import android.os.Parcelable
 import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.WriteWith
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
@@ -25,20 +27,16 @@ import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
+import timber.log.Timber
 import java.io.Serializable
 import java.net.URL
-
-typealias PositionListFactory = (Publication) -> List<Locator>
 
 /**
  * Shared model for a Readium Publication.
  *
  * @param type The kind of publication it is ( Epub, Cbz, ... )
  * @param version The version of the publication, if the type needs any.
- * @param positionListFactory Factory used to build lazily the [positionList]. By default, a parser
- *        will set this to parse the [positionList] from the publication, but the host app might
- *        want to overwrite this with a custom closure to implement, for example, a caching
- *        mechanism.
+ * @param positionListFactory Factory used to build lazily the [positionList].
  */
 @Parcelize
 data class Publication(
@@ -51,9 +49,7 @@ data class Publication(
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
     val otherCollections: List<PublicationCollection> = emptyList(),
-    // FIXME: This is a Serializable to be able to use Parcelize, but this should be changed once we moved away from Activity – see https://github.com/readium/r2-navigator-kotlin/issues/115
-    // Should be a [PositionListFactory]
-    val positionListFactory: Serializable = { emptyList<Locator>() } as Serializable,
+    val positionListFactory: @WriteWith<PositionListFactory.Parceler> PositionListFactory? = null,
 
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
     var type: TYPE = TYPE.EPUB,
@@ -67,6 +63,54 @@ data class Publication(
     var internalData: MutableMap<String, String> = mutableMapOf()
 
 ) : JSONable, Parcelable {
+
+    /**
+     * Creates a [Publication]'s [positionList].
+     *
+     * The parsers provide an implementation of this interface for each format, but a host app
+     * might want to use a custom factory to implement, for example, a caching mechanism or use a
+     * different calculation method.
+     */
+    interface PositionListFactory {
+        fun create(): List<Locator>
+
+        /**
+         * Implementation of a [Parceler] to be used with [@Parcelize] to serialize a
+         * [PositionListFactory].
+         *
+         * This won't be needed anymore once we use [Fragment] instead of [Activity] in the
+         * navigator.
+         */
+        object Parceler : kotlinx.android.parcel.Parceler<PositionListFactory?> {
+
+            /**
+             * Boxes a closure into a [PositionListFactory], because closures are serializable.
+             */
+            private class SerializableFactory(private val factory: (() -> List<Locator>)? = null): PositionListFactory {
+                override fun create(): List<Locator> =
+                    factory?.let { it() } ?: emptyList()
+            }
+
+            override fun create(parcel: Parcel): PositionListFactory? =
+                try {
+                    (parcel.readSerializable() as? () -> List<Locator>)
+                        ?.let { SerializableFactory(it) }
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to read a PositionListFactory from a Parcel")
+                    null
+                }
+
+            override fun PositionListFactory?.write(parcel: Parcel, flags: Int) {
+                try {
+                    // Wrap the [PositionListFactory] in a closure to make it serializable.
+                    parcel.writeSerializable(this?.let { { create() } as Serializable })
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to write a PositionListFactory into a Parcel")
+                }
+            }
+
+        }
+    }
 
     @Parcelize
     enum class TYPE : Parcelable {
@@ -94,7 +138,7 @@ data class Publication(
      */
     @IgnoredOnParcel
     val positionList: List<Locator> by lazy {
-        (positionListFactory as? PositionListFactory)?.invoke(this) ?: emptyList()
+        positionListFactory?.create() ?: emptyList()
     }
 
     /**

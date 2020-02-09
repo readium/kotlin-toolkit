@@ -25,7 +25,7 @@ class PublicationTest {
         links: List<Link> = listOf(),
         readingOrder: List<Link> = emptyList(),
         resources: List<Link> = emptyList(),
-        positionListFactory: PositionListFactory = { emptyList() }
+        positionListFactory: Publication.PositionListFactory? = null
     ) = Publication(
         metadata = Metadata(
             localizedTitle = LocalizedString(title),
@@ -35,7 +35,7 @@ class PublicationTest {
         links = links,
         readingOrder = readingOrder,
         resources = resources,
-        positionListFactory = positionListFactory as Serializable
+        positionListFactory = positionListFactory
     )
 
     @Test fun `parse minimal JSON`() {
@@ -277,7 +277,10 @@ class PublicationTest {
         assertEquals(
             listOf(Locator(href = "locator", type = "")),
             createPublication(
-                positionListFactory = { listOf(Locator(href="locator", type = "")) }
+                positionListFactory = object : Publication.PositionListFactory {
+                    override fun create(): List<Locator> =
+                        listOf(Locator(href = "locator", type = ""))
+                }
             ).positionList
         )
     }
@@ -294,11 +297,13 @@ class PublicationTest {
                 )
             ),
             createPublication(
-                positionListFactory = { listOf(
-                    Locator(href="res1", type = "text/html", title = "Loc A"),
-                    Locator(href="res2", type = "text/html", title = "Loc B"),
-                    Locator(href="res1", type = "text/html", title = "Loc B")
-                ) }
+                positionListFactory = object : Publication.PositionListFactory {
+                    override fun create(): List<Locator> = listOf(
+                        Locator(href="res1", type = "text/html", title = "Loc A"),
+                        Locator(href="res2", type = "text/html", title = "Loc B"),
+                        Locator(href="res1", type = "text/html", title = "Loc B")
+                    )
+                }
             ).positionListByResource
         )
     }
