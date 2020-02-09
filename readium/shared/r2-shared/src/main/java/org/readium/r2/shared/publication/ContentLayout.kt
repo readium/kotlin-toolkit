@@ -21,10 +21,10 @@ import java.util.*
  * Since [ReadingProgression] might be declared as [AUTO] or undefined in the Readium Web
  * Publication Manifest, [ContentLayout] is useful to determine the actual layout.
  *
- * @param key Identifier for this layout style, shared with ReadiumCSS.
+ * @param cssId Identifier for this layout style, shared with ReadiumCSS.
  */
 @Parcelize
-enum class ContentLayout(val key: String) : Parcelable {
+enum class ContentLayout(val cssId: String) : Parcelable {
     // Right to left
     RTL("rtl"),
     // Left to right
@@ -43,7 +43,7 @@ enum class ContentLayout(val key: String) : Parcelable {
             LTR, CJK_HORIZONTAL -> ReadingProgression.LTR
         }
 
-    companion object : KeyMapperWithDefault<String, ContentLayout>(values(), ContentLayout::key, LTR) {
+    companion object : KeyMapperWithDefault<String, ContentLayout>(values(), ContentLayout::cssId, LTR) {
 
         /**
          * Determines the [ContentLayout] for the given BCP 47 language code and
