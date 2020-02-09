@@ -80,9 +80,6 @@ class CBZParser : PublicationParser {
         return container
     }
 
-    /**
-     *
-     */
     override fun parse(fileAtPath: String, title: String): PubBox? {
         val container = try {
             generateContainerFrom(fileAtPath)
@@ -115,7 +112,8 @@ class CBZParser : PublicationParser {
             readingOrder = readingOrder,
             otherCollections = listOf(
                 PublicationCollection(role = "images", links = readingOrder)
-            )
+            ),
+            positionListFactory = CbzPositionListFactory(readingOrder)
         )
 
         publication.type = Publication.TYPE.CBZ
