@@ -13,6 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
 import org.joda.time.DateTime
 import org.junit.Test
+import org.readium.r2.shared.publication.Collection
 import org.readium.r2.shared.publication.Contributor
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Subject
@@ -378,4 +379,46 @@ class MetadataMiscTest {
             "http://my.url/#property0"
         )
     }
+}
+
+class CollectionTest {
+    private val epub2Metadata = parsePackageDocument("package/collections-epub2.opf").metadata
+    private val epub3Metadata = parsePackageDocument("package/collections-epub3.opf").metadata
+
+    @Test
+    fun `Basic collection are rightly parsed (epub3 only)`() {
+        assertThat(epub3Metadata.belongsToCollections).contains(
+            Collection(localizedName = LocalizedString.fromStrings(mapOf("en" to "Collection B")))
+        )
+    }
+
+    @Test
+    fun `Collections with unknown type are put into belongsToCollections (epub3 only`() {
+        assertThat(epub3Metadata.belongsToCollections).contains(
+            Collection(localizedName = LocalizedString.fromStrings(mapOf("en" to "Collection A")))
+        )
+    }
+
+    @Test
+    fun `Localized series are rightly parsed (epub3 only`() {
+        val names = LocalizedString.fromStrings(
+            mapOf(
+                "en" to "Series A",
+                "fr" to "Série A"
+            )
+        )
+        assertThat(epub3Metadata.belongsToSeries).contains(
+            Collection(localizedName = names, identifier = "ser-a", position = 2.0)
+        )
+    }
+
+    @Test
+    fun `Series with position are rightly computed`() {
+        val expected =
+            Collection(localizedName = LocalizedString.fromStrings(mapOf("en" to "Series B")), position = 1.5)
+        assertThat(epub2Metadata.belongsToSeries).contains(expected)
+        assertThat(epub3Metadata.belongsToSeries).contains(expected)
+    }
+
+
 }

@@ -13,6 +13,7 @@ import org.joda.time.DateTime
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Collection
 import org.readium.r2.streamer.parser.normalize
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
@@ -131,11 +132,28 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
 }
 
 internal data class MetaCollection(val metas: Map<String, List<MetaItem>>) {
-    private val defaultLang = first(Vocabularies.Dcterms + "language")
+    private val defaultLang = firstValue(Vocabularies.Dcterms + "language")
 
     private val titles = metas[Vocabularies.Dcterms + "title"]?.map { it.toTitle(defaultLang) }.orEmpty()
 
     private val maintitle = titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
+
+    private val series: List<Collection>
+
+    private val collections: List<Collection>
+
+    init {
+        val epub3Collections = metas[Vocabularies.Meta + "belongs-to-collection"]
+            .orEmpty().map { it.toCollection(defaultLang) }
+        val calibreSeries = metas["calibre:series"]?.firstOrNull()?.let {
+            val name = LocalizedString.fromStrings(mapOf(it.lang to it.value))
+            val position = firstValue("calibre:series_index")?.toDoubleOrNull()
+            Collection(localizedName = name, position = position)
+        }
+        val (seriesMeta, collectionsMeta) = epub3Collections.partition { it.first == "series" }
+        series = seriesMeta.map(Pair<String?, Collection>::second) + listOfNotNull(calibreSeries)
+        collections = collectionsMeta.map(Pair<String?, Collection>::second)
+    }
 
     private val allContributors: Map<String?, List<Contributor>>
 
@@ -165,6 +183,8 @@ internal data class MetaCollection(val metas: Map<String, List<MetaItem>>) {
         subjects = subjects(),
         description = description(),
         readingProgression = readingProgression,
+        belongsToCollections = belongsToCollections(),
+        belongsToSeries = belongsToSeries(),
         otherMetadata = otherMetadata(),
 
         authors = contributors("aut"),
@@ -182,21 +202,25 @@ internal data class MetaCollection(val metas: Map<String, List<MetaItem>>) {
 
     fun title() = maintitle?.value ?: LocalizedString()
 
-    fun sortAs() = maintitle?.fileAs ?: first("calibre:title_sort")
+    fun sortAs() = maintitle?.fileAs ?: firstValue("calibre:title_sort")
 
     fun subtitle() = titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()?.value
 
     fun contributors(role: String?) = allContributors[role].orEmpty()
 
-    fun published() = first(Vocabularies.Dcterms + "date")?.toDateOrNull()
+    fun published() = firstValue(Vocabularies.Dcterms + "date")?.toDateOrNull()
 
-    fun modified() = first(Vocabularies.Dcterms + "modified")?.toDateOrNull()
+    fun modified() = firstValue(Vocabularies.Dcterms + "modified")?.toDateOrNull()
 
-    fun description() = first(Vocabularies.Dcterms + "description")
+    fun description() = firstValue(Vocabularies.Dcterms + "description")
 
-    fun duration() = first(Vocabularies.Media + "duration")?.let { ClockValueParser.parse(it) }
+    fun duration() = firstValue(Vocabularies.Media + "duration")?.let { ClockValueParser.parse(it) }
 
-    fun cover() = first("cover")
+    fun cover() = firstValue("cover")
+
+    fun belongsToCollections() = collections
+
+    fun belongsToSeries() = series
 
     fun identifier(id: String?): String? {
         val identifiers = metas[Vocabularies.Dcterms + "identifier"]
@@ -214,10 +238,10 @@ internal data class MetaCollection(val metas: Map<String, List<MetaItem>>) {
     }
 
     private fun presentation(): Presentation {
-        val flowProp = first(Vocabularies.Rendition + "flow")
-        val spreadProp = first(Vocabularies.Rendition + "spread")
-        val orientationProp = first(Vocabularies.Rendition + "orientation")
-        val layoutProp = first(Vocabularies.Rendition + "layout")
+        val flowProp = firstValue(Vocabularies.Rendition + "flow")
+        val spreadProp = firstValue(Vocabularies.Rendition + "spread")
+        val orientationProp = firstValue(Vocabularies.Rendition + "orientation")
+        val layoutProp = firstValue(Vocabularies.Rendition + "layout")
 
         val (overflow, continuous) = when (flowProp) {
             "paginated" -> Pair(Presentation.Overflow.PAGINATED, false)
@@ -264,7 +288,7 @@ internal data class MetaCollection(val metas: Map<String, List<MetaItem>>) {
         return otherMetadata + Pair("presentation", presentation().toJSON().toMap())
     }
 
-    private fun first(property: String) = metas[property]?.firstOrNull()?.value
+    private fun firstValue(property: String) = metas[property]?.firstOrNull()?.value
 
     private fun splitSubject(subject: Subject): List<Subject> {
         val lang = subject.localizedName.translations.keys.first()
@@ -301,10 +325,13 @@ internal data class MetaItem(
 
     fun toContributor(defaultLang: String?, defaultRole: String? = null): Contributor {
         require(property in listOf("creator", "contributor", "publisher").map { Vocabularies.Dcterms + it } +
-                (Vocabularies.Media + "narrator"))
+                (Vocabularies.Media + "narrator") + (Vocabularies.Meta + "belongs-to-collection"))
         val names = localizedString(defaultLang)
-        return Contributor(names, sortAs = fileAs, roles = roles(defaultRole))
+        return Contributor(names, roles = roles(defaultRole),
+            sortAs = fileAs, identifier = identifier, position = groupPosition)
     }
+
+    fun toCollection(defaultLang: String?) = Pair(collectionType, toContributor(defaultLang))
 
     fun toMap(): Any {
         return if (children.isEmpty())
@@ -316,22 +343,31 @@ internal data class MetaItem(
     }
 
     private val fileAs
-        get() = first(Vocabularies.Meta + "file-as")
+        get() = firstValue(Vocabularies.Meta + "file-as")
 
     private val titleType
-        get() = first(Vocabularies.Meta + "title-type")
+        get() = firstValue(Vocabularies.Meta + "title-type")
 
     private val displaySeq
-        get() = first(Vocabularies.Meta + "display-seq")?.toIntOrNull()
+        get() = firstValue(Vocabularies.Meta + "display-seq")?.toIntOrNull()
 
     private val authority
-        get() = first(Vocabularies.Meta + "authority")
+        get() = firstValue(Vocabularies.Meta + "authority")
 
     private val term
-        get() = first(Vocabularies.Meta + "term")
+        get() = firstValue(Vocabularies.Meta + "term")
 
     private val alternateScript
         get() = children[Vocabularies.Meta + "alternate-script"]?.associate { Pair(it.lang, it.value) }.orEmpty()
+
+    private val collectionType
+        get() = firstValue(Vocabularies.Meta + "collection-type")
+
+    private val groupPosition
+        get() = firstValue(Vocabularies.Meta + "group-position")?.toDoubleOrNull()
+
+    private val identifier
+        get() = firstValue(Vocabularies.Dcterms + "identifier")
 
     private fun localizedString(defaultLang: String?): LocalizedString {
         val values =
@@ -340,13 +376,13 @@ internal data class MetaItem(
     }
 
     private fun roles(default: String?): Set<String> {
-        val roles = all(Vocabularies.Meta + "role")
+        val roles = allValues(Vocabularies.Meta + "role")
         return if (roles.isEmpty() && default != null) setOf(default) else roles.toSet()
     }
 
-    private fun first(property: String) = children[property]?.firstOrNull()?.value
+    private fun firstValue(property: String) = children[property]?.firstOrNull()?.value
 
-    private fun all(property: String) = children[property]?.map(MetaItem::value).orEmpty()
+    private fun allValues(property: String) = children[property]?.map(MetaItem::value).orEmpty()
 }
 
 internal data class Title(
@@ -356,7 +392,7 @@ internal data class Title(
     val displaySeq: Int? = null
 )
 
-private fun <K, V> List<V>.distributeBy(classes: Set<K>, transform: (V) -> Collection<K>): Map<K?, List<V>> {
+private fun <K, V> List<V>.distributeBy(classes: Set<K>, transform: (V) -> kotlin.collections.Collection<K>): Map<K?, List<V>> {
     /* Map all elements with [transform] and compute a [Map] with keys [null] and elements from [classes] and,
      as values, lists of elements whose transformed values contain the key.
      If a transformed element is in no class, it is assumed to be in [null] class. */
