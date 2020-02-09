@@ -97,37 +97,37 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkv-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-after.css"), "utf-8")
+            addResource("cjk-vertical-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-after.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkv-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-before.css"), "utf-8")
+            addResource("cjk-vertical-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-before.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkv-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-default.css"), "utf-8")
+            addResource("cjk-vertical-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-default.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkh-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-after.css"), "utf-8")
+            addResource("cjk-horizontal-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-after.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkh-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-before.css"), "utf-8")
+            addResource("cjk-horizontal-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-before.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkh-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-default.css"), "utf-8")
+            addResource("cjk-horizontal-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-default.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)

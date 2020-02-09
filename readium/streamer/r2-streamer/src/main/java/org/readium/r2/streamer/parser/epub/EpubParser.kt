@@ -144,7 +144,7 @@ class EpubParser : PublicationParser {
             ?: "content.opf"
 
     private fun setLayoutStyle(publication: Publication) {
-        publication.cssStyle = publication.contentLayout.name
+        publication.cssStyle = publication.contentLayout.cssId
         EPUBConstant.userSettingsUIPreset[publication.contentLayout]?.let {
             if (publication.type == Publication.TYPE.WEBPUB) {
                 publication.userSettingsUIPreset = EPUBConstant.forceScrollPreset
