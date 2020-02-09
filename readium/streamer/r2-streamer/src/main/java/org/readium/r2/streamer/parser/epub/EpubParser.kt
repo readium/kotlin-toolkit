@@ -124,7 +124,19 @@ class EpubParser : PublicationParser {
             }
         }.orEmpty()
 
-        val publication = Epub(packageDocument, navigationData, encryptionData).toPublication()
+        val displayOptionsXml = parseXmlDocument(Paths.koboDisplayOptions, container)
+            ?: parseXmlDocument(Paths.ibooksDIsplayOptions, container)
+
+        val displayOptions = displayOptionsXml?.getFirst("platform", "")
+            ?.get("option", "")
+            ?.mapNotNull { element ->
+                val optName = element.getAttr("name")
+                val optVal = element.text
+                if (optName != null && optVal != null) Pair(optName, optVal) else null
+            }
+            ?.toMap().orEmpty()
+
+        val publication = EpubAdapter(packageDocument, navigationData, encryptionData, displayOptions).toPublication()
         publication.internalData["type"] = "epub"
         publication.internalData["rootfile"] = container.rootFile.rootFilePath
 

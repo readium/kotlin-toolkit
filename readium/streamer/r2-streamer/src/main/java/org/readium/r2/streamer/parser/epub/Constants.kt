@@ -13,6 +13,8 @@ internal object Paths {
     const val lcpl: String = "META-INF/license.lcpl"
     const val container = "META-INF/container.xml"
     const val encryption = "META-INF/encryption.xml"
+    const val koboDisplayOptions = "META-INF/com.kobobooks.display-options.xml"
+    const val ibooksDIsplayOptions = "META-INF/com.kobobooks.display-options.xml"
 }
 
 internal object Mimetypes {

@@ -16,6 +16,7 @@ import org.readium.r2.streamer.parser.normalize
 internal data class PackageDocument(
     val path: String,
     val epubVersion: Double,
+    val uniqueIdentifierId: String?,
     val metadata: EpubMetadata,
     val manifest: List<Item>,
     val spine: Spine
@@ -27,6 +28,7 @@ internal data class PackageDocument(
             val prefixMap = PACKAGE_RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
 
             val epubVersion = document.getAttr("version")?.toDoubleOrNull() ?: 1.2
+            val uniqueIdentifierId = document.getAttr("unique-identifier")
             val metadata = MetadataParser(epubVersion, prefixMap).parse(document, filePath)
                 ?: return null
 
@@ -35,7 +37,7 @@ internal data class PackageDocument(
                 manifestElement.get("item", Namespaces.Opf).mapNotNull { Item.parse(it, filePath, prefixMap) }
             val spineElement = document.getFirst("spine", Namespaces.Opf) ?: return null
             val spine = Spine.parse(spineElement, prefixMap, epubVersion)
-            return PackageDocument(filePath, epubVersion, metadata, manifest, spine)
+            return PackageDocument(filePath, epubVersion, uniqueIdentifierId, metadata, manifest, spine)
         }
     }
 }

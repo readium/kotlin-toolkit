@@ -20,11 +20,11 @@ import org.readium.r2.shared.publication.epub.contains
 import org.readium.r2.shared.publication.epub.layout
 import org.readium.r2.shared.publication.presentation.*
 
-fun parsePackageDocument(path: String): Publication {
+fun parsePackageDocument(path: String, displayOptions: String? = null): Publication {
     val pub = PackageDocument::class.java.getResourceAsStream(path)
         ?.let { XmlParser().parse(it) }
         ?.let { PackageDocument.parse(it, "OEBPS/content.opf") }
-        ?.let { Epub(it) }
+        ?.let { EpubAdapter(it) }
         ?.toPublication()
     checkNotNull(pub)
     return pub

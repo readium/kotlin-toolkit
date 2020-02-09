@@ -16,24 +16,41 @@ import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.streamer.parser.normalize
 
-
-internal data class Epub(
-    val packageDocument: PackageDocument,
-    val navigationData: Map<String, List<Link>> = emptyMap(),
-    val encryptionData: Map<String, Encryption> = emptyMap()
+internal class EpubAdapter(
+    private val packageDocument: PackageDocument,
+    private val navigationData: Map<String, List<Link>> = emptyMap(),
+    private val encryptionData: Map<String, Encryption> = emptyMap(),
+    private val displayOptions: Map<String, String> = emptyMap()
 ) {
+    private val epubVersion = packageDocument.epubVersion
+    private val links = packageDocument.metadata.links
+    private val spine = packageDocument.spine
+    private val manifest = packageDocument.manifest
+
+    private val pubMetadata = PubMetadataAdapter(
+        epubVersion,
+        packageDocument.metadata.global,
+        packageDocument.uniqueIdentifierId,
+        spine.direction,
+        displayOptions
+    )
+
+    private val itemMetadata = packageDocument.metadata.refine
+        .mapValues { MetadataAdapter(epubVersion, it.value) }
+
+    @Suppress("Unchecked_cast")
+    private val itemById = manifest.filter { it.id != null }.associateBy(Item::id) as Map<String, Item>
+
+    private val itemrefByIdref = spine.itemrefs.associateBy(Itemref::idref)
+
     fun toPublication(): Publication {
-        val metadata = with(packageDocument) {
-            metadata.globalItems.toMetadata(metadata.uniqueIdentifierId, spine.direction)
-        }
-        val metadataLinks = packageDocument.metadata.links.mapNotNull(::mapLink)
+        // Compute metadata
+        val metadata = pubMetadata.metadata()
+        val metadataLinks = links.mapNotNull(::mapEpubLink)
 
         // Compute links
-        @Suppress("Unchecked_cast")
-        val itemById = packageDocument.manifest.filter { it.id != null }.associateBy(Item::id) as Map<String, Item>
-        val itemrefByIdref = packageDocument.spine.itemrefs.associateBy(Itemref::idref)
-        val links = packageDocument.manifest.map { computeLink(it, itemById, itemrefByIdref) }
-        val readingOrderIds = computeReadingOrderIds(links, itemrefByIdref)
+        val links = manifest.map { computeLink(it) }
+        val readingOrderIds = computeReadingOrderIds(links)
         val (readingOrder, resources) = links.partition { it.title in readingOrderIds }
 
         // Compute toc and otherCollections
@@ -51,11 +68,11 @@ internal data class Epub(
             otherCollections = otherCollections
         ).apply {
             type = Publication.TYPE.EPUB
-            version = packageDocument.epubVersion
+            version = epubVersion
         }
     }
 
-    private fun mapLink(link: EpubLink): Link? {
+    private fun mapEpubLink(link: EpubLink): Link? {
         val contains: MutableList<String> = mutableListOf()
         if (link.rel.contains(Vocabularies.Link + "record")) {
             if (link.properties.contains(Vocabularies.Link + "onix"))
@@ -71,7 +88,7 @@ internal data class Epub(
         )
     }
 
-    private fun computeReadingOrderIds(links: List<Link>, itemrefByIdref: Map<String, Itemref>): Set<String> {
+    private fun computeReadingOrderIds(links: List<Link>): Set<String> {
         val ids: MutableSet<String> = mutableSetOf()
         for (l in links) {
             if (itemrefByIdref.containsKey(l.title) && (itemrefByIdref[l.title] as Itemref).linear) {
@@ -90,16 +107,10 @@ internal data class Epub(
         return ids
     }
 
-    private fun computeLink(
-        item: Item,
-        itemById: Map<String, Item>,
-        itemrefByIdref: Map<String, Itemref>,
-        fallbackChain: Set<String> = emptySet()
-    ): Link {
-
+    private fun computeLink(item: Item, fallbackChain: Set<String> = emptySet()): Link {
         val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
-        val alternates = computeAlternates(item, itemById, itemrefByIdref, fallbackChain)
-        val duration = packageDocument.metadata.refineItems[item.id]?.duration()
+        val alternates = computeAlternates(item, fallbackChain)
+        val duration = itemMetadata[item.id]?.duration()
 
         return Link(
             title = item.id,
@@ -127,8 +138,8 @@ internal data class Epub(
             properties.putAll(parseItemrefProperties(itemref.properties))
         }
 
-        if (packageDocument.epubVersion < 3.0) {
-            val coverId = packageDocument.metadata.globalItems.cover()
+        if (epubVersion < 3.0) {
+            val coverId = pubMetadata.cover()
             if (coverId != null && item.id == coverId) rels.add("cover")
         }
 
@@ -139,23 +150,18 @@ internal data class Epub(
         return Pair(rels, Properties(properties))
     }
 
-    private fun computeAlternates(
-        item: Item,
-        itemById: Map<String, Item>,
-        itemrefByIdref: Map<String, Itemref>,
-        fallbackChain: Set<String>
-    ): List<Link> {
+    private fun computeAlternates(item: Item, fallbackChain: Set<String>): List<Link> {
 
         val fallback = item.fallback?.let { id ->
             if (id in fallbackChain) null else
                 itemById[id]?.let {
                     val updatedChain = if (item.id != null) fallbackChain + item.id else fallbackChain
-                    computeLink(it, itemById, itemrefByIdref, updatedChain)
+                    computeLink(it, updatedChain)
                 }
         }
         val mediaOverlays = item.mediaOverlay?.let { id ->
             itemById[id]?.let {
-                computeLink(it, itemById, itemrefByIdref)
+                computeLink(it)
             }
         }
         return listOfNotNull(fallback, mediaOverlays)
