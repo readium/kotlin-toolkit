@@ -892,7 +892,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 userSettings.updateViewCSS(SCROLL_REF)
             }, 500)
         } else {
-            if (publication.cssStyle != ContentLayout.CJK_VERTICAL.key) {
+            if (publication.cssStyle != ContentLayout.CJK_VERTICAL.cssId) {
                 publication.userSettingsUIPreset.remove(ReadiumCSSName.ref(SCROLL_REF))
             }
 
