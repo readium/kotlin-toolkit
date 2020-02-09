@@ -18,7 +18,7 @@ import android.view.MenuItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.divina.R2DiViNaActivity
-import org.readium.r2.shared.Locator
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.library.activitiesLaunched
@@ -76,7 +76,7 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
         super.onActivityResult(requestCode, resultCode, data)
         data ?: return
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
-            val locator = data.getSerializableExtra("locator") as Locator
+            val locator = data.getParcelableExtra("locator") as Locator
             if (DEBUG) Timber.d("locator href ${locator.href}")
 
             // Call the player's goTo function with the considered href

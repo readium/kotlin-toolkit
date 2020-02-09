@@ -8,29 +8,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Locator
-import org.readium.r2.shared.LocatorText
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.singleClick
 
 
 /**
- * This class describes a search result
- */
-//DO WE STILL NEED TO STORE MARK OBJ AND RANGEINFO?
-class SearchLocator(href: String,
-                    type: String,
-                    title: String? = null,
-                    locations: Locations? = null,
-                    text: LocatorText?,
-                    mark: String? = null,
-                    rangeInfo: String? = null) : Locator(href, type, title, locations, text)
-
-/**
  * This class is an adapter for Search results' list view
  */
-class SearchLocatorAdapter(private val activity: Activity, private var results: List<SearchLocator>, private var itemListener: RecyclerViewClickListener) : RecyclerView.Adapter<SearchLocatorAdapter.ViewHolder>() {
+class SearchLocatorAdapter(private val activity: Activity, private var results: List<Locator>, private var itemListener: RecyclerViewClickListener) : RecyclerView.Adapter<SearchLocatorAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = activity.applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -41,9 +27,9 @@ class SearchLocatorAdapter(private val activity: Activity, private var results: 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
         val tmpLocator = results[position]
-        val txtBefore = tmpLocator.text?.before
-        val txtAfter = tmpLocator.text?.after
-        val highlight = tmpLocator.text?.highlight
+        val txtBefore = tmpLocator.text.before
+        val txtAfter = tmpLocator.text.after
+        val highlight = tmpLocator.text.highlight
         val title = tmpLocator.title
 
         viewHolder.chapterView.text = title

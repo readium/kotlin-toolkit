@@ -16,9 +16,7 @@ import org.jetbrains.anko.toast
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.audiobook.R2AudiobookActivity
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Locator
-import org.readium.r2.shared.LocatorText
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Bookmark
 import org.readium.r2.testapp.db.BookmarksDatabase
@@ -37,7 +35,7 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
                 val resource = publication.readingOrder[currentResource]
                 val resourceHref = resource.href
                 val resourceType = resource.type ?: ""
-                Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0))
+                Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = 0.0))
             }
         }
 
@@ -130,8 +128,8 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
                         resourceHref,
                         resourceType,
                         resourceTitle,
-                        Locations(progression = seekBar!!.progress.toDouble()),
-                        LocatorText()
+                        Locator.Locations(progression = seekBar!!.progress.toDouble()),
+                        Locator.Text()
                 )
 
                 bookmarksDB.bookmarks.insert(bookmark)?.let {

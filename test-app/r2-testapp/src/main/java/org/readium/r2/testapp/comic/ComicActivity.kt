@@ -19,8 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.cbz.R2CbzActivity
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Locator
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.BooksDatabase
@@ -47,7 +46,7 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
                 val resource = publication.readingOrder[resourcePager.currentItem]
                 val resourceHref = resource.href
                 val resourceType = resource.type ?: ""
-                Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0))
+                Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = 0.0))
             }
         }
 

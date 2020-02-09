@@ -19,21 +19,30 @@ import nl.komponents.kovenant.then
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.json.JSONObject
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Locator
-import org.readium.r2.shared.LocatorText
+import org.readium.r2.shared.publication.Locator
 
-class Bookmark(val bookID: Long,
-               val publicationID: String,
-               val resourceIndex: Long,
-               val resourceHref: String,
-               val resourceType: String,
-               val resourceTitle: String,
-               val location: Locations,
-               val locatorText: LocatorText,
-               var creationDate: Long = DateTime().toDate().time,
-               var id: Long? = null):
-        Locator(resourceHref, resourceType, resourceTitle, location, locatorText)
+class Bookmark(
+    val bookID: Long,
+    val publicationID: String,
+    val resourceIndex: Long,
+    val resourceHref: String,
+    val resourceType: String,
+    val resourceTitle: String,
+    val location: Locator.Locations,
+    val locatorText: Locator.Text,
+    var creationDate: Long = DateTime().toDate().time,
+    var id: Long? = null
+) {
+
+    val locator get() = Locator(
+        href = resourceHref,
+        type = resourceType,
+        title = resourceTitle,
+        locations = location,
+        text = locatorText
+    )
+
+}
 
 class BookmarksDatabase(context: Context) {
 
@@ -99,7 +108,7 @@ class BookmarksDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "
                                 val id = cursor.getInt(cursor.getColumnIndex(BOOKMARKSTable.ID))
                                 val progression = cursor.getDouble(cursor.getColumnIndex("progression"))
                                 val values = ContentValues()
-                                values.put(BOOKMARKSTable.LOCATION, Locations(progression = progression).toJSON().toString())
+                                values.put(BOOKMARKSTable.LOCATION, Locator.Locations(progression = progression).toJSON().toString())
                                 db.update(BOOKMARKSTable.NAME, values, "${BOOKMARKSTable.ID}=?", arrayOf(id.toString()))
                                 hasItem = cursor.moveToNext()
                             }
@@ -306,7 +315,7 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
                 return@let it
             } ?: kotlin.run { return@run null }
 
-            return Bookmark(bookID as Long, publicationID as String, resourceIndex as Long, resourceHref as String, resourceType as String, resourceTitle as String, Locations.fromJSON(JSONObject(location as String)), LocatorText.fromJSON(JSONObject(locatorText as String)), created as Long, id as Long)
+            return Bookmark(bookID as Long, publicationID as String, resourceIndex as Long, resourceHref as String, resourceType as String, resourceTitle as String, Locator.Locations.fromJSON(JSONObject(location as String)), Locator.Text.fromJSON(JSONObject(locatorText as String)), created as Long, id as Long)
         }
     }
 
