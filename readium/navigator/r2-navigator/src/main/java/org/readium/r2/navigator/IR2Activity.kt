@@ -52,8 +52,6 @@ interface IR2TTS {
 
 interface Navigator {
     val currentLocation: Locator?
-        get() = null
-
     fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean
     fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean
     fun goForward(animated: Boolean, completion: () -> Unit): Boolean

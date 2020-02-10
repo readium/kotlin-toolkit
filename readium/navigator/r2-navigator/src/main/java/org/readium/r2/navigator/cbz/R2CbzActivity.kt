@@ -16,6 +16,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,6 +32,9 @@ import kotlin.coroutines.CoroutineContext
 
 
 open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator {
+
+    override val currentLocation: Locator?
+        get() = publication.positionList[resourcePager.currentItem]
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -95,6 +99,18 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
         resources = publication.readingOrder.map { it.href }
 
+
+        val navigator = this
+        resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+
+            override fun onPageSelected(position: Int) {
+                val delegate = navigatorDelegate ?: return
+                val locator = currentLocation ?: return
+                delegate.locationDidChange(navigator = navigator, locator = locator)
+            }
+
+        })
+
         adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
 
         resourcePager.adapter = adapter
@@ -111,15 +127,6 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
             resourcePager.currentItem = currentPagerPosition
         }
 
-    }
-
-    override fun onPause() {
-        super.onPause()
-        val resource = publication.readingOrder[resourcePager.currentItem]
-        val resourceHref = resource.href
-        val resourceType = resource.type ?: ""
-
-        navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title))
     }
 
     override fun nextResource(v: View?) {
@@ -184,9 +191,6 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
             if (data != null) {
 
                 val locator = data.getParcelableExtra("locator") as Locator
-
-                // Set the progression fetched
-                navigatorDelegate?.locationDidChange(locator = locator)
 
                 fun setCurrent(resources: List<String>) {
                     for (index in 0 until resources.count()) {

@@ -25,6 +25,9 @@ import kotlin.coroutines.CoroutineContext
 
 open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activity, MediaPlayerCallback, VisualNavigator {
 
+    override val currentLocation: Locator?
+        get() = null
+
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
