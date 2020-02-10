@@ -51,6 +51,7 @@ import org.readium.r2.shared.*
 import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.DRMManagementActivity
@@ -73,22 +74,11 @@ import kotlin.coroutines.CoroutineContext
  */
 class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, VisualNavigatorDelegate, OutlineTableViewControllerDelegate*/ {
 
-    override val currentLocation: Locator?
-        get() {
-            return booksDB.books.currentLocator(bookId)?.let {
-                it
-            } ?: run {
-                val resource = publication.readingOrder[resourcePager.currentItem]
-                val resourceHref = resource.href
-                val resourceType = resource.type ?: ""
-                Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = 0.0))
-            }
-        }
-
     override fun locationDidChange(navigator: Navigator?, locator: Locator) {
+        Timber.d("locationDidChange $locator")
         booksDB.books.saveProgression(locator, bookId)
 
-        if (locator.locations.progression == 0.0) {
+        if (this::screenReader.isInitialized && locator.locations.progression == 0.0) {
             screenReader.currentUtterance = 0
         }
     }
@@ -166,7 +156,9 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
         resourcePager.offscreenPageLimit = 1
 
-        currentPagerPosition = publication.readingOrder.indexOfFirst { it.href == currentLocation?.href }
+        currentPagerPosition = booksDB.books.currentLocator(bookId)
+            ?.let { publication.readingOrder.indexOfFirstWithHref(it.href) }
+            ?: 0
         resourcePager.currentItem = currentPagerPosition
 
         titleView.text = publication.metadata.title

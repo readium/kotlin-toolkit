@@ -17,29 +17,20 @@ import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.audiobook.R2AudiobookActivity
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Bookmark
 import org.readium.r2.testapp.db.BookmarksDatabase
 import org.readium.r2.testapp.db.BooksDatabase
 import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
+import timber.log.Timber
 
 
 class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
 
-    override val currentLocation: Locator?
-        get() {
-            return booksDB.books.currentLocator(bookId)?.let {
-                it
-            } ?: run {
-                val resource = publication.readingOrder[currentResource]
-                val resourceHref = resource.href
-                val resourceType = resource.type ?: ""
-                Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = 0.0))
-            }
-        }
-
     override fun locationDidChange(navigator: Navigator?, locator: Locator) {
+        Timber.d("locationDidChange $locator")
         booksDB.books.saveProgression(locator, bookId)
     }
 
@@ -61,7 +52,9 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
 
         progressDialog = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_audiobook))
 
-        currentResource = publication.readingOrder.indexOfFirst { it.href == currentLocation?.href }
+        currentResource = booksDB.books.currentLocator(bookId)
+            ?.let { publication.readingOrder.indexOfFirstWithHref(it.href) }
+            ?: 0
 
         Handler().postDelayed({
             //Setting cover

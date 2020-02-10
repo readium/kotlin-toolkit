@@ -20,11 +20,13 @@ import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.cbz.R2CbzActivity
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.BooksDatabase
 import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
+import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
 
@@ -37,20 +39,8 @@ import kotlin.coroutines.CoroutineContext
  */
 class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
 
-
-    override val currentLocation: Locator?
-        get() {
-            return booksDB.books.currentLocator(bookId)?.let {
-                it
-            } ?: run {
-                val resource = publication.readingOrder[resourcePager.currentItem]
-                val resourceHref = resource.href
-                val resourceType = resource.type ?: ""
-                Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = 0.0))
-            }
-        }
-
     override fun locationDidChange(navigator: Navigator?, locator: Locator) {
+        Timber.d("locationDidChange $locator")
         booksDB.books.saveProgression(locator, bookId)
     }
 
@@ -73,7 +63,10 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
         navigatorDelegate = this
         bookId = intent.getLongExtra("bookId", -1)
 
-        currentPagerPosition = publication.readingOrder.indexOfFirst { it.href == currentLocation?.href }
+        currentPagerPosition = booksDB.books.currentLocator(bookId)
+            ?.let { publication.readingOrder.indexOfFirstWithHref(it.href) }
+            ?: 0
+
         resourcePager.currentItem = currentPagerPosition
 
         toggleActionBar()
