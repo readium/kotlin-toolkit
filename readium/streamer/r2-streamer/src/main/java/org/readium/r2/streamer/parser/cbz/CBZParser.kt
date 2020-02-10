@@ -16,6 +16,7 @@ import android.webkit.MimeTypeMap
 import org.readium.r2.shared.publication.*
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
+import org.readium.r2.streamer.parser.PerResourcePositionListFactory
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
@@ -113,7 +114,10 @@ class CBZParser : PublicationParser {
             otherCollections = listOf(
                 PublicationCollection(role = "images", links = readingOrder)
             ),
-            positionListFactory = CbzPositionListFactory(readingOrder)
+            positionListFactory = PerResourcePositionListFactory(
+                readingOrder = readingOrder,
+                fallbackMediaType = "image/*"
+            )
         )
 
         publication.type = Publication.TYPE.CBZ

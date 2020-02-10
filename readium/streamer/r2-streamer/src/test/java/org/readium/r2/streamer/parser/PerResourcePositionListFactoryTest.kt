@@ -7,25 +7,25 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.parser.cbz
+package org.readium.r2.streamer.parser
 
 import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 
-class CbzPositionListFactoryTest {
+class PerResourcePositionListFactoryTest {
 
     @Test
     fun `Create from an empty {readingOrder}`() {
-        val factory = CbzPositionListFactory(readingOrder = emptyList())
+        val factory = PerResourcePositionListFactory(readingOrder = emptyList())
 
         assertEquals(0, factory.create().size)
     }
 
     @Test
     fun `Create from a {readingOrder} with one resource`() {
-        val factory = CbzPositionListFactory(readingOrder = listOf(
+        val factory = PerResourcePositionListFactory(readingOrder = listOf(
             Link(href = "res", type = "image/png")
         ))
 
@@ -44,7 +44,7 @@ class CbzPositionListFactoryTest {
 
     @Test
     fun `Create from a {readingOrder} with a few resources`() {
-        val factory = CbzPositionListFactory(readingOrder = listOf(
+        val factory = PerResourcePositionListFactory(readingOrder = listOf(
             Link(href = "res"),
             Link(href = "chap1", type = "image/png"),
             Link(href = "chap2", type = "image/png", title = "Chapter 2")
@@ -54,7 +54,7 @@ class CbzPositionListFactoryTest {
             listOf(
                 Locator(
                     href = "res",
-                    type = "image/*",
+                    type = "",
                     locations = Locator.Locations(
                         position = 1,
                         totalProgression = 0.0
@@ -83,10 +83,13 @@ class CbzPositionListFactoryTest {
     }
 
     @Test
-    fun `{type} fallbacks on image-*`() {
-        val factory = CbzPositionListFactory(readingOrder = listOf(
-            Link(href = "res")
-        ))
+    fun `{type} fallbacks on the given media type`() {
+        val factory = PerResourcePositionListFactory(
+            readingOrder = listOf(
+                Link(href = "res")
+            ),
+            fallbackMediaType = "image/*"
+        )
 
         assertEquals(
             listOf(Locator(
