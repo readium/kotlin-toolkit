@@ -41,7 +41,7 @@ internal object EncryptionParser {
         return Pair(normalize("/", resourceURI), enc)
     }
 
-    private fun parseEncryptionProperties(encryptionProperties: ElementNode): Pair<Int, String>? {
+    private fun parseEncryptionProperties(encryptionProperties: ElementNode): Pair<Long, String>? {
         for (encryptionProperty in encryptionProperties.get("EncryptionProperty", Namespaces.Enc)) {
             val compressionElement = encryptionProperty.getFirst("Compression", Namespaces.Comp)
             if (compressionElement != null) {
@@ -51,8 +51,8 @@ internal object EncryptionParser {
         return null
     }
 
-    private fun parseCompressionElement(compressionElement: ElementNode): Pair<Int, String>? {
-        val originalLength = compressionElement.getAttr("OriginalLength")?.toIntOrNull() ?: return null
+    private fun parseCompressionElement(compressionElement: ElementNode): Pair<Long, String>? {
+        val originalLength = compressionElement.getAttr("OriginalLength")?.toLongOrNull() ?: return null
         val method = compressionElement.getAttr("Method") ?: return null
         val compression = if (method == "8") "deflate" else "none"
         return Pair(originalLength, compression)
