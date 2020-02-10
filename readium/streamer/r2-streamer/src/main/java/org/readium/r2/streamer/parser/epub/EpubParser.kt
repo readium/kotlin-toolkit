@@ -21,7 +21,7 @@ import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.DirectoryContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
-import org.readium.r2.streamer.parser.normalize
+import org.readium.r2.shared.normalize
 import timber.log.Timber
 import java.io.File
 
