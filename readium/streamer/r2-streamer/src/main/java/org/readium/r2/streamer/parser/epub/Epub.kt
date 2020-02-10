@@ -9,12 +9,11 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.publication.PublicationCollection
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.parser.normalize
+import java.io.Serializable
 
 
 internal data class Epub(

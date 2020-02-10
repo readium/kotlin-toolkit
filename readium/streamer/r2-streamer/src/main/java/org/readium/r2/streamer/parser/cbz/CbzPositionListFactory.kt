@@ -17,6 +17,7 @@ import org.readium.r2.shared.publication.Publication
  * Creates the [positionList] for a CBZ [Publication] from its [readingOrder].
  *
  * https://github.com/readium/architecture/blob/master/models/locators/best-practices/format.md#comics
+ * https://github.com/readium/architecture/issues/101
  */
 internal class CbzPositionListFactory(private val readingOrder: List<Link>) : Publication.PositionListFactory {
 
@@ -26,7 +27,7 @@ internal class CbzPositionListFactory(private val readingOrder: List<Link>) : Pu
         return readingOrder.mapIndexed { index, link ->
             Locator(
                 href = link.href,
-                type = link.type ?: "",
+                type = link.type ?: "image/*",
                 title = link.title,
                 locations = Locator.Locations(
                     position = index + 1,

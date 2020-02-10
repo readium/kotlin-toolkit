@@ -26,13 +26,13 @@ class CbzPositionListFactoryTest {
     @Test
     fun `Create from a {readingOrder} with one resource`() {
         val factory = CbzPositionListFactory(readingOrder = listOf(
-            Link(href = "res")
+            Link(href = "res", type = "image/png")
         ))
 
         assertEquals(
             listOf(Locator(
                 href = "res",
-                type = "",
+                type = "image/png",
                 locations = Locator.Locations(
                     position = 1,
                     totalProgression = 0.0
@@ -46,15 +46,15 @@ class CbzPositionListFactoryTest {
     fun `Create from a {readingOrder} with a few resources`() {
         val factory = CbzPositionListFactory(readingOrder = listOf(
             Link(href = "res"),
-            Link(href = "chap1", type = "text/html"),
-            Link(href = "chap2", type = "text/html", title = "Chapter 2")
+            Link(href = "chap1", type = "image/png"),
+            Link(href = "chap2", type = "image/png", title = "Chapter 2")
         ))
 
         assertEquals(
             listOf(
                 Locator(
                     href = "res",
-                    type = "",
+                    type = "image/*",
                     locations = Locator.Locations(
                         position = 1,
                         totalProgression = 0.0
@@ -62,7 +62,7 @@ class CbzPositionListFactoryTest {
                 ),
                 Locator(
                     href = "chap1",
-                    type = "text/html",
+                    type = "image/png",
                     locations = Locator.Locations(
                         position = 2,
                         totalProgression = 1.0/3.0
@@ -70,7 +70,7 @@ class CbzPositionListFactoryTest {
                 ),
                 Locator(
                     href = "chap2",
-                    type = "text/html",
+                    type = "image/png",
                     title = "Chapter 2",
                     locations = Locator.Locations(
                         position = 3,
@@ -78,6 +78,25 @@ class CbzPositionListFactoryTest {
                     )
                 )
             ),
+            factory.create()
+        )
+    }
+
+    @Test
+    fun `{type} fallbacks on image-*`() {
+        val factory = CbzPositionListFactory(readingOrder = listOf(
+            Link(href = "res")
+        ))
+
+        assertEquals(
+            listOf(Locator(
+                href = "res",
+                type = "image/*",
+                locations = Locator.Locations(
+                    position = 1,
+                    totalProgression = 0.0
+                )
+            )),
             factory.create()
         )
     }

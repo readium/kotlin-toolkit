@@ -15,6 +15,8 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.ContentLayout
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
@@ -124,7 +126,17 @@ class EpubParser : PublicationParser {
             }
         }.orEmpty()
 
-        val publication = Epub(packageDocument, navigationData, encryptionData).toPublication()
+        var publication = Epub(packageDocument, navigationData, encryptionData).toPublication()
+
+        // Adds the [positionList] factory
+        publication = publication.copy(positionListFactory = EpubPositionListFactory(
+            container = container,
+            readingOrder = publication.readingOrder,
+            presentation = publication.metadata.presentation,
+            // FIXME: Should this be configurable by host apps? We can expose it in EpubParser.parse
+            reflowablePositionLength = 1024L
+        ))
+
         publication.internalData["type"] = "epub"
         publication.internalData["rootfile"] = container.rootFile.rootFilePath
 
