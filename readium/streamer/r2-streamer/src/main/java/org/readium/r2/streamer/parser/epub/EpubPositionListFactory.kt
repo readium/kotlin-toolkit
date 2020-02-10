@@ -9,7 +9,6 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import com.mcxiaoke.koi.ext.ceil
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -18,6 +17,7 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layoutOf
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.streamer.container.Container
+import kotlin.math.ceil
 
 /**
  * Creates the [positionList] for an EPUB [Publication] from its [readingOrder] and [container].
@@ -84,8 +84,7 @@ internal class EpubPositionListFactory(
         val length = link.properties.encryption?.originalLength
             ?: container.dataLength(link.href)
 
-        val pageCount = (length / reflowablePositionLength.toDouble())
-            .ceil().toInt()
+        val pageCount = ceil(length / reflowablePositionLength.toDouble()).toInt()
             .coerceAtLeast(1)
 
         return (1..pageCount).map { position ->

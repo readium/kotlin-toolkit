@@ -126,16 +126,17 @@ class EpubParser : PublicationParser {
             }
         }.orEmpty()
 
-        var publication = Epub(packageDocument, navigationData, encryptionData).toPublication()
-
-        // Adds the [positionList] factory
-        publication = publication.copy(positionListFactory = EpubPositionListFactory(
-            container = container,
-            readingOrder = publication.readingOrder,
-            presentation = publication.metadata.presentation,
-            // FIXME: Should this be configurable by host apps? We can expose it in EpubParser.parse
-            reflowablePositionLength = 1024L
-        ))
+        val publication = Epub(packageDocument, navigationData, encryptionData)
+            .toPublication()
+            .copyWithPositionListFactory {
+                EpubPositionListFactory(
+                    container = container,
+                    readingOrder = readingOrder,
+                    presentation = metadata.presentation,
+                    // We split reflowable resources every 1024 bytes.
+                    reflowablePositionLength = 1024L
+                )
+            }
 
         publication.internalData["type"] = "epub"
         publication.internalData["rootfile"] = container.rootFile.rootFilePath
