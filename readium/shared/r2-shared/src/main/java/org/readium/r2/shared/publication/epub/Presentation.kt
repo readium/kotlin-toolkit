@@ -9,13 +9,15 @@
 
 package org.readium.r2.shared.publication.epub
 
-import org.readium.r2.shared.publication.Metadata
-
-// EPUB extensions for [Metadata].
-// https://readium.org/webpub-manifest/schema/extensions/epub/metadata.schema.json
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.presentation.Presentation
 
 /**
- * Hints how the layout of the resource should be presented.
+ * Get the layout of the given resource in this publication.
+ * Falls back on REFLOWABLE.
  */
-val Metadata.layout: EpubLayout?
-    get() = EpubLayout(this["layout"] as? String)
+fun Presentation.layoutOf(link: Link): EpubLayout {
+    return link.properties.layout
+        ?: layout
+        ?: EpubLayout.REFLOWABLE
+}

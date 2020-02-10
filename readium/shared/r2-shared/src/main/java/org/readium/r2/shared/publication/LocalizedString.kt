@@ -72,7 +72,7 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
      * Returns a new [LocalizedString] after adding (or replacing) the translation with the given
      * [language].
      */
-    fun withString(language: String?, string: String): LocalizedString =
+    fun copyWithString(language: String?, string: String): LocalizedString =
         copy(translations = translations + Pair(language, Translation(string = string)))
 
     /**

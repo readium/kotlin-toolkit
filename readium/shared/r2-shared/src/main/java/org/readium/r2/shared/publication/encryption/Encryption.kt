@@ -15,6 +15,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optNullableInt
+import org.readium.r2.shared.extensions.optNullableLong
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
@@ -34,7 +35,7 @@ import org.readium.r2.shared.util.logging.log
 data class Encryption(
     val algorithm: String,
     val compression: String? = null,
-    val originalLength: Int? = null,
+    val originalLength: Long? = null,
     val profile: String? = null,
     val scheme: String? = null
 ) : JSONable, Parcelable {
@@ -68,8 +69,8 @@ data class Encryption(
                 compression = json.optNullableString("compression"),
                 // Fallback on [original-length] for legacy reasons
                 // See https://github.com/readium/webpub-manifest/pull/43
-                originalLength = json.optNullableInt("originalLength")
-                    ?: json.optNullableInt("original-length"),
+                originalLength = json.optNullableLong("originalLength")
+                    ?: json.optNullableLong("original-length"),
                 profile = json.optNullableString("profile"),
                 scheme = json.optNullableString("scheme")
             )
