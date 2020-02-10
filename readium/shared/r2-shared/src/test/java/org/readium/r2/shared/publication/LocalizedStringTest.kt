@@ -196,7 +196,7 @@ class LocalizedStringTest {
             )),
             LocalizedString.fromStrings(mapOf(
                 "en" to "a string"
-            )).withString("fr", "une chaîne")
+            )).copyWithString("fr", "une chaîne")
         )
     }
 
