@@ -13,7 +13,7 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.MediaOverlayNode
 import org.readium.r2.shared.MediaOverlays
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.streamer.parser.normalize
+import org.readium.r2.shared.normalize
 
 internal object SmilParser {
     /* According to https://www.w3.org/publishing/epub3/epub-mediaoverlays.html#sec-overlays-content-conf
