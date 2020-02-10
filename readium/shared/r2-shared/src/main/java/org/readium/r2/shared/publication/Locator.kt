@@ -143,11 +143,21 @@ data class Locator(
     }
 
     /**
-     * Returns a copy of the [Locator] after setting the [Locations.progression] to [progression].
+     * Shortcut to get a copy of the [Locator] with different [Locations] sub-properties.
      */
-    fun withProgression(progression: Double?) = copy(
+    fun copyWithLocations(
+        fragments: List<String> = locations.fragments,
+        progression: Double? = locations.progression,
+        position: Int? = locations.position,
+        totalProgression: Double? = locations.totalProgression,
+        otherLocations: Map<String, Any> = locations.otherLocations
+    ) = copy(
         locations = locations.copy(
-            progression = progression
+            fragments = fragments,
+            progression = progression,
+            position = position,
+            totalProgression = totalProgression,
+            otherLocations = otherLocations
         )
     )
 

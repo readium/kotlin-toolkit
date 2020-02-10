@@ -113,18 +113,51 @@ class LocatorTest {
         )
     }
 
-    @Test fun `copy a {Locator} with a new {progression}`() {
+    @Test fun `copy a {Locator} with different {Locations} sub-properties`() {
         assertEquals(
             Locator(
                 href = "http://locator",
                 type = "text/html",
-                locations = Locator.Locations(position = 42, progression = 4.1)
+                locations = Locator.Locations(
+                    fragments = listOf("p=4", "frag34"),
+                    progression = 0.74,
+                    position = 42,
+                    totalProgression = 0.32,
+                    otherLocations = mapOf("other" to "other-location")
+                )
             ),
             Locator(
                 href = "http://locator",
                 type = "text/html",
                 locations = Locator.Locations(position = 42, progression = 2.0)
-            ).withProgression(4.1)
+            ).copyWithLocations(
+                fragments = listOf("p=4", "frag34"),
+                progression = 0.74,
+                position = 42,
+                totalProgression = 0.32,
+                otherLocations = mapOf("other" to "other-location")
+            )
+        )
+    }
+
+    @Test fun `copy a {Locator} with reset {Locations} sub-properties`() {
+        assertEquals(
+            Locator(
+                href = "http://locator",
+                type = "text/html",
+                locations = Locator.Locations()
+            ),
+            Locator(
+                href = "http://locator",
+                type = "text/html",
+                locations = Locator.Locations(position = 42, progression = 2.0)
+            ).copyWithLocations(
+                fragments = emptyList(),
+                progression = null,
+                position = null,
+                totalProgression = null,
+                otherLocations = emptyMap()
+            )
         )
     }
 
