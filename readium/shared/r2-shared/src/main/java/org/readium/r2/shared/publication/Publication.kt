@@ -265,6 +265,15 @@ data class Publication(
     internal fun linksWithRole(role: String): List<Link> =
         otherCollections.firstWithRole(role)?.links ?: emptyList()
 
+    /**
+     * Copy the [Publication] with a different [PositionListFactory].
+     * The provided closure will be used to build the [PositionListFactory], with [this] being the
+     * [Publication].
+     */
+    fun copyWithPositionListFactory(createFactory: Publication.() -> PositionListFactory): Publication {
+        return run { copy(positionListFactory = createFactory()) }
+    }
+
     companion object {
 
         /**
