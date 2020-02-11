@@ -78,23 +78,24 @@ data class Publication(
          * Implementation of a [Parceler] to be used with [@Parcelize] to serialize a
          * [PositionListFactory].
          *
+         * Since we can't serialize a factory, we're loading eagerly the [positionList] to be
+         * serialized. Upon deserialization, the positions will be wrapped in a static factory.
+         *
          * This won't be needed anymore once we use [Fragment] instead of [Activity] in the
          * navigator.
          */
         object Parceler : kotlinx.android.parcel.Parceler<PositionListFactory?> {
 
-            /**
-             * Boxes a closure into a [PositionListFactory], because closures are serializable.
-             */
-            private class SerializableFactory(private val factory: (() -> List<Locator>)? = null): PositionListFactory {
-                override fun create(): List<Locator> =
-                    factory?.let { it() } ?: emptyList()
+            private class StaticPositionListFactory(private val positionList: List<Locator>): PositionListFactory {
+                override fun create(): List<Locator> = positionList
             }
 
             override fun create(parcel: Parcel): PositionListFactory? =
                 try {
-                    (parcel.readSerializable() as? () -> List<Locator>)
-                        ?.let { SerializableFactory(it) }
+                    mutableListOf<Locator>()
+                        .apply { parcel.readParcelableList(this, Locator::class.java.classLoader) }
+                        .let { StaticPositionListFactory(it) }
+
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to read a PositionListFactory from a Parcel")
                     null
@@ -102,8 +103,7 @@ data class Publication(
 
             override fun PositionListFactory?.write(parcel: Parcel, flags: Int) {
                 try {
-                    // Wrap the [PositionListFactory] in a closure to make it serializable.
-                    parcel.writeSerializable(this?.let { { create() } as Serializable })
+                    parcel.writeParcelableList(this?.create(), flags)
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to write a PositionListFactory into a Parcel")
                 }
