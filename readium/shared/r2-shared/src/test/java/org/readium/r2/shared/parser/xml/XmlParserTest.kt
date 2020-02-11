@@ -7,10 +7,9 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.shared.parser.xml.parser.org.readium.r2.shared.parser.xml
+package org.readium.r2.shared.parser.xml
 
 import org.junit.Test
-import org.readium.r2.shared.parser.xml.*
 import org.xmlpull.v1.XmlPullParserException
 import java.io.ByteArrayInputStream
 import javax.xml.XMLConstants
@@ -37,7 +36,7 @@ val metadatav2 = """
     </package>    
 """
 
-private fun parseXmlString(string: String, namespaceAware: Boolean = true) : ElementNode {
+private fun parseXmlString(string: String, namespaceAware: Boolean = true): ElementNode {
     val parser = XmlParser(namespaceAware)
     val stream = ByteArrayInputStream(string.toByteArray(Charsets.UTF_8))
     return parser.parse(stream)
@@ -48,45 +47,45 @@ class XmlParserTest {
     fun testNotNamespaceAwareV3() {
         val doc = parseXmlString(metadatav3, false)
         val expectedTitle = ElementNode(
-                "dc:title",
-                "",
-                "en",
-                mapOf("" to mapOf("id" to "title")),
-                listOf(TextNode("Moby-Dick"))
+            "dc:title",
+            "",
+            "en",
+            mapOf("" to mapOf("id" to "title")),
+            listOf(TextNode("Moby-Dick"))
         )
         val expectedTitleType = ElementNode(
-                "meta",
-                "",
-                "en",
-                mapOf("" to mapOf("refines" to "#title", "property" to "title-type")),
-                listOf(TextNode("main"))
+            "meta",
+            "",
+            "en",
+            mapOf("" to mapOf("refines" to "#title", "property" to "title-type")),
+            listOf(TextNode("main"))
         )
         val expectedAltScript = ElementNode(
-                "meta",
-                "",
-                "fr",
-                mapOf("" to mapOf("refines" to "#title", "property" to "alternate-script", "xml:lang" to "fr")),
-                listOf(TextNode("Moby Dick"))
+            "meta",
+            "",
+            "fr",
+            mapOf("" to mapOf("refines" to "#title", "property" to "alternate-script", "xml:lang" to "fr")),
+            listOf(TextNode("Moby Dick"))
         )
         val expectedCreator = ElementNode(
-                "dc:creator",
-                "",
-                "en",
-                mapOf("" to mapOf("id" to "creator")),
-                listOf(TextNode("Herman Melville"))
+            "dc:creator",
+            "",
+            "en",
+            mapOf("" to mapOf("id" to "creator")),
+            listOf(TextNode("Herman Melville"))
         )
         val expectedMetadata = ElementNode(
-                "metadata",
-                "",
-                "en",
-                mapOf("" to mapOf("xmlns:dc" to "http://purl.org/dc/elements/1.1/")),
-                listOf(expectedTitle, expectedTitleType, expectedAltScript, expectedCreator)
+            "metadata",
+            "",
+            "en",
+            mapOf("" to mapOf("xmlns:dc" to "http://purl.org/dc/elements/1.1/")),
+            listOf(expectedTitle, expectedTitleType, expectedAltScript, expectedCreator)
         )
         assertEquals(doc.name, "package")
         assertEquals(doc.namespace, "")
         assertEquals(doc.getAttr("version"), "3.0")
         assertEquals(doc.getAttr("xml:lang"), "en")
-        assertEquals(doc.lang,"en")
+        assertEquals(doc.lang, "en")
         val metadata = doc.getFirst("metadata", "") as ElementNode
         assertEquals(metadata.name, "metadata")
         assertEquals(metadata.namespace, "")
@@ -99,97 +98,102 @@ class XmlParserTest {
     fun testNamespaceAwareV3() {
         val doc = parseXmlString(metadatav3, true)
         val expectedTitle = ElementNode(
-                "title",
-                "http://purl.org/dc/elements/1.1/",
-                "en",
-                mapOf("" to mapOf("id" to "title")),
-                listOf(TextNode("Moby-Dick"))
+            "title",
+            "http://purl.org/dc/elements/1.1/",
+            "en",
+            mapOf("" to mapOf("id" to "title")),
+            listOf(TextNode("Moby-Dick"))
         )
         val expectedTitleType = ElementNode(
-                "meta",
-                "http://www.idpf.org/2007/opf",
-                "en",
-                mapOf("" to mapOf("refines" to "#title", "property" to "title-type")),
-                listOf(TextNode("main"))
+            "meta",
+            "http://www.idpf.org/2007/opf",
+            "en",
+            mapOf("" to mapOf("refines" to "#title", "property" to "title-type")),
+            listOf(TextNode("main"))
         )
         val expectedAltScript = ElementNode(
-                "meta",
-                "http://www.idpf.org/2007/opf",
-                "fr",
-                mapOf("" to mapOf("refines" to "#title", "property" to "alternate-script"), XMLConstants.XML_NS_URI to mapOf("lang" to "fr")),
-                listOf(TextNode("Moby Dick"))
+            "meta",
+            "http://www.idpf.org/2007/opf",
+            "fr",
+            mapOf(
+                "" to mapOf("refines" to "#title", "property" to "alternate-script"),
+                XMLConstants.XML_NS_URI to mapOf("lang" to "fr")
+            ),
+            listOf(TextNode("Moby Dick"))
         )
         val expectedCreator = ElementNode(
-                "creator",
-                "http://purl.org/dc/elements/1.1/",
-                "en",
-                mapOf("" to mapOf("id" to "creator")),
-                listOf(TextNode("Herman Melville"))
+            "creator",
+            "http://purl.org/dc/elements/1.1/",
+            "en",
+            mapOf("" to mapOf("id" to "creator")),
+            listOf(TextNode("Herman Melville"))
         )
         val expectedMetadata = ElementNode(
-                "metadata",
-                "http://www.idpf.org/2007/opf",
-                "en",
-                mapOf(),
-                listOf(expectedTitle, expectedTitleType, expectedAltScript, expectedCreator)
+            "metadata",
+            "http://www.idpf.org/2007/opf",
+            "en",
+            mapOf(),
+            listOf(expectedTitle, expectedTitleType, expectedAltScript, expectedCreator)
         )
-        assertEquals(doc.name, "package")
-        assertEquals(doc.namespace, "http://www.idpf.org/2007/opf")
-        assertEquals(doc.getAttr("version"), "3.0")
+        assertEquals("package", doc.name)
+        assertEquals("http://www.idpf.org/2007/opf", doc.namespace)
+        assertEquals("3.0", doc.getAttr("version"))
+
         val metadata = doc.getFirst("metadata", "http://www.idpf.org/2007/opf") as ElementNode
-        assertEquals(metadata.name, "metadata")
-        assertEquals(metadata.namespace, "http://www.idpf.org/2007/opf")
-        assertEquals(metadata.attributes, expectedMetadata.attributes)
-        assertEquals(metadata.children.filterIsInstance<ElementNode>(), expectedMetadata.children)
+        assertEquals("metadata", metadata.name)
+        assertEquals("http://www.idpf.org/2007/opf", metadata.namespace)
+        assertEquals(expectedMetadata.attributes, metadata.attributes)
+        assertEquals(expectedMetadata.children, metadata.children.filterIsInstance<ElementNode>())
     }
 
     @Test
     fun testNamespaceAwareV2() {
         val doc = parseXmlString(metadatav2, true)
         val expectedTitle = ElementNode(
-                "title",
-                "http://purl.org/dc/elements/1.1/",
-                "",
-                mapOf(),
-                listOf(TextNode("La Maison Tellier"))
+            "title",
+            "http://purl.org/dc/elements/1.1/",
+            "",
+            mapOf(),
+            listOf(TextNode("La Maison Tellier"))
         )
         val expectedCreator = ElementNode(
-                "creator",
-                "http://purl.org/dc/elements/1.1/",
-                "",
-                mapOf("http://www.idpf.org/2007/opf" to mapOf("role" to "aut")),
-                listOf(TextNode("Guy de Maupassant"))
+            "creator",
+            "http://purl.org/dc/elements/1.1/",
+            "",
+            mapOf("http://www.idpf.org/2007/opf" to mapOf("role" to "aut")),
+            listOf(TextNode("Guy de Maupassant"))
         )
         val expectedIdentifier = ElementNode(
-                "identifier",
-                "http://purl.org/dc/elements/1.1/",
-                "",
-                mapOf("" to mapOf("id" to "pub-id")),
-                listOf(TextNode("urn:uuid:8A768A9F-5559-3BAA-84E4-D39A4D249D51"))
+            "identifier",
+            "http://purl.org/dc/elements/1.1/",
+            "",
+            mapOf("" to mapOf("id" to "pub-id")),
+            listOf(TextNode("urn:uuid:8A768A9F-5559-3BAA-84E4-D39A4D249D51"))
         )
         val expectedMetadata = ElementNode(
-                "metadata",
-                "http://www.idpf.org/2007/opf",
-                "",
-                mapOf(),
-                listOf(expectedTitle, expectedCreator, expectedIdentifier)
+            "metadata",
+            "http://www.idpf.org/2007/opf",
+            "",
+            mapOf(),
+            listOf(expectedTitle, expectedCreator, expectedIdentifier)
         )
-        assertEquals(doc.name, "package")
-        assertEquals(doc.namespace,"http://www.idpf.org/2007/opf")
-        assertEquals(doc.getAttr("version"), "2.0")
+        assertEquals("package", doc.name)
+        assertEquals("http://www.idpf.org/2007/opf", doc.namespace)
+        assertEquals("2.0", doc.getAttr("version"))
+
         val metadata = doc.getFirst("metadata", "http://www.idpf.org/2007/opf") as ElementNode
-        assertEquals(metadata.name,"metadata")
-        assertEquals(metadata.namespace, "http://www.idpf.org/2007/opf")
-        assertEquals(metadata.attributes, expectedMetadata.attributes)
-        assertEquals(metadata.children.filterIsInstance<ElementNode>(), expectedMetadata.children)
+        assertEquals("metadata", metadata.name)
+        assertEquals("http://www.idpf.org/2007/opf", metadata.namespace)
+        assertEquals(expectedMetadata.attributes, metadata.attributes)
+        assertEquals(expectedMetadata.children, metadata.children.filterIsInstance<ElementNode>())
     }
 
-    @Test(expected= XmlPullParserException::class)
+    @Test(expected = XmlPullParserException::class)
     fun `An input with multiple roots raises an exception`() {
         parseXmlString(metadatav2 + metadatav3)
     }
 
-    @Test(expected= XmlPullParserException::class)
+    @Test(expected = XmlPullParserException::class)
     fun `An input with no root raises an exception`() {
         parseXmlString("   \n    \n")
     }
@@ -199,7 +203,7 @@ class ElementNodeTest {
     @Test
     fun testCollectText() {
         val doc = parseXmlString(
-                """    
+            """    
             <html>
                 <body>
                     <p>Premier paragraphe</p>
@@ -213,15 +217,16 @@ class ElementNodeTest {
                 </body>
             </html>
             
-        """)
+        """
+        )
         val text = doc.collectText().replace("\\s+".toRegex(), " ").trim()
-        assertEquals(text, "Premier paragraphe Un plus long paragraphe Ici un titre")
+        assertEquals("Premier paragraphe Un plus long paragraphe Ici un titre", text)
     }
 
     @Test
     fun testCollect() {
         val doc = parseXmlString(
-        """    
+            """    
             <html>
                 <body>
                     <section>
@@ -236,8 +241,9 @@ class ElementNodeTest {
                 </body>
             </html>
             
-        """)
+        """
+        )
         val navNode = ElementNode("nav", "")
-        assertEquals(doc.collect("nav", ""), List(3) { i -> navNode })
+        assertEquals(List(3) { i -> navNode }, doc.collect("nav", ""))
     }
 }

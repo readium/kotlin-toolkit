@@ -11,13 +11,14 @@ package org.readium.r2.shared
 
 import android.net.Uri
 import java.net.URI
+import java.net.URLDecoder
 
 fun getAbsolute(href: String, base: String): String {
     return try {
         val baseURI = URI.create(base)
         val relative = baseURI.resolve(href)
         relative.toString()
-    }catch (e:IllegalArgumentException){
+    } catch (e:IllegalArgumentException) {
         val hrefUri = Uri.parse(href)
         if (hrefUri.isAbsolute){
             href
@@ -27,27 +28,25 @@ fun getAbsolute(href: String, base: String): String {
     }
 }
 
-
-internal fun normalize(base: String, in_href: String?) : String {
-    if (in_href == null || in_href.isEmpty()) {
+fun normalize(base: String, href: String?): String {
+    if (href.isNullOrEmpty()) {
         return ""
     }
-    val hrefComponents = in_href.split( "/").filter { it.isNotEmpty() }
-    val baseComponents = base.split( "/").filter { it.isNotEmpty() }
-    baseComponents.dropLast(1)
 
-    val replacementsNumber = hrefComponents.filter { it == ".." }.count()
-    var normalizedComponents = hrefComponents.filter { it != ".." }
-    for (e in 0 until replacementsNumber) {
-        baseComponents.dropLast(1)
+    val resolved = try { // href is returned by resolve if it is absolute
+        val absoluteUri = URI.create(base).resolve(href)
+        val absoluteString = absoluteUri.toString() // this is a percent-decoded
+        val addSlash = absoluteUri.scheme == null && !absoluteString.startsWith("/")
+        (if (addSlash) "/" else "") + absoluteString
+    } catch (e: IllegalArgumentException){ // one of the URIs is ill-formed
+        val hrefUri = Uri.parse(href) // Android Uri is more forgiving
+        // Let's try to return something
+        if (hrefUri.isAbsolute) {
+            href
+        } else if (base.startsWith("/")) {
+            base + href
+        } else
+            "/" + base + href
     }
-    normalizedComponents = baseComponents + normalizedComponents
-    var normalizedString = ""
-    for (component in normalizedComponents) {
-        normalizedString += "/$component"
-    }
-    return normalizedString
+    return URLDecoder.decode(resolved, "UTF-8")
 }
-
-
-
