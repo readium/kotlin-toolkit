@@ -25,8 +25,25 @@ import kotlin.coroutines.CoroutineContext
 
 open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activity, MediaPlayerCallback, VisualNavigator {
 
-    override val currentLocation: Locator?
-        get() = null
+    override val currentLocation: Locator? get() =
+        publication.readingOrder[currentResource].let { resource ->
+            val progression = mediaPlayer
+                ?.let { it.currentPosition / it.duration }
+                ?: 0.0
+
+            // FIXME: Add totalProgression
+            Locator(
+                href = resource.href,
+                type = resource.type ?: "audio/*",
+                title = resource.title,
+                locations = Locator.Locations(
+                    fragments = listOf(
+                        "t=${mediaPlayer?.currentPosition?.toInt() ?: 0}"
+                    ),
+                    progression = progression
+                )
+            )
+        }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
