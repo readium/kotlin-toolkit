@@ -135,12 +135,12 @@ class XmlParserTest {
             mapOf(),
             listOf(expectedTitle, expectedTitleType, expectedAltScript, expectedCreator)
         )
-        assertEquals( "package", doc.name)
+        assertEquals("package", doc.name)
         assertEquals("http://www.idpf.org/2007/opf", doc.namespace)
         assertEquals("3.0", doc.getAttr("version"))
 
         val metadata = doc.getFirst("metadata", "http://www.idpf.org/2007/opf") as ElementNode
-        assertEquals( "metadata", metadata.name)
+        assertEquals("metadata", metadata.name)
         assertEquals("http://www.idpf.org/2007/opf", metadata.namespace)
         assertEquals(expectedMetadata.attributes, metadata.attributes)
         assertEquals(expectedMetadata.children, metadata.children.filterIsInstance<ElementNode>())
@@ -185,7 +185,7 @@ class XmlParserTest {
         assertEquals("metadata", metadata.name)
         assertEquals("http://www.idpf.org/2007/opf", metadata.namespace)
         assertEquals(expectedMetadata.attributes, metadata.attributes)
-        assertEquals( expectedMetadata.children, metadata.children.filterIsInstance<ElementNode>())
+        assertEquals(expectedMetadata.children, metadata.children.filterIsInstance<ElementNode>())
     }
 
     @Test(expected = XmlPullParserException::class)

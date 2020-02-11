@@ -18,7 +18,7 @@ fun getAbsolute(href: String, base: String): String {
         val baseURI = URI.create(base)
         val relative = baseURI.resolve(href)
         relative.toString()
-    } catch (e:IllegalArgumentException){
+    } catch (e:IllegalArgumentException) {
         val hrefUri = Uri.parse(href)
         if (hrefUri.isAbsolute){
             href
@@ -29,8 +29,11 @@ fun getAbsolute(href: String, base: String): String {
 }
 
 fun normalize(base: String, href: String?): String {
-    val resolved = if (href.isNullOrEmpty()) ""
-    else try { // href is returned by resolve if it is absolute
+    if (href.isNullOrEmpty()) {
+        return ""
+    }
+
+    val resolved = try { // href is returned by resolve if it is absolute
         val absoluteUri = URI.create(base).resolve(href)
         val absoluteString = absoluteUri.toString() // this is a percent-decoded
         val addSlash = absoluteUri.scheme == null && !absoluteString.startsWith("/")
@@ -47,6 +50,3 @@ fun normalize(base: String, href: String?): String {
     }
     return URLDecoder.decode(resolved, "UTF-8")
 }
-
-
-
