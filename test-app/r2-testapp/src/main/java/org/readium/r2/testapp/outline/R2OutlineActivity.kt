@@ -293,6 +293,8 @@ class R2OutlineActivity : AppCompatActivity() {
         return children
     }
 
+    private val Link.outlineTitle: String
+        get() = title ?: href
 
 
     /*
@@ -374,12 +376,12 @@ class R2OutlineActivity : AppCompatActivity() {
             val item = getItem(position)
             if (item is Pair<*, *>) {
                 item as Pair<Int, Link>
-                viewHolder.navigationTextView?.text = item.second.title
+                viewHolder.navigationTextView?.text = item.second.outlineTitle
                 val parameter = viewHolder.indentationView?.layoutParams
                 parameter?.width = item.first * 50
             } else {
                 item as Link
-                viewHolder.navigationTextView?.text = item.title
+                viewHolder.navigationTextView?.text = item.outlineTitle
             }
             return view as View
         }
@@ -531,12 +533,12 @@ class R2OutlineActivity : AppCompatActivity() {
         private fun getBookSpineItem(href: String): String? {
             for (link in publication.tableOfContents) {
                 if (link.href == href) {
-                    return link.title
+                    return link.outlineTitle
                 }
             }
             for (link in publication.readingOrder) {
                 if (link.href == href) {
-                    return link.title
+                    return link.outlineTitle
                 }
             }
             return null
@@ -624,12 +626,12 @@ class R2OutlineActivity : AppCompatActivity() {
         private fun getHighlightSpineItem(href: String): String? {
             for (link in publication.tableOfContents) {
                 if (link.href == href) {
-                    return link.title
+                    return link.outlineTitle
                 }
             }
             for (link in publication.readingOrder) {
                 if (link.href == href) {
-                    return link.title
+                    return link.outlineTitle
                 }
             }
             return null

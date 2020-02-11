@@ -40,7 +40,7 @@ import kotlin.coroutines.CoroutineContext
 class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
 
     override fun locationDidChange(navigator: Navigator?, locator: Locator) {
-        Timber.d("locationDidChange $locator")
+        Timber.d("locationDidChange position ${locator.locations.position ?: 0}/${publication.positionList.size} $locator")
         booksDB.books.saveProgression(locator, bookId)
     }
 
