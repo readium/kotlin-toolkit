@@ -20,7 +20,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
 
 internal data class EpubLink(
     val href: String,
-    val rel: List<String>,
+    val rels: List<String>,
     val mediaType: String?, val refines: String?,
     val properties: List<String> = emptyList()
 )
@@ -32,8 +32,10 @@ internal data class EpubMetadata(
 )
 
 internal class MetadataParser(private val epubVersion: Double, private val prefixMap: Map<String, String>) {
+
     fun parse(document: ElementNode, filePath: String): EpubMetadata? {
-        val metadata = document.getFirst("metadata", Namespaces.Opf) ?: return null
+        val metadata = document.getFirst("metadata", Namespaces.OPF)
+            ?: return null
         val (metas, links) = parseElements(metadata, filePath)
         val (globalMetas, refineMetas) = resolveMetaHierarchy(metas).partition { it.refines == null }
         val globalCollection = globalMetas.groupBy(MetadataItem::property)
@@ -48,12 +50,12 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
         val links: MutableList<EpubLink> = mutableListOf()
         for (e in metadataElement.getAll()) {
             when {
-                e.namespace == Namespaces.Dc -> parseDcElement(e)?.let { metas.add(it) }
-                e.namespace == Namespaces.Opf && e.name == "meta" -> parseMetaElement(e)?.let { metas.add(it) }
-                e.namespace == Namespaces.Opf && e.name == "link" -> parseLinkElement(
-                    e,
-                    filePath
-                )?.let { links.add(it) }
+                e.namespace == Namespaces.DC ->
+                    parseDcElement(e)?.let { metas.add(it) }
+                e.namespace == Namespaces.OPF && e.name == "meta" ->
+                    parseMetaElement(e)?.let { metas.add(it) }
+                e.namespace == Namespaces.OPF && e.name == "link" ->
+                    parseLinkElement(e, filePath)?.let { links.add(it) }
             }
         }
         return Pair(metas, links)
@@ -72,13 +74,18 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
 
     private fun parseMetaElement(element: ElementNode): MetadataItem? {
         return if (epubVersion < 3.0) {
-            val name = element.getAttr("name") ?: return null
-            val content = element.getAttr("content") ?: return null
+            val name = element.getAttr("name")
+                ?: return null
+            val content = element.getAttr("content")
+                ?: return null
             MetadataItem(name, content, element.lang, null, null, element.id)
         } else {
-            val propName = element.getAttr("property")?.trim()?.ifEmpty { null } ?: return null
-            val propValue = element.text?.trim()?.ifEmpty { null } ?: return null
-            val resolvedProp = resolveProperty(propName, prefixMap, DEFAULT_VOCAB.META) ?: return null
+            val propName = element.getAttr("property")?.trim()?.ifEmpty { null }
+                ?: return null
+            val propValue = element.text?.trim()?.ifEmpty { null }
+                ?: return null
+            val resolvedProp = resolveProperty(propName, prefixMap, DEFAULT_VOCAB.META)
+                ?: return null
             val resolvedScheme =
                 element.getAttr("scheme")?.trim()?.ifEmpty { null }?.let { resolveProperty(it, prefixMap) }
             val refines = element.getAttr("refines")?.removePrefix("#")
@@ -88,7 +95,7 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
 
     private fun parseDcElement(element: ElementNode): MetadataItem? {
         val propValue = element.text?.trim()?.ifEmpty { null } ?: return null
-        val propName = Vocabularies.Dcterms + element.name
+        val propName = Vocabularies.DCTERMS + element.name
         return when (element.name) {
             "creator", "contributor", "publisher" -> contributorWithLegacyAttr(element, propName, propValue)
             "date" -> dateWithLegacyAttr(element, propName, propValue)
@@ -97,19 +104,19 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
     }
 
     private fun contributorWithLegacyAttr(element: ElementNode, name: String, value: String): MetadataItem {
-        val fileAs = element.getAttrNs("file-as", Namespaces.Opf)?.let {
-            MetadataItem(Vocabularies.Meta + "file-as", value = it, lang = element.lang, id = element.id)
+        val fileAs = element.getAttrNs("file-as", Namespaces.OPF)?.let {
+            MetadataItem(Vocabularies.META + "file-as", value = it, lang = element.lang, id = element.id)
         }
-        val role = element.getAttrNs("role", Namespaces.Opf)?.let {
-            MetadataItem(Vocabularies.Meta + "role", it, lang = element.lang, id = element.id)
+        val role = element.getAttrNs("role", Namespaces.OPF)?.let {
+            MetadataItem(Vocabularies.META + "role", it, lang = element.lang, id = element.id)
         }
         val children = listOfNotNull(fileAs, role).groupBy(MetadataItem::property)
         return MetadataItem(name, value, lang = element.lang, id = element.id, children = children)
     }
 
     private fun dateWithLegacyAttr(element: ElementNode, name: String, value: String): MetadataItem? {
-        val eventAttr = element.getAttrNs("event", Namespaces.Opf)
-        val propName = if (eventAttr == "modification") Vocabularies.Dcterms + "modified" else name
+        val eventAttr = element.getAttrNs("event", Namespaces.OPF)
+        val propName = if (eventAttr == "modification") Vocabularies.DCTERMS + "modified" else name
         return MetadataItem(propName, value, lang = element.lang, id = element.id)
     }
 
@@ -130,7 +137,7 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
 }
 
 internal open class MetadataAdapter(val epubVersion: Double, val items: Map<String, List<MetadataItem>>) {
-    fun duration() = firstValue(Vocabularies.Media + "duration")?.let { ClockValueParser.parse(it) }
+    fun duration() = firstValue(Vocabularies.MEDIA + "duration")?.let { ClockValueParser.parse(it) }
 
     protected fun firstValue(property: String) = items[property]?.firstOrNull()?.value
 }
@@ -143,11 +150,11 @@ internal class PubMetadataAdapter(
     val displayOptions: Map<String, String>
 ) : MetadataAdapter(epubVersion, items) {
 
-    private val defaultLang = firstValue(Vocabularies.Dcterms + "language")
+    private val defaultLang = firstValue(Vocabularies.DCTERMS + "language")
 
-    private val titles = items[Vocabularies.Dcterms + "title"]?.map { it.toTitle(defaultLang) }.orEmpty()
+    private val titles = items[Vocabularies.DCTERMS + "title"]?.map { it.toTitle(defaultLang) }.orEmpty()
 
-    private val maintitle = titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
+    private val mainTitle = titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
 
     private val series: List<Collection>
 
@@ -164,7 +171,7 @@ internal class PubMetadataAdapter(
             collections = emptyList()
 
         } else {
-            val allCollections = items[Vocabularies.Meta + "belongs-to-collection"]
+            val allCollections = items[Vocabularies.META + "belongs-to-collection"]
                 .orEmpty().map { it.toCollection(defaultLang) }
             val (seriesMeta, collectionsMeta) = allCollections.partition { it.first == "series" }
             series = seriesMeta.map(Pair<String?, Collection>::second)
@@ -175,13 +182,13 @@ internal class PubMetadataAdapter(
     private val allContributors: Map<String?, List<Contributor>>
 
     init {
-        val creators = items[Vocabularies.Dcterms + "creator"].orEmpty()
+        val creators = items[Vocabularies.DCTERMS + "creator"].orEmpty()
             .map { it.toContributor(defaultLang, "aut") }
-        val publishers = items[Vocabularies.Dcterms + "publisher"].orEmpty()
+        val publishers = items[Vocabularies.DCTERMS + "publisher"].orEmpty()
             .map { it.toContributor(defaultLang, "pbl") }
-        val others = items[Vocabularies.Dcterms + "contributor"].orEmpty()
+        val others = items[Vocabularies.DCTERMS + "contributor"].orEmpty()
             .map { it.toContributor(defaultLang) }
-        val narrators = items[Vocabularies.Media + "narrator"].orEmpty()
+        val narrators = items[Vocabularies.MEDIA + "narrator"].orEmpty()
             .map { it.toContributor(defaultLang, "nrt") }
         val contributors = creators + publishers + narrators + others
         val knownRoles = setOf("aut", "trl", "edt", "pbl", "art", "ill", "clr", "nrt")
@@ -216,16 +223,16 @@ internal class PubMetadataAdapter(
     )
 
     fun identifier(): String? {
-        val identifiers = items[Vocabularies.Dcterms + "identifier"]
+        val identifiers = items[Vocabularies.DCTERMS + "identifier"]
             ?.associate { Pair(it.property, it.value) }.orEmpty()
         return uniqueIdentifierId?.let { identifiers[it] } ?: identifiers.values.firstOrNull()
     }
 
-    fun published() = firstValue(Vocabularies.Dcterms + "date")?.toDateOrNull()
+    fun published() = firstValue(Vocabularies.DCTERMS + "date")?.toDateOrNull()
 
-    fun modified() = firstValue(Vocabularies.Dcterms + "modified")?.toDateOrNull()
+    fun modified() = firstValue(Vocabularies.DCTERMS + "modified")?.toDateOrNull()
 
-    fun description() = firstValue(Vocabularies.Dcterms + "description")
+    fun description() = firstValue(Vocabularies.DCTERMS + "description")
 
     fun cover() = firstValue("cover")
 
@@ -233,24 +240,24 @@ internal class PubMetadataAdapter(
 
     fun belongsToSeries() = series
 
-    fun languages() = items[Vocabularies.Dcterms + "language"]?.map(MetadataItem::value).orEmpty()
+    fun languages() = items[Vocabularies.DCTERMS + "language"]?.map(MetadataItem::value).orEmpty()
 
-    fun title() = maintitle?.value ?: LocalizedString()
+    fun title() = mainTitle?.value ?: LocalizedString()
 
-    fun sortAs() = if (epubVersion < 3.0) firstValue("calibre:title_sort") else maintitle?.fileAs
+    fun sortAs() = if (epubVersion < 3.0) firstValue("calibre:title_sort") else mainTitle?.fileAs
 
     fun subtitle() = titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()?.value
 
     fun contributors(role: String?) = allContributors[role].orEmpty()
 
     private fun presentation(): Presentation {
-        val flowProp = firstValue(Vocabularies.Rendition + "flow")
-        val spreadProp = firstValue(Vocabularies.Rendition + "spread")
-        val orientationProp = firstValue(Vocabularies.Rendition + "orientation")
+        val flowProp = firstValue(Vocabularies.RENDITION + "flow")
+        val spreadProp = firstValue(Vocabularies.RENDITION + "spread")
+        val orientationProp = firstValue(Vocabularies.RENDITION + "orientation")
         val layoutProp =
             if (epubVersion < 3.0)
                 if (displayOptions["fixed-layout"] == "true") "pre-paginated" else "reflowable"
-            else firstValue(Vocabularies.Rendition + "layout")
+            else firstValue(Vocabularies.RENDITION + "layout")
 
         val (overflow, continuous) = when (flowProp) {
             "paginated" -> Pair(Presentation.Overflow.PAGINATED, false)
@@ -283,7 +290,7 @@ internal class PubMetadataAdapter(
     }
 
     fun subjects(): List<Subject> {
-        val subjects = items[Vocabularies.Dcterms + "subject"].orEmpty()
+        val subjects = items[Vocabularies.DCTERMS + "subject"].orEmpty()
         val parsedSubjects = subjects.map { it.toSubject(defaultLang) }
         val hasToSplit = parsedSubjects.size == 1 && parsedSubjects.first().run {
             localizedName.translations.size == 1 && code == null && scheme == null && sortAs == null
@@ -305,9 +312,9 @@ internal class PubMetadataAdapter(
         val dcterms = listOf(
             "identifier", "language", "title", "date", "modified", "description",
             "duration", "creator", "publisher", "contributor"
-        ).map { Vocabularies.Dcterms + it }
-        val media = listOf("narrator", "duration").map { Vocabularies.Media + it }
-        val rendition = listOf("flow", "spread", "orientation", "layout").map { Vocabularies.Rendition + it }
+        ).map { Vocabularies.DCTERMS + it }
+        val media = listOf("narrator", "duration").map { Vocabularies.MEDIA + it }
+        val rendition = listOf("flow", "spread", "orientation", "layout").map { Vocabularies.RENDITION + it }
         val usedProperties: List<String> = dcterms + media + rendition
 
         val otherMetadata: MutableMap<String, Any> = mutableMapOf()
@@ -328,20 +335,20 @@ internal data class MetadataItem(
 ) {
 
     fun toSubject(defaultLang: String?): Subject {
-        require(property == Vocabularies.Dcterms + "subject")
+        require(property == Vocabularies.DCTERMS + "subject")
         val values = localizedString(defaultLang)
         return Subject(values, fileAs, authority, term)
     }
 
     fun toTitle(defaultLang: String?): Title {
-        require(property == Vocabularies.Dcterms + "title")
+        require(property == Vocabularies.DCTERMS + "title")
         val values = localizedString(defaultLang)
         return Title(values, fileAs, titleType, displaySeq)
     }
 
     fun toContributor(defaultLang: String?, defaultRole: String? = null): Contributor {
-        require(property in listOf("creator", "contributor", "publisher").map { Vocabularies.Dcterms + it } +
-                (Vocabularies.Media + "narrator") + (Vocabularies.Meta + "belongs-to-collection"))
+        require(property in listOf("creator", "contributor", "publisher").map { Vocabularies.DCTERMS + it } +
+                (Vocabularies.MEDIA + "narrator") + (Vocabularies.META + "belongs-to-collection"))
         val names = localizedString(defaultLang)
         return Contributor(names, roles = roles(defaultRole),
             sortAs = fileAs, identifier = identifier, position = groupPosition)
@@ -359,31 +366,31 @@ internal data class MetadataItem(
     }
 
     private val fileAs
-        get() = firstValue(Vocabularies.Meta + "file-as")
+        get() = firstValue(Vocabularies.META + "file-as")
 
     private val titleType
-        get() = firstValue(Vocabularies.Meta + "title-type")
+        get() = firstValue(Vocabularies.META + "title-type")
 
     private val displaySeq
-        get() = firstValue(Vocabularies.Meta + "display-seq")?.toIntOrNull()
+        get() = firstValue(Vocabularies.META + "display-seq")?.toIntOrNull()
 
     private val authority
-        get() = firstValue(Vocabularies.Meta + "authority")
+        get() = firstValue(Vocabularies.META + "authority")
 
     private val term
-        get() = firstValue(Vocabularies.Meta + "term")
+        get() = firstValue(Vocabularies.META + "term")
 
     private val alternateScript
-        get() = children[Vocabularies.Meta + "alternate-script"]?.associate { Pair(it.lang, it.value) }.orEmpty()
+        get() = children[Vocabularies.META + "alternate-script"]?.associate { Pair(it.lang, it.value) }.orEmpty()
 
     private val collectionType
-        get() = firstValue(Vocabularies.Meta + "collection-type")
+        get() = firstValue(Vocabularies.META + "collection-type")
 
     private val groupPosition
-        get() = firstValue(Vocabularies.Meta + "group-position")?.toDoubleOrNull()
+        get() = firstValue(Vocabularies.META + "group-position")?.toDoubleOrNull()
 
     private val identifier
-        get() = firstValue(Vocabularies.Dcterms + "identifier")
+        get() = firstValue(Vocabularies.DCTERMS + "identifier")
 
     private fun localizedString(defaultLang: String?): LocalizedString {
         val values = mapOf(lang to value).plus(alternateScript)
@@ -392,7 +399,7 @@ internal data class MetadataItem(
     }
 
     private fun roles(default: String?): Set<String> {
-        val roles = allValues(Vocabularies.Meta + "role")
+        val roles = allValues(Vocabularies.META + "role")
         return if (roles.isEmpty() && default != null) setOf(default) else roles.toSet()
     }
 

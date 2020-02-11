@@ -12,27 +12,27 @@ package org.readium.r2.streamer.parser.epub
 import timber.log.Timber
 
 internal val PACKAGE_RESERVED_PREFIXES = mapOf(
-    "dcterms" to Vocabularies.Dcterms,
-    "media" to Vocabularies.Media,
-    "rendition" to Vocabularies.Rendition,
-    "ally" to Vocabularies.Ally,
-    "marc" to Vocabularies.Marc,
-    "onix" to Vocabularies.Onix,
-    "schema" to Vocabularies.Schema,
-    "xsd" to Vocabularies.Xsd
+    "dcterms" to Vocabularies.DCTERMS,
+    "media" to Vocabularies.MEDIA,
+    "rendition" to Vocabularies.RENDITION,
+    "ally" to Vocabularies.ALLY,
+    "marc" to Vocabularies.MARC,
+    "onix" to Vocabularies.ONIX,
+    "schema" to Vocabularies.SCHEMA,
+    "xsd" to Vocabularies.XSD
 )
 
 internal val CONTENT_RESERVED_PREFIXES = mapOf(
-    "msv" to Vocabularies.Msv,
-    "prism" to Vocabularies.Prism
+    "msv" to Vocabularies.MSV,
+    "prism" to Vocabularies.PRISM
 )
 
 internal enum class DEFAULT_VOCAB(val iri: String) {
-    META(Vocabularies.Meta),
-    LINK(Vocabularies.Link),
-    ITEM(Vocabularies.Item),
-    ITEMREF(Vocabularies.Itemref),
-    TYPE(Vocabularies.Type)
+    META(Vocabularies.META),
+    LINK(Vocabularies.LINK),
+    ITEM(Vocabularies.ITEM),
+    ITEMREF(Vocabularies.ITEMREF),
+    TYPE(Vocabularies.TYPE)
 }
 
 internal fun resolveProperty(

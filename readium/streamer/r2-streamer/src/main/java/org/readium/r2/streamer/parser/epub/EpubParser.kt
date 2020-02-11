@@ -9,7 +9,7 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.readium.r2.shared.*
+import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.parser.xml.ElementNode
@@ -22,11 +22,16 @@ import org.readium.r2.streamer.container.DirectoryContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.shared.normalize
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.encryption.Encryption
 import timber.log.Timber
 import java.io.File
 
 object EPUBConstant {
+
+    // FIXME: To refactor into r2-shared's ContentType
     const val mimetype: String = "application/epub+zip"
+
     private val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
         ReadiumCSSName.ref("hyphens") to false,
         ReadiumCSSName.ref("ligatures") to false
@@ -71,18 +76,6 @@ object EPUBConstant {
 
 
 class EpubParser : PublicationParser {
-    private fun generateContainerFrom(path: String): Container {
-        if (!File(path).exists())
-            throw ContainerError.missingFile(path)
-
-        val container = if (File(path).isDirectory) {
-            DirectoryContainer(path = path, mimetype = EPUBConstant.mimetype)
-        } else {
-            ArchiveContainer(path = path, mimetype = EPUBConstant.mimetype)
-        }
-        container.drm = if (container.contains(relativePath = Paths.lcpl)) DRM(DRM.Brand.lcp) else null
-        return container
-    }
 
     override fun parse(fileAtPath: String, title: String): PubBox? {
         val container = try {
@@ -92,76 +85,64 @@ class EpubParser : PublicationParser {
             return null
         }
 
-        val containerXml = parseXmlDocument(Paths.container, container) ?: return null
-        container.rootFile.mimetype = EPUBConstant.mimetype
-        container.rootFile.rootFilePath = getRootFilePath(containerXml)
+        val containerXml = parseXmlDocument(Paths.CONTAINER, container)
+            ?: return null
+        val opfPath = getRootFilePath(containerXml)
+        val packageXml = parseXmlDocument(opfPath, container)
+            ?: return null
+        val packageDocument = PackageDocument.parse(packageXml, opfPath)
+            ?: return null
 
-        val encryptionData =
-            if (container.contains(Paths.encryption))
-                parseXmlDocument(Paths.encryption, container)?.let {
-                    EncryptionParser.parse(
-                        it,
-                        container.drm
-                    )
-                }.orEmpty()
-            else
-                emptyMap()
+        container.rootFile.apply {
+            mimetype = EPUBConstant.mimetype
+            rootFilePath = opfPath
+        }
 
-        val packageXml = parseXmlDocument(container.rootFile.rootFilePath, container) ?: return null
-        val packageDocument = PackageDocument.parse(packageXml, container.rootFile.rootFilePath) ?: return null
+        val publication = EpubAdapter(
+                packageDocument = packageDocument,
+                navigationData = parseNavigationData(packageDocument, container),
+                encryptionData = parseEncryptionData(container),
+                displayOptions = parseDisplayOptions(container)
+            ).toPublication().apply {
+                internalData["type"] = "epub"
+                internalData["rootfile"] = opfPath
 
-        val navigationData = if (packageDocument.epubVersion < 3.0) {
-            val ncxItem = packageDocument.manifest.firstOrNull { it.mediaType == Mimetypes.Ncx }
-            ncxItem?.let {
-                val ncxPath = normalize(packageDocument.path, ncxItem.href)
-                parseXmlDocument(ncxPath, container)?.let { NcxParser.parse(it, ncxPath) }
+                // This might need to be moved as it's not really about parsing the EPUB but it
+                // sets values needed (in UserSettings & ContentFilter)
+                setLayoutStyle()
             }
-        } else {
-            val navItem = packageDocument.manifest.firstOrNull { it.properties.contains(Vocabularies.Item + "nav") }
-            navItem?.let {
-                val navPath = normalize(packageDocument.path, navItem.href)
-                parseXmlDocument(navPath, container)?.let { NavigationDocumentParser.parse(it, navPath) }
-            }
-        }.orEmpty()
-
-        val displayOptionsXml = parseXmlDocument(Paths.koboDisplayOptions, container)
-            ?: parseXmlDocument(Paths.ibooksDIsplayOptions, container)
-
-        val displayOptions = displayOptionsXml?.getFirst("platform", "")
-            ?.get("option", "")
-            ?.mapNotNull { element ->
-                val optName = element.getAttr("name")
-                val optVal = element.text
-                if (optName != null && optVal != null) Pair(optName, optVal) else null
-            }
-            ?.toMap().orEmpty()
-
-        val publication = EpubAdapter(packageDocument, navigationData, encryptionData, displayOptions).toPublication()
-        publication.internalData["type"] = "epub"
-        publication.internalData["rootfile"] = container.rootFile.rootFilePath
-
-        /*
-         * This might need to be moved as it's not really about parsing the Epub
-         * but it sets values needed (in UserSettings & ContentFilter)
-         */
-        setLayoutStyle(publication)
 
         return PubBox(publication, container)
     }
 
+    private fun generateContainerFrom(path: String): Container {
+        if (!File(path).exists())
+            throw ContainerError.missingFile(path)
+
+        val container = if (File(path).isDirectory) {
+            DirectoryContainer(path = path, mimetype = EPUBConstant.mimetype)
+        } else {
+            ArchiveContainer(path = path, mimetype = EPUBConstant.mimetype)
+        }
+        container.drm =
+            if (container.contains(relativePath = Paths.LCPL)) DRM(DRM.Brand.lcp)
+            else null
+        return container
+    }
+
     private fun getRootFilePath(document: ElementNode): String =
-        document.getFirst("rootfiles", Namespaces.Opc)
-            ?.getFirst("rootfile", Namespaces.Opc)
+        document.getFirst("rootfiles", Namespaces.OPC)
+            ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")
             ?: "content.opf"
 
-    private fun setLayoutStyle(publication: Publication) {
-        publication.cssStyle = publication.contentLayout.cssId
-        EPUBConstant.userSettingsUIPreset[publication.contentLayout]?.let {
-            if (publication.type == Publication.TYPE.WEBPUB) {
-                publication.userSettingsUIPreset = EPUBConstant.forceScrollPreset
+    private fun Publication.setLayoutStyle() {
+        cssStyle = contentLayout.cssId
+        EPUBConstant.userSettingsUIPreset[contentLayout]?.let {
+            if (type == Publication.TYPE.WEBPUB) {
+                userSettingsUIPreset = EPUBConstant.forceScrollPreset
             } else {
-                publication.userSettingsUIPreset = it
+                userSettingsUIPreset = it
             }
         }
     }
@@ -178,6 +159,44 @@ class EpubParser : PublicationParser {
         } catch (e: Exception) {
             null
         }
+    }
+
+    private fun parseEncryptionData(container: Container): Map<String, Encryption> =
+        if (container.contains(Paths.ENCRYPTION)) {
+            parseXmlDocument(Paths.ENCRYPTION, container)?.let {
+                EncryptionParser.parse(it, container.drm)
+            }.orEmpty()
+        } else {
+            emptyMap()
+        }
+
+    private fun parseNavigationData(packageDocument: PackageDocument, container: Container): Map<String, List<Link>> =
+        if (packageDocument.epubVersion < 3.0) {
+            val ncxItem = packageDocument.manifest.firstOrNull { it.mediaType == Mimetypes.NCX }
+            ncxItem?.let {
+                val ncxPath = normalize(packageDocument.path, ncxItem.href)
+                parseXmlDocument(ncxPath, container)?.let { NcxParser.parse(it, ncxPath) }
+            }
+        } else {
+            val navItem = packageDocument.manifest.firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
+            navItem?.let {
+                val navPath = normalize(packageDocument.path, navItem.href)
+                parseXmlDocument(navPath, container)?.let { NavigationDocumentParser.parse(it, navPath) }
+            }
+        }.orEmpty()
+
+    private fun parseDisplayOptions(container: Container): Map<String, String> {
+        val displayOptionsXml = parseXmlDocument(Paths.KOBO_DISPLAY_OPTIONS, container)
+            ?: parseXmlDocument(Paths.IBOOKS_DISPLAY_OPTIONS, container)
+
+        return displayOptionsXml?.getFirst("platform", "")
+            ?.get("option", "")
+            ?.mapNotNull { element ->
+                val optName = element.getAttr("name")
+                val optVal = element.text
+                if (optName != null && optVal != null) Pair(optName, optVal) else null
+            }
+            ?.toMap().orEmpty()
     }
 
     @Deprecated("This is done automatically in [parse], you can remove the call to [fillEncryption]", ReplaceWith(""))

@@ -16,11 +16,17 @@ import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.normalize
 
+/**
+ * Creates a [Publication] model from an EPUB package's document.
+ *
+ * @param displayOptions iBooks Display Options XML file to use as a fallback for the metadata.
+ *        See https://github.com/readium/architecture/blob/master/streamer/parser/metadata.md#epub-2x-9
+ */
 internal class EpubAdapter(
     private val packageDocument: PackageDocument,
     private val navigationData: Map<String, List<Link>> = emptyMap(),
     private val encryptionData: Map<String, Encryption> = emptyMap(),
-    private val displayOptions: Map<String, String> = emptyMap()
+    displayOptions: Map<String, String> = emptyMap()
 ) {
     private val epubVersion = packageDocument.epubVersion
     private val links = packageDocument.metadata.links
@@ -39,7 +45,9 @@ internal class EpubAdapter(
         .mapValues { MetadataAdapter(epubVersion, it.value) }
 
     @Suppress("Unchecked_cast")
-    private val itemById = manifest.filter { it.id != null }.associateBy(Item::id) as Map<String, Item>
+    private val itemById = manifest
+        .filter { it.id != null }
+        .associateBy(Item::id) as Map<String, Item>
 
     private val itemrefByIdref = spine.itemrefs.associateBy(Itemref::idref)
 
@@ -74,16 +82,16 @@ internal class EpubAdapter(
 
     private fun mapEpubLink(link: EpubLink): Link? {
         val contains: MutableList<String> = mutableListOf()
-        if (link.rel.contains(Vocabularies.Link + "record")) {
-            if (link.properties.contains(Vocabularies.Link + "onix"))
+        if (link.rels.contains(Vocabularies.LINK + "record")) {
+            if (link.properties.contains(Vocabularies.LINK + "onix"))
                 contains.add("onix")
-            if (link.properties.contains(Vocabularies.Link + "xmp"))
+            if (link.properties.contains(Vocabularies.LINK + "xmp"))
                 contains.add("xmp")
         }
         return Link(
             href = link.href,
             type = link.mediaType,
-            rels = link.rel,
+            rels = link.rels,
             properties = Properties(mapOf("contains" to contains))
         )
     }
@@ -173,13 +181,13 @@ internal class EpubAdapter(
         val others: MutableList<String> = mutableListOf()
         for (property in properties) {
             when (property) {
-                Vocabularies.Item + "scripted" -> contains.add("js")
-                Vocabularies.Item + "mathml" -> contains.add("mathml")
-                Vocabularies.Item + "svg" -> contains.add("svg")
-                Vocabularies.Item + "xmp-record" -> contains.add("xmp")
-                Vocabularies.Item + "remote-resources" -> contains.add("remote-resources")
-                Vocabularies.Item + "nav" -> rels.add("contents")
-                Vocabularies.Item + "cover-image" -> rels.add("cover")
+                Vocabularies.ITEM + "scripted" -> contains.add("js")
+                Vocabularies.ITEM + "mathml" -> contains.add("mathml")
+                Vocabularies.ITEM + "svg" -> contains.add("svg")
+                Vocabularies.ITEM + "xmp-record" -> contains.add("xmp")
+                Vocabularies.ITEM + "remote-resources" -> contains.add("remote-resources")
+                Vocabularies.ITEM + "nav" -> rels.add("contents")
+                Vocabularies.ITEM + "cover-image" -> rels.add("cover")
                 else -> others.add(property)
             }
         }
@@ -191,45 +199,44 @@ internal class EpubAdapter(
         for (property in properties) {
             //  Page
             when (property) {
-                Vocabularies.Rendition + "page-spread-center" -> "center"
-                Vocabularies.Rendition + "page-spread-left",
-                Vocabularies.Itemref + "page-spread-left" -> "left"
-                Vocabularies.Rendition + "page-spread-right",
-                Vocabularies.Itemref + "page-spread-right" -> "right"
+                Vocabularies.RENDITION + "page-spread-center" -> "center"
+                Vocabularies.RENDITION + "page-spread-left",
+                Vocabularies.ITEMREF + "page-spread-left" -> "left"
+                Vocabularies.RENDITION + "page-spread-right",
+                Vocabularies.ITEMREF + "page-spread-right" -> "right"
                 else -> null
             }?.let { linkProperties["page"] = it }
             //  Spread
             when (property) {
-                Vocabularies.Rendition + "spread-node" -> "none"
-                Vocabularies.Rendition + "spread-auto" -> "auto"
-                Vocabularies.Rendition + "spread-landscape" -> "landscape"
-                Vocabularies.Rendition + "spread-portrait",
-                Vocabularies.Rendition + "spread-both" -> "both"
+                Vocabularies.RENDITION + "spread-node" -> "none"
+                Vocabularies.RENDITION + "spread-auto" -> "auto"
+                Vocabularies.RENDITION + "spread-landscape" -> "landscape"
+                Vocabularies.RENDITION + "spread-portrait",
+                Vocabularies.RENDITION + "spread-both" -> "both"
                 else -> null
             }?.let { linkProperties["spread"] = it }
             //  Layout
             when (property) {
-                Vocabularies.Rendition + "layout-reflowable" -> "reflowable"
-                Vocabularies.Rendition + "layout-pre-paginated" -> "fixed"
+                Vocabularies.RENDITION + "layout-reflowable" -> "reflowable"
+                Vocabularies.RENDITION + "layout-pre-paginated" -> "fixed"
                 else -> null
             }?.let { linkProperties["layout"] = it }
             //  Orientation
             when (property) {
-                Vocabularies.Rendition + "orientation-auto" -> "auto"
-                Vocabularies.Rendition + "orientation-landscape" -> "landscape"
-                Vocabularies.Rendition + "orientation-portrait" -> "portrait"
+                Vocabularies.RENDITION + "orientation-auto" -> "auto"
+                Vocabularies.RENDITION + "orientation-landscape" -> "landscape"
+                Vocabularies.RENDITION + "orientation-portrait" -> "portrait"
                 else -> null
             }?.let { linkProperties["orientation"] = it }
             //  Overflow
             when (property) {
-                Vocabularies.Rendition + "flow-auto" -> "auto"
-                Vocabularies.Rendition + "flow-paginated" -> "paginated"
-                Vocabularies.Rendition + "flow-scrolled-continuous",
-                Vocabularies.Rendition + "flow-scrolled-doc" -> "scrolled"
+                Vocabularies.RENDITION + "flow-auto" -> "auto"
+                Vocabularies.RENDITION + "flow-paginated" -> "paginated"
+                Vocabularies.RENDITION + "flow-scrolled-continuous",
+                Vocabularies.RENDITION + "flow-scrolled-doc" -> "scrolled"
                 else -> null
             }?.let { linkProperties["overflow"] = it }
         }
         return linkProperties
     }
 }
-
