@@ -157,6 +157,7 @@ data class Metadata(
             val duration = json.optPositiveDouble("duration", remove = true)
             val numberOfPages = json.optPositiveInt("numberOfPages", remove = true)
             val belongsTo = json.remove("belongsTo") as? JSONObject
+                ?: json.remove("belongs_to") as? JSONObject
             val belongsToCollections = Collection.fromJSONArray(belongsTo?.opt("collection"), normalizeHref, warnings)
             val belongsToSeries = Collection.fromJSONArray(belongsTo?.opt("series"), normalizeHref, warnings)
 
