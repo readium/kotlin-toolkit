@@ -10,13 +10,11 @@
 package org.readium.r2.shared.extensions
 
 import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
 import java.util.*
 
-fun String.toIso8601Date(): Date? {
+fun String.iso8601ToDate(): Date? =
     try {
-        return DateTime(this, DateTimeZone.UTC).toDate()
+        DateTime(this).toDate()
     } catch (e: Exception) {
-        return null
+        null
     }
-}

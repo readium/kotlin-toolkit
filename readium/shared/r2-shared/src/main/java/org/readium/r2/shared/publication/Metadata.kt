@@ -134,8 +134,8 @@ data class Metadata(
             val identifier = json.remove("identifier") as? String
             val type = json.remove("@type") as? String
             val localizedSubtitle = LocalizedString.fromJSON(json.remove("subtitle"), warnings)
-            val modified = (json.remove("modified") as? String)?.toIso8601Date()
-            val published = (json.remove("published") as? String)?.toIso8601Date()
+            val modified = (json.remove("modified") as? String)?.iso8601ToDate()
+            val published = (json.remove("published") as? String)?.iso8601ToDate()
             val languages = json.optStringsFromArrayOrSingle("language", remove = true)
             val sortAs = json.remove("sortAs") as? String
             val subjects = Subject.fromJSONArray(json.remove("subject"), normalizeHref, warnings)

@@ -13,7 +13,7 @@ import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.assertJSONEquals
-import org.readium.r2.shared.extensions.toIso8601Date
+import org.readium.r2.shared.extensions.iso8601ToDate
 
 class MetadataTest {
 
@@ -37,8 +37,8 @@ class MetadataTest {
                     "en" to "Subtitle",
                     "fr" to "Sous-titre"
                 )),
-                modified = "2001-01-01T12:36:27.000Z".toIso8601Date(),
-                published = "2001-01-02T12:36:27.000Z".toIso8601Date(),
+                modified = "2001-01-01T12:36:27.000Z".iso8601ToDate(),
+                published = "2001-01-02T12:36:27.000Z".iso8601ToDate(),
                 languages = listOf("en", "fr"),
                 sortAs = "sort key",
                 subjects = listOf(Subject(name = "Science Fiction"), Subject(name = "Fantasy")),
@@ -198,8 +198,8 @@ class MetadataTest {
                     "en" to "Subtitle",
                     "fr" to "Sous-titre"
                 )),
-                modified = "2001-01-01T12:36:27.000Z".toIso8601Date(),
-                published = "2001-01-02T12:36:27.000Z".toIso8601Date(),
+                modified = "2001-01-01T12:36:27.000Z".iso8601ToDate(),
+                published = "2001-01-02T12:36:27.000Z".iso8601ToDate(),
                 languages = listOf("en", "fr"),
                 sortAs = "sort key",
                 subjects = listOf(Subject(name = "Science Fiction"), Subject(name = "Fantasy")),
