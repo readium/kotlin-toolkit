@@ -98,7 +98,7 @@ data class Contributor(
                 identifier = jsonObject.optNullableString("identifier"),
                 sortAs = jsonObject.optNullableString("sortAs"),
                 roles = jsonObject.optStringsFromArrayOrSingle("role").toSet(),
-                position = jsonObject.optNullableDouble("scheme"),
+                position = jsonObject.optNullableDouble("position"),
                 links = Link.fromJSONArray(jsonObject.optJSONArray("links"), normalizeHref)
             )
         }

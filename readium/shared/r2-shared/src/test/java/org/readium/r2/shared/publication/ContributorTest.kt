@@ -39,6 +39,7 @@ class ContributorTest {
                 identifier = "colin",
                 sortAs = "greenwood",
                 roles = setOf("bassist"),
+                position = 4.0,
                 links = listOf(
                     Link(href = "http://link1"),
                     Link(href = "http://link2")
