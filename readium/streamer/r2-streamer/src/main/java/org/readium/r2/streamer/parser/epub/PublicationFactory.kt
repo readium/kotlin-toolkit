@@ -22,11 +22,11 @@ import org.readium.r2.shared.normalize
  * @param displayOptions iBooks Display Options XML file to use as a fallback for the metadata.
  *        See https://github.com/readium/architecture/blob/master/streamer/parser/metadata.md#epub-2x-9
  */
-internal class EpubAdapter(
+internal class PublicationFactory(
     private val packageDocument: PackageDocument,
     private val navigationData: Map<String, List<Link>> = emptyMap(),
     private val encryptionData: Map<String, Encryption> = emptyMap(),
-    displayOptions: Map<String, String> = emptyMap()
+    private val displayOptions: Map<String, String> = emptyMap()
 ) {
     private val epubVersion = packageDocument.epubVersion
     private val links = packageDocument.metadata.links
@@ -51,7 +51,7 @@ internal class EpubAdapter(
 
     private val itemrefByIdref = spine.itemrefs.associateBy(Itemref::idref)
 
-    fun toPublication(): Publication {
+    fun create(): Publication {
         // Compute metadata
         val metadata = pubMetadata.metadata()
         val metadataLinks = links.mapNotNull(::mapEpubLink)
@@ -80,6 +80,7 @@ internal class EpubAdapter(
         }
     }
 
+    /** Compute a Publication [Link] from an Epub metadata link */
     private fun mapEpubLink(link: EpubLink): Link? {
         val contains: MutableList<String> = mutableListOf()
         if (link.rels.contains(Vocabularies.LINK + "record")) {
@@ -96,6 +97,7 @@ internal class EpubAdapter(
         )
     }
 
+    /** Recursively find the ids of links that must appear in the readingOrder */
     private fun computeReadingOrderIds(links: List<Link>): Set<String> {
         val ids: MutableSet<String> = mutableSetOf()
         for (l in links) {
@@ -106,6 +108,7 @@ internal class EpubAdapter(
         return ids
     }
 
+    /** Compute the ids contained in the alternate chain of [Link] */
     private fun computeIdChain(link: Link): Set<String> {
         // The termination has already been checked while computing links
         val ids: MutableSet<String> = mutableSetOf(link.title as String)
@@ -115,6 +118,7 @@ internal class EpubAdapter(
         return ids
     }
 
+    /** Compute a Publication [Link] for an epub [Item] and its fallbacks */
     private fun computeLink(item: Item, fallbackChain: Set<String> = emptySet()): Link {
         val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
         val alternates = computeAlternates(item, fallbackChain)
@@ -158,6 +162,7 @@ internal class EpubAdapter(
         return Pair(rels, Properties(properties))
     }
 
+    /** Compute alternate links for [item], checking for an infinite recursion */
     private fun computeAlternates(item: Item, fallbackChain: Set<String>): List<Link> {
 
         val fallback = item.fallback?.let { id ->

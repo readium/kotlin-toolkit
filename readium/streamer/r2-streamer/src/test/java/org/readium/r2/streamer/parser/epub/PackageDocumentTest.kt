@@ -24,8 +24,8 @@ fun parsePackageDocument(path: String, displayOptions: String? = null): Publicat
     val pub = PackageDocument::class.java.getResourceAsStream(path)
         ?.let { XmlParser().parse(it) }
         ?.let { PackageDocument.parse(it, "OEBPS/content.opf") }
-        ?.let { EpubAdapter(it) }
-        ?.toPublication()
+        ?.let { PublicationFactory(it) }
+        ?.create()
     checkNotNull(pub)
     return pub
 }

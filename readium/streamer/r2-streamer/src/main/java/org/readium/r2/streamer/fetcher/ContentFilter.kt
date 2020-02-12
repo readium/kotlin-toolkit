@@ -61,9 +61,8 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
             val inputStream = input.inputStream()
             var decodedInputStream = DrmDecoder().decoding(inputStream, resourceLink, container.drm)
             decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
-            val baseUrl = publication.baseUrl?.removeLastComponent()
             if ((resourceLink.type == "application/xhtml+xml" || resourceLink.type == "text/html")
-                    && baseUrl != null) {
+                    && publication.baseUrl != null) {
                 decodedInputStream =
                         if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE && (resourceLink.properties.layout == null
                                         || resourceLink.properties.layout == EpubLayout.REFLOWABLE)) {

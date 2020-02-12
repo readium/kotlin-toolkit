@@ -15,6 +15,7 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Collection
 import org.readium.r2.shared.normalize
+import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 
@@ -228,9 +229,9 @@ internal class PubMetadataAdapter(
         return uniqueIdentifierId?.let { identifiers[it] } ?: identifiers.values.firstOrNull()
     }
 
-    fun published() = firstValue(Vocabularies.DCTERMS + "date")?.toDateOrNull()
+    fun published() = firstValue(Vocabularies.DCTERMS + "date")?.iso8601ToDate()
 
-    fun modified() = firstValue(Vocabularies.DCTERMS + "modified")?.toDateOrNull()
+    fun modified() = firstValue(Vocabularies.DCTERMS + "modified")?.iso8601ToDate()
 
     fun description() = firstValue(Vocabularies.DCTERMS + "description")
 

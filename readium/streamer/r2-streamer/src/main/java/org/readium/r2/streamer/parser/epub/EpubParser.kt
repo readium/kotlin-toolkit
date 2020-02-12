@@ -98,12 +98,12 @@ class EpubParser : PublicationParser {
             rootFilePath = opfPath
         }
 
-        val publication = EpubAdapter(
+        val publication = PublicationFactory(
                 packageDocument = packageDocument,
                 navigationData = parseNavigationData(packageDocument, container),
                 encryptionData = parseEncryptionData(container),
                 displayOptions = parseDisplayOptions(container)
-            ).toPublication().apply {
+            ).create().apply {
                 internalData["type"] = "epub"
                 internalData["rootfile"] = opfPath
 
