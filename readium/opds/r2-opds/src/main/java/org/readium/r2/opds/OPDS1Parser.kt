@@ -103,7 +103,7 @@ class OPDS1Parser {
                             collectionLink = Link(
                                 href = getAbsolute(href, feed.href.toString()),
                                 title = link.getAttr("title"),
-                                rels = listOf("collection")
+                                rels = setOf("collection")
                             )
                         }
                     }
@@ -131,7 +131,7 @@ class OPDS1Parser {
                             href = getAbsolute(href, feed.href.toString()),
                             type = link.getAttr("type"),
                             title = entry.getFirst("title", Namespaces.Atom)?.text,
-                            rels = listOfNotNull(link.getAttr("rel")),
+                            rels = listOfNotNull(link.getAttr("rel")).toSet(),
                             properties = Properties(otherProperties = otherProperties)
                         )
 
@@ -150,7 +150,7 @@ class OPDS1Parser {
                 val href = getAbsolute(hrefAttr, feed.href.toString())
                 val title = link.getAttr("title")
                 val type = link.getAttr("type")
-                val rels = listOfNotNull(link.getAttr("rel"))
+                val rels = listOfNotNull(link.getAttr("rel")).toSet()
 
                 val facetGroupName = link.getAttrNs("facetGroup", Namespaces.Opds)
                 if (facetGroupName != null && rels.contains("http://opds-spec.org/facet")) {
@@ -277,7 +277,7 @@ class OPDS1Parser {
                         href = getAbsolute(href, feed.href.toString()),
                         type = element.getAttr("type"),
                         title = element.getAttr("title"),
-                        rels = listOfNotNull(rel),
+                        rels = listOfNotNull(rel).toSet(),
                         properties = Properties(otherProperties = properties)
                     )
                 }
