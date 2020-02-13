@@ -17,6 +17,6 @@ data class PubBox(var publication: Publication, var container: Container)
 
 interface PublicationParser {
 
-    fun parse(fileAtPath: String, title: String = File(fileAtPath).name): PubBox?
+    fun parse(fileAtPath: String, fallbackTitle: String = File(fileAtPath).name): PubBox?
 
 }

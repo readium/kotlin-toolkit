@@ -146,6 +146,7 @@ internal open class MetadataAdapter(val epubVersion: Double, val items: Map<Stri
 internal class PubMetadataAdapter(
     epubVersion: Double,
     items: Map<String, List<MetadataItem>>,
+    val fallbackTitle: String,
     val uniqueIdentifierId: String?,
     val readingProgression: ReadingProgression,
     val displayOptions: Map<String, String>
@@ -243,7 +244,7 @@ internal class PubMetadataAdapter(
 
     fun languages() = items[Vocabularies.DCTERMS + "language"]?.map(MetadataItem::value).orEmpty()
 
-    fun title() = mainTitle?.value ?: LocalizedString()
+    fun title() = mainTitle?.value ?: LocalizedString(fallbackTitle)
 
     fun sortAs() = if (epubVersion < 3.0) firstValue("calibre:title_sort") else mainTitle?.fileAs
 

@@ -23,6 +23,7 @@ import org.readium.r2.shared.normalize
  *        See https://github.com/readium/architecture/blob/master/streamer/parser/metadata.md#epub-2x-9
  */
 internal class PublicationFactory(
+    private val fallbackTitle: String,
     private val packageDocument: PackageDocument,
     private val navigationData: Map<String, List<Link>> = emptyMap(),
     private val encryptionData: Map<String, Encryption> = emptyMap(),
@@ -36,6 +37,7 @@ internal class PublicationFactory(
     private val pubMetadata = PubMetadataAdapter(
         epubVersion,
         packageDocument.metadata.global,
+        fallbackTitle,
         packageDocument.uniqueIdentifierId,
         spine.direction,
         displayOptions

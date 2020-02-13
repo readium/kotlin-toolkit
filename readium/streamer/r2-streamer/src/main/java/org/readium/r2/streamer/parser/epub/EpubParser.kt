@@ -77,7 +77,7 @@ object EPUBConstant {
 
 class EpubParser : PublicationParser {
 
-    override fun parse(fileAtPath: String, title: String): PubBox? {
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
@@ -99,6 +99,7 @@ class EpubParser : PublicationParser {
         }
 
         val publication = PublicationFactory(
+                fallbackTitle = fallbackTitle,
                 packageDocument = packageDocument,
                 navigationData = parseNavigationData(packageDocument, container),
                 encryptionData = parseEncryptionData(container),
