@@ -71,7 +71,7 @@ data class Contributor(
          * Parses a [Contributor] from its RWPM JSON representation.
          *
          * A contributor can be parsed from a single string, or a full-fledged object.
-         * The [links]' [href] and their children's recursively will be normalized using the
+         * The [links]' href and their children's will be normalized recursively using the
          * provided [normalizeHref] closure.
          * If the contributor can't be parsed, a warning will be logged with [warnings].
          */
@@ -106,7 +106,7 @@ data class Contributor(
         /**
          * Creates a list of [Contributor] from its RWPM JSON representation.
          *
-         * The [links]' [href] and their children's recursively will be normalized using the
+         * The [links]' href and their children's will be normalized recursively using the
          * provided [normalizeHref] closure.
          * If a contributor can't be parsed, a warning will be logged with [warnings].
          */

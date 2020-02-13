@@ -41,7 +41,7 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
      * The default translation for this localized string.
      */
     val defaultTranslation: Translation
-        get() = this[null]
+        get() = this.getOrFallback(null)
             ?: Translation(string = "")
 
     /**
@@ -59,7 +59,7 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
      *    3. on the English language
      *    4. the first translation found
      */
-    operator fun get(language: String?): Translation? {
+    fun getOrFallback(language: String?): Translation? {
         return translations[language]
             ?: translations[Locale.getDefault().toLanguageTag()]
             ?: translations[null]

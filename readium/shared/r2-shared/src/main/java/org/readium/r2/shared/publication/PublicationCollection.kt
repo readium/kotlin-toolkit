@@ -54,7 +54,7 @@ data class PublicationCollection(
          * Parses a [PublicationCollection] from its RWPM JSON representation.
          *
          * If the collection can't be parsed, a warning will be logged with [warnings].
-         * The [links]' [href] and their children's recursively will be normalized using the
+         * The [links]' href and their children's will be normalized recursively using the
          * provided [normalizeHref] closure.
          *
          * @param role JSON key used to reference the collection in its parent.
@@ -107,7 +107,7 @@ data class PublicationCollection(
          * Parses a list of [PublicationCollection] from its RWPM JSON representation.
          *
          * If the collection can't be parsed, a warning will be logged with [warnings].
-         * The [links]' [href] and their children's recursively will be normalized using the
+         * The [links]' href and their children's will be normalized recursively using the
          * provided [normalizeHref] closure.
          */
         fun collectionsFromJSON(

@@ -205,7 +205,7 @@ data class Metadata(
 
     @Deprecated("Use [localizedTitle.get] instead", ReplaceWith("localizedTitle.translationForLanguage(key)?.string"))
     fun titleForLang(key: String): String? =
-        localizedTitle[key]?.string
+        localizedTitle.getOrFallback(key)?.string
 
     @Deprecated("Use [readingProgression] instead.", ReplaceWith("readingProgression"))
     val direction: String

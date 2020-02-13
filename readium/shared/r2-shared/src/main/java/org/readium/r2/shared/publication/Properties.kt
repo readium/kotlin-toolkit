@@ -40,16 +40,6 @@ data class Properties(
      */
     operator fun get(key: String): Any? = otherProperties[key]
 
-    private fun writeObject(oos: ObjectOutputStream) {
-        oos.defaultWriteObject()
-        oos.writeUTF(JSONObject(otherProperties).toString())
-    }
-
-    private fun readObject(ois: java.io.ObjectInputStream) {
-        ois.defaultReadObject()
-        ois.readUTF()
-    }
-
     companion object {
 
         /**

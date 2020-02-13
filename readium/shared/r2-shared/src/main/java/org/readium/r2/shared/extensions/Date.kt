@@ -10,7 +10,9 @@
 package org.readium.r2.shared.extensions
 
 import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import java.util.*
 
-fun Date.toIso8601String(): String =
-    DateTime(this).toString()
+fun Date.toIso8601String(timeZone: TimeZone = TimeZone.getTimeZone("UTC")): String =
+    DateTime(this, DateTimeZone.forTimeZone(timeZone)).toString()
+

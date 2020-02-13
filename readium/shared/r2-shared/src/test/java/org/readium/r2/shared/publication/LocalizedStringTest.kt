@@ -96,7 +96,7 @@ class LocalizedStringTest {
             LocalizedString.fromStrings(mapOf(
                 "en" to "a string",
                 "fr" to "une chaîne"
-            ))["fr"]
+            )).getOrFallback("fr")
         )
     }
 
@@ -107,7 +107,7 @@ class LocalizedStringTest {
             LocalizedString.fromStrings(mapOf(
                 language to "a string",
                 "foobar" to "une chaîne"
-            ))[null]
+            )).getOrFallback(null)
         )
     }
 
@@ -118,7 +118,7 @@ class LocalizedStringTest {
                 "foo" to "a string",
                 "bar" to "une chaîne",
                 null to "Surgh"
-            ))[null]
+            )).getOrFallback(null)
         )
     }
 
@@ -129,7 +129,7 @@ class LocalizedStringTest {
                 "foo" to "a string",
                 "bar" to "une chaîne",
                 LocalizedString.UNDEFINED_LANGUAGE to "Surgh"
-            ))[null]
+            )).getOrFallback(null)
         )
     }
 
@@ -139,7 +139,7 @@ class LocalizedStringTest {
             LocalizedString.fromStrings(mapOf(
                 "en" to "a string",
                 "fr" to "une chaîne"
-            ))[null]
+            )).getOrFallback(null)
         )
     }
 
@@ -148,7 +148,7 @@ class LocalizedStringTest {
             LocalizedString.Translation("une chaîne"),
             LocalizedString.fromStrings(mapOf(
                 "fr" to "une chaîne"
-            ))[null]
+            )).getOrFallback(null)
         )
     }
 

@@ -23,7 +23,7 @@ class LinkTest {
                 type = "application/pdf",
                 templated = true,
                 title = "Link Title",
-                rels = listOf("publication", "cover"),
+                rels = setOf("publication", "cover"),
                 properties = Properties(otherProperties = mapOf("orientation" to "landscape")),
                 height = 1024,
                 width = 768,
@@ -72,7 +72,7 @@ class LinkTest {
     @Test fun `parse JSON {rel} as single string`() {
         assertEquals(
             Link.fromJSON(JSONObject("{'href': 'a', 'rel': 'publication'}")),
-            Link(href = "a", rels = listOf("publication"))
+            Link(href = "a", rels = setOf("publication"))
         )
     }
 
@@ -183,7 +183,7 @@ class LinkTest {
                 type = "application/pdf",
                 templated = true,
                 title = "Link Title",
-                rels = listOf("publication", "cover"),
+                rels = setOf("publication", "cover"),
                 properties = Properties(otherProperties = mapOf("orientation" to "landscape")),
                 height = 1024,
                 width = 768,

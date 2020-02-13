@@ -56,7 +56,7 @@ data class Link(
     val type: String? = null,
     val templated: Boolean = false,
     val title: String? = null,
-    val rels: List<String> = listOf(),
+    val rels: Set<String> = setOf(),
     val properties: Properties = Properties(),
     val height: Int? = null,
     val width: Int? = null,
@@ -110,7 +110,7 @@ data class Link(
                 type = json.optNullableString("type"),
                 templated = json.optBoolean("templated", false),
                 title = json.optNullableString("title"),
-                rels = json.optStringsFromArrayOrSingle("rel"),
+                rels = json.optStringsFromArrayOrSingle("rel").toSet(),
                 properties = Properties.fromJSON(json.optJSONObject("properties")),
                 height = json.optPositiveInt("height"),
                 width = json.optPositiveInt("width"),
@@ -144,6 +144,6 @@ data class Link(
 
     @Deprecated("Use [rels] instead.", ReplaceWith("rels"))
     val rel: List<String>
-        get() = rels
+        get() = rels.toList()
 
 }
