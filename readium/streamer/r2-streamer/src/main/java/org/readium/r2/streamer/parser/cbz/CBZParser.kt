@@ -107,7 +107,7 @@ class CBZParser : PublicationParser {
                 Link(
                         href = path,
                         type = getMimeType(path),
-                        rels = if (index == 0) listOf("cover") else emptyList()
+                        rels = if (index == 0) setOf("cover") else emptySet()
                 )
         }
         val publication = Publication(

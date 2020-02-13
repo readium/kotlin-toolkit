@@ -137,9 +137,9 @@ internal class PublicationFactory(
         )
     }
 
-    private fun computePropertiesAndRels(item: Item, itemref: Itemref?): Pair<List<String>, Properties> {
+    private fun computePropertiesAndRels(item: Item, itemref: Itemref?): Pair<Set<String>, Properties> {
         val properties: MutableMap<String, Any> = mutableMapOf()
-        val rels: MutableList<String> = mutableListOf()
+        val rels: MutableSet<String> = mutableSetOf()
         val (manifestRels, contains, others) = parseItemProperties(item.properties)
         rels.addAll(manifestRels)
         if (contains.isNotEmpty()) {
