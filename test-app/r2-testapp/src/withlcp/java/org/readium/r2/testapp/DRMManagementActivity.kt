@@ -36,10 +36,10 @@ import org.jetbrains.anko.design.longSnackbar
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.license.model.StatusDocument
-import org.readium.r2.lcp.public.LCPError
-import org.readium.r2.lcp.public.LCPLicense
-import org.readium.r2.lcp.public.LCPService
-import org.readium.r2.lcp.public.R2MakeLCPService
+import org.readium.r2.lcp.LCPError
+import org.readium.r2.lcp.LCPLicense
+import org.readium.r2.lcp.LCPService
+import org.readium.r2.lcp.R2MakeLCPService
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.utils.color

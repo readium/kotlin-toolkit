@@ -31,8 +31,8 @@ import kotlinx.coroutines.launch
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.longSnackbar
+import org.readium.r2.lcp.*
 import org.readium.r2.testapp.BuildConfig.DEBUG
-import org.readium.r2.lcp.public.*
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.publication.Publication
