@@ -11,7 +11,7 @@ package org.readium.r2.lcp.service
 
 import org.readium.r2.lcp.license.model.LicenseDocument
 
-interface DeviceRepository {
+internal interface DeviceRepository {
     fun isDeviceRegistered(license: LicenseDocument) : Boolean
     fun registerDevice(license: LicenseDocument)
 }

@@ -11,7 +11,7 @@ package org.readium.r2.lcp.license
 
 import java.util.concurrent.atomic.AtomicReference
 
-class StateMachine<STATE : Any, EVENT : Any> private constructor(
+internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
         private val graph: Graph<STATE, EVENT>
 ) {
 

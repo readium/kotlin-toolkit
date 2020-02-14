@@ -1,6 +1,6 @@
 /*
  * Module: r2-lcp-kotlin
- * Developers: Aferdita Muriqi
+ * Developers: Aferdita Muriqi, Mickaël Menu
  *
  * Copyright (c) 2019. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -10,13 +10,17 @@
 package org.readium.r2.lcp.license.container
 
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.lcp.public.LCPError
+import org.readium.r2.lcp.LCPError
 import org.zeroturnaround.zip.ZipUtil
 import java.io.File
 import java.util.zip.ZipFile
 
 
-open class ZIPLicenseContainer(private val zip: String, private val pathInZIP: String) : LicenseContainer {
+/**
+ * Access to a License Document stored in a ZIP archive.
+ * Meant to be subclassed to customize the pathInZIP property, eg. [EPUBLicenseContainer].
+ */
+internal open class ZIPLicenseContainer(private val zip: String, private val pathInZIP: String) : LicenseContainer {
 
     override fun read(): ByteArray {
 

@@ -15,7 +15,7 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import timber.log.Timber
 
-class NetworkService {
+internal class NetworkService {
     enum class Method(val rawValue: String) {
         get("GET"), post("POST"), put("PUT");
 

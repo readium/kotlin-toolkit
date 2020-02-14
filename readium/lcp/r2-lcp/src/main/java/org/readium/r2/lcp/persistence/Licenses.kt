@@ -11,11 +11,11 @@ package org.readium.r2.lcp.persistence
 
 import org.jetbrains.anko.db.*
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.lcp.public.LCPError
+import org.readium.r2.lcp.LCPError
 import org.readium.r2.lcp.service.DeviceRepository
 import org.readium.r2.lcp.service.LicensesRepository
 
-object LicensesTable {
+internal object LicensesTable {
     const val NAME = "Licenses"
     const val ID = "id"
     const val PRINTSLEFT = "printsLeft"
@@ -23,8 +23,7 @@ object LicensesTable {
     const val REGISTERED = "registered"
 }
 
-class Licenses(var database: LcpDatabaseOpenHelper) : DeviceRepository, LicensesRepository {
-
+internal class Licenses(var database: LcpDatabaseOpenHelper) : DeviceRepository, LicensesRepository {
 
     private fun exists(license: LicenseDocument): Boolean {
         return database.use {

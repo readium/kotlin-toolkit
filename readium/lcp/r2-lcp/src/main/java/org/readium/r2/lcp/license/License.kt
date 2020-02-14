@@ -16,10 +16,10 @@ import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.readium.lcp.sdk.Lcp
+import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
-import org.readium.r2.lcp.public.*
 import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
@@ -30,8 +30,7 @@ import java.io.File
 import java.net.URL
 import java.util.*
 
-
-class License(private var documents: ValidatedDocuments,
+internal class License(private var documents: ValidatedDocuments,
               private val validation: LicenseValidation,
               private val licenses: LicensesRepository,
               private val device: DeviceService,

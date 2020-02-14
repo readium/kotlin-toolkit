@@ -10,7 +10,7 @@
 package org.readium.r2.lcp.license.model.components.lcp
 
 import org.json.JSONObject
-import org.readium.r2.lcp.public.ParsingError
+import org.readium.r2.lcp.ParsingError
 
 data class Encryption(val json: JSONObject) {
     val profile: String

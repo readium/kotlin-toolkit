@@ -16,11 +16,11 @@ import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.joda.time.Days
 import org.readium.r2.lcp.BuildConfig.DEBUG
-import org.readium.r2.lcp.public.LCPError
+import org.readium.r2.lcp.LCPError
 import timber.log.Timber
 import java.util.*
 
-class CRLService(val network: NetworkService, val context: Context) {
+internal class CRLService(val network: NetworkService, val context: Context) {
 
     val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 

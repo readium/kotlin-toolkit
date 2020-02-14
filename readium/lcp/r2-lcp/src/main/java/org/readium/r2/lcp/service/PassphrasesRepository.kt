@@ -9,7 +9,7 @@
 
 package org.readium.r2.lcp.service
 
-interface PassphrasesRepository {
+internal interface PassphrasesRepository {
     fun passphrase(licenseId: String) : String?
     fun passphrases(userId: String) : List<String>
     fun addPassphrase(passphraseHash: String, licenseId: String, provider: String, userId: String?)

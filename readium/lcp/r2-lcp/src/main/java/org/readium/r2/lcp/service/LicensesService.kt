@@ -11,6 +11,7 @@ package org.readium.r2.lcp.service
 
 import android.content.Context
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
@@ -18,12 +19,11 @@ import org.readium.r2.lcp.license.container.EPUBLicenseContainer
 import org.readium.r2.lcp.license.container.LCPLLicenseContainer
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.lcp.public.*
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
 
 
-class LicensesService(private val licenses: LicensesRepository,
+internal class LicensesService(private val licenses: LicensesRepository,
                       private val crl: CRLService,
                       private val device: DeviceService,
                       private val network: NetworkService,

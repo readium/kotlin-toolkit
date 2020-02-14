@@ -11,7 +11,7 @@ package org.readium.r2.lcp.service
 
 import org.readium.r2.lcp.license.model.LicenseDocument
 
-interface LicensesRepository {
+internal interface LicensesRepository {
     fun addLicense(license: LicenseDocument)
     fun copiesLeft(licenseId: String) : Int?
     fun setCopiesLeft(quantity: Int, licenseId: String)
