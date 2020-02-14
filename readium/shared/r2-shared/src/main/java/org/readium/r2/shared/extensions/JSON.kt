@@ -59,7 +59,7 @@ fun JSONObject.putIfNotEmpty(name: String, jsonObject: JSONObject?) {
 
 /**
  * Maps [name] to [jsonable] after converting it to a [JSONObject], clobbering any existing
- * name/value mapping with the same name. If the [JSONObject] is empty, any existing mapping
+ * name/value mapping with the same name. If the [JSONObject] argument is empty, any existing mapping
  * for [name] is removed.
  */
 fun JSONObject.putIfNotEmpty(name: String, jsonable: JSONable?) {
