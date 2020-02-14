@@ -24,7 +24,7 @@ package org.readium.r2.shared.util
  * val layout: Layout? = Layout("reflowable")
  * ```
  */
-open class KeyMapper<K, E>(protected val map: Map<K, E>) {
+open class MapCompanion<K, E>(protected val map: Map<K, E>) {
 
     constructor(elements: Array<E>, keySelector: (E) -> K):
         this(elements.associateBy(keySelector))
@@ -55,9 +55,9 @@ open class KeyMapper<K, E>(protected val map: Map<K, E>) {
 }
 
 /**
- * Extends a [KeyMapper] by adding a [default] value as a fallback.
+ * Extends a [MapCompanion] by adding a [default] value as a fallback.
  */
-open class KeyMapperWithDefault<K, E>(map: Map<K, E>, val default: E) : KeyMapper<K, E>(map) {
+open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, val default: E) : MapCompanion<K, E>(map) {
 
     constructor(elements: Array<E>, keySelector: (E) -> K, default: E):
         this(elements.associateBy(keySelector), default)

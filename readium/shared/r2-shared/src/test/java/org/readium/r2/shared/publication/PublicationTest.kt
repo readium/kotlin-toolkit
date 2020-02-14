@@ -39,17 +39,13 @@ class PublicationTest {
         assertEquals(
             Publication(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
+                links = emptyList(),
+                readingOrder = emptyList()
             ),
             Publication.fromJSON(JSONObject("""{
                 "metadata": {"title": "Title"},
-                "links": [
-                    {"href": "/manifest.json", "rel": "self"}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html"}
-                ]
+                "links": [],
+                "readingOrder": []
             }"""))
         )
     }
@@ -214,17 +210,13 @@ class PublicationTest {
         assertJSONEquals(
             JSONObject("""{
                 "metadata": {"title": {"UND": "Title"}, "readingProgression": "auto"},
-                "links": [
-                    {"href": "/manifest.json", "rel": ["self"], "templated": false}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html", "templated": false}
-                ]
+                "links": [],
+                "readingOrder": []
             }"""),
             Publication(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
+                links = emptyList(),
+                readingOrder = emptyList()
             ).toJSON()
         )
     }

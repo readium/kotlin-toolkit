@@ -21,13 +21,13 @@ import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
 
 /**
- * Function used to recursively transform the [href] of a [Link] when parsing its JSON
+ * Function used to recursively transform the href of a [Link] when parsing its JSON
  * representation.
  */
 typealias LinkHrefNormalizer = (String) -> String
 
 /**
- * Default [href] normalizer for [Link], doing nothing.
+ * Default href normalizer for [Link], doing nothing.
  */
 val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
 

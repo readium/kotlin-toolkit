@@ -9,7 +9,7 @@
 
 package org.readium.r2.shared.drm
 
-import org.readium.r2.shared.util.KeyMapper
+import org.readium.r2.shared.util.MapCompanion
 import java.io.Serializable
 
 data class DRM(val brand: Brand): Serializable  {
@@ -19,14 +19,14 @@ data class DRM(val brand: Brand): Serializable  {
     enum class Brand(val rawValue: String): Serializable  {
         lcp("lcp");
 
-        companion object : KeyMapper<String, Brand>(values(), Brand::rawValue)
+        companion object : MapCompanion<String, Brand>(values(), Brand::rawValue)
 
     }
 
     enum class Scheme(val rawValue: String): Serializable  {
         lcp("http://readium.org/2014/01/lcp");
 
-        companion object : KeyMapper<String, Scheme>(values(), Scheme::rawValue)
+        companion object : MapCompanion<String, Scheme>(values(), Scheme::rawValue)
 
     }
 

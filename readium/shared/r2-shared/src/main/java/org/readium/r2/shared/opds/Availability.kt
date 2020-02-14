@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.toIso8601String
-import org.readium.r2.shared.util.KeyMapper
+import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
 import java.util.*
@@ -43,7 +43,7 @@ data class Availability(
         RESERVED("reserved"),
         READY("ready");
 
-        companion object : KeyMapper<String, State>(values(), State::value)
+        companion object : MapCompanion<String, State>(values(), State::value)
 
     }
 

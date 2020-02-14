@@ -22,6 +22,7 @@ import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
+import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
 import java.net.URL
@@ -179,9 +180,9 @@ data class Publication(
      */
     override fun toJSON() = JSONObject().apply {
         putIfNotEmpty("@context", context)
-        putIfNotEmpty("metadata", metadata)
-        putIfNotEmpty("links", links)
-        putIfNotEmpty("readingOrder", readingOrder)
+        put("metadata", metadata.toJSON())
+        put("links", links.toJSON())
+        put("readingOrder", readingOrder.toJSON())
         putIfNotEmpty("resources", resources)
         putIfNotEmpty("toc", tableOfContents)
         otherCollections.appendToJSONObject(this)
