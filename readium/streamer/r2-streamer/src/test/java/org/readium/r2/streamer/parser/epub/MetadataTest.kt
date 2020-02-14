@@ -346,7 +346,7 @@ class MetadataMiscTest {
             title = "cover",
             href = "/OEBPS/cover.jpg",
             type = "image/jpeg",
-            rels = listOf("cover")
+            rels = setOf("cover")
         )
         assertThat(parsePackageDocument("package/cover-epub2.opf").coverLink).isEqualTo(expected)
         assertThat(parsePackageDocument("package/cover-epub3.opf").coverLink).isEqualTo(expected)

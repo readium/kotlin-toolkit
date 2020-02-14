@@ -154,7 +154,7 @@ class LinkTest {
                 href = "/OEBPS/nav.xhtml",
                 title = "nav",
                 type = "application/xhtml+xml",
-                rels = listOf("contents")
+                rels = setOf("contents")
             ),
             Link(
                 href = "/style.css",
@@ -176,7 +176,7 @@ class LinkTest {
                 href = "/OEBPS/images/alice01a.png",
                 title = "img01a",
                 type = "image/png",
-                rels = listOf("cover")
+                rels = setOf("cover")
             ),
             Link(
                 href = "/OEBPS/images/alice02a.gif",
