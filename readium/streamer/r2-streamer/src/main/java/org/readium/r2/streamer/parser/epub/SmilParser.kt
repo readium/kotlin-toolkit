@@ -13,7 +13,7 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.MediaOverlayNode
 import org.readium.r2.shared.MediaOverlays
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.streamer.parser.normalize
+import org.readium.r2.shared.normalize
 
 internal object SmilParser {
     /* According to https://www.w3.org/publishing/epub3/epub-mediaoverlays.html#sec-overlays-content-conf
@@ -24,16 +24,16 @@ internal object SmilParser {
     */
 
     fun parse(document: ElementNode, filePath: String): MediaOverlays? {
-        val body = document.getFirst("body", Namespaces.Smil) ?: return null
+        val body = document.getFirst("body", Namespaces.SMIL) ?: return null
         return parseSeq(body, filePath)?.let { MediaOverlays(it) }
     }
 
     private fun parseSeq(node: ElementNode, filePath: String): List<MediaOverlayNode>? {
         val children: MutableList<MediaOverlayNode> = mutableListOf()
         for (child in node.getAll()) {
-            if (child.name == "par" && child.namespace == Namespaces.Smil)
+            if (child.name == "par" && child.namespace == Namespaces.SMIL)
                 parsePar(child, filePath)?.let { children.add(it) }
-            else if (child.name == "seq" && child.namespace == Namespaces.Smil)
+            else if (child.name == "seq" && child.namespace == Namespaces.SMIL)
                 parseSeq(child, filePath)?.let { children.addAll(it) }
         }
 
@@ -41,7 +41,7 @@ internal object SmilParser {
        - all child media overlays reference the same audio file
        - the seq element has an textref attribute (this is mandatory according to the EPUB spec)
        */
-        val textref = node.getAttrNs("textref", Namespaces.Ops)
+        val textref = node.getAttrNs("textref", Namespaces.OPS)
         val audioFiles = children.mapNotNull(MediaOverlayNode::audioFile)
         return if (textref != null && audioFiles.distinct().size == 1) { // hierarchy
             val normalizedTextref = normalize(filePath, textref)
@@ -50,8 +50,8 @@ internal object SmilParser {
     }
 
     private fun parsePar(node: ElementNode, filePath: String): MediaOverlayNode? {
-        val text = node.getFirst("text", Namespaces.Smil)?.getAttr("src") ?: return null
-        val audio = node.getFirst("audio", Namespaces.Smil)?.let { audioNode ->
+        val text = node.getFirst("text", Namespaces.SMIL)?.getAttr("src") ?: return null
+        val audio = node.getFirst("audio", Namespaces.SMIL)?.let { audioNode ->
             val src = audioNode.getAttr("src")
             val begin = audioNode.getAttr("clipBegin")?.let { ClockValueParser.parse(it) } ?: ""
             val end = audioNode.getAttr("clipEnd")?.let { ClockValueParser.parse(it) } ?: ""

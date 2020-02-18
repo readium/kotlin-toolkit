@@ -346,7 +346,7 @@ class MetadataMiscTest {
             title = "cover",
             href = "/OEBPS/cover.jpg",
             type = "image/jpeg",
-            rels = listOf("cover")
+            rels = setOf("cover")
         )
         assertThat(parsePackageDocument("package/cover-epub2.opf").coverLink).isEqualTo(expected)
         assertThat(parsePackageDocument("package/cover-epub3.opf").coverLink).isEqualTo(expected)
@@ -361,7 +361,7 @@ class MetadataMiscTest {
     fun `otherMetadata is rightly filled`() {
         val otherMetadata = parsePackageDocument("package/meta-others.opf").metadata.otherMetadata
         assertThat(otherMetadata).contains(
-            entry(Vocabularies.Dcterms + "source", "Wonderland"),
+            entry(Vocabularies.DCTERMS + "source", "Wonderland"),
             entry(
                 "http://my.url/#property0", mapOf(
                     "@value" to "refines0",
@@ -374,7 +374,7 @@ class MetadataMiscTest {
             )
         )
         assertThat(otherMetadata).containsOnlyKeys(
-            Vocabularies.Dcterms + "source",
+            Vocabularies.DCTERMS + "source",
             "presentation",
             "http://my.url/#property0"
         )

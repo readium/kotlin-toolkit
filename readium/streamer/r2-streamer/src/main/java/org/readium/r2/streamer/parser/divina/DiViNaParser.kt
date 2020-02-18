@@ -52,7 +52,7 @@ class DiViNaParser : PublicationParser {
         return container
     }
 
-    override fun parse(fileAtPath: String, title: String): PubBox? {
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
 
         val container = try {
             generateContainerFrom(fileAtPath)

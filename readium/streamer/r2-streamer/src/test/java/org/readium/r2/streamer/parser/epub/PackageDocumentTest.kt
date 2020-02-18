@@ -20,12 +20,12 @@ import org.readium.r2.shared.publication.epub.contains
 import org.readium.r2.shared.publication.epub.layout
 import org.readium.r2.shared.publication.presentation.*
 
-fun parsePackageDocument(path: String): Publication {
+fun parsePackageDocument(path: String, displayOptions: String? = null): Publication {
     val pub = PackageDocument::class.java.getResourceAsStream(path)
         ?.let { XmlParser().parse(it) }
         ?.let { PackageDocument.parse(it, "OEBPS/content.opf") }
-        ?.let { Epub(it) }
-        ?.toPublication()
+        ?.let { PublicationFactory("fallback title", it) }
+        ?.create()
     checkNotNull(pub)
     return pub
 }
@@ -154,7 +154,7 @@ class LinkTest {
                 href = "/OEBPS/nav.xhtml",
                 title = "nav",
                 type = "application/xhtml+xml",
-                rels = listOf("contents")
+                rels = setOf("contents")
             ),
             Link(
                 href = "/style.css",
@@ -176,7 +176,7 @@ class LinkTest {
                 href = "/OEBPS/images/alice01a.png",
                 title = "img01a",
                 type = "image/png",
-                rels = listOf("cover")
+                rels = setOf("cover")
             ),
             Link(
                 href = "/OEBPS/images/alice02a.gif",
