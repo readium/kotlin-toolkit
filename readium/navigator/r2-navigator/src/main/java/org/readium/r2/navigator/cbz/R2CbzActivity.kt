@@ -126,7 +126,17 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         } else {
             resourcePager.currentItem = currentPagerPosition
         }
+    }
 
+    override fun onStart() {
+        super.onStart()
+
+        // OnPageChangeListener.onPageSelected is not called on the first page of the book, so we
+        // trigger the locationDidChange event manually.
+        val navigator = this
+        currentLocation?.let {
+            navigatorDelegate?.locationDidChange(navigator = navigator, locator = it)
+        }
     }
 
     override fun nextResource(v: View?) {
