@@ -94,7 +94,10 @@ data class Publication(
             override fun create(parcel: Parcel): PositionListFactory? =
                 try {
                     mutableListOf<Locator>()
-                        .apply { parcel.readParcelableList(this, Locator::class.java.classLoader) }
+                        .apply {
+                            @Suppress("UNCHECKED_CAST")
+                            parcel.readList(this as MutableList<Any?>, Locator::class.java.classLoader)
+                        }
                         .let { StaticPositionListFactory(it) }
 
                 } catch (e: Exception) {
@@ -104,7 +107,7 @@ data class Publication(
 
             override fun PositionListFactory?.write(parcel: Parcel, flags: Int) {
                 try {
-                    parcel.writeParcelableList(this?.create(), flags)
+                    parcel.writeList(this?.create())
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to write a PositionListFactory into a Parcel")
                 }
