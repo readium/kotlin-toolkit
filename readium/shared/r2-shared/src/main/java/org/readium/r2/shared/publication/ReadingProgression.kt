@@ -11,7 +11,7 @@ package org.readium.r2.shared.publication
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
-import org.readium.r2.shared.util.KeyMapperWithDefault
+import org.readium.r2.shared.util.MapWithDefaultCompanion
 import java.util.*
 
 @Parcelize
@@ -26,7 +26,7 @@ enum class ReadingProgression(val value: String) : Parcelable {
     BTT("btt"),
     AUTO("auto");
 
-    companion object : KeyMapperWithDefault<String, ReadingProgression>(values(), ReadingProgression::value, AUTO) {
+    companion object : MapWithDefaultCompanion<String, ReadingProgression>(values(), ReadingProgression::value, AUTO) {
 
         override fun get(key: String?): ReadingProgression? =
             // For backward compatibility, we allow uppercase keys.

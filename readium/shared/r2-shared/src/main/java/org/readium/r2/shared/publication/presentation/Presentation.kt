@@ -15,8 +15,7 @@ import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableBoolean
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.util.KeyMapper
-import org.readium.r2.shared.util.KeyMapperWithDefault
+import org.readium.r2.shared.util.MapCompanion
 
 /**
  * The Presentation Hints extension defines a number of hints for User Agents about the way content
@@ -106,7 +105,7 @@ data class Presentation(
         CONTAIN("contain"),
         COVER("cover");
 
-        companion object : KeyMapper<String, Fit>(values(), Fit::value) {
+        companion object : MapCompanion<String, Fit>(values(), Fit::value) {
 
             /**
              * Default value for [Fit], if not specified.
@@ -124,7 +123,7 @@ data class Presentation(
         LANDSCAPE("landscape"),
         PORTRAIT("portrait");
 
-        companion object : KeyMapper<String, Orientation>(values(), Orientation::value) {
+        companion object : MapCompanion<String, Orientation>(values(), Orientation::value) {
 
             /**
              * Default value for [Orientation], if not specified.
@@ -149,7 +148,7 @@ data class Presentation(
         PAGINATED("paginated"),
         SCROLLED("scrolled");
 
-        companion object : KeyMapper<String, Overflow>(values(), Overflow::value) {
+        companion object : MapCompanion<String, Overflow>(values(), Overflow::value) {
 
             /**
              * Default value for [Overflow], if not specified.
@@ -175,7 +174,7 @@ data class Presentation(
         RIGHT("right"),
         CENTER("center");
 
-        companion object : KeyMapper<String, Page>(values(), Page::value)
+        companion object : MapCompanion<String, Page>(values(), Page::value)
     }
 
     /**
@@ -189,7 +188,7 @@ data class Presentation(
         NONE("none"),
         LANDSCAPE("landscape");
 
-        companion object : KeyMapper<String, Spread>(values(), Spread::value) {
+        companion object : MapCompanion<String, Spread>(values(), Spread::value) {
 
             /**
              * Default value for [Spread], if not specified.

@@ -13,6 +13,7 @@ import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.extensions.toMap
 
 class EncryptionTest {
 
@@ -64,21 +65,23 @@ class EncryptionTest {
 
     @Test
     fun `get full JSON`() {
-        assertJSONEquals(
-            JSONObject("""{
-                "algorithm": "http://algo",
-                "compression": "gzip",
-                "originalLength": 42099,
-                "profile": "http://profile",
-                "scheme": "http://scheme"
-            }"""),
+        // We build directly the map because [JSONObject] uses [Int] instead of [Long], which
+        // doesn't match [originalLength].
+        assertEquals(
+            mapOf(
+                "algorithm" to "http://algo",
+                "compression" to "gzip",
+                "originalLength" to 42099L,
+                "profile" to "http://profile",
+                "scheme" to "http://scheme"
+            ),
             Encryption(
                 algorithm = "http://algo",
                 compression = "gzip",
                 originalLength = 42099,
                 profile = "http://profile",
                 scheme = "http://scheme"
-            ).toJSON()
+            ).toJSON().toMap()
         )
     }
 

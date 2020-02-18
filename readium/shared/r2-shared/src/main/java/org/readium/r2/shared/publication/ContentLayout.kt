@@ -11,7 +11,7 @@ package org.readium.r2.shared.publication
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
-import org.readium.r2.shared.util.KeyMapperWithDefault
+import org.readium.r2.shared.util.MapWithDefaultCompanion
 import java.util.*
 
 /**
@@ -43,7 +43,7 @@ enum class ContentLayout(val cssId: String) : Parcelable {
             LTR, CJK_HORIZONTAL -> ReadingProgression.LTR
         }
 
-    companion object : KeyMapperWithDefault<String, ContentLayout>(values(), ContentLayout::cssId, LTR) {
+    companion object : MapWithDefaultCompanion<String, ContentLayout>(values(), ContentLayout::cssId, LTR) {
 
         /**
          * Determines the [ContentLayout] for the given BCP 47 language code and
@@ -53,7 +53,7 @@ enum class ContentLayout(val cssId: String) : Parcelable {
         fun from(language: String, readingProgression: ReadingProgression = ReadingProgression.AUTO): ContentLayout {
             // Removes the region from the BCP 47 tag
             @Suppress("NAME_SHADOWING")
-            val language = language.split("-").firstOrNull() ?: language
+            val language = language.split("-")[0]
 
             fun ReadingProgression.getContentLayoutOrDefault(default: ContentLayout, isCjk: Boolean = false): ContentLayout =
                 when (this) {

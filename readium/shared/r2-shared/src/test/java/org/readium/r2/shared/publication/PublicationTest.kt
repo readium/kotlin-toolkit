@@ -42,17 +42,13 @@ class PublicationTest {
         assertEquals(
             Publication(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = listOf("self"))),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
+                links = emptyList(),
+                readingOrder = emptyList()
             ),
             Publication.fromJSON(JSONObject("""{
                 "metadata": {"title": "Title"},
-                "links": [
-                    {"href": "/manifest.json", "rel": "self"}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html"}
-                ]
+                "links": [],
+                "readingOrder": []
             }"""))
         )
     }
@@ -62,7 +58,7 @@ class PublicationTest {
             Publication(
                 context = listOf("https://readium.org/webpub-manifest/context.jsonld"),
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = listOf("self"))),
+                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
                 resources = listOf(Link(href = "/image.png", type = "image/png")),
                 tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
@@ -98,7 +94,7 @@ class PublicationTest {
             Publication(
                 context = listOf("context1", "context2"),
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = listOf("self"))),
+                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
             ),
             Publication.fromJSON(JSONObject("""{
@@ -130,7 +126,7 @@ class PublicationTest {
         assertEquals(
             Publication(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = listOf("self"))),
+                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
             ),
             Publication.fromJSON(JSONObject("""{
@@ -150,8 +146,8 @@ class PublicationTest {
             Publication(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = listOf(
-                    Link(href = "/manifest.json", rels = listOf("self")),
-                    Link(href = "/withrel", rels = listOf("withrel"))
+                    Link(href = "/manifest.json", rels = setOf("self")),
+                    Link(href = "/withrel", rels = setOf("withrel"))
                 ),
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
             ),
@@ -173,7 +169,7 @@ class PublicationTest {
         assertEquals(
             Publication(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = listOf("self"))),
+                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
             ),
             Publication.fromJSON(JSONObject("""{
@@ -193,7 +189,7 @@ class PublicationTest {
         assertEquals(
             Publication(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = listOf("self"))),
+                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
                 resources = listOf(Link(href = "/withtype", type = "text/html"))
             ),
@@ -217,17 +213,13 @@ class PublicationTest {
         assertJSONEquals(
             JSONObject("""{
                 "metadata": {"title": {"UND": "Title"}, "readingProgression": "auto"},
-                "links": [
-                    {"href": "/manifest.json", "rel": ["self"], "templated": false}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html", "templated": false}
-                ]
+                "links": [],
+                "readingOrder": []
             }"""),
             Publication(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = listOf("self"))),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
+                links = emptyList(),
+                readingOrder = emptyList()
             ).toJSON()
         )
     }
@@ -260,7 +252,7 @@ class PublicationTest {
             Publication(
                 context = listOf("https://readium.org/webpub-manifest/context.jsonld"),
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = listOf("self"))),
+                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
                 resources = listOf(Link(href = "/image.png", type = "image/png")),
                 tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
@@ -344,7 +336,7 @@ class PublicationTest {
 
     @Test fun `set {self} link replaces existing {self} link`() {
         val publication = createPublication(
-            links = listOf(Link(href = "previous", rels = listOf("self")))
+            links = listOf(Link(href = "previous", rels = setOf("self")))
         )
         publication.setSelfLink("http://manifest.json")
 
@@ -356,7 +348,7 @@ class PublicationTest {
 
     @Test fun `get {baseUrl} computes the URL from the {self} link`() {
         val publication = createPublication(
-            links = listOf(Link(href = "http://domain.com/path/manifest.json", rels = listOf("self")))
+            links = listOf(Link(href = "http://domain.com/path/manifest.json", rels = setOf("self")))
         )
         assertEquals(
             URL("http://domain.com/path/"),
@@ -398,9 +390,9 @@ class PublicationTest {
     }
 
     @Test fun `find the first {Link} with the given {rel}`() {
-        val link1 = Link(href = "found", rels = listOf("rel1"))
-        val link2 = Link(href = "found", rels = listOf("rel2"))
-        val link3 = Link(href = "found", rels = listOf("rel3"))
+        val link1 = Link(href = "found", rels = setOf("rel1"))
+        val link2 = Link(href = "found", rels = setOf("rel2"))
+        val link3 = Link(href = "found", rels = setOf("rel3"))
         val publication = createPublication(
             links = listOf(Link(href = "other"), link1),
             readingOrder = listOf(Link(href = "other"), link2),
@@ -455,7 +447,7 @@ class PublicationTest {
     }
 
     @Test fun `find the cover {Link}`() {
-        val coverLink = Link(href = "cover", rels = listOf("cover"))
+        val coverLink = Link(href = "cover", rels = setOf("cover"))
         val publication = createPublication(
             links = listOf(Link(href = "other"), coverLink),
             readingOrder = listOf(Link(href = "other")),

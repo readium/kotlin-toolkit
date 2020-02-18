@@ -9,7 +9,7 @@
 
 package org.readium.r2.shared
 
-import org.readium.r2.shared.util.KeyMapper
+import org.readium.r2.shared.util.MapCompanion
 import java.io.Serializable
 
 enum class Injectable(val rawValue: String): Serializable {
@@ -17,6 +17,6 @@ enum class Injectable(val rawValue: String): Serializable {
     Font("fonts"),
     Style("styles");
 
-    companion object : KeyMapper<String, Injectable>(values(), Injectable::rawValue)
+    companion object : MapCompanion<String, Injectable>(values(), Injectable::rawValue)
 
 }

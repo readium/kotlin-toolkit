@@ -49,8 +49,7 @@ private fun unwrapJSON(value: Any) = when (value) {
  * the [JSONObject] is empty, any existing mapping for [name] is removed.
  */
 fun JSONObject.putIfNotEmpty(name: String, jsonObject: JSONObject?) {
-    jsonObject ?: return
-    if (jsonObject.length() == 0) {
+    if (jsonObject == null || jsonObject.length() == 0) {
         remove(name)
         return
     }
@@ -60,14 +59,12 @@ fun JSONObject.putIfNotEmpty(name: String, jsonObject: JSONObject?) {
 
 /**
  * Maps [name] to [jsonable] after converting it to a [JSONObject], clobbering any existing
- * name/value mapping with the same name. If the [JSONObject] is empty, any existing mapping
+ * name/value mapping with the same name. If the [JSONObject] argument is empty, any existing mapping
  * for [name] is removed.
  */
 fun JSONObject.putIfNotEmpty(name: String, jsonable: JSONable?) {
-    jsonable ?: return
-
-    val json = jsonable.toJSON()
-    if (json.length() == 0) {
+    val json = jsonable?.toJSON()
+    if (json == null || json.length() == 0) {
         remove(name)
         return
     }

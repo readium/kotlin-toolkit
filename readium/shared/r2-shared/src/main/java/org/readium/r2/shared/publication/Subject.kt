@@ -67,7 +67,7 @@ data class Subject(
          * Parses a [Subject] from its RWPM JSON representation.
          *
          * A subject can be parsed from a single string, or a full-fledged object.
-         * The [links]' [href] and their children's recursively will be normalized using the
+         * The [links]' href and their children's will be normalized recursively using the
          * provided [normalizeHref] closure.
          * If the subject can't be parsed, a warning will be logged with [warnings].
          */
@@ -101,7 +101,7 @@ data class Subject(
         /**
          * Creates a list of [Subject] from its RWPM JSON representation.
          *
-         * The [links]' [href] and their children's recursively will be normalized using the
+         * The [links]' href and their children's will be normalized recursively using the
          * provided [normalizeHref] closure.
          * If a subject can't be parsed, a warning will be logged with [warnings].
          */

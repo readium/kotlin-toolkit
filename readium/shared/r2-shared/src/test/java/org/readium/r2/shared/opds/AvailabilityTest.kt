@@ -4,7 +4,7 @@ import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.assertJSONEquals
-import org.readium.r2.shared.extensions.toIso8601Date
+import org.readium.r2.shared.extensions.iso8601ToDate
 
 class AvailabilityTest {
 
@@ -35,8 +35,8 @@ class AvailabilityTest {
         assertEquals(
             Availability(
                 state = Availability.State.AVAILABLE,
-                since = "2001-01-01T12:36:27.000Z".toIso8601Date(),
-                until = "2001-02-01T12:36:27.000Z".toIso8601Date()
+                since = "2001-01-01T12:36:27.000Z".iso8601ToDate(),
+                until = "2001-02-01T12:36:27.000Z".iso8601ToDate()
             ),
             Availability.fromJSON(JSONObject("""{
                 'state': 'available',
@@ -65,13 +65,13 @@ class AvailabilityTest {
         assertJSONEquals(
             JSONObject("""{
                 'state': 'available',
-                'since': '2001-01-01T12:36:27.000Z',
-                'until': '2001-02-01T12:36:27.000Z'
+                'since': '2001-02-01T13:36:27.000Z',
+                'until': '2001-02-01T13:36:27.000Z'
             }"""),
             Availability(
                 state = Availability.State.AVAILABLE,
-                since = "2001-01-01T12:36:27.000Z".toIso8601Date(),
-                until = "2001-02-01T12:36:27.000Z".toIso8601Date()
+                since = "2001-02-01T13:36:27.000Z".iso8601ToDate(),
+                until = "2001-02-01T13:36:27.000Z".iso8601ToDate()
             ).toJSON()
         )
     }

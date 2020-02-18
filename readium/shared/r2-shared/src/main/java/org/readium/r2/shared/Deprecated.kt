@@ -89,7 +89,7 @@ typealias RenditionSpread = Presentation.Spread
 @Deprecated("Use [Publication::fromJSON] instead", ReplaceWith("Publication.fromJSON(pubDict)", "org.readium.r2.shared.publication.Publication"))
 fun parsePublication(pubDict: JSONObject): org.readium.r2.shared.publication.Publication {
     return org.readium.r2.shared.publication.Publication.fromJSON(pubDict)
-        ?: throw Exception("Invalid publiation")
+        ?: throw Exception("Invalid publication")
 }
 
 @Deprecated("Use [Link::fromJSON] instead", ReplaceWith("Link.fromJSON(linkDict)", "org.readium.r2.shared.publication.Link"))

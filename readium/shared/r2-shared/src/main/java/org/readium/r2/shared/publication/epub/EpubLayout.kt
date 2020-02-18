@@ -11,7 +11,7 @@ package org.readium.r2.shared.publication.epub
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
-import org.readium.r2.shared.util.KeyMapper
+import org.readium.r2.shared.util.MapCompanion
 
 /**
  * Hints how the layout of the resource should be presented.
@@ -22,7 +22,7 @@ enum class EpubLayout(val value: String) : Parcelable {
     FIXED("fixed"),
     REFLOWABLE("reflowable");
 
-    companion object : KeyMapper<String, EpubLayout>(values(), EpubLayout::value) {
+    companion object : MapCompanion<String, EpubLayout>(values(), EpubLayout::value) {
 
         @Deprecated("Renamed to [FIXED]", ReplaceWith("EpubLayout.FIXED"))
         val Fixed: EpubLayout get() = FIXED
