@@ -54,7 +54,7 @@ class AudioBookParser : PublicationParser {
     /**
      * This functions parse a manifest.json and build PubBox object from it
      */
-    override fun parse(fileAtPath: String, title: String): PubBox? {
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
 
         //Building container
         val container = try {

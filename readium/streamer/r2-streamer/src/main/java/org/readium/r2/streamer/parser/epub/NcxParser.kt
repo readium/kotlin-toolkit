@@ -11,23 +11,24 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.streamer.parser.normalize
+import org.readium.r2.shared.normalize
 
 
 internal object NcxParser {
+
     fun parse(document: ElementNode, filePath: String): Map<String, List<Link>> {
-        val toc = document.getFirst("navMap", Namespaces.Ncx)
+        val toc = document.getFirst("navMap", Namespaces.NCX)
             ?.let { parseNavMapElement(it, filePath) }?.let { Pair("toc", it) }
-        val pageList = document.getFirst("pageList", Namespaces.Ncx)
+        val pageList = document.getFirst("pageList", Namespaces.NCX)
             ?.let { parsePageListElement(it, filePath) }?.let { Pair("page-list", it) }
         return listOfNotNull(toc, pageList).toMap()
     }
 
     private fun parseNavMapElement(element: ElementNode, filePath: String): List<Link> =
-        element.get("navPoint", Namespaces.Ncx).mapNotNull { parseNavPointElement(it, filePath) }
+        element.get("navPoint", Namespaces.NCX).mapNotNull { parseNavPointElement(it, filePath) }
 
     private fun parsePageListElement(element: ElementNode, filePath: String): List<Link> =
-        element.get("pageTarget", Namespaces.Ncx).mapNotNull {
+        element.get("pageTarget", Namespaces.NCX).mapNotNull {
             val href = extractHref(it, filePath)
             val title = extractTitle(it)
             if (href.isNullOrBlank() || title.isNullOrBlank())
@@ -38,7 +39,7 @@ internal object NcxParser {
     private fun parseNavPointElement(element: ElementNode, filePath: String): Link? {
         val title = extractTitle(element)
         val href = extractHref(element, filePath)
-        val children = element.get("navPoint", Namespaces.Ncx).mapNotNull { parseNavPointElement(it, filePath) }
+        val children = element.get("navPoint", Namespaces.NCX).mapNotNull { parseNavPointElement(it, filePath) }
         return if (children.isEmpty() && (href == null || title == null))
             null
         else
@@ -46,10 +47,11 @@ internal object NcxParser {
     }
 
     private fun extractTitle(element: ElementNode) =
-        element.getFirst("navLabel", Namespaces.Ncx)?.getFirst("text", Namespaces.Ncx)
+        element.getFirst("navLabel", Namespaces.NCX)?.getFirst("text", Namespaces.NCX)
             ?.text?.replace("\\s+".toRegex(), " ")?.trim()?.ifBlank { null }
 
     private fun extractHref(element: ElementNode, filePath: String) =
-        element.getFirst("content", Namespaces.Ncx)?.getAttr("src")
+        element.getFirst("content", Namespaces.NCX)?.getAttr("src")
             ?.ifBlank { null }?.let { normalize(filePath, it) }
+
 }

@@ -81,7 +81,7 @@ class CBZParser : PublicationParser {
         return container
     }
 
-    override fun parse(fileAtPath: String, title: String): PubBox? {
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
@@ -96,7 +96,7 @@ class CBZParser : PublicationParser {
         }
 
         val hash = fileToMD5(fileAtPath)
-        val metadata = Metadata(identifier = hash, localizedTitle = LocalizedString(title))
+        val metadata = Metadata(identifier = hash, localizedTitle = LocalizedString(fallbackTitle))
 
         val readingOrder = listFiles.mapIndexedNotNull { index, path ->
             if (path.startsWith("."))
@@ -105,7 +105,7 @@ class CBZParser : PublicationParser {
                 Link(
                         href = path,
                         type = getMimeType(path),
-                        rels = if (index == 0) listOf("cover") else emptyList()
+                        rels = if (index == 0) setOf("cover") else emptySet()
                 )
         }
         val publication = Publication(
