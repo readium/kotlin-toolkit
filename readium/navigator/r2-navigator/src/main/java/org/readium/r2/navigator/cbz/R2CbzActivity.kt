@@ -24,10 +24,7 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.*
 import kotlin.coroutines.CoroutineContext
 
 
@@ -37,7 +34,12 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         get() = publication.positionList[resourcePager.currentItem]
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
+            ?: return false
+
+        currentPagerPosition = resourceIndex
+        resourcePager.currentItem = currentPagerPosition
+        return true
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {

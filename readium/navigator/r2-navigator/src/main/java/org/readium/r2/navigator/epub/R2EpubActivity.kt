@@ -51,7 +51,14 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         notifyCurrentLocation()
     }
 
+    /**
+     * Locator waiting to be loaded in the navigator.
+     */
+    internal var pendingLocator: Locator? = null
+
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        pendingLocator = locator
+
         // href is the link to the page in the toc
         var href = locator.href
 

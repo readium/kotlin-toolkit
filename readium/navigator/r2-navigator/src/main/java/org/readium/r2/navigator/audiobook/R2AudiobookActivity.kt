@@ -15,10 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.BuildConfig.*
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.*
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
@@ -46,7 +43,12 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
+            ?: return false
+
+        currentResource = resourceIndex
+        mediaPlayer?.goTo(currentResource)
+        return true
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
