@@ -52,10 +52,6 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
 
         progressDialog = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_audiobook))
 
-        currentResource = booksDB.books.currentLocator(bookId)
-            ?.let { publication.readingOrder.indexOfFirstWithHref(it.href) }
-            ?: 0
-
         Handler().postDelayed({
             //Setting cover
             launch {
@@ -73,6 +69,10 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
         }, 100)
 
 
+        // Loads the last read location
+        booksDB.books.currentLocator(bookId)?.let {
+            go(it, false, {})
+        }
     }
 
     private var menuDrm: MenuItem? = null

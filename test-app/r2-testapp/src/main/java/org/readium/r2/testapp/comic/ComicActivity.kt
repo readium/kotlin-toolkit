@@ -63,13 +63,12 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
         navigatorDelegate = this
         bookId = intent.getLongExtra("bookId", -1)
 
-        currentPagerPosition = booksDB.books.currentLocator(bookId)
-            ?.let { publication.readingOrder.indexOfFirstWithHref(it.href) }
-            ?: 0
-
-        resourcePager.currentItem = currentPagerPosition
-
         toggleActionBar()
+
+        // Loads the last read location
+        booksDB.books.currentLocator(bookId)?.let {
+            go(it, false, {})
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

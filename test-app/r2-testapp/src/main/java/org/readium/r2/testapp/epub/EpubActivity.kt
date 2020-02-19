@@ -156,11 +156,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
         resourcePager.offscreenPageLimit = 1
 
-        currentPagerPosition = booksDB.books.currentLocator(bookId)
-            ?.let { publication.readingOrder.indexOfFirstWithHref(it.href) }
-            ?: 0
-        resourcePager.currentItem = currentPagerPosition
-
         titleView.text = publication.metadata.title
 
         play_pause.setOnClickListener {
@@ -229,6 +224,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         search_listView.adapter = searchResultAdapter
         search_listView.layoutManager = LinearLayoutManager(this)
 
+        // Loads the last read location
+        booksDB.books.currentLocator(bookId)?.let {
+            go(it, false, {})
+        }
     }
 
 
