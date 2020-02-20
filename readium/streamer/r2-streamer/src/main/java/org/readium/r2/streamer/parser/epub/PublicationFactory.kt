@@ -44,7 +44,7 @@ internal class PublicationFactory(
     )
 
     private val itemMetadata = packageDocument.metadata.refine
-        .mapValues { MetadataAdapter(epubVersion, it.value) }
+        .mapValues { LinkMetadataAdapter(epubVersion, it.value) }
 
     @Suppress("Unchecked_cast")
     private val itemById = manifest
@@ -123,17 +123,15 @@ internal class PublicationFactory(
     /** Compute a Publication [Link] for an epub [Item] and its fallbacks */
     private fun computeLink(item: Item, fallbackChain: Set<String> = emptySet()): Link {
         val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
-        val alternates = computeAlternates(item, fallbackChain)
-        val duration = itemMetadata[item.id]?.duration()
 
         return Link(
             title = item.id,
             href = normalize(packageDocument.path, item.href),
             type = item.mediaType,
-            duration = duration,
+            duration = itemMetadata[item.id]?.duration,
             rels = rels,
             properties = properties,
-            alternates = alternates
+            alternates = computeAlternates(item, fallbackChain)
         )
     }
 
@@ -153,7 +151,7 @@ internal class PublicationFactory(
         }
 
         if (epubVersion < 3.0) {
-            val coverId = pubMetadata.cover()
+            val coverId = pubMetadata.cover
             if (coverId != null && item.id == coverId) rels.add("cover")
         }
 

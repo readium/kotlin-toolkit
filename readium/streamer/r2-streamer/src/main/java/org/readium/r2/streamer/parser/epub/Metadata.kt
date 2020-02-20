@@ -9,7 +9,6 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.joda.time.DateTime
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.*
@@ -18,6 +17,13 @@ import org.readium.r2.shared.normalize
 import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
+
+internal data class Title(
+    val value: LocalizedString,
+    val fileAs: String? = null,
+    val type: String? = null,
+    val displaySeq: Int? = null
+)
 
 internal data class EpubLink(
     val href: String,
@@ -138,29 +144,91 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
 }
 
 internal open class MetadataAdapter(val epubVersion: Double, val items: Map<String, List<MetadataItem>>) {
-    fun duration() = firstValue(Vocabularies.MEDIA + "duration")?.let { ClockValueParser.parse(it) }
+    val duration = firstValue(Vocabularies.MEDIA + "duration")?.let { ClockValueParser.parse(it) }
 
     protected fun firstValue(property: String) = items[property]?.firstOrNull()?.value
 }
 
+internal class LinkMetadataAdapter(
+    epubVersion: Double,
+    items: Map<String, List<MetadataItem>>
+) : MetadataAdapter(epubVersion, items)
+
 internal class PubMetadataAdapter(
     epubVersion: Double,
     items: Map<String, List<MetadataItem>>,
-    val fallbackTitle: String,
-    val uniqueIdentifierId: String?,
-    val readingProgression: ReadingProgression,
-    val displayOptions: Map<String, String>
+    fallbackTitle: String,
+    uniqueIdentifierId: String?,
+    readingProgression: ReadingProgression,
+    displayOptions: Map<String, String>
 ) : MetadataAdapter(epubVersion, items) {
+
+    fun metadata() = Metadata(
+        identifier = identifier,
+        modified = modified,
+        published = published,
+        languages = languages,
+        localizedTitle = localizedTitle,
+        sortAs = sortAs,
+        localizedSubtitle = localizedSubtitle,
+        duration = duration,
+        subjects = subjects,
+        description = description,
+        readingProgression = readingProgression,
+        belongsToCollections = belongsToCollections,
+        belongsToSeries = belongsToSeries,
+        otherMetadata = otherMetadata,
+
+        authors = contributors("aut"),
+        translators = contributors("trl"),
+        editors = contributors("edt"),
+        publishers = contributors("pbl"),
+        artists = contributors("art"),
+        illustrators = contributors("ill"),
+        colorists = contributors("clr"),
+        narrators = contributors("nrt"),
+        contributors = contributors(null)
+    )
 
     private val defaultLang = firstValue(Vocabularies.DCTERMS + "language")
 
-    private val titles = items[Vocabularies.DCTERMS + "title"]?.map { it.toTitle(defaultLang) }.orEmpty()
+    val languages = items[Vocabularies.DCTERMS + "language"]?.map(MetadataItem::value).orEmpty()
 
-    private val mainTitle = titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
+    val identifier: String?
 
-    private val series: List<Collection>
+    init {
+        val identifiers = items[Vocabularies.DCTERMS + "identifier"]
+            ?.associate { Pair(it.property, it.value) }.orEmpty()
 
-    private val collections: List<Collection>
+        identifier = uniqueIdentifierId?.let { identifiers[it] } ?: identifiers.values.firstOrNull()
+    }
+
+    val published = firstValue(Vocabularies.DCTERMS + "date")?.iso8601ToDate()
+
+    val modified = firstValue(Vocabularies.DCTERMS + "modified")?.iso8601ToDate()
+
+    val description = firstValue(Vocabularies.DCTERMS + "description")
+
+    val cover = firstValue("cover")
+
+    val localizedTitle: LocalizedString
+
+    val localizedSubtitle: LocalizedString?
+
+    val sortAs: String?
+
+    init {
+        val titles = items[Vocabularies.DCTERMS + "title"]?.map { it.toTitle(defaultLang) }.orEmpty()
+        val mainTitle = titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
+
+        localizedTitle =  mainTitle?.value ?: LocalizedString(fallbackTitle)
+        localizedSubtitle = titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()?.value
+        sortAs = if (epubVersion < 3.0) firstValue("calibre:title_sort") else mainTitle?.fileAs
+    }
+
+    val belongsToSeries: List<Collection>
+
+    val belongsToCollections: List<Collection>
 
     init {
         if (epubVersion < 3.0) {
@@ -169,15 +237,39 @@ internal class PubMetadataAdapter(
                 val position = firstValue("calibre:series_index")?.toDoubleOrNull()
                 Collection(localizedName = name, position = position)
             }
-            series = listOfNotNull(calibreSeries)
-            collections = emptyList()
+
+            belongsToSeries = listOfNotNull(calibreSeries)
+            belongsToCollections = emptyList()
 
         } else {
             val allCollections = items[Vocabularies.META + "belongs-to-collection"]
                 .orEmpty().map { it.toCollection(defaultLang) }
             val (seriesMeta, collectionsMeta) = allCollections.partition { it.first == "series" }
-            series = seriesMeta.map(Pair<String?, Collection>::second)
-            collections = collectionsMeta.map(Pair<String?, Collection>::second)
+
+            belongsToSeries = seriesMeta.map(Pair<String?, Collection>::second)
+            belongsToCollections = collectionsMeta.map(Pair<String?, Collection>::second)
+        }
+    }
+
+    val subjects: List<Subject>
+
+    init {
+        val subjectItems = items[Vocabularies.DCTERMS + "subject"].orEmpty()
+        val parsedSubjects = subjectItems.map { it.toSubject(defaultLang) }
+        val hasToSplit = parsedSubjects.size == 1 && parsedSubjects.first().run {
+            localizedName.translations.size == 1 && code == null && scheme == null && sortAs == null
+        }
+
+        subjects = if (hasToSplit) splitSubject(parsedSubjects.first()) else parsedSubjects
+    }
+
+    private fun splitSubject(subject: Subject): List<Subject> {
+        val lang = subject.localizedName.translations.keys.first()
+        val names = subject.localizedName.translations.values.first().string.split(",", ";")
+            .map(kotlin.String::trim).filter(kotlin.String::isNotEmpty)
+        return names.map {
+            val newName = LocalizedString.fromStrings(mapOf(lang to it))
+            Subject(localizedName = newName)
         }
     }
 
@@ -197,62 +289,29 @@ internal class PubMetadataAdapter(
         allContributors = contributors.distributeBy(knownRoles, Contributor::roles)
     }
 
-    fun metadata() = Metadata(
-        identifier = identifier(),
-        modified = modified(),
-        published = published(),
-        languages = languages(),
-        localizedTitle = title(),
-        sortAs = sortAs(),
-        localizedSubtitle = subtitle(),
-        duration = duration(),
-        subjects = subjects(),
-        description = description(),
-        readingProgression = readingProgression,
-        belongsToCollections = belongsToCollections(),
-        belongsToSeries = belongsToSeries(),
-        otherMetadata = otherMetadata(),
+    private fun <K, V> List<V>.distributeBy(classes: Set<K>, transform: (V) -> kotlin.collections.Collection<K>): Map<K?, List<V>> {
+        /* Map all elements with [transform] and compute a [Map] with keys [null] and elements from [classes] and,
+         as values, lists of elements whose transformed values contain the key.
+         If a transformed element is in no class, it is assumed to be in [null] class. */
 
-        authors = contributors("aut"),
-        translators = contributors("trl"),
-        editors = contributors("edt"),
-        publishers = contributors("pbl"),
-        artists = contributors("art"),
-        illustrators = contributors("ill"),
-        colorists = contributors("clr"),
-        narrators = contributors("nrt"),
-        contributors = contributors(null)
-    )
-
-    fun identifier(): String? {
-        val identifiers = items[Vocabularies.DCTERMS + "identifier"]
-            ?.associate { Pair(it.property, it.value) }.orEmpty()
-        return uniqueIdentifierId?.let { identifiers[it] } ?: identifiers.values.firstOrNull()
+        val map: MutableMap<K?, MutableList<V>> = mutableMapOf()
+        for (element in this) {
+            val transformed = transform(element).filter { it in classes }
+            if (transformed.isEmpty())
+                map.getOrPut(null) { mutableListOf() }.add(element)
+            for (v in transformed)
+                map.getOrPut(v) { mutableListOf() }.add(element)
+        }
+        return map
     }
-
-    fun published() = firstValue(Vocabularies.DCTERMS + "date")?.iso8601ToDate()
-
-    fun modified() = firstValue(Vocabularies.DCTERMS + "modified")?.iso8601ToDate()
-
-    fun description() = firstValue(Vocabularies.DCTERMS + "description")
-
-    fun cover() = firstValue("cover")
-
-    fun belongsToCollections() = collections
-
-    fun belongsToSeries() = series
-
-    fun languages() = items[Vocabularies.DCTERMS + "language"]?.map(MetadataItem::value).orEmpty()
-
-    fun title() = mainTitle?.value ?: LocalizedString(fallbackTitle)
-
-    fun sortAs() = if (epubVersion < 3.0) firstValue("calibre:title_sort") else mainTitle?.fileAs
-
-    fun subtitle() = titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()?.value
 
     fun contributors(role: String?) = allContributors[role].orEmpty()
 
-    private fun presentation(): Presentation {
+    val readingProgression = readingProgression
+
+    val presentation: Presentation
+
+    init {
         val flowProp = firstValue(Vocabularies.RENDITION + "flow")
         val spreadProp = firstValue(Vocabularies.RENDITION + "spread")
         val orientationProp = firstValue(Vocabularies.RENDITION + "orientation")
@@ -285,32 +344,16 @@ internal class PubMetadataAdapter(
             "both", "portrait" -> Presentation.Spread.BOTH
             else -> Presentation.Spread.AUTO
         }
-        return Presentation(
+
+        presentation = Presentation(
             overflow = overflow, continuous = continuous,
             layout = layout, orientation = orientation, spread = spread
         )
     }
 
-    fun subjects(): List<Subject> {
-        val subjects = items[Vocabularies.DCTERMS + "subject"].orEmpty()
-        val parsedSubjects = subjects.map { it.toSubject(defaultLang) }
-        val hasToSplit = parsedSubjects.size == 1 && parsedSubjects.first().run {
-            localizedName.translations.size == 1 && code == null && scheme == null && sortAs == null
-        }
-        return if (hasToSplit) splitSubject(parsedSubjects.first()) else parsedSubjects
-    }
+    val otherMetadata: Map<String, Any>
 
-    private fun splitSubject(subject: Subject): List<Subject> {
-        val lang = subject.localizedName.translations.keys.first()
-        val names = subject.localizedName.translations.values.first().string.split(",", ";")
-            .map(kotlin.String::trim).filter(kotlin.String::isNotEmpty)
-        return names.map {
-            val newName = LocalizedString.fromStrings(mapOf(lang to it))
-            Subject(localizedName = newName)
-        }
-    }
-
-    fun otherMetadata(): Map<String, Any> {
+    init {
         val dcterms = listOf(
             "identifier", "language", "title", "date", "modified", "description",
             "duration", "creator", "publisher", "contributor"
@@ -319,10 +362,10 @@ internal class PubMetadataAdapter(
         val rendition = listOf("flow", "spread", "orientation", "layout").map { Vocabularies.RENDITION + it }
         val usedProperties: List<String> = dcterms + media + rendition
 
-        val otherMetadata: MutableMap<String, Any> = mutableMapOf()
+        val otherMap: MutableMap<String, Any> = mutableMapOf()
         val others = items.filterKeys { it !in usedProperties }.values.flatten()
-        others.forEach { otherMetadata[it.property] = it.toMap() }
-        return otherMetadata + Pair("presentation", presentation().toJSON().toMap())
+        others.forEach { otherMap[it.property] = it.toMap() }
+        otherMetadata = otherMap + Pair("presentation", presentation.toJSON().toMap())
     }
 }
 
@@ -358,14 +401,13 @@ internal data class MetadataItem(
 
     fun toCollection(defaultLang: String?) = Pair(collectionType, toContributor(defaultLang))
 
-    fun toMap(): Any {
-        return if (children.isEmpty())
+    fun toMap(): Any =
+        if (children.isEmpty())
             value
         else {
             val mappedChildren = children.values.flatten().associate { Pair(it.property, it.toMap()) }
             mappedChildren + Pair("@value", value)
         }
-    }
 
     private val fileAs
         get() = firstValue(Vocabularies.META + "file-as")
@@ -409,33 +451,3 @@ internal data class MetadataItem(
 
     private fun allValues(property: String) = children[property]?.map(MetadataItem::value).orEmpty()
 }
-
-internal data class Title(
-    val value: LocalizedString,
-    val fileAs: String? = null,
-    val type: String? = null,
-    val displaySeq: Int? = null
-)
-
-private fun <K, V> List<V>.distributeBy(classes: Set<K>, transform: (V) -> kotlin.collections.Collection<K>): Map<K?, List<V>> {
-    /* Map all elements with [transform] and compute a [Map] with keys [null] and elements from [classes] and,
-     as values, lists of elements whose transformed values contain the key.
-     If a transformed element is in no class, it is assumed to be in [null] class. */
-
-    val map: MutableMap<K?, MutableList<V>> = mutableMapOf()
-    for (element in this) {
-        val transformed = transform(element).filter { it in classes }
-        if (transformed.isEmpty())
-            map.getOrPut(null) { mutableListOf() }.add(element)
-        for (v in transformed)
-            map.getOrPut(v) { mutableListOf() }.add(element)
-    }
-    return map
-}
-
-private fun String.toDateOrNull() =
-    try {
-        DateTime(this).toDate()
-    } catch (e: Exception) {
-        null
-    }
