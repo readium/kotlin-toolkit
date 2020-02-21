@@ -21,9 +21,6 @@ open class DirectoryContainer(path: String, mimetype: String) : Container {
     override var rootFile: RootFile = RootFile(rootPath = path, mimetype = mimetype)
     override var drm: DRM? = null
 
-    override fun contains(relativePath: String): Boolean =
-        getFile(relativePath).exists()
-
     override fun data(relativePath: String): ByteArray {
         val file = getFile(relativePath)
         if (!file.exists())

@@ -126,7 +126,7 @@ class EpubParser : PublicationParser {
             ArchiveContainer(path = path, mimetype = EPUBConstant.mimetype)
         }
         container.drm =
-            if (container.contains(relativePath = Paths.LCPL)) DRM(DRM.Brand.lcp)
+            if (container.dataLength(relativePath = Paths.LCPL) > 0) DRM(DRM.Brand.lcp)
             else null
         return container
     }
@@ -163,7 +163,7 @@ class EpubParser : PublicationParser {
     }
 
     private fun parseEncryptionData(container: Container): Map<String, Encryption> =
-        if (container.contains(Paths.ENCRYPTION)) {
+        if (container.dataLength(Paths.ENCRYPTION) > 0) {
             parseXmlDocument(Paths.ENCRYPTION, container)?.let {
                 EncryptionParser.parse(it, container.drm)
             }.orEmpty()
