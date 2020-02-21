@@ -32,7 +32,7 @@ open class ArchiveContainer(path: String, mimetype: String) : Container {
     val archive: ZipFile = ZipFile(path)
 
     override fun data(relativePath: String): ByteArray {
-        val zipEntry = getEntry(relativePath)// ?: return ByteArray(0)
+        val zipEntry = getEntry(relativePath)
         val inputStream = archive.getInputStream(zipEntry)
         val outputStream = ByteArrayOutputStream()
         var readLength: Int
@@ -46,18 +46,19 @@ open class ArchiveContainer(path: String, mimetype: String) : Container {
 
     }
 
-    override fun contains(relativePath: String): Boolean =
-        getEntry(relativePath) != null
-
     override fun dataLength(relativePath: String): Long {
-        return getEntry(relativePath)?.size ?: 0
+        try {
+            return getEntry(relativePath).size
+        } catch (e: Exception) {
+            return 0
+        }
     }
 
     override fun dataInputStream(relativePath: String): InputStream {
         return archive.getInputStream(getEntry(relativePath))
     }
     
-    private fun getEntry(relativePath: String): ZipEntry? {
+    private fun getEntry(relativePath: String): ZipEntry {
         var path: String = try {
             URI(relativePath).path
         } catch (e: Exception) {
@@ -79,7 +80,7 @@ open class ArchiveContainer(path: String, mimetype: String) : Container {
                 return zipEntry
         }
 
-        return null
+        throw ContainerError.fileNotFound
     }
 
 }

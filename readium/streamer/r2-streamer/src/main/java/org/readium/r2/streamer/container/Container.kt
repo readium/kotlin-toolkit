@@ -30,7 +30,6 @@ import java.io.InputStream
 interface Container {
     var rootFile: RootFile
     var drm: DRM?
-    fun contains(relativePath: String): Boolean
     fun data(relativePath: String): ByteArray
     fun dataLength(relativePath: String): Long
     fun dataInputStream(relativePath: String): InputStream
