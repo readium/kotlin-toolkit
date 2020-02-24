@@ -42,11 +42,14 @@ data class Acquisition(
 
     companion object {
 
+        fun fromJSON(json: JSONObject?): Acquisition? =
+            fromJSON(json, null)
+
         /**
          * Creates an [Acquisition] from its JSON representation.
          * If the acquisition can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger<JsonWarning>? = null): Acquisition? {
+        internal fun fromJSON(json: JSONObject?, warnings: WarningLogger<JsonWarning>?): Acquisition? {
             val type = json?.optNullableString("type")
             if (type == null) {
                 warnings?.log(Acquisition::class.java, "[type] is required", json)
@@ -59,13 +62,16 @@ data class Acquisition(
             )
         }
 
+        fun fromJSONArray(json: JSONArray?): List<Acquisition> =
+            fromJSONArray(json, null)
+
         /**
          * Creates a list of [Acquisition] from its JSON representation.
          * If an acquisition can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSONArray(
+        internal fun fromJSONArray(
             json: JSONArray?,
-            warnings: WarningLogger<JsonWarning>? = null
+            warnings: WarningLogger<JsonWarning>?
         ): List<Acquisition> {
             return json.parseObjects { fromJSON(it as? JSONObject, warnings) }
         }

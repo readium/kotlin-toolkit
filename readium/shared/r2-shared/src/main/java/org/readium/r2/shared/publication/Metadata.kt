@@ -114,15 +114,18 @@ data class Metadata(
 
     companion object {
 
+        fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Metadata? =
+            fromJSON(json, normalizeHref, null)
+
         /**
          * Parses a [Metadata] from its RWPM JSON representation.
          *
          * If the metadata can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(
+        internal fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>? = null
+            warnings: WarningLogger<JsonWarning>?
         ): Metadata? {
             json ?: return null
             val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)

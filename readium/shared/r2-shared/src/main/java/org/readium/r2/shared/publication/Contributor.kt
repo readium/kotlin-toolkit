@@ -67,6 +67,9 @@ data class Contributor(
 
     companion object {
 
+        fun fromJSON(json: Any?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Contributor? =
+            fromJSON(json, normalizeHref, null)
+
         /**
          * Parses a [Contributor] from its RWPM JSON representation.
          *
@@ -75,10 +78,10 @@ data class Contributor(
          * provided [normalizeHref] closure.
          * If the contributor can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(
+        internal fun fromJSON(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>? = null
+            warnings: WarningLogger<JsonWarning>?
         ): Contributor? {
             json ?: return null
 
@@ -103,6 +106,9 @@ data class Contributor(
             )
         }
 
+        fun fromJSONArray(json: Any?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): List<Contributor> =
+            fromJSONArray(json, normalizeHref, null)
+
         /**
          * Creates a list of [Contributor] from its RWPM JSON representation.
          *
@@ -110,10 +116,10 @@ data class Contributor(
          * provided [normalizeHref] closure.
          * If a contributor can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSONArray(
+        internal fun fromJSONArray(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>? = null
+            warnings: WarningLogger<JsonWarning>?
         ): List<Contributor> {
             return when(json) {
                 is String, is JSONObject ->
