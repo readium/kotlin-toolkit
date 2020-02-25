@@ -48,6 +48,9 @@ import org.readium.r2.navigator.epub.Style
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.shared.*
+import org.readium.r2.shared.publication.ContentLayout
+import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
@@ -76,8 +79,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 it
             } ?: run {
                 val resource = publication.readingOrder[resourcePager.currentItem]
-                val resourceHref = resource.href ?: ""
-                val resourceType = resource.typeLink ?: ""
+                val resourceHref = resource.href
+                val resourceType = resource.type ?: ""
                 Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0))
             }
         }
@@ -340,7 +343,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 return false
             }
         })
-        searchView.setOnQueryTextFocusChangeListener { view, b ->
+        searchView.setOnQueryTextFocusChangeListener { _, b ->
             if (!b) {
                 search_overlay.visibility = View.INVISIBLE
             } else {
@@ -495,8 +498,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             R.id.bookmark -> {
                 val resourceIndex = resourcePager.currentItem.toLong()
                 val resource = publication.readingOrder[resourcePager.currentItem]
-                val resourceHref = resource.href ?: ""
-                val resourceType = resource.typeLink ?: ""
+                val resourceHref = resource.href
+                val resourceType = resource.type ?: ""
                 val resourceTitle = resource.title ?: ""
                 val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocation?.locations?.progression!!)?.let {
                     it
@@ -574,11 +577,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                         val index = fragments.getValue("i").toInt()
                         val searchStorage = getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
                         Handler().postDelayed({
-                            if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+                            if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
                                 val currentFragment = (resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
                                 val resource = publication.readingOrder[resourcePager.currentItem]
-                                val resourceHref = resource.href ?: ""
-                                val resourceType = resource.typeLink ?: ""
+                                val resourceHref = resource.href
+                                val resourceType = resource.type ?: ""
                                 val resourceTitle = resource.title ?: ""
 
                                 currentFragment.webView.runJavaScript("markSearch('${searchStorage.getString("term", null)}', null, '$resourceHref', '$resourceType', '$resourceTitle', '$index')") { result ->
@@ -752,7 +755,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     private fun drawHighlight() {
         val resource = publication.readingOrder[resourcePager.currentItem]
-        highlightDB.highlights.listAll(bookId, resource.href!!).forEach {
+        highlightDB.highlights.listAll(bookId, resource.href).forEach {
             val highlight = convertHighlight2NavigationHighlight(it)
             showHighlight(highlight)
         }
@@ -822,8 +825,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     private fun convertNavigationHighlight2Highlight(highlight: org.readium.r2.navigator.epub.Highlight, annotation: String? = null, annotationMarkStyle: String? = null): Highlight {
         val resourceIndex = resourcePager.currentItem.toLong()
         val resource = publication.readingOrder[resourcePager.currentItem]
-        val resourceHref = resource.href ?: ""
-        val resourceType = resource.typeLink ?: ""
+        val resourceHref = resource.href
+        val resourceType = resource.type ?: ""
         val resourceTitle = resource.title ?: ""
         val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocation?.locations?.progression!!)?.let {
             it
@@ -894,7 +897,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 userSettings.updateViewCSS(SCROLL_REF)
             }, 500)
         } else {
-            if (publication.cssStyle != ContentLayoutStyle.cjkv.name) {
+            if (publication.cssStyle != ContentLayout.CJK_VERTICAL.cssId) {
                 publication.userSettingsUIPreset.remove(ReadiumCSSName.ref(SCROLL_REF))
             }
 

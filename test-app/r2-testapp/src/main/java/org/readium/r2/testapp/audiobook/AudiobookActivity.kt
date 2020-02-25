@@ -35,8 +35,8 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
                 it
             } ?: run {
                 val resource = publication.readingOrder[currentResource]
-                val resourceHref = resource.href ?: ""
-                val resourceType = resource.typeLink ?: ""
+                val resourceHref = resource.href
+                val resourceType = resource.type ?: ""
                 Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0))
             }
         }
@@ -119,8 +119,8 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
                 val resourceIndex = currentResource.toLong()
 
                 val resource = publication.readingOrder[currentResource]
-                val resourceHref = resource.href ?: ""
-                val resourceType = resource.typeLink ?: ""
+                val resourceHref = resource.href
+                val resourceType = resource.type ?: ""
                 val resourceTitle = resource.title ?: ""
 
                 val bookmark = Bookmark(

@@ -20,7 +20,7 @@ import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.json.JSONObject
 import org.readium.r2.shared.Locator
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Publication
 import java.net.URI
 import java.nio.file.Paths
 

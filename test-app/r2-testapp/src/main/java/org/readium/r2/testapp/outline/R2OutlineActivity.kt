@@ -26,10 +26,13 @@ import kotlinx.android.synthetic.main.item_recycle_highlight.view.*
 import kotlinx.android.synthetic.main.item_recycle_outline.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import org.readium.r2.shared.Link
 import org.readium.r2.shared.Locations
 import org.readium.r2.shared.Locator
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.epub.landmarks
+import org.readium.r2.shared.publication.epub.pageList
+import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.*
 import org.readium.r2.testapp.epub.Position
@@ -52,7 +55,7 @@ class R2OutlineActivity : AppCompatActivity() {
         val tabHost = findViewById<TabHost>(R.id.tabhost)
         tabHost.setup()
 
-        val publication = intent.getSerializableExtra("publication") as Publication
+        val publication = intent.getParcelableExtra("publication") as Publication
 
         title = publication.metadata.title
 
@@ -62,7 +65,7 @@ class R2OutlineActivity : AppCompatActivity() {
          */
         val tableOfContext = mutableListOf<Pair<Int,Link>>()
 
-        val contents: MutableList<Link> = when {
+        val contents: List<Link> = when {
             publication.tableOfContents.isNotEmpty() -> {
                 publication.tableOfContents
             }
@@ -92,9 +95,9 @@ class R2OutlineActivity : AppCompatActivity() {
 
             val resource = tableOfContext[position].second
             val resourceHref = resource.href
-            val resourceType = resource.typeLink?: ""
+            val resourceType = resource.type ?: ""
 
-            resourceHref?.let {
+            resourceHref.let {
                 val intent = Intent()
                 
                 if (resourceHref.indexOf("#") > 0) {
@@ -174,8 +177,8 @@ class R2OutlineActivity : AppCompatActivity() {
 
                 //Link to the resource in the publication
                 val link = pageList[position]
-                val resourceHref = link.href?: ""
-                val resourceType = link.typeLink?: ""
+                val resourceHref = link.href
+                val resourceType = link.type ?: ""
 
 
                 val intent = Intent()
@@ -224,8 +227,8 @@ class R2OutlineActivity : AppCompatActivity() {
 
             //Link to the resource in the publication
             val link = landmarks[position]
-            val resourceHref = link.href?: ""
-            val resourceType = link.typeLink?: ""
+            val resourceHref = link.href
+            val resourceType = link.type ?: ""
 
             val intent = Intent()
             intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0),null))

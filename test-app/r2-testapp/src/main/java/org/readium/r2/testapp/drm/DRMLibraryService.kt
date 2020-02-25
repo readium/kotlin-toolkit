@@ -12,8 +12,8 @@ package org.readium.r2.testapp.drm
 
 import android.app.ProgressDialog
 import android.net.Uri
-import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.testapp.db.Book

@@ -34,8 +34,8 @@ import org.jetbrains.anko.design.longSnackbar
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.lcp.public.*
 import org.readium.r2.shared.Injectable
-import org.readium.r2.shared.Publication
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.testapp.db.Book
@@ -296,10 +296,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                                 launch {
                                     val parser = EpubParser()
                                     val pub = parser.parse(publication.localURL)
-                                    pub?.let {
-                                        val pair = parser.fillEncryption(pub.container, pub.publication, pub.container.drm)
-                                        pub.container = pair.first
-                                        pub.publication = pair.second
+                                    if (pub != null) {
                                         prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
                                         progress.dismiss()
                                         catalogView.longSnackbar("publication added to your library")
@@ -358,10 +355,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                         launch {
                             val parser = EpubParser()
                             val pub = parser.parse(result.localURL)
-                            pub?.let {
-                                val pair = parser.fillEncryption(pub.container, pub.publication, pub.container.drm)
-                                pub.container = pair.first
-                                pub.publication = pair.second
+                            if (pub != null) {
                                 prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
                                 progress.dismiss()
                                 catalogView.longSnackbar("publication added to your library")

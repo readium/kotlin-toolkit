@@ -19,7 +19,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mcxiaoke.koi.ext.onClick
 import com.squareup.picasso.Picasso
 import org.jetbrains.anko.intentFor
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 
 class RecyclerViewAdapter(private val activity: Activity, private val strings: MutableList<Publication>) : RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>() {

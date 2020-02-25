@@ -41,6 +41,7 @@ import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.shared.opds.ParseData
+import org.readium.r2.shared.publication.opds.numberOfItems
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
 import timber.log.Timber
