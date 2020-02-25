@@ -13,8 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.text.TextUtils
 import android.webkit.MimeTypeMap
-import org.readium.r2.shared.Link
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.*
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
@@ -84,7 +83,7 @@ class CBZParser : PublicationParser {
     /**
      *
      */
-    override fun parse(fileAtPath: String, title: String): PubBox? {
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
@@ -92,42 +91,33 @@ class CBZParser : PublicationParser {
             return null
         }
         val listFiles = try {
-            container.files
+            container.files.sorted()
         } catch (e: Exception) {
             if (DEBUG) Timber.e(e, "Missing File : META-INF/container.xml")
             return null
         }
 
-        val publication = Publication()
-
-        listFiles.forEach {
-            val link = Link()
-
-            link.typeLink = getMimeType(it)
-            link.href = it
-
-            if (!it.startsWith("_") && !it.startsWith(".")) {
-                if (link.typeLink == CBZConstant.mimetypeJPEG || link.typeLink == CBZConstant.mimetypePNG) {
-                    publication.images.add(link)
-                } else {
-                    publication.resources.add(link)
-                }
-            }
-
-        }
         val hash = fileToMD5(fileAtPath)
-        publication.images.first().rel.add("cover")
+        val metadata = Metadata(identifier = hash, localizedTitle = LocalizedString(fallbackTitle))
 
-        // Add href as title if title is missing (this is used to display the TOC)
-        for (link in publication.images) {
-            if (link.title == null || link.title!!.isEmpty()) {
-                link.title = link.href
-            }
+        val readingOrder = listFiles.mapIndexedNotNull { index, path ->
+            if (path.startsWith("."))
+                null
+            else
+                Link(
+                        href = path,
+                        type = getMimeType(path),
+                        rels = if (index == 0) setOf("cover") else emptySet()
+                )
         }
+        val publication = Publication(
+            metadata = metadata,
+            readingOrder = readingOrder,
+            otherCollections = listOf(
+                PublicationCollection(role = "images", links = readingOrder)
+            )
+        )
 
-        publication.images = publication.images.sortedWith(compareBy { it.href }).toMutableList()
-
-        publication.metadata.identifier = hash!!
         publication.type = Publication.TYPE.CBZ
         return PubBox(publication, container)
     }

@@ -48,7 +48,7 @@ dependencies {
         exclude module: 'support-v4'
     }
     // useful extensions (only ~100k)
-    implementation('com.mcxiaoke.koi:async:0.5.5') {
+        implementation('com.mcxiaoke.koi:async:0.5.5') {
         exclude module: 'support-v4'
     }
     implementation "androidx.appcompat:appcompat:1.2.0-alpha01"
@@ -74,6 +74,7 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.10.3'
 
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.assertj:assertj-core:3.14.0'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"

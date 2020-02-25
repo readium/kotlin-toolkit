@@ -17,8 +17,8 @@ import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
-import org.readium.r2.shared.Link
 import org.readium.r2.shared.MediaOverlays
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.streamer.fetcher.Fetcher
 
 
@@ -56,12 +56,14 @@ class MediaOverlayHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     private fun getMediaOverlay(spines: List<Link>, searchQueryPath: String): MediaOverlays? {
-        for (link in spines) {
-            if (link.href!!.contains(searchQueryPath)) {
-                return link.mediaOverlays
-            }
-        }
-        return MediaOverlays()
+        // FIXME: This is not supported until the model is properly specified
+        return null
+//        for (link in spines) {
+//            if (link.href.contains(searchQueryPath)) {
+//                return link.mediaOverlays
+//            }
+//        }
+//        return MediaOverlays()
     }
 
 }

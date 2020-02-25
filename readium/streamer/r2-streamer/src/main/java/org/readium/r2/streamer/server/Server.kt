@@ -13,7 +13,7 @@ import android.content.Context
 import android.content.res.AssetManager
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.Injectable
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.fetcher.Fetcher
@@ -97,37 +97,37 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkv-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-after.css"), "utf-8")
+            addResource("cjk-vertical-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-after.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkv-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-before.css"), "utf-8")
+            addResource("cjk-vertical-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-before.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkv-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-default.css"), "utf-8")
+            addResource("cjk-vertical-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-default.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkh-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-after.css"), "utf-8")
+            addResource("cjk-horizontal-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-after.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkh-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-before.css"), "utf-8")
+            addResource("cjk-horizontal-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-before.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)
         }
         try {
-            addResource("cjkh-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-default.css"), "utf-8")
+            addResource("cjk-horizontal-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-default.css"), "utf-8")
                     .useDelimiter("\\A").next())
         } catch (e: IOException) {
             if (DEBUG) Timber.d(e)
@@ -175,9 +175,9 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
     fun addEpub(publication: Publication, container: Container, fileName: String, userPropertiesPath: String?) {
         val fetcher = Fetcher(publication, container, userPropertiesPath, customResources)
 
-        addLinks(publication, fileName)
+        // addLinks(publication, fileName)
 
-        publication.addSelfLink(fileName, URL("$BASE_URL:$port"))
+        publication.setSelfLink("$BASE_URL:$port/$fileName/manifest.json")
 
         if (containsMediaOverlay) {
             addRoute(fileName + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)
@@ -190,7 +190,8 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
         addRoute(FONT_HANDLE, FontHandler::class.java, fonts)
     }
 
-    private fun addLinks(publication: Publication, filePath: String) {
+    /* FIXME: To review once the media-overlays will be supported in the Publication model
+         private fun addLinks(publication: Publication, filePath: String) {
         containsMediaOverlay = false
         for (link in publication.otherLinks) {
             if (link.rel.contains("media-overlay")) {
@@ -198,7 +199,7 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
                 link.href = link.href?.replace("port", "127.0.0.1:$listeningPort$filePath")
             }
         }
-    }
+    } */
 
     private fun InputStream.toFile(path: String) {
         use { input ->

@@ -46,7 +46,7 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
             val filePath = getHref(session!!.uri)
             val link = fetcher.publication.linkWithHref(filePath)!!
-            val mimeType = link.typeLink!!
+            val mimeType = link.type ?: ""
 
             // If the content is of type html return the response this is done to
             // skip the check for following font deobfuscation check

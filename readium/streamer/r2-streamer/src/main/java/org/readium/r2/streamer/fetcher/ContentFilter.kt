@@ -11,13 +11,19 @@ package org.readium.r2.streamer.fetcher
 
 import org.json.JSONArray
 import org.json.JSONObject
-import org.readium.r2.shared.*
+import org.readium.r2.shared.Injectable
+import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.extensions.removeLastComponent
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.epub.layout
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.server.Resources
 import java.io.File
 import java.io.InputStream
 
-interface ContentFilters {
+internal interface ContentFilters {
     fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
         return input
     }
@@ -27,16 +33,16 @@ interface ContentFilters {
     }
 }
 
-class ContentFiltersEpub(private val userPropertiesPath: String?, private var customResources: Resources?) : ContentFilters {
+internal class ContentFiltersEpub(private val userPropertiesPath: String?, private var customResources: Resources?) : ContentFilters {
 
     override fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
         publication.linkWithHref(path)?.let { resourceLink ->
 
             var decodedInputStream = DrmDecoder().decoding(input, resourceLink, container.drm)
             decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
-            if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")) {
-                decodedInputStream = if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && resourceLink.properties.layout == null
-                        || resourceLink.properties.layout == "reflowable") {
+            if ((resourceLink.type == "application/xhtml+xml" || resourceLink.type == "text/html")) {
+                decodedInputStream = if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE && resourceLink.properties.layout == null
+                        || resourceLink.properties.layout == EpubLayout.REFLOWABLE) {
                     injectReflowableHtml(decodedInputStream, publication)
                 } else {
                     injectFixedLayoutHtml(decodedInputStream)
@@ -55,12 +61,11 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, private var cu
             val inputStream = input.inputStream()
             var decodedInputStream = DrmDecoder().decoding(inputStream, resourceLink, container.drm)
             decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
-            val baseUrl = publication.baseUrl()?.removeLastComponent()
-            if ((resourceLink.typeLink == "application/xhtml+xml" || resourceLink.typeLink == "text/html")
-                    && baseUrl != null) {
+            if ((resourceLink.type == "application/xhtml+xml" || resourceLink.type == "text/html")
+                    && publication.baseUrl != null) {
                 decodedInputStream =
-                        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable && (resourceLink.properties.layout == null
-                                        || resourceLink.properties.layout == "reflowable")) {
+                        if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE && (resourceLink.properties.layout == null
+                                        || resourceLink.properties.layout == EpubLayout.REFLOWABLE)) {
                             injectReflowableHtml(decodedInputStream, publication)
                         } else {
                             injectFixedLayoutHtml(decodedInputStream)
@@ -159,7 +164,7 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, private var cu
             }
         }
 
-        if (publication.cssStyle == PageProgressionDirection.rtl.name) {
+        if (publication.cssStyle == "rtl") {
             resourceHtml1 = addRTLDir("html", resourceHtml1)
             resourceHtml1 = addRTLDir("body", resourceHtml1)
         }
@@ -319,5 +324,5 @@ class ContentFiltersEpub(private val userPropertiesPath: String?, private var cu
 }
 
 
-class ContentFiltersCbz : ContentFilters
+internal class ContentFiltersCbz : ContentFilters
 

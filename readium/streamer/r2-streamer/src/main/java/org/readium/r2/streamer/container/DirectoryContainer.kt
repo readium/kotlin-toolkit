@@ -22,15 +22,12 @@ open class DirectoryContainer(path: String, mimetype: String) : Container {
     override var drm: DRM? = null
 
     override fun data(relativePath: String): ByteArray {
-
-        val decodedFilePath = rootFile.rootPath + "/" + getDecodedRelativePath(relativePath)
-        val file = File(decodedFilePath)
-
+        val file = getFile(relativePath)
         if (!file.exists())
             throw ContainerError.fileNotFound
 
         val outputStream = ByteArrayOutputStream()
-        var readLength = 0
+        var readLength: Int
         val buffer = ByteArray(16384)
         val inputStream = FileInputStream(file)
 
@@ -42,15 +39,20 @@ open class DirectoryContainer(path: String, mimetype: String) : Container {
     }
 
     override fun dataLength(relativePath: String) =
-            File(rootFile.toString() + "/" + getDecodedRelativePath(relativePath)).length()
+        getFile(relativePath).length()
 
     override fun dataInputStream(relativePath: String) =
-            FileInputStream(File(rootFile.toString() + "/" + getDecodedRelativePath(relativePath)))
+        FileInputStream(getFile(relativePath))
 
 
-    private fun getDecodedRelativePath(relativePath: String): String {
-        val replacedPath = relativePath.replace(" ", "%20")
-        return URI(replacedPath).path
+    private fun getFile(relativePath: String): File {
+        val path = relativePath
+            // Decode the path
+            .replace(" ", "%20")
+            // [Link]'s [href] are prefixed with /
+            .removePrefix("/")
+
+        return File("${rootFile.rootPath}/${URI(path).path}")
     }
 
 }

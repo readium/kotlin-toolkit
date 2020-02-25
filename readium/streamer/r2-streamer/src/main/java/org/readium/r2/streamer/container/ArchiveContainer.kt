@@ -32,10 +32,10 @@ open class ArchiveContainer(path: String, mimetype: String) : Container {
     val archive: ZipFile = ZipFile(path)
 
     override fun data(relativePath: String): ByteArray {
-        val zipEntry = getEntry(relativePath)// ?: return ByteArray(0)
+        val zipEntry = getEntry(relativePath)
         val inputStream = archive.getInputStream(zipEntry)
         val outputStream = ByteArrayOutputStream()
-        var readLength = 0
+        var readLength: Int
         val buffer = ByteArray(16384)
 
         while (inputStream.read(buffer).let { readLength = it; it != -1 })
@@ -47,20 +47,27 @@ open class ArchiveContainer(path: String, mimetype: String) : Container {
     }
 
     override fun dataLength(relativePath: String): Long {
-        return archive.size().toLong()
+        try {
+            return getEntry(relativePath).size
+        } catch (e: Exception) {
+            return 0
+        }
     }
 
     override fun dataInputStream(relativePath: String): InputStream {
         return archive.getInputStream(getEntry(relativePath))
     }
     
-    private fun getEntry(relativePath: String): ZipEntry? {
-
-        val path: String = try {
+    private fun getEntry(relativePath: String): ZipEntry {
+        var path: String = try {
             URI(relativePath).path
         } catch (e: Exception) {
             relativePath
         }
+
+        // [ZipFile] doesn't expect a / at the beginning of relative paths, but [Link]'s [href]
+        // have them.
+        path = path.removePrefix("/")
 
         var zipEntry = archive.getEntry(path)
         if (zipEntry != null)
@@ -73,7 +80,8 @@ open class ArchiveContainer(path: String, mimetype: String) : Container {
                 return zipEntry
         }
 
-        return null
+        throw ContainerError.fileNotFound
     }
+
 }
 

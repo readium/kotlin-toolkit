@@ -20,14 +20,13 @@ import java.io.InputStream
  *                 and the mime type of it
  *
  * @var drm : contain the brand, scheme, profile and license of DRM if it exist
- **
+ *
  * @func data : return the ByteArray content of a file from the publication
  *
  * @func dataLength : return the length of content
  *
  * @func dataInputStream : return the InputStream of content
  */
-
 interface Container {
     var rootFile: RootFile
     var drm: DRM?

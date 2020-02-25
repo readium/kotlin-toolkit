@@ -1,6 +1,6 @@
 /*
  * Module: r2-streamer-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Developers: Aferdita Muriqi, Clément Baumann, Mickaël Menu
  *
  * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -18,13 +18,10 @@ interface CBZContainer : Container {
 }
 
 class CBZArchiveContainer(path: String) : CBZContainer, ArchiveContainer(path, CBZConstant.mimetypeCBZ) {
+
     override val files: List<String>
-        get() {
-            val filesList = mutableListOf<String>()
-            archive.let {
-                val listEntries = it.entries()
-                listEntries.toList().forEach { entry -> filesList.add(entry.toString()) }
-            }
-            return filesList
-        }
+        get() = archive.entries().toList()
+            .filter { !it.isDirectory }
+            .map { it.name }
+
 }

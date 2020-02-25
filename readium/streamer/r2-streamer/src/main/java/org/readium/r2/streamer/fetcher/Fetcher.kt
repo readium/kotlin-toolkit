@@ -9,7 +9,7 @@
 
 package org.readium.r2.streamer.fetcher
 
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.server.Resources
 import java.io.InputStream
@@ -46,7 +46,7 @@ class Fetcher(var publication: Publication, var container: Container, private va
     fun dataLength(path: String): Long {
         val relativePath = rootFileDirectory.plus(path)
 
-        publication.resource(path) ?: throw Exception("Missing file")
+        publication.resourceWithHref(path) ?: throw Exception("Missing file")
         return container.dataLength(relativePath)
     }
 
