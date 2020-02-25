@@ -9,7 +9,7 @@
 
 package org.readium.r2.shared.opds
 
-import org.readium.r2.shared.Link
+import org.readium.r2.shared.publication.Link
 import java.io.Serializable
 
 
