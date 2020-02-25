@@ -32,7 +32,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.duolingo.open.rtlviewpager.DelegatingPagerAdapter;
 
-import org.readium.r2.shared.PageProgressionDirection;
+import org.readium.r2.shared.publication.ReadingProgression;
 
 import java.util.HashMap;
 
@@ -47,7 +47,7 @@ import java.util.HashMap;
  * modifications are kept internal to <code>RtlViewPager</code>.
  */
 public class R2RTLViewPager extends ViewPager {
-    public String direction = PageProgressionDirection.ltr.name();
+    public ReadingProgression direction = ReadingProgression.LTR;
     private int mLayoutDirection = ViewCompat.LAYOUT_DIRECTION_LTR;
     private HashMap<OnPageChangeListener, ReversingOnPageChangeListener> mPageChangeListeners = new HashMap<>();
 
@@ -62,7 +62,7 @@ public class R2RTLViewPager extends ViewPager {
     public void onRtlPropertiesChanged(int layoutDirection) {
         super.onRtlPropertiesChanged(layoutDirection);
         int viewCompatLayoutDirection = layoutDirection == View.LAYOUT_DIRECTION_RTL  ? ViewCompat.LAYOUT_DIRECTION_RTL : ViewCompat.LAYOUT_DIRECTION_LTR;
-        if (direction.equals(PageProgressionDirection.rtl.name())) {
+        if (direction == ReadingProgression.RTL) {
             viewCompatLayoutDirection = ViewCompat.LAYOUT_DIRECTION_RTL;
         }
         if (viewCompatLayoutDirection != mLayoutDirection) {

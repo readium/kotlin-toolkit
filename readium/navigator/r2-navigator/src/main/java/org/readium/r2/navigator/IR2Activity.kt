@@ -12,9 +12,10 @@ package org.readium.r2.navigator
 import android.content.SharedPreferences
 import android.view.View
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.Link
 import org.readium.r2.shared.Locator
-import org.readium.r2.shared.Publication
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression
 import java.net.URL
 
 interface IR2Activity {
@@ -103,15 +104,6 @@ sealed class NavigatorError : Exception() {
 }
 
 
-enum class ReadingProgression(val rawValue: String) {
-    rtl("rtl"), ltr("ltr"), auto("auto");
-
-    companion object {
-        operator fun invoke(rawValue: String) = ReadingProgression.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-
 interface VisualNavigator : Navigator {
     //    val view: UIView
     val readingProgression: ReadingProgression
@@ -123,17 +115,21 @@ interface VisualNavigator : Navigator {
 
 fun VisualNavigator.goLeft(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
     return when (readingProgression) {
-        ReadingProgression.ltr -> goBackward(animated = animated, completion = completion)
-        ReadingProgression.auto -> goBackward(animated = animated, completion = completion)
-        ReadingProgression.rtl -> goForward(animated = animated, completion = completion)
+        ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
+            goBackward(animated = animated, completion = completion)
+
+        ReadingProgression.RTL, ReadingProgression.BTT ->
+            goForward(animated = animated, completion = completion)
     }
 }
 
 fun VisualNavigator.goRight(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
     return when (readingProgression) {
-        ReadingProgression.ltr -> goForward(animated = animated, completion = completion)
-        ReadingProgression.auto -> goForward(animated = animated, completion = completion)
-        ReadingProgression.rtl -> goBackward(animated = animated, completion = completion)
+        ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
+            goForward(animated = animated, completion = completion)
+
+        ReadingProgression.RTL, ReadingProgression.BTT ->
+            goBackward(animated = animated, completion = completion)
     }
 }
 

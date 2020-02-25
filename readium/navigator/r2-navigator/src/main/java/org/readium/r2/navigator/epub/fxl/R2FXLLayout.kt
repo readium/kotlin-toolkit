@@ -414,7 +414,6 @@ class R2FXLLayout : FrameLayout {
     }
 
     fun setScale(scale: Float, animate: Boolean) {
-        val c = getChildAt(0)
         setScale(scale, (right / 2).toFloat(), (bottom / 2).toFloat(), animate)
     }
 

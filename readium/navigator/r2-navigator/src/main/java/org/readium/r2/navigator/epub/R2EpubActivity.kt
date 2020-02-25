@@ -34,6 +34,11 @@ import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.presentation.presentation
 import java.net.URI
 import kotlin.coroutines.CoroutineContext
 
@@ -106,7 +111,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
         resourcePager.adapter = adapter
 
-        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+        if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
             setCurrent(resourcesSingle)
         } else {
 
@@ -150,7 +155,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
                 val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
 
-                if (layoutDirectionIsRTL() || publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                if (layoutDirectionIsRTL() || publication.contentLayout.readingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
                     currentFragment?.webView?.let {
                         currentFragment.webView.progression = 1.0
@@ -164,8 +169,8 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                     }
                 }
                 val resource = publication.readingOrder[resourcePager.currentItem]
-                val resourceHref = resource.href ?: ""
-                val resourceType = resource.typeLink ?: ""
+                val resourceHref = resource.href
+                val resourceType = resource.type ?: ""
 
                 navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = currentFragment?.webView?.progression)))
 
@@ -183,7 +188,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
                 val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
 
-                if (layoutDirectionIsRTL() || publication.metadata.direction == PageProgressionDirection.rtl.name) {
+                if (layoutDirectionIsRTL() || publication.contentLayout.readingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
                     currentFragment?.webView?.let {
                         currentFragment.webView.progression = 0.0
@@ -197,8 +202,8 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                     }
                 }
                 val resource = publication.readingOrder[resourcePager.currentItem]
-                val resourceHref = resource.href ?: ""
-                val resourceType = resource.typeLink ?: ""
+                val resourceHref = resource.href
+                val resourceType = resource.type ?: ""
 
                 navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = currentFragment?.webView?.progression)))
 
@@ -257,7 +262,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         resourcesDouble = ArrayList()
 
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
-        publication = intent.getSerializableExtra("publication") as Publication
+        publication = intent.getParcelableExtra("publication") as Publication
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publicationIdentifier = publication.metadata.identifier!!
 
@@ -274,9 +279,9 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         for ((resourceIndexSingle, spineItem) in publication.readingOrder.withIndex()) {
             val uri: String = if (URI(publicationPath).isAbsolute) {
                 if (URI(spineItem.href).isAbsolute) {
-                    spineItem.href!!
+                    spineItem.href
                 } else {
-                    getAbsolute(spineItem.href!!, publicationPath)
+                    getAbsolute(spineItem.href, publicationPath)
                 }
             } else {
                 "$BASE_URL:$port" + "/" + publicationFileName + spineItem.href
@@ -309,7 +314,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         }
 
 
-        if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+        if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
             adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
             resourcePager.type = Publication.TYPE.EPUB
         } else {
@@ -330,10 +335,10 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         }
         resourcePager.adapter = adapter
 
-        resourcePager.direction = publication.metadata.direction
+        resourcePager.direction = publication.contentLayout.readingProgression
 
-        if (publication.cssStyle == PageProgressionDirection.rtl.name) {
-            resourcePager.direction = PageProgressionDirection.rtl.name
+        if (publication.cssStyle == ReadingProgression.RTL.value) {
+            resourcePager.direction = ReadingProgression.RTL
         }
 
 
@@ -349,7 +354,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
             }
 
             override fun onPageSelected(position: Int) {
-//                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+//                if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
 //                    resourcePager.disableTouchEvents = true
 //                }
                 pagerPosition = 0
@@ -377,10 +382,6 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         })
 
 
-    }
-
-    override fun onWindowStartingActionMode(callback: ActionMode.Callback?, type: Int): ActionMode? {
-        return super.onWindowStartingActionMode(callback, type)
     }
 
     override fun onActionModeStarted(mode: ActionMode?) {
@@ -452,7 +453,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
                 resourcePager.adapter = adapter
 
-                if (publication.metadata.rendition.layout == RenditionLayout.Reflowable) {
+                if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
                     setCurrent(resourcesSingle)
                 } else {
 
@@ -511,8 +512,8 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         currentFragment?.webView?.getCurrentSelectionInfo {
             val selection = JSONObject(it)
             val resource = publication.readingOrder[resourcePager.currentItem]
-            val resourceHref = resource.href ?: ""
-            val resourceType = resource.typeLink ?: ""
+            val resourceHref = resource.href
+            val resourceType = resource.type ?: ""
             val locations = Locations.fromJSON(selection.getJSONObject("locations"))
             val text = LocatorText.fromJSON(selection.getJSONObject("text"))
 

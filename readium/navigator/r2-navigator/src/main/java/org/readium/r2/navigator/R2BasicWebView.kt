@@ -29,6 +29,7 @@ import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.getAbsolute
+import org.readium.r2.shared.publication.ReadingProgression
 
 
 /**
@@ -82,7 +83,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             }
             val scrollMode = listener.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
-                if (listener.publication.metadata.direction == "rtl") {
+                if (listener.publication.contentLayout.readingProgression == ReadingProgression.RTL) {
                     this@R2BasicWebView.evaluateJavascript("scrollRightRTL();") { result ->
                         if (result.contains("edge")) {
                             navigator.goBackward(animated = animated)
@@ -113,7 +114,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             }
             val scrollMode = listener.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
-                if (listener.publication.metadata.direction == "rtl") {
+                if (listener.publication.contentLayout.readingProgression == ReadingProgression.RTL) {
                     this@R2BasicWebView.evaluateJavascript("scrollLeftRTL();") { result ->
                         if (result.contains("edge")) {
                             navigator.goForward(animated = animated)
@@ -230,7 +231,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${listener.publication.metadata.direction}\");", null)
+        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${listener.publication.contentLayout.readingProgression.value}\");", null)
     }
 
     fun setScrollMode(scrollMode: Boolean) {
