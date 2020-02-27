@@ -50,6 +50,9 @@ data class PublicationCollection(
 
     companion object {
 
+        fun fromJSON(role: String, json: Any?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): PublicationCollection? =
+            fromJSON(role, json, normalizeHref, null)
+
         /**
          * Parses a [PublicationCollection] from its RWPM JSON representation.
          *
@@ -59,11 +62,11 @@ data class PublicationCollection(
          *
          * @param role JSON key used to reference the collection in its parent.
          */
-        fun fromJSON(
+        internal fun fromJSON(
             role: String,
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>? = null
+            warnings: WarningLogger<JsonWarning>?
         ): PublicationCollection? {
             json ?: return null
 
@@ -103,6 +106,9 @@ data class PublicationCollection(
             )
         }
 
+        fun collectionsFromJSON(json: JSONObject, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): List<PublicationCollection> =
+            collectionsFromJSON(json, normalizeHref, null)
+
         /**
          * Parses a list of [PublicationCollection] from its RWPM JSON representation.
          *
@@ -110,10 +116,10 @@ data class PublicationCollection(
          * The [links]' href and their children's will be normalized recursively using the
          * provided [normalizeHref] closure.
          */
-        fun collectionsFromJSON(
+        internal fun collectionsFromJSON(
             json: JSONObject,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>? = null
+            warnings: WarningLogger<JsonWarning>?
         ): List<PublicationCollection> {
             val collections = mutableListOf<PublicationCollection>()
             for (role in json.keys().asSequence().sorted()) {

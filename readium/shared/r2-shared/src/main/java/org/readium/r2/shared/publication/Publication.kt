@@ -280,6 +280,9 @@ data class Publication(
 
     companion object {
 
+        fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Publication? =
+            fromJSON(json, normalizeHref, null)
+
         /**
          * Parses a [Publication] from its RWPM JSON representation.
          *
@@ -287,10 +290,10 @@ data class Publication(
          * https://readium.org/webpub-manifest/
          * https://readium.org/webpub-manifest/schema/publication.schema.json
          */
-        fun fromJSON(
+        internal fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>? = null
+            warnings: WarningLogger<JsonWarning>?
         ): Publication? {
             json ?: return null
 

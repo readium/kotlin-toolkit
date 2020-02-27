@@ -11,11 +11,13 @@ package org.readium.r2.shared.util.logging
 
 import org.json.JSONObject
 
+// FIXME: WarningLogger is internal until the Streamer API is specified
+
 /**
  * Interface to be implemented by third-party apps if they want to observe warnings raised, for
  * example, during the parsing of a [Publication].
  */
-interface WarningLogger<in W : Warning> {
+internal interface WarningLogger<in W : Warning> {
 
     fun log(warning: W)
 
@@ -25,7 +27,7 @@ interface WarningLogger<in W : Warning> {
  * Implementation of a [WarningLogger] that accumulates the warnings in a list, to be used as a
  * convenience by third-party apps.
  */
-class ListWarningLogger<W : Warning> : WarningLogger<W> {
+internal class ListWarningLogger<W : Warning> : WarningLogger<W> {
 
     /**
      * The list of accumulated [Warning]s.
@@ -45,7 +47,7 @@ class ListWarningLogger<W : Warning> : WarningLogger<W> {
  * For example, while parsing an EPUB we, might want to report issues in the publication without
  * failing the whole parsing.
  */
-interface Warning {
+internal interface Warning {
 
     /**
      * User-facing message describing the warning.
@@ -61,7 +63,7 @@ interface Warning {
  * @param reason Details about the failure.
  * @param json Source [JSONObject].
  */
-data class JsonWarning(
+internal data class JsonWarning(
     val modelClass: Class<*>,
     val reason: String,
     val json: JSONObject? = null
@@ -77,6 +79,6 @@ data class JsonWarning(
  * @param reason Details about the failure.
  * @param json Source [JSONObject].
  */
-fun WarningLogger<JsonWarning>.log(modelClass: Class<*>, reason: String, json: JSONObject? = null) {
+internal fun WarningLogger<JsonWarning>.log(modelClass: Class<*>, reason: String, json: JSONObject? = null) {
     log(JsonWarning(modelClass, reason, json))
 }

@@ -44,11 +44,14 @@ data class Price(
 
     companion object {
 
+        fun fromJSON(json: JSONObject?): Price? =
+            fromJSON(json, null)
+
         /**
          * Creates an [Price] from its JSON representation.
          * If the price can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger<JsonWarning>? = null): Price? {
+        internal fun fromJSON(json: JSONObject?, warnings: WarningLogger<JsonWarning>?): Price? {
             val currency = json?.optNullableString("currency")
             val value = json?.optPositiveDouble("value")
             if (currency == null || value == null) {
