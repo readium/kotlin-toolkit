@@ -75,7 +75,7 @@ import kotlin.coroutines.CoroutineContext
 class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, VisualNavigatorDelegate, OutlineTableViewControllerDelegate*/ {
 
     override fun locationDidChange(navigator: Navigator?, locator: Locator) {
-        Timber.d("locationDidChange position ${locator.locations.position ?: 0}/${publication.positionList.size} $locator")
+        Timber.d("locationDidChange position ${locator.locations.position ?: 0}/${publication.positions.size} $locator")
         booksDB.books.saveProgression(locator, bookId)
 
         if (this::screenReader.isInitialized && locator.locations.progression == 0.0) {
