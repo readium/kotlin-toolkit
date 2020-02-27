@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.normalize
@@ -140,8 +141,8 @@ internal class PublicationFactory(
         if (contains.isNotEmpty()) {
             properties["contains"] = contains
         }
-        if (others.isNotEmpty()) {
-            properties["others"] = others
+        for (other in others) {
+            properties[other] = true
         }
         if (itemref != null) {
             properties.putAll(parseItemrefProperties(itemref.properties))
@@ -153,7 +154,7 @@ internal class PublicationFactory(
         }
 
         encryptionData[item.href]?.let {
-            properties["encrypted"] = it
+            properties["encrypted"] = it.toJSON().toMap()
         }
 
         return Pair(rels, Properties(properties))
