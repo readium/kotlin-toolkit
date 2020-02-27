@@ -12,6 +12,7 @@ package org.readium.r2.shared.fetcher
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.readium.r2.shared.publication.Link
+import java.io.InputStream
 
 class ContentFilterTest {
 
@@ -20,7 +21,7 @@ class ContentFilterTest {
         val filter = object : ContentFilter {
             override val priority = 0
             override val accepts = listOf("audio/opus", "text/css")
-            override fun filter(input: ByteArray, link: Link): ByteArray = input
+            override fun filter(input: InputStream, link: Link): InputStream = input
         }
 
         val acceptedLink = Link(href = "/stylesheet.css", type = "text/css")
@@ -35,7 +36,7 @@ class ContentFilterTest {
         val filter = object : ContentFilter {
             override val priority = 0
             override val accepts = listOf("audio/*")
-            override fun filter(input: ByteArray, link: Link): ByteArray = input
+            override fun filter(input: InputStream, link: Link): InputStream = input
         }
 
         val link = Link(href = "/chap1.opus", type = "audio/opus")
@@ -47,7 +48,7 @@ class ContentFilterTest {
         val filter = object : ContentFilter {
             override val priority = 0
             override val accepts = listOf("audio/*")
-            override fun filter(input: ByteArray, link: Link): ByteArray = input
+            override fun filter(input: InputStream, link: Link): InputStream = input
         }
 
         val link = Link(href = "/chap1.opus")
@@ -59,7 +60,7 @@ class ContentFilterTest {
         val filter = object : ContentFilter {
             override val priority: Int = 0
             override val accepts: Collection<String> = emptyList()
-            override fun filter(input: ByteArray, link: Link): ByteArray = input
+            override fun filter(input: InputStream, link: Link): InputStream = input
         }
 
         val link1 = Link(href = "/chap1.opus", type = null)
