@@ -25,7 +25,7 @@ class PublicationTest {
         links: List<Link> = listOf(),
         readingOrder: List<Link> = emptyList(),
         resources: List<Link> = emptyList(),
-        positionListFactory: Publication.PositionListFactory? = null
+        positionsFactory: Publication.PositionListFactory? = null
     ) = Publication(
         metadata = Metadata(
             localizedTitle = LocalizedString(title),
@@ -35,7 +35,7 @@ class PublicationTest {
         links = links,
         readingOrder = readingOrder,
         resources = resources,
-        positionListFactory = positionListFactory
+        positionsFactory = positionsFactory
     )
 
     @Test fun `parse minimal JSON`() {
@@ -261,23 +261,23 @@ class PublicationTest {
         )
     }
 
-    @Test fun `get the default empty {positionList}`() {
-        assertEquals(emptyList<Locator>(), createPublication().positionList)
+    @Test fun `get the default empty {positions}`() {
+        assertEquals(emptyList<Locator>(), createPublication().positions)
     }
 
-    @Test fun `get the {positionList} computed from the {positionListFactory}`() {
+    @Test fun `get the {positions} computed from the {positionsFactory}`() {
         assertEquals(
             listOf(Locator(href = "locator", type = "")),
             createPublication(
-                positionListFactory = object : Publication.PositionListFactory {
+                positionsFactory = object : Publication.PositionListFactory {
                     override fun create(): List<Locator> =
                         listOf(Locator(href = "locator", type = ""))
                 }
-            ).positionList
+            ).positions
         )
     }
 
-    @Test fun `get the {positionListByResource} computed from the {positionListFactory}`() {
+    @Test fun `get the {positionsByResource} computed from the {positionsFactory}`() {
         assertEquals(
             mapOf(
                 "res1" to listOf(
@@ -289,14 +289,14 @@ class PublicationTest {
                 )
             ),
             createPublication(
-                positionListFactory = object : Publication.PositionListFactory {
+                positionsFactory = object : Publication.PositionListFactory {
                     override fun create(): List<Locator> = listOf(
                         Locator(href="res1", type = "text/html", title = "Loc A"),
                         Locator(href="res2", type = "text/html", title = "Loc B"),
                         Locator(href="res1", type = "text/html", title = "Loc B")
                     )
                 }
-            ).positionListByResource
+            ).positionsByResource
         )
     }
 

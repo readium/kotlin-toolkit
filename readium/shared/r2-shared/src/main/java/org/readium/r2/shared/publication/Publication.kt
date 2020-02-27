@@ -37,7 +37,7 @@ import java.net.URL
  *
  * @param type The kind of publication it is ( Epub, Cbz, ... )
  * @param version The version of the publication, if the type needs any.
- * @param positionListFactory Factory used to build lazily the [positionList].
+ * @param positionsFactory Factory used to build lazily the [positions].
  */
 @Parcelize
 data class Publication(
@@ -50,7 +50,7 @@ data class Publication(
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
     val otherCollections: List<PublicationCollection> = emptyList(),
-    val positionListFactory: @WriteWith<PositionListFactory.Parceler> PositionListFactory? = null,
+    val positionsFactory: @WriteWith<PositionListFactory.Parceler> PositionListFactory? = null,
 
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
     var type: TYPE = TYPE.EPUB,
@@ -66,7 +66,7 @@ data class Publication(
 ) : JSONable, Parcelable {
 
     /**
-     * Creates a [Publication]'s [positionList].
+     * Creates a [Publication]'s [positions].
      *
      * The parsers provide an implementation of this interface for each format, but a host app
      * might want to use a custom factory to implement, for example, a caching mechanism or use a
@@ -79,7 +79,7 @@ data class Publication(
          * Implementation of a [Parceler] to be used with [@Parcelize] to serialize a
          * [PositionListFactory].
          *
-         * Since we can't serialize a factory, we're loading eagerly the [positionList] to be
+         * Since we can't serialize a factory, we're loading eagerly the [positions] to be
          * serialized. Upon deserialization, the positions will be wrapped in a static factory.
          *
          * This won't be needed anymore once we use [Fragment] instead of [Activity] in the
@@ -87,8 +87,8 @@ data class Publication(
          */
         object Parceler : kotlinx.android.parcel.Parceler<PositionListFactory?> {
 
-            private class StaticPositionListFactory(private val positionList: List<Locator>): PositionListFactory {
-                override fun create(): List<Locator> = positionList
+            private class StaticPositionListFactory(private val positions: List<Locator>): PositionListFactory {
+                override fun create(): List<Locator> = positions
             }
 
             override fun create(parcel: Parcel): PositionListFactory? =
@@ -141,16 +141,16 @@ data class Publication(
      * List of all the positions in the publication.
      */
     @IgnoredOnParcel
-    val positionList: List<Locator> by lazy {
-        positionListFactory?.create() ?: emptyList()
+    val positions: List<Locator> by lazy {
+        positionsFactory?.create() ?: emptyList()
     }
 
     /**
      * List of all the positions in each resource, indexed by their [href].
      */
     @IgnoredOnParcel
-    val positionListByResource: Map<String, List<Locator>> by lazy {
-        positionList.groupBy { it.href }
+    val positionsByResource: Map<String, List<Locator>> by lazy {
+        positions.groupBy { it.href }
     }
 
     /**
@@ -274,8 +274,8 @@ data class Publication(
      * The provided closure will be used to build the [PositionListFactory], with [this] being the
      * [Publication].
      */
-    fun copyWithPositionListFactory(createFactory: Publication.() -> PositionListFactory): Publication {
-        return run { copy(positionListFactory = createFactory()) }
+    fun copyWithPositionsFactory(createFactory: Publication.() -> PositionListFactory): Publication {
+        return run { copy(positionsFactory = createFactory()) }
     }
 
     companion object {
