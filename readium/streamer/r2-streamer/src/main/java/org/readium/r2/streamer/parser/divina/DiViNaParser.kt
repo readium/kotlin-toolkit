@@ -88,7 +88,7 @@ class DiViNaParser : PublicationParser {
 
         //Parsing manifest.json & building publication object
         val publication = Publication.fromJSON(json)
-            ?.copyWithPositionListFactory {
+            ?.copyWithPositionsFactory {
                 PerResourcePositionListFactory(
                     readingOrder = readingOrder,
                     fallbackMediaType = "image/*"

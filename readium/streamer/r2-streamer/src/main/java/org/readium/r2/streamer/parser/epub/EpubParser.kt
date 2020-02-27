@@ -107,7 +107,7 @@ class EpubParser : PublicationParser {
                 encryptionData = parseEncryptionData(container),
                 displayOptions = parseDisplayOptions(container)
             ).create()
-            .copyWithPositionListFactory {
+            .copyWithPositionsFactory {
                 EpubPositionListFactory(
                     container = container,
                     readingOrder = readingOrder,

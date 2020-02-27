@@ -20,7 +20,7 @@ import org.readium.r2.streamer.container.Container
 import kotlin.math.ceil
 
 /**
- * Creates the [positionList] for an EPUB [Publication] from its [readingOrder] and [container].
+ * Creates the [positions] for an EPUB [Publication] from its [readingOrder] and [container].
  *
  * The [presentation] is used to apply different calculation strategy if the resource has a
  * reflowable or fixed layout.
@@ -40,7 +40,7 @@ internal class EpubPositionListFactory(
 
     override fun create(): List<Locator> {
         var lastPositionOfPreviousResource = 0
-        var positionList = readingOrder.flatMap { link ->
+        var positions = readingOrder.flatMap { link ->
             val positions =
                 if (presentation.layoutOf(link) == EpubLayout.FIXED) {
                     createFixed(link, lastPositionOfPreviousResource)
@@ -56,8 +56,8 @@ internal class EpubPositionListFactory(
         }
 
         // Calculates [totalProgression].
-        val totalPageCount = positionList.size
-        positionList = positionList.map { locator ->
+        val totalPageCount = positions.size
+        positions = positions.map { locator ->
             val position = locator.locations.position
             if (position == null) {
                 locator
@@ -68,7 +68,7 @@ internal class EpubPositionListFactory(
             }
         }
 
-        return positionList
+        return positions
     }
 
     private fun createFixed(link: Link, startPosition: Int) = listOf(

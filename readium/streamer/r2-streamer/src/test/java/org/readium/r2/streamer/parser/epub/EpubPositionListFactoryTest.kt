@@ -418,9 +418,6 @@ class EpubPositionListFactoryTest {
             override var rootFile: RootFile = RootFile()
             override var drm: DRM? = null
 
-            override fun contains(relativePath: String): Boolean =
-                findResource(relativePath) != null
-
             override fun data(relativePath: String): ByteArray =
                 ByteArray(0)
 

@@ -114,7 +114,7 @@ class CBZParser : PublicationParser {
             otherCollections = listOf(
                 PublicationCollection(role = "images", links = readingOrder)
             ),
-            positionListFactory = PerResourcePositionListFactory(
+            positionsFactory = PerResourcePositionListFactory(
                 readingOrder = readingOrder,
                 fallbackMediaType = "image/*"
             )

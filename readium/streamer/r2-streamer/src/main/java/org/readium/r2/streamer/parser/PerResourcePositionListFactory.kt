@@ -14,7 +14,7 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 
 /**
- * Creates the [positionList] for a [Publication] that will have one position per [readingOrder]
+ * Creates the [positions] for a [Publication] that will have one position per [readingOrder]
  * resource.
  *
  * This is used for CBZ and DiViNa formats.
