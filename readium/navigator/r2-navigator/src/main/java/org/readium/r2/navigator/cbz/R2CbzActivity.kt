@@ -31,7 +31,7 @@ import kotlin.coroutines.CoroutineContext
 open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator {
 
     override val currentLocation: Locator?
-        get() = publication.positionList[resourcePager.currentItem]
+        get() = publication.positions[resourcePager.currentItem]
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)

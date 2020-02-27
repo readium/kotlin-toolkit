@@ -484,7 +484,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     override val currentLocation: Locator? get() {
         val resource = publication.readingOrder[resourcePager.currentItem]
         val progression = currentFragment?.webView?.progression ?: 0.0
-        val positions = publication.positionListByResource[resource.href]
+        val positions = publication.positionsByResource[resource.href]
             ?: return null
         val positionIndex = ceil(progression * (positions.size - 1)).toInt()
         return positions[positionIndex]
