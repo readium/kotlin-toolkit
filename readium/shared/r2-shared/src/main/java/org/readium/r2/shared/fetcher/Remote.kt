@@ -64,8 +64,15 @@ private class HttpResourceHandle(href: String): ResourceHandle(href) {
             ?.firstOrNull()
     }
 
+    override val mimeType: String? by lazy {
+        headerFields?.get("content-type")?.firstOrNull()
+    }
+
     override val encoding: String? by lazy {
-        headerFields?.get("content-encoding")?.firstOrNull()
+        mimeType?.let {
+            """charset=["]?(\S&&[^;])["]?""".toRegex(RegexOption.IGNORE_CASE)
+                .find(it)?.groups?.get(1)?.value
+        }
     }
 }
 

@@ -15,8 +15,10 @@ import java.nio.ByteBuffer
 
 interface Fetcher {
 
+    /** Return a handle to try to retrieve a `link`'s content or properties, or null if the href is early detected as not valid. */
     fun fetch(link: Link): ResourceHandle?
 
+    /** Close resources associated with the fetcher when there is any one */
     fun close() {}
 }
 
@@ -24,6 +26,8 @@ abstract class ResourceHandle(val href: String) {
 
     /** Return a new stream for reading the resource. */
     abstract fun stream(): InputStream?
+
+    open val mimeType: String? = null
 
     /** The encoding of the resource if it is text and the information is available, null otherwise. */
     open val encoding: String? = null

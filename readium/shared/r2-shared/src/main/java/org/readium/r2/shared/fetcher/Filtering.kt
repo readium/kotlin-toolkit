@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.fetcher
 
+import android.content.Intent
 import androidx.core.content.MimeTypeFilter
 import org.readium.r2.shared.publication.Link
 import java.io.InputStream
@@ -21,8 +22,15 @@ interface ContentFilter {
 
     fun filter(input: InputStream, link: Link): InputStream
 
-    fun acceptsLink(link: Link): Boolean =
-        accepts.map { MimeTypeFilter.matches(link.type, it) }.any { it }
+    fun acceptsLink(link: Link): Boolean {
+        val normalizedLinkType = link.type?.let { Intent.normalizeMimeType(it) }
+        return accepts
+            .map {
+                    val normalizedFilter =  Intent.normalizeMimeType(it)!! // null is returned only when input is null
+                    MimeTypeFilter.matches(normalizedLinkType, normalizedFilter)
+                }
+            .any { it }
+    }
 }
 
 class FilteredFetcher(val fetcher: Fetcher, val filters: Collection<ContentFilter>) : Fetcher {
