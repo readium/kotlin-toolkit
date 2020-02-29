@@ -31,26 +31,20 @@ class DirectoryFetcher(val directory: String) : Fetcher {
     }
 
     override fun fetch(link: Link): ResourceHandle? = FileHandle(link.href, directory)
-
-
 }
 
 private class FileHandle(href: String, val parent: String? = null) : ResourceHandle(href) {
 
     private val file = File(parent, href)
 
-    override fun stream(): InputStream? = streamOfFile(file)
-
-    override val length: Long? by lazy { lengthOfFile(file) ?: super.length }
-
-    private fun streamOfFile(file: File): InputStream? =
+    override fun stream(): InputStream? =
         try {
             file.inputStream().buffered()
         } catch (e: FileNotFoundException) {
             null
         }
 
-    private fun lengthOfFile(file: File): Long? =
+    override val metadataLength: Long? by lazy {
         if (Build.VERSION.SDK_INT > 25) {
             // this version reads file's attributes in bulk, so consistency is ensured
             try {
@@ -59,9 +53,8 @@ private class FileHandle(href: String, val parent: String? = null) : ResourceHan
             } catch (e: Exception) {
                 null
             }
-        } else if (!file.isFile) {
-            null
         } else {
-            file.length().takeUnless { it == 0L }
+            file.length().takeIf { file.isFile && it != 0L }
         }
+    }
 }
