@@ -12,7 +12,6 @@ package org.readium.r2.shared.fetcher
 import android.content.Intent
 import androidx.core.content.MimeTypeFilter
 import org.readium.r2.shared.publication.Link
-import java.io.InputStream
 
 interface ContentFilter {
 
@@ -38,27 +37,10 @@ class FilteredFetcher(val fetcher: Fetcher, val filters: Collection<ContentFilte
     override fun fetch(link: Link): ResourceHandle? {
         val resource = fetcher.fetch(link) ?: return null
         val acceptedFilters = filters.filter { it.acceptsLink(resource) }
-        return FilteredHandle(link, resource, acceptedFilters)
+        return acceptedFilters.toList().fold(resource) { acc, filter -> filter.filter(acc, link) }
     }
 
     override fun close() {
         fetcher.close()
     }
-}
-
-private class FilteredHandle(link: Link, val resource: ResourceHandle, val filters: Collection<ContentFilter>)
-    : ResourceHandle(link) {
-
-    private val filteredResource: ResourceHandle? by lazy {
-        filters.toList().fold(resource) { acc, filter -> filter.filter(acc, link) }
-    }
-
-    override fun stream(): InputStream? = filteredResource?.stream()
-
-    override val encoding =  filteredResource?.encoding
-
-    override val mimeType: String? = filteredResource?.mimeType
-
-    override val metadataLength: Long? = filteredResource?.metadataLength
-
 }
