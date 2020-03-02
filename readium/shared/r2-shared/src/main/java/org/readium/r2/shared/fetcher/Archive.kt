@@ -18,7 +18,7 @@ import java.util.zip.ZipFile
 
 class ZipFetcher(val archive: ZipFile) : Fetcher {
 
-    override fun fetch(link: Link): ResourceHandle? = ZipEntryHandle(link.href, archive)
+    override fun fetch(link: Link): ResourceHandle? = ZipEntryHandle(link, archive)
 
     override fun close() = archive.close()
 
@@ -31,10 +31,10 @@ class ZipFetcher(val archive: ZipFile) : Fetcher {
     }
 }
 
-private class ZipEntryHandle(href: String, val archive: ZipFile) : ResourceHandle(href) {
+private class ZipEntryHandle(link: Link, val archive: ZipFile) : ResourceHandle(link) {
 
     override fun stream(): InputStream? {
-        val entry = entryFromHref(href)
+        val entry = entryFromHref(link.href)
         return try {
             archive.getInputStream(entry)
         } catch (e: ZipException) {
@@ -45,7 +45,7 @@ private class ZipEntryHandle(href: String, val archive: ZipFile) : ResourceHandl
     }
 
     override val metadataLength: Long? by lazy {
-        entryFromHref(href)?.size?.takeIf { it != -1L }
+        entryFromHref(link.href)?.size?.takeIf { it != -1L }
     }
 
     private fun entryFromHref(href: String): ZipEntry? =

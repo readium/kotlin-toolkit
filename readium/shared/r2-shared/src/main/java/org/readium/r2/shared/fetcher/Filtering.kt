@@ -20,10 +20,10 @@ interface ContentFilter {
 
     val accepts: Collection<String>
 
-    fun filter(input: InputStream, link: Link): InputStream
+    fun filter(resource: ResourceHandle, link: Link): ResourceHandle
 
-    fun acceptsLink(link: Link): Boolean {
-        val normalizedLinkType = link.type?.let { Intent.normalizeMimeType(it) }
+    fun acceptsLink(resource: ResourceHandle): Boolean {
+        val normalizedLinkType = resource.mimeType?.let { Intent.normalizeMimeType(it) }
         return accepts
             .map {
                     val normalizedFilter =  Intent.normalizeMimeType(it)!! // null is returned only when input is null
@@ -37,7 +37,7 @@ class FilteredFetcher(val fetcher: Fetcher, val filters: Collection<ContentFilte
 
     override fun fetch(link: Link): ResourceHandle? {
         val resource = fetcher.fetch(link) ?: return null
-        val acceptedFilters = filters.filter { it.acceptsLink(link) }
+        val acceptedFilters = filters.filter { it.acceptsLink(resource) }
         return FilteredHandle(link, resource, acceptedFilters)
     }
 
@@ -46,13 +46,19 @@ class FilteredFetcher(val fetcher: Fetcher, val filters: Collection<ContentFilte
     }
 }
 
-private class FilteredHandle(val link: Link, val resource: ResourceHandle, val filters: Collection<ContentFilter>)
-    : ResourceHandle(resource.href) {
+private class FilteredHandle(link: Link, val resource: ResourceHandle, val filters: Collection<ContentFilter>)
+    : ResourceHandle(link) {
 
-    override fun stream(): InputStream?  {
-        val originalStream = resource.stream() ?: return null
-        return filters.toList().fold(originalStream) { stream, filter -> filter.filter(stream, link) }
+    private val filteredResource: ResourceHandle? by lazy {
+        filters.toList().fold(resource) { acc, filter -> filter.filter(acc, link) }
     }
 
-    override val encoding = resource.encoding
+    override fun stream(): InputStream? = filteredResource?.stream()
+
+    override val encoding =  filteredResource?.encoding
+
+    override val mimeType: String? = filteredResource?.mimeType
+
+    override val metadataLength: Long? = filteredResource?.metadataLength
+
 }

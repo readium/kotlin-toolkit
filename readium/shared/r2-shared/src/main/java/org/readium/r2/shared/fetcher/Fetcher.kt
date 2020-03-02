@@ -22,12 +22,12 @@ interface Fetcher {
     fun close() {}
 }
 
-abstract class ResourceHandle(val href: String) {
+abstract class ResourceHandle(val link: Link) {
 
     /** Return a new stream for reading the resource. */
     abstract fun stream(): InputStream?
 
-    open val mimeType: String? = null
+    open val mimeType: String? = link.type
 
     /** The encoding of the resource if it is text and the information is available, null otherwise. */
     open val encoding: String? = null
@@ -59,7 +59,7 @@ abstract class ResourceHandle(val href: String) {
     }
 
     /** An estimate of data length from metadata */
-    open protected val metadataLength: Long? = null
+    open val metadataLength: Long? = null
 }
 
 class CompositeFetcher(val selector: (Link) -> Fetcher, val children: Collection<Fetcher>) : Fetcher {

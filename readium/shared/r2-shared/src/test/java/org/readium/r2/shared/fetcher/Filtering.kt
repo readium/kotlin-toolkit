@@ -21,14 +21,20 @@ class ContentFilterTest {
         val filter = object : ContentFilter {
             override val priority = 0
             override val accepts = listOf("audio/opus", "text/css")
-            override fun filter(input: InputStream, link: Link): InputStream = input
+            override fun filter(resource: ResourceHandle, link: Link): ResourceHandle = resource
         }
 
-        val acceptedLink = Link(href = "/stylesheet.css", type = "text/css")
-        assertThat(filter.acceptsLink(acceptedLink)).isTrue()
+        val acceptedResource = object : ResourceHandle(Link(href = "/stylesheet.css", type = "text/css")) {
+            override fun stream(): InputStream? = null
+        }
 
-        val rejectedLink = Link(href = "/chap1.xhtml", type = "application/xhtml+xml")
-        assertThat(filter.acceptsLink(rejectedLink)).isFalse()
+        assertThat(filter.acceptsLink(acceptedResource)).isTrue()
+
+        val rejectedResource = object : ResourceHandle(Link(href = "/chap1.xhtml", type = "application/xhtml+xml")) {
+            override fun stream(): InputStream? = null
+        }
+
+        assertThat(filter.acceptsLink(rejectedResource)).isFalse()
     }
 
     @Test
@@ -36,11 +42,13 @@ class ContentFilterTest {
         val filter = object : ContentFilter {
             override val priority = 0
             override val accepts = listOf("audio/*")
-            override fun filter(input: InputStream, link: Link): InputStream = input
+            override fun filter(resource: ResourceHandle, link: Link): ResourceHandle = resource
         }
 
-        val link = Link(href = "/chap1.opus", type = "audio/opus")
-        assertThat(filter.acceptsLink(link)).isTrue()
+        val resource = object : ResourceHandle(Link(href = "/chap1.opus", type = "audio/opus")) {
+            override fun stream(): InputStream? = null
+        }
+        assertThat(filter.acceptsLink(resource)).isTrue()
     }
 
     @Test
@@ -48,11 +56,13 @@ class ContentFilterTest {
         val filter = object : ContentFilter {
             override val priority = 0
             override val accepts = listOf("audio/*")
-            override fun filter(input: InputStream, link: Link): InputStream = input
+            override fun filter(resource: ResourceHandle, link: Link): ResourceHandle = resource
         }
 
-        val link = Link(href = "/chap1.opus")
-        assertThat(filter.acceptsLink(link)).isFalse()
+        val resource = object : ResourceHandle(Link(href = "/chap1.opus")) {
+            override fun stream(): InputStream? = null
+        }
+        assertThat(filter.acceptsLink(resource)).isFalse()
     }
 
     @Test
@@ -60,12 +70,17 @@ class ContentFilterTest {
         val filter = object : ContentFilter {
             override val priority: Int = 0
             override val accepts: Collection<String> = emptyList()
-            override fun filter(input: InputStream, link: Link): InputStream = input
+            override fun filter(resource: ResourceHandle, link: Link): ResourceHandle = resource
         }
 
-        val link1 = Link(href = "/chap1.opus", type = null)
-        assertThat(filter.acceptsLink(link1)).isFalse()
-        val link2 = Link(href = "/chap2.opus", type = "audio/opus")
-        assertThat(filter.acceptsLink(link2)).isFalse()
+        val resource1 = object : ResourceHandle(Link(href = "/chap1.opus", type = null)) {
+            override fun stream(): InputStream? = null
+        }
+        assertThat(filter.acceptsLink(resource1)).isFalse()
+
+        val resource2 = object : ResourceHandle(Link(href = "/chap2.opus", type = "audio/opus")) {
+            override fun stream(): InputStream? = null
+        }
+        assertThat(filter.acceptsLink(resource2)).isFalse()
     }
 }

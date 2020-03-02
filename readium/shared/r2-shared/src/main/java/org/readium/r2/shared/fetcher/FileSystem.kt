@@ -21,7 +21,7 @@ class FileFetcher(val files: Map<String, String>) : Fetcher {
 
     constructor(file: String, href: String) : this(mapOf(href to file))
 
-    override fun fetch(link: Link): ResourceHandle? = FileHandle(link.href)
+    override fun fetch(link: Link): ResourceHandle? = FileHandle(link)
 }
 
 class DirectoryFetcher(val directory: String) : Fetcher {
@@ -30,12 +30,12 @@ class DirectoryFetcher(val directory: String) : Fetcher {
         fun fromPath(path: String): DirectoryFetcher? = if (File(path).isDirectory) fromPath(path) else null
     }
 
-    override fun fetch(link: Link): ResourceHandle? = FileHandle(link.href, directory)
+    override fun fetch(link: Link): ResourceHandle? = FileHandle(link, directory)
 }
 
-private class FileHandle(href: String, val parent: String? = null) : ResourceHandle(href) {
+private class FileHandle(link: Link, val parent: String? = null) : ResourceHandle(link) {
 
-    private val file = File(parent, href)
+    private val file = File(parent, link.href)
 
     override fun stream(): InputStream? =
         try {
