@@ -24,6 +24,7 @@ import org.readium.r2.shared.Locator
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.BooksDatabase
+import org.readium.r2.testapp.library.LibraryActivity
 import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
 import kotlin.coroutines.CoroutineContext
@@ -66,7 +67,9 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
     private lateinit var booksDB: BooksDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (activitiesLaunched.incrementAndGet() > 1) { finish(); }
+        if (activitiesLaunched.incrementAndGet() > 1 || !LibraryActivity.isServerStarted) {
+            finish()
+        }
         super.onCreate(savedInstanceState)
 
         booksDB = BooksDatabase(this)
