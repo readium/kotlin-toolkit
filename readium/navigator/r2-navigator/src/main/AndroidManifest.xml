@@ -15,10 +15,7 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
 
-    <application
-        android:allowBackup="false"
-        android:supportsRtl="true"
-        tools:replace="android:allowBackup">
+    <application>
 
         <activity
             android:name=".epub.R2EpubActivity"
