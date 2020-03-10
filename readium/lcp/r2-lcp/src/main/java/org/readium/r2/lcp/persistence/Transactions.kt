@@ -15,7 +15,7 @@ import org.jetbrains.anko.db.rowParser
 import org.jetbrains.anko.db.select
 import org.readium.r2.lcp.service.PassphrasesRepository
 
-object TransactionsTable {
+internal object TransactionsTable {
     const val NAME = "Transactions"
     const val ID = "id"
     const val ORIGIN = "origin"
@@ -23,7 +23,7 @@ object TransactionsTable {
     const val PASSPHRASE = "passphrase"
 }
 
-class Transactions(var database: LcpDatabaseOpenHelper) : PassphrasesRepository {
+internal class Transactions(var database: LcpDatabaseOpenHelper) : PassphrasesRepository {
 
     override fun passphrase(licenseId: String): String? {
         return database.use {

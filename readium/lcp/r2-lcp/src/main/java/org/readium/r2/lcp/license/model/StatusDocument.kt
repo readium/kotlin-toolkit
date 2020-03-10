@@ -15,10 +15,9 @@ import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.license.model.components.Links
 import org.readium.r2.lcp.license.model.components.lsd.Event
 import org.readium.r2.lcp.license.model.components.lsd.PotentialRights
-import org.readium.r2.lcp.public.ParsingError
+import org.readium.r2.lcp.ParsingError
 import java.net.URL
 import java.nio.charset.Charset
-
 
 data class StatusDocument(val data: ByteArray) {
 

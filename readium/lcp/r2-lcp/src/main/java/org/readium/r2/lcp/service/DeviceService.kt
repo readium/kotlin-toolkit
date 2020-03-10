@@ -15,11 +15,11 @@ import android.content.SharedPreferences
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
-import org.readium.r2.lcp.public.LCPError
+import org.readium.r2.lcp.LCPError
 import java.io.Serializable
 import java.util.*
 
-class DeviceService(private val repository: DeviceRepository, private val network: NetworkService, val context: Context):Serializable {
+internal class DeviceService(private val repository: DeviceRepository, private val network: NetworkService, val context: Context):Serializable {
 
     val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 

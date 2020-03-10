@@ -11,7 +11,6 @@ package org.readium.r2.lcp.license.model.components
 
 import org.json.JSONArray
 
-
 data class Links(val json: JSONArray) {
 
     var links:MutableList<Link> = mutableListOf()

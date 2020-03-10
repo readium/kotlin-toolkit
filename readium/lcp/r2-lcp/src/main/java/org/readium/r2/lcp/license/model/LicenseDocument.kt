@@ -17,10 +17,9 @@ import org.readium.r2.lcp.license.model.components.lcp.Encryption
 import org.readium.r2.lcp.license.model.components.lcp.Rights
 import org.readium.r2.lcp.license.model.components.lcp.Signature
 import org.readium.r2.lcp.license.model.components.lcp.User
-import org.readium.r2.lcp.public.ParsingError
+import org.readium.r2.lcp.ParsingError
 import java.net.URL
 import java.nio.charset.Charset
-
 
 data class LicenseDocument(val data: ByteArray) {
     val provider: String

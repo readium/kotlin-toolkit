@@ -12,7 +12,6 @@ package org.readium.r2.lcp.license.model.components.lsd
 import org.joda.time.DateTime
 import org.json.JSONObject
 
-
 data class PotentialRights(val json: JSONObject) {
     val end: DateTime?
 

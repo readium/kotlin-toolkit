@@ -18,14 +18,14 @@ import org.jetbrains.anko.db.createTable
 
 
 // Access property for Context
-val Context.database: LcpDatabaseOpenHelper
+internal val Context.database: LcpDatabaseOpenHelper
     get() = LcpDatabaseOpenHelper.getInstance(applicationContext)
 
-val Context.appContext: Context
+internal val Context.appContext: Context
     get() = applicationContext
 
 
-class Database(context: Context) {
+internal class Database(context: Context) {
 
     val shared: LcpDatabaseOpenHelper = LcpDatabaseOpenHelper(context)
     var licenses: Licenses
@@ -38,8 +38,7 @@ class Database(context: Context) {
 
 }
 
-
-class LcpDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "lcpdatabase", null, 1) {
+internal class LcpDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "lcpdatabase", null, 1) {
     companion object {
         private var instance: LcpDatabaseOpenHelper? = null
 

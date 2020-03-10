@@ -13,37 +13,37 @@ import org.joda.time.DateTime
 import org.readium.lcp.sdk.DRMContext
 import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.BuildConfig.DEBUG
+import org.readium.r2.lcp.LCPAuthenticating
+import org.readium.r2.lcp.LCPError
+import org.readium.r2.lcp.StatusError
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.license.model.components.Link
-import org.readium.r2.lcp.public.LCPAuthenticating
-import org.readium.r2.lcp.public.LCPError
-import org.readium.r2.lcp.public.StatusError
 import org.readium.r2.lcp.service.CRLService
 import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesService
 import timber.log.Timber
 
-sealed class Either<A, B> {
+internal sealed class Either<A, B> {
     class Left<A, B>(val left: A) : Either<A, B>()
     class Right<A, B>(val right: B) : Either<A, B>()
 }
 
 private val supportedProfiles = listOf("http://readium.org/lcp/basic-profile", "http://readium.org/lcp/profile-1.0")
 
-typealias Context = Either<DRMContext, StatusError>
+internal typealias Context = Either<DRMContext, StatusError>
 
-typealias Observer = (ValidatedDocuments?, Exception?) -> Unit
+internal typealias Observer = (ValidatedDocuments?, Exception?) -> Unit
 
 private var observers: MutableList<Pair<Observer, ObserverPolicy>> = mutableListOf()
 
-enum class ObserverPolicy {
+internal enum class ObserverPolicy {
     once,
     always
 }
 
-data class ValidatedDocuments constructor(val license: LicenseDocument, private val context: Context, val status: StatusDocument? = null) {
+internal data class ValidatedDocuments constructor(val license: LicenseDocument, private val context: Context, val status: StatusDocument? = null) {
     fun getContext(): DRMContext {
         when (context) {
             is Either.Left -> return context.left
@@ -52,7 +52,7 @@ data class ValidatedDocuments constructor(val license: LicenseDocument, private 
     }
 }
 
-sealed class State {
+internal sealed class State {
     object start : State()
     data class validateLicense(val data: ByteArray, val status: StatusDocument?) : State()
     data class fetchStatus(val license: LicenseDocument) : State()
@@ -67,7 +67,7 @@ sealed class State {
 }
 
 
-sealed class Event {
+internal sealed class Event {
     data class retrievedLicenseData(val data: ByteArray) : Event()
     data class validatedLicense(val license: LicenseDocument) : Event()
     data class retrievedStatusData(val data: ByteArray) : Event()
@@ -80,14 +80,15 @@ sealed class Event {
     object cancelled : Event()
 }
 
-class LicenseValidation(var authentication: LCPAuthenticating?,
-                        val crl: CRLService,
-                        val device: DeviceService,
-                        val network: NetworkService,
-                        val passphrases: PassphrasesService,
-                        val context: android.content.Context,
-                        val onLicenseValidated: (LicenseDocument) -> Unit) {
-
+internal class LicenseValidation(
+    var authentication: LCPAuthenticating?,
+    val crl: CRLService,
+    val device: DeviceService,
+    val network: NetworkService,
+    val passphrases: PassphrasesService,
+    val context: android.content.Context,
+    val onLicenseValidated: (LicenseDocument) -> Unit
+) {
 
     var state: State = State.start
         set(newValue) {

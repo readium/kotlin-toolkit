@@ -17,7 +17,7 @@ import org.readium.r2.lcp.public.LCPAuthenticatedLicense
 import org.readium.r2.lcp.public.LCPAuthenticating
 import org.readium.r2.lcp.public.LCPAuthenticationReason
 
-class PassphrasesService(private val repository: PassphrasesRepository) {
+internal class PassphrasesService(private val repository: PassphrasesRepository) {
 
     fun request(license: LicenseDocument, authentication: LCPAuthenticating?, completion: (String?) -> Unit) {
         runBlocking {

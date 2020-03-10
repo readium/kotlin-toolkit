@@ -12,9 +12,8 @@ package org.readium.r2.lcp.license.model.components
 
 import org.json.JSONArray
 import org.json.JSONObject
-import org.readium.r2.lcp.public.ParsingError
+import org.readium.r2.lcp.ParsingError
 import java.net.URL
-
 
 data class Link(val json: JSONObject) {
     val href: String
