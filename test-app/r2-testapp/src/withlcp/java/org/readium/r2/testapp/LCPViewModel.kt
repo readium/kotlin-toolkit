@@ -15,7 +15,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import org.joda.time.DateTime
-import org.readium.r2.lcp.public.LCPLicense
+import org.readium.r2.lcp.LCPLicense
 import org.readium.r2.shared.drm.DRM
 import java.io.Serializable
 import java.net.URL
