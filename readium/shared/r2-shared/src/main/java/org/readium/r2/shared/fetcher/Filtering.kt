@@ -23,6 +23,8 @@ interface ContentFilter {
     fun filter(resource: Resource): Resource
 
     fun acceptsLink(resource: Resource): Boolean {
+        if (accepts.isEmpty()) return true
+
         val normalizedLinkType = resource.link.type?.let { Intent.normalizeMimeType(it) }
         return accepts
             .map {
@@ -35,10 +37,10 @@ interface ContentFilter {
 
 class FilteredFetcher(val fetcher: Fetcher, val filters: Collection<ContentFilter>) : Fetcher {
 
-    override fun get(link: Link): Resource? {
-        val resource = fetcher.get(link) ?: return null
-        val acceptedFilters = filters.filter { it.acceptsLink(resource) }
-        return acceptedFilters.toList().fold(resource) { acc, filter -> filter.filter(acc) }
+    override fun get(link: Link): Resource {
+        val resource = fetcher.get(link)
+        val acceptedFilters = filters.filter { it.acceptsLink(resource) }.toList().sortedByDescending(ContentFilter::priority)
+        return acceptedFilters.fold(resource) { acc, filter -> filter.filter(acc) }
     }
 
     override fun close() {
@@ -46,27 +48,7 @@ class FilteredFetcher(val fetcher: Fetcher, val filters: Collection<ContentFilte
     }
 }
 
-abstract class DelegatedResource(private val delegate: Resource) : Resource by delegate  {}
-
-class SomeContentFilter : ContentFilter {
-    override val priority: Int = 0
-
-    override val accepts: Collection<String> = listOf()
-
-    override fun filter(resource: Resource): Resource = object : Resource by resource {
-        override fun stream(): InputStream? {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-    }
-}
-
-class SimpleContentFilter(priority: Int, accepts: Collection<String>, val byteFilter: (ByteArray) -> ByteArray) : ContentFilter {
-    override val priority: Int
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-    override val accepts: Collection<String>
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-
+class BytesContentFilter(override val priority: Int, override val accepts: Collection<String>, val byteFilter: (ByteArray) -> ByteArray) : ContentFilter {
     override fun filter(resource: Resource): Resource =
        object : Resource by resource {
            override fun stream(): InputStream? = bytes?.inputStream()
@@ -76,8 +58,5 @@ class SimpleContentFilter(priority: Int, accepts: Collection<String>, val byteFi
            }
 
            override val length: Long? = bytes?.size?.toLong()
-
-           override val estimatedLength: Long? = length
        }
-
 }
