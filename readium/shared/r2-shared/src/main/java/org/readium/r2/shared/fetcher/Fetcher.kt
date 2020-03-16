@@ -63,7 +63,7 @@ class CompositeFetcher(val selectors: List<Selector>) : Fetcher {
 
     class Selector(val fetcher: Fetcher, val accepts: (Link) -> Boolean)
 
-    class DummyResource(override val link: Link) : Resource {
+    private class DummyResource(override val link: Link) : Resource {
 
         override fun stream(): InputStream? = null
 

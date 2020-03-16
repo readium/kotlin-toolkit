@@ -18,7 +18,7 @@ import java.util.zip.ZipFile
 
 class ZipFetcher(val archive: ZipFile) : Fetcher {
 
-    override fun get(link: Link): Resource = ZipEntryHandle(link, archive)
+    override fun get(link: Link): Resource = ZipResource(link, archive)
 
     override fun close() = archive.close()
 
@@ -31,7 +31,7 @@ class ZipFetcher(val archive: ZipFile) : Fetcher {
     }
 }
 
-private class ZipEntryHandle(override val link: Link, val archive: ZipFile) : ResourceImpl() {
+private class ZipResource(override val link: Link, val archive: ZipFile) : ResourceImpl() {
 
     override fun stream(): InputStream? {
         val entry = entryForHref(link.href)
