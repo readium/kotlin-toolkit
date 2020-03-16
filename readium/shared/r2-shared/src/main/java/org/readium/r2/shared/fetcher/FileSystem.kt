@@ -19,21 +19,17 @@ import java.nio.file.attribute.BasicFileAttributes
 
 class FileFetcher(val files: Map<String, String>) : Fetcher {
 
-    constructor(file: String, href: String) : this(mapOf(href to file))
+    constructor(path: String, href: String) : this(mapOf(href to path))
 
-    override fun fetch(link: Link): ResourceHandle? = FileHandle(link)
+    override fun get(link: Link): Resource = FileResource(link)
 }
 
-class DirectoryFetcher(val directory: String) : Fetcher {
+class DirectoryFetcher(val path: String) : Fetcher {
 
-    companion object {
-        fun fromPath(path: String): DirectoryFetcher? = if (File(path).isDirectory) fromPath(path) else null
-    }
-
-    override fun fetch(link: Link): ResourceHandle? = FileHandle(link, directory)
+    override fun get(link: Link): Resource = FileResource(link, path)
 }
 
-private class FileHandle(link: Link, val parent: String? = null) : ResourceHandle(link) {
+private class FileResource(override val link: Link, val parent: String? = null) : ResourceImpl() {
 
     private val file = File(parent, link.href)
 

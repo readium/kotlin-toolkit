@@ -19,17 +19,16 @@ import kotlin.reflect.KProperty0
 /**
  * This class implements a lazy fetcher of resources over HTTP.
  *
- * No request is done until a ResourceHandle property is called.
+ * No request is done until a Resource property is called.
  * When metadata is requested before content, a HEAD request is done.
  * Otherwise, the result from the previous GET request is used.
 */
 class HttpFetcher : Fetcher {
 
-    override fun fetch(link: Link): ResourceHandle? =
-        if (link.href.startsWith("http")) HttpResourceHandle(link) else null
+    override fun get(link: Link): Resource = HttpResource(link)
 }
 
-private class HttpResourceHandle(link: Link): ResourceHandle(link) {
+private class HttpResource(link: Link): ResourceImpl() {
 
     private val headConnection: HttpURLConnection? by lazy {
         (URL(link.href).openConnection() as? HttpURLConnection)?.apply { requestMethod = "HEAD" }
@@ -47,11 +46,15 @@ private class HttpResourceHandle(link: Link): ResourceHandle(link) {
         }
     }
 
+    override val link: Link by lazy {
+        link.copy(type = headerFields?.get("content-type")?.firstOrNull { it != "application/octet-stream" } ?: link.type)
+    }
+
     override fun stream(): InputStream? = bytes?.inputStream()
 
     override val bytes: ByteArray? by lazy {
         try {
-            getConnection?.inputStream?.readBytes()
+            getConnection?.inputStream?.use { it.readBytes() }
         } catch (e: Exception) {
             null
         }
@@ -62,17 +65,6 @@ private class HttpResourceHandle(link: Link): ResourceHandle(link) {
             ?.get("content-length")
             ?.mapNotNull(String::toLongOrNull)
             ?.firstOrNull()
-    }
-
-    override val mimeType: String? by lazy {
-        headerFields?.get("content-type")?.firstOrNull() ?: link.type
-    }
-
-    override val encoding: String? by lazy {
-        mimeType?.let {
-            """charset=["]?(\S&&[^;])["]?""".toRegex(RegexOption.IGNORE_CASE)
-                .find(it)?.groups?.get(1)?.value
-        }
     }
 }
 
