@@ -13,6 +13,7 @@ import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.assertJSONEquals
+import java.io.Serializable
 import java.net.URL
 
 class PublicationTest {
@@ -23,7 +24,8 @@ class PublicationTest {
         readingProgression: ReadingProgression = ReadingProgression.AUTO,
         links: List<Link> = listOf(),
         readingOrder: List<Link> = emptyList(),
-        resources: List<Link> = emptyList()
+        resources: List<Link> = emptyList(),
+        positionsFactory: Publication.PositionListFactory? = null
     ) = Publication(
         metadata = Metadata(
             localizedTitle = LocalizedString(title),
@@ -32,7 +34,8 @@ class PublicationTest {
         ),
         links = links,
         readingOrder = readingOrder,
-        resources = resources
+        resources = resources,
+        positionsFactory = positionsFactory
     )
 
     @Test fun `parse minimal JSON`() {
@@ -255,6 +258,45 @@ class PublicationTest {
                 tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
                 otherCollections = listOf(PublicationCollection(role = "sub", links = listOf(Link(href = "/sublink"))))
             ).toJSON()
+        )
+    }
+
+    @Test fun `get the default empty {positions}`() {
+        assertEquals(emptyList<Locator>(), createPublication().positions)
+    }
+
+    @Test fun `get the {positions} computed from the {positionsFactory}`() {
+        assertEquals(
+            listOf(Locator(href = "locator", type = "")),
+            createPublication(
+                positionsFactory = object : Publication.PositionListFactory {
+                    override fun create(): List<Locator> =
+                        listOf(Locator(href = "locator", type = ""))
+                }
+            ).positions
+        )
+    }
+
+    @Test fun `get the {positionsByResource} computed from the {positionsFactory}`() {
+        assertEquals(
+            mapOf(
+                "res1" to listOf(
+                    Locator(href="res1", type = "text/html", title = "Loc A"),
+                    Locator(href="res1", type = "text/html", title = "Loc B")
+                ),
+                "res2" to listOf(
+                    Locator(href="res2", type = "text/html", title = "Loc B")
+                )
+            ),
+            createPublication(
+                positionsFactory = object : Publication.PositionListFactory {
+                    override fun create(): List<Locator> = listOf(
+                        Locator(href="res1", type = "text/html", title = "Loc A"),
+                        Locator(href="res2", type = "text/html", title = "Loc B"),
+                        Locator(href="res1", type = "text/html", title = "Loc B")
+                    )
+                }
+            ).positionsByResource
         )
     }
 

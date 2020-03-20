@@ -153,3 +153,10 @@ data class Link(
         get() = rels.toList()
 
 }
+
+/**
+ * Returns the first [Link] with the given [href], or [null] if not found.
+ */
+fun List<Link>.indexOfFirstWithHref(href: String): Int? =
+    indexOfFirst { it.href == href }
+        .takeUnless { it == -1 }

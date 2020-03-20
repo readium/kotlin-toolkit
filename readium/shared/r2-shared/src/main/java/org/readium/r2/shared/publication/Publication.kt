@@ -10,8 +10,11 @@
 package org.readium.r2.shared.publication
 
 import android.net.Uri
+import android.os.Parcel
 import android.os.Parcelable
+import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.WriteWith
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
@@ -25,6 +28,8 @@ import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
+import timber.log.Timber
+import java.io.Serializable
 import java.net.URL
 
 /**
@@ -32,6 +37,7 @@ import java.net.URL
  *
  * @param type The kind of publication it is ( Epub, Cbz, ... )
  * @param version The version of the publication, if the type needs any.
+ * @param positionsFactory Factory used to build lazily the [positions].
  */
 @Parcelize
 data class Publication(
@@ -44,6 +50,7 @@ data class Publication(
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
     val otherCollections: List<PublicationCollection> = emptyList(),
+    val positionsFactory: @WriteWith<PositionListFactory.Parceler> PositionListFactory? = null,
 
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
     var type: TYPE = TYPE.EPUB,
@@ -57,6 +64,57 @@ data class Publication(
     var internalData: MutableMap<String, String> = mutableMapOf()
 
 ) : JSONable, Parcelable {
+
+    /**
+     * Creates a [Publication]'s [positions].
+     *
+     * The parsers provide an implementation of this interface for each format, but a host app
+     * might want to use a custom factory to implement, for example, a caching mechanism or use a
+     * different calculation method.
+     */
+    interface PositionListFactory {
+        fun create(): List<Locator>
+
+        /**
+         * Implementation of a [Parceler] to be used with [@Parcelize] to serialize a
+         * [PositionListFactory].
+         *
+         * Since we can't serialize a factory, we're loading eagerly the [positions] to be
+         * serialized. Upon deserialization, the positions will be wrapped in a static factory.
+         *
+         * This won't be needed anymore once we use [Fragment] instead of [Activity] in the
+         * navigator.
+         */
+        object Parceler : kotlinx.android.parcel.Parceler<PositionListFactory?> {
+
+            private class StaticPositionListFactory(private val positions: List<Locator>): PositionListFactory {
+                override fun create(): List<Locator> = positions
+            }
+
+            override fun create(parcel: Parcel): PositionListFactory? =
+                try {
+                    mutableListOf<Locator>()
+                        .apply {
+                            @Suppress("UNCHECKED_CAST")
+                            parcel.readList(this as MutableList<Any?>, Locator::class.java.classLoader)
+                        }
+                        .let { StaticPositionListFactory(it) }
+
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to read a PositionListFactory from a Parcel")
+                    null
+                }
+
+            override fun PositionListFactory?.write(parcel: Parcel, flags: Int) {
+                try {
+                    parcel.writeList(this?.create())
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to write a PositionListFactory into a Parcel")
+                }
+            }
+
+        }
+    }
 
     @Parcelize
     enum class TYPE : Parcelable {
@@ -77,6 +135,22 @@ data class Publication(
             fun fromString(type: String): EXTENSION? =
                 EXTENSION.values().firstOrNull { it.value == type }
         }
+    }
+
+    /**
+     * List of all the positions in the publication.
+     */
+    @IgnoredOnParcel
+    val positions: List<Locator> by lazy {
+        positionsFactory?.create() ?: emptyList()
+    }
+
+    /**
+     * List of all the positions in each resource, indexed by their [href].
+     */
+    @IgnoredOnParcel
+    val positionsByResource: Map<String, List<Locator>> by lazy {
+        positions.groupBy { it.href }
     }
 
     /**
@@ -195,6 +269,15 @@ data class Publication(
     internal fun linksWithRole(role: String): List<Link> =
         otherCollections.firstWithRole(role)?.links ?: emptyList()
 
+    /**
+     * Copy the [Publication] with a different [PositionListFactory].
+     * The provided closure will be used to build the [PositionListFactory], with [this] being the
+     * [Publication].
+     */
+    fun copyWithPositionsFactory(createFactory: Publication.() -> PositionListFactory): Publication {
+        return run { copy(positionsFactory = createFactory()) }
+    }
+
     companion object {
 
         fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Publication? =
@@ -251,9 +334,11 @@ data class Publication(
 
     }
 
+    @IgnoredOnParcel
     @Deprecated("Renamed to [listOfAudioClips]", ReplaceWith("listOfAudioClips"))
     val listOfAudioFiles: List<Link> = listOfAudioClips
 
+    @IgnoredOnParcel
     @Deprecated("Renamed to [listOfVideoClips]", ReplaceWith("listOfVideoClips"))
     val listOfVideos: List<Link> = listOfVideoClips
 

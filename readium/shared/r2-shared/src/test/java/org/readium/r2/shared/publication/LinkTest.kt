@@ -215,4 +215,18 @@ class LinkTest {
         )
     }
 
+    @Test
+    fun `Find the first index of the {Link} with the given {href} in a list of {Link}`() {
+        assertNull(listOf(Link(href = "href")).indexOfFirstWithHref("foobar"))
+
+        assertEquals(
+            1,
+            listOf(
+                Link(href = "href1"),
+                Link(href = "href2"),
+                Link(href = "href2")  // duplicated on purpose
+            ).indexOfFirstWithHref("href2")
+        )
+    }
+
 }

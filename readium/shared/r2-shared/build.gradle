@@ -51,7 +51,12 @@ dependencies {
     implementation 'nl.komponents.kovenant:kovenant-functional:3.3.0'
     implementation 'joda-time:joda-time:2.9.9'
 
+    testImplementation "androidx.test:core-ktx:1.2.0"
+    testImplementation "androidx.test.ext:junit-ktx:1.1.1"
+    testImplementation "junit:junit:4.12"
+    testImplementation "net.sf.kxml:kxml2:2.3.0"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation "org.robolectric:robolectric:4.3.1"
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.assertj:assertj-core:3.14.0'
     testImplementation 'org.mockito:mockito-core:2.19.0'

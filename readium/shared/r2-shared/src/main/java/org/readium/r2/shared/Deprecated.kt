@@ -23,6 +23,20 @@ import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.presentation.Presentation
 import java.net.URL
 
+@Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.Locator"))
+typealias Locator = org.readium.r2.shared.publication.Locator
+
+@Deprecated("Renamed into [Locator.Locations]", ReplaceWith("Locator.Locations", "org.readium.r2.shared.publication.Locator"))
+typealias Locations = org.readium.r2.shared.publication.Locator.Locations
+
+@Deprecated("Renamed into [Locator.Text]", ReplaceWith("Locator.Text", "org.readium.r2.shared.publication.Locator"))
+typealias LocatorText = org.readium.r2.shared.publication.Locator.Text
+
+@Deprecated("Moved to another package", ReplaceWith("Locator.Text", "org.readium.r2.shared.publication.html.DomRange"))
+typealias DomRange = org.readium.r2.shared.publication.html.DomRange
+
+@Deprecated("Renamed into [DomRange.Point]", ReplaceWith("DomRange.Point", "org.readium.r2.shared.publication.html.DomRange"))
+typealias Range = org.readium.r2.shared.publication.html.DomRange.Point
 
 @Deprecated("Refactored into [LocalizedString]", ReplaceWith("org.readium.r2.shared.publication.LocalizedString"))
 typealias MultilanguageString = org.readium.r2.shared.publication.LocalizedString

@@ -108,7 +108,7 @@ internal fun JSONObject.putIfNotEmpty(name: String, collection: Collection<*>) {
  */
 fun JSONObject.optPositiveInt(name: String, fallback: Int = -1, remove: Boolean = false): Int? {
     val int = optInt(name, fallback)
-    val value = if (int > 0) int else null
+    val value = if (int >= 0) int else null
     if (remove) {
         this.remove(name)
     }
@@ -122,7 +122,7 @@ fun JSONObject.optPositiveInt(name: String, fallback: Int = -1, remove: Boolean 
  */
 fun JSONObject.optPositiveDouble(name: String, fallback: Double = -1.0, remove: Boolean = false): Double? {
     val double = optDouble(name, fallback)
-    val value = if (double > 0) double else null
+    val value = if (double >= 0) double else null
     if (remove) {
         this.remove(name)
     }
