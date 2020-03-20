@@ -26,9 +26,8 @@ import kotlinx.android.synthetic.main.item_recycle_highlight.view.*
 import kotlinx.android.synthetic.main.item_recycle_outline.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Locator
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.landmarks
 import org.readium.r2.shared.publication.epub.pageList
@@ -102,9 +101,9 @@ class R2OutlineActivity : AppCompatActivity() {
                 
                 if (resourceHref.indexOf("#") > 0) {
                     val id = resourceHref.substring(resourceHref.indexOf('#'))
-                    intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(fragment = id),null))
+                    intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(fragments = listOf(id))))
                 } else {
-                    intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0),null))
+                    intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = 0.0)))
                 }
 
                 setResult(Activity.RESULT_OK, intent)
@@ -137,7 +136,7 @@ class R2OutlineActivity : AppCompatActivity() {
             val bookmarkProgression = bookmarks[position].location.progression
 
             val intent = Intent()
-            intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = bookmarkProgression),null))
+            intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = bookmarkProgression)))
             setResult(Activity.RESULT_OK, intent)
             finish()
         }
@@ -156,7 +155,7 @@ class R2OutlineActivity : AppCompatActivity() {
             //Progression of the selected bookmark
             val highlightProgression = highlights[position].location.progression
             val intent = Intent()
-            intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = highlightProgression),null))
+            intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = highlightProgression)))
             setResult(Activity.RESULT_OK, intent)
             finish()
 
@@ -182,7 +181,7 @@ class R2OutlineActivity : AppCompatActivity() {
 
 
                 val intent = Intent()
-                intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0),null))
+                intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = 0.0)))
                 setResult(Activity.RESULT_OK, intent)
                 finish()
 
@@ -207,7 +206,7 @@ class R2OutlineActivity : AppCompatActivity() {
                     val pageProgression = syntheticPageList[position].progression
 
                     val intent = Intent()
-                    intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = pageProgression), null))
+                    intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = pageProgression)))
                     setResult(Activity.RESULT_OK, intent)
                     finish()
                 }
@@ -231,7 +230,7 @@ class R2OutlineActivity : AppCompatActivity() {
             val resourceType = link.type ?: ""
 
             val intent = Intent()
-            intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0),null))
+            intent.putExtra("locator", Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = 0.0)))
             setResult(Activity.RESULT_OK, intent)
             finish()
 
@@ -294,6 +293,8 @@ class R2OutlineActivity : AppCompatActivity() {
         return children
     }
 
+    private val Link.outlineTitle: String
+        get() = title ?: href
 
 
     /*
@@ -375,12 +376,12 @@ class R2OutlineActivity : AppCompatActivity() {
             val item = getItem(position)
             if (item is Pair<*, *>) {
                 item as Pair<Int, Link>
-                viewHolder.navigationTextView?.text = item.second.title
+                viewHolder.navigationTextView?.text = item.second.outlineTitle
                 val parameter = viewHolder.indentationView?.layoutParams
                 parameter?.width = item.first * 50
             } else {
                 item as Link
-                viewHolder.navigationTextView?.text = item.title
+                viewHolder.navigationTextView?.text = item.outlineTitle
             }
             return view as View
         }
@@ -532,12 +533,12 @@ class R2OutlineActivity : AppCompatActivity() {
         private fun getBookSpineItem(href: String): String? {
             for (link in publication.tableOfContents) {
                 if (link.href == href) {
-                    return link.title
+                    return link.outlineTitle
                 }
             }
             for (link in publication.readingOrder) {
                 if (link.href == href) {
-                    return link.title
+                    return link.outlineTitle
                 }
             }
             return null
@@ -625,12 +626,12 @@ class R2OutlineActivity : AppCompatActivity() {
         private fun getHighlightSpineItem(href: String): String? {
             for (link in publication.tableOfContents) {
                 if (link.href == href) {
-                    return link.title
+                    return link.outlineTitle
                 }
             }
             for (link in publication.readingOrder) {
                 if (link.href == href) {
-                    return link.title
+                    return link.outlineTitle
                 }
             }
             return null

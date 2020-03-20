@@ -49,7 +49,9 @@ import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.shared.*
 import org.readium.r2.shared.publication.ContentLayout
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.DRMManagementActivity
@@ -58,7 +60,6 @@ import org.readium.r2.testapp.db.*
 import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
 import org.readium.r2.testapp.search.MarkJSSearchEngine
-import org.readium.r2.testapp.search.SearchLocator
 import org.readium.r2.testapp.search.SearchLocatorAdapter
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
@@ -73,22 +74,11 @@ import kotlin.coroutines.CoroutineContext
  */
 class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, VisualNavigatorDelegate, OutlineTableViewControllerDelegate*/ {
 
-    override val currentLocation: Locator?
-        get() {
-            return booksDB.books.currentLocator(bookId)?.let {
-                it
-            } ?: run {
-                val resource = publication.readingOrder[resourcePager.currentItem]
-                val resourceHref = resource.href
-                val resourceType = resource.type ?: ""
-                Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = 0.0))
-            }
-        }
-
     override fun locationDidChange(navigator: Navigator?, locator: Locator) {
+        Timber.d("locationDidChange position ${locator.locations.position ?: 0}/${publication.positions.size} $locator")
         booksDB.books.saveProgression(locator, bookId)
 
-        if (locator.locations?.progression == 0.toDouble()) {
+        if (this::screenReader.isInitialized && locator.locations.progression == 0.0) {
             screenReader.currentUtterance = 0
         }
     }
@@ -126,7 +116,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
     private var searchTerm = ""
     private lateinit var searchStorage: SharedPreferences
     private lateinit var searchResultAdapter: SearchLocatorAdapter
-    private lateinit var searchResult: MutableList<SearchLocator>
+    private lateinit var searchResult: MutableList<Locator>
 
     private var mode: ActionMode? = null
     private var popupWindow: PopupWindow? = null
@@ -165,9 +155,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         toggleActionBar()
 
         resourcePager.offscreenPageLimit = 1
-
-        currentPagerPosition = publication.readingOrder.indexOfFirst { it.href == currentLocation?.href }
-        resourcePager.currentItem = currentPagerPosition
 
         titleView.text = publication.metadata.title
 
@@ -237,6 +224,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         search_listView.adapter = searchResultAdapter
         search_listView.layoutManager = LinearLayoutManager(this)
 
+        // Loads the last read location
+        booksDB.books.currentLocator(bookId)?.let {
+            go(it, false, {})
+        }
     }
 
 
@@ -370,7 +361,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 val tmp = searchStorage.getString("result", null)
                 if (tmp != null) {
                     searchResult.clear()
-                    searchResult.addAll(Gson().fromJson(tmp, Array<SearchLocator>::class.java).asList().toMutableList())
+                    searchResult.addAll(Gson().fromJson(tmp, Array<Locator>::class.java).asList().toMutableList())
                     searchResultAdapter.notifyDataSetChanged()
 
                     val keyword = searchStorage.getString("term", null)
@@ -512,8 +503,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                         resourceHref,
                         resourceType,
                         resourceTitle,
-                        Locations(progression = currentLocation?.locations?.progression, position = currentPage),
-                        LocatorText()
+                        Locator.Locations(progression = currentLocation?.locations?.progression, position = currentPage?.toInt()),
+                        Locator.Text()
                 )
 
                 bookmarksDB.bookmarks.insert(bookmark)?.let {
@@ -564,8 +555,8 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         } else {
             super.onActivityResult(requestCode, resultCode, data)
             if (requestCode == 2 && resultCode == Activity.RESULT_OK && data != null) {
-                val locator = data.getSerializableExtra("locator") as Locator
-                locator.locations?.fragment?.let { fragment ->
+                val locator = data.getParcelableExtra("locator") as Locator
+                locator.locations.fragments.firstOrNull()?.let { fragment ->
 
                     // TODO handle fragment anchors (id=) instead of catching the json exception
                     try {
@@ -794,7 +785,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(note.applicationWindowToken, InputMethodManager.HIDE_NOT_ALWAYS)
             }
             if (highlight != null) {
-                findViewById<TextView>(R.id.select_text).text = highlight.locator.text?.highlight
+                findViewById<TextView>(R.id.select_text).text = highlight.locator.text.highlight
                 note.setText(annotation)
             } else {
                 currentSelection {
@@ -832,11 +823,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             it
         }
 
-        val highlightLocations = highlight.locator.locations?.apply {
-            progression = currentLocation?.locations?.progression
-            position = currentPage
-        } ?: Locations()
-        val locationText = highlight.locator.text ?: LocatorText()
+        val highlightLocations = highlight.locator.locations.copy(
+            progression = currentLocation?.locations?.progression,
+            position = currentPage?.toInt()
+        )
+        val locationText = highlight.locator.text
 
         return Highlight(
                 highlight.id,
@@ -857,12 +848,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
     private fun convertHighlight2NavigationHighlight(highlight: Highlight) = org.readium.r2.navigator.epub.Highlight(
             highlight.highlightID,
-            Locator(
-                    highlight.resourceHref,
-                    highlight.resourceType,
-                    locations = highlight.locations,
-                    text = highlight.locatorText
-            ),
+            highlight.locator,
             highlight.color,
             Style.highlight,
             highlight.annotationMarkStyle

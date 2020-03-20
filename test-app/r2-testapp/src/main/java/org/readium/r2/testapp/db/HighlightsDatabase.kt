@@ -14,26 +14,33 @@ import android.database.sqlite.SQLiteDatabase
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.json.JSONObject
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Locator
-import org.readium.r2.shared.LocatorText
+import org.readium.r2.shared.publication.Locator
 
-class Highlight(val highlightID: String,
-                val publicationID: String,
-                val style: String,
-                val color: Int,
-                val annotation: String,
-                val annotationMarkStyle: String,
-                val resourceIndex: Long,
-                val resourceHref: String,
-                val resourceType: String,
-                val resourceTitle: String,
-                val location: Locations,
-                val locatorText: LocatorText,
-                var creationDate: Long = DateTime().toDate().time,
-                var id: Long? = null,
-                val bookID: Long):
-        Locator(resourceHref, resourceType, resourceTitle, location, locatorText)
+class Highlight(
+    val highlightID: String,
+    val publicationID: String,
+    val style: String,
+    val color: Int,
+    val annotation: String,
+    val annotationMarkStyle: String,
+    val resourceIndex: Long,
+    val resourceHref: String,
+    val resourceType: String,
+    val resourceTitle: String,
+    val location: Locator.Locations,
+    val locatorText: Locator.Text,
+    var creationDate: Long = DateTime().toDate().time,
+    var id: Long? = null,
+    val bookID: Long
+) {
+    val locator: Locator get() = Locator(
+        href = resourceHref,
+        type = resourceType,
+        title = resourceTitle,
+        locations = location,
+        text = locatorText
+    )
+}
 
 class HighligtsDatabase(context: Context) {
 
@@ -370,7 +377,7 @@ class HIGHLIGHTS(private var database: HighlightsDatabaseOpenHelper) {
                 return@let it
             } ?: kotlin.run { return@run 0 }
 
-            return Highlight(highlightID as String, publicationID as String, style as String, (color as Long).toInt(), annotation as String, annotationMarkStyle as String, resourceIndex as Long, resourceHref as String, resourceType as String, resourceTitle as String, Locations.fromJSON(JSONObject(location as String)), LocatorText.fromJSON(JSONObject(locatorText as String)), created as Long,  id as Long, bookID =  bookID as Long)
+            return Highlight(highlightID as String, publicationID as String, style as String, (color as Long).toInt(), annotation as String, annotationMarkStyle as String, resourceIndex as Long, resourceHref as String, resourceType as String, resourceTitle as String, Locator.Locations.fromJSON(JSONObject(location as String)), Locator.Text.fromJSON(JSONObject(locatorText as String)), created as Long,  id as Long, bookID =  bookID as Long)
         }
     }
 
