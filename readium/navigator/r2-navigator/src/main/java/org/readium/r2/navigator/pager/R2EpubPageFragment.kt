@@ -29,9 +29,10 @@ import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
 import org.json.JSONArray
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.shared.APPEARANCE_REF
-import org.readium.r2.shared.Locations
 import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.publication.Locator
 import java.io.IOException
 import java.io.InputStream
 
@@ -147,17 +148,19 @@ class R2EpubPageFragment : Fragment() {
                 val currentFragment: R2EpubPageFragment = (webView.listener.resourcePager?.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
 
                 if (this@R2EpubPageFragment.tag == currentFragment.tag) {
-                    var locations = webView.navigator.currentLocation?.locations
+                    val epubNavigator = (webView.navigator as? R2EpubActivity)
+                    var locations = epubNavigator?.pendingLocator?.locations
+                    epubNavigator?.pendingLocator = null
 
                     // TODO this seems to be needed, will need to test more
                     if (url!!.indexOf("#") > 0) {
                         val id = url.substring(url.indexOf('#'))
                         webView.loadUrl("javascript:scrollAnchor($id);")
-                        locations = Locations(fragment = id)
+                        locations = Locator.Locations(fragments = listOf(id))
                     }
 
-                    if (locations?.fragment == null) {
-                        locations?.progression?.let { progression ->
+                    if (locations != null && locations.fragments.isEmpty()) {
+                        locations.progression?.let { progression ->
                             currentFragment.webView.progression = progression
 
                             if (webView.listener.preferences.getBoolean(SCROLL_REF, false)) {
@@ -165,7 +168,8 @@ class R2EpubPageFragment : Fragment() {
                                 currentFragment.webView.scrollToPosition(progression)
 
                             } else {
-                                (object : CountDownTimer(100, 1) {
+                                // FIXME: We need a better way to wait, because if the value is too low it fails
+                                (object : CountDownTimer(200, 1) {
                                     override fun onTick(millisUntilFinished: Long) {}
                                     override fun onFinish() {
                                         currentFragment.webView.calculateCurrentItem()
@@ -227,10 +231,10 @@ class R2EpubPageFragment : Fragment() {
         }
 
 
-        val locations = webView.navigator.currentLocation?.locations
+        val locations = (webView.navigator as? R2EpubActivity)?.pendingLocator?.locations
 
 
-        locations?.fragment?.let { fragment ->
+        locations?.fragments?.firstOrNull()?.let { fragment ->
 
             val fragments = JSONArray(fragment).getString(0).split(",").associate {
                 val (left, right) = it.split("=")

@@ -9,7 +9,7 @@
 
 package org.readium.r2.navigator.epub
 
-import org.readium.r2.shared.Locator
+import org.readium.r2.shared.publication.Locator
 
 interface IR2Selectable {
     fun currentSelection(callback: (Locator?) -> Unit)

@@ -21,9 +21,7 @@ import android.view.ActionMode
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -33,35 +31,38 @@ import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.*
+import org.readium.r2.shared.COLUMN_COUNT_REF
+import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import java.net.URI
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.ceil
 
 
 open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator {
 
     override fun progressionDidChange(progression: Double) {
-        val locator = currentLocation
-        locator?.locations?.progression = progression
-        navigatorDelegate?.locationDidChange(locator = locator!!)
+        notifyCurrentLocation()
     }
 
+    /**
+     * Locator waiting to be loaded in the navigator.
+     */
+    internal var pendingLocator: Locator? = null
+
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-
-        pagerPosition = 0
-
-        // Set the progression fetched
-        navigatorDelegate?.locationDidChange(locator = locator)
+        pendingLocator = locator
 
         // href is the link to the page in the toc
         var href = locator.href
 
-        if (href!!.indexOf("#") > 0) {
+        if (href.indexOf("#") > 0) {
             href = href.substring(0, href.indexOf("#"))
         }
 
@@ -72,8 +73,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                     if (resource.second.endsWith(href)) {
                         if (resourcePager.currentItem == resource.first) {
                             // reload webview if it has an anchor
-                            val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-                            locator.locations?.fragment?.let { fragment ->
+                            locator.locations.fragments.firstOrNull()?.let { fragment ->
 
                                 val fragments = JSONArray(fragment).getString(0).split(",").associate {
                                     val (left, right) = it.split("=")
@@ -86,13 +86,13 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                                         anchor = "#$anchor"
                                     }
                                     val goto = resource.second + anchor
-                                    currentFragent?.webView?.loadUrl(goto)
+                                    currentFragment?.webView?.loadUrl(goto)
                                 } else {
-                                    currentFragent?.webView?.loadUrl(resource.second)
+                                    currentFragment?.webView?.loadUrl(resource.second)
                                 }
 
                             } ?: run {
-                                currentFragent?.webView?.loadUrl(resource.second)
+                                currentFragment?.webView?.loadUrl(resource.second)
                             }
                         } else {
                             resourcePager.currentItem = resource.first
@@ -148,32 +148,23 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
         launch {
-            pagerPosition = 0
             if (resourcePager.currentItem < resourcePager.adapter!!.count - 1) {
 
                 resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
 
-                val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-
                 if (layoutDirectionIsRTL() || publication.contentLayout.readingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
-                    currentFragment?.webView?.let {
-                        currentFragment.webView.progression = 1.0
-                        currentFragment.webView.setCurrentItem(currentFragment.webView.numPages - 1, false)
+                    currentFragment?.webView?.apply {
+                        progression = 1.0
+                        setCurrentItem(numPages - 1, false)
                     }
                 } else {
                     // The view has LTR layout
-                    currentFragment?.webView?.let {
-                        currentFragment.webView.progression = 0.0
-                        currentFragment.webView.setCurrentItem(0, false)
+                    currentFragment?.webView?.apply {
+                        progression = 0.0
+                        setCurrentItem(0, false)
                     }
                 }
-                val resource = publication.readingOrder[resourcePager.currentItem]
-                val resourceHref = resource.href
-                val resourceType = resource.type ?: ""
-
-                navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = currentFragment?.webView?.progression)))
-
             }
         }
         return true
@@ -181,32 +172,23 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
         launch {
-            pagerPosition = 0
             if (resourcePager.currentItem > 0) {
 
                 resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
 
-                val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-
                 if (layoutDirectionIsRTL() || publication.contentLayout.readingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
-                    currentFragment?.webView?.let {
-                        currentFragment.webView.progression = 0.0
-                        currentFragment.webView.setCurrentItem(0, false)
+                    currentFragment?.webView?.apply {
+                        progression = 0.0
+                        setCurrentItem(0, false)
                     }
                 } else {
                     // The view has LTR layout
-                    currentFragment?.webView?.let {
-                        currentFragment.webView.progression = 1.0
-                        currentFragment.webView.setCurrentItem(currentFragment.webView.numPages - 1, false)
+                    currentFragment?.webView?.apply {
+                        progression = 1.0
+                        setCurrentItem(numPages - 1, false)
                     }
                 }
-                val resource = publication.readingOrder[resourcePager.currentItem]
-                val resourceHref = resource.href
-                val resourceType = resource.type ?: ""
-
-                navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = currentFragment?.webView?.progression)))
-
             }
         }
         return true
@@ -242,8 +224,6 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
     private lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
     private lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
-
-    var pagerPosition = 0
 
     var currentPagerPosition: Int = 0
     lateinit var adapter: R2PagerAdapter
@@ -341,24 +321,12 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
             resourcePager.direction = ReadingProgression.RTL
         }
 
-
-
-        resourcePager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-
-            override fun onPageScrollStateChanged(state: Int) {
-                // Do nothing
-            }
-
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-                // Do nothing
-            }
+        resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
 
             override fun onPageSelected(position: Int) {
 //                if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
 //                    resourcePager.disableTouchEvents = true
 //                }
-                pagerPosition = 0
-                val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
                 if (preferences.getBoolean(SCROLL_REF, false)) {
                     if (currentPagerPosition < position) {
                         // handle swipe LEFT
@@ -373,15 +341,24 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                         currentFragment?.webView?.setCurrentItem(0, false)
                     } else if (currentPagerPosition > position) {
                         // handle swipe RIGHT
-                        currentFragment?.webView?.setCurrentItem(currentFragment.webView.numPages - 1, false)
+                        currentFragment?.webView?.apply {
+                            setCurrentItem(numPages - 1, false)
+                        }
                     }
                 }
                 currentPagerPosition = position // Update current position
+
+                notifyCurrentLocation()
             }
 
         })
 
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        notifyCurrentLocation()
     }
 
     override fun onActionModeStarted(mode: ActionMode?) {
@@ -393,17 +370,12 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
 
-                pagerPosition = 0
-
-                val locator = data.getSerializableExtra("locator") as Locator
-
-                // Set the progression fetched
-                navigatorDelegate?.locationDidChange(locator = locator)
+                val locator = data.getParcelableExtra("locator") as Locator
 
                 // href is the link to the page in the toc
                 var href = locator.href
 
-                if (href!!.indexOf("#") > 0) {
+                if (href.indexOf("#") > 0) {
                     href = href.substring(0, href.indexOf("#"))
                 }
 
@@ -414,8 +386,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                             if (resource.second.endsWith(href)) {
                                 if (resourcePager.currentItem == resource.first) {
                                     // reload webview if it has an anchor
-                                    val currentFragent = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-                                    locator.locations?.fragment?.let { fragment ->
+                                    locator.locations.fragments.firstOrNull()?.let { fragment ->
 
                                         val fragments = JSONArray(fragment).getString(0).split(",").associate {
                                             val (left, right) = it.split("=")
@@ -428,13 +399,13 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                                                 anchor = "#$anchor"
                                             }
                                             val goto = resource.second + anchor
-                                            currentFragent?.webView?.loadUrl(goto)
+                                            currentFragment?.webView?.loadUrl(goto)
                                         } else {
-                                            currentFragent?.webView?.loadUrl(resource.second)
+                                            currentFragment?.webView?.loadUrl(resource.second)
                                         }
 
                                     } ?: run {
-                                        currentFragent?.webView?.loadUrl(resource.second)
+                                        currentFragment?.webView?.loadUrl(resource.second)
                                     }
                                 } else {
                                     resourcePager.currentItem = resource.first
@@ -485,8 +456,6 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-
-
     override fun toggleActionBar() {
         if (allowToggleActionBar) {
             launch {
@@ -506,22 +475,64 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         }
     }
 
-    override fun currentSelection(callback: (Locator?) -> Unit) {
-        val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
+    private val r2PagerAdapter: R2PagerAdapter
+        get() = resourcePager.adapter as R2PagerAdapter
 
+    private val currentFragment: R2EpubPageFragment? get() =
+        r2PagerAdapter.mFragments.get(r2PagerAdapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
+
+    override val currentLocation: Locator? get() {
+        val resource = publication.readingOrder[resourcePager.currentItem]
+        val progression = currentFragment?.webView?.progression ?: 0.0
+        val positions = publication.positionsByResource[resource.href]
+            ?: return null
+        val positionIndex = ceil(progression * (positions.size - 1)).toInt()
+        return positions[positionIndex]
+            .copyWithLocations(progression = progression)
+    }
+
+    /**
+     * Last current location notified.
+     * Used to avoid sending twice the same location.
+     */
+    private var notifiedCurrentLocation: Locator? = null
+
+    /**
+     * While scrolling we receive a lot of new current locations, so we use a coroutine job to
+     * debounce the notification.
+     */
+    private var debounceLocationNotificationJob: Job? = null
+
+    private fun notifyCurrentLocation() {
+        val navigator = this
+        debounceLocationNotificationJob?.cancel()
+        debounceLocationNotificationJob = launch {
+            delay(100L)
+
+            val delegate = navigatorDelegate ?: return@launch
+            val locator = currentLocation ?: return@launch
+            if (locator == notifiedCurrentLocation) {
+                return@launch
+            }
+            notifiedCurrentLocation = locator
+            delegate.locationDidChange(navigator = navigator, locator = locator)
+        }
+    }
+
+    override fun currentSelection(callback: (Locator?) -> Unit) {
         currentFragment?.webView?.getCurrentSelectionInfo {
             val selection = JSONObject(it)
             val resource = publication.readingOrder[resourcePager.currentItem]
             val resourceHref = resource.href
             val resourceType = resource.type ?: ""
-            val locations = Locations.fromJSON(selection.getJSONObject("locations"))
-            val text = LocatorText.fromJSON(selection.getJSONObject("text"))
+            val locations = Locator.Locations.fromJSON(selection.getJSONObject("locations"))
+            val text = Locator.Text.fromJSON(selection.getJSONObject("text"))
 
             val locator = Locator(
-                    resourceHref,
-                    resourceType,
-                    locations = locations,
-                    text = text
+                href = resourceHref,
+                type = resourceType,
+                locations = locations,
+                text = text
             )
             callback(locator)
         }
@@ -529,7 +540,6 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     }
 
     override fun showHighlight(highlight: Highlight) {
-        val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
         currentFragment?.webView?.run {
             val colorJson = JSONObject().apply {
                 put("red", Color.red(highlight.color))
@@ -548,7 +558,6 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     }
 
     override fun hideHighlightWithID(id: String) {
-        val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
         currentFragment?.webView?.destroyHighlight(id)
         currentFragment?.webView?.destroyHighlight(id.replace("HIGHLIGHT", "ANNOTATION"))
     }
@@ -558,8 +567,6 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     }
 
     override fun rectangleForHighlightWithID(id: String, callback: (Rect?) -> Unit) {
-        val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-
         currentFragment?.webView?.rectangleForHighlightWithID(id) {
             val rect = JSONObject(it).run {
                 try {
@@ -595,8 +602,6 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
     fun createHighlight(color: Int, callback: (Highlight) -> Unit) {
         currentSelection { locator ->
-            val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
-
             val colorJson = JSONObject().apply {
                 put("red", Color.red(color))
                 put("green", Color.green(color))
@@ -620,7 +625,6 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
     fun createAnnotation(highlight: Highlight?, callback: (Highlight) -> Unit) {
         if (highlight != null) {
-            val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
             currentFragment?.webView?.createAnnotation(highlight.id)
             callback(highlight)
         } else {

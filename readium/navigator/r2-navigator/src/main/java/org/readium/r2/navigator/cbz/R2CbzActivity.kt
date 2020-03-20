@@ -16,6 +16,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,18 +24,22 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Locator
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.*
 import kotlin.coroutines.CoroutineContext
 
 
 open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator {
 
+    override val currentLocation: Locator?
+        get() = publication.positions[resourcePager.currentItem]
+
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
+            ?: return false
+
+        currentPagerPosition = resourceIndex
+        resourcePager.currentItem = currentPagerPosition
+        return true
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
@@ -96,6 +101,18 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
         resources = publication.readingOrder.map { it.href }
 
+
+        val navigator = this
+        resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+
+            override fun onPageSelected(position: Int) {
+                val delegate = navigatorDelegate ?: return
+                val locator = currentLocation ?: return
+                delegate.locationDidChange(navigator = navigator, locator = locator)
+            }
+
+        })
+
         adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
 
         resourcePager.adapter = adapter
@@ -111,16 +128,17 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         } else {
             resourcePager.currentItem = currentPagerPosition
         }
-
     }
 
-    override fun onPause() {
-        super.onPause()
-        val resource = publication.readingOrder[resourcePager.currentItem]
-        val resourceHref = resource.href
-        val resourceType = resource.type ?: ""
+    override fun onStart() {
+        super.onStart()
 
-        navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
+        // OnPageChangeListener.onPageSelected is not called on the first page of the book, so we
+        // trigger the locationDidChange event manually.
+        val navigator = this
+        currentLocation?.let {
+            navigatorDelegate?.locationDidChange(navigator = navigator, locator = it)
+        }
     }
 
     override fun nextResource(v: View?) {
@@ -136,7 +154,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
             val resourceHref = resource.href
             val resourceType = resource.type ?: ""
 
-            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
+            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title))
         }
     }
 
@@ -153,7 +171,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
             val resourceHref = resource.href
             val resourceType = resource.type ?: ""
 
-            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations()))
+            navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title))
         }
     }
 
@@ -184,15 +202,12 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
 
-                val locator = data.getSerializableExtra("locator") as Locator
-
-                // Set the progression fetched
-                navigatorDelegate?.locationDidChange(locator = locator)
+                val locator = data.getParcelableExtra("locator") as Locator
 
                 fun setCurrent(resources: List<String>) {
                     for (index in 0 until resources.count()) {
-                        val resource = resources[index] as String
-                        if (resource.endsWith(locator.href!!)) {
+                        val resource = resources[index]
+                        if (resource.endsWith(locator.href)) {
                             resourcePager.currentItem = index
                             break
                         }

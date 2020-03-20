@@ -15,19 +15,40 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.BuildConfig.*
-import org.readium.r2.shared.Locations
-import org.readium.r2.shared.Locator
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.*
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
 open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activity, MediaPlayerCallback, VisualNavigator {
 
+    override val currentLocation: Locator? get() =
+        publication.readingOrder[currentResource].let { resource ->
+            val progression = mediaPlayer
+                ?.let { it.currentPosition / it.duration }
+                ?: 0.0
+
+            // FIXME: Add totalProgression
+            Locator(
+                href = resource.href,
+                type = resource.type ?: "audio/*",
+                title = resource.title,
+                locations = Locator.Locations(
+                    fragments = listOf(
+                        "t=${mediaPlayer?.currentPosition?.toInt() ?: 0}"
+                    ),
+                    progression = progression
+                )
+            )
+        }
+
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
+            ?: return false
+
+        currentResource = resourceIndex
+        mediaPlayer?.goTo(currentResource)
+        return true
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
@@ -251,16 +272,16 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         val resourceHref = resource.href
         val resourceType = resource.type ?: ""
 
-        navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = seekBar!!.progress.toDouble())))
+        navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = seekBar!!.progress.toDouble())))
 
     }
 
-    private var seekLocation: Locations? = null
+    private var seekLocation: Locator.Locations? = null
     private var isSeekNeeded = false
     var isSeekTracking = false
     private fun seekIfNeeded() {
         if (isSeekNeeded) {
-            val time = seekLocation?.fragment?.let {
+            val time = seekLocation?.fragments?.firstOrNull()?.let {
                 var time = it
                 if (time.startsWith("#t=")) {
                     time = time.substring(time.indexOf('=') + 1)
@@ -318,7 +339,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 val resourceHref = resource.href
                 val resourceType = resource.type ?: ""
 
-                navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locations(progression = seekBar!!.progress.toDouble())))
+                navigatorDelegate?.locationDidChange(locator = Locator(resourceHref, resourceType, publication.metadata.title, Locator.Locations(progression = seekBar!!.progress.toDouble())))
 
                 Handler().postDelayed(this, 100)
             }
@@ -349,7 +370,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
-                val locator = data.getSerializableExtra("locator") as Locator
+                val locator = data.getParcelableExtra("locator") as Locator
 
                 // Set the progression fetched
                 navigatorDelegate?.locationDidChange(locator = locator)
@@ -357,7 +378,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 // href is the link to the page in the toc
                 var href = locator.href
 
-                if (href!!.indexOf("#") > 0) {
+                if (href.indexOf("#") > 0) {
                     href = href.substring(0, href.indexOf("#"))
                 }
 

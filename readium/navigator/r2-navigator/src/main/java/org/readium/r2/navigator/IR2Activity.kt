@@ -12,8 +12,8 @@ package org.readium.r2.navigator
 import android.content.SharedPreferences
 import android.view.View
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.Locator
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import java.net.URL
@@ -52,8 +52,6 @@ interface IR2TTS {
 
 interface Navigator {
     val currentLocation: Locator?
-        get() = null
-
     fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean
     fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean
     fun goForward(animated: Boolean, completion: () -> Unit): Boolean
