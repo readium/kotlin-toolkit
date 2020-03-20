@@ -13,6 +13,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
+import org.readium.r2.streamer.parser.PerResourcePositionListFactory
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
@@ -87,9 +88,17 @@ class DiViNaParser : PublicationParser {
 
         //Parsing manifest.json & building publication object
         val publication = Publication.fromJSON(json)
-        publication?.type = Publication.TYPE.DiViNa
+            ?.copyWithPositionsFactory {
+                PerResourcePositionListFactory(
+                    readingOrder = readingOrder,
+                    fallbackMediaType = "image/*"
+                )
+            }
+            ?: return null
 
-        return publication?.let {  PubBox(it, container) }
+        publication.type = Publication.TYPE.DiViNa
+
+        return PubBox(publication, container)
     }
 
     private fun InputStream.toFile(path: String) {

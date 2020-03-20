@@ -15,6 +15,8 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.ContentLayout
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
@@ -104,7 +106,17 @@ class EpubParser : PublicationParser {
                 navigationData = parseNavigationData(packageDocument, container),
                 encryptionData = parseEncryptionData(container),
                 displayOptions = parseDisplayOptions(container)
-            ).create().apply {
+            ).create()
+            .copyWithPositionsFactory {
+                EpubPositionListFactory(
+                    container = container,
+                    readingOrder = readingOrder,
+                    presentation = metadata.presentation,
+                    // We split reflowable resources every 1024 bytes.
+                    reflowablePositionLength = 1024L
+                )
+            }
+            .apply {
                 internalData["type"] = "epub"
                 internalData["rootfile"] = opfPath
 
