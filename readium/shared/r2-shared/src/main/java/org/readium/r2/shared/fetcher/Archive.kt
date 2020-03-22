@@ -16,7 +16,12 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
-class ZipFetcher(val archive: ZipFile) : Fetcher {
+class ZipFetcher : Fetcher {
+    private val archive: ZipFile
+
+    private constructor(archive: ZipFile) {
+        this.archive = archive
+    }
 
     override fun get(link: Link): Resource = ZipResource(link, archive)
 
