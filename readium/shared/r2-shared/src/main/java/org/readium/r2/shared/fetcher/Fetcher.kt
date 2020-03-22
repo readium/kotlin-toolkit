@@ -17,7 +17,7 @@ interface Fetcher {
     /** Return a handle to try to retrieve a `link`'s content. */
     fun get(link: Link): Resource
 
-    /** Close resources associated with the fetcher when there is any one. */
+    /** Close resources associated with the fetcher if there's any. */
     fun close() {}
 }
 
@@ -33,12 +33,12 @@ interface Resource {
     val length: Long?
 }
 
-abstract class ResourceImpl : Resource {
+internal abstract class ResourceImpl : Resource {
 
     override val bytes: ByteArray? by lazy {
         stream().use {
             try {
-               it?.readBytes()
+                it?.readBytes()
             } catch (e: Exception) {
                 null
             }
