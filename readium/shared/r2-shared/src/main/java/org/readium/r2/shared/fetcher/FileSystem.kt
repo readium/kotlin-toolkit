@@ -21,17 +21,18 @@ class FileFetcher(val files: Map<String, String>) : Fetcher {
 
     constructor(path: String, href: String) : this(mapOf(href to path))
 
-    override fun get(link: Link): Resource = FileResource(link)
+    override fun get(link: Link): Resource =
+        files[link.href]?.let { FileResource(link, it) } ?: NotFoundResource(link)
 }
 
 class DirectoryFetcher(val path: String) : Fetcher {
 
-    override fun get(link: Link): Resource = FileResource(link, path)
+    override fun get(link: Link): Resource = FileResource(link, File(path, link.href).absolutePath)
 }
 
-private class FileResource(override val link: Link, val parent: String? = null) : ResourceImpl() {
+private class FileResource(override val link: Link, val path: String) : ResourceImpl() {
 
-    private val file = File(parent, link.href)
+    private val file = File(path)
 
     override fun stream(): InputStream? =
         try {
