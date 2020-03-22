@@ -10,6 +10,7 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.isLazyInitialized
 import java.io.InputStream
 
 interface Fetcher {
@@ -29,7 +30,7 @@ interface Resource {
 
     val bytes: ByteArray?
 
-    /** Data length from metadata if available and from bytes otherwise. */
+    /** An estimate of data length. */
     val length: Long?
 }
 
@@ -48,35 +49,34 @@ internal abstract class ResourceImpl : Resource {
     /**
      * The true length is used if it is already known, or no length is available from metadata.
      */
-    override val length: Long? by lazy {
-        if (::length.isLazyInitialized)
-            length
+    override val length: Long?
+        get () = if (::bytes.isLazyInitialized)
+            bytes?.size?.toLong()
         else
-            metadataLength ?: length
-    }
+            metadataLength
 
     /** An estimate of data length from metadata */
     open val metadataLength: Long? = null
+}
+
+internal class NotFoundResource(override val link: Link) : Resource {
+
+    override fun stream(): InputStream? = null
+
+    override val bytes: ByteArray? = null
+
+    override val length: Long? = null
 }
 
 class CompositeFetcher(val selectors: List<Selector>) : Fetcher {
 
     class Selector(val fetcher: Fetcher, val accepts: (Link) -> Boolean)
 
-    private class DummyResource(override val link: Link) : Resource {
-
-        override fun stream(): InputStream? = null
-
-        override val bytes: ByteArray? = null
-
-        override val length: Long? = null
-    }
-
     constructor(local: Fetcher, remote: Fetcher)
             : this(listOf( Selector(remote, ::hrefIsRemote), Selector(local, { true }) ))
 
     override fun get(link: Link): Resource =
-        selectors.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: DummyResource(link)
+        selectors.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: NotFoundResource(link)
 
     override fun close() {
         selectors.forEach { it.fetcher.close() }

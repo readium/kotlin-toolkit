@@ -14,15 +14,15 @@ import androidx.core.content.MimeTypeFilter
 import org.readium.r2.shared.publication.Link
 import java.io.InputStream
 
-interface ContentFilter {
+interface ResourceTransformer {
 
     val priority: Int
 
     val accepts: Collection<String>
 
-    fun filter(resource: Resource): Resource
+    fun transform(resource: Resource): Resource
 
-    fun acceptsLink(resource: Resource): Boolean {
+    fun accepts(resource: Resource): Boolean {
         if (accepts.isEmpty()) return true
 
         val normalizedLinkType = resource.link.type?.let { Intent.normalizeMimeType(it) }
@@ -35,12 +35,14 @@ interface ContentFilter {
     }
 }
 
-class FilteredFetcher(val fetcher: Fetcher, val filters: Collection<ContentFilter>) : Fetcher {
+class TransformingFetcher(val fetcher: Fetcher, val filters: Collection<ResourceTransformer>) : Fetcher {
 
     override fun get(link: Link): Resource {
         val resource = fetcher.get(link)
-        val acceptedFilters = filters.filter { it.acceptsLink(resource) }.toList().sortedByDescending(ContentFilter::priority)
-        return acceptedFilters.fold(resource) { acc, filter -> filter.filter(acc) }
+        val acceptedFilters = filters
+            .filter { it.accepts(resource) }
+            .toList().sortedByDescending(ResourceTransformer::priority)
+        return acceptedFilters.fold(resource) { acc, filter -> filter.transform(acc) }
     }
 
     override fun close() {
@@ -48,8 +50,8 @@ class FilteredFetcher(val fetcher: Fetcher, val filters: Collection<ContentFilte
     }
 }
 
-class BytesContentFilter(override val priority: Int, override val accepts: Collection<String>, val byteFilter: (ByteArray) -> ByteArray) : ContentFilter {
-    override fun filter(resource: Resource): Resource =
+class BytesResourceTransformer(override val priority: Int, override val accepts: Collection<String>, val byteFilter: (ByteArray) -> ByteArray) : ResourceTransformer {
+    override fun transform(resource: Resource): Resource =
        object : Resource by resource {
            override fun stream(): InputStream? = bytes?.inputStream()
 

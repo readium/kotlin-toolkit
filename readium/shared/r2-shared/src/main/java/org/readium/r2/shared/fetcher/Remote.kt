@@ -10,10 +10,10 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.isLazyInitialized
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import kotlin.reflect.KProperty0
 
 
 /**
@@ -38,19 +38,18 @@ private class HttpResource(link: Link): ResourceImpl() {
         (URL(link.href).openConnection() as? HttpURLConnection)?.apply { requestMethod = "GET" }
     }
 
-    private val headerFields: Map<String, List<String>>? by lazy {
-        if (::getConnection.isLazyInitialized) {
+    private val headerFields: Map<String, List<String>>?
+        get() = if (::getConnection.isLazyInitialized) {
             getConnection?.headerFields
         } else {
             headConnection?.headerFields
         }
-    }
 
     override val link: Link by lazy {
-        link.copy(type = headerFields?.get("content-type")?.firstOrNull { it != "application/octet-stream" } ?: link.type)
+        link.copy(type = headerFields?.get("Content-Type")?.firstOrNull { it != "application/octet-stream" } ?: link.type)
     }
 
-    override fun stream(): InputStream? = bytes?.inputStream()
+    override fun stream(): InputStream? = bytes?.inputStream()  // getConnection?.inputStream always returns the same stream
 
     override val bytes: ByteArray? by lazy {
         try {
@@ -62,11 +61,9 @@ private class HttpResource(link: Link): ResourceImpl() {
 
     override val metadataLength: Long? by lazy {
         headerFields
-            ?.get("content-length")
+            ?.get("Content-Length")
             ?.mapNotNull(String::toLongOrNull)
             ?.firstOrNull()
     }
 }
 
-val KProperty0<*>.isLazyInitialized: Boolean
-    get() = (getDelegate() as Lazy<*>).isInitialized()
