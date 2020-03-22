@@ -27,7 +27,12 @@ class FileFetcher(val files: Map<String, String>) : Fetcher {
 
 class DirectoryFetcher(val path: String) : Fetcher {
 
-    override fun get(link: Link): Resource = FileResource(link, File(path, link.href).absolutePath)
+    val directory = File(path)
+
+    override fun get(link: Link): Resource {
+        val file = File(path, link.href)
+        return if (file.parentFile == directory) FileResource(link, file.absolutePath) else NotFoundResource(link)
+    }
 }
 
 private class FileResource(override val link: Link, val path: String) : ResourceImpl() {
