@@ -67,20 +67,3 @@ internal class NotFoundResource(override val link: Link) : Resource {
 
     override val length: Long? = null
 }
-
-class CompositeFetcher(val selectors: List<Selector>) : Fetcher {
-
-    class Selector(val fetcher: Fetcher, val accepts: (Link) -> Boolean)
-
-    constructor(local: Fetcher, remote: Fetcher)
-            : this(listOf( Selector(remote, ::hrefIsRemote), Selector(local, { true }) ))
-
-    override fun get(link: Link): Resource =
-        selectors.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: NotFoundResource(link)
-
-    override fun close() {
-        selectors.forEach { it.fetcher.close() }
-    }
-}
-
-private fun hrefIsRemote(link: Link) = link.href.startsWith("/")
