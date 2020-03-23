@@ -34,27 +34,28 @@ class ZipFetcher : Fetcher {
             null
         }
     }
-}
 
-private class ZipResource(override val link: Link, val archive: ZipFile) : ResourceImpl() {
+    private class ZipResource(override val link: Link, val archive: ZipFile) : ResourceImpl() {
 
-    override fun stream(): InputStream? {
-        val entry = entryForHref(link.href)
-        return try {
-            archive.getInputStream(entry)
-        } catch (e: ZipException) {
-            null
-        } catch (e: IOException) {
-            null
+        override fun stream(): InputStream? {
+            val entry = entryForHref(link.href)
+            return try {
+                archive.getInputStream(entry)
+            } catch (e: ZipException) {
+                null
+            } catch (e: IOException) {
+                null
+            }
         }
-    }
 
-    override val metadataLength: Long? by lazy {
-        entryForHref(link.href)?.size?.takeIf { it != -1L }
-    }
+        override val metadataLength: Long? by lazy {
+            entryForHref(link.href)?.size?.takeIf { it != -1L }
+        }
 
-    private fun entryForHref(href: String): ZipEntry? =
-        archive.getEntry(href.removePrefix("/"))
+        private fun entryForHref(href: String): ZipEntry? =
+            archive.getEntry(href.removePrefix("/"))
+    }
 }
+
 
 
