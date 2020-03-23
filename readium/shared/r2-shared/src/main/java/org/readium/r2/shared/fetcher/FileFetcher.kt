@@ -17,7 +17,7 @@ import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
 
-class FileFetcher(val paths: Map<String, String>) : Fetcher {
+class FileFetcher(private val paths: Map<String, String>) : Fetcher {
 
     constructor(href: String, path: String) : this(mapOf(href to path))
 
@@ -34,7 +34,7 @@ class FileFetcher(val paths: Map<String, String>) : Fetcher {
         return NotFoundResource(link)
     }
 
-    private class FileResource(override val link: Link, val path: String) : ResourceImpl() {
+    private class FileResource(override val link: Link, path: String) : ResourceImpl() {
 
         private val file = File(path)
 
