@@ -36,9 +36,7 @@ class ZipFetcher private constructor(private val archive: ZipFile) : Fetcher {
             val entry = entryForHref(link.href)
             return try {
                 archive.getInputStream(entry)
-            } catch (e: ZipException) {
-                null
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 null
             }
         }
