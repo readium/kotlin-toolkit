@@ -9,13 +9,12 @@
 
 package org.readium.r2.shared.fetcher
 
-import android.os.Build
 import org.readium.r2.shared.publication.Link
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.InputStream
-import java.nio.file.Files
-import java.nio.file.attribute.BasicFileAttributes
+import java.io.RandomAccessFile
+import java.nio.channels.Channels
+import java.nio.channels.FileChannel
 
 class FileFetcher(private val paths: Map<String, String>) : Fetcher {
 
@@ -27,35 +26,32 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
                 val resourcePath = File(path, link.href.removePrefix(href)).canonicalPath
                 // Make sure that the requested resource is [path] or one of its descendant.
                 if (resourcePath.startsWith(path)) {
-                    return FileResource(link, resourcePath)
+                    return try {
+                        val channel = RandomAccessFile(path, "r").channel
+                        FileResource(link, channel)
+                    } catch (e: Exception) {
+                        NullResource(link)
+                    }
                 }
             }
         }
         return NullResource(link)
     }
 
-    private class FileResource(override val link: Link, path: String) : ResourceImpl() {
-
-        private val file = File(path)
+    private class FileResource(override val link: Link, private val channel: FileChannel) : ResourceImpl() {
 
         override fun stream(): InputStream? =
             try {
-                file.inputStream().buffered()
-            } catch (e: FileNotFoundException) {
+                Channels.newInputStream(channel).buffered()
+            } catch (e: Exception) {
                 null
             }
 
         override val metadataLength: Long? by lazy {
-            if (Build.VERSION.SDK_INT > 25) {
-                // this version reads file's attributes in bulk, so consistency is ensured
-                try {
-                    val attributes = Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
-                    if (attributes.isRegularFile) attributes.size() else null
-                } catch (e: Exception) {
-                    null
-                }
-            } else {
-                file.length().takeIf { file.isFile && it != 0L }
+           try {
+               channel.size()
+           } catch (e : Exception) {
+               null
             }
         }
     }
