@@ -10,10 +10,8 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
-import java.io.IOException
 import java.io.InputStream
 import java.util.zip.ZipEntry
-import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
 class ZipFetcher private constructor(private val archive: ZipFile) : Fetcher {
