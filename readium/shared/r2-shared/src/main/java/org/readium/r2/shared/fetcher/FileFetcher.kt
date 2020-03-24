@@ -20,22 +20,28 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
 
     constructor(href: String, path: String) : this(mapOf(href to path))
 
+    private val openFiles: MutableMap<String, RandomAccessFile> = mutableMapOf()
+
     override fun get(link: Link): Resource {
         for ((href, path) in paths) {
             if (link.href.startsWith(href)) {
                 val resourcePath = File(path, link.href.removePrefix(href)).canonicalPath
                 // Make sure that the requested resource is [path] or one of its descendant.
                 if (resourcePath.startsWith(path)) {
-                    return try {
-                        val channel = RandomAccessFile(path, "r").channel
-                        FileResource(link, channel)
+                    try {
+                        val file = openFiles.getOrPut(resourcePath, { RandomAccessFile(resourcePath, "r") })
+                        return FileResource(link, file.channel)
                     } catch (e: Exception) {
-                        NullResource(link)
                     }
                 }
             }
         }
         return NullResource(link)
+    }
+
+    override fun close() {
+        openFiles.values.forEach { it.close() }
+        openFiles.clear()
     }
 
     private class FileResource(override val link: Link, private val channel: FileChannel) : ResourceImpl() {
