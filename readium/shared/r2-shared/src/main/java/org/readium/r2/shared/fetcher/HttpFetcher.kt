@@ -27,6 +27,8 @@ class HttpFetcher : Fetcher {
 
     override fun get(link: Link): Resource = HttpResource(link)
 
+    override fun close() {}
+
     private class HttpResource(link: Link): ResourceImpl() {
 
         private val headConnection: HttpURLConnection? by lazy {

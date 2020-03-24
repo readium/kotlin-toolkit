@@ -19,7 +19,7 @@ interface Fetcher {
     fun get(link: Link): Resource
 
     /** Close resources associated with the fetcher if there's any. */
-    fun close() {}
+    fun close()
 }
 
 interface Resource {
