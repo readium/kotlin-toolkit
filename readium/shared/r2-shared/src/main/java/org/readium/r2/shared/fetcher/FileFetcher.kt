@@ -31,7 +31,7 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
                 }
             }
         }
-        return NotFoundResource(link)
+        return NullResource(link)
     }
 
     private class FileResource(override val link: Link, path: String) : ResourceImpl() {

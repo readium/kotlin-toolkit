@@ -59,7 +59,7 @@ internal abstract class ResourceImpl : Resource {
     open val metadataLength: Long? = null
 }
 
-internal class NotFoundResource(override val link: Link) : Resource {
+internal class NullResource(override val link: Link) : Resource {
 
     override fun stream(): InputStream? = null
 

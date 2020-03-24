@@ -11,18 +11,18 @@ package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
 
-class CompositeFetcher(val selectors: List<Selector>) : Fetcher {
+class RoutingFetcher(val routes: List<Route>) : Fetcher {
 
-    class Selector(val fetcher: Fetcher, val accepts: (Link) -> Boolean)
+    class Route(val fetcher: Fetcher, val accepts: (Link) -> Boolean)
 
     constructor(local: Fetcher, remote: Fetcher)
-            : this(listOf( Selector(remote, ::hrefIsRemote), Selector(local, { true }) ))
+            : this(listOf( Route(remote, ::hrefIsRemote), Route(local, { true }) ))
 
     override fun get(link: Link): Resource =
-        selectors.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: NotFoundResource(link)
+        routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: NullResource(link)
 
     override fun close() {
-        selectors.forEach { it.fetcher.close() }
+        routes.forEach { it.fetcher.close() }
     }
 }
 
