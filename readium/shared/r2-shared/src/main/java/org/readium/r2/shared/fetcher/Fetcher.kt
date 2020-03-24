@@ -32,6 +32,8 @@ interface Resource {
 
     /** An estimate of data length. */
     val length: Long?
+
+    fun close()
 }
 
 internal abstract class ResourceImpl : Resource {
@@ -66,4 +68,6 @@ internal class NullResource(override val link: Link) : Resource {
     override val bytes: ByteArray? = null
 
     override val length: Long? = null
+
+    override fun close() {}
 }

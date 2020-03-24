@@ -47,6 +47,8 @@ class ZipFetcher private constructor(private val archive: ZipFile) : Fetcher {
             entryForHref(link.href)?.size?.takeIf { it != -1L }
         }
 
+        override fun close() {}
+
         private fun entryForHref(href: String): ZipEntry? =
             archive.getEntry(href.removePrefix("/"))
     }

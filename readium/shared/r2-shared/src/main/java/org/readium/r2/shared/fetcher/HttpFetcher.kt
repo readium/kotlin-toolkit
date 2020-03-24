@@ -66,6 +66,8 @@ class HttpFetcher : Fetcher {
                 ?.mapNotNull(String::toLongOrNull)
                 ?.firstOrNull()
         }
+
+        override fun close() {}
     }
 }
 
