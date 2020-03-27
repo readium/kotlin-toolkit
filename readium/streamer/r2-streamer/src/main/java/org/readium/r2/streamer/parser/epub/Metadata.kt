@@ -80,7 +80,7 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
     }
 
     private fun parseMetaElement(element: ElementNode): MetadataItem? {
-        return if (epubVersion < 3.0) {
+        return if (element.getAttr("property") == null) {
             val name = element.getAttr("name")
                 ?: return null
             val content = element.getAttr("content")
@@ -223,7 +223,7 @@ internal class PubMetadataAdapter(
 
         localizedTitle =  mainTitle?.value ?: LocalizedString(fallbackTitle)
         localizedSubtitle = titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()?.value
-        sortAs = if (epubVersion < 3.0) firstValue("calibre:title_sort") else mainTitle?.fileAs
+        sortAs = mainTitle?.fileAs ?: firstValue("calibre:title_sort")
     }
 
     val belongsToSeries: List<Collection>

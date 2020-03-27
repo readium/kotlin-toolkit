@@ -148,10 +148,8 @@ internal class PublicationFactory(
             properties.putAll(parseItemrefProperties(itemref.properties))
         }
 
-        if (epubVersion < 3.0) {
-            val coverId = pubMetadata.cover
-            if (coverId != null && item.id == coverId) rels.add("cover")
-        }
+        val coverId = pubMetadata.cover
+        if (coverId != null && item.id == coverId) rels.add("cover")
 
         encryptionData[item.href]?.let {
             properties["encrypted"] = it.toJSON().toMap()
