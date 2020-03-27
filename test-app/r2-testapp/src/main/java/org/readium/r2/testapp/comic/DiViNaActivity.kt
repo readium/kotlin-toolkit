@@ -21,6 +21,7 @@ import org.readium.r2.navigator.divina.R2DiViNaActivity
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.library.LibraryActivity
 import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
 import timber.log.Timber
@@ -45,7 +46,9 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
     private var menuToc: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (activitiesLaunched.incrementAndGet() > 1) { finish(); }
+        if (activitiesLaunched.incrementAndGet() > 1 || !LibraryActivity.isServerStarted) {
+            finish()
+        }
         super.onCreate(savedInstanceState)
 
         bookId = intent.getLongExtra("bookId", -1)

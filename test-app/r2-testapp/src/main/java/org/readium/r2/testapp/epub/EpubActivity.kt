@@ -57,6 +57,7 @@ import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.*
+import org.readium.r2.testapp.library.LibraryActivity
 import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
 import org.readium.r2.testapp.search.MarkJSSearchEngine
@@ -129,7 +130,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
      *   - Initialize search.
      */
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (activitiesLaunched.incrementAndGet() > 1) {
+        if (activitiesLaunched.incrementAndGet() > 1 || !LibraryActivity.isServerStarted) {
             finish()
         }
         super.onCreate(savedInstanceState)

@@ -716,7 +716,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 server.loadCustomResource(assets.open("scripts/crypto-sha256.js"), "crypto-sha256.js", Injectable.Script)
                 server.loadCustomResource(assets.open("scripts/highlight.js"), "highlight.js", Injectable.Script)
 
-
+                isServerStarted = true
             }
         }
     }
@@ -724,6 +724,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     private fun stopServer() {
         if (server.isAlive) {
             server.stop()
+            isServerStarted = false
         }
     }
 
@@ -1238,5 +1239,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         listener?.processLcpActivityResult(uri, it, progress, networkAvailable)
     }
 
-}
+    companion object {
 
+        var isServerStarted = false
+            private set
+
+    }
+
+}

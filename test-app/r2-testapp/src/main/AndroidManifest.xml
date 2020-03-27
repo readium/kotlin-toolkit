@@ -29,6 +29,7 @@
         tools:replace="android:allowBackup"
         tools:targetApi="m">
         <activity android:name=".CatalogActivity"
+            android:clearTaskOnLaunch="true"
             android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
