@@ -58,8 +58,11 @@ internal class PublicationFactory(
 
         // Compute links
         val links = manifest.map { computeLink(it) }
-        val readingOrderIds = computeReadingOrderIds(links)
-        val (readingOrder, resources) = links.partition { it.title in readingOrderIds }
+        val linkById = links.associateBy(Link::title)
+        val readingOrder = spine.itemrefs.filter { it.linear }.mapNotNull { linkById[it.idref] }
+        val readingOrderIds = readingOrder.mapNotNull(Link::title)
+        val readingOrderAlternateIds = computeAlternateIds(readingOrder)
+        val resources = links.filterNot { it.title in readingOrderIds || it.title in readingOrderAlternateIds }
 
         // Compute toc and otherCollections
         val toc = navigationData["toc"].orEmpty()
@@ -97,23 +100,20 @@ internal class PublicationFactory(
         )
     }
 
-    /** Recursively find the ids of links that must appear in the readingOrder */
-    private fun computeReadingOrderIds(links: List<Link>): Set<String> {
+    /** Recursively find the ids of the alternate links in [links] */
+    private fun computeAlternateIds(links: List<Link>): Set<String> {
         val ids: MutableSet<String> = mutableSetOf()
-        for (l in links) {
-            if (itemrefByIdref.containsKey(l.title) && (itemrefByIdref[l.title] as Itemref).linear) {
-                ids.addAll(computeIdChain(l))
-            }
-        }
+        links.forEach { ids.addAll(computeAlternateChain(it)) }
         return ids
     }
 
     /** Compute the ids contained in the alternate chain of [Link] */
-    private fun computeIdChain(link: Link): Set<String> {
+    private fun computeAlternateChain(link: Link): Set<String> {
         // The termination has already been checked while computing links
-        val ids: MutableSet<String> = mutableSetOf(link.title as String)
+        val ids: MutableSet<String> = mutableSetOf()
         for (a in link.alternates) {
-            ids.addAll(computeIdChain(a))
+            a.title?.let { ids.add(it) }
+            ids.addAll(computeAlternateChain(a))
         }
         return ids
     }
