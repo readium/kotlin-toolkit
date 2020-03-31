@@ -40,16 +40,23 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
     private fun authenticate(license: LicenseDocument, reason: LCPAuthenticationReason, authentication: LCPAuthenticating, completion: (String?) -> Unit) {
         val authenticatedLicense = LCPAuthenticatedLicense(document = license)
         authentication.requestPassphrase(authenticatedLicense, reason) { clearPassphrase ->
-            clearPassphrase?.let {
+            if (clearPassphrase != null) {
                 val hashedPassphrase = HASH.sha256(clearPassphrase)
+                val passphrases = mutableListOf(hashedPassphrase)
+                // Note: The C++ LCP lib crashes if we provide a passphrase that is not a valid
+                // SHA-256 hash. So we check this beforehand.
+                if (sha256Regex.matches(clearPassphrase)) {
+                    passphrases.add(clearPassphrase)
+                }
+
                 try {
-                    val passphrase = Lcp().findOneValidPassphrase(license.json.toString(), listOf(hashedPassphrase).toTypedArray())
+                    val passphrase = Lcp().findOneValidPassphrase(license.json.toString(), passphrases.toTypedArray())
                     this.repository.addPassphrase(passphrase, license.id, license.provider, license.user.id)
                     completion(passphrase)
                 } catch (e: Exception) {
                     authenticate(license, LCPAuthenticationReason.invalidPassphrase, authentication, completion)
                 }
-            } ?: run {
+            } else {
                 completion(null)
             }
         }
@@ -68,4 +75,9 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         }
         return passphrases
     }
+
+    companion object {
+        private val sha256Regex = "^([a-f0-9]{64})$".toRegex(RegexOption.IGNORE_CASE)
+    }
+
 }

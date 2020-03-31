@@ -23,6 +23,7 @@ interface LCPAuthenticating {
      * @param license Information to show to the user about the license being opened.
      * @param reason Reason why the passphrase is requested. It should be used to prompt the user.
      * @param completion Used to return the retrieved passphrase. If the user cancelled, send nil.
+     *        The passphrase may be already hashed.
      */
     fun requestPassphrase(license: LCPAuthenticatedLicense, reason: LCPAuthenticationReason, completion: (String?) -> Unit)
 
