@@ -350,6 +350,7 @@ class MetadataMiscTest {
         )
         assertThat(parsePackageDocument("package/cover-epub2.opf").coverLink).isEqualTo(expected)
         assertThat(parsePackageDocument("package/cover-epub3.opf").coverLink).isEqualTo(expected)
+        assertThat(parsePackageDocument("package/cover-mix.opf").coverLink).isEqualTo(expected)
     }
 
     @Test(timeout = PARSE_PUB_TIMEOUT)
