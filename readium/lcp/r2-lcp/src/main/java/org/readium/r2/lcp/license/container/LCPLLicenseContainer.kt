@@ -23,17 +23,12 @@ internal class LCPLLicenseContainer(private val lcpl: String? = null, private va
 
     var publication: String? = null
 
-    override fun read() : ByteArray {
-        return lcpl?.let {
-            URL(Uri.parse(it).toString()).openStream().readBytes()
-        } ?: run {
-            byteArray?.let {
-                it
-            } ?:run {
-                ByteArray(0)
-            }
+    override fun read() : ByteArray =
+        if (lcpl != null) {
+            URL(Uri.parse(lcpl).toString()).openStream().readBytes()
+        } else {
+            byteArray ?: ByteArray(0)
         }
-    }
 
     override fun write(license: LicenseDocument) {
         publication?.let {

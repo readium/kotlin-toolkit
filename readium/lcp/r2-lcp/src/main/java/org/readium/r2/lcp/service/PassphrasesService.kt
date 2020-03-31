@@ -12,10 +12,10 @@ package org.readium.r2.lcp.service
 import com.mcxiaoke.koi.HASH
 import kotlinx.coroutines.runBlocking
 import org.readium.lcp.sdk.Lcp
+import org.readium.r2.lcp.LCPAuthenticatedLicense
+import org.readium.r2.lcp.LCPAuthenticating
+import org.readium.r2.lcp.LCPAuthenticationReason
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.lcp.public.LCPAuthenticatedLicense
-import org.readium.r2.lcp.public.LCPAuthenticating
-import org.readium.r2.lcp.public.LCPAuthenticationReason
 
 internal class PassphrasesService(private val repository: PassphrasesRepository) {
 
