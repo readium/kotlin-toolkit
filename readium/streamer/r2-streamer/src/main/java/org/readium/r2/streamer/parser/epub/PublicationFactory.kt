@@ -57,12 +57,11 @@ internal class PublicationFactory(
         val metadataLinks = links.mapNotNull(::mapEpubLink)
 
         // Compute links
-        val links = manifest.map { computeLink(it) }
-        val linkById = links.associateBy(Link::title)
-        val readingOrder = spine.itemrefs.filter { it.linear }.mapNotNull { linkById[it.idref] }
-        val readingOrderIds = readingOrder.mapNotNull(Link::title)
-        val readingOrderAlternateIds = computeAlternateIds(readingOrder)
-        val resources = links.filterNot { it.title in readingOrderIds || it.title in readingOrderAlternateIds }
+        val readingOrderIds = spine.itemrefs.filter { it.linear }.map { it.idref }
+        val readingOrder = readingOrderIds.mapNotNull { itemById[it]?.let { computeLink(it) } }
+        val readingOrderAllIds = computeIdsWithFallbacks(readingOrderIds)
+        val resourceItems = manifest.filterNot { it.id in readingOrderAllIds }
+        val resources = resourceItems.map { computeLink(it) }
 
         // Compute toc and otherCollections
         val toc = navigationData["toc"].orEmpty()
@@ -100,21 +99,20 @@ internal class PublicationFactory(
         )
     }
 
-    /** Recursively find the ids of the alternate links in [links] */
-    private fun computeAlternateIds(links: List<Link>): Set<String> {
-        val ids: MutableSet<String> = mutableSetOf()
-        links.forEach { ids.addAll(computeAlternateChain(it)) }
-        return ids
+    /** Recursively find the ids of the fallback items in [items] */
+    private fun computeIdsWithFallbacks(ids: List<String>): Set<String> {
+        val fallbackIds: MutableSet<String> = mutableSetOf()
+        ids.forEach { fallbackIds.addAll(computeFallbackChain(it)) }
+        return fallbackIds
     }
 
-    /** Compute the ids contained in the alternate chain of [Link] */
-    private fun computeAlternateChain(link: Link): Set<String> {
+    /** Compute the ids contained in the fallback chain of [item] */
+    private fun computeFallbackChain(id: String): Set<String> {
         // The termination has already been checked while computing links
         val ids: MutableSet<String> = mutableSetOf()
-        for (a in link.alternates) {
-            a.title?.let { ids.add(it) }
-            ids.addAll(computeAlternateChain(a))
-        }
+        val item = itemById[id]
+        item?.id?.let { ids.add(it) }
+        item?.fallback?.let { ids.addAll(computeFallbackChain(it)) }
         return ids
     }
 
@@ -123,7 +121,6 @@ internal class PublicationFactory(
         val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
 
         return Link(
-            title = item.id,
             href = normalize(packageDocument.path, item.href),
             type = item.mediaType,
             duration = itemMetadata[item.id]?.duration,

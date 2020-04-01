@@ -131,12 +131,10 @@ class LinkTest {
         assertThat(resourcesPub.readingOrder).containsExactly(
             Link(
                 href = "/titlepage.xhtml",
-                title = "titlepage",
                 type = "application/xhtml+xml"
             ),
             Link(
                 href = "/OEBPS/chapter01.xhtml",
-                title = "chapter01",
                 type = "application/xhtml+xml"
             )
         )
@@ -147,50 +145,41 @@ class LinkTest {
         assertThat(resourcesPub.resources).containsExactlyInAnyOrder(
             Link(
                 href = "/OEBPS/fonts/MinionPro.otf",
-                title = "font0",
                 type = "application/vnd.ms-opentype"
             ),
             Link(
                 href = "/OEBPS/nav.xhtml",
-                title = "nav",
                 type = "application/xhtml+xml",
                 rels = setOf("contents")
             ),
             Link(
                 href = "/style.css",
-                title = "css",
                 type = "text/css"
             ),
             Link(
                 href = "/OEBPS/chapter01.smil",
-                title = "chapter01_smil",
                 type = "application/smil+xml"
             ),
             Link(
                 href = "/OEBPS/chapter02.smil",
-                title = "chapter02_smil",
                 type = "application/smil+xml",
                 duration = 1949.0
             ),
             Link(
                 href = "/OEBPS/images/alice01a.png",
-                title = "img01a",
                 type = "image/png",
                 rels = setOf("cover")
             ),
             Link(
                 href = "/OEBPS/images/alice02a.gif",
-                title = "img02a",
                 type = "image/gif"
             ),
             Link(
                 href = "/OEBPS/chapter02.xhtml",
-                title = "chapter02",
                 type = "application/xhtml+xml"
             ),
             Link(
-                href = "/OEBPS/nomediatype.txt",
-                title = "nomediatype"
+                href = "/OEBPS/nomediatype.txt"
             )
         )
     }
@@ -201,17 +190,14 @@ class LinkMiscTest {
         assertThat(parsePackageDocument("package/fallbacks.opf")).isEqualTo(
             Link(
                 href = "/OEBPS/chap1_docbook.xml",
-                title = "item1",
                 type = "application/docbook+xml",
                 alternates = listOf(
                     Link(
                         href = "/OEBPS/chap1.xml",
-                        title = "fall1",
                         type = "application/z3998-auth+xml",
                         alternates = listOf(
                             Link(
                                 href = "/OEBPS/chap1.xhtml",
-                                title = "fall2",
                                 type = "application/xhtml+xml"
                             )
                         )
