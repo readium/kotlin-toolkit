@@ -49,25 +49,10 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
 
     private class FileResource(override val link: Link, private val file: RandomAccessFile) : ResourceImpl() {
 
-        private val channel = file.channel
+        override fun stream(): InputStream = Channels.newInputStream(file.channel).buffered()
 
-        override fun stream(): InputStream? =
-            try {
-                Channels.newInputStream(channel).buffered()
-            } catch (e: Exception) {
-                null
-            }
+        override val metadataLength: Long = file.length()
 
-        override val metadataLength: Long? by lazy {
-           try {
-               channel.size()
-           } catch (e : Exception) {
-               null
-            }
-        }
-
-        override fun close() {
-            file.close()
-        }
+        override fun close() = file.close()
     }
 }

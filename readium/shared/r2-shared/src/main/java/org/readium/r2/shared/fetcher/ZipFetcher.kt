@@ -30,13 +30,9 @@ class ZipFetcher private constructor(private val archive: ZipFile) : Fetcher {
 
     private class ZipResource(override val link: Link, val archive: ZipFile) : ResourceImpl() {
 
-        override fun stream(): InputStream? {
+        override fun stream(): InputStream {
             val entry = entryForHref(link.href)
-            return try {
-                archive.getInputStream(entry)
-            } catch (e: Exception) {
-                null
-            }
+            return archive.getInputStream(entry)
         }
 
         override val metadataLength: Long? by lazy {

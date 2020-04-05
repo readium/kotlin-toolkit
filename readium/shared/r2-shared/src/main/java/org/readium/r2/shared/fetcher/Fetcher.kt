@@ -9,9 +9,10 @@
 
 package org.readium.r2.shared.fetcher
 
+import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.util.isLazyInitialized
 import java.io.InputStream
+import java.lang.IllegalArgumentException
 
 interface Fetcher {
 
@@ -25,10 +26,7 @@ interface Fetcher {
 interface Resource {
     val link: Link
 
-    /** Return a new stream to read the resource. */
-    fun stream(): InputStream?
-
-    val bytes: ByteArray?
+    fun read(range: LongRange? = null): ByteArray?
 
     /** An estimate of data length. */
     val length: Long?
@@ -38,34 +36,51 @@ interface Resource {
 
 internal abstract class ResourceImpl : Resource {
 
-    override val bytes: ByteArray? by lazy {
-        stream().use {
-            try {
-                it?.readBytes()
-            } catch (e: Exception) {
-                null
-            }
+    protected abstract fun stream(): InputStream
+
+    /** An estimate of data length from metadata */
+    protected open val metadataLength: Long? = null
+
+    override fun read(range: LongRange?): ByteArray? {
+        return try {
+            if (range == null)
+                readFully()
+            else
+                readRange(range)
+        } catch (e: Exception) {
+            null
         }
     }
 
-    /**
-     * The true length is used if it is already known, or no length is available from metadata.
-     */
-    override val length: Long?
-        get () = if (::bytes.isLazyInitialized)
-            bytes?.size?.toLong()
-        else
-            metadataLength
+    private fun readFully(): ByteArray = stream().use { it.readBytes() }
 
-    /** An estimate of data length from metadata */
-    open val metadataLength: Long? = null
+    private fun readRange(range: LongRange): ByteArray {
+        val length = range.last - range.first + 1
+
+        if (range.first > range.last || range.first < 0)
+            throw IllegalArgumentException("Invalid range $range")
+        else if (length > Int.MAX_VALUE)
+            throw IllegalArgumentException("Range length greater than Int.MAX_VALUE")
+
+        stream().use {
+            val skipped = it.skip(range.first)
+            if (skipped != range.first) throw Exception("Unable to skip enough bytes")
+            return it.read(length)
+        }
+    }
+
+    override val length: Long?
+        get() =
+            try {
+                metadataLength
+            } catch (e: Exception) {
+                readFully().size.toLong()
+            }
 }
 
 internal class NullResource(override val link: Link) : Resource {
 
-    override fun stream(): InputStream? = null
-
-    override val bytes: ByteArray? = null
+    override fun read(range: LongRange?): ByteArray? = null
 
     override val length: Long? = null
 
