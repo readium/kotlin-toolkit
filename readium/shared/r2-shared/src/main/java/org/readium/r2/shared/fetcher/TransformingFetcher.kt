@@ -55,16 +55,11 @@ internal class BytesResourceTransformer(
     val byteFilter: (ByteArray) -> ByteArray
 ) : ResourceTransformer {
 
-    override fun transform(resource: Resource): Resource =
-        object : Resource by resource {
-            override fun stream(): InputStream? = bytes?.inputStream()
-
-            override val bytes: ByteArray? by lazy {
-                resource.bytes?.let { byteFilter(it) }
-            }
-
-            override val length: Long? = bytes?.size?.toLong()
-        }
+    override fun transform(resource: Resource): Resource {
+        val originalBytes = resource.read() ?: return NullResource(resource.link)
+        val transformedBytes = if (accepts(resource)) byteFilter(originalBytes) else originalBytes
+        return BytesResource(resource.link, transformedBytes)
+    }
 
     fun accepts(resource: Resource): Boolean {
         if (accepts.isEmpty()) return true

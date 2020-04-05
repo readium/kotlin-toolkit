@@ -28,7 +28,7 @@ class ZipFetcher private constructor(private val archive: ZipFile) : Fetcher {
         }
     }
 
-    private class ZipResource(override val link: Link, val archive: ZipFile) : ResourceImpl() {
+    private class ZipResource(override val link: Link, val archive: ZipFile) : StreamResource() {
 
         override fun stream(): InputStream {
             val entry = entryForHref(link.href)

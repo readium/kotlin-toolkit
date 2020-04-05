@@ -11,11 +11,9 @@ package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
 
-interface Fetcher {
+class ProxyFetcher(val closure: (Link) -> Resource) : Fetcher {
+    override fun get(link: Link): Resource = closure(link)
 
-    /** Return a handle to try to retrieve a `link`'s content. */
-    fun get(link: Link): Resource
-
-    /** Close resources associated with the fetcher if there's any. */
-    fun close()
+    override fun close() {}
 }
+
