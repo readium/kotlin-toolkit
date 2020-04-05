@@ -21,13 +21,27 @@ interface ResourceTransformer {
     fun transform(resource: Resource): Resource
 }
 
-class TransformingFetcher(val fetcher: Fetcher, val filters: Collection<ResourceTransformer>) : Fetcher {
+class ResourceTransformerChain(val transformers: Collection<ResourceTransformer>, override val priority: Int)
+    : ResourceTransformer {
+
+    override fun transform(resource: Resource): Resource =
+        transformers
+            .toList().sortedByDescending(ResourceTransformer::priority)
+            .fold(resource) { acc, filter -> filter.transform(acc) }
+
+}
+
+class TransformingFetcher(val fetcher: Fetcher, val transformerChain: ResourceTransformerChain) : Fetcher {
+
+    constructor(fetcher: Fetcher, transformers: Collection<ResourceTransformer>)
+            : this(fetcher, ResourceTransformerChain(transformers, 0))
+
+    constructor(fetcher: Fetcher, transformer: ResourceTransformer)
+            : this(fetcher, listOf(transformer))
 
     override fun get(link: Link): Resource {
         val resource = fetcher.get(link)
-        return filters
-            .toList().sortedByDescending(ResourceTransformer::priority)
-            .fold(resource) { acc, filter -> filter.transform(acc) }
+        return transformerChain.transform(resource)
     }
 
     override fun close() {
