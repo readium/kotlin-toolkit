@@ -23,6 +23,12 @@ interface Fetcher {
     fun close()
 }
 
+class ProxyFetcher(val closure: (Link) -> Resource) : Fetcher {
+    override fun get(link: Link): Resource = closure(link)
+
+    override fun close() {}
+}
+
 interface Resource {
     val link: Link
 
@@ -32,6 +38,15 @@ interface Resource {
     val length: Long?
 
     fun close()
+}
+
+internal class NullResource(override val link: Link) : Resource {
+
+    override fun read(range: LongRange?): ByteArray? = null
+
+    override val length: Long? = null
+
+    override fun close() {}
 }
 
 internal abstract class ResourceImpl : Resource {
@@ -76,13 +91,4 @@ internal abstract class ResourceImpl : Resource {
             } catch (e: Exception) {
                 readFully().size.toLong()
             }
-}
-
-internal class NullResource(override val link: Link) : Resource {
-
-    override fun read(range: LongRange?): ByteArray? = null
-
-    override val length: Long? = null
-
-    override fun close() {}
 }
