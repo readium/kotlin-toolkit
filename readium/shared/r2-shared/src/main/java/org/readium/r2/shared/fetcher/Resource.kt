@@ -25,6 +25,8 @@ interface Resource {
     fun close()
 }
 
+typealias ResourceTransformer = (Resource) -> Resource
+
 class NullResource(override val link: Link) : Resource {
 
     override fun read(range: LongRange?): ByteArray? = null
