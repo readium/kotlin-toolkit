@@ -16,7 +16,7 @@ class RoutingFetcher(val routes: List<Route>) : Fetcher {
     class Route(val fetcher: Fetcher, val accepts: (Link) -> Boolean)
 
     constructor(local: Fetcher, remote: Fetcher)
-            : this(listOf( Route(remote, ::hrefIsRemote), Route(local, { true }) ))
+            : this(listOf( Route(local, ::hrefIsLocal), Route(remote, { true }) ))
 
     override fun get(link: Link): Resource =
         routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: NullResource(link)
@@ -26,4 +26,4 @@ class RoutingFetcher(val routes: List<Route>) : Fetcher {
     }
 }
 
-private fun hrefIsRemote(link: Link) = link.href.startsWith("/")
+private fun hrefIsLocal(link: Link) = link.href.startsWith("/")
