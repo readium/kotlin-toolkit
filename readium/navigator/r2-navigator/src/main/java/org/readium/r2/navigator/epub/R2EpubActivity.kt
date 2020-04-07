@@ -22,11 +22,9 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.navigator.*
-import org.readium.r2.navigator.R
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -75,12 +73,12 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                             // reload webview if it has an anchor
                             locator.locations.fragments.firstOrNull()?.let { fragment ->
 
-                                val fragments = JSONArray(fragment).getString(0).split(",").associate {
+                                val fragments = fragment.split(",").associate {
                                     val (left, right) = it.split("=")
                                     left to right.toInt()
                                 }
                                 //            val id = fragments.getValue("id")
-                                if (fragments.isEmpty()) {
+                                if (fragments.isNullOrEmpty()) {
                                     var anchor = fragment
                                     if (!anchor.startsWith("#")) {
                                         anchor = "#$anchor"
@@ -371,7 +369,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
             if (data != null) {
 
                 val locator = data.getParcelableExtra("locator") as Locator
-
+                pendingLocator = locator
                 // href is the link to the page in the toc
                 var href = locator.href
 
@@ -388,12 +386,12 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                                     // reload webview if it has an anchor
                                     locator.locations.fragments.firstOrNull()?.let { fragment ->
 
-                                        val fragments = JSONArray(fragment).getString(0).split(",").associate {
+                                        val fragments = fragment.split(",").associate {
                                             val (left, right) = it.split("=")
                                             left to right.toInt()
                                         }
                                         //            val id = fragments.getValue("id")
-                                        if (fragments.isEmpty()) {
+                                        if (fragments.isNullOrEmpty()) {
                                             var anchor = fragment
                                             if (!anchor.startsWith("#")) {
                                                 anchor = "#$anchor"
