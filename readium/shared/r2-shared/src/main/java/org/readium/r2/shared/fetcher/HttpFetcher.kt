@@ -10,6 +10,7 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.isLazyInitialized
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -46,7 +47,8 @@ class HttpFetcher : Fetcher {
             link.copy(type = headerFields?.get("Content-Type")?.firstOrNull { it != "application/octet-stream" } ?: link.type)
         }
 
-        override fun stream(): InputStream = bytes.inputStream()  // getConnection?.inputStream always returns the same stream
+        override fun stream(): Try<InputStream, Resource.Error> =
+            Try.success(bytes.inputStream())  // getConnection?.inputStream always returns the same stream
 
         private val bytes: ByteArray by lazy {
             getConnection.inputStream.use { it.readBytes() }

@@ -10,6 +10,7 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.Try
 import java.io.File
 import java.io.InputStream
 import java.io.RandomAccessFile
@@ -29,17 +30,18 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
                 val resourcePath = File(path, link.href.removePrefix(href)).canonicalPath
                 // Make sure that the requested resource is [path] or one of its descendant.
                 if (resourcePath.startsWith(path)) {
-                    try {
+                    return try {
                         val file = RandomAccessFile(resourcePath, "r")
                         val resource = FileResource(link, file)
                         openResources.add(WeakReference(resource))
                         return resource
                     } catch (e: Exception) {
+                       FailureResource(link, Resource.Error.NotFound)
                     }
                 }
             }
         }
-        return NullResource(link)
+        return FailureResource(link, Resource.Error.NotFound)
     }
 
     override fun close() {
@@ -49,9 +51,17 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
 
     private class FileResource(override val link: Link, private val file: RandomAccessFile) : StreamResource() {
 
-        override fun stream(): InputStream = Channels.newInputStream(file.channel).buffered()
+        override fun stream(): Try<InputStream, Resource.Error.NotFound> {
+            val stream = Channels.newInputStream(file.channel).buffered()
+            return Try.success(stream)
+        }
 
-        override val metadataLength: Long = file.length()
+        override val metadataLength: Long? =
+            try {
+                file.length()
+            } catch (e: Exception) {
+                null
+            }
 
         override fun close() = file.close()
     }

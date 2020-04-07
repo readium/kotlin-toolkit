@@ -10,6 +10,7 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.Try
 import java.io.InputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
@@ -30,9 +31,12 @@ class ZipFetcher private constructor(private val archive: ZipFile) : Fetcher {
 
     private class ZipResource(override val link: Link, val archive: ZipFile) : StreamResource() {
 
-        override fun stream(): InputStream {
+        override fun stream(): Try<InputStream, Resource.Error> {
             val entry = entryForHref(link.href)
-            return archive.getInputStream(entry)
+            return if (entry == null)
+                Try.failure(Resource.Error.NotFound)
+            else
+                Try.success(archive.getInputStream(entry))
         }
 
         override val metadataLength: Long? by lazy {

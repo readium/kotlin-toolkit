@@ -19,7 +19,7 @@ class RoutingFetcher(val routes: List<Route>) : Fetcher {
             : this(listOf( Route(local, ::hrefIsLocal), Route(remote, { true }) ))
 
     override fun get(link: Link): Resource =
-        routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: NullResource(link)
+        routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: FailureResource(link, Resource.Error.NotFound)
 
     override fun close() {
         routes.forEach { it.fetcher.close() }
