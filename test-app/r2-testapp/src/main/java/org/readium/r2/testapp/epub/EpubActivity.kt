@@ -38,7 +38,6 @@ import org.jetbrains.anko.appcompat.v7.coroutines.onClose
 import org.jetbrains.anko.indeterminateProgressDialog
 import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.navigator.Navigator
@@ -561,7 +560,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
                     // TODO handle fragment anchors (id=) instead of catching the json exception
                     try {
-                        val fragments = JSONArray(fragment).getString(0).split(",").associate {
+                        val fragments = fragment.split(",").associate {
                             val (left, right) = it.split("=")
                             left to right.toInt()
                         }
