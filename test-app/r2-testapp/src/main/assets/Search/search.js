@@ -63,8 +63,7 @@ var markSearch = function(searchTerm, searchElement, href, type, title, index) {
                 markElements[i].classList.remove(currentClass);
             }
             current.className += currentClass;
-            checkScrollMode();
-            if(!scrolling) {
+            if(!isScrollModeEnabled()) {
                 current.scrollIntoView();
                 var offset = Math.round(window.scrollX + window.innerWidth);
                 var scrollWidth = document.scrollingElement.scrollWidth;
