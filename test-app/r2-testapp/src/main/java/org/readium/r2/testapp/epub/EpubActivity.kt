@@ -558,13 +558,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 val locator = data.getParcelableExtra("locator") as Locator
                 locator.locations.fragments.firstOrNull()?.let { fragment ->
 
-                    // TODO handle fragment anchors (id=) instead of catching the json exception
-                    try {
-                        val fragments = fragment.split(",").associate {
-                            val (left, right) = it.split("=")
-                            left to right.toInt()
-                        }
-
+                    val fragments = fragment.split(",").associate {
+                        val (left, right) = it.split("=")
+                        left to right.toInt()
+                    }
+                    if (fragments.isNotEmpty() && fragments.containsKey("i")) {
                         val index = fragments.getValue("i").toInt()
                         val searchStorage = getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
                         Handler().postDelayed({
@@ -582,7 +580,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                                 }
                             }
                         }, 1200)
-                    } catch (e: Exception) {
                     }
                 }
             }
