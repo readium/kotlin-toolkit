@@ -78,7 +78,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                                     left to right.toInt()
                                 }
                                 //            val id = fragments.getValue("id")
-                                if (fragments.isNullOrEmpty()) {
+                                if (fragments.isEmpty()) {
                                     var anchor = fragment
                                     if (!anchor.startsWith("#")) {
                                         anchor = "#$anchor"
@@ -366,89 +366,9 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
-            if (data != null) {
-
-                val locator = data.getParcelableExtra("locator") as Locator
-                pendingLocator = locator
-                // href is the link to the page in the toc
-                var href = locator.href
-
-                if (href.indexOf("#") > 0) {
-                    href = href.substring(0, href.indexOf("#"))
-                }
-
-                fun setCurrent(resources: ArrayList<*>) {
-                    for (resource in resources) {
-                        if (resource is Pair<*, *>) {
-                            resource as Pair<Int, String>
-                            if (resource.second.endsWith(href)) {
-                                if (resourcePager.currentItem == resource.first) {
-                                    // reload webview if it has an anchor
-                                    locator.locations.fragments.firstOrNull()?.let { fragment ->
-
-                                        val fragments = fragment.split(",").associate {
-                                            val (left, right) = it.split("=")
-                                            left to right.toInt()
-                                        }
-                                        //            val id = fragments.getValue("id")
-                                        if (fragments.isNullOrEmpty()) {
-                                            var anchor = fragment
-                                            if (!anchor.startsWith("#")) {
-                                                anchor = "#$anchor"
-                                            }
-                                            val goto = resource.second + anchor
-                                            currentFragment?.webView?.loadUrl(goto)
-                                        } else {
-                                            currentFragment?.webView?.loadUrl(resource.second)
-                                        }
-
-                                    } ?: run {
-                                        currentFragment?.webView?.loadUrl(resource.second)
-                                    }
-                                } else {
-                                    resourcePager.currentItem = resource.first
-                                }
-                                break
-                            }
-                        } else {
-                            resource as Triple<Int, String, String>
-                            if (resource.second.endsWith(href) || resource.third.endsWith(href)) {
-                                resourcePager.currentItem = resource.first
-                                break
-                            }
-                        }
-                    }
-                }
-
-                resourcePager.adapter = adapter
-
-                if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
-                    setCurrent(resourcesSingle)
-                } else {
-
-                    when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
-                        1 -> {
-                            setCurrent(resourcesSingle)
-                        }
-                        2 -> {
-                            setCurrent(resourcesDouble)
-                        }
-                        else -> {
-                            // TODO based on device
-                            // TODO decide if 1 page or 2 page
-                            setCurrent(resourcesSingle)
-                        }
-                    }
-                }
-
-                if (supportActionBar!!.isShowing && allowToggleActionBar) {
-                    resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                            or View.SYSTEM_UI_FLAG_IMMERSIVE)
-                }
+            val locator = data?.getParcelableExtra("locator") as? Locator
+            if (locator != null) {
+                go(locator)
             }
         }
         super.onActivityResult(requestCode, resultCode, data)
