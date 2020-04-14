@@ -43,7 +43,7 @@ dependencies {
     } else {
         implementation "com.github.readium:r2-shared-kotlin:1.1.6"
     }
-    implementation "androidx.appcompat:appcompat:1.2.0-alpha01"
+    implementation "androidx.appcompat:appcompat:1.2.0-beta01"
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
     implementation 'joda-time:joda-time:2.9.9'
     implementation 'com.github.kittinunf.fuel:fuel:1.16.0'
