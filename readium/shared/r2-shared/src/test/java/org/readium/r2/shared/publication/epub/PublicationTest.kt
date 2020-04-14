@@ -31,7 +31,7 @@ class PublicationTest {
         assertEquals(
             links,
             createPublication(otherCollections = listOf(
-                PublicationCollection(role = "page-list", links = links)
+                PublicationCollection(role = "pageList", links = links)
             )).pageList
         )
     }

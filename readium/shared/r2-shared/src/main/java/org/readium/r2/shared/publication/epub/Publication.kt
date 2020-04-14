@@ -20,7 +20,7 @@ import org.readium.r2.shared.publication.Link
  * Provides navigation to positions in the Publication content that correspond to the locations of
  * page boundaries present in a print source being represented by this EPUB Publication.
  */
-val Publication.pageList: List<Link> get() = linksWithRole("page-list")
+val Publication.pageList: List<Link> get() = linksWithRole("pageList")
 
 /**
  * Identifies fundamental structural components of the publication in order to enable Reading
