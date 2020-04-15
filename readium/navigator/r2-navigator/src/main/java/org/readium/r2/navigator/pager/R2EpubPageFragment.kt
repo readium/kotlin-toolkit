@@ -27,7 +27,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
-import org.json.JSONArray
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.shared.APPEARANCE_REF
@@ -236,7 +235,7 @@ class R2EpubPageFragment : Fragment() {
 
         locations?.fragments?.firstOrNull()?.let { fragment ->
 
-            val fragments = JSONArray(fragment).getString(0).split(",").associate {
+            val fragments = fragment.split(",").associate {
                 val (left, right) = it.split("=")
                 left to right.toInt()
             }
