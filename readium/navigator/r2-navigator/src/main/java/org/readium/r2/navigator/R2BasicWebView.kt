@@ -73,13 +73,17 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {
-            if (activity.supportActionBar!!.isShowing && listener.allowToggleActionBar) {
-                listener.resourcePager?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE)
+            activity.supportActionBar?.let {
+                if (it.isShowing && listener.allowToggleActionBar) {
+                    listener.resourcePager?.systemUiVisibility = (
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            or View.SYSTEM_UI_FLAG_IMMERSIVE
+                        )
+                }
             }
             val scrollMode = listener.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
@@ -104,13 +108,17 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     open fun scrollLeft(animated: Boolean = false) {
         uiScope.launch {
-            if (activity.supportActionBar!!.isShowing && listener.allowToggleActionBar) {
-                listener.resourcePager?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE)
+            activity.supportActionBar?.let {
+                if (it.isShowing && listener.allowToggleActionBar) {
+                    listener.resourcePager?.systemUiVisibility = (
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            or View.SYSTEM_UI_FLAG_IMMERSIVE
+                        )
+                }
             }
             val scrollMode = listener.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
@@ -167,9 +175,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
                     // Initialize a new instance of popup window
                     val mPopupWindow = PopupWindow(
-                            customView,
-                            ListPopupWindow.WRAP_CONTENT,
-                            ListPopupWindow.WRAP_CONTENT
+                        customView,
+                        ListPopupWindow.WRAP_CONTENT,
+                        ListPopupWindow.WRAP_CONTENT
                     )
                     mPopupWindow.isOutsideTouchable = true
                     mPopupWindow.isFocusable = true
@@ -240,6 +248,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     fun setProperty(key: String, value: String) {
         this.evaluateJavascript("setProperty(\"$key\", \"$value\");") {
+            // Used to redraw highlights when user settings changed.
             listener.onPageLoaded()
         }
     }
