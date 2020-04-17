@@ -95,7 +95,8 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
-        publication = intent.getParcelableExtra("publication") as Publication
+        publication = intent.getPublication(this)
+
         publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title
 
@@ -128,6 +129,12 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         } else {
             resourcePager.currentItem = currentPagerPosition
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        intent.destroyPublication()
     }
 
     override fun onStart() {
