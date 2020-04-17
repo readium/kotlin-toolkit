@@ -26,9 +26,7 @@ import kotlinx.android.synthetic.main.item_recycle_highlight.view.*
 import kotlinx.android.synthetic.main.item_recycle_outline.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.epub.landmarks
 import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.opds.images
@@ -54,7 +52,7 @@ class R2OutlineActivity : AppCompatActivity() {
         val tabHost = findViewById<TabHost>(R.id.tabhost)
         tabHost.setup()
 
-        val publication = intent.getParcelableExtra("publication") as Publication
+        val publication = intent.getPublication(this)
 
         title = publication.metadata.title
 

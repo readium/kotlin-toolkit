@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.divina.R2DiViNaActivity
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.putPublicationFrom
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.library.LibraryActivity
@@ -65,9 +66,10 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.toc -> {
-                val intent = Intent(this, R2OutlineActivity::class.java)
-                intent.putExtra("publication", publication)
-                intent.putExtra("bookId", bookId)
+                val intent = Intent(this, R2OutlineActivity::class.java).apply {
+                    putPublicationFrom(intent)
+                    putExtra("bookId", bookId)
+                }
                 startActivityForResult(intent, 2)
                 true
             }

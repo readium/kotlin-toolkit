@@ -56,12 +56,11 @@ import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.opds.ParseData
-import org.readium.r2.shared.parsePublication
 import org.readium.r2.shared.promise
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.Publication.Companion
 import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.opds.images
+import org.readium.r2.shared.publication.putPublication
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.audio.AudioBookConstant
@@ -1043,21 +1042,22 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null) {
-
         val intent = Intent(this, when (publication.type) {
             Publication.TYPE.AUDIO -> AudiobookActivity::class.java
             Publication.TYPE.CBZ -> ComicActivity::class.java
             Publication.TYPE.DiViNa -> DiViNaActivity::class.java
             else -> EpubActivity::class.java
         })
-        intent.putExtra("publicationPath", publicationPath)
-        intent.putExtra("publicationFileName", book.fileName)
-        intent.putExtra("publication", publication)
-        intent.putExtra("bookId", book.id)
-        intent.putExtra("cover", coverByteArray)
+
+        intent.apply {
+            putPublication(publication)
+            putExtra("publicationPath", publicationPath)
+            putExtra("publicationFileName", book.fileName)
+            putExtra("bookId", book.id)
+            putExtra("cover", coverByteArray)
+        }
 
         startActivity(intent)
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
