@@ -95,8 +95,10 @@ fun Intent.getPublication(activity: Activity): Publication {
     return publication ?: Publication(metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString("")))
 }
 
-fun Intent.destroyPublication() {
-    getStringExtra(extraKey)?.let {
-        PublicationRepository.remove(it)
+fun Intent.destroyPublication(activity: Activity) {
+    if (activity.isFinishing) {
+        getStringExtra(extraKey)?.let {
+            PublicationRepository.remove(it)
+        }
     }
 }
