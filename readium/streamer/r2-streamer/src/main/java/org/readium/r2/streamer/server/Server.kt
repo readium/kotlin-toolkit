@@ -22,7 +22,9 @@ import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import java.net.URI
 import java.net.URL
+import java.net.URLEncoder
 import java.util.*
 
 class Server(port: Int) : AbstractServer(port)
@@ -171,20 +173,20 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
         }
     }
 
-
     fun addEpub(publication: Publication, container: Container, fileName: String, userPropertiesPath: String?) {
+        val baseUrl = URL(Publication.localBaseUrlOf(filename = fileName, port = port))
         val fetcher = Fetcher(publication, container, userPropertiesPath, customResources)
 
-        // addLinks(publication, fileName)
+        // addLinks(publication, sanitizedFilename)
 
-        publication.setSelfLink("$BASE_URL:$port/$fileName/manifest.json")
+        publication.setSelfLink(URL(baseUrl, "manifest.json").toString())
 
         if (containsMediaOverlay) {
-            addRoute(fileName + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)
+            addRoute(baseUrl.path + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)
         }
-        addRoute(fileName + JSON_MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
-        addRoute(fileName + MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
-        addRoute(fileName + MANIFEST_ITEM_HANDLE, ResourceHandler::class.java, fetcher)
+        addRoute(baseUrl.path + JSON_MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
+        addRoute(baseUrl.path + MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
+        addRoute(baseUrl.path + MANIFEST_ITEM_HANDLE, ResourceHandler::class.java, fetcher)
         addRoute(JS_HANDLE, JSHandler::class.java, resources)
         addRoute(CSS_HANDLE, CSSHandler::class.java, resources)
         addRoute(FONT_HANDLE, FontHandler::class.java, fonts)
