@@ -262,7 +262,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
                     getAbsolute(spineItem.href, publicationPath)
                 }
             } else {
-                "$BASE_URL:$port" + "/" + publicationFileName + spineItem.href
+                Publication.localUrlOf(filename = publicationFileName, port = port ?: 0, href = spineItem.href)
             }
             resourcesSingle.add(Pair(resourceIndexSingle, uri))
 
