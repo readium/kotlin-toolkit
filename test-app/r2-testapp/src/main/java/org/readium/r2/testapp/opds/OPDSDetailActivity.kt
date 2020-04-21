@@ -168,7 +168,7 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
     override fun onDestroy() {
         super.onDestroy()
 
-        intent.destroyPublication()
+        intent.destroyPublication(this)
     }
 
     private fun getDownloadURL(publication: Publication): URL? {
