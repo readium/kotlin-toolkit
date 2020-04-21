@@ -104,7 +104,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
     override fun onDestroy() {
         super.onDestroy()
         divinaWebView.evaluateJavascript("if (player) { player.destroy(); };", null)
-        intent.destroyPublication()
+        intent.destroyPublication(this)
     }
 }
 

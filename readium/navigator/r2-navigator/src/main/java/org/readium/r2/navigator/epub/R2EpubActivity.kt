@@ -354,7 +354,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     override fun onDestroy() {
         super.onDestroy()
 
-        intent.destroyPublication()
+        intent.destroyPublication(this)
     }
 
     override fun onResume() {

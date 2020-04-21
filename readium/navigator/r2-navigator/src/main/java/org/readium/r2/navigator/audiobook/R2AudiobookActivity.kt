@@ -364,7 +364,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer?.stop()
-        intent.destroyPublication()
+        intent.destroyPublication(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

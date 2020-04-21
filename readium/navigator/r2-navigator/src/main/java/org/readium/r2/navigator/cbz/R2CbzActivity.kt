@@ -134,7 +134,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     override fun onDestroy() {
         super.onDestroy()
 
-        intent.destroyPublication()
+        intent.destroyPublication(this)
     }
 
     override fun onStart() {
