@@ -23,9 +23,9 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.shared.extensions.destroyPublication
+import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.getPublication
-import org.readium.r2.shared.publication.destroyPublication
 import kotlin.coroutines.CoroutineContext
 
 

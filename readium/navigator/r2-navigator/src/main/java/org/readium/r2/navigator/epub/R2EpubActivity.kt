@@ -31,6 +31,8 @@ import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.extensions.destroyPublication
+import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.epub.EpubLayout
