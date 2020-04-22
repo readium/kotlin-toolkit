@@ -55,12 +55,12 @@ import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.opds.images
-import org.readium.r2.shared.publication.putPublication
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.audio.AudioBookConstant

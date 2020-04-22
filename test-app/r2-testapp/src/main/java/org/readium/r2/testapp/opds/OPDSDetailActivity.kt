@@ -27,10 +27,10 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.support.v4.nestedScrollView
+import org.readium.r2.shared.extensions.destroyPublication
+import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.getPublication
 import org.readium.r2.shared.publication.opds.images
-import org.readium.r2.shared.publication.destroyPublication
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Book
 import org.readium.r2.testapp.db.BooksDatabase

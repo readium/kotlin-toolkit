@@ -18,8 +18,8 @@ import android.view.MenuItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.divina.R2DiViNaActivity
+import org.readium.r2.shared.extensions.putPublicationFrom
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.putPublicationFrom
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.library.LibraryActivity
@@ -67,7 +67,7 @@ class DiViNaActivity : R2DiViNaActivity(), CoroutineScope {
         return when (item.itemId) {
             R.id.toc -> {
                 val intent = Intent(this, R2OutlineActivity::class.java).apply {
-                    putPublicationFrom(intent)
+                    putPublicationFrom(this@DiViNaActivity)
                     putExtra("bookId", bookId)
                 }
                 startActivityForResult(intent, 2)

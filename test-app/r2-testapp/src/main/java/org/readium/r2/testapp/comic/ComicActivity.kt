@@ -19,10 +19,8 @@ import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.cbz.R2CbzActivity
+import org.readium.r2.shared.extensions.putPublicationFrom
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.indexOfFirstWithHref
-import org.readium.r2.shared.publication.opds.images
-import org.readium.r2.shared.publication.putPublicationFrom
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.BooksDatabase
 import org.readium.r2.testapp.library.LibraryActivity
@@ -85,7 +83,7 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
         return when (item.itemId) {
             R.id.toc -> {
                 val intent = Intent(this, R2OutlineActivity::class.java).apply {
-                    putPublicationFrom(intent)
+                    putPublicationFrom(this@ComicActivity)
                     putExtra("bookId", bookId)
                 }
                 startActivityForResult(intent, 2)

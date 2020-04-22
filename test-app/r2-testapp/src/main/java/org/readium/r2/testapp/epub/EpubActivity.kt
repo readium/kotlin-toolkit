@@ -47,6 +47,7 @@ import org.readium.r2.navigator.epub.Style
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.shared.*
+import org.readium.r2.shared.extensions.putPublicationFrom
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -211,7 +212,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
                 val locator = searchResult[position]
                 val intent = Intent().apply {
-                    putPublicationFrom(intent)
+                    putPublicationFrom(this@EpubActivity)
                     putExtra("publicationPath", publicationPath)
                     putExtra("epubName", publicationFileName)
                     putExtra("bookId", bookId)
@@ -442,7 +443,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
             R.id.toc -> {
                 val intent = Intent(this, R2OutlineActivity::class.java).apply {
-                    putPublicationFrom(intent)
+                    putPublicationFrom(this@EpubActivity)
                     putExtra("bookId", bookId)
                 }
                 startActivityForResult(intent, 2)

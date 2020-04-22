@@ -26,6 +26,7 @@ import kotlinx.android.synthetic.main.item_recycle_highlight.view.*
 import kotlinx.android.synthetic.main.item_recycle_outline.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
+import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.epub.landmarks
 import org.readium.r2.shared.publication.epub.pageList
