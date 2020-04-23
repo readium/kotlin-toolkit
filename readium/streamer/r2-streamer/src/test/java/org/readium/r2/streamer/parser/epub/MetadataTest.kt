@@ -70,7 +70,8 @@ class ContributorParsingTest {
 
     @Test
     fun `file-as is parsed`() {
-        val contributor = Contributor(localizedName = LocalizedString("Contributor 3"), sortAs = "Sorting Key")
+        val contributor = Contributor(localizedName = LocalizedString("Contributor 3"),
+            localizedSortAs = LocalizedString("Sorting Key"))
         assertThat(epub2Metadata.contributors).contains(contributor)
         assertThat(epub3Metadata.contributors).contains(contributor)
     }
