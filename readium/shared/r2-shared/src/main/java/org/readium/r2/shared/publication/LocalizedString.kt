@@ -38,6 +38,13 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
     )
 
     /**
+     * Shortcut to create a [LocalizedString] using a single string for a given language.
+     */
+    constructor(lang: String?, value: String): this(
+        translations = mapOf(lang to Translation(string = value))
+    )
+
+    /**
      * The default translation for this localized string.
      */
     val defaultTranslation: Translation

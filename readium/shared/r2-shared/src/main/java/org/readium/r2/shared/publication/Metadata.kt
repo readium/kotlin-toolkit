@@ -38,10 +38,10 @@ data class Metadata(
     val type: String? = null, // URI (@type)
     val localizedTitle: LocalizedString,
     val localizedSubtitle: LocalizedString? = null,
+    val localizedSortAs: LocalizedString? = null,
     val modified: Date? = null,
     val published: Date? = null,
     val languages: List<String> = emptyList(), // BCP 47 tag
-    val sortAs: String? = null,
     val subjects: List<Subject> = emptyList(),
     val authors: List<Contributor> = emptyList(),
     val translators: List<Contributor> = emptyList(),
@@ -70,6 +70,12 @@ data class Metadata(
      */
     val title: String get() = localizedTitle.string
 
+
+    /**
+     * Returns the default translation string for the [localizedSortAs].
+     */
+    val sortAs: String? get() = localizedSortAs?.string
+
     /**
      * Serializes a [Metadata] to its RWPM JSON representation.
      */
@@ -81,7 +87,7 @@ data class Metadata(
         put("modified", modified?.toIso8601String())
         put("published", published?.toIso8601String())
         putIfNotEmpty("language", languages)
-        put("sortAs", sortAs)
+        putIfNotEmpty("sortAs", localizedSortAs)
         putIfNotEmpty("subject", subjects)
         putIfNotEmpty("author", authors)
         putIfNotEmpty("translator", translators)
@@ -140,7 +146,7 @@ data class Metadata(
             val modified = (json.remove("modified") as? String)?.iso8601ToDate()
             val published = (json.remove("published") as? String)?.iso8601ToDate()
             val languages = json.optStringsFromArrayOrSingle("language", remove = true)
-            val sortAs = json.remove("sortAs") as? String
+            val localizedSortAs = LocalizedString.fromJSON(json.remove("sortAs"), warnings)
             val subjects = Subject.fromJSONArray(json.remove("subject"), normalizeHref, warnings)
             val authors = Contributor.fromJSONArray(json.remove("author"), normalizeHref, warnings)
             val translators = Contributor.fromJSONArray(json.remove("translator"), normalizeHref, warnings)
@@ -169,10 +175,10 @@ data class Metadata(
                 type = type,
                 localizedTitle = localizedTitle,
                 localizedSubtitle = localizedSubtitle,
+                localizedSortAs = localizedSortAs,
                 modified = modified,
                 published = published,
                 languages = languages,
-                sortAs = sortAs,
                 subjects = subjects,
                 authors = authors,
                 translators = translators,
