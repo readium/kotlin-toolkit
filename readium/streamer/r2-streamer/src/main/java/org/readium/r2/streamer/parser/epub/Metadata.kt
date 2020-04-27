@@ -382,14 +382,14 @@ internal data class MetadataItem(
     fun toSubject(defaultLang: String?): Subject {
         require(property == Vocabularies.DCTERMS + "subject")
         val values = localizedString(defaultLang)
-        val localizedSortAs = fileAs?.let { LocalizedString(if (it.first == "") defaultLang else it.first, it.second) }
+        val localizedSortAs = fileAs?.let { LocalizedString(it.second, if (it.first == "") defaultLang else it.first) }
         return Subject(values, localizedSortAs, authority, term)
     }
 
     fun toTitle(defaultLang: String?): Title {
         require(property == Vocabularies.DCTERMS + "title")
         val values = localizedString(defaultLang)
-        val localizedSortAs = fileAs?.let { LocalizedString(if (it.first == "") defaultLang else it.first, it.second) }
+        val localizedSortAs = fileAs?.let { LocalizedString(it.second, if (it.first == "") defaultLang else it.first) }
         return Title(values, localizedSortAs, titleType, displaySeq)
     }
 
@@ -397,7 +397,7 @@ internal data class MetadataItem(
         require(property in listOf("creator", "contributor", "publisher").map { Vocabularies.DCTERMS + it } +
                 (Vocabularies.MEDIA + "narrator") + (Vocabularies.META + "belongs-to-collection"))
         val names = localizedString(defaultLang)
-        val localizedSortAs = fileAs?.let { LocalizedString(if (it.first == "") defaultLang else it.first, it.second) }
+        val localizedSortAs = fileAs?.let { LocalizedString(it.second, if (it.first == "") defaultLang else it.first) }
         return Contributor(names, localizedSortAs = localizedSortAs,
             roles = roles(defaultRole), identifier = identifier, position = groupPosition)
     }
