@@ -377,9 +377,7 @@ class R2OutlineActivity : AppCompatActivity() {
             if (item is Pair<*, *>) {
                 item as Pair<Int, Link>
                 viewHolder.navigationTextView?.text = item.second.outlineTitle
-                //val parameter = viewHolder.indentationView?.layoutParams
-                //parameter?.width = item.first * 50
-                viewHolder.indentationView?.layoutParams = LinearLayout.LayoutParams(item.first * 50,ViewGroup.LayoutParams.MATCH_PARENT)
+                viewHolder.indentationView?.layoutParams = LinearLayout.LayoutParams(item.first * 50, ViewGroup.LayoutParams.MATCH_PARENT)
             } else {
                 item as Link
                 viewHolder.navigationTextView?.text = item.outlineTitle
