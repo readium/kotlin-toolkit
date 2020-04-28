@@ -36,8 +36,8 @@ class ContributorTest {
         assertEquals(
             Contributor(
                 localizedName = LocalizedString("Colin Greenwood"),
+                localizedSortAs = LocalizedString("greenwood"),
                 identifier = "colin",
-                sortAs = "greenwood",
                 roles = setOf("bassist"),
                 position = 4.0,
                 links = listOf(
@@ -167,7 +167,7 @@ class ContributorTest {
             JSONObject("""{
                 "name": {"UND": "Colin Greenwood"},
                 "identifier": "colin",
-                "sortAs": "greenwood",
+                "sortAs": {"UND": "greenwood"},
                 "role": ["bassist"],
                 "position": 4.0,
                 "links": [
@@ -177,8 +177,8 @@ class ContributorTest {
             }"""),
             Contributor(
                 localizedName = LocalizedString("Colin Greenwood"),
+                localizedSortAs = LocalizedString("greenwood"),
                 identifier = "colin",
-                sortAs = "greenwood",
                 roles = setOf("bassist"),
                 position = 4.0,
                 links = listOf(

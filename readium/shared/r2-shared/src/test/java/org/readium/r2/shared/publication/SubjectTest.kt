@@ -36,7 +36,7 @@ class SubjectTest {
         assertEquals(
             Subject(
                 localizedName = LocalizedString("Science Fiction"),
-                sortAs = "science-fiction",
+                localizedSortAs = LocalizedString("science-fiction"),
                 scheme = "http://scheme",
                 code = "CODE",
                 links = listOf(
@@ -142,7 +142,7 @@ class SubjectTest {
         assertJSONEquals(
             JSONObject("""{
                 "name": {"UND": "Science Fiction"},
-                "sortAs": "science-fiction",
+                "sortAs": {"UND": "science-fiction"},
                 "scheme": "http://scheme",
                 "code": "CODE",
                 "links": [
@@ -152,7 +152,7 @@ class SubjectTest {
             }"""),
             Subject(
                 localizedName = LocalizedString("Science Fiction"),
-                sortAs = "science-fiction",
+                localizedSortAs = LocalizedString("science-fiction"),
                 scheme = "http://scheme",
                 code = "CODE",
                 links = listOf(
