@@ -23,6 +23,7 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.removeLastComponent
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.toJSON
@@ -174,7 +175,7 @@ data class Publication(
     fun setSelfLink(href: String) {
         links = links.toMutableList().apply {
             removeAll { it.rels.contains("self") }
-            add(Link(href = href, type = "application/webpub+json", rels = setOf("self")))
+            add(Link(href = href, type = MediaType.WEBPUB_MANIFEST.toString(), rels = setOf("self")))
         }
     }
 
