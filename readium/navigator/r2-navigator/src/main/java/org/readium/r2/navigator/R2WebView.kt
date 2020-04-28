@@ -460,7 +460,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         for (i in 0 until count) {
             val child = getChildAt(i)
             if (child.visibility != View.GONE) {
-                val lp = child.layoutParams as LayoutParams
+                val lp = child.layoutParams as? LayoutParams ?: continue
                 var childLeft: Int
                 var childTop: Int
                 if (lp.isDecor) {
