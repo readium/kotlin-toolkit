@@ -20,7 +20,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
 
 internal data class Title(
     val value: LocalizedString,
-    val fileAs: String? = null,
+    val fileAs: LocalizedString? = null,
     val type: String? = null,
     val displaySeq: Int? = null
 )
@@ -169,7 +169,7 @@ internal class PubMetadataAdapter(
         published = published,
         languages = languages,
         localizedTitle = localizedTitle,
-        sortAs = sortAs,
+        localizedSortAs = localizedSortAs,
         localizedSubtitle = localizedSubtitle,
         duration = duration,
         subjects = subjects,
@@ -215,7 +215,7 @@ internal class PubMetadataAdapter(
 
     val localizedSubtitle: LocalizedString?
 
-    val sortAs: String?
+    val localizedSortAs: LocalizedString?
 
     init {
         val titles = items[Vocabularies.DCTERMS + "title"]?.map { it.toTitle(defaultLang) }.orEmpty()
@@ -223,7 +223,7 @@ internal class PubMetadataAdapter(
 
         localizedTitle =  mainTitle?.value ?: LocalizedString(fallbackTitle)
         localizedSubtitle = titles.filter { it.type == "subtitle" }.sortedBy(Title::displaySeq).firstOrNull()?.value
-        sortAs = mainTitle?.fileAs ?: firstValue("calibre:title_sort")
+        localizedSortAs = mainTitle?.fileAs ?: firstValue("calibre:title_sort")?.let { LocalizedString(it) }
     }
 
     val belongsToSeries: List<Collection>
@@ -382,21 +382,24 @@ internal data class MetadataItem(
     fun toSubject(defaultLang: String?): Subject {
         require(property == Vocabularies.DCTERMS + "subject")
         val values = localizedString(defaultLang)
-        return Subject(values, fileAs, authority, term)
+        val localizedSortAs = fileAs?.let { LocalizedString(it.second, if (it.first == "") defaultLang else it.first) }
+        return Subject(values, localizedSortAs, authority, term)
     }
 
     fun toTitle(defaultLang: String?): Title {
         require(property == Vocabularies.DCTERMS + "title")
         val values = localizedString(defaultLang)
-        return Title(values, fileAs, titleType, displaySeq)
+        val localizedSortAs = fileAs?.let { LocalizedString(it.second, if (it.first == "") defaultLang else it.first) }
+        return Title(values, localizedSortAs, titleType, displaySeq)
     }
 
     fun toContributor(defaultLang: String?, defaultRole: String? = null): Contributor {
         require(property in listOf("creator", "contributor", "publisher").map { Vocabularies.DCTERMS + it } +
                 (Vocabularies.MEDIA + "narrator") + (Vocabularies.META + "belongs-to-collection"))
         val names = localizedString(defaultLang)
-        return Contributor(names, roles = roles(defaultRole),
-            sortAs = fileAs, identifier = identifier, position = groupPosition)
+        val localizedSortAs = fileAs?.let { LocalizedString(it.second, if (it.first == "") defaultLang else it.first) }
+        return Contributor(names, localizedSortAs = localizedSortAs,
+            roles = roles(defaultRole), identifier = identifier, position = groupPosition)
     }
 
     fun toCollection(defaultLang: String?) = Pair(collectionType, toContributor(defaultLang))
@@ -410,7 +413,7 @@ internal data class MetadataItem(
         }
 
     private val fileAs
-        get() = firstValue(Vocabularies.META + "file-as")
+        get() = children[Vocabularies.META + "file-as"]?.firstOrNull()?.let { Pair(it.lang, it.value) }
 
     private val titleType
         get() = firstValue(Vocabularies.META + "title-type")
