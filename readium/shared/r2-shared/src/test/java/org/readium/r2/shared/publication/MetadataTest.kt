@@ -40,7 +40,7 @@ class MetadataTest {
                 modified = "2001-01-01T12:36:27.000Z".iso8601ToDate(),
                 published = "2001-01-02T12:36:27.000Z".iso8601ToDate(),
                 languages = listOf("en", "fr"),
-                sortAs = "sort key",
+                localizedSortAs = LocalizedString("sort key"),
                 subjects = listOf(Subject(name = "Science Fiction"), Subject(name = "Fantasy")),
                 authors = listOf(Contributor(name = "Author")),
                 translators = listOf(Contributor(name = "Translator")),
@@ -158,7 +158,7 @@ class MetadataTest {
                 "modified": "2001-01-01T12:36:27.000Z",
                 "published": "2001-01-02T12:36:27.000Z",
                 "language": ["en", "fr"],
-                "sortAs": "sort key",
+                "sortAs": {"en": "sort key", "fr": "clé de tri"},
                 "subject": [
                     {"name": {"UND": "Science Fiction"}},
                     {"name": {"UND": "Fantasy"}}
@@ -201,7 +201,10 @@ class MetadataTest {
                 modified = "2001-01-01T12:36:27.000Z".iso8601ToDate(),
                 published = "2001-01-02T12:36:27.000Z".iso8601ToDate(),
                 languages = listOf("en", "fr"),
-                sortAs = "sort key",
+                localizedSortAs = LocalizedString.fromStrings(mapOf(
+                    "en" to "sort key",
+                    "fr" to "clé de tri"
+                )),
                 subjects = listOf(Subject(name = "Science Fiction"), Subject(name = "Fantasy")),
                 authors = listOf(Contributor(name = "Author")),
                 translators = listOf(Contributor(name = "Translator")),

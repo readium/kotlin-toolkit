@@ -32,7 +32,7 @@ import org.readium.r2.shared.util.logging.log
 @Parcelize
 data class Subject(
     val localizedName: LocalizedString,
-    val sortAs: String? = null,
+    val localizedSortAs: LocalizedString? = null,
     val scheme: String? = null,
     val code: String? = null,
     val links: List<Link> = emptyList()
@@ -51,11 +51,16 @@ data class Subject(
     val name: String get() = localizedName.string
 
     /**
+     * Returns the default translation string for the [localizedSortAs].
+     */
+    val sortAs: String? get() = localizedSortAs?.string
+
+    /**
      * Serializes a [Subject] to its RWPM JSON representation.
      */
     override fun toJSON() = JSONObject().apply {
         putIfNotEmpty("name", localizedName)
-        put("sortAs", sortAs)
+        putIfNotEmpty("sortAs", localizedSortAs)
         put("scheme", scheme)
         put("code", code)
         putIfNotEmpty("links", links)
@@ -94,7 +99,7 @@ data class Subject(
             val jsonObject = (json as? JSONObject) ?: JSONObject()
             return Subject(
                 localizedName = localizedName,
-                sortAs = jsonObject.optNullableString("sortAs"),
+                localizedSortAs = LocalizedString.fromJSON(jsonObject.remove("sortAs"), warnings),
                 scheme = jsonObject.optNullableString("scheme"),
                 code = jsonObject.optNullableString("code"),
                 links = Link.fromJSONArray(jsonObject.optJSONArray("links"), normalizeHref, warnings)

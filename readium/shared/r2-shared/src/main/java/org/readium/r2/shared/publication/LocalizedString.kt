@@ -31,10 +31,10 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
     ) : Parcelable
 
     /**
-     * Shortcut to create a [LocalizedString] using a single string, without a language.
+     * Shortcut to create a [LocalizedString] using a single string for a given language.
      */
-    constructor(string: String): this(
-        translations = mapOf(null to Translation(string = string))
+    constructor(value: String, lang: String? = null) : this(
+        translations = mapOf(lang to Translation(string = value))
     )
 
     /**
