@@ -17,6 +17,8 @@ import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
 import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
+import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.format.mediaType
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.fetcher.Fetcher
 import timber.log.Timber
@@ -46,19 +48,19 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
             val filePath = getHref(session!!.uri)
             val link = fetcher.publication.linkWithHref(filePath)!!
-            val mimeType = link.type ?: ""
+            val mediaType = link.mediaType ?: MediaType.BINARY
 
             // If the content is of type html return the response this is done to
             // skip the check for following font deobfuscation check
-            if (mimeType == "application/xhtml+xml") {
-                return serveResponse(session, fetcher.dataStream(filePath), mimeType)
+            if (mediaType.isHtml) {
+                return serveResponse(session, fetcher.dataStream(filePath), mediaType.toString())
             }
 
             // ********************
             //  FONT DEOBFUSCATION
             // ********************
 
-            return serveResponse(session, fetcher.dataStream(filePath), mimeType)
+            return serveResponse(session, fetcher.dataStream(filePath), mediaType.toString())
         } catch (e: Exception) {
             if (DEBUG) Timber.e(e)
             return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)

@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.cbz
 
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
 
@@ -17,7 +18,7 @@ interface CBZContainer : Container {
     val files: List<String>
 }
 
-class CBZArchiveContainer(path: String) : CBZContainer, ArchiveContainer(path, CBZConstant.mimetypeCBZ) {
+class CBZArchiveContainer(path: String) : CBZContainer, ArchiveContainer(path, MediaType.CBZ.toString()) {
 
     override val files: List<String>
         get() = archive.entries().toList()

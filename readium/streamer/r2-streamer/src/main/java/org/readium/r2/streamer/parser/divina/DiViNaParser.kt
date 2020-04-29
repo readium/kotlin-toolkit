@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.parser.divina
 
 import org.json.JSONObject
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
@@ -25,10 +26,11 @@ import java.nio.charset.Charset
 
 class DiViNaConstant {
     companion object {
-        // Some constants useful to parse an DiViNa document
-        const val mimetype = "application/divina+json"
-        const val manifestPath = "manifest.json"
-        const val publicationPath = "publication.json"
+        @Deprecated("Use [MediaType.DIVINA_MANIFEST.toString()] instead", replaceWith = ReplaceWith("MediaType.DIVINA_MANIFEST.toString()"))
+        val mimetype get() = MediaType.DIVINA_MANIFEST.toString()
+
+        internal const val manifestPath = "manifest.json"
+        internal const val publicationPath = "publication.json"
     }
 }
 

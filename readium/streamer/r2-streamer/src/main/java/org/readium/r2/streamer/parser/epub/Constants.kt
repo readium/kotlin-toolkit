@@ -17,14 +17,6 @@ internal object Paths {
     const val IBOOKS_DISPLAY_OPTIONS = "META-INF/com.kobobooks.display-options.xml"
 }
 
-// FIXME: Content types should be refactored into r2-shared
-internal object Mimetypes {
-    const val EPUB = "application/epub+zip"
-    const val OEBPS = "application/oebps-package+xml"
-    const val NCX = "application/x-dtbncx+xml"
-    const val SMIL = "application/smil+xml"
-}
-
 internal object Namespaces {
     const val OPC = "urn:oasis:names:tc:opendocument:xmlns:container"
     const val ENC = "http://www.w3.org/2001/04/xmlenc#"

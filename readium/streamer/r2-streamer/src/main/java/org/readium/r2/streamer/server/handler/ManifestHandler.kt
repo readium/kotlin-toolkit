@@ -15,6 +15,7 @@ import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.fetcher.Fetcher
 import timber.log.Timber
@@ -24,7 +25,7 @@ import java.io.IOException
 class ManifestHandler : RouterNanoHTTPD.DefaultHandler() {
 
     override fun getMimeType(): String {
-        return "application/webpub+json"
+        return MediaType.WEBPUB_MANIFEST.toString()
     }
 
     override fun getText(): String {
