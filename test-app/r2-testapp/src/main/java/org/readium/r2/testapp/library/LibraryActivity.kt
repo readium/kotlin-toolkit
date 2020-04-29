@@ -55,11 +55,10 @@ import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.opds.ParseData
-import org.readium.r2.shared.parsePublication
 import org.readium.r2.shared.promise
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.Publication.Companion
 import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.streamer.container.ContainerError
@@ -1143,7 +1142,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val file = File(publicationPath)
 
             try {
-                if (mime == EPUBConstant.mimetype) {
+                if (MediaType.EPUB.contains(mime)) {
                     val parser = EpubParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
@@ -1151,7 +1150,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                                 ?: false)
                         progress.dismiss()
                     }
-                } else if (name.endsWith(Publication.EXTENSION.CBZ.value) || mime == CBZConstant.mimetypeCBZ) {
+                } else if (name.endsWith(Publication.EXTENSION.CBZ.value) || MediaType.CBZ.contains(mime)) {
                     val parser = CBZParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
@@ -1159,7 +1158,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                                 ?: false)
                         progress.dismiss()
                     }
-                } else if (name.endsWith(Publication.EXTENSION.DIVINA.value) || mime == DiViNaConstant.mimetype) {
+                } else if (name.endsWith(Publication.EXTENSION.DIVINA.value) || MediaType.DIVINA_MANIFEST.contains(mime)) {
                     val parser = DiViNaParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
@@ -1167,7 +1166,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                                 ?: false)
                         progress.dismiss()
                     }
-                } else if (name.endsWith(Publication.EXTENSION.AUDIO.value) || mime == AudioBookConstant.mimetype) {
+                } else if (name.endsWith(Publication.EXTENSION.AUDIO.value) || MediaType.AUDIOBOOK.contains(mime)) {
                     val parser = AudioBookParser()
                     val pub = parser.parse(publicationPath)
                     if (pub != null) {
