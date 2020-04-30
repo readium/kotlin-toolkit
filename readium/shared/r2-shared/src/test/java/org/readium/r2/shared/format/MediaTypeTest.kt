@@ -245,7 +245,7 @@ class MediaTypeTest {
         assertTrue(MediaType.parse("application/zip")!!.isZip)
         assertTrue(MediaType.parse("application/zip;charset=utf-8")!!.isZip)
         assertTrue(MediaType.parse("application/epub+zip")!!.isZip)
-        // These media types must be explicitely matched since they don't have any ZIP hint
+        // These media types must be explicitly matched since they don't have any ZIP hint
         assertTrue(MediaType.parse("application/audiobook+lcp")!!.isZip)
         assertTrue(MediaType.parse("application/pdf+lcp")!!.isZip)
     }
