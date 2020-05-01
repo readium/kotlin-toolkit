@@ -229,24 +229,21 @@ internal class PubMetadataAdapter(
     val belongsToCollections: List<Collection>
 
     init {
-        if (epubVersion < 3.0) {
-            val calibreSeries = items["calibre:series"]?.firstOrNull()?.let {
-                val name = LocalizedString.fromStrings(mapOf(it.lang to it.value))
-                val position = firstValue("calibre:series_index")?.toDoubleOrNull()
-                Collection(localizedName = name, position = position)
-            }
+        val allCollections = items[Vocabularies.META + "belongs-to-collection"]
+            .orEmpty().map { it.toCollection() }
+        val (seriesMeta, collectionsMeta) = allCollections.partition { it.first == "series" }
 
-            belongsToSeries = listOfNotNull(calibreSeries)
-            belongsToCollections = emptyList()
+        belongsToCollections = collectionsMeta.map(Pair<String?, Collection>::second)
 
-        } else {
-            val allCollections = items[Vocabularies.META + "belongs-to-collection"]
-                .orEmpty().map { it.toCollection() }
-            val (seriesMeta, collectionsMeta) = allCollections.partition { it.first == "series" }
-
-            belongsToSeries = seriesMeta.map(Pair<String?, Collection>::second)
-            belongsToCollections = collectionsMeta.map(Pair<String?, Collection>::second)
-        }
+        belongsToSeries =
+            if (seriesMeta.isNotEmpty())
+                seriesMeta.map(Pair<String?, Collection>::second)
+            else
+                items["calibre:series"]?.firstOrNull()?.let {
+                    val name = LocalizedString.fromStrings(mapOf(it.lang to it.value))
+                    val position = firstValue("calibre:series_index")?.toDoubleOrNull()
+                    listOf(Collection(localizedName = name, position = position))
+                }.orEmpty()
     }
 
     val subjects: List<Subject>
