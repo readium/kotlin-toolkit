@@ -198,45 +198,45 @@ class MediaTypeTest {
     }
 
     @Test
-    fun `is part of equal media type`() {
+    fun `matches equal media type`() {
         assertTrue(MediaType.parse("text/html;charset=utf-8")
-            !!.isPartOf(MediaType.parse("text/html;charset=utf-8")))
+            !!.matches(MediaType.parse("text/html;charset=utf-8")))
     }
 
     @Test
-    fun `is part of must match parameters`() {
+    fun `matches must match parameters`() {
         assertFalse(MediaType.parse("text/html;charset=ascii")
-            !!.isPartOf(MediaType.parse("text/html;charset=utf-8")))
-        assertFalse(MediaType.parse("text/html")
-            !!.isPartOf(MediaType.parse("text/html;charset=utf-8")))
+            !!.matches(MediaType.parse("text/html;charset=utf-8")))
     }
 
     @Test
-    fun `is part of ignores parameters order`() {
+    fun `matches ignores parameters order`() {
         assertTrue(MediaType.parse("text/html;charset=utf-8;type=entry")
-            !!.isPartOf(MediaType.parse("text/html;type=entry;charset=utf-8")))
+            !!.matches(MediaType.parse("text/html;type=entry;charset=utf-8")))
     }
 
     @Test
-    fun `is part of ignores extra parameters`() {
+    fun `matches ignores extra parameters`() {
         assertTrue(MediaType.parse("text/html;charset=utf-8")
-            !!.isPartOf(MediaType.parse("text/html")))
+            !!.matches(MediaType.parse("text/html;charset=utf-8;extra=param")))
+        assertTrue(MediaType.parse("text/html;charset=utf-8;extra=param")
+            !!.matches(MediaType.parse("text/html;charset=utf-8")))
     }
 
     @Test
-    fun `is part of supports wildcards`() {
-        assertTrue(MediaType.parse("text/html;charset=utf-8")
-            !!.isPartOf(MediaType.parse("*/*")))
-        assertTrue(MediaType.parse("text/html;charset=utf-8")
-            !!.isPartOf(MediaType.parse("text/*")))
-        assertFalse(MediaType.parse("application/zip")
-            !!.isPartOf(MediaType.parse("text/*")))
+    fun `matches supports wildcards`() {
+        assertTrue(MediaType.parse("text/html;charset=utf-8")!!.matches(MediaType.parse("*/*")))
+        assertTrue(MediaType.parse("text/html;charset=utf-8")!!.matches(MediaType.parse("text/*")))
+        assertFalse(MediaType.parse("application/zip")!!.matches(MediaType.parse("text/*")))
+        assertTrue(MediaType.parse("*/*")!!.matches(MediaType.parse("text/html;charset=utf-8")))
+        assertTrue(MediaType.parse("text/*")!!.matches(MediaType.parse("text/html;charset=utf-8")))
+        assertFalse(MediaType.parse("text/*")!!.matches(MediaType.parse("application/zip")))
     }
 
     @Test
-    fun `is part of from string`() {
+    fun `matches from string`() {
         assertTrue(MediaType.parse("text/html;charset=utf-8")
-            !!.isPartOf("text/html;charset=utf-8"))
+            !!.matches("text/html;charset=utf-8"))
     }
 
     @Test

@@ -113,13 +113,16 @@ class MediaType private constructor(string: String) {
     /**
      * Returns whether two media types are equal, checking the type, subtype and parameters.
      * Parameters order is ignored.
+     *
+     * `text/html` != `text/html;charset=utf-8` with strict equality comparison, which is most
+     * likely not the desired result. Instead, you can use [matches] to check if any of the media
+     * types is a parameterized version of the other one.
+     *
+     * To ignore this warning, compare [MediaType.toString] instead of [MediaType] itself.
      */
+    @Deprecated("Strict media type comparisons can be a source of bug, if parameters are present", ReplaceWith("this.matches(other)"))
     override fun equals(other: Any?): Boolean {
-        @Suppress("NAME_SHADOWING")
-        val other = other as? MediaType
-            ?: return false
-
-        return type == other.type && subtype == other.subtype && parameters == other.parameters
+        return toString() == (other as? MediaType)?.toString()
     }
 
     override fun hashCode(): Int {
@@ -160,62 +163,65 @@ class MediaType private constructor(string: String) {
     }
 
     /**
-     * Returns whether this media type is included in the provided [other] media type.
+     * Returns whether this media type and `other` are the same, ignoring parameters that are not
+     * in both media types.
      *
-     * For example, `text/html;charset=utf-8` is part of `text/html`.
+     * For example, `text/html` matches `text/html;charset=utf-8`, but `text/html;charset=ascii`
+     * doesn't. This is basically like `contains`, but working in both direction.
      */
-    fun isPartOf(other: MediaType?): Boolean =
-        other?.contains(this) ?: false
+    fun matches(other: MediaType?): Boolean =
+        contains(other) || (other?.contains(this) == true)
 
     /**
-     * Returns whether this media type is included in the provided [other] media type.
+     * Returns whether this media type and `other` are the same, ignoring parameters that are not
+     * in both media types.
      */
-    fun isPartOf(other: String?): Boolean =
-        other?.let { parse(it) }?.contains(this) ?: false
+    fun matches(other: String?): Boolean =
+        matches(other?.let { parse(it) })
 
     /** Returns whether this media type is structured as a ZIP archive. */
     val isZip: Boolean get() {
-        return isPartOf(ZIP)
-            || isPartOf(LCP_PROTECTED_AUDIOBOOK)
-            || isPartOf(LCP_PROTECTED_PDF)
+        return matches(ZIP)
+            || matches(LCP_PROTECTED_AUDIOBOOK)
+            || matches(LCP_PROTECTED_PDF)
             || structuredSyntaxSuffix == "+zip"
     }
 
     /** Returns whether this media type is structured as a JSON file. */
     val isJson: Boolean get() {
-        return isPartOf(JSON)
+        return matches(JSON)
             || structuredSyntaxSuffix == "+json"
     }
 
     /** Returns whether this media type is of an OPDS feed. */
     val isOpds: Boolean get() {
-        return isPartOf(OPDS1)
-            || isPartOf(OPDS1_ENTRY)
-            || isPartOf(OPDS2)
-            || isPartOf(OPDS2_PUBLICATION)
+        return matches(OPDS1)
+            || matches(OPDS1_ENTRY)
+            || matches(OPDS2)
+            || matches(OPDS2_PUBLICATION)
     }
 
     /** Returns whether this media type is of an HTML document. */
     val isHtml: Boolean get() {
-        return isPartOf(HTML)
-            || isPartOf(XHTML)
+        return matches(HTML)
+            || matches(XHTML)
     }
 
     /** Returns whether this media type is of a bitmap image, so excluding vectorial formats. */
     val isBitmap: Boolean get() {
-        return isPartOf(BMP)
-            || isPartOf(GIF)
-            || isPartOf(JPEG)
-            || isPartOf(PNG)
-            || isPartOf(TIFF)
-            || isPartOf(WEBP)
+        return matches(BMP)
+            || matches(GIF)
+            || matches(JPEG)
+            || matches(PNG)
+            || matches(TIFF)
+            || matches(WEBP)
     }
 
     /** Returns whether this media type is of a Readium Web Publication Manifest. */
     val isRwpm: Boolean get() {
-        return isPartOf(AUDIOBOOK_MANIFEST)
-            || isPartOf(DIVINA_MANIFEST)
-            || isPartOf(WEBPUB_MANIFEST)
+        return matches(AUDIOBOOK_MANIFEST)
+            || matches(DIVINA_MANIFEST)
+            || matches(WEBPUB_MANIFEST)
     }
 
     companion object {
