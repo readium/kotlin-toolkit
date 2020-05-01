@@ -200,14 +200,14 @@ class TitleTest {
         assertThat(epub2Metadata.localizedTitle).isEqualTo(
             LocalizedString.fromStrings(
                 mapOf(
-                    "en" to "Alice's Adventures in Wonderland"
+                    null to "Alice's Adventures in Wonderland"
                 )
             )
         )
         assertThat(epub3Metadata.localizedTitle).isEqualTo(
             LocalizedString.fromStrings(
                 mapOf(
-                    "en" to "Alice's Adventures in Wonderland",
+                    null to "Alice's Adventures in Wonderland",
                     "fr" to "Les Aventures d'Alice au pays des merveilles"
                 )
             )
@@ -241,7 +241,7 @@ class TitleTest {
     @Test
     fun `The selected subtitle has the lowest display-seq property (epub3 only)`() {
         val metadata = parsePackageDocument("package/title-multiple-subtitles.opf").metadata
-        assertThat(metadata.localizedSubtitle).isEqualTo(LocalizedString.fromStrings(mapOf("en" to "Subtitle 2")))
+        assertThat(metadata.localizedSubtitle).isEqualTo(LocalizedString.fromStrings(mapOf(null to "Subtitle 2")))
     }
 }
 
