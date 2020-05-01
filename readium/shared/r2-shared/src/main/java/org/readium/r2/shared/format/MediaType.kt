@@ -217,6 +217,10 @@ class MediaType private constructor(string: String) {
             || matches(WEBP)
     }
 
+    /** Returns whether this media type is of an audio clip. */
+    val isAudio: Boolean get() =
+        type == "audio"
+
     /** Returns whether this media type is of a Readium Web Publication Manifest. */
     val isRwpm: Boolean get() {
         return matches(AUDIOBOOK_MANIFEST)
