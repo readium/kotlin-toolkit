@@ -274,41 +274,15 @@ internal class PubMetadataAdapter(
     private val allContributors: Map<String?, List<Contributor>>
 
     init {
-        // Distribute <dc:creator> and <dc:contributor> in different classes depending on roles
-        val creators = items[Vocabularies.DCTERMS + "creator"].orEmpty()
-            .map { it.toContributor(defaultRole = "aut") }
-        val others = items[Vocabularies.DCTERMS + "contributor"].orEmpty()
-            .map { it.toContributor() }
-        val knownRoles = setOf("aut", "trl", "edt", "pbl", "art", "ill", "clr", "nrt")
-        val contributors = (creators + others).distributeBy(knownRoles, Contributor::roles)
-            .toMutableMap().mapValues { it.value.toMutableList() }
-
-        // Publishers and narrators can be provided as dedicated elements too
-        val publishers = contributors["pbl"].orEmpty() +
-                items[Vocabularies.DCTERMS + "publisher"].orEmpty()
-                    .map { it.toContributor("pbl") }
-        val narrators = contributors["nrt"].orEmpty() +
+        val contributors = items[Vocabularies.DCTERMS + "creator"].orEmpty() +
+                items[Vocabularies.DCTERMS + "contributor"].orEmpty() +
+                items[Vocabularies.DCTERMS + "publisher"].orEmpty() +
                 items[Vocabularies.MEDIA + "narrator"].orEmpty()
-                    .map { it.toContributor(  "nrt") }
 
-        // Override narrators and publishers with the exhaustive lists
-        allContributors = contributors + mapOf("nrt" to narrators, "pbl" to publishers)
-    }
-
-    private fun <K, V> List<V>.distributeBy(classes: Set<K>, transform: (V) -> kotlin.collections.Collection<K>): Map<K?, List<V>> {
-        /* Map all elements with [transform] and compute a [Map] with keys [null] and elements from [classes] and,
-         as values, lists of elements whose transformed values contain the key.
-         If a transformed element is in no class, it is assumed to be in [null] class. */
-
-        val map: MutableMap<K?, MutableList<V>> = mutableMapOf()
-        for (element in this) {
-            val transformed = transform(element).filter { it in classes }
-            if (transformed.isEmpty())
-                map.getOrPut(null) { mutableListOf() }.add(element)
-            for (v in transformed)
-                map.getOrPut(v) { mutableListOf() }.add(element)
-        }
-        return map
+        allContributors = contributors
+            .map(MetadataItem::toContributor)
+            .groupBy(Pair<String?, Contributor>::first)
+            .mapValues { it.value.map(Pair<String?, Contributor>::second) }
     }
 
     fun contributors(role: String?) = allContributors[role].orEmpty()
@@ -399,17 +373,28 @@ internal data class MetadataItem(
         return Title(values, localizedSortAs, titleType, displaySeq)
     }
 
-    fun toContributor(defaultRole: String? = null): Contributor {
+    fun toContributor(): Pair<String?, Contributor> {
         require(property in listOf("creator", "contributor", "publisher").map { Vocabularies.DCTERMS + it } +
                 (Vocabularies.MEDIA + "narrator") + (Vocabularies.META + "belongs-to-collection"))
+        val knownRoles = setOf("aut", "trl", "edt", "pbl", "art", "ill", "clr", "nrt")
         val names = localizedString()
         val localizedSortAs = fileAs?.let { LocalizedString(it.second, it.first) }
-        val roles = role(defaultRole)?.let { setOf(it) }.orEmpty()
-        return Contributor(names, localizedSortAs = localizedSortAs,
+        val roles = role.takeUnless { it in knownRoles  }?.let { setOf(it) }.orEmpty()
+        val type = when(property) {
+            Vocabularies.META + "belongs-to-collection" -> collectionType
+            Vocabularies.DCTERMS + "creator" -> "aut"
+            Vocabularies.DCTERMS + "publisher" -> "pbl"
+            Vocabularies.MEDIA + "narrator" -> "nrt"
+            else -> role.takeIf { it in knownRoles } // Vocabularies.DCTERMS + "contributor"
+        }
+
+        val contributor =  Contributor(names, localizedSortAs = localizedSortAs,
             roles = roles, identifier = identifier, position = groupPosition)
+
+        return Pair(type, contributor)
     }
 
-    fun toCollection() = Pair(collectionType, toContributor())
+    fun toCollection() = toContributor()
 
     fun toMap(): Any =
         if (children.isEmpty())
@@ -447,14 +432,13 @@ internal data class MetadataItem(
     private val identifier
         get() = firstValue(Vocabularies.DCTERMS + "identifier")
 
+    private val role
+        get() = firstValue(Vocabularies.META + "role")
+
     private fun localizedString(): LocalizedString {
         val values = mapOf(lang.takeUnless { it == "" } to value).plus(alternateScript)
         return LocalizedString.fromStrings(values)
     }
 
-    private fun role(default: String?) = firstValue(Vocabularies.META + "role") ?: default
-
     private fun firstValue(property: String) = children[property]?.firstOrNull()?.value
-
-    private fun allValues(property: String) = children[property]?.map(MetadataItem::value).orEmpty()
 }

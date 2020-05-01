@@ -29,20 +29,14 @@ class ContributorParsingTest {
 
     @Test
     fun `dc_creator is by default an author`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Author 1"),
-            roles = setOf("aut")
-        )
+        val contributor = Contributor(localizedName = LocalizedString("Author 1"))
         assertThat(epub2Metadata.authors).contains(contributor)
         assertThat(epub3Metadata.authors).contains(contributor)
     }
 
     @Test
-    fun `dc_publisher is by default a publisher`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Publisher 1"),
-            roles = setOf("pbl")
-        )
+    fun `dc_publisher is a publisher`() {
+        val contributor = Contributor(localizedName = LocalizedString("Publisher 1"))
         assertThat(epub2Metadata.publishers).contains(contributor)
         assertThat(epub3Metadata.publishers).contains(contributor)
     }
@@ -84,55 +78,40 @@ class ContributorParsingTest {
 
     @Test
     fun `Only the first role is considered (epub3 only)`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Cameleon"),
-            roles = setOf("aut")
-        )
+        val contributor = Contributor(localizedName = LocalizedString("Cameleon"))
         assertThat(epub3Metadata.authors).contains(contributor)
     }
 
     @Test
     fun `Media Overlays narrators are rightly parsed (epub3 only)`() {
-        val contributor = Contributor(localizedName = LocalizedString("Media Overlays Narrator"), roles = setOf("nrt"))
+        val contributor = Contributor(localizedName = LocalizedString("Media Overlays Narrator"))
         assertThat(epub3Metadata.narrators).contains(contributor)
     }
 
     @Test
     fun `Author is rightly parsed`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Author 2"),
-            roles = setOf("aut")
-        )
+        val contributor = Contributor(localizedName = LocalizedString("Author 2"))
         assertThat(epub2Metadata.authors).contains(contributor)
         assertThat(epub3Metadata.authors).contains(contributor)
     }
 
     @Test
     fun `Publisher is rightly parsed`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Publisher 2"),
-            roles = setOf("pbl")
-        )
+        val contributor = Contributor(localizedName = LocalizedString("Publisher 2")        )
         assertThat(epub2Metadata.publishers).contains(contributor)
         assertThat(epub3Metadata.publishers).contains(contributor)
     }
 
     @Test
     fun `Translator is rightly parsed`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Translator"),
-            roles = setOf("trl")
-        )
+        val contributor = Contributor(localizedName = LocalizedString("Translator"))
         assertThat(epub2Metadata.translators).contains(contributor)
         assertThat(epub3Metadata.translators).contains(contributor)
     }
 
     @Test
     fun `Artist is rightly parsed`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Artist"),
-            roles = setOf("art")
-        )
+        val contributor = Contributor(localizedName = LocalizedString("Artist"))
         assertThat(epub2Metadata.artists).contains(contributor)
         assertThat(epub3Metadata.artists).contains(contributor)
     }
@@ -141,7 +120,7 @@ class ContributorParsingTest {
     fun `Illustrator is rightly parsed`() {
         val contributor = Contributor(
             localizedName = LocalizedString("Illustrator"),
-            roles = setOf("ill")
+            roles = emptySet()
         )
         assertThat(epub2Metadata.illustrators).contains(contributor)
         assertThat(epub3Metadata.illustrators).contains(contributor)
@@ -151,7 +130,7 @@ class ContributorParsingTest {
     fun `Colorist is rightly parsed`() {
         val contributor = Contributor(
             localizedName = LocalizedString("Colorist"),
-            roles = setOf("clr")
+            roles = emptySet()
         )
         assertThat(epub2Metadata.colorists).contains(contributor)
         assertThat(epub3Metadata.colorists).contains(contributor)
@@ -161,7 +140,7 @@ class ContributorParsingTest {
     fun `Narrator is rightly parsed`() {
         val contributor = Contributor(
             localizedName = LocalizedString("Narrator"),
-            roles = setOf("nrt")
+            roles = emptySet()
         )
         assertThat(epub2Metadata.narrators).contains(contributor)
         assertThat(epub3Metadata.narrators).contains(contributor)
