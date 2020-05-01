@@ -30,7 +30,6 @@ import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
 import timber.log.Timber
-import java.io.Serializable
 import java.net.URL
 
 /**
@@ -214,6 +213,21 @@ data class Publication(
         link { it.rels.contains(rel) }
 
     /**
+     * Finds the first [Link] having the given [rel] matching the given [predicate], in the
+     * publications' links.
+     */
+    internal fun linkWithRelMatching(predicate: (String) -> Boolean): Link? {
+        for (link in links) {
+            for (rel in link.rels) {
+                if (predicate(rel)) {
+                    return link
+                }
+            }
+        }
+        return null
+    }
+
+    /**
      * Finds the first [Link] having the given [href] in the publications's links.
      */
     fun linkWithHref(href: String): Link? =
@@ -278,6 +292,30 @@ data class Publication(
     fun copyWithPositionsFactory(createFactory: Publication.() -> PositionListFactory): Publication {
         return run { copy(positionsFactory = createFactory()) }
     }
+
+    /**
+     * Returns whether all the resources in the reading order are bitmaps.
+     */
+    internal val allReadingOrderIsBitmap: Boolean get() =
+        readingOrder.all {
+            it.mediaType?.isBitmap == true
+        }
+
+    /**
+     * Returns whether all the resources in the reading order are audio clips.
+     */
+    internal val allReadingOrderIsAudio: Boolean get() =
+        readingOrder.all {
+            it.mediaType?.isAudio == true
+        }
+
+    /**
+     * Returns whether all the resources in the reading order are contained in any of the given media types.
+     */
+    internal fun allReadingOrderMatches(vararg mediaTypes: MediaType): Boolean =
+        readingOrder.all { link ->
+            mediaTypes.any { link.mediaType?.matches(it) == true }
+        }
 
     companion object {
 

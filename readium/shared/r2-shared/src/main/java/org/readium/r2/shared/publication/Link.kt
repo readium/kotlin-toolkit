@@ -17,6 +17,7 @@ import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
 
@@ -66,6 +67,10 @@ data class Link(
     val alternates: List<Link> = listOf(),
     val children: List<Link> = listOf()
 ) : JSONable, Parcelable {
+
+    /** Media type of the linked resource. */
+    val mediaType: MediaType? get() =
+        type?.let { MediaType.parse(it) }
 
     /**
      * Serializes a [Link] to its RWPM JSON representation.

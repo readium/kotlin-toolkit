@@ -199,6 +199,7 @@ class MediaType private constructor(string: String) {
             || matches(OPDS1_ENTRY)
             || matches(OPDS2)
             || matches(OPDS2_PUBLICATION)
+            || matches(OPDS_AUTHENTICATION)
     }
 
     /** Returns whether this media type is of an HTML document. */
@@ -264,6 +265,7 @@ class MediaType private constructor(string: String) {
         val OPDS1_ENTRY = MediaType("application/atom+xml;type=entry;profile=opds-catalog")
         val OPDS2 = MediaType("application/opds+json")
         val OPDS2_PUBLICATION = MediaType("application/opds-publication+json")
+        val OPDS_AUTHENTICATION = MediaType("application/opds-authentication+json")
         val JSON = MediaType("application/json")
         val LCP_PROTECTED_AUDIOBOOK = MediaType("application/audiobook+lcp")
         val LCP_PROTECTED_PDF = MediaType("application/pdf+lcp")
@@ -301,7 +303,3 @@ class MediaType private constructor(string: String) {
     }
 
 }
-
-/** Media type of the linked resource. */
-val Link.mediaType: MediaType? get() =
-    type?.let { MediaType.parse(it) }

@@ -266,6 +266,7 @@ class MediaTypeTest {
         assertTrue(MediaType.parse("application/opds+json")!!.isOpds)
         assertTrue(MediaType.parse("application/opds-publication+json")!!.isOpds)
         assertTrue(MediaType.parse("application/opds+json;charset=utf-8")!!.isOpds)
+        assertTrue(MediaType.parse("application/opds-authentication+json")!!.isOpds)
     }
 
     @Test
