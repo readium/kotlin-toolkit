@@ -276,17 +276,25 @@ internal class PubMetadataAdapter(
     private val allContributors: Map<String?, List<Contributor>>
 
     init {
+        // Distribute <dc:creator> and <dc:contributor> in different classes depending on roles
         val creators = items[Vocabularies.DCTERMS + "creator"].orEmpty()
-            .map { it.toContributor(defaultLang, "aut") }
-        val publishers = items[Vocabularies.DCTERMS + "publisher"].orEmpty()
-            .map { it.toContributor(defaultLang, "pbl") }
+            .map { it.toContributor(defaultLang, defaultRole = "aut") }
         val others = items[Vocabularies.DCTERMS + "contributor"].orEmpty()
             .map { it.toContributor(defaultLang) }
-        val narrators = items[Vocabularies.MEDIA + "narrator"].orEmpty()
-            .map { it.toContributor(defaultLang, "nrt") }
-        val contributors = creators + publishers + narrators + others
         val knownRoles = setOf("aut", "trl", "edt", "pbl", "art", "ill", "clr", "nrt")
-        allContributors = contributors.distributeBy(knownRoles, Contributor::roles)
+        val contributors = (creators + others).distributeBy(knownRoles, Contributor::roles)
+            .toMutableMap().mapValues { it.value.toMutableList() }
+
+        // Publishers and narrators can be provided as dedicated elements too
+        val publishers = contributors["pbl"].orEmpty() +
+                items[Vocabularies.DCTERMS + "publisher"].orEmpty()
+                    .map { it.toContributor(defaultLang, "pbl") }
+        val narrators = contributors["nrt"].orEmpty() +
+                items[Vocabularies.MEDIA + "narrator"].orEmpty()
+                    .map { it.toContributor(defaultLang,    "nrt") }
+
+        // Override narrators and publishers with the exhaustive lists
+        allContributors = contributors + mapOf("nrt" to narrators, "pbl" to publishers)
     }
 
     private fun <K, V> List<V>.distributeBy(classes: Set<K>, transform: (V) -> kotlin.collections.Collection<K>): Map<K?, List<V>> {
@@ -398,8 +406,9 @@ internal data class MetadataItem(
                 (Vocabularies.MEDIA + "narrator") + (Vocabularies.META + "belongs-to-collection"))
         val names = localizedString(defaultLang)
         val localizedSortAs = fileAs?.let { LocalizedString(it.second, if (it.first == "") defaultLang else it.first) }
+        val roles = role(defaultRole)?.let { setOf(it) }.orEmpty()
         return Contributor(names, localizedSortAs = localizedSortAs,
-            roles = roles(defaultRole), identifier = identifier, position = groupPosition)
+            roles = roles, identifier = identifier, position = groupPosition)
     }
 
     fun toCollection(defaultLang: String?) = Pair(collectionType, toContributor(defaultLang))
@@ -445,10 +454,7 @@ internal data class MetadataItem(
         return LocalizedString.fromStrings(values)
     }
 
-    private fun roles(default: String?): Set<String> {
-        val roles = allValues(Vocabularies.META + "role")
-        return if (roles.isEmpty() && default != null) setOf(default) else roles.toSet()
-    }
+    private fun role(default: String?) = firstValue(Vocabularies.META + "role") ?: default
 
     private fun firstValue(property: String) = children[property]?.firstOrNull()?.value
 

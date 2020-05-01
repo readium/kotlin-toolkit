@@ -55,13 +55,6 @@ class ContributorParsingTest {
     }
 
     @Test
-    fun `Refined roles override tag names`() {
-        val contributor = Contributor(localizedName = LocalizedString("Author 2"), roles = setOf("aut"))
-        assertThat(epub2Metadata.authors).contains(contributor)
-        assertThat(epub3Metadata.authors).contains(contributor)
-    }
-
-    @Test
     fun `Unknown roles are ignored`() {
         val contributor = Contributor(localizedName = LocalizedString("Contributor 2"), roles = setOf("unknown"))
         assertThat(epub2Metadata.contributors).contains(contributor)
@@ -90,13 +83,12 @@ class ContributorParsingTest {
     }
 
     @Test
-    fun `Multiple roles are all parsed (epub3 only)`() {
+    fun `Only the first role is considered (epub3 only)`() {
         val contributor = Contributor(
             localizedName = LocalizedString("Cameleon"),
-            roles = setOf("aut", "pbl")
+            roles = setOf("aut")
         )
         assertThat(epub3Metadata.authors).contains(contributor)
-        assertThat(epub3Metadata.publishers).contains(contributor)
     }
 
     @Test
@@ -108,7 +100,7 @@ class ContributorParsingTest {
     @Test
     fun `Author is rightly parsed`() {
         val contributor = Contributor(
-            localizedName = LocalizedString("Author 3"),
+            localizedName = LocalizedString("Author 2"),
             roles = setOf("aut")
         )
         assertThat(epub2Metadata.authors).contains(contributor)
@@ -177,7 +169,7 @@ class ContributorParsingTest {
 
     @Test
     fun `No more contributor than needed`() {
-        assertThat(epub2Metadata.authors).size().isEqualTo(3)
+        assertThat(epub2Metadata.authors).size().isEqualTo(2)
         assertThat(epub2Metadata.publishers).size().isEqualTo(2)
         assertThat(epub2Metadata.translators).size().isEqualTo(1)
         assertThat(epub2Metadata.editors).size().isEqualTo(1)
@@ -187,8 +179,8 @@ class ContributorParsingTest {
         assertThat(epub2Metadata.narrators).size().isEqualTo(1)
         assertThat(epub2Metadata.contributors).size().isEqualTo(3)
 
-        assertThat(epub3Metadata.authors).size().isEqualTo(4)
-        assertThat(epub3Metadata.publishers).size().isEqualTo(3)
+        assertThat(epub3Metadata.authors).size().isEqualTo(3)
+        assertThat(epub3Metadata.publishers).size().isEqualTo(2)
         assertThat(epub3Metadata.translators).size().isEqualTo(1)
         assertThat(epub3Metadata.editors).size().isEqualTo(1)
         assertThat(epub3Metadata.artists).size().isEqualTo(1)
