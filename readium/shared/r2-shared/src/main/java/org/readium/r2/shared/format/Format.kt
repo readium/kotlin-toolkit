@@ -13,6 +13,7 @@ import android.os.Looper
 import timber.log.Timber
 import java.io.File
 
+
 /**
  * Represents a known file format, uniquely identified by a media type.
  *
@@ -275,12 +276,12 @@ data class Format(
          *  - Heavy Sniffing reads the bytes to perform more advanced sniffing.
          */
         private fun of(content: FormatSnifferContent?, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer>): Format? {
-//            if (content != null && Looper.myLooper() == Looper.getMainLooper()) {
-//                Timber.w("Format.of() should not be called from the main thread, as it might block the UI")
-//            }
+            if (content != null && Looper.myLooper() == Looper.getMainLooper()) {
+                Timber.w("Format.of() should not be called from the main thread, as it might block the UI")
+            }
 
             // Light sniffing
-            val context = FormatSnifferContext(mediaTypes = mediaTypes, fileExtensions = fileExtensions)
+            var context = FormatSnifferContext(mediaTypes = mediaTypes, fileExtensions = fileExtensions)
             for (sniffer in sniffers) {
                 val format = sniffer(context)
                 if (format != null) {
@@ -290,7 +291,7 @@ data class Format(
 
             // Heavy sniffing
             if (content != null) {
-                val context = FormatSnifferContext(content = content, mediaTypes = mediaTypes, fileExtensions = fileExtensions)
+                context = FormatSnifferContext(content = content, mediaTypes = mediaTypes, fileExtensions = fileExtensions)
                 for (sniffer in sniffers) {
                     val format = sniffer(context)
                     if (format != null) {
@@ -299,8 +300,11 @@ data class Format(
                 }
             }
 
-            // FIXME
-            return null
+            // Falls back on the system-wide registered media types using [MimeTypeMap].
+            // Note: This is done after the heavy sniffing of the provided [sniffers], because
+            // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
+            // their content (for example, for RWPM).
+            return FormatSniffers.system(context)
         }
 
     }

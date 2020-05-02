@@ -35,11 +35,11 @@ class FormatSnifferContext internal constructor(
 ) {
 
     /** Media type hints. */
-    private val mediaTypes: List<MediaType> = mediaTypes
+    val mediaTypes: List<MediaType> = mediaTypes
         .mapNotNull { MediaType.parse(it) }
 
     /** File extension hints. */
-    private val fileExtensions: List<String> = fileExtensions
+    val fileExtensions: List<String> = fileExtensions
         .map { it.toLowerCase(Locale.ROOT) }
 
     // Metadata

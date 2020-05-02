@@ -9,9 +9,11 @@
 
 package org.readium.r2.shared.format
 
+import android.webkit.MimeTypeMap
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Publication
 import java.io.File
+import java.net.URLConnection
 import java.util.*
 import java.util.zip.ZipEntry
 
@@ -322,6 +324,50 @@ object FormatSniffers {
         if (context.readFileSignature(length = 5) == "%PDF-") {
             return Format.PDF
         }
+
+        return null
+    }
+
+    /**
+     * Sniffs the system-wide registered media types using [MimeTypeMap] and
+     * [URLConnection.guessContentTypeFromStream].
+     */
+    fun system(context: FormatSnifferContext): Format? {
+        val mimetypes = MimeTypeMap.getSingleton()
+
+        fun createFormat(mediaType: MediaType, extension: String) =
+            Format(name = extension.toUpperCase(Locale.ROOT), mediaType = mediaType, fileExtension = extension)
+
+        fun sniffExtension(extension: String): Format? {
+            val mediaType = mimetypes.getMimeTypeFromExtension(extension)?.let { MediaType.parse(it) }
+                ?: return null
+            val preferredExtension = mimetypes.getExtensionFromMimeType(mediaType.toString())
+                ?: return null
+            return createFormat(mediaType, preferredExtension)
+        }
+
+        fun sniffMediaType(mediaType: MediaType): Format? {
+            val extension = mimetypes.getExtensionFromMimeType(mediaType.toString())
+                ?: return null
+            val preferredMediaType = mimetypes.getMimeTypeFromExtension(extension)?.let { MediaType.parse(it) }
+                ?: return null
+            return createFormat(preferredMediaType, extension)
+        }
+
+        for (mediaType in context.mediaTypes) {
+            return sniffMediaType(mediaType) ?: continue
+        }
+
+        for (extension in context.fileExtensions) {
+            return sniffExtension(extension) ?: continue
+        }
+
+        context.stream()
+            ?.let { URLConnection.guessContentTypeFromStream(it) }
+            ?.let { MediaType.parse(it) }
+            ?.let {
+                return sniffMediaType(it)
+            }
 
         return null
     }

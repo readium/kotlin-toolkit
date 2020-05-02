@@ -114,13 +114,11 @@ class MediaType private constructor(string: String) {
      * Returns whether two media types are equal, checking the type, subtype and parameters.
      * Parameters order is ignored.
      *
+     * WARNING: Strict media type comparisons can be a source of bug, if parameters are present.
      * `text/html` != `text/html;charset=utf-8` with strict equality comparison, which is most
      * likely not the desired result. Instead, you can use [matches] to check if any of the media
      * types is a parameterized version of the other one.
-     *
-     * To ignore this warning, compare [MediaType.toString] instead of [MediaType] itself.
      */
-    @Deprecated("Strict media type comparisons can be a source of bug, if parameters are present", ReplaceWith("this.matches(other)"))
     override fun equals(other: Any?): Boolean {
         return toString() == (other as? MediaType)?.toString()
     }
