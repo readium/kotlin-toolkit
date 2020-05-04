@@ -364,9 +364,15 @@ internal class PubMetadataAdapter(
         val rendition = listOf("flow", "spread", "orientation", "layout").map { Vocabularies.RENDITION + it }
         val usedProperties: List<String> = dcterms + media + rendition
 
-        val otherMap: MutableMap<String, Any> = mutableMapOf()
-        val others = items.filterKeys { it !in usedProperties }.values.flatten()
-        others.forEach { otherMap[it.property] = it.toMap() }
+        val otherMap = items
+            .filterKeys { it !in usedProperties }
+            .mapValues {
+                val values = it.value.map(MetadataItem::toMap)
+                when(values.size) {
+                    1 -> values[0]
+                    else -> values
+                }
+            }
         otherMetadata = otherMap + Pair("presentation", presentation.toJSON().toMap())
     }
 }
