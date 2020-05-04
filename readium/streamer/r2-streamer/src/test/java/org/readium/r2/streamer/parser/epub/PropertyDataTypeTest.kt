@@ -77,17 +77,6 @@ class TestResolveProperty {
         assertThat(resolveProperty("media:narrator", PACKAGE_RESERVED_PREFIXES, DEFAULT_VOCAB.META))
             .isEqualTo("http://www.idpf.org/epub/vocab/overlays/#narrator")
     }
-
-    @Test
-    fun `Return null when the prefix is unknown`() {
-        assertThat(resolveProperty("unknown:narrator", PACKAGE_RESERVED_PREFIXES, DEFAULT_VOCAB.META))
-            .isNull()
-    }
-
-    @Test
-    fun `Empty string is rightly handled`() {
-        assertThat(resolveProperty("", mapOf())).isNull()
-    }
 }
 
 class ParsePropertiesTest {

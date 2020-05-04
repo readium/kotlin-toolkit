@@ -81,11 +81,13 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
 
     private fun parseMetaElement(element: ElementNode): MetadataItem? {
         return if (element.getAttr("property") == null) {
-            val name = element.getAttr("name")
+            val name = element.getAttr("name")?.trim()?.ifEmpty { null }
                 ?: return null
-            val content = element.getAttr("content")
+            val content = element.getAttr("content")?.trim()?.ifEmpty { null }
                 ?: return null
-            MetadataItem(name, content, element.lang, null, null, element.id)
+            val resolvedName = resolveProperty(name, prefixMap)
+                ?: return null
+            MetadataItem(resolvedName, content, element.lang, null, null, element.id)
         } else {
             val propName = element.getAttr("property")?.trim()?.ifEmpty { null }
                 ?: return null
