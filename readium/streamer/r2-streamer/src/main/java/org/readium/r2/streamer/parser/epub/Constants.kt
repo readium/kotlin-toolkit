@@ -49,7 +49,7 @@ internal object Vocabularies {
     const val TYPE = "http://idpf.org/epub/vocab/structure/#" // this is a guessed value
 
     const val DCTERMS = "http://purl.org/dc/terms/"
-    const val ALLY = "http://www.idpf.org/epub/vocab/package/a11y/#"
+    const val A11Y = "http://www.idpf.org/epub/vocab/package/a11y/#"
     const val MARC = "http://id.loc.gov/vocabulary/"
     const val ONIX = "http://www.editeur.org/ONIX/book/codelists/current.html#"
     const val SCHEMA = "http://schema.org/"

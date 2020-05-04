@@ -15,7 +15,7 @@ internal val PACKAGE_RESERVED_PREFIXES = mapOf(
     "dcterms" to Vocabularies.DCTERMS,
     "media" to Vocabularies.MEDIA,
     "rendition" to Vocabularies.RENDITION,
-    "ally" to Vocabularies.ALLY,
+    "a11y" to Vocabularies.A11Y,
     "marc" to Vocabularies.MARC,
     "onix" to Vocabularies.ONIX,
     "schema" to Vocabularies.SCHEMA,
