@@ -50,7 +50,7 @@ class LocalizedStringTest {
         assertJSONEquals(
             LocalizedString("a string").toJSON(),
             JSONObject("""{
-                "UND": "a string"
+                "und": "a string"
             }""")
         )
     }
@@ -65,7 +65,7 @@ class LocalizedStringTest {
             JSONObject("""{
                 "en": "a string",
                 "fr": "une chaîne",
-                "UND": "Surgh"
+                "und": "Surgh"
             }""")
         )
     }
