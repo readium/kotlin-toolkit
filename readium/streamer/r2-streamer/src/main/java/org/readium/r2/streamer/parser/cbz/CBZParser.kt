@@ -12,7 +12,7 @@ package org.readium.r2.streamer.parser.cbz
 import android.net.Uri
 import android.os.Build
 import android.text.TextUtils
-import android.webkit.MimeTypeMap
+import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
 import org.readium.r2.streamer.BuildConfig.DEBUG
@@ -71,7 +71,10 @@ class CBZParser : PublicationParser {
             return null
         }
         val listFiles = try {
-            container.files.sorted()
+            container.files
+                .filterNot { it.startsWith(".") }
+                .sorted()
+
         } catch (e: Exception) {
             if (DEBUG) Timber.e(e, "Missing File : META-INF/container.xml")
             return null
@@ -80,15 +83,12 @@ class CBZParser : PublicationParser {
         val hash = fileToMD5(fileAtPath)
         val metadata = Metadata(identifier = hash, localizedTitle = LocalizedString(fallbackTitle))
 
-        val readingOrder = listFiles.mapIndexedNotNull { index, path ->
-            if (path.startsWith("."))
-                null
-            else
-                Link(
-                        href = path,
-                        type = getMimeType(path),
-                        rels = if (index == 0) setOf("cover") else emptySet()
-                )
+        val readingOrder = listFiles.mapIndexed { index, path ->
+            Link(
+                href = path,
+                type = Format.of(fileExtension = File(path).extension)?.mediaType.toString(),
+                rels = if (index == 0) setOf("cover") else emptySet()
+            )
         }
         val publication = Publication(
             metadata = metadata,
@@ -104,33 +104,6 @@ class CBZParser : PublicationParser {
 
         publication.type = Publication.TYPE.CBZ
         return PubBox(publication, container)
-    }
-
-    private fun getMimeType(file: String): String? {
-        return try {
-            val lastSegment = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val path = Paths.get(file)
-                path.fileName.toString()
-            } else {
-                val uri = Uri.parse(file)
-                uri.lastPathSegment
-            }
-            var type: String? = null
-            val name = lastSegment?.replace(" ", "")?.replace("'", "")?.replace(",", "")
-            val extension = MimeTypeMap.getFileExtensionFromUrl(name)
-            if (!TextUtils.isEmpty(extension)) {
-                type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)!!
-            } else {
-                val reCheckExtension = MimeTypeMap.getFileExtensionFromUrl(name?.replace("\\s+", ""))
-                if (!TextUtils.isEmpty(reCheckExtension)) {
-                    type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(reCheckExtension)!!
-                }
-            }
-            type
-        } catch (e: Exception) {
-            if (DEBUG) Timber.e(e)
-            null
-        }
     }
 
     private fun fileToMD5(filePath: String): String? {

@@ -13,8 +13,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.extensions.removeLastComponent
-import org.readium.r2.shared.format.mediaType
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layout

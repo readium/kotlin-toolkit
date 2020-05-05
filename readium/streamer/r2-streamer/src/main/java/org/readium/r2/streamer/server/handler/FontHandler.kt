@@ -10,19 +10,18 @@
 package org.readium.r2.streamer.server.handler
 
 
-import android.webkit.MimeTypeMap
 import org.nanohttpd.protocols.http.IHTTPSession
 import org.nanohttpd.protocols.http.response.IStatus
 import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
+import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.server.Fonts
 import timber.log.Timber
 import java.io.InputStream
-import java.util.*
 
 
 class FontHandler : RouterNanoHTTPD.DefaultHandler() {
@@ -50,29 +49,13 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
             val lastSlashIndex = uri.lastIndexOf('/')
             uri = uri.substring(lastSlashIndex + 1, uri.length)
             val resources = uriResource!!.initParameter(Fonts::class.java)
-            val x = createResponse(Status.OK, getMimeType(uri), resources.get(uri).inputStream())
-            x
+            val resource = resources.get(uri)
+            val mediaType = Format.of(resource)?.mediaType ?: MediaType.BINARY
+            createResponse(Status.OK, mediaType.toString(), resource.inputStream())
         } catch (e: Exception) {
             if (DEBUG) Timber.e( " Exception %s", e.toString())
             newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
-    }
-
-    private fun getMimeType(url: String): String {
-        val extension = MimeTypeMap.getFileExtensionFromUrl(url)
-        var mimeType = MediaType.OTF.toString()
-        if (extension != null) {
-            try {
-                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)!!
-            } catch (e: Exception) {
-                when (extension.toLowerCase(Locale.ROOT)) {
-                    "otf" -> mimeType = MediaType.OTF.toString()
-                    "ttf" -> mimeType = MediaType.TTF.toString()
-                // TODO handle other font types
-                }
-            }
-        }
-        return mimeType
     }
 
     private fun createResponse(status: Status, mimeType: String, message: InputStream): Response {
