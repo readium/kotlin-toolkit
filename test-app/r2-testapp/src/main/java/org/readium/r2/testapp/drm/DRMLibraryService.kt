@@ -34,5 +34,5 @@ interface DRMLibraryService {
 interface LCPLibraryActivityService {
     fun parseIntentLcpl(uriString: String, networkAvailable: Boolean)
     fun prepareAndStartActivityWithLCP(drm: DRM, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean)
-    fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean)
+    fun processLcpActivityResult(uri: Uri, progress: ProgressDialog, networkAvailable: Boolean)
 }

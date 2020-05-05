@@ -331,7 +331,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
         }
     }
 
-    override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
+    override fun processLcpActivityResult(uri: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
 
         currenProgressDialog = progress
 
