@@ -153,6 +153,14 @@ class FormatSnifferContext internal constructor(
         }
 
     /**
+     * Returns whether the content is a JSON object containing all of the given root keys.
+     */
+    internal fun containsJsonKeys(vararg keys: String): Boolean {
+        val json = contentAsJson ?: return false
+        return json.keys().asSequence().toSet().containsAll(keys.toList())
+    }
+
+    /**
      * Returns whether a ZIP entry exists in this file.
      */
     internal fun containsZipEntryAt(path: String): Boolean =

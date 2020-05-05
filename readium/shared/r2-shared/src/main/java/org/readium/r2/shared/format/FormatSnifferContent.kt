@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.format
 
+import android.content.ContentResolver
+import android.net.Uri
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -59,5 +61,21 @@ internal class FormatSnifferBytesContent(val getBytes: () -> ByteArray) : Format
 
     override fun stream(): InputStream? =
         ByteArrayInputStream(bytes)
+
+}
+
+/** Used to sniff a content URI. */
+internal class FormatSnifferUriContent(val uri: Uri, val contentResolver: ContentResolver) : FormatSnifferContent {
+
+    override fun read(): ByteArray? =
+        stream()?.readBytes()
+
+    override fun stream(): InputStream? =
+        try {
+            contentResolver.openInputStream(uri)
+        } catch (e: Exception) {
+            Timber.e(e)
+            null
+        }
 
 }

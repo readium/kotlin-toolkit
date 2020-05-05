@@ -89,10 +89,8 @@ object FormatSniffers {
         if (context.hasMediaType("application/opds-authentication+json") || context.hasMediaType("application/vnd.opds.authentication.v1.0+json")) {
             return Format.OPDS_AUTHENTICATION
         }
-        context.contentAsJson?.let { json ->
-            if (json.keys().asSequence().toSet().containsAll(listOf("id", "title", "authentication"))) {
-                return Format.OPDS_AUTHENTICATION
-            }
+        if (context.containsJsonKeys("id", "title", "authentication")) {
+            return Format.OPDS_AUTHENTICATION
         }
 
         return null
@@ -103,10 +101,8 @@ object FormatSniffers {
         if (context.hasFileExtension("lcpl") || context.hasMediaType("application/vnd.readium.lcp.license.v1.0+json")) {
             return Format.LCP_LICENSE
         }
-        context.contentAsJson?.let { json ->
-            if (json.keys().asSequence().toSet().containsAll(listOf("id", "issued", "provider", "encryption"))) {
-                return Format.LCP_LICENSE
-            }
+        if (context.containsJsonKeys("id", "issued", "provider", "encryption")) {
+            return Format.LCP_LICENSE
         }
         return null
     }
@@ -189,7 +185,7 @@ object FormatSniffers {
             if (publication.allReadingOrderIsBitmap) {
                 return if (isManifest) Format.DIVINA_MANIFEST else Format.DIVINA
             }
-            if (isLcpProtected && publication.allReadingOrderMatches(MediaType.PDF)) {
+            if (isLcpProtected && publication.allReadingOrderMatchesAnyOf(MediaType.PDF)) {
                 return Format.LCP_PROTECTED_PDF
             }
             if (publication.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {

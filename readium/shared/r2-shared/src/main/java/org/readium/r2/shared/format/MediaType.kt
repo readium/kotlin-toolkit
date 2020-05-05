@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.format
 
-import org.readium.r2.shared.publication.Link
 import java.lang.IllegalArgumentException
 import java.nio.charset.Charset
 import java.util.*
@@ -76,7 +75,9 @@ class MediaType private constructor(string: String) {
         // > letters.
         // > https://www.iana.org/assignments/character-sets/character-sets.xhtml
         parameters["charset"]?.let {
-            parameters["charset"] = it.toUpperCase(Locale.ROOT)
+            parameters["charset"] =
+                (try { Charset.forName(it).name() } catch (e: Exception) { it })
+                    .toUpperCase(Locale.ROOT)
         }
 
         this.parameters = parameters

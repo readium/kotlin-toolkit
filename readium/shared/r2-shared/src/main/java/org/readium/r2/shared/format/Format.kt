@@ -9,7 +9,10 @@
 
 package org.readium.r2.shared.format
 
+import android.content.ContentResolver
+import android.net.Uri
 import android.os.Looper
+import android.webkit.MimeTypeMap
 import timber.log.Timber
 import java.io.File
 
@@ -265,6 +268,40 @@ data class Format(
          */
         fun of(bytes: () -> ByteArray, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
             return of(content = FormatSnifferBytesContent(bytes), mediaTypes = mediaTypes, fileExtensions = fileExtensions, sniffers = sniffers)
+        }
+
+        /**
+         * Resolves a format from a content URI and a [ContentResolver].
+         * Accepts the following URI schemes: content, android.resource, file.
+         *
+         * Warning: This API should never be called from the UI thread.
+         */
+        fun of(uri: Uri, contentResolver: ContentResolver, mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return of(uri, contentResolver, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
+        }
+
+        /**
+         * Resolves a format from a content URI and a [ContentResolver].
+         * Accepts the following URI schemes: content, android.resource, file.
+         *
+         * Warning: This API should never be called from the UI thread.
+         */
+        fun of(uri: Uri, contentResolver: ContentResolver, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            val allMediaTypes = mediaTypes.toMutableList()
+            val allFileExtensions = fileExtensions.toMutableList()
+
+            if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
+                contentResolver.getType(uri)?.let {
+                    allMediaTypes.add(0, it)
+                }
+            } else {
+                MimeTypeMap.getFileExtensionFromUrl(uri.toString()).ifEmpty { null }?.let {
+                    allFileExtensions.add(0, it)
+                }
+            }
+
+            val content = FormatSnifferUriContent(uri = uri, contentResolver = contentResolver)
+            return of(content = content, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
         }
 
         /**

@@ -312,7 +312,7 @@ data class Publication(
     /**
      * Returns whether all the resources in the reading order are contained in any of the given media types.
      */
-    internal fun allReadingOrderMatches(vararg mediaTypes: MediaType): Boolean =
+    internal fun allReadingOrderMatchesAnyOf(vararg mediaTypes: MediaType): Boolean =
         readingOrder.all { link ->
             mediaTypes.any { link.mediaType?.matches(it) == true }
         }
