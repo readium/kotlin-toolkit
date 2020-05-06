@@ -178,55 +178,52 @@ class MediaType private constructor(string: String) {
     fun matches(other: String?): Boolean =
         matches(other?.let { parse(it) })
 
+    /**
+     * Returns whether this media type matches any of the `others` media types.
+     */
+    fun matchesAny(vararg others: MediaType?): Boolean =
+        others.any { matches(it) }
+
+    /**
+     * Returns whether this media type matches any of the `others` media types.
+     */
+    fun matchesAny(vararg others: String?): Boolean =
+        others.any { matches(it) }
+
     /** Returns whether this media type is structured as a ZIP archive. */
-    val isZip: Boolean get() {
-        return matches(ZIP)
-            || matches(LCP_PROTECTED_AUDIOBOOK)
-            || matches(LCP_PROTECTED_PDF)
+    val isZip: Boolean get() =
+        matchesAny(ZIP, LCP_PROTECTED_AUDIOBOOK, LCP_PROTECTED_PDF)
             || structuredSyntaxSuffix == "+zip"
-    }
 
     /** Returns whether this media type is structured as a JSON file. */
-    val isJson: Boolean get() {
-        return matches(JSON)
-            || structuredSyntaxSuffix == "+json"
-    }
+    val isJson: Boolean get() =
+        matches(JSON) || structuredSyntaxSuffix == "+json"
 
     /** Returns whether this media type is of an OPDS feed. */
-    val isOpds: Boolean get() {
-        return matches(OPDS1)
-            || matches(OPDS1_ENTRY)
-            || matches(OPDS2)
-            || matches(OPDS2_PUBLICATION)
-            || matches(OPDS_AUTHENTICATION)
-    }
+    val isOpds: Boolean get() =
+        matchesAny(OPDS1, OPDS1_ENTRY, OPDS2, OPDS2_PUBLICATION, OPDS_AUTHENTICATION)
 
     /** Returns whether this media type is of an HTML document. */
-    val isHtml: Boolean get() {
-        return matches(HTML)
-            || matches(XHTML)
-    }
+    val isHtml: Boolean get() =
+        matchesAny(HTML, XHTML)
 
     /** Returns whether this media type is of a bitmap image, so excluding vectorial formats. */
-    val isBitmap: Boolean get() {
-        return matches(BMP)
-            || matches(GIF)
-            || matches(JPEG)
-            || matches(PNG)
-            || matches(TIFF)
-            || matches(WEBP)
-    }
+    val isBitmap: Boolean get() =
+        matchesAny(BMP, GIF, JPEG, PNG, TIFF, WEBP)
 
     /** Returns whether this media type is of an audio clip. */
     val isAudio: Boolean get() =
         type == "audio"
 
     /** Returns whether this media type is of a Readium Web Publication Manifest. */
-    val isRwpm: Boolean get() {
-        return matches(AUDIOBOOK_MANIFEST)
-            || matches(DIVINA_MANIFEST)
-            || matches(WEBPUB_MANIFEST)
-    }
+    val isRwpm: Boolean get() =
+        matchesAny(AUDIOBOOK_MANIFEST, DIVINA_MANIFEST, WEBPUB_MANIFEST)
+
+    /** Returns whether this media type is of a publication file. */
+    val isPublication: Boolean get() = matchesAny(
+        AUDIOBOOK, AUDIOBOOK_MANIFEST, CBZ, DIVINA, DIVINA_MANIFEST, EPUB, LCP_PROTECTED_AUDIOBOOK,
+        LCP_PROTECTED_PDF, LPF, PDF, W3C_WPUB_MANIFEST, WEBPUB, WEBPUB_MANIFEST, ZAB
+    )
 
     companion object {
 
