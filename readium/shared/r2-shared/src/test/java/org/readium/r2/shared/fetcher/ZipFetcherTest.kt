@@ -57,6 +57,25 @@ class ZipFetcherTest {
         val result = resource.read(0..10L)
         assert(result.isSuccess)
         assertEquals("application", result.success.toString(StandardCharsets.UTF_8))
+        assertEquals(11, result.success.size)
+    }
+
+    @Test
+    fun `Out of range indexes are clamped to the available length`() {
+        val resource = fetcher.get(Link(href = "/mimetype"))
+        val result = resource.read(-5..60L)
+        assert(result.isSuccess)
+        assertEquals("application/epub+zip", result.success.toString(StandardCharsets.UTF_8))
+        assertEquals(20, result.success.size)
+    }
+
+    @Test
+    fun `Descreasing ranges are understood as empty ones`() {
+        val resource = fetcher.get(Link(href = "/mimetype"))
+        val result = resource.read(60..20L)
+        assert(result.isSuccess)
+        assertEquals("", result.success.toString(StandardCharsets.UTF_8))
+        assertEquals(0, result.success.size)
     }
 
     @Test
@@ -65,7 +84,5 @@ class ZipFetcherTest {
         val result = resource.length
         assert(result.isSuccess)
         assertEquals(20L, result.success)
-
     }
-
 }

@@ -84,6 +84,25 @@ class FileFetcherTest {
         assertEquals("tex", result.success.toString(StandardCharsets.UTF_8))
     }
 
+
+    @Test
+    fun `Out of range indexes are clamped to the available length`() {
+        val resource = fetcher.get(Link(href = "/file_href"))
+        val result = resource.read(-5..60L)
+        assert(result.isSuccess)
+        assertEquals("text", result.success.toString(StandardCharsets.UTF_8))
+        assertEquals(4, result.success.size)
+    }
+
+    @Test
+    fun `Descreasing ranges are understood as empty ones`() {
+        val resource = fetcher.get(Link(href = "/file_href"))
+        val result = resource.read(60..20L)
+        assert(result.isSuccess)
+        assertEquals("", result.success.toString(StandardCharsets.UTF_8))
+        assertEquals(0, result.success.size)
+    }
+
     @Test
     fun `Computing length works well`() {
         val resource = fetcher.get(Link(href = "/file_href"))

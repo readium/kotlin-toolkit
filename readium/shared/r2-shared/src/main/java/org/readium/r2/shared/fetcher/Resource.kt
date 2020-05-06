@@ -80,7 +80,8 @@ internal abstract class StreamResource : Resource {
     }
 
     private fun readRange(range: LongRange): Try<ByteArray, Resource.Error> {
-        checkRange(range)
+        @Suppress("NAME_SHADOWING")
+        val range = checkedRange(range)
 
         val streamResult = stream()
         if (streamResult.isFailure) return Try.failure(streamResult.failure)
@@ -111,12 +112,8 @@ class BytesResource(override val link: Link, private val bytes: ByteArray) : Res
         if (range == null)
             return Try.success(bytes.copyOf())
 
-        try {
-            checkRange(range)
-        } catch (e: Exception) {
-            return Try.failure(Resource.Error.Other(Exception("Range not satisfiable")))
-        }
-
+        @Suppress("NAME_SHADOWING")
+        val range = checkedRange(range)
         val byteRange = bytes.sliceArray(range.map(Long::toInt))
         return Try.success(byteRange)
     }
@@ -126,9 +123,10 @@ class BytesResource(override val link: Link, private val bytes: ByteArray) : Res
     override fun close() {}
 }
 
-private fun checkRange(range: LongRange) {
-    if (range.first > range.last || range.first < 0)
-        throw IllegalArgumentException("Invalid range $range")
+private fun checkedRange(range: LongRange): LongRange =
+    if (range.first >= range.last)
+        0 until 0L
     else if (range.last - range.first + 1 > Int.MAX_VALUE)
         throw IllegalArgumentException("Range length greater than Int.MAX_VALUE")
-}
+    else
+        LongRange(range.first.coerceAtLeast(0), range.last)
