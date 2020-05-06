@@ -21,9 +21,11 @@ class Try<out Success, out Failure> private constructor(private val _success: Su
 
     val isFailure get() = _failure != null
 
-    val success = _success!!
+    val success
+        get() = _success!!
 
-    val failure = _failure!!
+    val failure
+        get() = _failure!!
 
     fun successOrNull() = _success
 

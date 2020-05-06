@@ -22,14 +22,17 @@ import java.io.OutputStream
  *
  * **Note** It is the caller's responsibility to close both of these resources.
  */
-internal fun InputStream.copyTo(out: OutputStream, limit: Long, bufferSize: Int = DEFAULT_BUFFER_SIZE): Long {
-    var bytesCopied: Long = 0
+internal fun InputStream.copyTo(out: OutputStream, limit: Long, bufferSize: Int = DEFAULT_BUFFER_SIZE): Int {
+    var bytesCopied: Int = 0
+    var toRead: Int = limit.toInt()
     val buffer = ByteArray(bufferSize)
-    var bytes = read(buffer, 0, limit.toInt())
-    while (bytes >= 0) {
+    var bytes = read(buffer, 0, minOf(buffer.size, toRead))
+    toRead -= bytes
+    while (bytes > 0) {
         out.write(buffer, 0, bytes)
         bytesCopied += bytes
-        bytes = read(buffer, 0, (limit - bytesCopied).toInt())
+        bytes = read(buffer, 0, minOf(buffer.size, toRead))
+        toRead -= bytes
     }
     return bytesCopied
 }
@@ -41,6 +44,6 @@ internal fun InputStream.copyTo(out: OutputStream, limit: Long, bufferSize: Int 
  */
 internal fun InputStream.read(limit: Long): ByteArray {
         val buffer = ByteArrayOutputStream(maxOf(DEFAULT_BUFFER_SIZE, this.available(), limit.toInt()))
-        copyTo (buffer, limit)
+        copyTo(buffer, limit)
         return buffer.toByteArray()
     }
