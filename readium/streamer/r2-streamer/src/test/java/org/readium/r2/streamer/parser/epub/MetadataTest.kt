@@ -80,6 +80,7 @@ class ContributorParsingTest {
     fun `Only the first role is considered (epub3 only)`() {
         val contributor = Contributor(localizedName = LocalizedString("Cameleon"))
         assertThat(epub3Metadata.authors).contains(contributor)
+        assertThat(epub3Metadata.publishers).doesNotContain(contributor)
     }
 
     @Test
