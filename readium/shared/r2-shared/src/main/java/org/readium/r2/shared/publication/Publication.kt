@@ -31,6 +31,7 @@ import org.readium.r2.shared.util.logging.log
 import timber.log.Timber
 import java.io.Serializable
 import java.net.URL
+import java.net.URLEncoder
 
 /**
  * Shared model for a Readium Publication.
@@ -331,6 +332,31 @@ data class Publication(
                 otherCollections = otherCollections
             )
         }
+
+        /**
+         * Creates the base URL for a [Publication] locally served through HTTP, from the
+         * publication's [filename] and the HTTP server [port].
+         *
+         * Note: This is used for backward-compatibility, but ideally this should be handled by the
+         * [Server], and set in the self [Link]. Unfortunately, the self [Link] is not available
+         * in the navigator at the moment without changing the code in reading apps.
+         */
+        fun localBaseUrlOf(filename: String, port: Int): String {
+            val sanitizedFilename = filename
+                .removePrefix("/")
+                // If the filename contains + or %, then NanoHTTPD will fail, even after
+                // percent-encoding it.
+                .replace("[ +%]".toRegex(), "_")
+                .let { URLEncoder.encode(it, "UTF-8") }
+
+            return "http://127.0.0.1:$port/$sanitizedFilename"
+        }
+
+        /**
+         * Gets the absolute URL of a resource locally served through HTTP.
+         */
+        fun localUrlOf(filename: String, port: Int, href: String): String =
+            localBaseUrlOf(filename, port) + href
 
     }
 
