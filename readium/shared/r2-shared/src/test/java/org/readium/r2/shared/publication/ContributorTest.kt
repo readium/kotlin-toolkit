@@ -156,7 +156,7 @@ class ContributorTest {
 
     @Test fun `get minimal JSON`() {
         assertJSONEquals(
-            JSONObject("{'name': {'UND': 'Colin Greenwood'}}"),
+            JSONObject("{'name': {'und': 'Colin Greenwood'}}"),
             Contributor(localizedName = LocalizedString("Colin Greenwood"))
                 .toJSON()
         )
@@ -165,9 +165,9 @@ class ContributorTest {
     @Test fun `get full JSON`() {
         assertJSONEquals(
             JSONObject("""{
-                "name": {"UND": "Colin Greenwood"},
+                "name": {"und": "Colin Greenwood"},
                 "identifier": "colin",
-                "sortAs": {"UND": "greenwood"},
+                "sortAs": {"und": "greenwood"},
                 "role": ["bassist"],
                 "position": 4.0,
                 "links": [
@@ -193,7 +193,7 @@ class ContributorTest {
         assertJSONEquals(
             JSONArray("""[
                 {
-                    "name": {"UND": "Thom Yorke"},
+                    "name": {"und": "Thom Yorke"},
                 },
                 {
                     "name": {"en": "Jonny Greenwood", "fr": "Jean Boisvert"},

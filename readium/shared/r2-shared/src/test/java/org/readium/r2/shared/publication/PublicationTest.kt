@@ -141,30 +141,6 @@ class PublicationTest {
         )
     }
 
-    @Test fun `parse JSON ignores {links} without {rel}`() {
-        assertEquals(
-            Publication(
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(
-                    Link(href = "/manifest.json", rels = setOf("self")),
-                    Link(href = "/withrel", rels = setOf("withrel"))
-                ),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
-            ),
-            Publication.fromJSON(JSONObject("""{
-                "metadata": {"title": "Title"},
-                "links": [
-                    {"href": "/manifest.json", "rel": "self"},
-                    {"href": "/withrel", "rel": "withrel"},
-                    {"href": "/withoutrel"}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html"}
-                ]
-            }"""))
-        )
-    }
-
     @Test fun `parse JSON ignores {readingOrder} without {type}`() {
         assertEquals(
             Publication(
@@ -212,7 +188,7 @@ class PublicationTest {
     @Test fun `get minimal JSON`() {
         assertJSONEquals(
             JSONObject("""{
-                "metadata": {"title": {"UND": "Title"}, "readingProgression": "auto"},
+                "metadata": {"title": {"und": "Title"}, "readingProgression": "auto"},
                 "links": [],
                 "readingOrder": []
             }"""),
@@ -228,7 +204,7 @@ class PublicationTest {
         assertJSONEquals(
             JSONObject("""{
                 "@context": ["https://readium.org/webpub-manifest/context.jsonld"],
-                "metadata": {"title": {"UND": "Title"}, "readingProgression": "auto"},
+                "metadata": {"title": {"und": "Title"}, "readingProgression": "auto"},
                 "links": [
                     {"href": "/manifest.json", "rel": ["self"], "templated": false}
                 ],

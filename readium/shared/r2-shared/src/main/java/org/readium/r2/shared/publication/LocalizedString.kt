@@ -101,7 +101,7 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
         /**
          * BCP-47 tag for an undefined language.
          */
-        const val UNDEFINED_LANGUAGE = "UND"
+        const val UNDEFINED_LANGUAGE = "und"
 
         /**
          * Shortcut to create a [LocalizedString] using a map of translations indexed by the BCP 47

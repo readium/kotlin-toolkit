@@ -19,11 +19,13 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
+import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.extensions.HashAlgorithm
+import org.readium.r2.shared.extensions.hash
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.toJSON
@@ -32,6 +34,7 @@ import org.readium.r2.shared.util.logging.log
 import timber.log.Timber
 import java.io.Serializable
 import java.net.URL
+import java.net.URLEncoder
 
 /**
  * Shared model for a Readium Publication.
@@ -307,7 +310,6 @@ data class Publication(
             }
 
             val links = Link.fromJSONArray(json.remove("links") as? JSONArray, normalizeHref, warnings)
-                .filter { it.rels.isNotEmpty() }
 
             // [readingOrder] used to be [spine], so we parse [spine] as a fallback.
             val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JSONArray
@@ -332,6 +334,29 @@ data class Publication(
                 otherCollections = otherCollections
             )
         }
+
+        /**
+         * Creates the base URL for a [Publication] locally served through HTTP, from the
+         * publication's [filename] and the HTTP server [port].
+         *
+         * Note: This is used for backward-compatibility, but ideally this should be handled by the
+         * [Server], and set in the self [Link]. Unfortunately, the self [Link] is not available
+         * in the navigator at the moment without changing the code in reading apps.
+         */
+        fun localBaseUrlOf(filename: String, port: Int): String {
+            val sanitizedFilename = filename
+                .removePrefix("/")
+                .hash(HashAlgorithm.MD5)
+                .let { URLEncoder.encode(it, "UTF-8") }
+
+            return "http://127.0.0.1:$port/$sanitizedFilename"
+        }
+
+        /**
+         * Gets the absolute URL of a resource locally served through HTTP.
+         */
+        fun localUrlOf(filename: String, port: Int, href: String): String =
+            localBaseUrlOf(filename, port) + href
 
     }
 

@@ -10,6 +10,7 @@
 package org.readium.r2.shared.extensions
 
 import org.joda.time.DateTime
+import java.security.MessageDigest
 import java.util.*
 
 fun String.iso8601ToDate(): Date? =
@@ -18,3 +19,14 @@ fun String.iso8601ToDate(): Date? =
     } catch (e: Exception) {
         null
     }
+
+internal enum class HashAlgorithm(val key: String) {
+    MD5("MD5"),
+    SHA256("SHA-256")
+}
+
+internal fun String.hash(algorithm: HashAlgorithm): String =
+    MessageDigest
+        .getInstance(algorithm.key)
+        .digest(this.toByteArray())
+        .fold("") { str, it -> str + "%02x".format(it) }
