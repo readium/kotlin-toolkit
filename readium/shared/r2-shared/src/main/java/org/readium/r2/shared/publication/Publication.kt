@@ -342,8 +342,14 @@ data class Publication(
          * in the navigator at the moment without changing the code in reading apps.
          */
         fun localBaseUrlOf(filename: String, port: Int): String {
-            val sanitizedFilename = URLEncoder.encode(filename.removePrefix("/"), "UTF-8")
-            return "http://127.0.0.1:$port/$sanitizedFilename/"
+            val sanitizedFilename = filename
+                .removePrefix("/")
+                // If the filename contains + or %, then NanoHTTPD will fail, even after
+                // percent-encoding it.
+                .replace("[ +%]".toRegex(), "_")
+                .let { URLEncoder.encode(it, "UTF-8") }
+
+            return "http://127.0.0.1:$port/$sanitizedFilename"
         }
 
         /**
