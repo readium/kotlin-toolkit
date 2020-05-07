@@ -308,7 +308,6 @@ data class Publication(
             }
 
             val links = Link.fromJSONArray(json.remove("links") as? JSONArray, normalizeHref, warnings)
-                .filter { it.rels.isNotEmpty() }
 
             // [readingOrder] used to be [spine], so we parse [spine] as a fallback.
             val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JSONArray

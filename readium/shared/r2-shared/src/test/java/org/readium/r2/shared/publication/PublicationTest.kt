@@ -141,30 +141,6 @@ class PublicationTest {
         )
     }
 
-    @Test fun `parse JSON ignores {links} without {rel}`() {
-        assertEquals(
-            Publication(
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(
-                    Link(href = "/manifest.json", rels = setOf("self")),
-                    Link(href = "/withrel", rels = setOf("withrel"))
-                ),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
-            ),
-            Publication.fromJSON(JSONObject("""{
-                "metadata": {"title": "Title"},
-                "links": [
-                    {"href": "/manifest.json", "rel": "self"},
-                    {"href": "/withrel", "rel": "withrel"},
-                    {"href": "/withoutrel"}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html"}
-                ]
-            }"""))
-        )
-    }
-
     @Test fun `parse JSON ignores {readingOrder} without {type}`() {
         assertEquals(
             Publication(
