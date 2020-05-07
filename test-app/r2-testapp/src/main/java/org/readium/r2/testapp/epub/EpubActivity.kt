@@ -47,10 +47,10 @@ import org.readium.r2.navigator.epub.Style
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.shared.*
-import org.readium.r2.shared.publication.ContentLayout
+import org.readium.r2.shared.extensions.putPublicationFrom
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.DRMManagementActivity
@@ -211,12 +211,13 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 }
 
                 val locator = searchResult[position]
-                val intent = Intent()
-                intent.putExtra("publicationPath", publicationPath)
-                intent.putExtra("epubName", publicationFileName)
-                intent.putExtra("publication", publication)
-                intent.putExtra("bookId", bookId)
-                intent.putExtra("locator", locator)
+                val intent = Intent().apply {
+                    putPublicationFrom(this@EpubActivity)
+                    putExtra("publicationPath", publicationPath)
+                    putExtra("epubName", publicationFileName)
+                    putExtra("bookId", bookId)
+                    putExtra("locator", locator)
+                }
                 onActivityResult(2, Activity.RESULT_OK, intent)
             }
 
@@ -441,9 +442,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         when (item.itemId) {
 
             R.id.toc -> {
-                val intent = Intent(this, R2OutlineActivity::class.java)
-                intent.putExtra("publication", publication)
-                intent.putExtra("bookId", bookId)
+                val intent = Intent(this, R2OutlineActivity::class.java).apply {
+                    putPublicationFrom(this@EpubActivity)
+                    putExtra("bookId", bookId)
+                }
                 startActivityForResult(intent, 2)
                 return true
             }

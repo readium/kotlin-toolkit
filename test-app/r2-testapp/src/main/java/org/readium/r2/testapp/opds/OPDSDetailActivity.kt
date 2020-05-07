@@ -27,6 +27,8 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.support.v4.nestedScrollView
+import org.readium.r2.shared.extensions.destroyPublication
+import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
@@ -53,7 +55,8 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
         val database = BooksDatabase(this)
 
         val opdsDownloader = OPDSDownloader(this)
-        val publication: Publication = intent.getParcelableExtra("publication") as Publication
+        val publication: Publication = intent.getPublication(this)
+
         nestedScrollView {
             fitsSystemWindows = true
             lparams(width = matchParent, height = matchParent)
@@ -160,6 +163,12 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        intent.destroyPublication(this)
     }
 
     private fun getDownloadURL(publication: Publication): URL? {

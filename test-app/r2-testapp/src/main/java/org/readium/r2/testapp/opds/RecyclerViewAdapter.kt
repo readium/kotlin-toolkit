@@ -11,6 +11,7 @@
 package org.readium.r2.testapp.opds
 
 import android.app.Activity
+import android.content.Intent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -18,7 +19,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.mcxiaoke.koi.ext.onClick
 import com.squareup.picasso.Picasso
-import org.jetbrains.anko.intentFor
+import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
@@ -46,7 +47,9 @@ class RecyclerViewAdapter(private val activity: Activity, private val strings: M
         }
 
         viewHolder.itemView.onClick {
-            activity.startActivity(activity.intentFor<OPDSDetailActivity>("publication" to publication))
+            activity.startActivity(Intent(activity, OPDSDetailActivity::class.java).apply {
+                putPublication(publication)
+            })
         }
     }
 
