@@ -23,6 +23,8 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.shared.extensions.destroyPublication
+import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Publication
 import kotlin.coroutines.CoroutineContext
 
@@ -54,9 +56,9 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
         divinaWebView.activity = this
         divinaWebView.listener = this
 
+        publication = intent.getPublication(this)
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
-        publication = intent.getParcelableExtra("publication") as Publication
 
         publicationIdentifier = publication.metadata.identifier ?: ""
         title = publication.metadata.title
@@ -102,6 +104,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
     override fun onDestroy() {
         super.onDestroy()
         divinaWebView.evaluateJavascript("if (player) { player.destroy(); };", null)
+        intent.destroyPublication(this)
     }
 }
 

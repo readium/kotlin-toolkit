@@ -15,6 +15,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.BuildConfig.*
+import org.readium.r2.shared.extensions.destroyPublication
+import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.*
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -120,7 +122,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
 
-        publication = intent.getParcelableExtra("publication") as Publication
+        publication = intent.getPublication(this)
         publicationIdentifier = publication.metadata.identifier!!
 
         title = null
@@ -283,7 +285,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         if (isSeekNeeded) {
             val time = seekLocation?.fragments?.firstOrNull()?.let {
                 var time = it
-                if (time.startsWith("#t=")) {
+                if (time.startsWith("#t=") || time.startsWith("t=")) {
                     time = time.substring(time.indexOf('=') + 1)
                 }
                 time
@@ -364,6 +366,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer?.stop()
+        intent.destroyPublication(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

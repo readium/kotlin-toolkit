@@ -31,11 +31,10 @@ import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.extensions.destroyPublication
+import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.getAbsolute
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import java.net.URI
@@ -239,8 +238,8 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         resourcesSingle = ArrayList()
         resourcesDouble = ArrayList()
 
+        publication = intent.getPublication(this)
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
-        publication = intent.getParcelableExtra("publication") as Publication
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publicationIdentifier = publication.metadata.identifier!!
 
@@ -352,6 +351,12 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         })
 
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        intent.destroyPublication(this)
     }
 
     override fun onResume() {
