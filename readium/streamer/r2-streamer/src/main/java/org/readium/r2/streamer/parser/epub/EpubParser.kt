@@ -11,6 +11,7 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
@@ -31,8 +32,8 @@ import java.io.File
 
 object EPUBConstant {
 
-    // FIXME: To refactor into r2-shared's ContentType
-    const val mimetype: String = "application/epub+zip"
+    @Deprecated("Use [MediaType.EPUB.toString()] instead", replaceWith = ReplaceWith("MediaType.EPUB.toString()"))
+    val mimetype: String get() = MediaType.EPUB.toString()
 
     private val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
         ReadiumCSSName.ref("hyphens") to false,
@@ -96,7 +97,7 @@ class EpubParser : PublicationParser {
             ?: return null
 
         container.rootFile.apply {
-            mimetype = EPUBConstant.mimetype
+            mimetype = MediaType.EPUB.toString()
             rootFilePath = opfPath
         }
 
@@ -133,9 +134,9 @@ class EpubParser : PublicationParser {
             throw ContainerError.missingFile(path)
 
         val container = if (File(path).isDirectory) {
-            DirectoryContainer(path = path, mimetype = EPUBConstant.mimetype)
+            DirectoryContainer(path = path, mimetype = MediaType.EPUB.toString())
         } else {
-            ArchiveContainer(path = path, mimetype = EPUBConstant.mimetype)
+            ArchiveContainer(path = path, mimetype = MediaType.EPUB.toString())
         }
         container.drm =
             if (container.dataLength(relativePath = Paths.LCPL) > 0) DRM(DRM.Brand.lcp)
@@ -185,7 +186,7 @@ class EpubParser : PublicationParser {
 
     private fun parseNavigationData(packageDocument: PackageDocument, container: Container): Map<String, List<Link>> =
         if (packageDocument.epubVersion < 3.0) {
-            val ncxItem = packageDocument.manifest.firstOrNull { it.mediaType == Mimetypes.NCX }
+            val ncxItem = packageDocument.manifest.firstOrNull { MediaType.NCX.contains(it.mediaType) }
             ncxItem?.let {
                 val ncxPath = normalize(packageDocument.path, ncxItem.href)
                 parseXmlDocument(ncxPath, container)?.let { NcxParser.parse(it, ncxPath) }

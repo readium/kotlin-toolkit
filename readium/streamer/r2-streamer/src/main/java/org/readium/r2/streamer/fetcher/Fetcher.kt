@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.fetcher
 
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.server.Resources
@@ -51,9 +52,10 @@ class Fetcher(var publication: Publication, var container: Container, private va
     }
 
     private fun getContentFilters(mimeType: String?, customResources: Resources? = null): ContentFilters {
-        return when (mimeType) {
-            "application/epub+zip", "application/oebps-package+xml" -> ContentFiltersEpub(userPropertiesPath, customResources)
-            "application/vnd.comicbook+zip", "application/x-cbr" -> ContentFiltersCbz()
+        val mediaType = mimeType?.let { MediaType.parse(it) }
+        return when (mediaType) {
+            MediaType.EPUB -> ContentFiltersEpub(userPropertiesPath, customResources)
+            MediaType.CBZ -> ContentFiltersCbz()
             else -> throw Exception("Missing container or MIMEtype")
         }
     }

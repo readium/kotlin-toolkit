@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.parser.audio
 
 import org.json.JSONObject
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
@@ -24,9 +25,10 @@ import java.nio.charset.Charset
 
 class AudioBookConstant {
     companion object {
-        // Some constants useful to parse an DiViNa document
-        const val mimetype = "application/audiobook+zip"
-        const val manifestPath = "manifest.json"
+        @Deprecated("Use [MediaType.AUDIOBOOK.toString()] instead", replaceWith = ReplaceWith("MediaType.AUDIOBOOK.toString()"))
+        val mimetype get() = MediaType.AUDIOBOOK.toString()
+
+        internal const val manifestPath = "manifest.json"
     }
 }
 

@@ -17,10 +17,12 @@ import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.server.Fonts
 import timber.log.Timber
 import java.io.InputStream
+import java.util.*
 
 
 class FontHandler : RouterNanoHTTPD.DefaultHandler() {
@@ -58,14 +60,14 @@ class FontHandler : RouterNanoHTTPD.DefaultHandler() {
 
     private fun getMimeType(url: String): String {
         val extension = MimeTypeMap.getFileExtensionFromUrl(url)
-        var mimeType = "application/vnd.ms-opentype"
+        var mimeType = MediaType.OTF.toString()
         if (extension != null) {
             try {
                 mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)!!
             } catch (e: Exception) {
-                when (extension) {
-                    ".otf" -> mimeType = "application/vnd.ms-opentype"
-                    ".ttf" -> mimeType = "application/vnd.ms-truetype"
+                when (extension.toLowerCase(Locale.ROOT)) {
+                    "otf" -> mimeType = MediaType.OTF.toString()
+                    "ttf" -> mimeType = MediaType.TTF.toString()
                 // TODO handle other font types
                 }
             }

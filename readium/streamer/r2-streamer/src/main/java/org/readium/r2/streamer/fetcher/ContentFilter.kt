@@ -14,6 +14,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.extensions.removeLastComponent
+import org.readium.r2.shared.format.mediaType
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layout
@@ -40,7 +41,7 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
 
             var decodedInputStream = DrmDecoder().decoding(input, resourceLink, container.drm)
             decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
-            if ((resourceLink.type == "application/xhtml+xml" || resourceLink.type == "text/html")) {
+            if (resourceLink.mediaType?.isHtml == true) {
                 decodedInputStream = if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE && resourceLink.properties.layout == null
                         || resourceLink.properties.layout == EpubLayout.REFLOWABLE) {
                     injectReflowableHtml(decodedInputStream, publication)
@@ -61,7 +62,7 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
             val inputStream = input.inputStream()
             var decodedInputStream = DrmDecoder().decoding(inputStream, resourceLink, container.drm)
             decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
-            if ((resourceLink.type == "application/xhtml+xml" || resourceLink.type == "text/html")
+            if (resourceLink.mediaType?.isHtml == true
                     && publication.baseUrl != null) {
                 decodedInputStream =
                         if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE && (resourceLink.properties.layout == null
