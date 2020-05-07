@@ -132,7 +132,7 @@ class SubjectTest {
 
     @Test fun `get minimal JSON`() {
         assertJSONEquals(
-            JSONObject("{'name': {'UND': 'Science Fiction'}}"),
+            JSONObject("{'name': {'und': 'Science Fiction'}}"),
             Subject(localizedName = LocalizedString("Science Fiction"))
                 .toJSON()
         )
@@ -141,8 +141,8 @@ class SubjectTest {
     @Test fun `get full JSON`() {
         assertJSONEquals(
             JSONObject("""{
-                "name": {"UND": "Science Fiction"},
-                "sortAs": {"UND": "science-fiction"},
+                "name": {"und": "Science Fiction"},
+                "sortAs": {"und": "science-fiction"},
                 "scheme": "http://scheme",
                 "code": "CODE",
                 "links": [
@@ -167,10 +167,10 @@ class SubjectTest {
         assertJSONEquals(
             JSONArray("""[
                 {
-                    "name": {"UND": "Fantasy"},
+                    "name": {"und": "Fantasy"},
                 },
                 {
-                    "name": {"UND": "Science Fiction"},
+                    "name": {"und": "Science Fiction"},
                     "scheme": "http://scheme"
                 }
             ]"""),

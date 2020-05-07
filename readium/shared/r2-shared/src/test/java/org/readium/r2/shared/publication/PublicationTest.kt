@@ -212,7 +212,7 @@ class PublicationTest {
     @Test fun `get minimal JSON`() {
         assertJSONEquals(
             JSONObject("""{
-                "metadata": {"title": {"UND": "Title"}, "readingProgression": "auto"},
+                "metadata": {"title": {"und": "Title"}, "readingProgression": "auto"},
                 "links": [],
                 "readingOrder": []
             }"""),
@@ -228,7 +228,7 @@ class PublicationTest {
         assertJSONEquals(
             JSONObject("""{
                 "@context": ["https://readium.org/webpub-manifest/context.jsonld"],
-                "metadata": {"title": {"UND": "Title"}, "readingProgression": "auto"},
+                "metadata": {"title": {"und": "Title"}, "readingProgression": "auto"},
                 "links": [
                     {"href": "/manifest.json", "rel": ["self"], "templated": false}
                 ],
