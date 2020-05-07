@@ -16,6 +16,7 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.LCPError
+import timber.log.Timber
 import java.io.Serializable
 import java.util.*
 
@@ -31,12 +32,13 @@ internal class DeviceService(private val repository: DeviceRepository, private v
         }
     val name: String
         get() {
-            val deviceName = BluetoothAdapter.getDefaultAdapter()
-            return deviceName?.name?.let  {
-                it
-            }?: run {
-               "Android Unknown"
-            }
+            val bluetoothName =
+                try { BluetoothAdapter.getDefaultAdapter()?.name }
+                catch(e: Exception) {
+                    Timber.e(e)
+                    null
+                }
+            return bluetoothName ?: "Android"
         }
 
     val asQueryParameters: MutableList<Pair<String, Any?>>
