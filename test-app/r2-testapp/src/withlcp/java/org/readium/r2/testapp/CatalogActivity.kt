@@ -35,6 +35,7 @@ import org.readium.r2.lcp.*
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.epub.EpubParser
@@ -325,7 +326,13 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                     prepareToServe(pub, book.fileName!!, file.absolutePath, add = false, lcp = true)
                     server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json")
 
-                    this@CatalogActivity.startActivity(intentFor<EpubActivity>("publicationPath" to publicationPath, "publicationFileName" to book.fileName, "publication" to publication, "bookId" to book.id, "drm" to true))
+                    this@CatalogActivity.startActivity(Intent(this@CatalogActivity, EpubActivity::class.java).apply {
+                        putPublication(publication)
+                        putExtra("publicationPath", publicationPath)
+                        putExtra("publicationFileName", book.fileName)
+                        putExtra("bookId", book.id)
+                        putExtra("drm", true)
+                    })
                 }
             }
         }
