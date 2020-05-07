@@ -12,19 +12,27 @@ package org.readium.r2.shared.fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.InputStream
 import java.io.RandomAccessFile
 import java.lang.ref.WeakReference
 import java.nio.channels.Channels
 import java.util.LinkedList
 
-class FileFetcher(private val paths: Map<String, String>) : Fetcher {
+/**
+ * Provides access to resources on the local file system.
+ *
+ * [paths] contains the reachable local paths, indexed by the exposed HREF. Sub-paths are reachable
+ * as well, to be able to access a whole directory.
+ */
+internal class FileFetcher(private val paths: Map<String, String>) : Fetcher {
 
+    /** Provides access to the given local [path] at [href]. */
     constructor(href: String, path: String) : this(mapOf(href to path))
 
-    private val openResources: MutableList<WeakReference<Resource>> = LinkedList()
+    private val openedResources: MutableList<WeakReference<Resource>> = LinkedList()
 
-    override fun get(link: Link): Resource {
+    override fun get(link: Link, parameters: HrefParameters): Resource {
         for ((href, path) in paths) {
             if (link.href.startsWith(href)) {
                 val resourcePath = File(path, link.href.removePrefix(href)).canonicalPath
@@ -33,10 +41,14 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
                     return try {
                         val file = RandomAccessFile(resourcePath, "r")
                         val resource = FileResource(link, file)
-                        openResources.add(WeakReference(resource))
+                        openedResources.add(WeakReference(resource))
                         return resource
+                    } catch (e: FileNotFoundException) {
+                        FailureResource(link, Resource.Error.NotFound)
+                    } catch (e: SecurityException) {
+                        FailureResource(link, Resource.Error.Forbidden)
                     } catch (e: Exception) {
-                       FailureResource(link, Resource.Error.NotFound)
+                        FailureResource(link, Resource.Error.Other(e))
                     }
                 }
             }
@@ -45,13 +57,13 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
     }
 
     override fun close() {
-        openResources.mapNotNull(WeakReference<Resource>::get).forEach { it.close() }
-        openResources.clear()
+        openedResources.mapNotNull(WeakReference<Resource>::get).forEach { it.close() }
+        openedResources.clear()
     }
 
     private class FileResource(override val link: Link, private val file: RandomAccessFile) : StreamResource() {
 
-        override fun stream(): Try<InputStream, Resource.Error.NotFound> {
+        override fun stream(): Try<InputStream, Resource.Error> {
             val stream = Channels.newInputStream(file.channel).buffered()
             return Try.success(stream)
         }

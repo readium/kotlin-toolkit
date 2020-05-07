@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.util
 
+/** A [Result] type which can be used as a return type. */
 class Try<out Success, out Failure> private constructor(private val _success: Success?, private val _failure: Failure?) {
 
     companion object {
@@ -37,3 +38,9 @@ class Try<out Success, out Failure> private constructor(private val _success: Su
             else -> Try.failure(failure)
         }
 }
+
+fun <R, S, F> Try<S, F>.flatMap(transform: (value: S) -> Try<R, F>): Try<R, F> =
+    when {
+        isSuccess -> transform(success)
+        else -> Try.failure(failure)
+    }
