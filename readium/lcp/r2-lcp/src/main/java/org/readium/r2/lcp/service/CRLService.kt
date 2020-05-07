@@ -35,6 +35,7 @@ internal class CRLService(val network: NetworkService, val context: Context) {
         localCRL?.let {
             if (daysSince(localCRL.second) < expiration) {
                 completion(localCRL.first)
+                return
             }
         }
 
