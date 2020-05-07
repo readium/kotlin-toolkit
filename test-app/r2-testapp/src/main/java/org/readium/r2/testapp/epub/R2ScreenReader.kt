@@ -16,7 +16,6 @@ import android.speech.tts.UtteranceProgressListener
 import android.widget.Toast
 import org.jsoup.Jsoup
 import org.jsoup.select.Elements
-import org.readium.r2.navigator.BASE_URL
 import org.readium.r2.navigator.IR2TTS
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.shared.publication.Publication
@@ -186,10 +185,12 @@ class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigat
     private fun setUtterances(): Boolean {
         //Load resource as sentences
         utterances = mutableListOf()
-        splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
+        val url = Publication.localUrlOf(filename = epubName, port = port, href = items[resourceIndex].href)
+        splitResourceAndAddToUtterances(url)
 
 //        while (++resourceIndex < items.size && utterances.size == 0) {
-//            splitResourceAndAddToUtterances("$BASE_URL:$port/$epubName${items[resourceIndex].href}")
+//            val url = Publication.localUrlOf(filename = epubName, port = port, href = items[resourceIndex].href)
+//            splitResourceAndAddToUtterances(url)
 //        }
 //
 //        if (resourceIndex == items.size)

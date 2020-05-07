@@ -72,7 +72,6 @@ import org.readium.r2.streamer.parser.divina.DiViNaConstant
 import org.readium.r2.streamer.parser.divina.DiViNaParser
 import org.readium.r2.streamer.parser.epub.EPUBConstant
 import org.readium.r2.streamer.parser.epub.EpubParser
-import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
@@ -654,8 +653,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!, pub.metadata.identifier!!)
 
             when (pub.type) {
-                Publication.TYPE.EPUB -> syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName!!, pub.readingOrder))
-                Publication.TYPE.WEBPUB -> syntheticPageList.execute(Triple("", book.fileName!!, pub.readingOrder))
+                Publication.TYPE.EPUB -> syntheticPageList.execute(Triple(localPort, book.fileName!!, pub.readingOrder))
+                Publication.TYPE.WEBPUB -> syntheticPageList.execute(Triple(0, book.fileName!!, pub.readingOrder))
                 else -> {
                     //no page list
                 }

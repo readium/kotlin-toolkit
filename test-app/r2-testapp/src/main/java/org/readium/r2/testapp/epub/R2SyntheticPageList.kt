@@ -15,12 +15,13 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.db.PositionsDatabase
 import java.net.URI
 import java.net.URL
 
 
-class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private val bookID: Long, private val publicationIdentifier: String) : AsyncTask<Triple<String, String, List<Link>>, String, MutableList<Position>>() {
+class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private val bookID: Long, private val publicationIdentifier: String) : AsyncTask<Triple<Int, String, List<Link>>, String, MutableList<Position>>() {
 
     private val syntheticPageList = mutableListOf<Position>()
     private var pageNumber: Long = 0
@@ -29,7 +30,7 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
         positionsDB.positions.init(bookID)
     }
 
-    override fun doInBackground(vararg p0: Triple<String, String, List<Link>>): MutableList<Position> {
+    override fun doInBackground(vararg p0: Triple<Int, String, List<Link>>): MutableList<Position> {
 
         for (uri in p0) {
             for (i in 0 until uri.third.size) {
@@ -49,7 +50,7 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
         positionsDB.positions.storeSyntheticPageList(bookID, jsonPageList)
     }
 
-    private fun createSyntheticPages(baseURL: String, epubName: String, link: Link) {
+    private fun createSyntheticPages(port: Int, epubName: String, link: Link) {
         val resourceURL: URL
 
         val resourceHref = link.href
@@ -58,7 +59,7 @@ class R2SyntheticPageList(private val positionsDB: PositionsDatabase, private va
         resourceURL = if (URI(resourceHref).isAbsolute) {
             URL(resourceHref)
         } else {
-            URL(baseURL + epubName + resourceHref)
+            URL(Publication.localUrlOf(filename = epubName, port = port, href = resourceHref))
         }
 
         val text: String?
