@@ -11,14 +11,27 @@ package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
 
-class RoutingFetcher(val routes: List<Route>) : Fetcher {
+/**
+ * Routes requests to child fetchers, depending on a provided predicate.
+ *
+ * This can be used for example to serve a publication containing both local and remote resources,
+ * and more generally to concatenate different content sources.
+ *
+ * The [routes] will be tested in the given order.
+ */
+internal class RoutingFetcher(private val routes: List<Route>) : Fetcher {
 
-    class Route(val fetcher: Fetcher, val accepts: (Link) -> Boolean)
+    /**
+     * Holds a child fetcher and the predicate used to determine if it can answer a request.
+     *
+     * The default value for [accepts] means that the fetcher will accept any link.
+     */
+    class Route(val fetcher: Fetcher, val accepts: (Link) -> Boolean = { true })
 
     constructor(local: Fetcher, remote: Fetcher)
-            : this(listOf( Route(local, ::hrefIsLocal), Route(remote, { true }) ))
+            : this(listOf( Route(local, Link::isLocal), Route(remote) ))
 
-    override fun get(link: Link): Resource =
+    override fun get(link: Link, parameters: HrefParameters): Resource =
         routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: FailureResource(link, Resource.Error.NotFound)
 
     override fun close() {
@@ -26,4 +39,4 @@ class RoutingFetcher(val routes: List<Route>) : Fetcher {
     }
 }
 
-private fun hrefIsLocal(link: Link) = link.href.startsWith("/")
+private val Link.isLocal: Boolean get() = href.startsWith("/")

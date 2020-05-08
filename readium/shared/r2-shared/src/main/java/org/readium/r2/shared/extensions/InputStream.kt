@@ -43,7 +43,7 @@ internal fun InputStream.copyTo(out: OutputStream, limit: Long, bufferSize: Int 
  * **Note**: It is the caller's responsibility to close this stream.
  */
 internal fun InputStream.read(limit: Long): ByteArray {
-        val buffer = ByteArrayOutputStream(maxOf(DEFAULT_BUFFER_SIZE, this.available(), limit.toInt()))
-        copyTo(buffer, limit)
-        return buffer.toByteArray()
-    }
+    val buffer = ByteArrayOutputStream(maxOf(DEFAULT_BUFFER_SIZE, this.available(), limit.toInt()))
+    copyTo(buffer, limit)
+    return buffer.toByteArray()
+}

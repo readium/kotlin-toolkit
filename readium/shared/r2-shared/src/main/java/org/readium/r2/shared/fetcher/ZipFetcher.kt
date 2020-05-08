@@ -15,9 +15,10 @@ import java.io.InputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-class ZipFetcher private constructor(private val archive: ZipFile) : Fetcher {
+/** Provides access to entries of a ZIP archive. */
+internal class ZipFetcher private constructor(private val archive: ZipFile) : Fetcher {
 
-    override fun get(link: Link): Resource = ZipResource(link, archive)
+    override fun get(link: Link, parameters: HrefParameters): Resource = ZipResource(link, archive)
 
     override fun close() = archive.close()
 
