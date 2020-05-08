@@ -52,7 +52,7 @@ internal interface Resource {
      * back on UTF-8.
      */
     fun readAsString(charset: Charset? = null): Try<String, Error> =
-        read().map {
+        read().tryMap {
             String(it, charset = charset ?: link.mediaType?.charset ?: Charsets.UTF_8)
         }
 
@@ -140,32 +140,23 @@ internal abstract class StreamResource : Resource {
             readRange(range)
 
     private fun readFully(): Try<ByteArray, Resource.Error> =
-        stream().flatMap { stream ->
-            stream.use {
-                try {
-                    Try.success(it.readBytes())
-                } catch (e: Exception) {
-                    Try.failure(Resource.Error.Other(e))
-                }
-            }
+        stream().tryMap { stream ->
+            stream.use { it.readBytes() }
         }
 
     private fun readRange(range: LongRange): Try<ByteArray, Resource.Error> =
-        stream().flatMap { stream ->
+        stream().tryMap { stream ->
             @Suppress("NAME_SHADOWING")
             val range = checkedRange(range)
 
             stream.use {
                 val skipped = it.skip(range.first)
-                if (skipped != range.first) {
-                    return@use Try.success(ByteArray(0))
-                }
                 val length = range.last - range.first + 1
-                return@use try {
-                    Try.success(it.read(length))
-                } catch (e: Exception) {
-                    Try.failure(Resource.Error.Other(e))
+                val bytes = it.read(length)
+                if (skipped != range.first && bytes.isNotEmpty()) {
+                    throw Exception("Unable to skip enough bytes")
                 }
+                return@use bytes
             }
         }
 
@@ -182,3 +173,16 @@ private fun checkedRange(range: LongRange): LongRange =
         throw IllegalArgumentException("Range length greater than Int.MAX_VALUE")
     else
         LongRange(range.first.coerceAtLeast(0), range.last)
+
+/**
+ * Maps the result with the given [transform]
+ *
+ * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Error.Other.
+ */
+internal fun <R, S> Try<S, Resource.Error>.tryMap(transform: (value: S) -> R): Try<R, Resource.Error> =
+    when {
+        isSuccess ->
+            try { Try.success((transform(success))) }
+            catch(e: Exception) { Try.failure(Resource.Error.Other(e)) }
+        else -> Try.failure(failure)
+    }
