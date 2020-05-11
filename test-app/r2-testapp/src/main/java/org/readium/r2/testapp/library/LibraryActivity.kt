@@ -54,6 +54,7 @@ import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.format.Format
+import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
 import org.readium.r2.shared.publication.Publication
@@ -65,7 +66,6 @@ import org.readium.r2.streamer.parser.audio.AudioBookParser
 import org.readium.r2.streamer.parser.cbz.CBZParser
 import org.readium.r2.streamer.parser.divina.DiViNaParser
 import org.readium.r2.streamer.parser.epub.EpubParser
-import org.readium.r2.streamer.server.BASE_URL
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
@@ -634,8 +634,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val syntheticPageList = R2SyntheticPageList(positionsDB, book.id!!, pub.metadata.identifier!!)
 
             when (pub.type) {
-                Publication.TYPE.EPUB -> syntheticPageList.execute(Triple("$BASE_URL:$localPort/", book.fileName!!, pub.readingOrder))
-                Publication.TYPE.WEBPUB -> syntheticPageList.execute(Triple("", book.fileName!!, pub.readingOrder))
+                Publication.TYPE.EPUB -> syntheticPageList.execute(Triple(localPort, book.fileName!!, pub.readingOrder))
+                Publication.TYPE.WEBPUB -> syntheticPageList.execute(Triple(0, book.fileName!!, pub.readingOrder))
                 else -> {
                     //no page list
                 }
@@ -1023,21 +1023,22 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null) {
-
         val intent = Intent(this, when (publication.type) {
             Publication.TYPE.AUDIO -> AudiobookActivity::class.java
             Publication.TYPE.CBZ -> ComicActivity::class.java
             Publication.TYPE.DiViNa -> DiViNaActivity::class.java
             else -> EpubActivity::class.java
         })
-        intent.putExtra("publicationPath", publicationPath)
-        intent.putExtra("publicationFileName", book.fileName)
-        intent.putExtra("publication", publication)
-        intent.putExtra("bookId", book.id)
-        intent.putExtra("cover", coverByteArray)
+
+        intent.apply {
+            putPublication(publication)
+            putExtra("publicationPath", publicationPath)
+            putExtra("publicationFileName", book.fileName)
+            putExtra("bookId", book.id)
+            putExtra("cover", coverByteArray)
+        }
 
         startActivity(intent)
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
