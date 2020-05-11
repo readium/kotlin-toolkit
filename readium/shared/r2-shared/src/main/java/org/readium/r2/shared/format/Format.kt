@@ -12,7 +12,9 @@ package org.readium.r2.shared.format
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.Looper
+import android.provider.MediaStore
 import android.webkit.MimeTypeMap
+import org.readium.r2.shared.extensions.queryProjection
 import timber.log.Timber
 import java.io.File
 
@@ -290,13 +292,17 @@ data class Format(
             val allMediaTypes = mediaTypes.toMutableList()
             val allFileExtensions = fileExtensions.toMutableList()
 
+            MimeTypeMap.getFileExtensionFromUrl(uri.toString()).ifEmpty { null }?.let {
+                allFileExtensions.add(0, it)
+            }
+
             if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
-                contentResolver.getType(uri)?.let {
-                    allMediaTypes.add(0, it)
-                }
-            } else {
-                MimeTypeMap.getFileExtensionFromUrl(uri.toString()).ifEmpty { null }?.let {
-                    allFileExtensions.add(0, it)
+                contentResolver.getType(uri)
+                    ?.takeUnless { MediaType.BINARY.matches(it) }
+                    ?.let { allMediaTypes.add(0, it) }
+
+                contentResolver.queryProjection(uri, MediaStore.MediaColumns.DISPLAY_NAME)?.let { filename ->
+                    allFileExtensions.add(0, File(filename).extension)
                 }
             }
 
