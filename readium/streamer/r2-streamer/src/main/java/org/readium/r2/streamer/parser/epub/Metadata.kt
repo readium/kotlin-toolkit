@@ -81,11 +81,13 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
 
     private fun parseMetaElement(element: ElementNode): MetadataItem? {
         return if (element.getAttr("property") == null) {
-            val name = element.getAttr("name")
+            val name = element.getAttr("name")?.trim()?.ifEmpty { null }
                 ?: return null
-            val content = element.getAttr("content")
+            val content = element.getAttr("content")?.trim()?.ifEmpty { null }
                 ?: return null
-            MetadataItem(name, content, element.lang, null, null, element.id)
+            val resolvedName = resolveProperty(name, prefixMap)
+                ?: return null
+            MetadataItem(resolvedName, content, element.lang, null, null, element.id)
         } else {
             val propName = element.getAttr("property")?.trim()?.ifEmpty { null }
                 ?: return null
@@ -362,9 +364,15 @@ internal class PubMetadataAdapter(
         val rendition = listOf("flow", "spread", "orientation", "layout").map { Vocabularies.RENDITION + it }
         val usedProperties: List<String> = dcterms + media + rendition
 
-        val otherMap: MutableMap<String, Any> = mutableMapOf()
-        val others = items.filterKeys { it !in usedProperties }.values.flatten()
-        others.forEach { otherMap[it.property] = it.toMap() }
+        val otherMap = items
+            .filterKeys { it !in usedProperties }
+            .mapValues {
+                val values = it.value.map(MetadataItem::toMap)
+                when(values.size) {
+                    1 -> values[0]
+                    else -> values
+                }
+            }
         otherMetadata = otherMap + Pair("presentation", presentation.toJSON().toMap())
     }
 }

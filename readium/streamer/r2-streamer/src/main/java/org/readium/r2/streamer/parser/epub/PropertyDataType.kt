@@ -15,7 +15,7 @@ internal val PACKAGE_RESERVED_PREFIXES = mapOf(
     "dcterms" to Vocabularies.DCTERMS,
     "media" to Vocabularies.MEDIA,
     "rendition" to Vocabularies.RENDITION,
-    "ally" to Vocabularies.ALLY,
+    "a11y" to Vocabularies.A11Y,
     "marc" to Vocabularies.MARC,
     "onix" to Vocabularies.ONIX,
     "schema" to Vocabularies.SCHEMA,
@@ -38,17 +38,14 @@ internal enum class DEFAULT_VOCAB(val iri: String) {
 internal fun resolveProperty(
     property: String, prefixMap: Map<String, String>,
     defaultVocab: DEFAULT_VOCAB? = null
-): String? {
+): String {
     val splitted = property.split(":", limit = 2).filterNot(String::isEmpty)
-    return if (splitted.size == 1) {
-        if (defaultVocab == null) Timber.d("Missing prefix in property $property, no default vocabulary available")
-        defaultVocab?.iri?.let { it + splitted[0] }
-    } else if (splitted.size == 2) {
-        val vocab = prefixMap[splitted[0]]
-        if (vocab == null) Timber.d("Prefix ${splitted[0]} has not been declared and is not a reserved prefix either.")
-        prefixMap[splitted[0]]?.let { it + splitted[1] }
-    } else // empty string
-        null
+    return if (splitted.size == 1 && defaultVocab != null) {
+        defaultVocab.iri + splitted[0]
+    } else if (splitted.size == 2 && prefixMap[splitted[0]] != null) {
+        prefixMap[splitted[0]] + splitted[1]
+    } else
+        property
 }
 
 internal fun parsePrefixes(prefixes: String): Map<String, String> =
