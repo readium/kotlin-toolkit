@@ -15,40 +15,35 @@ import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
-import org.readium.r2.lcp.license.container.EPUBLicenseContainer
-import org.readium.r2.lcp.license.container.LCPLLicenseContainer
+import org.readium.r2.lcp.license.container.BytesLicenseContainer
 import org.readium.r2.lcp.license.container.LicenseContainer
+import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.format.Format
 import timber.log.Timber
 
 
-internal class LicensesService(private val licenses: LicensesRepository,
-                      private val crl: CRLService,
-                      private val device: DeviceService,
-                      private val network: NetworkService,
-                      private val passphrases: PassphrasesService,
-                      private val context: Context) : LCPService {
-
+internal class LicensesService(
+    private val licenses: LicensesRepository,
+    private val crl: CRLService,
+    private val device: DeviceService,
+    private val network: NetworkService,
+    private val passphrases: PassphrasesService,
+    private val context: Context
+) : LCPService {
 
     override fun importPublication(lcpl: ByteArray, authentication: LCPAuthenticating?, completion: (LCPImportedPublication?, LCPError?) -> Unit) = runBlocking {
-        val container = LCPLLicenseContainer(byteArray = lcpl)
+        val container = BytesLicenseContainer(lcpl)
         try {
             retrieveLicense(container, authentication) { license ->
-                license?.let {
-                    license.fetchPublication(context).success {
-                        val publication = LCPImportedPublication(localURL = it, suggestedFilename = "${license.license.id}${Publication.EXTENSION.EPUB.value}")
-
-                        // is needed to be able to write the license in it's container
-                        container.publication = publication.localURL
-
-                        container.write(license.license)
-
+                if (license != null) {
+                    license.fetchPublication(context).success { filepath ->
+                        val publication = LCPImportedPublication(localURL = filepath, suggestedFilename = suggestedFilename(filepath, license))
                         completion(publication, null)
                     }.fail {
                         completion(null, LCPError.network(it))
                     }
-                } ?: run {
+                } else {
                     completion(null, null)
                 }
             }
@@ -58,8 +53,8 @@ internal class LicensesService(private val licenses: LicensesRepository,
     }
 
     override fun retrieveLicense(publication: String, authentication: LCPAuthenticating?, completion: (LCPLicense?, LCPError?) -> Unit) = runBlocking {
-        val container = EPUBLicenseContainer(epub = publication)
         try {
+            val container = createLicenseContainer(publication)
             retrieveLicense(container, authentication) { license ->
                 if (DEBUG) Timber.d("license retrieved ${license?.license}")
                 completion(license, null)
@@ -112,6 +107,12 @@ internal class LicensesService(private val licenses: LicensesRepository,
                 completion(null)
             }
         }
+    }
+
+    /** Returns the suggested filename to be used when importing a publication. **/
+    private fun suggestedFilename(filepath: String, license: License): String {
+        val format = Format.of(filepath) ?: Format.EPUB
+        return "${license.license.id}.${format.fileExtension}"
     }
 
 }

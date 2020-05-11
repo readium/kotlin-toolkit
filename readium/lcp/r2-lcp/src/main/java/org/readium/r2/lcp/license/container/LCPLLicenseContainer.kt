@@ -10,6 +10,8 @@ package org.readium.r2.lcp.license.container
 
 import android.net.Uri
 import org.readium.r2.lcp.BuildConfig.DEBUG
+import org.readium.r2.lcp.ContainerError
+import org.readium.r2.lcp.LCPError
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.zeroturnaround.zip.ZipUtil
 import timber.log.Timber
@@ -17,33 +19,22 @@ import java.io.File
 import java.net.URL
 
 /**
- * Access a License Document stored in an LCPDF archive.
+ * Access a License Document stored in an LCP License Document file (LCPL).
  */
-internal class LCPLLicenseContainer(private val lcpl: String? = null, private val byteArray: ByteArray? = null) : LicenseContainer {
-
-    var publication: String? = null
+internal class LCPLLicenseContainer(private val lcpl: String) : LicenseContainer {
 
     override fun read() : ByteArray =
-        if (lcpl != null) {
-            URL(Uri.parse(lcpl).toString()).openStream().readBytes()
-        } else {
-            byteArray ?: ByteArray(0)
+        try {
+            File(lcpl).readBytes()
+        } catch (e: Exception) {
+            throw LCPError.licenseContainer(ContainerError.openFailed)
         }
 
     override fun write(license: LicenseDocument) {
-        publication?.let {
-            val pathInZip = "META-INF/license.lcpl"
-            if (DEBUG) Timber.i("LCP moveLicense")
-            val source = File(publication)
-            val tmpZip = File("$publication.tmp")
-            tmpZip.delete()
-            source.copyTo(tmpZip)
-            source.delete()
-            if (ZipUtil.containsEntry(tmpZip, pathInZip)) {
-                ZipUtil.removeEntry(tmpZip, pathInZip)
-            }
-            ZipUtil.addEntry(tmpZip, pathInZip, license.data, source)
-            tmpZip.delete()
+        try {
+            File(lcpl).writeBytes(license.data)
+        } catch (e: Exception) {
+            throw LCPError.licenseContainer(ContainerError.writeFailed(lcpl))
         }
     }
 
