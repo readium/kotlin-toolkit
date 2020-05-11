@@ -141,7 +141,7 @@ class MetadataTest {
     @Test fun `get minimal JSON`() {
         assertJSONEquals(
             JSONObject("""{
-                "title": {"UND": "Title"},
+                "title": {"und": "Title"},
                 "readingProgression": "auto"
             }"""),
             Metadata(localizedTitle = LocalizedString("Title")).toJSON()
@@ -160,29 +160,29 @@ class MetadataTest {
                 "language": ["en", "fr"],
                 "sortAs": {"en": "sort key", "fr": "clé de tri"},
                 "subject": [
-                    {"name": {"UND": "Science Fiction"}},
-                    {"name": {"UND": "Fantasy"}}
+                    {"name": {"und": "Science Fiction"}},
+                    {"name": {"und": "Fantasy"}}
                 ],
-                "author": [{"name": {"UND": "Author"}}],
-                "translator": [{"name": {"UND": "Translator"}}],
-                "editor": [{"name": {"UND": "Editor"}}],
-                "artist": [{"name": {"UND": "Artist"}}],
-                "illustrator": [{"name": {"UND": "Illustrator"}}],
-                "letterer": [{"name": {"UND": "Letterer"}}],
-                "penciler": [{"name": {"UND": "Penciler"}}],
-                "colorist": [{"name": {"UND": "Colorist"}}],
-                "inker": [{"name": {"UND": "Inker"}}],
-                "narrator": [{"name": {"UND": "Narrator"}}],
-                "contributor": [{"name": {"UND": "Contributor"}}],
-                "publisher": [{"name": {"UND": "Publisher"}}],
-                "imprint": [{"name": {"UND": "Imprint"}}],
+                "author": [{"name": {"und": "Author"}}],
+                "translator": [{"name": {"und": "Translator"}}],
+                "editor": [{"name": {"und": "Editor"}}],
+                "artist": [{"name": {"und": "Artist"}}],
+                "illustrator": [{"name": {"und": "Illustrator"}}],
+                "letterer": [{"name": {"und": "Letterer"}}],
+                "penciler": [{"name": {"und": "Penciler"}}],
+                "colorist": [{"name": {"und": "Colorist"}}],
+                "inker": [{"name": {"und": "Inker"}}],
+                "narrator": [{"name": {"und": "Narrator"}}],
+                "contributor": [{"name": {"und": "Contributor"}}],
+                "publisher": [{"name": {"und": "Publisher"}}],
+                "imprint": [{"name": {"und": "Imprint"}}],
                 "readingProgression": "rtl",
                 "description": "Description",
                 "duration": 4.24,
                 "numberOfPages": 240,
                 "belongsTo": {
-                    "collection": [{"name": {"UND": "Collection"}}],
-                    "series": [{"name": {"UND": "Series"}}]
+                    "collection": [{"name": {"und": "Collection"}}],
+                    "series": [{"name": {"und": "Series"}}]
                 },
                 "other-metadata1": "value",
                 "other-metadata2": [42]
