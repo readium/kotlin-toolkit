@@ -325,3 +325,22 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
 
 internal class ContentFiltersCbz : ContentFilters
 
+/** Content filter for LCP protected packages (except EPUB). */
+internal class ContentFiltersLcp : ContentFilters {
+
+    override fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
+        val resourceLink = publication.linkWithHref(path)
+            ?: return input
+
+        return DrmDecoder().decoding(input, resourceLink, container.drm)
+    }
+
+    override fun apply(input: ByteArray, publication: Publication, container: Container, path: String): ByteArray {
+        val resourceLink = publication.linkWithHref(path)
+            ?: return input
+
+        val inputStream = input.inputStream()
+        return DrmDecoder().decoding(inputStream, resourceLink, container.drm).readBytes()
+    }
+
+}

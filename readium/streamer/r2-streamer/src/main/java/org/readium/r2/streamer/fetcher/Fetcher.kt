@@ -56,6 +56,7 @@ class Fetcher(var publication: Publication, var container: Container, private va
         return when (mediaType) {
             MediaType.EPUB -> ContentFiltersEpub(userPropertiesPath, customResources)
             MediaType.CBZ -> ContentFiltersCbz()
+            MediaType.LCP_PROTECTED_AUDIOBOOK, MediaType.LCP_PROTECTED_PDF -> ContentFiltersLcp()
             else -> null
         }
     }
