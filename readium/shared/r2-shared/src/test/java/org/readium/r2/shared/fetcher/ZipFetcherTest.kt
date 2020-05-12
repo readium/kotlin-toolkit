@@ -28,7 +28,7 @@ class ZipFetcherTest {
     }
 
     @Test
-    fun `Reading a missing entry returns NotFound`() {
+    fun `Computing length for a missing entry returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
         val result = resource.length
         assert(result.isFailure)
@@ -36,7 +36,7 @@ class ZipFetcherTest {
     }
 
     @Test
-    fun `Computing length for a missing entry returns NotFound`() {
+    fun `Reading a missing entry returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
         val result = resource.read()
         assert(result.isFailure)
@@ -70,7 +70,7 @@ class ZipFetcherTest {
     }
 
     @Test
-    fun `Descreasing ranges are understood as empty ones`() {
+    fun `Decreasing ranges are understood as empty ones`() {
         val resource = fetcher.get(Link(href = "/mimetype"))
         val result = resource.read(60..20L)
         assert(result.isSuccess)

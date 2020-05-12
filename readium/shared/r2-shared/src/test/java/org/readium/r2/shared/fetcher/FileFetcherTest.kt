@@ -29,7 +29,7 @@ class FileFetcherTest {
     }
 
     @Test
-    fun `Reading a missing file returns NotFound`() {
+    fun `Computing length for a missing file returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
         val result = resource.length
         assert(result.isFailure)
@@ -37,7 +37,7 @@ class FileFetcherTest {
     }
 
     @Test
-    fun `Computing length for a missing file returns NotFound`() {
+    fun `Reading a missing file returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
         val result = resource.read()
         assert(result.isFailure)
@@ -95,7 +95,7 @@ class FileFetcherTest {
     }
 
     @Test
-    fun `Descreasing ranges are understood as empty ones`() {
+    fun `Decreasing ranges are understood as empty ones`() {
         val resource = fetcher.get(Link(href = "/file_href"))
         val result = resource.read(60..20L)
         assert(result.isSuccess)
