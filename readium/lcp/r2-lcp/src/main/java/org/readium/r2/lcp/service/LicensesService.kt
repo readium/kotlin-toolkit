@@ -37,8 +37,7 @@ internal class LicensesService(
         try {
             retrieveLicense(container, authentication) { license ->
                 if (license != null) {
-                    license.fetchPublication(context).success { filepath ->
-                        val publication = LCPImportedPublication(localURL = filepath, suggestedFilename = suggestedFilename(filepath, license))
+                    license.fetchPublication(context).success { publication ->
                         completion(publication, null)
                     }.fail {
                         completion(null, LCPError.network(it))
@@ -107,12 +106,6 @@ internal class LicensesService(
                 completion(null)
             }
         }
-    }
-
-    /** Returns the suggested filename to be used when importing a publication. **/
-    private fun suggestedFilename(filepath: String, license: License): String {
-        val format = Format.of(filepath) ?: Format.EPUB
-        return "${license.license.id}.${format.fileExtension}"
     }
 
 }

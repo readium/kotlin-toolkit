@@ -214,7 +214,7 @@ internal class License(
         }
     }
 
-    internal fun fetchPublication(context: Context, parameters: List<Pair<String, Any?>>? = null): Promise<String, Exception> {
+    internal fun fetchPublication(context: Context, parameters: List<Pair<String, Any?>>? = null): Promise<LCPImportedPublication, Exception> {
         val license = this.documents.license
         val link = license.link(LicenseDocument.Rel.publication)
         val url = link?.url
@@ -247,7 +247,10 @@ internal class License(
             val container = createLicenseContainer(filepath, format)
             container.write(license)
 
-            filepath
+            LCPImportedPublication(
+                localURL = filepath,
+                suggestedFilename = "${license.id}.${format.fileExtension}"
+            )
         }
     }
 
