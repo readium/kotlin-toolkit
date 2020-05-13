@@ -62,11 +62,18 @@ dependencies {
     implementation 'org.zeroturnaround:zt-zip:1.13'
 
     implementation 'org.jsoup:jsoup:1.10.3'
+    implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+
+    // Lifecycle
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.2.0"
 
     // ChrisBane/PhotoView ( for the Zoom handling )
     implementation 'com.github.chrisbanes:PhotoView:2.1.4'

@@ -29,6 +29,9 @@
         <activity
             android:name=".divina.R2DiViNaActivity"
             android:theme="@style/AppTheme" />
+        <activity
+            android:name=".pdf.R2PdfActivity"
+            android:theme="@style/AppTheme" />
 
     </application>
 
