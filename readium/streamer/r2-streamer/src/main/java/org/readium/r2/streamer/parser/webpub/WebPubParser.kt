@@ -31,40 +31,40 @@ class WebPubParser : PublicationParser {
         val file = File(fileAtPath)
         val format = Format.of(file) ?: return null
 
-        if (format.mediaType.isRwpm) {
-            return parseManifest(file, format)
+        return if (format.mediaType.isRwpm) {
+            parseManifest(file, format)
         } else {
-            return parsePackage(file, format)
+            parsePackage(file, format)
         }
     }
 
     private fun parseManifest(file: File, format: Format): PubBox? {
-        try {
+        return try {
             val container = EmptyContainer(file.path, mimetype = format.mediaType.toString())
             val manifestJson = file.readText()
-            return parsePublication(manifestJson, container, format, isPackage = false)
+            parsePublication(manifestJson, container, format, isPackage = false)
                 ?.let { PubBox(it, container) }
 
         } catch(e: Exception) {
             Timber.e(e, "Failed to parse RWPM")
-            return null
+            null
         }
     }
 
     private fun parsePackage(file: File, format: Format): PubBox? {
-        try {
+        return try {
             val manifestPath = "manifest.json"
             val container = ArchiveContainer(file.path, mimetype = format.mediaType.toString()).apply {
                 rootFile.rootFilePath = manifestPath
             }
             val manifestJson = String(container.data(manifestPath))
 
-            return parsePublication(manifestJson, container, format, isPackage = true)
+            parsePublication(manifestJson, container, format, isPackage = true)
                 ?.let { PubBox(it, container) }
 
         } catch (e: Exception) {
             Timber.e(e, "Failed to parse Readium WebPub package")
-            return null
+            null
         }
     }
 
