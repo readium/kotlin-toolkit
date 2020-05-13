@@ -32,9 +32,7 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.longSnackbar
 import org.readium.r2.lcp.*
-import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.drm.DRM
-import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.testapp.BuildConfig.DEBUG
@@ -42,7 +40,6 @@ import org.readium.r2.testapp.db.Book
 import org.readium.r2.testapp.drm.DRMFulfilledPublication
 import org.readium.r2.testapp.drm.DRMLibraryService
 import org.readium.r2.testapp.drm.LCPLibraryActivityService
-import org.readium.r2.testapp.epub.EpubActivity
 import org.readium.r2.testapp.library.LibraryActivity
 import org.readium.r2.testapp.utils.extensions.parse
 import timber.log.Timber
@@ -322,17 +319,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                     catalogView.longSnackbar("${(it as LCPError).errorDescription}")
 
                 } else {
-
-                    prepareToServe(pub, book.fileName!!, file.absolutePath, add = false, lcp = true)
-                    server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json")
-
-                    this@CatalogActivity.startActivity(Intent(this@CatalogActivity, EpubActivity::class.java).apply {
-                        putPublication(publication)
-                        putExtra("publicationPath", publicationPath)
-                        putExtra("publicationFileName", book.fileName)
-                        putExtra("bookId", book.id)
-                        putExtra("drm", true)
-                    })
+                    prepareAndStartActivity(pub, book, file, publicationPath, publication)
                 }
             }
         }
