@@ -11,12 +11,12 @@ package org.readium.r2.navigator
 
 import android.content.SharedPreferences
 import android.view.View
+import androidx.lifecycle.LiveData
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
-import java.net.URL
 
 interface IR2Activity {
 
@@ -51,59 +51,25 @@ interface IR2TTS {
 
 
 interface Navigator {
-    val currentLocation: Locator?
-    fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean
-    fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean
-    fun goForward(animated: Boolean, completion: () -> Unit): Boolean
-    fun goBackward(animated: Boolean, completion: () -> Unit): Boolean
 
+    val currentLocator: LiveData<Locator?>
+
+    fun go(locator: Locator, animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    fun go(link: Link, animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+
+    @Deprecated("Use [currentLocator] instead", ReplaceWith("currentLocator.value"))
+    val currentLocation: Locator? get() = currentLocator.value
 }
-
-fun Navigator.go(locator: Locator, animated: Boolean = false, completion: () -> Unit = {}): Boolean =
-        go(locator = locator, animated = animated, completion = completion)
-
-fun Navigator.go(link: Link, animated: Boolean = false, completion: () -> Unit = {}): Boolean =
-        go(link = link, animated = animated, completion = completion)
-
-fun Navigator.goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean =
-        goForward(animated = animated, completion = completion)
-
-fun Navigator.goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean =
-        goBackward(animated = animated, completion = completion)
-
 
 interface NavigatorDelegate {
+    @Deprecated("Observe [currentLocator] instead")
     fun locationDidChange(navigator: Navigator? = null, locator: Locator)
-
-    // present error message
-    fun presentError(navigator: Navigator? = null, error: NavigatorError) {}
-
-    // present external url
-    fun presentExternalURL(navigator: Navigator? = null, url: URL) {}
-}
-
-
-//public fun NavigatorDelegate.navigator(navigator: Navigator, url: URL) {
-//    if (UIApplication.shared.canOpenURL(url)) {
-//        UIApplication.shared.openURL(url)
-//    }
-//}
-
-
-sealed class NavigatorError : Exception() {
-    object copyForbidden : NavigatorError()
-
-    val errorDescription: String?
-        get() {
-            return when (this) {
-                is copyForbidden -> "NavigatorError.copyForbidden"
-            }
-        }
 }
 
 
 interface VisualNavigator : Navigator {
-    //    val view: UIView
     val readingProgression: ReadingProgression
 
     fun goLeft(animated: Boolean, completion: () -> Unit): Boolean
@@ -130,12 +96,3 @@ fun VisualNavigator.goRight(animated: Boolean = false, completion: () -> Unit = 
             goBackward(animated = animated, completion = completion)
     }
 }
-
-
-//public interface VisualNavigatorDelegate: NavigatorDelegate {
-//    fun navigator(navigator: VisualNavigator, point: CGPoint)
-//}
-
-//public fun VisualNavigatorDelegate.navigator(navigator: VisualNavigator, point: CGPoint) {}
-
-

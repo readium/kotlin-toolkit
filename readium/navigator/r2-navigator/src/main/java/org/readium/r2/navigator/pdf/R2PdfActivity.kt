@@ -16,7 +16,6 @@ import org.readium.r2.navigator.R
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Publication
 
-
 class R2PdfActivity : AppCompatActivity() {
 
     private lateinit var publication: Publication

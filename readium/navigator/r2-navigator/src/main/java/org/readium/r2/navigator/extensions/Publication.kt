@@ -10,17 +10,16 @@
 package org.readium.r2.navigator.extensions
 
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import java.net.URL
 
-/** Computes an absolute URL to the given [link]. */
-internal fun Publication.urlTo(link: Link): URL? {
+/** Computes an absolute URL to the given HREF. */
+internal fun Publication.urlToHref(href: String): URL? {
     val baseUrl = this.baseUrl?.toString()?.removeSuffix("/")
-    val urlString = if (baseUrl != null && link.href.startsWith("/")) {
-        "$baseUrl${link.href}"
+    val urlString = if (baseUrl != null && href.startsWith("/")) {
+        "$baseUrl${href}"
     } else {
-        link.href
+        href
     }
     return tryOrNull { URL(urlString) }
 }
