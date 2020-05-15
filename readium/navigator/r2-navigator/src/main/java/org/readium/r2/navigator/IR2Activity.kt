@@ -10,6 +10,7 @@
 package org.readium.r2.navigator
 
 import android.content.SharedPreferences
+import android.graphics.PointF
 import android.view.View
 import androidx.lifecycle.LiveData
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -61,6 +62,13 @@ interface Navigator {
 
     @Deprecated("Use [currentLocator] instead", ReplaceWith("currentLocator.value"))
     val currentLocation: Locator? get() = currentLocator.value
+
+    interface Listener {
+    }
+
+    interface VisualListener : Listener {
+        fun onTap(point: PointF): Boolean = false
+    }
 }
 
 interface NavigatorDelegate {
