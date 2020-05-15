@@ -39,6 +39,11 @@ class PdfNavigatorFragment(
     private val listener: Navigator.Listener? = null
 ) : Fragment(), Navigator {
 
+    interface Listener: Navigator.Listener {
+        /** Called when configuring [PDFView]. */
+        fun onConfigurePdfView(configurator: PDFView.Configurator) {}
+    }
+
     lateinit var pdfView: PDFView
 
     private var currentHref: String? = null
@@ -47,13 +52,19 @@ class PdfNavigatorFragment(
         val context = requireContext()
         pdfView = PDFView(context, null)
 
-        if (initialLocator != null) {
-            go(initialLocator)
+        val locator: Locator? = savedInstanceState?.getParcelable(KEY_LOCATOR) ?: initialLocator
+        if (locator != null) {
+            go(locator)
         } else {
             go(publication.readingOrder.first())
         }
 
         return pdfView
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(KEY_LOCATOR, currentLocator.value)
     }
 
     private fun goToHref(href: String, page: Int, animated: Boolean = false, completion: () -> Unit = {}): Boolean {
@@ -64,16 +75,19 @@ class PdfNavigatorFragment(
             completion()
 
         } else {
-            val listener = this
             lifecycleScope.launch {
                 try {
                     // Android forbids network requests on the main thread by default, so we have to
                     // do that in the IO dispatcher.
                     withContext(Dispatchers.IO) {
                         pdfView.fromStream(url.openStream())
-                            .defaultPage(page)
                             .spacing(10)
                             .pageFitPolicy(FitPolicy.WIDTH)
+                            // Customization of [PDFView] is done before setting the listeners,
+                            // to avoid overriding them in reading apps, which would break the
+                            // navigator.
+                            .also { (listener as? Listener)?.onConfigurePdfView(it) }
+                            .defaultPage(page)
                             .onRender { _ -> completion() }
                             .onPageChange { page, pageCount -> onPageChanged(page, pageCount) }
                             .onTap { event -> onTap(event) }
@@ -97,8 +111,10 @@ class PdfNavigatorFragment(
     override val currentLocator: LiveData<Locator?> get() = _currentLocator
     private val _currentLocator = MutableLiveData<Locator?>(null)
 
-    override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean =
-        goToHref(locator.href, locator.locations.page ?: 0, animated, completion)
+    override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        val page = ((locator.locations.page ?: 1) - 1).coerceAtLeast(0)
+        return goToHref (locator.href, page, animated, completion)
+    }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean =
         goToHref(link.href, 0, animated, completion)
@@ -123,7 +139,7 @@ class PdfNavigatorFragment(
         return true
     }
 
-    // PdfView Listeners
+    // [PDFView] Listeners
     private fun onPageChanged(page: Int, pageCount: Int) {
         val href = currentHref ?: return
         val link = publication.linkWithHref(href)
@@ -146,6 +162,10 @@ class PdfNavigatorFragment(
         e ?: return false
         val listener = (listener as? Navigator.VisualListener) ?: return false
         return listener.onTap(PointF(e.x, e.y))
+    }
+
+    companion object {
+        private const val KEY_LOCATOR = "locator"
     }
 
 }
