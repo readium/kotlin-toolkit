@@ -75,6 +75,14 @@ class FileFetcherTest {
         assert(result.isFailure)
         assertEquals(Resource.Error.NotFound, result.failure)
     }
+    
+    @Test
+    fun `Reading a file outside the allowed directory returns NotFound`() {
+        val resource = fetcher.get(Link(href = "/dir_href/../text.txt"))
+        val result = resource.read()
+        assert(result.isFailure)
+        assertEquals(Resource.Error.NotFound, result.failure)
+    }
 
     @Test
     fun `Reading a range works well`() {
