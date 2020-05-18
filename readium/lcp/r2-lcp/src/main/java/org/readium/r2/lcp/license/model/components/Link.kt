@@ -13,6 +13,7 @@ package org.readium.r2.lcp.license.model.components
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.lcp.ParsingError
+import org.readium.r2.lcp.service.URLParameters
 import java.net.URL
 
 data class Link(val json: JSONObject) {
@@ -55,7 +56,7 @@ data class Link(val json: JSONObject) {
 
 
 //TODO: needs some more work here
-    fun url(parameters:  List<Pair<String, Any?>>) : URL? {
+    fun url(parameters:  URLParameters) : URL? {
         if (!templated) {
             return URL(href)
         }
@@ -76,6 +77,6 @@ data class Link(val json: JSONObject) {
     }
 
     val url: URL?
-        get() = url(parameters = listOf())
+        get() = url(parameters = emptyMap())
 
 }

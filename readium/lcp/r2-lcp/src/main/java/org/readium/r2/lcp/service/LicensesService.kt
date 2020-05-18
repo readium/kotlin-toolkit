@@ -10,7 +10,9 @@
 package org.readium.r2.lcp.service
 
 import android.content.Context
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.License
@@ -19,7 +21,6 @@ import org.readium.r2.lcp.license.container.BytesLicenseContainer
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.shared.format.Format
 import timber.log.Timber
 
 
@@ -30,17 +31,19 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context
-) : LCPService {
+) : LCPService, CoroutineScope by MainScope() {
 
-    override fun importPublication(lcpl: ByteArray, authentication: LCPAuthenticating?, completion: (LCPImportedPublication?, LCPError?) -> Unit) = runBlocking {
+    override fun importPublication(lcpl: ByteArray, authentication: LCPAuthenticating?, completion: (LCPImportedPublication?, LCPError?) -> Unit) {
         val container = BytesLicenseContainer(lcpl)
         try {
             retrieveLicense(container, authentication) { license ->
                 if (license != null) {
-                    license.fetchPublication(context).success { publication ->
-                        completion(publication, null)
-                    }.fail {
-                        completion(null, LCPError.network(it))
+                    launch {
+                        try {
+                            completion(license.fetchPublication(context), null)
+                        } catch (e: Exception) {
+                            completion(null, LCPError.wrap(e))
+                        }
                     }
                 } else {
                     completion(null, null)
@@ -51,7 +54,7 @@ internal class LicensesService(
         }
     }
 
-    override fun retrieveLicense(publication: String, authentication: LCPAuthenticating?, completion: (LCPLicense?, LCPError?) -> Unit) = runBlocking {
+    override fun retrieveLicense(publication: String, authentication: LCPAuthenticating?, completion: (LCPLicense?, LCPError?) -> Unit) {
         try {
             val container = createLicenseContainer(publication)
             retrieveLicense(container, authentication) { license ->

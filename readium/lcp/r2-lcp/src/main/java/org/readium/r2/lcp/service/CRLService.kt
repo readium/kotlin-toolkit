@@ -57,7 +57,7 @@ internal class CRLService(val network: NetworkService, val context: Context) {
     private fun fetch(completion: (String?) -> Unit) = runBlocking {
 
         val url = "http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl"
-        network.fetch(url, NetworkService.Method.get) { status, data ->
+        network.fetch(url, NetworkService.Method.GET) { status, data ->
 
             if (DEBUG) Timber.d("Status $status")
             if (status != 200) {

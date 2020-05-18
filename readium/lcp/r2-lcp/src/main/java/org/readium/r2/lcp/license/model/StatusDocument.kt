@@ -11,11 +11,12 @@ package org.readium.r2.lcp.license.model
 
 import org.joda.time.DateTime
 import org.json.JSONObject
+import org.readium.r2.lcp.ParsingError
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.license.model.components.Links
 import org.readium.r2.lcp.license.model.components.lsd.Event
 import org.readium.r2.lcp.license.model.components.lsd.PotentialRights
-import org.readium.r2.lcp.ParsingError
+import org.readium.r2.lcp.service.URLParameters
 import java.net.URL
 import java.nio.charset.Charset
 
@@ -93,7 +94,7 @@ data class StatusDocument(val data: ByteArray) {
     fun links(rel: Rel): List<Link> =
             links[rel.rawValue]
 
-    fun url(rel: Rel, parameters:  List<Pair<String, Any?>> = listOf()): URL {
+    fun url(rel: Rel, parameters:  URLParameters = emptyMap()): URL {
         return link(rel)?.url(parameters) ?: throw ParsingError.url(rel = rel.rawValue)
     }
 
