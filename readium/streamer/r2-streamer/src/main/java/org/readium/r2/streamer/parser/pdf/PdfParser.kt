@@ -11,10 +11,8 @@ package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
 import android.graphics.Bitmap
-import com.shockwave.pdfium.PdfDocument
-import com.shockwave.pdfium.PdfiumCore
-import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.pdf.toLinks
 import org.readium.r2.shared.publication.*
 import org.readium.r2.streamer.container.FileContainer
 import org.readium.r2.streamer.parser.PubBox
@@ -26,9 +24,7 @@ import java.io.File
 /**
  * Parses a PDF file into a Readium [Publication].
  */
-class PdfParser(context: Context) : PublicationParser {
-
-    private val core = PdfiumCore(context.applicationContext)
+class PdfParser(private val context: Context) : PublicationParser {
 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? =
         try {
@@ -39,13 +35,10 @@ class PdfParser(context: Context) : PublicationParser {
             container.rootFile.rootFilePath = rootHref
             container.files[rootHref] = FileContainer.File.Path(fileAtPath)
 
-            val document = core.newDocument(File(fileAtPath).readBytes())
-            val meta = core.getDocumentMeta(document)
-            val pageCount = core.getPageCount(document)
-
+            val document = PdfiumDocument.fromBytes(File(fileAtPath).readBytes(), context)
             val links = mutableListOf<Link>()
 
-            core.renderCover(document)?.let { cover ->
+            document.cover?.let { cover ->
                 val stream = ByteArrayOutputStream()
                 if (cover.compress(Bitmap.CompressFormat.PNG, 100, stream)) {
                     val coverHref = "/cover.png"
@@ -56,14 +49,14 @@ class PdfParser(context: Context) : PublicationParser {
 
             val publication = Publication(
                 metadata = Metadata(
-                    // FIXME: Extract the identifier from the file, it's not exposed by PdfiumCore
-                    identifier = file.md5() ?: file.name,
-                    localizedTitle = LocalizedString(meta.title?.ifEmpty { null } ?: file.toTitle()),
-                    authors = listOfNotNull(meta.author).map { Contributor(name = it) },
-                    numberOfPages = pageCount
+                    identifier = document.identifier ?: file.name,
+                    localizedTitle = LocalizedString(document.title?.ifEmpty { null } ?: file.toTitle()),
+                    authors = listOfNotNull(document.author).map { Contributor(name = it) },
+                    numberOfPages = document.pageCount
                 ),
                 readingOrder = listOf(Link(href = rootHref, type = MediaType.PDF.toString())),
-                links = links
+                links = links,
+                tableOfContents = document.outline.toLinks(rootHref)
             )
 
             PubBox(publication, container)
@@ -72,23 +65,6 @@ class PdfParser(context: Context) : PublicationParser {
             Timber.e(e)
             null
         }
-
-    private fun PdfiumCore.renderCover(document: PdfDocument): Bitmap? {
-        try {
-            val pointer = openPage(document, 0)
-            if (pointer <= 0) return null
-
-            val width = getPageWidth(document, 0)
-            val height = getPageHeight(document, 0)
-            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            renderPageBitmap(document, bitmap, 0, 0, 0, width, height, false)
-            return bitmap
-
-        } catch (e: Exception) {
-            Timber.e(e)
-            return null
-        }
-    }
 
     private fun File.toTitle(): String =
         nameWithoutExtension.replace("_", " ")
