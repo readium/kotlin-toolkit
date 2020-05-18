@@ -36,7 +36,12 @@ internal class FormatSnifferFileContent(val file: File) : FormatSnifferContent {
 
     override fun read(): ByteArray? =
         try {
-            file.readBytes()
+            // We only read files smaller than 100KB to avoid an [OutOfMemoryError].
+            if (file.length() > 100000) {
+                null
+            } else {
+                file.readBytes()
+            }
         } catch (e: Exception) {
             Timber.e(e)
             null

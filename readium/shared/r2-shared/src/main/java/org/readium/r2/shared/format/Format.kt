@@ -14,6 +14,7 @@ import android.net.Uri
 import android.os.Looper
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
+import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.extensions.queryProjection
 import timber.log.Timber
 import java.io.File
@@ -225,8 +226,12 @@ data class Format(
          * Resolves a format from a single file extension and media type hint, without checking the actual
          * content.
          */
-        fun of(mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? =
-            of(content = null, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
+        fun of(mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            if (DEBUG && mediaType?.startsWith("/") == true) {
+                throw IllegalArgumentException("The provided media type is incorrect: $mediaType. To pass a file path, you must wrap it in a File().")
+            }
+            return of(content = null, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
+        }
 
         /**
          * Resolves a format from file extension and media type hints, without checking the actual
