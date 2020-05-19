@@ -9,9 +9,11 @@
 
 package org.readium.r2.streamer.parser.webpub
 
+import android.content.Context
 import org.json.JSONObject
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.format.Format
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.normalize
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.container.ArchiveContainer
@@ -25,17 +27,30 @@ import java.io.File
 /**
  * Parses any Readium Web Publication package or manifest, e.g. WebPub, Audiobook, DiViNa, LCPDF...
  */
-class WebPubParser : PublicationParser {
+class WebPubParser(private val context: Context) : PublicationParser {
 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val file = File(fileAtPath)
         val format = Format.of(file) ?: return null
 
-        return if (format.mediaType.isRwpm) {
+        val pubBox = if (format.mediaType.isRwpm) {
             parseManifest(file, format)
         } else {
             parsePackage(file, format)
         }
+
+        if (pubBox != null) {
+            val readingOrder = pubBox.publication.readingOrder
+
+            // Checks the requirements from the LCPDF specification.
+            // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
+            if (format == Format.LCP_PROTECTED_PDF && (readingOrder.isEmpty() || !readingOrder.all { it.mediaType?.matches(MediaType.PDF) == true })) {
+                Timber.e("Invalid LCP Protected PDF")
+                return null
+            }
+        }
+
+        return pubBox
     }
 
     private fun parseManifest(file: File, format: Format): PubBox? {
@@ -75,9 +90,21 @@ class WebPubParser : PublicationParser {
                 container.drm = DRM(DRM.Brand.lcp)
             }
 
-            Publication
+            var publication = Publication
                 .fromJSON(JSONObject(manifestJson)) { normalize(base = "/", href = it) }
                 ?.apply { type = format.toPublicationType() }
+
+            if (format == Format.LCP_PROTECTED_PDF) {
+                publication = publication?.copyWithPositionsFactory {
+                    LcpdfPositionListFactory(
+                        context = this@WebPubParser.context.applicationContext,
+                        container = container,
+                        readingOrder = readingOrder
+                    )
+                }
+            }
+
+            publication
 
         } catch (e: Exception) {
             Timber.e(e, "Failed to parse RWPM")

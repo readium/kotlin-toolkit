@@ -47,6 +47,7 @@ class PdfParser(private val context: Context) : PublicationParser {
                 }
             }
 
+            val tableOfContents = document.outline.toLinks(rootHref)
             val publication = Publication(
                 metadata = Metadata(
                     identifier = document.identifier ?: file.name,
@@ -56,7 +57,12 @@ class PdfParser(private val context: Context) : PublicationParser {
                 ),
                 readingOrder = listOf(Link(href = rootHref, type = MediaType.PDF.toString())),
                 links = links,
-                tableOfContents = document.outline.toLinks(rootHref)
+                tableOfContents = tableOfContents,
+                positionsFactory = PdfPositionListFactory(
+                    documentHref = rootHref,
+                    pageCount = document.pageCount,
+                    tableOfContents = tableOfContents
+                )
             )
 
             PubBox(publication, container)
