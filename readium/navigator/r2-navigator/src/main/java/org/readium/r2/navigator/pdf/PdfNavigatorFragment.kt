@@ -20,14 +20,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
-import com.github.barteksc.pdfviewer.util.FitPolicy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.extensions.urlToHref
-import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -82,14 +80,16 @@ class PdfNavigatorFragment(
                     withContext(Dispatchers.IO) {
                         pdfView.fromStream(url.openStream())
                             .spacing(10)
-                            .pageFitPolicy(FitPolicy.WIDTH)
                             // Customization of [PDFView] is done before setting the listeners,
                             // to avoid overriding them in reading apps, which would break the
                             // navigator.
                             .also { (listener as? Listener)?.onConfigurePdfView(it) }
                             .defaultPage(page)
-                            .onRender { _ -> completion() }
-                            .onPageChange { page, pageCount -> onPageChanged(page, pageCount) }
+                            .onRender { _, _, _ ->
+                                pdfView.fitToWidth()
+                                completion()
+                            }
+                            .onPageChange { page, _ -> onPageChanged(page) }
                             .onTap { event -> onTap(event) }
                             .load()
                     }
@@ -140,22 +140,10 @@ class PdfNavigatorFragment(
     }
 
     // [PDFView] Listeners
-    private fun onPageChanged(page: Int, pageCount: Int) {
+
+    private fun onPageChanged(page: Int) {
         val href = currentHref ?: return
-        val link = publication.linkWithHref(href)
-        val progression = if (pageCount > 0) page / pageCount.toDouble() else 0.0
-        // FIXME: proper position and totalProgression
-        _currentLocator.value = Locator(
-            href = href,
-            type = link?.type ?: MediaType.PDF.toString(),
-            title = link?.title,
-            locations = Locator.Locations(
-                fragments = listOf("page=${page + 1}"),
-                position = page + 1,
-                progression = progression,
-                totalProgression = progression
-            )
-        )
+        _currentLocator.value = publication.positionsByResource[href]?.getOrNull(page)
     }
 
     private fun onTap(e: MotionEvent?): Boolean {
