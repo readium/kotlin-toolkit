@@ -13,6 +13,7 @@ import android.content.Context
 import android.content.res.AssetManager
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.Injectable
+import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.Container
@@ -61,79 +62,29 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
     }
 
     fun loadReadiumCSSResources(assets: AssetManager) {
-        try {
-            addResource("ltr-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/ltr/ReadiumCSS-after.css"), "utf-8")
+        fun load(name: String, layout: ContentLayout) {
+            try {
+                addResource("${layout.cssId}-${name}.css", Scanner(assets.open("static/readium-css/${layout.readiumCSSPath}ReadiumCSS-$name.css"), "utf-8")
                     .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
+            } catch (e: IOException) {
+                if (DEBUG) Timber.d(e)
+            }
         }
-        try {
-            addResource("ltr-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/ltr/ReadiumCSS-before.css"), "utf-8")
-                    .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
-        }
-        try {
-            addResource("ltr-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/ltr/ReadiumCSS-default.css"), "utf-8")
-                    .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
-        }
-        try {
-            addResource("rtl-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/rtl/ReadiumCSS-after.css"), "utf-8")
-                    .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
-        }
-        try {
-            addResource("rtl-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/rtl/ReadiumCSS-before.css"), "utf-8")
-                    .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
-        }
-        try {
-            addResource("rtl-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/rtl/ReadiumCSS-default.css"), "utf-8")
-                    .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
-        }
-        try {
-            addResource("cjk-vertical-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-after.css"), "utf-8")
-                    .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
-        }
-        try {
-            addResource("cjk-vertical-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-before.css"), "utf-8")
-                    .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
-        }
-        try {
-            addResource("cjk-vertical-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-vertical/ReadiumCSS-default.css"), "utf-8")
-                    .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
-        }
-        try {
-            addResource("cjk-horizontal-after.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-after.css"), "utf-8")
-                    .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
-        }
-        try {
-            addResource("cjk-horizontal-before.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-before.css"), "utf-8")
-                    .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
-        }
-        try {
-            addResource("cjk-horizontal-default.css", Scanner(assets.open("static/"+ Injectable.Style.rawValue +"/cjk-horizontal/ReadiumCSS-default.css"), "utf-8")
-                    .useDelimiter("\\A").next())
-        } catch (e: IOException) {
-            if (DEBUG) Timber.d(e)
+
+        for (layout in ContentLayout.values()) {
+            load("before", layout)
+            load("default", layout)
+            load("after", layout)
         }
     }
+
+    private val ContentLayout.readiumCSSPath: String get() = when(this)  {
+        ContentLayout.LTR -> ""
+        ContentLayout.RTL -> "rtl/"
+        ContentLayout.CJK_VERTICAL -> "cjk-vertical/"
+        ContentLayout.CJK_HORIZONTAL -> "cjk-horizontal/"
+    }
+
     fun loadR2ScriptResources(assets: AssetManager) {
         try {
             addResource("touchHandling.js", Scanner(assets.open(Injectable.Script.rawValue + "/touchHandling.js"), "utf-8")

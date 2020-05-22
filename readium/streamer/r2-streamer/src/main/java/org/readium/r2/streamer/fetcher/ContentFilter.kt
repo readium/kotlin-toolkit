@@ -92,7 +92,6 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
         beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\" />")
 
         beginIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-before.css"))
-        beginIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-default.css"))
         endIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-after.css"))
         endIncludes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/touchHandling.js"))
         endIncludes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/utils.js"))
