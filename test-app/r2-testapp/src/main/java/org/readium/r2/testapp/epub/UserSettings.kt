@@ -35,7 +35,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
     lateinit var resourcePager: R2ViewPager
 
     private val appearanceValues = listOf("readium-default-on", "readium-sepia-on", "readium-night-on")
-    private val fontFamilyValues = listOf("Original", "PT Serif", "Roboto", "Source Sans Pro", "Vollkorn", "OpenDyslexic")
+    private val fontFamilyValues = listOf("Original", "PT Serif", "Roboto", "Source Sans Pro", "Vollkorn", "OpenDyslexic", "AccessibleDfA", "IA Writer Duospace")
     private val textAlignmentValues = listOf("justify", "start")
     private val columnCountValues = listOf("auto", "1", "2")
 
