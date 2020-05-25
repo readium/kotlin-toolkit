@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.extensions
 
+import java.io.File
 import java.net.URL
 
 fun URL.removeLastComponent(): URL {
@@ -21,3 +22,7 @@ fun URL.removeLastComponent(): URL {
         .removeSuffix(lastPathComponent)
     )
 }
+
+/** Returns the file extension of the URL. */
+val URL.extension: String? get() =
+    File(path).extension.ifBlank { null }

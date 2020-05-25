@@ -19,4 +19,6 @@ enum class Injectable(val rawValue: String): Serializable {
 
     companion object : MapCompanion<String, Injectable>(values(), Injectable::rawValue)
 
+    override fun toString(): String = rawValue
+
 }

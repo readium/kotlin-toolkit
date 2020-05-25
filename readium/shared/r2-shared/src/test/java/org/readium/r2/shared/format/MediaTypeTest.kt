@@ -119,6 +119,12 @@ class MediaTypeTest {
     }
 
     @Test
+    fun `charset value is canonicalized`() {
+        assertEquals("US-ASCII", MediaType.parse("text/html;charset=ascii")?.parameters?.get("charset"))
+        assertEquals("UNKNOWN", MediaType.parse("text/html;charset=unknown")?.parameters?.get("charset"))
+    }
+
+    @Test
     fun equality() {
         assertEquals(MediaType.parse("application/atom+xml")!!, MediaType.parse("application/atom+xml")!!)
         assertEquals(MediaType.parse("application/atom+xml;profile=opds-catalog")!!, MediaType.parse("application/atom+xml;profile=opds-catalog")!!)
@@ -240,6 +246,18 @@ class MediaTypeTest {
     }
 
     @Test
+    fun `matches any media type`() {
+        assertTrue(MediaType.parse("text/html")
+            !!.matchesAny(MediaType.parse("application/zip")!!, MediaType.parse("text/html;charset=utf-8")!!))
+        assertFalse(MediaType.parse("text/html")
+            !!.matchesAny(MediaType.parse("application/zip")!!, MediaType.parse("text/plain;charset=utf-8")!!))
+        assertTrue(MediaType.parse("text/html")
+            !!.matchesAny("application/zip", "text/html;charset=utf-8"))
+        assertFalse(MediaType.parse("text/html")
+            !!.matchesAny("application/zip", "text/plain;charset=utf-8"))
+    }
+
+    @Test
     fun `is ZIP`() {
         assertFalse(MediaType.parse("text/plain")!!.isZip)
         assertTrue(MediaType.parse("application/zip")!!.isZip)
@@ -266,6 +284,7 @@ class MediaTypeTest {
         assertTrue(MediaType.parse("application/opds+json")!!.isOpds)
         assertTrue(MediaType.parse("application/opds-publication+json")!!.isOpds)
         assertTrue(MediaType.parse("application/opds+json;charset=utf-8")!!.isOpds)
+        assertTrue(MediaType.parse("application/opds-authentication+json")!!.isOpds)
     }
 
     @Test
@@ -302,6 +321,26 @@ class MediaTypeTest {
         assertTrue(MediaType.parse("application/divina+json")!!.isRwpm)
         assertTrue(MediaType.parse("application/webpub+json")!!.isRwpm)
         assertTrue(MediaType.parse("application/webpub+json;charset=utf-8")!!.isRwpm)
+    }
+
+    @Test
+    fun `is publication`() {
+        assertFalse(MediaType.parse("text/html")!!.isPublication)
+        assertTrue(MediaType.parse("application/audiobook+zip")!!.isPublication)
+        assertTrue(MediaType.parse("application/audiobook+json")!!.isPublication)
+        assertTrue(MediaType.parse("application/audiobook+lcp")!!.isPublication)
+        assertTrue(MediaType.parse("application/audiobook+json;charset=utf-8")!!.isPublication)
+        assertTrue(MediaType.parse("application/divina+zip")!!.isPublication)
+        assertTrue(MediaType.parse("application/divina+json")!!.isPublication)
+        assertTrue(MediaType.parse("application/webpub+zip")!!.isPublication)
+        assertTrue(MediaType.parse("application/webpub+json")!!.isPublication)
+        assertTrue(MediaType.parse("application/vnd.comicbook+zip")!!.isPublication)
+        assertTrue(MediaType.parse("application/epub+zip")!!.isPublication)
+        assertTrue(MediaType.parse("application/lpf+zip")!!.isPublication)
+        assertTrue(MediaType.parse("application/pdf")!!.isPublication)
+        assertTrue(MediaType.parse("application/pdf+lcp")!!.isPublication)
+        assertTrue(MediaType.parse("application/x.readium.w3c.wpub+json")!!.isPublication)
+        assertTrue(MediaType.parse("application/x.readium.zab+zip")!!.isPublication)
     }
 
 }

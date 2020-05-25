@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.format
 
-import org.readium.r2.shared.publication.Link
 import java.lang.IllegalArgumentException
 import java.nio.charset.Charset
 import java.util.*
@@ -76,7 +75,9 @@ class MediaType private constructor(string: String) {
         // > letters.
         // > https://www.iana.org/assignments/character-sets/character-sets.xhtml
         parameters["charset"]?.let {
-            parameters["charset"] = it.toUpperCase(Locale.ROOT)
+            parameters["charset"] =
+                (try { Charset.forName(it).name() } catch (e: Exception) { it })
+                    .toUpperCase(Locale.ROOT)
         }
 
         this.parameters = parameters
@@ -114,13 +115,11 @@ class MediaType private constructor(string: String) {
      * Returns whether two media types are equal, checking the type, subtype and parameters.
      * Parameters order is ignored.
      *
+     * WARNING: Strict media type comparisons can be a source of bug, if parameters are present.
      * `text/html` != `text/html;charset=utf-8` with strict equality comparison, which is most
      * likely not the desired result. Instead, you can use [matches] to check if any of the media
      * types is a parameterized version of the other one.
-     *
-     * To ignore this warning, compare [MediaType.toString] instead of [MediaType] itself.
      */
-    @Deprecated("Strict media type comparisons can be a source of bug, if parameters are present", ReplaceWith("this.matches(other)"))
     override fun equals(other: Any?): Boolean {
         return toString() == (other as? MediaType)?.toString()
     }
@@ -179,54 +178,52 @@ class MediaType private constructor(string: String) {
     fun matches(other: String?): Boolean =
         matches(other?.let { parse(it) })
 
+    /**
+     * Returns whether this media type matches any of the `others` media types.
+     */
+    fun matchesAny(vararg others: MediaType?): Boolean =
+        others.any { matches(it) }
+
+    /**
+     * Returns whether this media type matches any of the `others` media types.
+     */
+    fun matchesAny(vararg others: String?): Boolean =
+        others.any { matches(it) }
+
     /** Returns whether this media type is structured as a ZIP archive. */
-    val isZip: Boolean get() {
-        return matches(ZIP)
-            || matches(LCP_PROTECTED_AUDIOBOOK)
-            || matches(LCP_PROTECTED_PDF)
+    val isZip: Boolean get() =
+        matchesAny(ZIP, LCP_PROTECTED_AUDIOBOOK, LCP_PROTECTED_PDF)
             || structuredSyntaxSuffix == "+zip"
-    }
 
     /** Returns whether this media type is structured as a JSON file. */
-    val isJson: Boolean get() {
-        return matches(JSON)
-            || structuredSyntaxSuffix == "+json"
-    }
+    val isJson: Boolean get() =
+        matches(JSON) || structuredSyntaxSuffix == "+json"
 
     /** Returns whether this media type is of an OPDS feed. */
-    val isOpds: Boolean get() {
-        return matches(OPDS1)
-            || matches(OPDS1_ENTRY)
-            || matches(OPDS2)
-            || matches(OPDS2_PUBLICATION)
-    }
+    val isOpds: Boolean get() =
+        matchesAny(OPDS1, OPDS1_ENTRY, OPDS2, OPDS2_PUBLICATION, OPDS_AUTHENTICATION)
 
     /** Returns whether this media type is of an HTML document. */
-    val isHtml: Boolean get() {
-        return matches(HTML)
-            || matches(XHTML)
-    }
+    val isHtml: Boolean get() =
+        matchesAny(HTML, XHTML)
 
     /** Returns whether this media type is of a bitmap image, so excluding vectorial formats. */
-    val isBitmap: Boolean get() {
-        return matches(BMP)
-            || matches(GIF)
-            || matches(JPEG)
-            || matches(PNG)
-            || matches(TIFF)
-            || matches(WEBP)
-    }
+    val isBitmap: Boolean get() =
+        matchesAny(BMP, GIF, JPEG, PNG, TIFF, WEBP)
 
     /** Returns whether this media type is of an audio clip. */
     val isAudio: Boolean get() =
         type == "audio"
 
     /** Returns whether this media type is of a Readium Web Publication Manifest. */
-    val isRwpm: Boolean get() {
-        return matches(AUDIOBOOK_MANIFEST)
-            || matches(DIVINA_MANIFEST)
-            || matches(WEBPUB_MANIFEST)
-    }
+    val isRwpm: Boolean get() =
+        matchesAny(AUDIOBOOK_MANIFEST, DIVINA_MANIFEST, WEBPUB_MANIFEST)
+
+    /** Returns whether this media type is of a publication file. */
+    val isPublication: Boolean get() = matchesAny(
+        AUDIOBOOK, AUDIOBOOK_MANIFEST, CBZ, DIVINA, DIVINA_MANIFEST, EPUB, LCP_PROTECTED_AUDIOBOOK,
+        LCP_PROTECTED_PDF, LPF, PDF, W3C_WPUB_MANIFEST, WEBPUB, WEBPUB_MANIFEST, ZAB
+    )
 
     companion object {
 
@@ -264,6 +261,7 @@ class MediaType private constructor(string: String) {
         val OPDS1_ENTRY = MediaType("application/atom+xml;type=entry;profile=opds-catalog")
         val OPDS2 = MediaType("application/opds+json")
         val OPDS2_PUBLICATION = MediaType("application/opds-publication+json")
+        val OPDS_AUTHENTICATION = MediaType("application/opds-authentication+json")
         val JSON = MediaType("application/json")
         val LCP_PROTECTED_AUDIOBOOK = MediaType("application/audiobook+lcp")
         val LCP_PROTECTED_PDF = MediaType("application/pdf+lcp")
@@ -301,7 +299,3 @@ class MediaType private constructor(string: String) {
     }
 
 }
-
-/** Media type of the linked resource. */
-val Link.mediaType: MediaType? get() =
-    type?.let { MediaType.parse(it) }
