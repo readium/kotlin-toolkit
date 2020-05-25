@@ -22,10 +22,8 @@ import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.net.URI
 import java.net.URL
 import java.net.URLDecoder
-import java.net.URLEncoder
 import java.util.*
 
 class Server(port: Int) : AbstractServer(port)
@@ -175,10 +173,13 @@ abstract class AbstractServer(private var port: Int) : RouterNanoHTTPD("127.0.0.
     }
 
     fun addEpub(publication: Publication, container: Container, fileName: String, userPropertiesPath: String?) {
+        if (container.rootFile.rootFilePath.isEmpty()) {
+            return
+        }
         val baseUrl = URL(Publication.localBaseUrlOf(filename = fileName, port = port))
         val fetcher = Fetcher(publication, container, userPropertiesPath, customResources)
 
-        publication.setSelfLink(URL(baseUrl, "manifest.json").toString())
+        publication.setSelfLink("$baseUrl/manifest.json")
 
         // NanoHTTPD expects percent-decoded routes.
         val basePath =
