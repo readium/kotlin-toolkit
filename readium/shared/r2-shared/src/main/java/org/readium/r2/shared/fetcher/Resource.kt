@@ -10,10 +10,8 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.extensions.read
-import org.readium.r2.shared.format.mediaType
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
 import java.io.InputStream
 import java.lang.IllegalArgumentException
 import java.nio.charset.Charset
