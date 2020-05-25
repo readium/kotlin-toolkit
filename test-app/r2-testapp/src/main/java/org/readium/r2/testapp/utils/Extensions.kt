@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat
 import java.io.File
 import java.io.FileFilter
 import java.io.InputStream
+import java.net.URL
 
 
 /**
@@ -42,3 +43,6 @@ fun InputStream.toFile(path: String) {
         File(path).outputStream().use { input.copyTo(it) }
     }
 }
+
+val URL.extension: String? get() =
+    File(path).extension.ifBlank { null }

@@ -46,7 +46,7 @@ class Book(var id: Long? = null,
            val identifier: String,
            val cover: ByteArray? = null,
            val progression: String? = null,
-           val ext: Publication.EXTENSION
+           val ext: String
 ) {
 
     val fileName: String?
@@ -215,7 +215,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
                         BOOKSTable.HREF to book.href,
                         BOOKSTable.IDENTIFIER to book.identifier,
                         BOOKSTable.COVER to book.cover,
-                        BOOKSTable.EXTENSION to book.ext.value,
+                        BOOKSTable.EXTENSION to book.ext,
                         BOOKSTable.CREATION to book.creation)
             }
         }
@@ -334,7 +334,7 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
                 return@let it as String
             } ?: kotlin.run { return@run null }
 
-            return Book(id, creation as Long, href, title, author, identifier, cover, progression, Publication.EXTENSION.fromString(ext)!!)
+            return Book(id, creation as Long, href, title, author, identifier, cover, progression, ext)
         }
     }
 }

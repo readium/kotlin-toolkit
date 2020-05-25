@@ -32,19 +32,16 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.longSnackbar
 import org.readium.r2.lcp.*
-import org.readium.r2.testapp.BuildConfig.DEBUG
-import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.drm.DRM
-import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.parser.PubBox
-import org.readium.r2.streamer.parser.epub.EpubParser
+import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.db.Book
 import org.readium.r2.testapp.drm.DRMFulfilledPublication
 import org.readium.r2.testapp.drm.DRMLibraryService
 import org.readium.r2.testapp.drm.LCPLibraryActivityService
-import org.readium.r2.testapp.epub.EpubActivity
 import org.readium.r2.testapp.library.LibraryActivity
+import org.readium.r2.testapp.utils.extensions.parse
 import timber.log.Timber
 import java.io.File
 import java.net.URL
@@ -295,8 +292,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                                 if (DEBUG) Timber.d(publication.suggestedFilename)
                                 val file = File(publication.localURL)
                                 launch {
-                                    val parser = EpubParser()
-                                    val pub = parser.parse(publication.localURL)
+                                    val pub = Publication.parse(publication.localURL, fileExtension = File(publication.suggestedFilename).extension)
                                     if (pub != null) {
                                         prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
                                         progress.dismiss()
@@ -313,7 +309,8 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
         }
     }
 
-    override fun prepareAndStartActivityWithLCP(drm: DRM, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean) {
+
+    override fun prepareAndStartActivityWithLCP(drm: DRM, pub: PubBox, book: Book, file: File, publicationPath: String, publication: Publication, networkAvailable: Boolean) {
         loadPublication(file.absolutePath, drm) {
             launch {
 
@@ -322,23 +319,13 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                     catalogView.longSnackbar("${(it as LCPError).errorDescription}")
 
                 } else {
-
-                    prepareToServe(pub, book.fileName!!, file.absolutePath, add = false, lcp = true)
-                    server.addEpub(publication, pub.container, "/" + book.fileName, applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json")
-
-                    this@CatalogActivity.startActivity(Intent(this@CatalogActivity, EpubActivity::class.java).apply {
-                        putPublication(publication)
-                        putExtra("publicationPath", publicationPath)
-                        putExtra("publicationFileName", book.fileName)
-                        putExtra("bookId", book.id)
-                        putExtra("drm", true)
-                    })
+                    prepareAndStartActivity(pub, book, file, publicationPath, publication)
                 }
             }
         }
     }
 
-    override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
+    override fun processLcpActivityResult(uri: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
 
         currenProgressDialog = progress
 
@@ -360,8 +347,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                         if (DEBUG) Timber.d(result.suggestedFilename)
                         val file = File(result.localURL)
                         launch {
-                            val parser = EpubParser()
-                            val pub = parser.parse(result.localURL)
+                            val pub = Publication.parse(result.localURL, fileExtension = File(result.suggestedFilename).extension)
                             if (pub != null) {
                                 prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
                                 progress.dismiss()

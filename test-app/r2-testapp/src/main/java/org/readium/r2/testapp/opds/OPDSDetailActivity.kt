@@ -35,6 +35,7 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Book
 import org.readium.r2.testapp.db.BooksDatabase
 import org.readium.r2.testapp.db.books
+import org.readium.r2.testapp.utils.extensions.authorName
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -102,7 +103,7 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
                             opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
                                 val publicationIdentifier = publication.metadata.identifier!!
-                                val author = authorName(publication)
+                                val author = publication.metadata.authorName
                                 Thread {
                                     val stream = ByteArrayOutputStream()
 
@@ -116,7 +117,7 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
                                         }
                                     }
 
-                                    val book = Book(id = (-1).toLong(), title = publication.metadata.title, author = author, href = pair.first, identifier = publicationIdentifier, cover = stream.toByteArray(), ext = Publication.EXTENSION.EPUB, progression = "{}")
+                                    val book = Book(id = (-1).toLong(), title = publication.metadata.title, author = author, href = pair.first, identifier = publicationIdentifier, cover = stream.toByteArray(), ext = Publication.EXTENSION.EPUB.value, progression = "{}")
                                     database.books.insert(book, false)?.let {
                                         book.id = it
                                         books.add(0,book)
@@ -198,14 +199,5 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
             null
         }
     }
-
-    private fun authorName(publication: Publication): String {
-        return publication.metadata.authors.firstOrNull()?.name?.let {
-            return@let it
-        } ?: run {
-            return@run String()
-        }
-    }
-
 
 }

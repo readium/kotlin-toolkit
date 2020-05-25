@@ -13,7 +13,6 @@ package org.readium.r2.testapp.library
 
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -24,10 +23,8 @@ import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.text.TextUtils
 import android.view.*
-import android.webkit.MimeTypeMap
 import android.webkit.URLUtil
 import android.widget.Button
 import android.widget.EditText
@@ -56,21 +53,14 @@ import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.extensions.putPublication
+import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.promise
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.opds.images
-import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PubBox
-import org.readium.r2.streamer.parser.audio.AudioBookConstant
-import org.readium.r2.streamer.parser.audio.AudioBookParser
-import org.readium.r2.streamer.parser.cbz.CBZConstant
-import org.readium.r2.streamer.parser.cbz.CBZParser
-import org.readium.r2.streamer.parser.divina.DiViNaConstant
-import org.readium.r2.streamer.parser.divina.DiViNaParser
-import org.readium.r2.streamer.parser.epub.EPUBConstant
-import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
@@ -89,6 +79,9 @@ import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
 import org.readium.r2.testapp.utils.ContentResolverUtil
 import org.readium.r2.testapp.utils.R2IntentHelper
+import org.readium.r2.testapp.utils.extension
+import org.readium.r2.testapp.utils.extensions.authorName
+import org.readium.r2.testapp.utils.extensions.parse
 import org.readium.r2.testapp.utils.toFile
 import org.zeroturnaround.zip.ZipUtil
 import timber.log.Timber
@@ -102,7 +95,6 @@ import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.zip.ZipException
 import kotlin.coroutines.CoroutineContext
 
 var activitiesLaunched: AtomicInteger = AtomicInteger(0)
@@ -295,50 +287,38 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         editTextHref!!.error = "Please Enter A Valid URL."
                         editTextHref!!.requestFocus()
                     } else {
-                        editTextHref!!.text.toString().let {
-                            val extension = when (it.substring(it.lastIndexOf("."))) {
-                                Publication.EXTENSION.EPUB.value -> Publication.EXTENSION.EPUB
-                                Publication.EXTENSION.JSON.value -> Publication.EXTENSION.JSON
-                                Publication.EXTENSION.AUDIO.value -> Publication.EXTENSION.AUDIO
-                                Publication.EXTENSION.DIVINA.value -> Publication.EXTENSION.DIVINA
-                                Publication.EXTENSION.LCPL.value -> Publication.EXTENSION.LCPL
-                                Publication.EXTENSION.CBZ.value -> Publication.EXTENSION.CBZ
-                                else -> Publication.EXTENSION.UNKNOWN
-                            }
+                        val url = tryOrNull { URL(editTextHref?.text.toString()) }
+                            ?: return@setOnClickListener
 
-                            when (extension) {
-                                Publication.EXTENSION.LCPL -> {
-                                    dismiss()
-                                    parseIntentLcpl(editTextHref!!.text.toString(), isNetworkAvailable)
-                                }
-                                Publication.EXTENSION.EPUB, Publication.EXTENSION.CBZ -> {
-                                    dismiss()
-                                    parseIntentPublication(editTextHref!!.text.toString())
-                                }
-                                Publication.EXTENSION.AUDIO -> {
-                                    editTextHref!!.error = "Import Audio via URL not supported yet."
-                                    editTextHref!!.requestFocus()
-                                }
-                                Publication.EXTENSION.DIVINA -> {
-                                    editTextHref!!.error = "Import DiViNa via URL not supported yet."
-                                    editTextHref!!.requestFocus()
-                                }
-                                else -> {
-                                    val parseDataPromise = parseURL(URL(editTextHref!!.text.toString()))
-                                    parseDataPromise.successUi { parseData ->
-                                        if (parseData.feed == null) {
-                                            dismiss()
-                                            downloadData(parseData)
-                                        } else {
-                                            editTextHref!!.error = "Please Enter A Valid Publication URL."
-                                            editTextHref!!.requestFocus()
-                                        }
-                                    }
-                                    parseDataPromise.failUi {
+                        // FIXME: We should download the content first to determine what to do with it.
+                        val format = Format.of(fileExtension = url.extension)
+                        when (format) {
+                            Format.LCP_LICENSE -> {
+                                dismiss()
+                                parseIntentLcpl(url.toString(), isNetworkAvailable)
+                            }
+                            Format.EPUB, Format.CBZ -> {
+                                dismiss()
+                                parseIntentPublication(url.toString())
+                            }
+                            Format.AUDIOBOOK, Format.AUDIOBOOK_MANIFEST, Format.DIVINA, Format.DIVINA_MANIFEST -> {
+                                editTextHref!!.error = "Import ${format.name} via URL not supported yet."
+                                editTextHref!!.requestFocus()
+                            }
+                            else -> {
+                                val parseDataPromise = parseURL(url)
+                                parseDataPromise.successUi { parseData ->
+                                    if (parseData.feed == null) {
+                                        dismiss()
+                                        downloadData(parseData)
+                                    } else {
                                         editTextHref!!.error = "Please Enter A Valid Publication URL."
                                         editTextHref!!.requestFocus()
                                     }
-
+                                }
+                                parseDataPromise.failUi {
+                                    editTextHref!!.error = "Please Enter A Valid Publication URL."
+                                    editTextHref!!.requestFocus()
                                 }
                             }
                         }
@@ -362,7 +342,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
                 val publicationIdentifier = publication.metadata.identifier!!
-                val author = authorName(publication)
+                val author = publication.metadata.authorName
                 task {
                     getBitmapFromURL(publication.images.first().href)
                 }.then {
@@ -370,7 +350,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     val stream = ByteArrayOutputStream()
                     bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-                    val book = Book(title = publication.metadata.title, author = author, href = pair.first, identifier = publicationIdentifier, cover = stream.toByteArray(), ext = Publication.EXTENSION.EPUB, progression = "{}")
+                    val book = Book(title = publication.metadata.title, author = author, href = pair.first, identifier = publicationIdentifier, cover = stream.toByteArray(), ext = Publication.EXTENSION.EPUB.value, progression = "{}")
 
                     launch {
                         progress.dismiss()
@@ -600,46 +580,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         try {
             launch {
-
-                when {
-                    uriString.endsWith(Publication.EXTENSION.EPUB.value) -> {
-                        val parser = EpubParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                    ?: false)
-                            progress.dismiss()
-                        }
-                    }
-                    uriString.endsWith(Publication.EXTENSION.CBZ.value) -> {
-                        val parser = CBZParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                    ?: false)
-                            progress.dismiss()
-                        }
-                    }
-                    uriString.endsWith(Publication.EXTENSION.AUDIO.value) -> {
-                        val parser = AudioBookParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                    ?: false)
-                            progress.dismiss()
-                        }
-                    }
-                    uriString.endsWith(Publication.EXTENSION.DIVINA.value) -> {
-                        val parser = DiViNaParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                    ?: false)
-                            progress.dismiss()
-                        }
-                    }
-
-
+                val pub = Publication.parse(publicationPath)
+                if (pub != null) {
+                    prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
+                            ?: false)
+                    progress.dismiss()
                 }
             }
         } catch (e: Throwable) {
@@ -726,14 +671,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    private fun authorName(publication: Publication): String {
-        return publication.metadata.authors.firstOrNull()?.name?.let {
-            return@let it
-        } ?: run {
-            return@run String()
-        }
-    }
-
     private fun copySamplesFromAssetsToStorage() {
         assets.list("Samples")?.filter {
             it.endsWith(Publication.EXTENSION.EPUB.value)
@@ -770,46 +707,17 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                 val file = File(publicationPath)
 
-                when {
-                    element.endsWith(Publication.EXTENSION.EPUB.value) -> {
-                        val parser = EpubParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                    ?: false)
-                        }
-                    }
-                    element.endsWith(Publication.EXTENSION.CBZ.value) -> {
-                        val parser = CBZParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                    ?: false)
-                        }
-                    }
-                    element.endsWith(Publication.EXTENSION.AUDIO.value) -> {
-                        val parser = AudioBookParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                    ?: false)
-                        }
-                    }
-                    element.endsWith(Publication.EXTENSION.DIVINA.value) -> {
-                        val parser = DiViNaParser()
-                        val pub = parser.parse(publicationPath)
-                        if (pub != null) {
-                            prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                    ?: false)
-                        }
-                    }
+                val pub = Publication.parse(publicationPath)
+                if (pub != null) {
+                    prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.brand == DRM.Brand.lcp)
                 }
             }
         }
     }
 
     protected fun prepareToServe(pub: PubBox?, fileName: String, absolutePath: String, add: Boolean, lcp: Boolean) {
-        if (pub == null) {
+        val format = Format.of(File(absolutePath))
+        if (pub == null || format == null) {
             catalogView.snackbar("Invalid publication")
             return
         }
@@ -817,61 +725,23 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         val container = pub.container
 
         launch {
-            val publicationIdentifier = publication.metadata.identifier!!
-            val book: Book = when (publication.type) {
-                Publication.TYPE.EPUB -> {
-                    preferences.edit().putString("$publicationIdentifier-publicationPort", localPort.toString()).apply()
-                    val author = authorName(publication)
-                    val cover = publication.coverLink?.href?.let {
-                        try {
-                            ZipUtil.unpackEntry(File(absolutePath), it.removePrefix("/"))
-                        } catch (e: ZipException) {
-                            null
-                        }
-                    }
+            val key = publication.metadata.identifier ?: publication.metadata.title
+            preferences.edit().putString("$key-publicationPort", localPort.toString()).apply()
+            server.addEpub(publication, container, "/$fileName", applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json")
 
-                    if (!lcp) {
-                        server.addEpub(publication, container, "/$fileName", applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json")
-                    }
-                    Book(title = publication.metadata.title, author = author, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.EPUB, progression = "{}")
-                }
-                Publication.TYPE.CBZ -> {
-                    val cover = publication.coverLink?.href?.let {
-                        try {
-                            container.data(it)
-                        } catch (e: ContainerError.fileNotFound) {
-                            null
-                        }
-                    }
-
-                    Book(title = publication.metadata.title, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.CBZ, progression = "{}")
-                }
-                Publication.TYPE.DiViNa -> {
-                    val cover = publication.coverLink?.href?.let {
-                        try {
-                            container.data(it)
-                        } catch (e: ContainerError.fileNotFound) {
-                            null
-                        }
-                    }
-
-                    Book(title = publication.metadata.title, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.DIVINA, progression = "{}")
-                }
-                Publication.TYPE.AUDIO -> {
-                    val cover = publication.coverLink?.href?.let {
-                        try {
-                            container.data(it)
-                        } catch (e: ContainerError.fileNotFound) {
-                            null
-                        }
-                    }
-
-                    //Building book object and adding it to library
-                    Book(title = publication.metadata.title, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.AUDIO, progression = "{}")
-                }
-                else -> TODO()
-            }
             if (add) {
+                val publicationIdentifier = publication.metadata.identifier ?: ""
+                val author = publication.metadata.authorName
+                val cover = publication.coverLink?.href?.let {
+                    try {
+                        container.data(it)
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                        null
+                    }
+                }
+                val book = Book(title = publication.metadata.title, author = author, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = ".${format.fileExtension}", progression = "{}")
+
                 database.books.insert(book, false)?.let { id ->
                     book.id = id
                     books.add(0, book)
@@ -925,57 +795,29 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val book = books[position]
             val publicationPath = R2DIRECTORY + book.fileName
             val file = File(book.href)
-            when (book.ext) {
-                Publication.EXTENSION.EPUB -> {
-                    val parser = EpubParser()
-                    val pub = parser.parse(publicationPath)
-                    pub?.let {
-                        pub.container.drm?.let { drm: DRM ->
-                            prepareAndStartActivityWithLCP(drm, pub, book, file, publicationPath, parser, pub.publication, isNetworkAvailable)
-                        } ?: run {
-                            prepareAndStartActivity(pub, book, file, publicationPath, pub.publication)
-                        }
-                    }
-                }
-                Publication.EXTENSION.CBZ -> {
-                    val parser = CBZParser()
-                    val pub = parser.parse(publicationPath)
-                    pub?.let {
-                        startActivity(publicationPath, book, pub.publication)
-                    }
-                }
-                Publication.EXTENSION.DIVINA -> {
-                    val parser = DiViNaParser()
-                    val pub = parser.parse(publicationPath)
-                    pub?.let {
-                        startActivity(publicationPath, book, pub.publication)
-                    }
-                }
-                Publication.EXTENSION.AUDIO -> {
 
-                    //If selected book is an audiobook
-                    val parser = AudioBookParser()
-                    //Parse book manifest to publication object
-                    val pub = parser.parse(publicationPath)
+            if (book.ext == Publication.EXTENSION.JSON.value) {
+                // FIXME: Use proper parser
+                prepareWebPublication(book.href, book, add = false)
 
-                    pub?.let {
-                        //Starting AudiobookActivity
-                        val ref = pub.publication.coverLink?.href
-                        val coverByteArray = ref?.let {
-                            try {
-                                pub.container.data(ref)
-                            } catch (e: Exception) {
-                                null
-                            }
-                        }
-
-                        startActivity(publicationPath, book, pub.publication, coverByteArray)
+            } else {
+                val pub = Publication.parse(book.href)
+                if (pub != null) {
+                    if (pub.container.drm?.brand == DRM.Brand.lcp) {
+                        prepareAndStartActivityWithLCP(pub.container.drm!!, pub, book, file, publicationPath, pub.publication, isNetworkAvailable)
+                    } else {
+                        val coverByteArray: ByteArray? = null
+                        // FIXME: We shouldn't do that because if the cover is too large, it will crash the app with a TransactionTooLargeException
+//                        val coverByteArray = pub.publication.coverLink?.href?.let {
+//                            try {
+//                                pub.container.data(it)
+//                            } catch (e: Exception) {
+//                                null
+//                            }
+//                        }
+                        prepareAndStartActivity(pub, book, file, publicationPath, pub.publication, coverByteArray)
                     }
                 }
-                Publication.EXTENSION.JSON -> {
-                    prepareWebPublication(book.href, book, add = false)
-                }
-                else -> null
             }
         } then {
             progress.dismiss()
@@ -1010,10 +852,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                         val stream = ByteArrayOutputStream()
                         bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-                        book = Book(title = externalPub.metadata.title, href = externalManifest, identifier = externalPub.metadata.identifier!!, cover = stream.toByteArray(), ext = Publication.EXTENSION.JSON)
+                        book = Book(title = externalPub.metadata.title, href = externalManifest, identifier = externalPub.metadata.identifier!!, cover = stream.toByteArray(), ext = Publication.EXTENSION.JSON.value)
 
                     } ?: run {
-                        book = Book(title = externalPub.metadata.title, href = externalManifest, identifier = externalPub.metadata.identifier!!, ext = Publication.EXTENSION.JSON)
+                        book = Book(title = externalPub.metadata.title, href = externalManifest, identifier = externalPub.metadata.identifier!!, ext = Publication.EXTENSION.JSON.value)
                     }
 
                     launch {
@@ -1035,9 +877,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         }
     }
 
-    private fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication) {
+    protected fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication, coverByteArray: ByteArray? = null) {
         prepareToServe(pub, book.fileName!!, file.absolutePath, add = false, lcp = false)
-        startActivity(publicationPath, book, publication)
+        startActivity(publicationPath, book, publication, coverByteArray)
     }
 
     private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null) {
@@ -1077,21 +919,18 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 progress.show()
 
             } then {
-
-                val uri: Uri? = data.data
-                uri?.let {
-                    val fileType = getMimeType(uri)
-                    val mime = fileType.first
-                    val name = fileType.second
-
-                    if (name.endsWith(Publication.EXTENSION.LCPL.value)) {
-                        processLcpActivityResult(uri, it, progress, isNetworkAvailable)
+                val uri = data.data
+                val format = uri?.let { Format.of(it, contentResolver) }
+                if (format != null) {
+                    if (format == Format.LCP_LICENSE) {
+                        processLcpActivityResult(uri, progress, isNetworkAvailable)
                     } else {
-                        processEpubResult(uri, mime, progress, name)
+                        processEpubResult(uri, format, progress)
                     }
-
+                } else {
+                    catalogView.longSnackbar("Unsupported file")
+                    progress.dismiss()
                 }
-
             }
 
         } else if (resultCode == RESULT_OK) {
@@ -1109,25 +948,15 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
 
-    private fun processEpubResult(uri: Uri?, mime: String, progress: ProgressDialog, name: String) {
+    private fun processEpubResult(uri: Uri?, format: Format, progress: ProgressDialog) {
         val fileName = UUID.randomUUID().toString()
         val publicationPath = R2DIRECTORY + fileName
 
         val input = contentResolver.openInputStream(uri as Uri)
 
         launch {
-
-            when {
-                name.endsWith(Publication.EXTENSION.DIVINA.value) -> {
-                    val output = File(publicationPath)
-                    if (!output.exists()) {
-                        if (!output.mkdir()) {
-                            throw RuntimeException("Cannot create directory")
-                        }
-                    }
-                    ZipUtil.unpack(input, output)
-                }
-                name.endsWith(Publication.EXTENSION.AUDIO.value) -> {
+            when (format) {
+                Format.DIVINA, Format.AUDIOBOOK -> {
                     val output = File(publicationPath)
                     if (!output.exists()) {
                         if (!output.mkdir()) {
@@ -1142,38 +971,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val file = File(publicationPath)
 
             try {
-                if (mime == EPUBConstant.mimetype) {
-                    val parser = EpubParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                ?: false)
-                        progress.dismiss()
-                    }
-                } else if (name.endsWith(Publication.EXTENSION.CBZ.value) || mime == CBZConstant.mimetypeCBZ) {
-                    val parser = CBZParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
-                                ?: false)
-                        progress.dismiss()
-                    }
-                } else if (name.endsWith(Publication.EXTENSION.DIVINA.value) || mime == DiViNaConstant.mimetype) {
-                    val parser = DiViNaParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, true, pub.container.drm?.let { true }
-                                ?: false)
-                        progress.dismiss()
-                    }
-                } else if (name.endsWith(Publication.EXTENSION.AUDIO.value) || mime == AudioBookConstant.mimetype) {
-                    val parser = AudioBookParser()
-                    val pub = parser.parse(publicationPath)
-                    if (pub != null) {
-                        prepareToServe(pub, fileName, file.absolutePath, true, pub.container.drm?.let { true }
-                                ?: false)
-                        progress.dismiss()
-                    }
+                val publication = Publication.parse(publicationPath, format)
+                if (publication != null) {
+                    prepareToServe(publication, fileName, file.absolutePath, add = true, lcp = publication.container.drm?.brand == DRM.Brand.lcp)
+                    progress.dismiss()
                 } else {
                     catalogView.longSnackbar("Unsupported file")
                     progress.dismiss()
@@ -1181,39 +982,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 }
             } catch (e: Throwable) {
                 e.printStackTrace()
+                progress.dismiss()
             }
-        }
-    }
-
-
-    private fun getMimeType(uri: Uri): Pair<String, String> {
-        val mimeType: String?
-        var fileName = String()
-        if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
-            val contentResolver: ContentResolver = applicationContext.contentResolver
-            mimeType = contentResolver.getType(uri)
-            getContentName(contentResolver, uri)?.let {
-                fileName = it
-            }
-        } else {
-            val fileExtension: String = MimeTypeMap.getFileExtensionFromUrl(uri
-                    .toString())
-            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                    fileExtension.toLowerCase())
-        }
-        return Pair(mimeType!!, fileName)
-    }
-
-    private fun getContentName(resolver: ContentResolver, uri: Uri): String? {
-        val cursor = resolver.query(uri, null, null, null, null)
-        cursor!!.moveToFirst()
-        val nameIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
-        return if (nameIndex >= 0) {
-            val name = cursor.getString(nameIndex)
-            cursor.close()
-            name
-        } else {
-            null
         }
     }
 
@@ -1230,12 +1000,12 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         listener?.parseIntentLcpl(uriString, networkAvailable)
     }
 
-    override fun prepareAndStartActivityWithLCP(drm: DRM, pub: PubBox, book: Book, file: File, publicationPath: String, parser: EpubParser, publication: Publication, networkAvailable: Boolean) {
-        listener?.prepareAndStartActivityWithLCP(drm, pub, book, file, publicationPath, parser, publication, networkAvailable)
+    override fun prepareAndStartActivityWithLCP(drm: DRM, pub: PubBox, book: Book, file: File, publicationPath: String, publication: Publication, networkAvailable: Boolean) {
+        listener?.prepareAndStartActivityWithLCP(drm, pub, book, file, publicationPath, publication, networkAvailable)
     }
 
-    override fun processLcpActivityResult(uri: Uri, it: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
-        listener?.processLcpActivityResult(uri, it, progress, networkAvailable)
+    override fun processLcpActivityResult(uri: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
+        listener?.processLcpActivityResult(uri, progress, networkAvailable)
     }
 
     companion object {
