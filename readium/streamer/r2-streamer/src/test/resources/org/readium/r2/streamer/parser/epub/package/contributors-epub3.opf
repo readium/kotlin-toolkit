@@ -10,9 +10,6 @@
     <!-- dc:contributor is by default a Contributor -->
     <dc:contributor>Contributor 1</dc:contributor>
     
-    <!-- Refined roles override tag names, so Author 2 is not considered a Publisher -->
-    <dc:publisher id="author-2">Author 2</dc:publisher>
-    <meta refines="#author-2" property="role">aut</meta>
     <!-- Unknown roles are ignored -->
     <dc:contributor id="unknown">Contributor 2</dc:contributor> 
     <meta refines="#unknown" property="role">unknown</meta>
@@ -22,17 +19,19 @@
     
      <!-- Localized contributor -->
     <dc:contributor id="localized">Contributor 4</dc:contributor> 
-    <meta refines="#localized" property="alternate-script" xml:lang="fr">Contributeur 4 en français</meta> 
-    <!-- Contributor with multiple roles -->
+    <meta refines="#localized" property="alternate-script" xml:lang="fr">Contributeur 4 en français</meta>
+    
+    <!-- Only the first role is used -->
     <dc:contributor id="cameleon">Cameleon</dc:contributor> 
     <meta refines="#cameleon" property="role">aut</meta>
     <meta refines="#cameleon" property="role">pbl</meta>
+    
     <!-- Media Overlays narrator -->
     <meta property="media:narrator">Media Overlays Narrator</meta>
 
     <!-- Various roles -->
-    <dc:contributor id="author-3">Author 3</dc:contributor>
-    <meta refines="#author-3" property="role">aut</meta>
+    <dc:contributor id="author-2">Author 2</dc:contributor>
+    <meta refines="#author-2" property="role">aut</meta>
     
     <dc:contributor id="publisher">Publisher 2</dc:contributor> 
     <meta refines="#publisher" property="role">pbl</meta>
