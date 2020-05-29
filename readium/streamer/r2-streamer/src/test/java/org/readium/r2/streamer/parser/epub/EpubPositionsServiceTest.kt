@@ -1,5 +1,5 @@
 /*
- * Module: r2-shared-kotlin
+ * Module: r2-streamer-kotlin
  * Developers: Mickaël Menu
  *
  * Copyright (c) 2020. Readium Foundation. All rights reserved.
@@ -13,27 +13,31 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.HrefParameters
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.util.Try
 import org.readium.r2.streamer.container.Container
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 
-class EpubPositionListFactoryTest {
+class EpubPositionsServiceTest {
 
     @Test
-    fun `Create from an empty {readingOrder}`() {
-        val factory = createFactory(readingOrder = emptyList())
+    fun `Positions from an empty {readingOrder}`() {
+        val service = createService(readingOrder = emptyList())
 
-        assertEquals(0, factory.create().size)
+        assertEquals(0, service.positions.size)
     }
 
     @Test
-    fun `Create from a {readingOrder} with one resource`() {
-        val factory = createFactory(
+    fun `Positions  from a {readingOrder} with one resource`() {
+        val service = createService(
             readingOrder = listOf(
                 Pair(1L, Link(href = "res", type = "application/xml"))
             )
@@ -49,13 +53,13 @@ class EpubPositionListFactoryTest {
                     totalProgression = 0.0
                 )
             )),
-            factory.create()
+            service.positions
         )
     }
 
     @Test
-    fun `Create from a {readingOrder} with a few resources`() {
-        val factory = createFactory(
+    fun `Positions from a {readingOrder} with a few resources`() {
+        val service = createService(
             readingOrder = listOf(
                 Pair(1L, Link(href = "res")),
                 Pair(2L, Link(href = "chap1", type = "application/xml")),
@@ -94,13 +98,13 @@ class EpubPositionListFactoryTest {
                     )
                 )
             ),
-            factory.create()
+            service.positions
         )
     }
 
     @Test
     fun `{type} fallbacks on text-html`() {
-        val factory = createFactory(
+        val service = createService(
             readingOrder = listOf(
                 Pair(1L, Link(href = "chap1", properties = createProperties(layout = EpubLayout.REFLOWABLE))),
                 Pair(1L, Link(href = "chap2", properties = createProperties(layout = EpubLayout.FIXED)))
@@ -128,13 +132,13 @@ class EpubPositionListFactoryTest {
                     )
                 )
             ),
-            factory.create()
+            service.positions
         )
     }
 
     @Test
-    fun `Create one position per fixed-layout resources`() {
-        val factory = createFactory(
+    fun `One position per fixed-layout resources`() {
+        val service = createService(
             layout = EpubLayout.FIXED,
             readingOrder = listOf(
                 Pair(10000L, Link(href = "res")),
@@ -174,13 +178,13 @@ class EpubPositionListFactoryTest {
                     )
                 )
             ),
-            factory.create()
+            service.positions
         )
     }
 
     @Test
     fun `Split reflowable resources by the provided number of bytes`() {
-        val factory = createFactory(
+        val service = createService(
             layout = EpubLayout.REFLOWABLE,
             readingOrder = listOf(
                 Pair(0L, Link(href = "chap1")),
@@ -268,14 +272,14 @@ class EpubPositionListFactoryTest {
                     )
                 )
            ),
-            factory.create()
+            service.positions
         )
     }
 
     @Test
     fun `{layout} fallbacks to reflowable`() {
         // We check this by verifying that the resource will be split every 1024 bytes
-        val factory = createFactory(
+        val service = createService(
             layout = null,
             readingOrder = listOf(
                 Pair(60L, Link(href = "chap1"))
@@ -304,13 +308,13 @@ class EpubPositionListFactoryTest {
                     )
                 )
             ),
-            factory.create()
+            service.positions
         )
     }
 
     @Test
-    fun `Create from publication with mixed layouts`() {
-        val factory = createFactory(
+    fun `Positions from publication with mixed layouts`() {
+        val service = createService(
             layout = EpubLayout.FIXED,
             readingOrder = listOf(
                 Pair(20000L, Link(href = "chap1")),
@@ -359,13 +363,13 @@ class EpubPositionListFactoryTest {
                     )
                 )
             ),
-            factory.create()
+            service.positions
         )
     }
 
     @Test
     fun `Use the encrypted {originalLength} if available, instead of the {Container}'s file length`() {
-        val factory = createFactory(
+        val service = createService(
             layout = EpubLayout.REFLOWABLE,
             readingOrder = listOf(
                 Pair(60L, Link(href = "chap1", properties = createProperties(encryptedOriginalLength = 20L))),
@@ -404,31 +408,36 @@ class EpubPositionListFactoryTest {
                     )
                 )
             ),
-            factory.create()
+            service.positions
         )
     }
 
-    private fun createFactory(
+    private fun createService(
         layout: EpubLayout? = null,
         readingOrder: List<Pair<Long, Link>>,
         reflowablePositionLength: Long = 50L
-    ) = EpubPositionListFactory(
+    ) = EpubPositionsService(
         readingOrder = readingOrder.map { it.second },
-        container = object : Container {
-            override var rootFile: RootFile = RootFile()
-            override var drm: DRM? = null
-
-            override fun data(relativePath: String): ByteArray =
-                ByteArray(0)
-
-            override fun dataLength(relativePath: String): Long =
-                findResource(relativePath)?.first ?: 0
-
-            override fun dataInputStream(relativePath: String): InputStream =
-                ByteArrayInputStream(data(relativePath))
+        fetcher = object : Fetcher {
 
             private fun findResource(relativePath: String): Pair<Long, Link>? =
                 readingOrder.find { it.second.href == relativePath }
+
+            override val links: List<Link> = emptyList()
+
+            override fun get(link: Link, parameters: HrefParameters): Resource = object : Resource {
+                override val link: Link = link
+
+                override val length = findResource(link.href)
+                    ?.let { Try.success(it.first) }
+                    ?: Try.failure(Resource.Error.NotFound)
+
+                override fun read(range: LongRange?): Try<ByteArray, Resource.Error> = Try.success(ByteArray(0))
+
+                override fun close() {}
+            }
+
+            override fun close() {}
         },
         presentation = Presentation(layout = layout),
         reflowablePositionLength = reflowablePositionLength

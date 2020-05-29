@@ -11,10 +11,11 @@ package org.readium.r2.streamer.parser.divina
 
 import org.json.JSONObject
 import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
-import org.readium.r2.streamer.parser.PerResourcePositionListFactory
+import org.readium.r2.streamer.parser.PerResourcePositionsService
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
@@ -88,17 +89,22 @@ class DiViNaParser : PublicationParser {
         val stringManifest = data.toString(Charset.defaultCharset())
         val json = JSONObject(stringManifest)
 
+        val positionsServiceFactory = { context: Publication.Service.Context ->
+            PerResourcePositionsService(
+                readingOrder = context.manifest.readingOrder,
+                fallbackMediaType = "image/*")
+        }
+
         //Parsing manifest.json & building publication object
-        val publication = Publication.fromJSON(json)
-            ?.copyWithPositionsFactory {
-                PerResourcePositionListFactory(
-                    readingOrder = readingOrder,
-                    fallbackMediaType = "image/*"
-                )
-            }
+        val manifest = Manifest.fromJSON(json)
             ?: return null
 
-        publication.type = Publication.TYPE.DiViNa
+        val publication = Publication(
+            manifest = manifest,
+            serviceFactories = listOf(positionsServiceFactory)
+        ).apply {
+            Publication.TYPE.DiViNa
+        }
 
         return PubBox(publication, container)
     }

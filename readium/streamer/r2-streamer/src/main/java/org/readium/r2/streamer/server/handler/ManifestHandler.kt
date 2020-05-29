@@ -17,7 +17,7 @@ import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.streamer.BuildConfig.DEBUG
-import org.readium.r2.streamer.fetcher.Fetcher
+import org.readium.r2.streamer.fetcher.ServingFetcher
 import timber.log.Timber
 import java.io.IOException
 
@@ -38,8 +38,8 @@ class ManifestHandler : RouterNanoHTTPD.DefaultHandler() {
 
     override fun get(uriResource: RouterNanoHTTPD.UriResource?, urlParams: Map<String, String>?, session: IHTTPSession?): Response {
         return try {
-            val fetcher = uriResource!!.initParameter(Fetcher::class.java)
-            newFixedLengthResponse(status, mimeType, fetcher.publication.manifest)
+            val fetcher = uriResource!!.initParameter(ServingFetcher::class.java)
+            newFixedLengthResponse(status, mimeType, fetcher.publication.manifest())
         } catch (e: IOException) {
             if (DEBUG) Timber.v(" IOException %s", e.toString())
             newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)

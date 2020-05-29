@@ -1,0 +1,80 @@
+/*
+ * Module: r2-streamer-kotlin
+ * Developers: Quentin Gliosca
+ *
+ * Copyright (c) 2020. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
+
+package org.readium.r2.streamer.fetcher
+
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
+import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.FileFetcher
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.encryption.Encryption
+import java.io.File
+import kotlin.test.assertNotNull
+
+class DeobfuscationTransformerTest {
+
+    private val identifier = "urn:uuid:36d5078e-ff7d-468e-a5f3-f47c14b91f2f"
+    private val transformer = DeobfuscationTransformer(identifier)
+    private val fetcher: Fetcher
+    private val font: ByteArray
+
+    init {
+        val deobfuscationDir = DeobfuscationTransformerTest::class.java
+            .getResource("deobfuscation/cut-cut.woff")
+            ?.path
+            ?.let { File(it).parent }
+        assertNotNull(deobfuscationDir)
+        fetcher = FileFetcher("/deobfuscation", deobfuscationDir)
+
+        val fontResult = fetcher.get(Link(href = "/deobfuscation/cut-cut.woff")).read()
+        assert(fontResult.isSuccess)
+        font = fontResult.success
+    }
+
+    private fun deobfuscate(href: String, algorithm: String): Resource {
+        val properties = mapOf(
+            "encrypted" to  Encryption(
+                algorithm = algorithm
+            ).toJSON().toMap()
+        )
+        val obfuscatedRes = fetcher.get(
+            Link(
+                href = href,
+                properties = Properties(properties)
+            )
+        )
+        return transformer.transform(obfuscatedRes)
+    }
+
+    @Test
+    fun testIdpfDeobfuscation() {
+        val deobfuscatedRes = deobfuscate(
+            "/deobfuscation/cut-cut.obf.woff",
+            "http://www.idpf.org/2008/embedding"
+        ).read()
+        assert(deobfuscatedRes.isSuccess)
+        assertThat(deobfuscatedRes.success).isEqualTo(font)
+    }
+
+    @Test
+    fun testAdobeDeobfuscation() {
+        val deobfuscatedRes = deobfuscate(
+            "/deobfuscation/cut-cut.adb.woff",
+            "http://ns.adobe.com/pdf/enc#RC"
+        ).read()
+        assert(deobfuscatedRes.isSuccess)
+        assertThat(deobfuscatedRes.success).isEqualTo(font)
+    }
+
+}

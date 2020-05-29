@@ -1,5 +1,5 @@
 /*
- * Module: r2-shared-kotlin
+ * Module: r2-streamer-kotlin
  * Developers: Mickaël Menu
  *
  * Copyright (c) 2020. Readium Foundation. All rights reserved.
@@ -14,18 +14,18 @@ import org.junit.Test
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 
-class PerResourcePositionListFactoryTest {
+class PerResourcePositionsServiceTest {
 
     @Test
-    fun `Create from an empty {readingOrder}`() {
-        val factory = PerResourcePositionListFactory(readingOrder = emptyList())
+    fun `Positions from an empty {readingOrder}`() {
+        val service = PerResourcePositionsService(readingOrder = emptyList())
 
-        assertEquals(0, factory.create().size)
+        assertEquals(0, service.positions.size)
     }
 
     @Test
-    fun `Create from a {readingOrder} with one resource`() {
-        val factory = PerResourcePositionListFactory(readingOrder = listOf(
+    fun `Positions from a {readingOrder} with one resource`() {
+        val service = PerResourcePositionsService(readingOrder = listOf(
             Link(href = "res", type = "image/png")
         ))
 
@@ -38,13 +38,13 @@ class PerResourcePositionListFactoryTest {
                     totalProgression = 0.0
                 )
             )),
-            factory.create()
+            service.positions
         )
     }
 
     @Test
-    fun `Create from a {readingOrder} with a few resources`() {
-        val factory = PerResourcePositionListFactory(readingOrder = listOf(
+    fun `Positions from a {readingOrder} with a few resources`() {
+        val service = PerResourcePositionsService(readingOrder = listOf(
             Link(href = "res"),
             Link(href = "chap1", type = "image/png"),
             Link(href = "chap2", type = "image/png", title = "Chapter 2")
@@ -78,13 +78,13 @@ class PerResourcePositionListFactoryTest {
                     )
                 )
             ),
-            factory.create()
+            service.positions
         )
     }
 
     @Test
     fun `{type} fallbacks on the given media type`() {
-        val factory = PerResourcePositionListFactory(
+        val services = PerResourcePositionsService(
             readingOrder = listOf(
                 Link(href = "res")
             ),
@@ -100,7 +100,7 @@ class PerResourcePositionListFactoryTest {
                     totalProgression = 0.0
                 )
             )),
-            factory.create()
+            services.positions
         )
     }
 

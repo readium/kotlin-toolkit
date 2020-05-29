@@ -51,7 +51,7 @@ internal class PublicationFactory(
 
     private val itemrefByIdref = spine.itemrefs.associateBy(Itemref::idref)
 
-    fun create(): Publication {
+    fun create(): Manifest {
         // Compute metadata
         val metadata = pubMetadata.metadata()
         val metadataLinks = links.mapNotNull(::mapEpubLink)
@@ -69,7 +69,7 @@ internal class PublicationFactory(
             navigationData.minus("toc").map { PublicationCollection(links = it.value, role = it.key) }
 
         // Build Publication object
-        return Publication(
+        return Manifest(
             metadata = metadata,
             links = metadataLinks,
             readingOrder = readingOrder,
@@ -78,7 +78,7 @@ internal class PublicationFactory(
             otherCollections = otherCollections
         ).apply {
             type = Publication.TYPE.EPUB
-            version = epubVersion
+            version = packageDocument.epubVersion
         }
     }
 

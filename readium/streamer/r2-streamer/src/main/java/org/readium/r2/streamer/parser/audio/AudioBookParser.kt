@@ -11,6 +11,7 @@ package org.readium.r2.streamer.parser.audio
 
 import org.json.JSONObject
 import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
@@ -86,7 +87,7 @@ class AudioBookParser : PublicationParser {
             }
         }
 
-        val publication = Publication.fromJSON(json, hrefNormalizer)
+        val publication = Manifest.fromJSON(json, hrefNormalizer)?.let { Publication(it) }
 
         publication?.type = Publication.TYPE.AUDIO
 

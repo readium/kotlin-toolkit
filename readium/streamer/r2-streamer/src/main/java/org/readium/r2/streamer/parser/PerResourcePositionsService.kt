@@ -1,5 +1,5 @@
 /*
- * Module: r2-shared-kotlin
+ * Module: r2-streamer-kotlin
  * Developers: Mickaël Menu
  *
  * Copyright (c) 2020. Readium Foundation. All rights reserved.
@@ -12,9 +12,11 @@ package org.readium.r2.streamer.parser
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.PositionsService
+
 
 /**
- * Creates the [positions] for a [Publication] that will have one position per [readingOrder]
+ * Positions Service for a [Publication] that will have one position per [readingOrder]
  * resource.
  *
  * This is used for CBZ and DiViNa formats.
@@ -25,15 +27,15 @@ import org.readium.r2.shared.publication.Publication
  * @param fallbackMediaType Media type that will be used as a fallback if the Link doesn't specify
  *        any.
  */
-internal class PerResourcePositionListFactory(
+internal class PerResourcePositionsService(
     private val readingOrder: List<Link>,
     private val fallbackMediaType: String = ""
-) : Publication.PositionListFactory {
+) : PositionsService {
 
-    override fun create(): List<Locator> {
+    override val positions: List<Locator> by lazy {
         val pageCount = readingOrder.size
 
-        return readingOrder.mapIndexed { index, link ->
+        readingOrder.mapIndexed { index, link ->
             Locator(
                 href = link.href,
                 type = link.type ?: fallbackMediaType,
@@ -47,3 +49,4 @@ internal class PerResourcePositionListFactory(
     }
 
 }
+

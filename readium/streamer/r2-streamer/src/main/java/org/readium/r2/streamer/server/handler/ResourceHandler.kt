@@ -2,7 +2,7 @@
  * Module: r2-streamer-kotlin
  * Developers: Aferdita Muriqi, Clément Baumann
  *
- * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Copyright (c) 2020. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -13,16 +13,15 @@ import org.nanohttpd.protocols.http.IHTTPSession
 import org.nanohttpd.protocols.http.NanoHTTPD.MIME_PLAINTEXT
 import org.nanohttpd.protocols.http.response.IStatus
 import org.nanohttpd.protocols.http.response.Response
-import org.nanohttpd.protocols.http.response.Response.newChunkedResponse
 import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.streamer.BuildConfig.DEBUG
-import org.readium.r2.streamer.fetcher.Fetcher
+import org.readium.r2.streamer.fetcher.ServingFetcher
 import timber.log.Timber
 import java.io.IOException
-import java.io.InputStream
 
 
 class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
@@ -41,38 +40,28 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
     override fun get(uriResource: RouterNanoHTTPD.UriResource?, urlParams: Map<String, String>?,
                      session: IHTTPSession?): Response? {
-        try {
+        return try {
             if (DEBUG) Timber.v("Method: ${session!!.method}, Uri: ${session.uri}")
-            val fetcher = uriResource!!.initParameter(Fetcher::class.java)
+            val fetcher = uriResource!!.initParameter(ServingFetcher::class.java)
 
             val filePath = getHref(session!!.uri)
             val link = fetcher.publication.linkWithHref(filePath)!!
             val mediaType = link.mediaType ?: MediaType.BINARY
-
-            // If the content is of type html return the response this is done to
-            // skip the check for following font deobfuscation check
-            if (mediaType.isHtml) {
-                return serveResponse(session, fetcher.dataStream(filePath), mediaType.toString())
-            }
-
-            // ********************
-            //  FONT DEOBFUSCATION
-            // ********************
-
-            return serveResponse(session, fetcher.dataStream(filePath), mediaType.toString())
+            val resource = fetcher.get(link, urlParams.orEmpty())
+            serveResponse(session, resource, mediaType.toString())
         } catch (e: Exception) {
             if (DEBUG) Timber.e(e)
-            return newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
+            newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
     }
 
-    private fun serveResponse(session: IHTTPSession, inputStream: InputStream, mimeType: String): Response {
+    private fun serveResponse(session: IHTTPSession, resource: Resource, mimeType: String): Response {
         var response: Response?
         var rangeRequest: String? = session.headers["range"]
 
         try {
             // Calculate etag
-            val etag = Integer.toHexString(inputStream.hashCode())
+            val etag = Integer.toHexString(resource.hashCode()) //FIXME: Is this working?
 
             // Support skipping:
             var startFrom: Long = 0
@@ -93,35 +82,47 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             }
 
             // Change return code and add Content-Range header when skipping is requested
-            val streamLength = inputStream.available().toLong()
+            val dataLength = resource.length.let {
+                if (it.isSuccess) {
+                    it.success
+                } else
+                    return responseFromFailure(it.failure)
+            }
+
             if (rangeRequest != null && startFrom >= 0) {
-                if (startFrom >= streamLength) {
+                if (startFrom >= dataLength) {
                     response = createResponse(Status.RANGE_NOT_SATISFIABLE, MIME_PLAINTEXT, "")
-                    response.addHeader("Content-Range", "bytes 0-0/$streamLength")
+                    response.addHeader("Content-Range", "bytes 0-0/$dataLength")
                     response.addHeader("ETag", etag)
                 } else {
                     if (endAt < 0) {
-                        endAt = streamLength - 1
-                    }
-                    var newLen = endAt - startFrom + 1
-                    if (newLen < 0) {
-                        newLen = 0
+                        endAt = dataLength - 1
                     }
 
-                    val dataLen = newLen
-                    inputStream.skip(startFrom)
+                    val data = resource.read(startFrom..endAt).let {
+                        if (it.isSuccess)
+                            it.success
+                        else
+                            return responseFromFailure(it.failure)
+                    }
 
-                    response = createResponse(Status.PARTIAL_CONTENT, mimeType, inputStream)
-                    response.addHeader("Content-Length", "" + dataLen)
-                    response.addHeader("Content-Range", "bytes $startFrom-$endAt/$streamLength")
+                    response = createResponse(Status.PARTIAL_CONTENT, mimeType, data)
+                    response.addHeader("Content-Length", data.size.toString())
+                    response.addHeader("Content-Range", "bytes $startFrom-$endAt/$dataLength")
                     response.addHeader("ETag", etag)
                 }
             } else {
                 if (etag == session.headers["if-none-match"])
                     response = createResponse(Status.NOT_MODIFIED, mimeType, "")
                 else {
-                    response = createResponse(Status.OK, mimeType, inputStream)
-                    response.addHeader("Content-Length", "" + streamLength)
+                    val data = resource.read().let {
+                        if (it.isSuccess)
+                            it.success
+                        else
+                            return responseFromFailure(it.failure)
+                    }
+                    response = createResponse(Status.OK, mimeType, data)
+                    response.addHeader("Content-Length", data.size.toString())
                     response.addHeader("ETag", etag)
                 }
             }
@@ -134,8 +135,8 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         return response ?: getResponse("Error 404: File not found")
     }
 
-    private fun createResponse(status: Status, mimeType: String, message: InputStream): Response {
-        val response = newChunkedResponse(status, mimeType, message)
+    private fun createResponse(status: Status, mimeType: String, message: ByteArray): Response {
+        val response = newFixedLengthResponse(status, mimeType, message)
         response.addHeader("Accept-Ranges", "bytes")
         return response
     }
@@ -153,6 +154,17 @@ class ResourceHandler : RouterNanoHTTPD.DefaultHandler() {
     private fun getHref(path: String): String {
         val offset = path.indexOf("/", 0)
         val startIndex = path.indexOf("/", offset + 1)
-        return path.substring(startIndex + 1)
+        return path.substring(startIndex )
     }
+
+    private fun responseFromFailure(error: Resource.Error): Response {
+        val status = when(error) {
+            is Resource.Error.NotFound -> Status.NOT_FOUND
+            is Resource.Error.Forbidden -> Status.FORBIDDEN
+            is Resource.Error.Unavailable -> Status.SERVICE_UNAVAILABLE
+            is Resource.Error.Other -> Status.INTERNAL_ERROR
+        }
+        return newFixedLengthResponse(status, mimeType, ResponseStatus.FAILURE_RESPONSE)
+    }
+
 }

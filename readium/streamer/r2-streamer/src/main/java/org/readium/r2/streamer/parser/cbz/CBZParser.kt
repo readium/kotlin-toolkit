@@ -9,22 +9,19 @@
 
 package org.readium.r2.streamer.parser.cbz
 
-import android.net.Uri
-import android.os.Build
-import android.text.TextUtils
+import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
-import org.readium.r2.streamer.parser.PerResourcePositionListFactory
+import org.readium.r2.streamer.parser.PerResourcePositionsService
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import java.nio.file.Paths
 import java.security.MessageDigest
 import kotlin.experimental.and
 
@@ -64,6 +61,9 @@ class CBZParser : PublicationParser {
     }
 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
+        val fetcher = ArchiveFetcher.fromPath(fileAtPath)
+            ?: return null
+
         val container = try {
             generateContainerFrom(fileAtPath)
         } catch (e: Exception) {
@@ -90,19 +90,28 @@ class CBZParser : PublicationParser {
                 rels = if (index == 0) setOf("cover") else emptySet()
             )
         }
-        val publication = Publication(
+        val manifest = Manifest(
             metadata = metadata,
             readingOrder = readingOrder,
             otherCollections = listOf(
                 PublicationCollection(role = "images", links = readingOrder)
-            ),
-            positionsFactory = PerResourcePositionListFactory(
-                readingOrder = readingOrder,
-                fallbackMediaType = "image/*"
             )
         )
 
-        publication.type = Publication.TYPE.CBZ
+        val positionsServiceFactory = { context: Publication.Service.Context ->
+            PerResourcePositionsService(
+                readingOrder = context.manifest.readingOrder,
+                fallbackMediaType = "image/*")
+        }
+
+        val publication = Publication(
+            manifest = manifest,
+            fetcher = fetcher,
+            serviceFactories = listOf(positionsServiceFactory)
+        ).apply {
+            type =  Publication.TYPE.CBZ
+        }
+
         return PubBox(publication, container)
     }
 

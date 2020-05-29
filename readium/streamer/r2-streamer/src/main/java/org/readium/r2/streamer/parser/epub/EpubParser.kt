@@ -11,13 +11,13 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.fetcher.TransformingFetcher
+import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.ContentLayout
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
@@ -27,6 +27,8 @@ import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.shared.normalize
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.streamer.fetcher.DecryptionTransformer
+import org.readium.r2.streamer.fetcher.DeobfuscationTransformer
 import timber.log.Timber
 import java.io.File
 
@@ -88,6 +90,8 @@ class EpubParser : PublicationParser {
             return null
         }
 
+        val zipFetcher = ArchiveFetcher.fromPath(fileAtPath)
+            ?: return null
         val containerXml = parseXmlDocument(Paths.CONTAINER, container)
             ?: return null
         val opfPath = getRootFilePath(containerXml)
@@ -101,30 +105,32 @@ class EpubParser : PublicationParser {
             rootFilePath = opfPath
         }
 
-        val publication = PublicationFactory(
+        val manifest = PublicationFactory(
                 fallbackTitle = fallbackTitle,
                 packageDocument = packageDocument,
                 navigationData = parseNavigationData(packageDocument, container),
                 encryptionData = parseEncryptionData(container),
                 displayOptions = parseDisplayOptions(container)
             ).create()
-            .copyWithPositionsFactory {
-                EpubPositionListFactory(
-                    container = container,
-                    readingOrder = readingOrder,
-                    presentation = metadata.presentation,
-                    // We split reflowable resources every 1024 bytes.
-                    reflowablePositionLength = 1024L
-                )
-            }
-            .apply {
-                internalData["type"] = "epub"
-                internalData["rootfile"] = opfPath
 
-                // This might need to be moved as it's not really about parsing the EPUB but it
-                // sets values needed (in UserSettings & ContentFilter)
-                setLayoutStyle()
-            }
+        val transformers = listOfNotNull(
+            container.drm?.let { DecryptionTransformer(it)::transform },
+            manifest.metadata.identifier?.let { DeobfuscationTransformer(it)::transform }
+        )
+        val fetcher = TransformingFetcher(zipFetcher, transformers)
+
+        val publication = Publication(
+            manifest = manifest,
+            fetcher = fetcher,
+            serviceFactories = listOf((EpubPositionsService)::create)
+        ).apply {
+            internalData["type"] = "epub"
+            internalData["rootfile"] = opfPath
+
+            // This might need to be moved as it's not really about parsing the EPUB but it
+            // sets values needed (in UserSettings & ContentFilter)
+            setLayoutStyle()
+        }
 
         return PubBox(publication, container)
     }
