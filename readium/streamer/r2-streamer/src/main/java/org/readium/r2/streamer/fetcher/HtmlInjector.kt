@@ -23,7 +23,7 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.streamer.server.Resources
 import java.io.File
 
-class HtmlInjector(
+internal class HtmlInjector(
     val publication: Publication,
     val userPropertiesPath: String?,
     val customResources: Resources? = null

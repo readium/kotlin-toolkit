@@ -29,14 +29,14 @@ import org.readium.r2.shared.publication.services.PositionsService
  */
 internal class PerResourcePositionsService(
     private val readingOrder: List<Link>,
-    private val fallbackMediaType: String = ""
+    private val fallbackMediaType: String
 ) : PositionsService {
 
-    override val positions: List<Locator> by lazy {
+    override val positionsByReadingOrder: List<List<Locator>> by lazy {
         val pageCount = readingOrder.size
 
         readingOrder.mapIndexed { index, link ->
-            Locator(
+            listOf(Locator(
                 href = link.href,
                 type = link.type ?: fallbackMediaType,
                 title = link.title,
@@ -44,8 +44,19 @@ internal class PerResourcePositionsService(
                     position = index + 1,
                     totalProgression = index.toDouble() / pageCount.toDouble()
                 )
+            ))
+        }
+    }
+
+    companion object {
+
+        fun createFactory(fallbackMediaType: String = ""): (Publication.Service.Context) -> PerResourcePositionsService = {
+            PerResourcePositionsService(
+                readingOrder = it.manifest.readingOrder,
+                fallbackMediaType = fallbackMediaType
             )
         }
+
     }
 
 }

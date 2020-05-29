@@ -98,16 +98,12 @@ class CBZParser : PublicationParser {
             )
         )
 
-        val positionsServiceFactory = { context: Publication.Service.Context ->
-            PerResourcePositionsService(
-                readingOrder = context.manifest.readingOrder,
-                fallbackMediaType = "image/*")
-        }
-
         val publication = Publication(
             manifest = manifest,
             fetcher = fetcher,
-            serviceFactories = listOf(positionsServiceFactory)
+            serviceFactories = listOf(
+                PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
+            )
         ).apply {
             type =  Publication.TYPE.CBZ
         }

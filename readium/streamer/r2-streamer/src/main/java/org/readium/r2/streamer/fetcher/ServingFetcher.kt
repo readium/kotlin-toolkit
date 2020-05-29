@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.fetcher
 
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.HrefParameters
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -19,7 +20,7 @@ internal class ServingFetcher(
     val publication: Publication,
     userPropertiesPath: String?,
     customResources: Resources? = null
-) : org.readium.r2.shared.fetcher.Fetcher {
+) : Fetcher {
 
     private val htmlInjector: HtmlInjector = HtmlInjector(publication, userPropertiesPath, customResources)
 
