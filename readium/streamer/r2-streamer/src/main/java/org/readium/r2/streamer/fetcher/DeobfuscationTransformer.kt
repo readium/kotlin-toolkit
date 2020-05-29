@@ -41,9 +41,7 @@ internal class DeobfuscationTransformer(private val pubId: String) {
     }
 
     private fun deobfuscate(resource: Resource, obfuscationKey: ByteArray, obfuscationLength: Int): Resource =
-        object: Resource {
-            override val link: Link = resource.link
-
+        object: Resource by resource {
             override val length: Try<Long, Resource.Error> = resource.length
 
             override fun read(range: LongRange?): Try<ByteArray, Resource.Error> = resource.read(range).map {
@@ -54,8 +52,6 @@ internal class DeobfuscationTransformer(private val pubId: String) {
                     it[i] = it[i].xor(obfuscationKey[i % obfuscationKey.size])
                 it
             }
-
-            override fun close() = resource.close()
         }
 
     private fun getHashKeyAdobe(pubId: String) =
