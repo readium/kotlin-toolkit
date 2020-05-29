@@ -37,7 +37,7 @@ class ArchiveFetcher private constructor(private val archive: ZipFile) : Fetcher
 
     private class ZipResource(override val link: Link, val archive: ZipFile) : StreamResource() {
 
-        override fun stream(): Try<InputStream, Resource.Error> {
+        override fun stream(): ResourceTry<InputStream> {
             val entry = entryForHref(link.href)
             return if (entry == null)
                 Try.failure(Resource.Error.NotFound)

@@ -66,7 +66,7 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
 
     private class FileResource(override val link: Link, private val file: RandomAccessFile) : StreamResource() {
 
-        override fun stream(): Try<InputStream, Resource.Error> {
+        override fun stream(): ResourceTry<InputStream> {
             val stream = Channels.newInputStream(file.channel).buffered()
             return Try.success(stream)
         }

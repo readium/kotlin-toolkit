@@ -12,11 +12,13 @@ package org.readium.r2.shared.fetcher
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.flatMap
 import java.io.InputStream
-import java.lang.IllegalArgumentException
 import java.nio.charset.Charset
 
-/** Acts as a proxy to an actual resource by handling read access. */
+/**
+ * Acts as a proxy to an actual resource by handling read access.
+ */
 interface Resource {
 
     /**
@@ -33,7 +35,7 @@ interface Resource {
      * This value must be treated as a hint, as it might not reflect the actual bytes length. To get
      * the real length, you need to read the whole resource.
      */
-    val length: Try<Long, Error>
+    val length: ResourceTry<Long>
 
     /**
      * Reads the bytes at the given range.
@@ -41,7 +43,7 @@ interface Resource {
      * When [range] is null, the whole content is returned. Out-of-range indexes are clamped to the
      * available length automatically.
      */
-    fun read(range: LongRange? = null): Try<ByteArray, Error>
+    fun read(range: LongRange? = null): ResourceTry<ByteArray>
 
     /**
      * Reads the full content as a [String].
@@ -49,7 +51,7 @@ interface Resource {
      * If [charset] is null, then it is parsed from the `charset` parameter of `link.type`, or falls
      * back on UTF-8.
      */
-    fun readAsString(charset: Charset? = null): Try<String, Error> =
+    fun readAsString(charset: Charset? = null): ResourceTry<String> =
         read().tryMap {
             String(it, charset = charset ?: link.mediaType?.charset ?: Charsets.UTF_8)
         }
@@ -59,7 +61,7 @@ interface Resource {
      */
     fun close()
 
-    sealed class Error {
+    sealed class Error : Throwable() {
 
         /** Equivalent to a 404 HTTP error. */
         object NotFound : Error()
@@ -96,9 +98,9 @@ internal typealias ResourceTransformer = (Resource) -> Resource
 /** Creates a Resource that will always return the given [error]. */
 class FailureResource(override val link: Link, private val error: Resource.Error) : Resource {
 
-    override fun read(range: LongRange?): Try<ByteArray, Resource.Error> = Try.failure(error)
+    override fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
 
-    override val length:  Try<Long, Resource.Error> = Try.failure(error)
+    override val length:  ResourceTry<Long> = Try.failure(error)
 
     override fun close() {}
 }
@@ -107,7 +109,7 @@ class FailureResource(override val link: Link, private val error: Resource.Error
 open class BytesResource(override val link: Link, private val bytes: () -> ByteArray) : Resource {
     private val byteArray by lazy(bytes)
 
-    override fun read(range: LongRange?): Try<ByteArray, Resource.Error> {
+    override fun read(range: LongRange?): ResourceTry<ByteArray> {
         if (range == null)
             return Try.success(byteArray)
 
@@ -117,7 +119,7 @@ open class BytesResource(override val link: Link, private val bytes: () -> ByteA
         return Try.success(byteRange)
     }
 
-    override val length: Try<Long, Resource.Error> = Try.success(byteArray.size.toLong())
+    override val length: ResourceTry<Long> = Try.success(byteArray.size.toLong())
 
     override fun close() {}
 }
@@ -127,23 +129,23 @@ class StringResource(link: Link, string: () -> String) : BytesResource(link, { s
 
 internal abstract class StreamResource : Resource {
 
-    protected abstract fun stream(): Try<InputStream, Resource.Error>
+    protected abstract fun stream(): ResourceTry<InputStream>
 
     /** An estimate of data length from metadata */
     protected abstract val metadataLength: Long?
 
-    override fun read(range: LongRange?): Try<ByteArray, Resource.Error> =
+    override fun read(range: LongRange?): ResourceTry<ByteArray> =
         if (range == null)
             readFully()
         else
             readRange(range)
 
-    private fun readFully(): Try<ByteArray, Resource.Error> =
+    private fun readFully(): ResourceTry<ByteArray> =
         stream().tryMap { stream ->
             stream.use { it.readBytes() }
         }
 
-    private fun readRange(range: LongRange): Try<ByteArray, Resource.Error> =
+    private fun readRange(range: LongRange): ResourceTry<ByteArray> =
         stream().tryMap { stream ->
             @Suppress("NAME_SHADOWING")
             val range = checkedRange(range)
@@ -159,7 +161,7 @@ internal abstract class StreamResource : Resource {
             }
         }
 
-    override val length: Try<Long, Resource.Error>
+    override val length: ResourceTry<Long>
         get() =
             metadataLength?.let { Try.success(it) }
                 ?: readFully().map { it.size.toLong() }
@@ -173,15 +175,21 @@ private fun checkedRange(range: LongRange): LongRange =
     else
         LongRange(range.first.coerceAtLeast(0), range.last)
 
+typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Error>
+
 /**
  * Maps the result with the given [transform]
  *
  * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Error.Other.
  */
-internal fun <R, S> Try<S, Resource.Error>.tryMap(transform: (value: S) -> R): Try<R, Resource.Error> =
+fun <R, S> ResourceTry<S>.tryMap(transform: (value: S) -> R): ResourceTry<R> =
     when {
         isSuccess ->
             try { Try.success((transform(success))) }
-            catch(e: Exception) { Try.failure(Resource.Error.Other(e)) }
+            catch (e: Resource.Error) { Try.failure(e) }
+            catch (e: Exception) { Try.failure(Resource.Error.Other(e)) }
         else -> Try.failure(failure)
     }
+
+fun <R, S> ResourceTry<S>.tryFlatMap(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
+    tryMap(transform).flatMap { it }
