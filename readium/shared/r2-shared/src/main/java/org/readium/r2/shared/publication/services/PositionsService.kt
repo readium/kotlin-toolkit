@@ -23,19 +23,29 @@ private val positionsLink = Link(
     rels = setOf("http://readium.org/position-list")
 )
 
-
+/**
+ * Provides a list of discrete locations in the publication, no matter what the original format is.
+ */
 interface PositionsService : Publication.Service {
 
-    override val links get() = listOf(positionsLink)
+    /**
+     * List of all the positions in the publication, grouped by the resource reading order index.
+     */
+    val positionsByReadingOrder: List<List<Locator>>
 
-    val positions: List<Locator>
+    /**
+     * List of all the positions in the publication.
+     */
+    val positions: List<Locator> get() = positionsByReadingOrder.flatten()
+
+    override val links get() = listOf(positionsLink)
 
     override fun get(link: Link, parameters: Map<String, String>): Resource? =
         if (link.href != positionsLink.href)
             null
         else
             StringResource(positionsLink) {
-                JSONObject().run {
+                JSONObject().apply {
                     put("total", positions.size)
                     put("positions", positions.toJSON())
                 }.toString()
@@ -44,22 +54,24 @@ interface PositionsService : Publication.Service {
 }
 
 /**
+ * List of all the positions in the publication, grouped by the resource reading order index.
+ */
+val Publication.positionsByReadingOrder: List<List<Locator>> get() {
+    val service = findService(PositionsService::class.java)
+    return service?.positionsByReadingOrder ?: emptyList()
+}
+
+/**
  * List of all the positions in the publication.
  */
 val Publication.positions: List<Locator> get() {
     val service = findService(PositionsService::class.java)
-    return service?.positions ?: positionsFactory?.create() ?: emptyList()
+    return service?.positions ?: emptyList()
 }
 
 /**
  * List of all the positions in each resource, indexed by their href.
  */
+@Deprecated("Use [positionsByReadingOrder] instead", ReplaceWith("positionsByReadingOrder"))
 val Publication.positionsByResource: Map<String, List<Locator>>
     get() = positions.groupBy { it.href }
-
-/**
- * List of all the positions in the publication, grouped by the resource reading order index.
- */
-val Publication.positionsByReadingOrder: List<List<Locator>>
-    get() = readingOrder.map { positionsByResource[it.href].orEmpty() }
-

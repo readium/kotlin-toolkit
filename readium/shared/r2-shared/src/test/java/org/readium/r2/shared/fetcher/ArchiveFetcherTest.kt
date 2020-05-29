@@ -9,12 +9,19 @@
 
 package org.readium.r2.shared.fetcher
 
+import android.webkit.MimeTypeMap
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Link
+import org.robolectric.Shadows
+import org.robolectric.annotation.Config
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [28])
 class ArchiveFetcherTest {
 
     private val fetcher: Fetcher
@@ -29,22 +36,27 @@ class ArchiveFetcherTest {
 
     @Test
     fun `Link list is correct`() {
+        Shadows.shadowOf(MimeTypeMap.getSingleton()).apply {
+            addExtensionMimeTypMapping("css", "text/css")
+            addExtensionMimeTypMapping("png", "image/png")
+            addExtensionMimeTypMapping("xml", "text/xml")
+        }
+
         assertEquals(
             listOf(
-                "mimetype",
-                "EPUB/cover.xhtml",
-                "EPUB/css/epub.css",
-                "EPUB/css/nav.css",
-                "EPUB/images/cover.png",
-                "EPUB/nav.xhtml",
-                "EPUB/package.opf",
-                "EPUB/s04.xhtml",
-                "EPUB/toc.ncx",
-                "META-INF/container.xml"
-            ).map { Link(href = it) },
+                "mimetype" to null,
+                "EPUB/cover.xhtml" to "text/html",
+                "EPUB/css/epub.css" to "text/css",
+                "EPUB/css/nav.css" to "text/css",
+                "EPUB/images/cover.png" to "image/png",
+                "EPUB/nav.xhtml" to "text/html",
+                "EPUB/package.opf" to null,
+                "EPUB/s04.xhtml" to "text/html",
+                "EPUB/toc.ncx" to null,
+                "META-INF/container.xml" to "text/xml"
+            ).map { (href, type) -> Link(href = href, type = type) }.toList(),
             fetcher.links
         )
-
     }
 
     @Test

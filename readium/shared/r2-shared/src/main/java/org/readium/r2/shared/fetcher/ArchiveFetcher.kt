@@ -9,8 +9,10 @@
 
 package org.readium.r2.shared.fetcher
 
+import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
+import java.io.File
 import java.io.InputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
@@ -18,10 +20,11 @@ import java.util.zip.ZipFile
 /** Provides access to entries of an archive. */
 class ArchiveFetcher private constructor(private val archive: ZipFile) : Fetcher {
 
-    override val links: List<Link>
-        get() = archive.entries().toList().mapNotNull {
-            Link(href = it.name)
+    override val links: List<Link> by lazy {
+        archive.entries().toList().mapNotNull {
+            Link(href = it.name, type = Format.of(fileExtension = File(it.name).extension)?.mediaType?.toString())
         }
+    }
 
     override fun get(link: Link, parameters: HrefParameters): Resource =
         ZipResource(link, archive)

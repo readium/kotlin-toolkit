@@ -22,35 +22,50 @@ class PositionsServiceTest {
     @Test
     fun `get works fine`() {
         val positions = listOf(
-            Locator(
-                href = "res",
-                type = "application/xml",
-                locations = Locator.Locations(
-                    position = 1,
-                    totalProgression = 0.0
+            listOf(
+                Locator(
+                    href = "res",
+                    type = "application/xml",
+                    locations = Locator.Locations(
+                        position = 1,
+                        totalProgression = 0.0
+                    )
                 )
             ),
-            Locator(
-                href = "chap1",
-                type = "image/png",
-                locations = Locator.Locations(
-                    position = 2,
-                    totalProgression = 1.0 / 3.0
+            listOf(
+                Locator(
+                    href = "chap1",
+                    type = "image/png",
+                    locations = Locator.Locations(
+                        position = 2,
+                        totalProgression = 1.0 / 4.0
+                    )
                 )
             ),
-            Locator(
-                href = "chap2",
-                type = "image/png",
-                title = "Chapter 2",
-                locations = Locator.Locations(
-                    position = 3,
-                    totalProgression = 2.0 / 3.0
+            listOf(
+                Locator(
+                    href = "chap2",
+                    type = "image/png",
+                    title = "Chapter 2",
+                    locations = Locator.Locations(
+                        position = 3,
+                        totalProgression = 3.0 / 4.0
+                    )
+                ),
+                Locator(
+                    href = "chap2",
+                    type = "image/png",
+                    title = "Chapter 2.5",
+                    locations = Locator.Locations(
+                        position = 4,
+                        totalProgression = 3.0 / 4.0
+                    )
                 )
             )
         )
 
         val service = object : PositionsService {
-            override val positions: List<Locator> = positions
+            override val positionsByReadingOrder: List<List<Locator>> = positions
         }
 
         val json = service.get(Link("/~readium/positions"))
@@ -69,7 +84,7 @@ class PositionsServiceTest {
                 )
             } }
 
-        assertEquals(positions.size, total)
-        assertEquals(positions, locators)
+        assertEquals(positions.flatten().size, total)
+        assertEquals(positions.flatten(), locators)
     }
 }

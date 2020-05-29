@@ -9,7 +9,8 @@
 
 package org.readium.r2.shared.publication
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
@@ -50,7 +51,7 @@ class PublicationTest {
             createPublication(
                 positionsServiceFactory = { context ->
                     object: PositionsService {
-                        override val positions: List<Locator> = listOf(Locator(href = "locator", type = ""))
+                        override val positionsByReadingOrder: List<List<Locator>> = listOf(listOf(Locator(href = "locator", type = "")))
                     }
                 }
             ).positions
@@ -71,10 +72,12 @@ class PublicationTest {
             createPublication(
                 positionsServiceFactory = { context ->
                     object: PositionsService {
-                        override val positions: List<Locator> = listOf(
-                            Locator(href="res1", type = "text/html", title = "Loc A"),
-                            Locator(href="res2", type = "text/html", title = "Loc B"),
-                            Locator(href="res1", type = "text/html", title = "Loc B")
+                        override val positionsByReadingOrder: List<List<Locator>> = listOf(
+                            listOf(
+                                Locator(href="res1", type = "text/html", title = "Loc A"),
+                                Locator(href="res1", type = "text/html", title = "Loc B")
+                            ),
+                            listOf(Locator(href="res2", type = "text/html", title = "Loc B"))
                         )
                     }
                 }
