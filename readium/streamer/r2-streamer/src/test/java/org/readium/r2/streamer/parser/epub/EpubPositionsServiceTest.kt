@@ -9,18 +9,22 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.junit.Assert.assertEquals
+import org.junit.Assert.*
 import org.junit.Test
+import org.readium.r2.shared.RootFile
+import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.HrefParameters
 import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.ResourceTry
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.Try
+import org.readium.r2.streamer.container.Container
+import java.io.ByteArrayInputStream
+import java.io.InputStream
 
 class EpubPositionsServiceTest {
 

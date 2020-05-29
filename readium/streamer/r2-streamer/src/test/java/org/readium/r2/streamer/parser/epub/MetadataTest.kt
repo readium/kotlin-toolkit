@@ -18,7 +18,7 @@ import org.readium.r2.shared.publication.Contributor
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Subject
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.linkWithRel
+import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import kotlin.test.assertNotNull
@@ -321,9 +321,9 @@ class MetadataMiscTest {
             type = "image/jpeg",
             rels = setOf("cover")
         )
-        assertThat(parsePackageDocument("package/cover-epub2.opf").resources.linkWithRel("cover")).isEqualTo(expected)
-        assertThat(parsePackageDocument("package/cover-epub3.opf").resources.linkWithRel("cover")).isEqualTo(expected)
-        assertThat(parsePackageDocument("package/cover-mix.opf").resources.linkWithRel("cover")).isEqualTo(expected)
+        assertThat(parsePackageDocument("package/cover-epub2.opf").resources.firstWithRel("cover")).isEqualTo(expected)
+        assertThat(parsePackageDocument("package/cover-epub3.opf").resources.firstWithRel("cover")).isEqualTo(expected)
+        assertThat(parsePackageDocument("package/cover-mix.opf").resources.firstWithRel("cover")).isEqualTo(expected)
     }
 
     @Test(timeout = PARSE_PUB_TIMEOUT)
