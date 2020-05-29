@@ -733,14 +733,9 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             if (add) {
                 val publicationIdentifier = publication.metadata.identifier ?: ""
                 val author = publication.metadata.authorName
-                val cover = publication.coverLink?.href?.let {
-                    try {
-                        container.data(it)
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                        null
-                    }
-                }
+                val cover = publication.coverLink
+                    ?.let { publication.get(it) }
+                    ?.read()?.successOrNull()
                 val book = Book(title = publication.metadata.title, author = author, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = ".${format.fileExtension}", progression = "{}")
 
                 database.books.insert(book, false)?.let { id ->
@@ -932,6 +927,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                     catalogView.longSnackbar("Unsupported file")
                     progress.dismiss()
                 }
+
             }
 
         } else if (resultCode == RESULT_OK) {

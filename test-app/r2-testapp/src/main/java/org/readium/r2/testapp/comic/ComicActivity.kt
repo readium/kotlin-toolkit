@@ -21,6 +21,7 @@ import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.cbz.R2CbzActivity
 import org.readium.r2.shared.extensions.putPublicationFrom
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.BooksDatabase
 import org.readium.r2.testapp.library.LibraryActivity
