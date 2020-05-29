@@ -9,12 +9,12 @@
 
 package org.readium.r2.shared.opds
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import org.readium.r2.shared.publication.Link
-import java.io.Serializable
 
-
-data class Facet(val title: String) : Serializable {
+@Parcelize
+data class Facet(val title: String) : Parcelable {
     var metadata: OpdsMetadata = OpdsMetadata(title = title)
     var links = mutableListOf<Link>()
-
 }
