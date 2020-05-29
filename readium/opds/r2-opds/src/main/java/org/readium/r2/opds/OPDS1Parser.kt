@@ -288,7 +288,7 @@ class OPDS1Parser {
 
             links = links - images
 
-            return Publication(
+            val manifest = Manifest(
                 metadata = Metadata(
                     identifier = entry.getFirst("identifier", Namespaces.Dc)?.text
                         ?: entry.getFirst("id", Namespaces.Atom)?.text,
@@ -343,6 +343,7 @@ class OPDS1Parser {
                         ?.let { PublicationCollection(role = "images", links = it) }
                 )
             )
+            return Publication(manifest)
         }
 
         private fun addFacet(feed: Feed, link: Link, title: String) {
