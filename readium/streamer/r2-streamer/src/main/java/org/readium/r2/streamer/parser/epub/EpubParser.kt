@@ -11,24 +11,24 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.drm.DRM
-import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.fetcher.ArchiveFetcher
+import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.normalize
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.ContentLayout
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.DirectoryContainer
+import org.readium.r2.streamer.fetcher.DeobfuscationTransformer
+import org.readium.r2.streamer.fetcher.LcpDecryptionTransformer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
-import org.readium.r2.shared.normalize
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.streamer.fetcher.DecryptionTransformer
-import org.readium.r2.streamer.fetcher.DeobfuscationTransformer
 import timber.log.Timber
 import java.io.File
 
@@ -114,7 +114,7 @@ class EpubParser : PublicationParser {
             ).create()
 
         val transformers = listOfNotNull(
-            container.drm?.let { DecryptionTransformer(it)::transform },
+            container.drm?.let { LcpDecryptionTransformer(it)::transform },
             manifest.metadata.identifier?.let { DeobfuscationTransformer(it)::transform }
         )
         val fetcher = TransformingFetcher(zipFetcher, transformers)

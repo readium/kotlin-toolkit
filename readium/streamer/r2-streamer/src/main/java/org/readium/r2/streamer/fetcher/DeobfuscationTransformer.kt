@@ -12,9 +12,9 @@ package org.readium.r2.streamer.fetcher
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
 import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.ResourceTry
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.encryption.encryption
-import org.readium.r2.shared.util.Try
 import kotlin.experimental.xor
 
 internal class DeobfuscationTransformer(private val pubId: String) {
@@ -44,9 +44,9 @@ internal class DeobfuscationTransformer(private val pubId: String) {
         object: Resource {
             override val link: Link = resource.link
 
-            override val length: Try<Long, Resource.Error> = resource.length
+            override val length: ResourceTry<Long> = resource.length
 
-            override fun read(range: LongRange?): Try<ByteArray, Resource.Error> = resource.read(range).map {
+            override fun read(range: LongRange?): ResourceTry<ByteArray> = resource.read(range).map {
                 @Suppress("NAME_SHADOWING")
                 val range = range ?: (0L until it.size)
                 val toDeobfuscate = Math.max(range.start, 0L) .. Math.min(range.last, obfuscationLength - 1L)
