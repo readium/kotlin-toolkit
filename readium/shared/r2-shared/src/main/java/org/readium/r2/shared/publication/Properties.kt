@@ -16,7 +16,6 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.extensions.toMap
-import java.io.ObjectOutputStream
 
 /**
  * Properties associated to the linked resource.
@@ -33,6 +32,15 @@ data class Properties(
      * Serializes a [Properties] to its RWPM JSON representation.
      */
     override fun toJSON() = JSONObject(otherProperties)
+
+    /**
+     * Makes a copy of this [Properties] after merging in the given additional other [properties].
+     */
+    fun add(properties: Map<String, Any>): Properties {
+        val otherProperties = otherProperties.toMutableMap()
+        otherProperties.putAll(properties)
+        return copy(otherProperties = otherProperties)
+    }
 
     /**
      * Syntactic sugar to access the [otherProperties] values by subscripting [Properties] directly.

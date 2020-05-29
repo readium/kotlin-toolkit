@@ -286,6 +286,59 @@ class LinkTest {
     }
 
     @Test
+    fun `Make a copy after adding the given {properties}`() {
+        val link = Link(
+            href = "http://href",
+            type = "application/pdf",
+            templated = true,
+            title = "Link Title",
+            rels = setOf("publication", "cover"),
+            properties = Properties(otherProperties = mapOf("orientation" to "landscape")),
+            height = 1024,
+            width = 768,
+            bitrate = 74.2,
+            duration = 45.6,
+            languages = listOf("fr"),
+            alternates = listOf(
+                Link(href = "/alternate1"),
+                Link(href = "/alternate2")
+            ),
+            children = listOf(
+                Link(href = "http://child1"),
+                Link(href = "http://child2")
+            )
+        )
+
+        assertJSONEquals(
+            JSONObject("""{
+                "href": "http://href",
+                "type": "application/pdf",
+                "templated": true,
+                "title": "Link Title",
+                "rel": ["publication", "cover"],
+                "properties": {
+                    "orientation": "landscape",
+                    "additional": "property"
+                },
+                "height": 1024,
+                "width": 768,
+                "bitrate": 74.2,
+                "duration": 45.6,
+                "language": ["fr"],
+                "alternate": [
+                    {"href": "/alternate1", "templated": false},
+                    {"href": "/alternate2", "templated": false}
+                ],
+                "children": [
+                    {"href": "http://child1", "templated": false},
+                    {"href": "http://child2", "templated": false}
+                ]
+            }"""),
+            link.addProperties(mapOf("additional" to "property")).toJSON()
+        )
+    }
+
+    @Test
     fun `Find the first index of the {Link} with the given {href} in a list of {Link}`() {
         assertNull(listOf(Link(href = "href")).indexOfFirstWithHref("foobar"))
 
@@ -298,45 +351,5 @@ class LinkTest {
             ).indexOfFirstWithHref("href2")
         )
     }
-
-    @Test
-    fun `linksMatching finds all the links matching the given predicate`() {
-        assertEquals(
-            listOf(
-                Link(href = "href2"),
-                Link(href = "href3")
-            ),
-            listOf(
-                Link(href = "href1"),
-                Link(href = "href2"),
-                Link(href = "href3")
-            ).linksMatching { it.href in listOf("href2", "href3") }
-        )
-    }
-
-    @Test
-    fun `linkMatching finds the first link matching the given predicate`() {
-        assertEquals(
-                Link(href = "href2"),
-            listOf(
-                Link(href = "href1"),
-                Link(href = "href2"),
-                Link(href = "href3")
-            ).linkMatching { it.href in listOf("href2", "href3") }
-        )
-    }
-
-    @Test
-    fun `linkMatching returns null if no link matches the given predicate`() {
-        assertNull(
-            listOf(
-                Link(href = "href1"),
-                Link(href = "href2"),
-                Link(href = "href3")
-            ).linkMatching { it.href == "href4" }
-        )
-    }
-
-
 
 }

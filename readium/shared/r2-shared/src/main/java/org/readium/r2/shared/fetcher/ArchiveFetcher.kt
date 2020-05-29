@@ -23,7 +23,8 @@ class ArchiveFetcher private constructor(private val archive: ZipFile) : Fetcher
             Link(href = it.name)
         }
 
-    override fun get(link: Link, parameters: HrefParameters): Resource = ZipResource(link, archive)
+    override fun get(link: Link, parameters: HrefParameters): Resource =
+        ZipResource(link, archive)
 
     override fun close() = archive.close()
 
@@ -35,25 +36,34 @@ class ArchiveFetcher private constructor(private val archive: ZipFile) : Fetcher
         }
     }
 
-    private class ZipResource(override val link: Link, val archive: ZipFile) : StreamResource() {
+    private class ZipResource(val originalLink: Link, val archive: ZipFile) : StreamResource() {
 
         override fun stream(): ResourceTry<InputStream> {
-            val entry = entryForHref(link.href)
             return if (entry == null)
                 Try.failure(Resource.Error.NotFound)
             else
                 Try.success(archive.getInputStream(entry))
         }
 
+        override val link: Link by lazy {
+            // Adds the compressed length to the original link.
+            entry?.compressedSize?.takeIf { it != -1L }
+                ?.let { originalLink.addProperties(mapOf("compressedLength" to it)) }
+                ?: originalLink
+        }
+
         override val metadataLength: Long? by lazy {
-            entryForHref(link.href)?.size?.takeIf { it != -1L }
+            entry?.size?.takeIf { it != -1L }
         }
 
         override fun close() {}
 
-        private fun entryForHref(href: String): ZipEntry? =
-            archive.getEntry(href.removePrefix("/"))
+        private val entry: ZipEntry? by lazy {
+            archive.getEntry(originalLink.href.removePrefix("/"))
+        }
+
     }
+
 }
 
 

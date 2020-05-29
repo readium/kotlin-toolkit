@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.fetcher
 
+import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 import java.io.File
@@ -17,7 +18,7 @@ import java.io.InputStream
 import java.io.RandomAccessFile
 import java.lang.ref.WeakReference
 import java.nio.channels.Channels
-import java.util.LinkedList
+import java.util.*
 
 /**
  * Provides access to resources on the local file system.
@@ -25,7 +26,6 @@ import java.util.LinkedList
  * [paths] contains the reachable local paths, indexed by the exposed HREF. Sub-paths are reachable
  * as well, to be able to access a whole directory.
  */
-
 class FileFetcher(private val paths: Map<String, String>) : Fetcher {
 
     /** Provides access to the given local [path] at [href]. */
@@ -33,7 +33,20 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
 
     private val openedResources: MutableList<WeakReference<Resource>> = LinkedList()
 
-    override val links: List<Link> = emptyList()
+    override val links: List<Link> by lazy {
+        paths.toSortedMap().flatMap { (href, path) ->
+            File(path).walk().mapNotNull { file ->
+                if (file.isDirectory) {
+                    null
+                } else {
+                    Link(
+                        href = File(href, file.path.removePrefix(path)).path,
+                        type = Format.of(fileExtension = file.extension)?.mediaType.toString()
+                    )
+                }
+            }.toList()
+        }
+    }
 
     override fun get(link: Link, parameters: HrefParameters): Resource {
         for ((href, path) in paths) {

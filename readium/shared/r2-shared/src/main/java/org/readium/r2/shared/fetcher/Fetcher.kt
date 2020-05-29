@@ -45,7 +45,8 @@ interface Fetcher {
 
 }
 
-class DummyFetcher : Fetcher {
+/** A [Fetcher] providing no resources at all. */
+class EmptyFetcher : Fetcher {
 
     override val links: List<Link> = emptyList()
 

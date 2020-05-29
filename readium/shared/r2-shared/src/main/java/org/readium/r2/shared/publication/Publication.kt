@@ -16,7 +16,7 @@ import org.readium.r2.shared.extensions.HashAlgorithm
 import org.readium.r2.shared.extensions.hash
 import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.extensions.toUrlOrNull
-import org.readium.r2.shared.fetcher.DummyFetcher
+import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.format.MediaType
@@ -27,19 +27,17 @@ import org.readium.r2.shared.publication.services.positions
 import java.net.URL
 import java.net.URLEncoder
 
-
 /**
  * Shared model for a Readium Publication.
  * @param type The kind of publication it is ( Epub, Cbz, ... )
  * @param version The version of the publication, if the type needs any.
  * @param positionsFactory Factory used to build lazily the [positions].
  */
-
 data class Publication(
     private val manifest: Manifest,
-    private val fetcher: Fetcher = DummyFetcher(),
+    private val fetcher: Fetcher = EmptyFetcher(),
     private val serviceFactories: List<(Service.Context) -> Service?> = emptyList(),
-    @Deprecated("Provide a [ServiceFactory] for a [PositionsService] instead.")
+    @Deprecated("Provide a [ServiceFactory] for a [PositionsService] instead.", level = DeprecationLevel.ERROR)
     @Suppress("DEPRECATION")
     val positionsFactory: PositionListFactory? = null,
 
@@ -151,8 +149,8 @@ data class Publication(
     }
 
     /**
-    * Returns the RWPM JSON representation for this [Publication]'s manifest, as a string.
-    */
+     * Returns the RWPM JSON representation for this [Publication]'s manifest, as a string.
+     */
     fun manifest(): String = manifest.toJSON().toString().replace("\\/", "/")
 
     /**
@@ -160,7 +158,7 @@ data class Publication(
      * This is computed from the self link.
      */
     val baseUrl: URL?
-        get() = links.linkWithRel("self")
+        get() = links.firstWithRel("self")
             ?.let { it.href.toUrlOrNull()?.removeLastComponent() }
 
     /**
@@ -264,34 +262,10 @@ data class Publication(
      * [Publication].
      */
     @Suppress("DEPRECATION")
-    @Deprecated("Use [Publication.copy(serviceFactories)] instead", ReplaceWith("Publication.copy(serviceFactories = listOf(positionsServiceFactory)"))
+    @Deprecated("Use [Publication.copy(serviceFactories)] instead", ReplaceWith("Publication.copy(serviceFactories = listOf(positionsServiceFactory)"), level = DeprecationLevel.ERROR)
     fun copyWithPositionsFactory(createFactory: Publication.() -> PositionListFactory): Publication {
         return run { copy(positionsFactory = createFactory()) }
     }
-
-    /**
-     * Returns whether all the resources in the reading order are bitmaps.
-     */
-    internal val allReadingOrderIsBitmap: Boolean get() =
-        readingOrder.all {
-            it.mediaType?.isBitmap == true
-        }
-
-    /**
-     * Returns whether all the resources in the reading order are audio clips.
-     */
-    internal val allReadingOrderIsAudio: Boolean get() =
-        readingOrder.all {
-            it.mediaType?.isAudio == true
-        }
-
-    /**
-     * Returns whether all the resources in the reading order are contained in any of the given media types.
-     */
-    internal fun allReadingOrderMatchesAnyOf(vararg mediaTypes: MediaType): Boolean =
-        readingOrder.all { link ->
-            mediaTypes.any { link.mediaType?.matches(it) == true }
-        }
 
     @Deprecated("Renamed to [listOfAudioClips]", ReplaceWith("listOfAudioClips"))
     val listOfAudioFiles: List<Link> = listOfAudioClips

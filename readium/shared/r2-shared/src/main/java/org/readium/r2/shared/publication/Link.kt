@@ -15,11 +15,10 @@ import kotlinx.android.parcel.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
 /**
@@ -68,7 +67,6 @@ data class Link(
     val alternates: List<Link> = listOf(),
     val children: List<Link> = listOf()
 ) : JSONable, Parcelable {
-
 
     /** Media type of the linked resource. */
     val mediaType: MediaType? get() =
@@ -138,6 +136,12 @@ data class Link(
         putIfNotEmpty("alternate", alternates)
         putIfNotEmpty("children", children)
     }
+
+    /**
+     * Makes a copy of this [Link] after merging in the given additional other [properties].
+     */
+    fun addProperties(properties: Map<String, Any>): Link =
+        copy(properties = this.properties.add(properties))
 
     companion object {
 
@@ -215,75 +219,72 @@ fun List<Link>.indexOfFirstWithHref(href: String): Int? =
         .takeUnless { it == -1 }
 
 /**
- * Finds all the links matching the given predicate.
- */
-fun List<Link>.linksMatching(predicate: (Link) -> Boolean): List<Link> = filter(predicate)
-
-/**
- * Finds the first link matching the given predicate.
- */
-fun List<Link>.linkMatching(predicate: (Link) -> Boolean): Link? = firstOrNull(predicate)
-
-/**
  * Finds the first link matching the given HREF.
  */
-fun List<Link>.linkWithHref(href: String): Link? = firstOrNull { it.href == href }
+fun List<Link>.firstWithHref(href: String): Link? = firstOrNull { it.href == href }
 
 /**
  * Finds all the links with the given relation.
  */
-fun List<Link>.linksWithRel(rel: String): List<Link> = filter { it.rels.contains(rel) }
+fun List<Link>.filterByRel(rel: String): List<Link> = filter { it.rels.contains(rel) }
 
 /**
  * Finds the first link with the given relation.
  */
-fun List<Link>.linkWithRel(rel: String): Link? = firstOrNull { it.rels.contains(rel) }
+fun List<Link>.firstWithRel(rel: String): Link? = firstOrNull { it.rels.contains(rel) }
 
 /**
  * Finds all the links matching the given media type.
  */
-fun List<Link>.linksMatchingMediaType(mediaType: MediaType): List<Link> = filter {
+fun List<Link>.filterByMediaType(mediaType: MediaType): List<Link> = filter {
     it.mediaType?.matches(mediaType) ?: false
 }
 
 /**
  * Finds the first link matching the given media type.
  */
-fun List<Link>.linkMatchingMediaType(mediaType: MediaType): Link? = firstOrNull {
+fun List<Link>.firstWithMediaType(mediaType: MediaType): Link? = firstOrNull {
     it.mediaType?.matches(mediaType) ?: false
+}
+
+/**
+ * Returns whether all the resources in the collection are bitmaps.
+ */
+val List<Link>.allIsBitmap: Boolean get() = all {
+    it.mediaType?.isBitmap ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are audio clips.
  */
 val List<Link>.allIsAudio: Boolean get() = all {
-    it.mediaType?.type == "audio"
+    it.mediaType?.isAudio ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are video clips.
  */
-val List<Link>.allReadingOrderIsVideo: Boolean get() = all {
-    it.mediaType?.type == "video"
+val List<Link>.allIsVideo: Boolean get() = all {
+    it.mediaType?.isVideo ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are HTML documents.
  */
-val List<Link>.allReadingOrderIsHtml: Boolean get() = all {
+val List<Link>.allIsHtml: Boolean get() = all {
     it.mediaType?.isHtml ?: false
 }
 
 /**
- * Returns whether all the resources in the collection match the given media type.
+ * Returns whether all the resources in the collection are matching the given media type.
  */
-fun List<Link>.allReadingOrderMatchesMediaType(mediaType: MediaType) = all {
-    it.mediaType?.matches(mediaType) ?: false
+fun List<Link>.allMatchesMediaType(mediaType: MediaType): Boolean = all {
+    mediaType.matches(it.mediaType)
 }
 
 /**
- * Returns whether all the resources in the collection match any of the given media types.
+ * Returns whether all the resources in the collection are matching any of the given media types.
  */
-fun List<Link>.allReadingOrderMatchesAnyOfMediaTypes(mediaTypes: List<MediaType>) = all {
-    mediaTypes.any { type -> type.matches(it.mediaType) }
+fun List<Link>.allMatchesMediaTypes(mediaTypes: List<MediaType>): Boolean = all {
+    mediaTypes.any { mediaType -> mediaType.matches(it.mediaType) }
 }

@@ -9,14 +9,20 @@
 
 package org.readium.r2.shared.fetcher
 
+import android.webkit.MimeTypeMap
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Link
+import org.robolectric.Shadows
+import org.robolectric.annotation.Config
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [28])
 class FileFetcherTest {
-
 
     private val fetcher: Fetcher
 
@@ -103,6 +109,7 @@ class FileFetcherTest {
     }
 
     @Test
+    @Suppress("EmptyRange")
     fun `Decreasing ranges are understood as empty ones`() {
         val resource = fetcher.get(Link(href = "/file_href"))
         val result = resource.read(60..20L)
@@ -117,7 +124,24 @@ class FileFetcherTest {
         val result = resource.length
         assert(result.isSuccess)
         assertEquals(4L, result.success)
+    }
 
+    @Test
+    fun `Computing links works well`() {
+        Shadows.shadowOf(MimeTypeMap.getSingleton()).apply {
+            addExtensionMimeTypMapping("txt", "text/plain")
+            addExtensionMimeTypMapping("mp3", "audio/mpeg")
+        }
+
+        assertEquals(
+            listOf(
+                Link(href = "/dir_href/subdirectory/hello.mp3", type = "audio/mpeg"),
+                Link(href = "/dir_href/subdirectory/text2.txt", type = "text/plain"),
+                Link(href = "/dir_href/text1.txt", type = "text/plain"),
+                Link(href = "/file_href", type = "text/plain")
+            ),
+            fetcher.links
+        )
     }
 
 }

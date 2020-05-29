@@ -32,7 +32,7 @@ internal fun String.hash(algorithm: HashAlgorithm): String =
         .digest(this.toByteArray())
         .fold("") { str, it -> str + "%02x".format(it) }
 
-fun String.toUrlOrNull(context: URL? = null) =
+internal fun String.toUrlOrNull(context: URL? = null) =
     try {
         URL(context, this)
     } catch (e: Exception) {

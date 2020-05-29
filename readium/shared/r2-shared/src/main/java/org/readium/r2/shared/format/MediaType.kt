@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.format
 
-import java.lang.IllegalArgumentException
 import java.nio.charset.Charset
 import java.util.*
 
@@ -214,6 +213,10 @@ class MediaType private constructor(string: String) {
     /** Returns whether this media type is of an audio clip. */
     val isAudio: Boolean get() =
         type == "audio"
+
+    /** Returns whether this media type is of a video clip. */
+    val isVideo: Boolean get() =
+        type == "video"
 
     /** Returns whether this media type is of a Readium Web Publication Manifest. */
     val isRwpm: Boolean get() =

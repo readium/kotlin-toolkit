@@ -12,6 +12,9 @@ package org.readium.r2.shared.format
 import android.webkit.MimeTypeMap
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.allIsAudio
+import org.readium.r2.shared.publication.allIsBitmap
+import org.readium.r2.shared.publication.allMatchesMediaType
 import java.io.File
 import java.net.URLConnection
 import java.util.*
@@ -178,14 +181,14 @@ object FormatSniffers {
         if (publication != null) {
             val isLcpProtected = context.containsZipEntryAt("license.lcpl")
 
-            if (publication.metadata.type == "http://schema.org/Audiobook" || publication.allReadingOrderIsAudio) {
+            if (publication.metadata.type == "http://schema.org/Audiobook" || publication.readingOrder.allIsAudio) {
                 return if (isManifest) Format.AUDIOBOOK_MANIFEST
                 else (if (isLcpProtected) Format.LCP_PROTECTED_AUDIOBOOK else Format.AUDIOBOOK)
             }
-            if (publication.allReadingOrderIsBitmap) {
+            if (publication.readingOrder.allIsBitmap) {
                 return if (isManifest) Format.DIVINA_MANIFEST else Format.DIVINA
             }
-            if (isLcpProtected && publication.allReadingOrderMatchesAnyOf(MediaType.PDF)) {
+            if (isLcpProtected && publication.readingOrder.allMatchesMediaType(MediaType.PDF)) {
                 return Format.LCP_PROTECTED_PDF
             }
             if (publication.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
