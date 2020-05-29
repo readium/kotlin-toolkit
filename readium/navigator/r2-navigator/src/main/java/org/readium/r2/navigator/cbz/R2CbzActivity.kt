@@ -27,6 +27,7 @@ import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.services.positions
 import kotlin.coroutines.CoroutineContext
 
 

@@ -37,6 +37,7 @@ import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.publication.services.positionsByResource
 import java.net.URI
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
