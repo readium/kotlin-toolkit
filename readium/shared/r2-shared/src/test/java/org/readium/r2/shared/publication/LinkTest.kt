@@ -1,3 +1,13 @@
+/*
+ * Module: r2-shared-kotlin
+ * Developers: Mickaël Menu, Quentin Gliosca
+ *
+ * Copyright (c) 2020. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
+
 package org.readium.r2.shared.publication
 
 import org.json.JSONArray
@@ -8,6 +18,66 @@ import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.toJSON
 
 class LinkTest {
+
+    @Test fun `templateParameters works fine`() {
+        val href =  "/url{?x,hello,y}name{z,y,w}"
+        assertEquals(
+            listOf("x", "hello", "y", "z", "w"),
+            Link(href = href, templated = true).templateParameters
+        )
+    }
+
+    @Test fun `expand works fine with simple string templates`() {
+        val href =  "/url{x,hello,y}name{z,y,w}"
+        val parameters = mapOf(
+            "x" to "aaa",
+            "hello" to "Hello, world",
+            "y" to "b",
+            "z" to "45",
+            "w" to "w"
+        )
+        assertEquals(
+            "/urlaaa,Hello, world,bname45,b,w",
+            Link(href = href, templated = true).expand(parameters)
+        )
+    }
+
+    @Test fun `expand works fine with form-style ampersand-separated templates`() {
+        val href =  "/url{?x,hello,y}name"
+        val parameters = mapOf(
+            "x" to "aaa",
+            "hello" to "Hello, world",
+            "y" to "b"
+        )
+        assertEquals(
+            "/url?x=aaa&hello=Hello, world&y=bname",
+            Link(href = href, templated = true).expand(parameters)
+        )
+    }
+
+    @Test fun `expand adds extra parameters as query parameters`() {
+        assertEquals(
+            "/path?search=banana&code=14",
+            Link(href = "/path{?search}", templated = true).expand(
+                mapOf(
+                    "search" to "banana",
+                    "code" to "14"
+                )
+            )
+        )
+    }
+
+    @Test fun `expand adds a query for extra parameters`() {
+        assertEquals(
+            "/path?search=banana&code=14",
+            Link(href = "/path", templated = true).expand(
+                mapOf(
+                    "search" to "banana",
+                    "code" to "14"
+                )
+            )
+        )
+    }
 
     @Test fun `parse minimal JSON`() {
         assertEquals(
@@ -228,5 +298,45 @@ class LinkTest {
             ).indexOfFirstWithHref("href2")
         )
     }
+
+    @Test
+    fun `linksMatching finds all the links matching the given predicate`() {
+        assertEquals(
+            listOf(
+                Link(href = "href2"),
+                Link(href = "href3")
+            ),
+            listOf(
+                Link(href = "href1"),
+                Link(href = "href2"),
+                Link(href = "href3")
+            ).linksMatching { it.href in listOf("href2", "href3") }
+        )
+    }
+
+    @Test
+    fun `linkMatching finds the first link matching the given predicate`() {
+        assertEquals(
+                Link(href = "href2"),
+            listOf(
+                Link(href = "href1"),
+                Link(href = "href2"),
+                Link(href = "href3")
+            ).linkMatching { it.href in listOf("href2", "href3") }
+        )
+    }
+
+    @Test
+    fun `linkMatching returns null if no link matches the given predicate`() {
+        assertNull(
+            listOf(
+                Link(href = "href1"),
+                Link(href = "href2"),
+                Link(href = "href3")
+            ).linkMatching { it.href == "href4" }
+        )
+    }
+
+
 
 }

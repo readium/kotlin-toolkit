@@ -77,6 +77,29 @@ data class Metadata(
     val sortAs: String? get() = localizedSortAs?.string
 
     /**
+     * Computes a ReadingProgression when the value of Metadata::readingProgression is set to auto, using the publication language.
+     */
+    val effectiveReadingProgression: ReadingProgression = contentLayout.readingProgression
+
+    /**
+     * Returns the [ContentLayout] for the default language.
+     */
+    val contentLayout: ContentLayout get() = contentLayoutForLanguage(null)
+
+    /**
+     * Returns the [ContentLayout] for the given [language].
+     */
+    fun contentLayoutForLanguage(language: String?): ContentLayout {
+        @Suppress("NAME_SHADOWING")
+        val language = language?.ifEmpty { null }
+
+        return ContentLayout.from(
+            language = language ?: languages.firstOrNull() ?: "",
+            readingProgression = readingProgression
+        )
+    }
+
+    /**
      * Serializes a [Metadata] to its RWPM JSON representation.
      */
     override fun toJSON() = JSONObject(otherMetadata).apply {

@@ -15,6 +15,7 @@ import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 
 class PublicationTest {
@@ -22,8 +23,10 @@ class PublicationTest {
     private fun createPublication(
         otherCollections: List<PublicationCollection> = emptyList()
     ) = Publication(
-        metadata = Metadata(localizedTitle = LocalizedString("Title")),
-        otherCollections = otherCollections
+        manifest = Manifest(
+            metadata = Metadata(localizedTitle = LocalizedString("Title")),
+            otherCollections = otherCollections
+        )
     )
 
     @Test fun `get {pageList}`() {

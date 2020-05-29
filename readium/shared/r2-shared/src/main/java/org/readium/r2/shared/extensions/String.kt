@@ -10,6 +10,7 @@
 package org.readium.r2.shared.extensions
 
 import org.joda.time.DateTime
+import java.net.URL
 import java.security.MessageDigest
 import java.util.*
 
@@ -30,3 +31,10 @@ internal fun String.hash(algorithm: HashAlgorithm): String =
         .getInstance(algorithm.key)
         .digest(this.toByteArray())
         .fold("") { str, it -> str + "%02x".format(it) }
+
+fun String.toUrlOrNull(context: URL? = null) =
+    try {
+        URL(context, this)
+    } catch (e: Exception) {
+        null
+    }

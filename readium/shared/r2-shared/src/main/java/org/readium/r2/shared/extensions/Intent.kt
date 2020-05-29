@@ -13,6 +13,7 @@ import android.app.Activity
 import android.content.Intent
 import org.readium.r2.shared.BuildConfig
 import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
@@ -44,9 +45,12 @@ fun Intent.getPublication(activity: Activity): Publication {
     val publication = getStringExtra(extraKey)?.let { PublicationRepository.get(it) }
     if (publication == null) {
         activity.finish()
+        // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
+        val metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
+        return Publication(Manifest(metadata = metadata))
     }
-    // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
-    return publication ?: Publication(metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString("")))
+
+    return publication
 }
 
 fun Intent.destroyPublication(activity: Activity) {

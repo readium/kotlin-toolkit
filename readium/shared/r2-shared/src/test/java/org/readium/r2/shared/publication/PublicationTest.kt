@@ -9,11 +9,11 @@
 
 package org.readium.r2.shared.publication
 
-import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
-import org.readium.r2.shared.assertJSONEquals
-import java.io.Serializable
+import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.publication.services.positions
+import org.readium.r2.shared.publication.services.positionsByResource
 import java.net.URL
 
 class PublicationTest {
@@ -25,217 +25,20 @@ class PublicationTest {
         links: List<Link> = listOf(),
         readingOrder: List<Link> = emptyList(),
         resources: List<Link> = emptyList(),
-        positionsFactory: Publication.PositionListFactory? = null
+        positionsServiceFactory: ((Publication.Service.Context) -> PositionsService?)? = null
     ) = Publication(
-        metadata = Metadata(
-            localizedTitle = LocalizedString(title),
-            languages = listOf(language),
-            readingProgression = readingProgression
-        ),
-        links = links,
-        readingOrder = readingOrder,
-        resources = resources,
-        positionsFactory = positionsFactory
+            manifest = Manifest(
+                    metadata = Metadata(
+                        localizedTitle = LocalizedString(title),
+                        languages = listOf(language),
+                        readingProgression = readingProgression
+                    ),
+                    links = links,
+                    readingOrder = readingOrder,
+                    resources = resources
+                ),
+            serviceFactories = listOfNotNull(positionsServiceFactory)
     )
-
-    @Test fun `parse minimal JSON`() {
-        assertEquals(
-            Publication(
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = emptyList(),
-                readingOrder = emptyList()
-            ),
-            Publication.fromJSON(JSONObject("""{
-                "metadata": {"title": "Title"},
-                "links": [],
-                "readingOrder": []
-            }"""))
-        )
-    }
-
-    @Test fun `parse full JSON`() {
-        assertEquals(
-            Publication(
-                context = listOf("https://readium.org/webpub-manifest/context.jsonld"),
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
-                resources = listOf(Link(href = "/image.png", type = "image/png")),
-                tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
-                otherCollections = listOf(PublicationCollection(role = "sub", links = listOf(Link(href = "/sublink"))))
-            ),
-            Publication.fromJSON(JSONObject("""{
-                "@context": "https://readium.org/webpub-manifest/context.jsonld",
-                "metadata": {"title": "Title"},
-                "links": [
-                    {"href": "/manifest.json", "rel": "self"}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html"}
-                ],
-                "resources": [
-                    {"href": "/image.png", "type": "image/png"}
-                ],
-                "toc": [
-                    {"href": "/cover.html"},
-                    {"href": "/chap1.html"}
-                ],
-                "sub": {
-                    "links": [
-                        {"href": "/sublink"}
-                    ]
-                }
-            }"""))
-        )
-    }
-
-    @Test fun `parse JSON {context} as array`() {
-        assertEquals(
-            Publication(
-                context = listOf("context1", "context2"),
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
-            ),
-            Publication.fromJSON(JSONObject("""{
-                "@context": ["context1", "context2"],
-                "metadata": {"title": "Title"},
-                "links": [
-                    {"href": "/manifest.json", "rel": "self"}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html"}
-                ]
-            }"""))
-        )
-    }
-
-    @Test fun `parse JSON requires {metadata}`() {
-        assertNull(Publication.fromJSON(JSONObject("""{
-                "links": [
-                    {"href": "/manifest.json", "rel": "self"}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html"}
-                ]
-        }""")))
-    }
-
-    // {readingOrder} used to be {spine}, so we parse {spine} as a fallback.
-    @Test fun `parse JSON {spine} as {readingOrder}`() {
-        assertEquals(
-            Publication(
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
-            ),
-            Publication.fromJSON(JSONObject("""{
-                "metadata": {"title": "Title"},
-                "links": [
-                    {"href": "/manifest.json", "rel": "self"}
-                ],
-                "spine": [
-                    {"href": "/chap1.html", "type": "text/html"}
-                ]
-            }"""))
-        )
-    }
-
-    @Test fun `parse JSON ignores {readingOrder} without {type}`() {
-        assertEquals(
-            Publication(
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
-            ),
-            Publication.fromJSON(JSONObject("""{
-                "metadata": {"title": "Title"},
-                "links": [
-                    {"href": "/manifest.json", "rel": "self"}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html"},
-                    {"href": "/chap2.html"}
-                ]
-            }"""))
-        )
-    }
-
-    @Test fun `parse JSON ignores {resources} without {type}`() {
-        assertEquals(
-            Publication(
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
-                resources = listOf(Link(href = "/withtype", type = "text/html"))
-            ),
-            Publication.fromJSON(JSONObject("""{
-                "metadata": {"title": "Title"},
-                "links": [
-                    {"href": "/manifest.json", "rel": "self"}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html"},
-                ],
-                "resources": [
-                    {"href": "/withtype", "type": "text/html"},
-                    {"href": "/withouttype"}
-                ]
-            }"""))
-        )
-    }
-
-    @Test fun `get minimal JSON`() {
-        assertJSONEquals(
-            JSONObject("""{
-                "metadata": {"title": {"und": "Title"}, "readingProgression": "auto"},
-                "links": [],
-                "readingOrder": []
-            }"""),
-            Publication(
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = emptyList(),
-                readingOrder = emptyList()
-            ).toJSON()
-        )
-    }
-
-    @Test fun `get full JSON`() {
-        assertJSONEquals(
-            JSONObject("""{
-                "@context": ["https://readium.org/webpub-manifest/context.jsonld"],
-                "metadata": {"title": {"und": "Title"}, "readingProgression": "auto"},
-                "links": [
-                    {"href": "/manifest.json", "rel": ["self"], "templated": false}
-                ],
-                "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html", "templated": false}
-                ],
-                "resources": [
-                    {"href": "/image.png", "type": "image/png", "templated": false}
-                ],
-                "toc": [
-                    {"href": "/cover.html", "templated": false},
-                    {"href": "/chap1.html", "templated": false}
-                ],
-                "sub": {
-                    "metadata": {},
-                    "links": [
-                        {"href": "/sublink", "templated": false}
-                    ]
-                }
-            }"""),
-            Publication(
-                context = listOf("https://readium.org/webpub-manifest/context.jsonld"),
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
-                resources = listOf(Link(href = "/image.png", type = "image/png")),
-                tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
-                otherCollections = listOf(PublicationCollection(role = "sub", links = listOf(Link(href = "/sublink"))))
-            ).toJSON()
-        )
-    }
 
     @Test fun `get the default empty {positions}`() {
         assertEquals(emptyList<Locator>(), createPublication().positions)
@@ -245,9 +48,10 @@ class PublicationTest {
         assertEquals(
             listOf(Locator(href = "locator", type = "")),
             createPublication(
-                positionsFactory = object : Publication.PositionListFactory {
-                    override fun create(): List<Locator> =
-                        listOf(Locator(href = "locator", type = ""))
+                positionsServiceFactory = { context ->
+                    object: PositionsService {
+                        override val positions: List<Locator> = listOf(Locator(href = "locator", type = ""))
+                    }
                 }
             ).positions
         )
@@ -265,12 +69,14 @@ class PublicationTest {
                 )
             ),
             createPublication(
-                positionsFactory = object : Publication.PositionListFactory {
-                    override fun create(): List<Locator> = listOf(
-                        Locator(href="res1", type = "text/html", title = "Loc A"),
-                        Locator(href="res2", type = "text/html", title = "Loc B"),
-                        Locator(href="res1", type = "text/html", title = "Loc B")
-                    )
+                positionsServiceFactory = { context ->
+                    object: PositionsService {
+                        override val positions: List<Locator> = listOf(
+                            Locator(href="res1", type = "text/html", title = "Loc A"),
+                            Locator(href="res2", type = "text/html", title = "Loc B"),
+                            Locator(href="res1", type = "text/html", title = "Loc B")
+                        )
+                    }
                 }
             ).positionsByResource
         )

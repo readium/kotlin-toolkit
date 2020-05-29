@@ -10,6 +10,7 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
+import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
@@ -68,9 +69,56 @@ data class Link(
     val children: List<Link> = listOf()
 ) : JSONable, Parcelable {
 
+
     /** Media type of the linked resource. */
     val mediaType: MediaType? get() =
         type?.let { MediaType.parse(it) }
+
+    /**
+     * List of URI template parameter keys, if the [Link] is templated.
+     */
+    @IgnoredOnParcel
+    val templateParameters: List<String> by lazy {
+        if (!templated)
+            emptyList()
+        else
+            "\\{\\??([^}]+)}".toRegex()
+                .findAll(href).toList()
+                .flatMap { it.groupValues[1].split(",") }
+                .distinct()
+    }
+
+    /**
+     * Expands the HREF by replacing URI template variables by the given parameters.
+     *
+     * Any extra parameter is appended as query parameters.
+     * See RFC 6570 on URI template.
+     */
+    fun expand(parameters: Map<String, String>): String {
+        fun expandSimpleString(string: String, parameters: Map<String, String>): String =
+            string.split(",").joinToString(",") { parameters[it] ?: "" }
+
+        fun expandFormStyle(string: String, parameters: Map<String, String>): String =
+            "?" + string.split(",").joinToString("&") { "${it}=${parameters[it].orEmpty()}" }
+
+        val expanded = "\\{(\\??)([^}]+)}".toRegex().replace(href) {
+            if (it.groupValues[1].isEmpty())
+                expandSimpleString(it.groupValues[2], parameters)
+            else
+                expandFormStyle(it.groupValues[2], parameters)
+            }
+
+        val extra = parameters
+            .filterKeys { it !in templateParameters }
+            .map { "${it.key}=${it.value}" }
+            .joinToString("&")
+
+        return when {
+            extra.isBlank() -> expanded
+            expanded.indexOf('?') == -1 -> "${expanded}?${extra}"
+            else -> "${expanded}&${extra}"
+        }
+    }
 
     /**
      * Serializes a [Link] to its RWPM JSON representation.
@@ -165,3 +213,77 @@ data class Link(
 fun List<Link>.indexOfFirstWithHref(href: String): Int? =
     indexOfFirst { it.href == href }
         .takeUnless { it == -1 }
+
+/**
+ * Finds all the links matching the given predicate.
+ */
+fun List<Link>.linksMatching(predicate: (Link) -> Boolean): List<Link> = filter(predicate)
+
+/**
+ * Finds the first link matching the given predicate.
+ */
+fun List<Link>.linkMatching(predicate: (Link) -> Boolean): Link? = firstOrNull(predicate)
+
+/**
+ * Finds the first link matching the given HREF.
+ */
+fun List<Link>.linkWithHref(href: String): Link? = firstOrNull { it.href == href }
+
+/**
+ * Finds all the links with the given relation.
+ */
+fun List<Link>.linksWithRel(rel: String): List<Link> = filter { it.rels.contains(rel) }
+
+/**
+ * Finds the first link with the given relation.
+ */
+fun List<Link>.linkWithRel(rel: String): Link? = firstOrNull { it.rels.contains(rel) }
+
+/**
+ * Finds all the links matching the given media type.
+ */
+fun List<Link>.linksMatchingMediaType(mediaType: MediaType): List<Link> = filter {
+    it.mediaType?.matches(mediaType) ?: false
+}
+
+/**
+ * Finds the first link matching the given media type.
+ */
+fun List<Link>.linkMatchingMediaType(mediaType: MediaType): Link? = firstOrNull {
+    it.mediaType?.matches(mediaType) ?: false
+}
+
+/**
+ * Returns whether all the resources in the collection are audio clips.
+ */
+val List<Link>.allIsAudio: Boolean get() = all {
+    it.mediaType?.type == "audio"
+}
+
+/**
+ * Returns whether all the resources in the collection are video clips.
+ */
+val List<Link>.allReadingOrderIsVideo: Boolean get() = all {
+    it.mediaType?.type == "video"
+}
+
+/**
+ * Returns whether all the resources in the collection are HTML documents.
+ */
+val List<Link>.allReadingOrderIsHtml: Boolean get() = all {
+    it.mediaType?.isHtml ?: false
+}
+
+/**
+ * Returns whether all the resources in the collection match the given media type.
+ */
+fun List<Link>.allReadingOrderMatchesMediaType(mediaType: MediaType) = all {
+    it.mediaType?.matches(mediaType) ?: false
+}
+
+/**
+ * Returns whether all the resources in the collection match any of the given media types.
+ */
+fun List<Link>.allReadingOrderMatchesAnyOfMediaTypes(mediaTypes: List<MediaType>) = all {
+    mediaTypes.any { type -> type.matches(it.mediaType) }
+}
