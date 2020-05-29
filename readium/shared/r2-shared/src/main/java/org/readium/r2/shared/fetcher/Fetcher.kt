@@ -11,10 +11,20 @@ package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
 
-internal typealias HrefParameters = Map<String, String>
+typealias HrefParameters = Map<String, String>
 
 /** Provides access to a [Resource] from a [Link]. */
-internal interface Fetcher {
+interface Fetcher {
+
+    /**
+     * Known resources available in the medium, such as file paths on the file system
+     * or entries in a ZIP archive. This list is not exhaustive, and additional
+     * unknown resources might be reachable.
+     *
+     * If the medium has an inherent resource order, it should be followed.
+     * Otherwise, HREFs are sorted alphabetically.
+     */
+    val links: List<Link>
 
     /**
      * Returns the [Resource] at the given [link]'s HREF.
@@ -32,5 +42,15 @@ internal interface Fetcher {
 
     /** Closes any opened file handles, removes temporary files, etc. */
     fun close()
+
+}
+
+class DummyFetcher : Fetcher {
+
+    override val links: List<Link> = emptyList()
+
+    override fun get(link: Link, parameters: HrefParameters): Resource = FailureResource(link, Resource.Error.NotFound)
+
+    override fun close() {}
 
 }

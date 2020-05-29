@@ -31,6 +31,8 @@ internal class RoutingFetcher(private val routes: List<Route>) : Fetcher {
     constructor(local: Fetcher, remote: Fetcher)
             : this(listOf( Route(local, Link::isLocal), Route(remote) ))
 
+    override val links: List<Link> = routes.flatMap { it.fetcher.links }
+
     override fun get(link: Link, parameters: HrefParameters): Resource =
         routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: FailureResource(link, Resource.Error.NotFound)
 

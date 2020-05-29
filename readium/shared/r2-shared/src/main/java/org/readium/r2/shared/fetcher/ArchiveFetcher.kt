@@ -15,16 +15,21 @@ import java.io.InputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-/** Provides access to entries of a ZIP archive. */
-internal class ZipFetcher private constructor(private val archive: ZipFile) : Fetcher {
+/** Provides access to entries of an archive. */
+class ArchiveFetcher private constructor(private val archive: ZipFile) : Fetcher {
+
+    override val links: List<Link>
+        get() = archive.entries().toList().mapNotNull {
+            Link(href = it.name)
+        }
 
     override fun get(link: Link, parameters: HrefParameters): Resource = ZipResource(link, archive)
 
     override fun close() = archive.close()
 
     companion object {
-        fun fromPath(path: String): ZipFetcher? = try {
-            ZipFetcher(ZipFile(path))
+        fun fromPath(path: String): ArchiveFetcher? = try {
+            ArchiveFetcher(ZipFile(path))
         } catch (e: Exception) {
             null
         }

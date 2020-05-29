@@ -17,7 +17,7 @@ import java.lang.IllegalArgumentException
 import java.nio.charset.Charset
 
 /** Acts as a proxy to an actual resource by handling read access. */
-internal interface Resource {
+interface Resource {
 
     /**
      * The link from which the resource was retrieved.
@@ -94,7 +94,7 @@ internal interface Resource {
 internal typealias ResourceTransformer = (Resource) -> Resource
 
 /** Creates a Resource that will always return the given [error]. */
-internal class FailureResource(override val link: Link, private val error: Resource.Error) : Resource {
+class FailureResource(override val link: Link, private val error: Resource.Error) : Resource {
 
     override fun read(range: LongRange?): Try<ByteArray, Resource.Error> = Try.failure(error)
 
@@ -104,25 +104,26 @@ internal class FailureResource(override val link: Link, private val error: Resou
 }
 
 /** Creates a Resource serving an array of [bytes]. */
-internal open class BytesResource(override val link: Link, private val bytes: ByteArray) : Resource {
+open class BytesResource(override val link: Link, private val bytes: () -> ByteArray) : Resource {
+    private val byteArray by lazy(bytes)
 
     override fun read(range: LongRange?): Try<ByteArray, Resource.Error> {
         if (range == null)
-            return Try.success(bytes.copyOf())
+            return Try.success(byteArray)
 
         @Suppress("NAME_SHADOWING")
         val range = checkedRange(range)
-        val byteRange = bytes.sliceArray(range.map(Long::toInt))
+        val byteRange = byteArray.sliceArray(range.map(Long::toInt))
         return Try.success(byteRange)
     }
 
-    override val length: Try<Long, Resource.Error> = Try.success(bytes.size.toLong())
+    override val length: Try<Long, Resource.Error> = Try.success(byteArray.size.toLong())
 
     override fun close() {}
 }
 
 /** Creates a Resource serving a string encoded as UTF-8. */
-internal class StringResource(link: Link, string: String) : BytesResource(link, string.toByteArray())
+class StringResource(link: Link, string: () -> String) : BytesResource(link, { string().toByteArray() })
 
 internal abstract class StreamResource : Resource {
 

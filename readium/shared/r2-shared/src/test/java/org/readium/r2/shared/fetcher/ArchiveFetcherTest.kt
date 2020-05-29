@@ -15,16 +15,36 @@ import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class ZipFetcherTest {
+class ArchiveFetcherTest {
 
     private val fetcher: Fetcher
 
     init {
-        val epub = ZipFetcherTest::class.java.getResource("epub.epub")
+        val epub = ArchiveFetcherTest::class.java.getResource("epub.epub")
         assertNotNull(epub)
-        val zipFetcher = ZipFetcher.fromPath(epub.path)
+        val zipFetcher = ArchiveFetcher.fromPath(epub.path)
         assertNotNull(zipFetcher)
         fetcher = zipFetcher
+    }
+
+    @Test
+    fun `Link list is correct`() {
+        assertEquals(
+            listOf(
+                "mimetype",
+                "EPUB/cover.xhtml",
+                "EPUB/css/epub.css",
+                "EPUB/css/nav.css",
+                "EPUB/images/cover.png",
+                "EPUB/nav.xhtml",
+                "EPUB/package.opf",
+                "EPUB/s04.xhtml",
+                "EPUB/toc.ncx",
+                "META-INF/container.xml"
+            ).map { Link(href = it) },
+            fetcher.links
+        )
+
     }
 
     @Test

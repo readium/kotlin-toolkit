@@ -25,12 +25,15 @@ import java.util.LinkedList
  * [paths] contains the reachable local paths, indexed by the exposed HREF. Sub-paths are reachable
  * as well, to be able to access a whole directory.
  */
-internal class FileFetcher(private val paths: Map<String, String>) : Fetcher {
+
+class FileFetcher(private val paths: Map<String, String>) : Fetcher {
 
     /** Provides access to the given local [path] at [href]. */
     constructor(href: String, path: String) : this(mapOf(href to path))
 
     private val openedResources: MutableList<WeakReference<Resource>> = LinkedList()
+
+    override val links: List<Link> = emptyList()
 
     override fun get(link: Link, parameters: HrefParameters): Resource {
         for ((href, path) in paths) {
