@@ -30,7 +30,8 @@ internal class DecryptionTransformer(val drm: DRM) {
     }
 
     private fun decipher(resource: Resource): Resource =
-        object: Resource by resource {
+        object: Resource {
+            override val link: Link = resource.link
 
             override val length: Try<Long, Resource.Error>
                 get () {
@@ -55,6 +56,9 @@ internal class DecryptionTransformer(val drm: DRM) {
                     Try.success(data)
                 }
             }
+
+            override fun close() = resource.close()
+
         }
 
     private fun decipher(input: InputStream, drm: DRM): ByteArray? {
