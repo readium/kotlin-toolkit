@@ -11,6 +11,7 @@ package org.readium.r2.shared.fetcher
 
 import android.webkit.MimeTypeMap
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Link
@@ -133,14 +134,11 @@ class FileFetcherTest {
             addExtensionMimeTypMapping("mp3", "audio/mpeg")
         }
 
-        assertEquals(
-            listOf(
-                Link(href = "/dir_href/subdirectory/hello.mp3", type = "audio/mpeg"),
-                Link(href = "/dir_href/subdirectory/text2.txt", type = "text/plain"),
-                Link(href = "/dir_href/text1.txt", type = "text/plain"),
-                Link(href = "/file_href", type = "text/plain")
-            ),
-            fetcher.links
+        assertThat(fetcher.links).containsExactlyInAnyOrder(
+            Link(href = "/dir_href/subdirectory/hello.mp3", type = "audio/mpeg"),
+            Link(href = "/dir_href/subdirectory/text2.txt", type = "text/plain"),
+            Link(href = "/dir_href/text1.txt", type = "text/plain"),
+            Link(href = "/file_href", type = "text/plain")
         )
     }
 
