@@ -32,11 +32,7 @@ data class Manifest(
     val readingOrder: List<Link> = emptyList(),
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
-    val otherCollections: List<PublicationCollection> = emptyList(),
-
-    // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
-    var type: Publication.TYPE = Publication.TYPE.EPUB,
-    var version: Double = 0.0
+    val otherCollections: List<PublicationCollection> = emptyList()
 
 ) : JSONable, Parcelable {
 

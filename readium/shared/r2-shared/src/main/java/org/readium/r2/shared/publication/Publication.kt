@@ -59,12 +59,8 @@ data class Publication(
     val otherCollections: List<PublicationCollection> get() = manifest.otherCollections
 
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
-    var type: Publication.TYPE
-        get() = manifest.type
-        set(value) { manifest.type = value}
-    var version: Double
-        get() = manifest.version
-        set(value) { manifest.version = value}
+    var type: Publication.TYPE = Publication.TYPE.EPUB
+    var version: Double = 0.0
 
     /**
      * Base interface to be implemented by all publication services.
