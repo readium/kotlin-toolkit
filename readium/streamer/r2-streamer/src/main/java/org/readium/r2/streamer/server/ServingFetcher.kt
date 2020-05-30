@@ -7,14 +7,14 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.fetcher
+package org.readium.r2.streamer.server
 
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.HrefParameters
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.streamer.server.Resources
+import org.readium.r2.streamer.fetcher.HtmlInjector
 
 internal class ServingFetcher(
     val publication: Publication,
@@ -22,7 +22,12 @@ internal class ServingFetcher(
     customResources: Resources? = null
 ) : Fetcher {
 
-    private val htmlInjector: HtmlInjector = HtmlInjector(publication, userPropertiesPath, customResources)
+    private val htmlInjector: HtmlInjector =
+        HtmlInjector(
+            publication,
+            userPropertiesPath,
+            customResources
+        )
 
     override val links: List<Link> = emptyList()
 

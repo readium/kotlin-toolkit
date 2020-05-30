@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.fetcher
+package org.readium.r2.streamer.parser.epub
 
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
@@ -17,7 +17,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.encryption.encryption
 import kotlin.experimental.xor
 
-internal class DeobfuscationTransformer(private val pubId: String) {
+internal class EpubDeobfuscator(private val pubId: String) {
 
     private val algorithm2length = mapOf(
         "http://www.idpf.org/2008/embedding" to 1040,

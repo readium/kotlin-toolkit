@@ -25,7 +25,6 @@ import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.DirectoryContainer
-import org.readium.r2.streamer.fetcher.DeobfuscationTransformer
 import org.readium.r2.streamer.fetcher.LcpDecryptionTransformer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
@@ -115,7 +114,9 @@ class EpubParser : PublicationParser {
 
         val transformers = listOfNotNull(
             container.drm?.let { LcpDecryptionTransformer(it)::transform },
-            manifest.metadata.identifier?.let { DeobfuscationTransformer(it)::transform }
+            manifest.metadata.identifier?.let { EpubDeobfuscator(
+                it
+            )::transform }
         )
         val fetcher = TransformingFetcher(zipFetcher, transformers)
 

@@ -8,7 +8,7 @@
  */
 
 
-package org.readium.r2.streamer.fetcher
+package org.readium.r2.streamer.parser.epub
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -22,15 +22,15 @@ import org.readium.r2.shared.publication.encryption.Encryption
 import java.io.File
 import kotlin.test.assertNotNull
 
-class DeobfuscationTransformerTest {
+class EpubDeobfuscatorTest {
 
     private val identifier = "urn:uuid:36d5078e-ff7d-468e-a5f3-f47c14b91f2f"
-    private val transformer = DeobfuscationTransformer(identifier)
+    private val transformer = EpubDeobfuscator(identifier)
     private val fetcher: Fetcher
     private val font: ByteArray
 
     init {
-        val deobfuscationDir = DeobfuscationTransformerTest::class.java
+        val deobfuscationDir = EpubDeobfuscatorTest::class.java
             .getResource("deobfuscation/cut-cut.woff")
             ?.path
             ?.let { File(it).parent }

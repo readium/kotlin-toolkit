@@ -20,7 +20,7 @@ import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.MediaOverlays
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.streamer.fetcher.ServingFetcher
+import org.readium.r2.streamer.server.ServingFetcher
 
 
 class MediaOverlayHandler : RouterNanoHTTPD.DefaultHandler() {

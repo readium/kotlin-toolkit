@@ -19,7 +19,7 @@ import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.streamer.BuildConfig.DEBUG
-import org.readium.r2.streamer.fetcher.ServingFetcher
+import org.readium.r2.streamer.server.ServingFetcher
 import timber.log.Timber
 import java.io.IOException
 
