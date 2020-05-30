@@ -147,7 +147,7 @@ data class Publication(
     /**
      * Returns the RWPM JSON representation for this [Publication]'s manifest, as a string.
      */
-    fun manifest(): String = manifest.toJSON().toString().replace("\\/", "/")
+    val jsonManifest: String = manifest.toJSON().toString().replace("\\/", "/")
 
     /**
      * Returns the URL where this [Publication] is served.
