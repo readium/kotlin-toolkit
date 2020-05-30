@@ -127,6 +127,9 @@ class EpubParser : PublicationParser {
             internalData["type"] = "epub"
             internalData["rootfile"] = opfPath
 
+            type = Publication.TYPE.EPUB
+            version = packageDocument.epubVersion
+
             // This might need to be moved as it's not really about parsing the EPUB but it
             // sets values needed (in UserSettings & ContentFilter)
             setLayoutStyle()

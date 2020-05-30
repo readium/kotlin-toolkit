@@ -58,15 +58,6 @@ class ReadingProgressionTest {
     }
 }
 
-class PackageMiscTest {
-    @Test
-    fun `Version is rightly parsed`() {
-        assertThat(parsePackageDocument("package/version-epub2.opf").version).isEqualTo(2.0)
-        assertThat(parsePackageDocument("package/version-epub3.opf").version).isEqualTo(3.0)
-        assertThat(parsePackageDocument("package/version-default.opf").version).isEqualTo(1.2)
-    }
-}
-
 class LinkPropertyTest {
     private val propertiesPub = parsePackageDocument("package/links-properties.opf")
 

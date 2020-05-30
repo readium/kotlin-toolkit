@@ -76,10 +76,7 @@ internal class PublicationFactory(
             resources = resources,
             tableOfContents = toc,
             otherCollections = otherCollections
-        ).apply {
-            type = Publication.TYPE.EPUB
-            version = packageDocument.epubVersion
-        }
+        )
     }
 
     /** Compute a Publication [Link] from an Epub metadata link */
