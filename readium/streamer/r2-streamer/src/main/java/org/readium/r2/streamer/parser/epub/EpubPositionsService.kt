@@ -40,9 +40,9 @@ internal class EpubPositionsService(
     private val reflowablePositionLength: Long
 ) : PositionsService {
 
-    override val positions: List<Locator> by lazy {
+    override val positionsByReadingOrder: List<List<Locator>> by lazy {
         var lastPositionOfPreviousResource = 0
-        var positions = readingOrder.flatMap { link ->
+        var positions = readingOrder.map { link ->
             val positions =
                 if (presentation.layoutOf(link) == EpubLayout.FIXED) {
                     createFixed(link, lastPositionOfPreviousResource)
@@ -58,15 +58,17 @@ internal class EpubPositionsService(
         }
 
         // Calculates [totalProgression].
-        val totalPageCount = positions.size
-        positions = positions.map { locator ->
-            val position = locator.locations.position
-            if (position == null) {
-                locator
-            } else {
-                locator.copyWithLocations(
-                    totalProgression = (position - 1) / totalPageCount.toDouble()
-                )
+        val totalPageCount = positions.map { it.size }.sum()
+        positions = positions.map { item ->
+            item.map { locator ->
+                val position = locator.locations.position
+                if (position == null) {
+                    locator
+                } else {
+                    locator.copyWithLocations(
+                        totalProgression = (position - 1) / totalPageCount.toDouble()
+                    )
+                }
             }
         }
 

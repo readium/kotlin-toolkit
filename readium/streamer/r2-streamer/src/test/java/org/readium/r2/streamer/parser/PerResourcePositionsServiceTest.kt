@@ -18,16 +18,17 @@ class PerResourcePositionsServiceTest {
 
     @Test
     fun `Positions from an empty {readingOrder}`() {
-        val service = PerResourcePositionsService(readingOrder = emptyList())
+        val service = PerResourcePositionsService(readingOrder = emptyList(), fallbackMediaType = "")
 
         assertEquals(0, service.positions.size)
     }
 
     @Test
     fun `Positions from a {readingOrder} with one resource`() {
-        val service = PerResourcePositionsService(readingOrder = listOf(
-            Link(href = "res", type = "image/png")
-        ))
+        val service = PerResourcePositionsService(
+            readingOrder = listOf(Link(href = "res", type = "image/png")),
+            fallbackMediaType = ""
+        )
 
         assertEquals(
             listOf(Locator(
@@ -44,11 +45,14 @@ class PerResourcePositionsServiceTest {
 
     @Test
     fun `Positions from a {readingOrder} with a few resources`() {
-        val service = PerResourcePositionsService(readingOrder = listOf(
-            Link(href = "res"),
-            Link(href = "chap1", type = "image/png"),
-            Link(href = "chap2", type = "image/png", title = "Chapter 2")
-        ))
+        val service = PerResourcePositionsService(
+            readingOrder = listOf(
+                Link(href = "res"),
+                Link(href = "chap1", type = "image/png"),
+                Link(href = "chap2", type = "image/png", title = "Chapter 2")
+            ),
+            fallbackMediaType = ""
+        )
 
         assertEquals(
             listOf(
