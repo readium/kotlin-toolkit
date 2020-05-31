@@ -15,6 +15,7 @@ import org.junit.Test
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByResource
+import org.readium.r2.shared.publication.services.positionsServiceFactory
 import java.net.URL
 
 class PublicationTest {
@@ -38,7 +39,9 @@ class PublicationTest {
                     readingOrder = readingOrder,
                     resources = resources
                 ),
-            serviceFactories = listOfNotNull(positionsServiceFactory)
+            servicesBuilder = Publication.ServicesBuilder().apply {
+                positionsServiceFactory?.let { this. positionsServiceFactory = it }
+            }
     )
 
     @Test fun `get the default empty {positions}`() {

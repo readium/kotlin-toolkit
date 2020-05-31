@@ -27,6 +27,9 @@ import org.readium.r2.shared.publication.services.positions
 import java.net.URL
 import java.net.URLEncoder
 
+internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
+
+
 /**
  * Shared model for a Readium Publication.
  * @param type The kind of publication it is ( Epub, Cbz, ... )
@@ -36,7 +39,7 @@ import java.net.URLEncoder
 data class Publication(
     private val manifest: Manifest,
     private val fetcher: Fetcher = EmptyFetcher(),
-    private val serviceFactories: List<(Service.Context) -> Service?> = emptyList(),
+    private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
     @Deprecated("Provide a [ServiceFactory] for a [PositionsService] instead.", level = DeprecationLevel.ERROR)
     @Suppress("DEPRECATION")
     val positionsFactory: PositionListFactory? = null,
@@ -48,7 +51,7 @@ data class Publication(
     // FIXME: This is not specified and need to be refactored
     var internalData: MutableMap<String, String> = mutableMapOf()
 ) {
-    private val services: List<Service> = serviceFactories.mapNotNull { it(Service.Context(manifest, fetcher)) }
+    private val services: List<Service> = servicesBuilder.build(Service.Context(manifest, fetcher))
 
     val context: List<String> get() = manifest.context
     val metadata: Metadata get() = manifest.metadata
@@ -79,6 +82,31 @@ data class Publication(
         fun get(link: Link, parameters: Map<String, String>  = emptyMap()): Resource? = null
 
         fun close() {}
+    }
+
+    data class ServicesBuilder(internal var serviceFactories: MutableMap<String, ServiceFactory> = mutableMapOf()) {
+
+        /** Builds the actual list of publication services to use in a Publication. */
+        fun build(context: Service.Context) : List<Service> = serviceFactories.values.mapNotNull { it(context) }
+
+        /** Sets the publication service factory for the given service type. */
+        operator fun set(serviceType: Class<Service>, factory: ServiceFactory) {
+            requireNotNull(serviceType.simpleName)
+            serviceFactories[serviceType.simpleName] = factory
+        }
+
+        /** Removes any service factory producing the given kind of service. */
+        fun remove(serviceType: Class<Service>) {
+            requireNotNull(serviceType.simpleName)
+            serviceFactories.remove(serviceType.simpleName)
+        }
+
+        /* Replaces the service factory associated with the given service type with the result of `transform`. */
+        fun wrap(serviceType: Class<Service>, transform: ((ServiceFactory)?) -> ServiceFactory) {
+            requireNotNull(serviceType.simpleName)
+            serviceFactories[serviceType.simpleName] = transform(serviceFactories[serviceType.simpleName])
+        }
+
     }
 
     /**

@@ -15,6 +15,7 @@ import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.toJSON
 
 private val positionsLink = Link(
@@ -75,3 +76,13 @@ val Publication.positions: List<Locator> get() {
 @Deprecated("Use [positionsByReadingOrder] instead", ReplaceWith("positionsByReadingOrder"))
 val Publication.positionsByResource: Map<String, List<Locator>>
     get() = positions.groupBy { it.href }
+
+
+/** Factory to build a [PositionsService] */
+var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
+    get() = serviceFactories[PositionsService::class.simpleName]
+    set(value) {
+        if (value == null)
+            serviceFactories.remove(PositionsService::class.simpleName!!)
+        else
+            serviceFactories[PositionsService::class.simpleName!!] = value }
