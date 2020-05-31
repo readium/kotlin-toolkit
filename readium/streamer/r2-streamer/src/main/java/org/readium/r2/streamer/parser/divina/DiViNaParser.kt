@@ -13,6 +13,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PerResourcePositionsService
@@ -95,9 +96,9 @@ class DiViNaParser : PublicationParser {
 
         val publication = Publication(
             manifest = manifest,
-            serviceFactories = listOf(
-                PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
-            )
+            servicesBuilder = Publication.ServicesBuilder().apply {
+                positionsServiceFactory = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
+            }
         ).apply {
             Publication.TYPE.DiViNa
         }

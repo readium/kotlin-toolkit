@@ -13,6 +13,7 @@ import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PerResourcePositionsService
@@ -101,9 +102,9 @@ class CBZParser : PublicationParser {
         val publication = Publication(
             manifest = manifest,
             fetcher = fetcher,
-            serviceFactories = listOf(
-                PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
-            )
+            servicesBuilder = Publication.ServicesBuilder().apply {
+                positionsServiceFactory = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
+            }
         ).apply {
             type =  Publication.TYPE.CBZ
         }

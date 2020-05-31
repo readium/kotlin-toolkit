@@ -21,6 +21,7 @@ import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
@@ -123,7 +124,9 @@ class EpubParser : PublicationParser {
         val publication = Publication(
             manifest = manifest,
             fetcher = fetcher,
-            serviceFactories = listOf((EpubPositionsService)::create)
+            servicesBuilder = Publication.ServicesBuilder().apply {
+                positionsServiceFactory = (EpubPositionsService)::create
+            }
         ).apply {
             internalData["type"] = "epub"
             internalData["rootfile"] = opfPath
