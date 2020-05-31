@@ -15,6 +15,8 @@ import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ServiceFactory
 import kotlin.test.assertEquals
 
 class PositionsServiceTest {
@@ -86,5 +88,18 @@ class PositionsServiceTest {
 
         assertEquals(positions.flatten().size, total)
         assertEquals(positions.flatten(), locators)
+    }
+
+    @Test
+    fun `helper for ServicesBuilder works fine`() {
+        val factory = { context: Publication.Service.Context ->
+            object : PositionsService {
+                override val positionsByReadingOrder: List<List<Locator>> = emptyList()
+            }
+        }
+        assertEquals(
+            mapOf<String, ServiceFactory>(PositionsService::class.simpleName!! to factory),
+            Publication.ServicesBuilder().apply { positionsServiceFactory = factory }.serviceFactories
+        )
     }
 }

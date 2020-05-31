@@ -14,7 +14,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
-import org.readium.r2.shared.publication.services.positionsByResource
+import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.publication.services.positionsServiceFactory
 import java.net.URL
 
@@ -48,7 +48,7 @@ class PublicationTest {
         assertEquals(emptyList<Locator>(), createPublication().positions)
     }
 
-    @Test fun `get the {positions} computed from the {positionsFactory}`() {
+    @Test fun `get the {positions} computed from the {PositionsService}`() {
         assertEquals(
             listOf(Locator(href = "locator", type = "")),
             createPublication(
@@ -61,14 +61,14 @@ class PublicationTest {
         )
     }
 
-    @Test fun `get the {positionsByResource} computed from the {positionsFactory}`() {
+    @Test fun `get the {positionsByReadingOrder} computed from the {PositionsService}`() {
         assertEquals(
-            mapOf(
-                "res1" to listOf(
+            listOf(
+                listOf(
                     Locator(href="res1", type = "text/html", title = "Loc A"),
                     Locator(href="res1", type = "text/html", title = "Loc B")
                 ),
-                "res2" to listOf(
+                listOf(
                     Locator(href="res2", type = "text/html", title = "Loc B")
                 )
             ),
@@ -84,7 +84,7 @@ class PublicationTest {
                         )
                     }
                 }
-            ).positionsByResource
+            ).positionsByReadingOrder
         )
     }
 
