@@ -26,6 +26,7 @@ import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.positions
 import java.net.URL
 import java.net.URLEncoder
+import kotlin.reflect.KClass
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
@@ -90,19 +91,19 @@ data class Publication(
         fun build(context: Service.Context) : List<Service> = serviceFactories.values.mapNotNull { it(context) }
 
         /** Sets the publication service factory for the given service type. */
-        operator fun set(serviceType: Class<Service>, factory: ServiceFactory) {
+        operator fun <T> set(serviceType: Class<T>, factory: ServiceFactory) {
             requireNotNull(serviceType.simpleName)
             serviceFactories[serviceType.simpleName] = factory
         }
 
         /** Removes any service factory producing the given kind of service. */
-        fun remove(serviceType: Class<Service>) {
+        fun <T> remove(serviceType: Class<T>) {
             requireNotNull(serviceType.simpleName)
             serviceFactories.remove(serviceType.simpleName)
         }
 
         /* Replaces the service factory associated with the given service type with the result of `transform`. */
-        fun wrap(serviceType: Class<Service>, transform: ((ServiceFactory)?) -> ServiceFactory) {
+        fun <T> wrap(serviceType: Class<T>, transform: ((ServiceFactory)?) -> ServiceFactory) {
             requireNotNull(serviceType.simpleName)
             serviceFactories[serviceType.simpleName] = transform(serviceFactories[serviceType.simpleName])
         }
