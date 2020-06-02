@@ -134,12 +134,12 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
-        val s = ServerSocket(0)
+        val s = ServerSocket(if (DEBUG) 8080 else 0)
         s.localPort
         s.close()
 
         localPort = s.localPort
-        server = Server(localPort)
+        server = Server(localPort, applicationContext)
 
         val properties = Properties()
         val inputStream = this.assets.open("configs/config.properties")
@@ -643,12 +643,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 if (DEBUG) Timber.e(e)
             }
             if (server.isAlive) {
-
-                // Add Resources from R2Navigator
-                server.loadReadiumCSSResources(assets)
-                server.loadR2ScriptResources(assets)
-                server.loadR2FontResources(assets, applicationContext)
-
 //                // Add your own resources here
 //                server.loadCustomResource(assets.open("scripts/test.js"), "test.js")
 //                server.loadCustomResource(assets.open("styles/test.css"), "test.css")
@@ -657,8 +651,6 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 server.loadCustomResource(assets.open("Search/mark.js"), "mark.js", Injectable.Script)
                 server.loadCustomResource(assets.open("Search/search.js"), "search.js", Injectable.Script)
                 server.loadCustomResource(assets.open("Search/mark.css"), "mark.css", Injectable.Style)
-                server.loadCustomResource(assets.open("scripts/crypto-sha256.js"), "crypto-sha256.js", Injectable.Script)
-                server.loadCustomResource(assets.open("scripts/highlight.js"), "highlight.js", Injectable.Script)
 
                 isServerStarted = true
             }
