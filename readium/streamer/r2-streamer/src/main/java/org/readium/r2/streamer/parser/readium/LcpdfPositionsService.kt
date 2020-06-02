@@ -75,7 +75,7 @@ internal class LcpdfPositionsService(
     private fun openPdfAt(link: Link): PdfDocument? =
         try {
             PdfiumDocument.fromBytes(
-                bytes = fetcher.get(link).read().get(),
+                bytes = fetcher.readBytes(link),
                 context = context
             )
         } catch (e: Exception) {

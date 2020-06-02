@@ -10,16 +10,14 @@
 package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
-import android.graphics.Bitmap
 import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.pdf.toLinks
 import org.readium.r2.shared.publication.*
-import org.readium.r2.streamer.container.FileContainer
+import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
-import java.io.ByteArrayOutputStream
 import java.io.File
 
 /**
@@ -33,21 +31,19 @@ class PdfParser(private val context: Context) : PublicationParser {
 
             val rootHref = "/publication.pdf"
             val fetcher = FileFetcher(href = rootHref, path = fileAtPath)
-            val container = FileContainer(path = fileAtPath, mimetype = MediaType.PDF.toString())
-            container.rootFile.rootFilePath = rootHref
-            container.files[rootHref] = FileContainer.File.Path(fileAtPath)
 
             val document = PdfiumDocument.fromBytes(File(fileAtPath).readBytes(), context)
             val links = mutableListOf<Link>()
 
-            document.cover?.let { cover ->
-                val stream = ByteArrayOutputStream()
-                if (cover.compress(Bitmap.CompressFormat.PNG, 100, stream)) {
-                    val coverHref = "/cover.png"
-                    container.files[coverHref] = FileContainer.File.Bytes(stream.toByteArray())
-                    links.add(Link(href = coverHref, rels = setOf("cover"), type = MediaType.PNG.toString(), width = cover.width, height = cover.height))
-                }
-            }
+            // FIXME: CoverService
+//            document.cover?.let { cover ->
+//                val stream = ByteArrayOutputStream()
+//                if (cover.compress(Bitmap.CompressFormat.PNG, 100, stream)) {
+//                    val coverHref = "/cover.png"
+//                    container.files[coverHref] = FileContainer.File.Bytes(stream.toByteArray())
+//                    links.add(Link(href = coverHref, rels = setOf("cover"), type = MediaType.PNG.toString(), width = cover.width, height = cover.height))
+//                }
+//            }
 
             val tableOfContents = document.outline.toLinks(rootHref)
             val publication = Publication(
@@ -65,6 +61,12 @@ class PdfParser(private val context: Context) : PublicationParser {
                 servicesBuilder = Publication.ServicesBuilder(
                     positions = (PdfPositionsService)::create
                 )
+            )
+
+            val container = PublicationContainer(
+                publication = publication,
+                path = fileAtPath,
+                mediaType = MediaType.PDF
             )
 
             PubBox(publication, container)
