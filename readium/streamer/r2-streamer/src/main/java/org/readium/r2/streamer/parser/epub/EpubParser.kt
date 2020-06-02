@@ -124,9 +124,9 @@ class EpubParser : PublicationParser {
         val publication = Publication(
             manifest = manifest,
             fetcher = fetcher,
-            servicesBuilder = Publication.ServicesBuilder().apply {
-                positionsServiceFactory = (EpubPositionsService)::create
-            }
+            servicesBuilder = Publication.ServicesBuilder(
+                positions = (EpubPositionsService)::create
+            )
         ).apply {
             internalData["type"] = "epub"
             internalData["rootfile"] = opfPath
