@@ -33,7 +33,7 @@ internal class PdfPositionsService(
         // FIXME: Use the [tableOfContents] to generate the titles
         if (pageCount <= 0) {
             Timber.e("Invalid page count for a PDF document: $pageCount")
-            return@lazy emptyList()
+            return@lazy emptyList<List<Locator>>()
         }
 
         return@lazy (1..pageCount).map { position ->

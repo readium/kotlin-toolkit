@@ -39,7 +39,7 @@ internal class LcpdfPositionsService(
 
         val totalPageCount = resources.sumBy { it.first }
         if (totalPageCount <= 0) {
-            return@lazy emptyList()
+            return@lazy emptyList<List<Locator>>()
         }
 
         var lastPositionOfPreviousResource = 0
@@ -75,7 +75,7 @@ internal class LcpdfPositionsService(
     private fun openPdfAt(link: Link): PdfDocument? =
         try {
             PdfiumDocument.fromBytes(
-                bytes = fetcher.get(link).read().success,
+                bytes = fetcher.get(link).read().get(),
                 context = context
             )
         } catch (e: Exception) {

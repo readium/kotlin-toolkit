@@ -96,9 +96,9 @@ class DiViNaParser : PublicationParser {
 
         val publication = Publication(
             manifest = manifest,
-            servicesBuilder = Publication.ServicesBuilder().apply {
-                positionsServiceFactory = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
-            }
+            servicesBuilder = Publication.ServicesBuilder(
+                positions = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
+            )
         ).apply {
             Publication.TYPE.DiViNa
         }

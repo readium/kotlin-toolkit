@@ -15,7 +15,6 @@ import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.pdf.toLinks
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.streamer.container.FileContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
@@ -63,9 +62,9 @@ class PdfParser(private val context: Context) : PublicationParser {
                     links = links,
                     tableOfContents = tableOfContents
                 ),
-                servicesBuilder = Publication.ServicesBuilder().apply {
-                    positionsServiceFactory = (PdfPositionsService)::create
-                }
+                servicesBuilder = Publication.ServicesBuilder(
+                    positions = (PdfPositionsService)::create
+                )
             )
 
             PubBox(publication, container)
