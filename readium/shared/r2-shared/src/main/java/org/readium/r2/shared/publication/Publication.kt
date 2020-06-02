@@ -22,8 +22,9 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
+import org.readium.r2.shared.publication.services.CoverService
+import org.readium.r2.shared.publication.services.DefaultCoverService
 import org.readium.r2.shared.publication.services.PositionsService
-
 import org.readium.r2.shared.publication.services.positions
 import java.net.URL
 import java.net.URLEncoder
@@ -120,8 +121,12 @@ data class Publication(
     data class ServicesBuilder(internal var serviceFactories: MutableMap<String, ServiceFactory>) {
 
         @Suppress("UNCHECKED_CAST")
-        constructor(positions: ServiceFactory? = null) : this(mapOf(
-                PositionsService::class.java.simpleName to positions
+        constructor(
+            positions: ServiceFactory? = null,
+            cover: ServiceFactory? = (DefaultCoverService)::create
+        ) : this(mapOf(
+                PositionsService::class.java.simpleName to positions,
+                CoverService::class.java.simpleName to cover
             ).filterValues { it != null }.toMutableMap() as MutableMap<String, ServiceFactory>)
 
         /** Builds the actual list of publication services to use in a Publication. */

@@ -17,6 +17,7 @@ import org.readium.r2.shared.extensions.size
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.fetcher.BytesResource
 import org.readium.r2.shared.fetcher.FailureResource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
@@ -94,24 +95,33 @@ var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
 /**
  *  A [CoverService] which searches a [Link] with rel `cover` in the publication's manifest.
  */
-class DefaultCoverService(val context: Publication.Service.Context) : CoverService {
+class DefaultCoverService private constructor(val coverLinks: List<Link>, val fetcher: Fetcher) : CoverService {
 
     override val cover: Bitmap?
         get() {
-            val collections = with(context.manifest) { listOf(readingOrder, resources, links) }
-            val coverLinks: List<Link> = collections.map { it.deepFlatFilter { "cover" in it.rels } }.flatten()
             for (link in coverLinks) {
-                val data = context.fetcher.get(link).read().successOrNull() ?: continue
+                val data = fetcher.get(link).read().successOrNull() ?: continue
                 return BitmapFactory.decodeByteArray(data, 0, data.size)
             }
             return null
         }
+
+    companion object {
+
+        fun create(context: Publication.Service.Context) = DefaultCoverService(
+            coverLinks = with(context.manifest) { listOf(readingOrder, resources, links) }
+                .map { link -> link.deepFlatFilter { "cover" in it.rels } }
+                .flatten(),
+            fetcher = context.fetcher
+        )
+
+    }
 }
 
 /**
  * A [CoverService] which uses a provided in-memory bitmap.
  */
-class InMemoryCoverService(override val cover: Bitmap, val quality: Int = 90) : CoverService {
+class InMemoryCoverService private constructor(override val cover: Bitmap) : CoverService {
 
     override val links: List<Link> = listOf(
         coverLink(cover.size)
