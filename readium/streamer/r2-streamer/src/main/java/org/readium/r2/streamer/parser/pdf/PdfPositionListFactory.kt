@@ -16,7 +16,7 @@ import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
 
 /**
- * Creates the [positions] for an PDF [Publication].
+ * Creates the [positions] for a PDF [Publication].
  *
  * @param documentHref The HREF of the PDF document in the [Publication].
  * @param pageCount Total page count in the PDF document.

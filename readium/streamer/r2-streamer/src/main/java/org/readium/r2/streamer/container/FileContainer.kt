@@ -19,7 +19,7 @@ import java.io.InputStream
 import java.net.URL
 
 /** Container providing access to standalone files. */
-class FileContainer(path: String, mimetype: String) : Container {
+internal class FileContainer(path: String, mimetype: String) : Container {
 
     /** Two types of file served: from a path, or from a bytes buffer. */
     sealed class File {

@@ -12,12 +12,12 @@ package org.readium.r2.streamer.parser.pdf
 import android.content.Context
 import android.graphics.Bitmap
 import com.shockwave.pdfium.PdfiumCore
+import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.pdf.PdfDocument
 import timber.log.Timber
-import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 
-class PdfiumDocument private constructor(
+internal class PdfiumDocument private constructor(
     val core: PdfiumCore,
     val document: _PdfiumDocument,
     override val identifier: String?,
