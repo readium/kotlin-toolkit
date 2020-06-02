@@ -57,6 +57,12 @@ interface Resource {
         }
 
     /**
+     * Creates an [InputStream] to read the content.
+     */
+    fun stream(): ResourceTry<InputStream> =
+        length.map { ResourceInputStream(resource = this, length = it) }
+
+    /**
      * Closes any opened file handles.
      */
     fun close()
@@ -127,9 +133,30 @@ open class BytesResource(override val link: Link, private val bytes: () -> ByteA
 /** Creates a Resource serving a string encoded as UTF-8. */
 class StringResource(link: Link, string: () -> String) : BytesResource(link, { string().toByteArray() })
 
+/**
+ * A base class for a [Resource] which acts as a proxy to another one.
+ *
+ * Every function is delegating to the proxied resource, and subclasses should override some of them.
+ */
+internal abstract class ResourceProxy(
+    protected val resource: Resource
+) : Resource {
+
+    override val link: Link get() = resource.link
+
+    override val length: ResourceTry<Long> get() = resource.length
+
+    override fun read(range: LongRange?): ResourceTry<ByteArray> {
+        return resource.read(range)
+    }
+
+    override fun close() = resource.close()
+
+}
+
 internal abstract class StreamResource : Resource {
 
-    protected abstract fun stream(): ResourceTry<InputStream>
+    abstract override fun stream(): ResourceTry<InputStream>
 
     /** An estimate of data length from metadata */
     protected abstract val metadataLength: Long?

@@ -167,6 +167,12 @@ data class Publication(
     }
 
     /**
+     * Returns the resource targeted by the given [href].
+     */
+    fun get(href: String): Resource =
+        get(Link(href = href))
+
+    /**
      * Closes any opened resource associated with the [Publication], including [services].
      */
     fun close() {

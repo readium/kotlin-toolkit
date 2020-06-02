@@ -40,6 +40,20 @@ interface Fetcher {
      */
     fun get(link: Link, parameters: HrefParameters = emptyMap()): Resource
 
+    /** Returns the [Resource] at the given [href]. */
+    fun get(href: String): Resource =
+        get(Link(href = href))
+
+    /** Shortcut to get the data of a file at given [Link]. */
+    @Throws(Resource.Error::class)
+    fun readBytes(link: Link): ByteArray =
+        get(link).read().get()
+
+    /** Shortcut to get the data of a file at given [href]. */
+    @Throws(Resource.Error::class)
+    fun readBytes(href: String): ByteArray =
+        get(href).read().get()
+
     /** Closes any opened file handles, removes temporary files, etc. */
     fun close()
 
