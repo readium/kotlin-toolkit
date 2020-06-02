@@ -192,8 +192,6 @@ internal class PubMetadataAdapter(
         contributors = contributors(null)
     )
 
-    private val defaultLang = firstValue(Vocabularies.DCTERMS + "language")
-
     val languages = items[Vocabularies.DCTERMS + "language"]?.map(MetadataItem::value).orEmpty()
 
     val identifier: String?
@@ -220,7 +218,7 @@ internal class PubMetadataAdapter(
     val localizedSortAs: LocalizedString?
 
     init {
-        val titles = items[Vocabularies.DCTERMS + "title"]?.map { it.toTitle(defaultLang) }.orEmpty()
+        val titles = items[Vocabularies.DCTERMS + "title"]?.map { it.toTitle() }.orEmpty()
         val mainTitle = titles.firstOrNull { it.type == "main" } ?: titles.firstOrNull()
 
         localizedTitle =  mainTitle?.value ?: LocalizedString(fallbackTitle)
@@ -233,31 +231,28 @@ internal class PubMetadataAdapter(
     val belongsToCollections: List<Collection>
 
     init {
-        if (epubVersion < 3.0) {
-            val calibreSeries = items["calibre:series"]?.firstOrNull()?.let {
-                val name = LocalizedString.fromStrings(mapOf(it.lang to it.value))
-                val position = firstValue("calibre:series_index")?.toDoubleOrNull()
-                Collection(localizedName = name, position = position)
-            }
+        val allCollections = items[Vocabularies.META + "belongs-to-collection"]
+            .orEmpty().map { it.toCollection() }
+        val (seriesMeta, collectionsMeta) = allCollections.partition { it.first == "series" }
 
-            belongsToSeries = listOfNotNull(calibreSeries)
-            belongsToCollections = emptyList()
+        belongsToCollections = collectionsMeta.map(Pair<String?, Collection>::second)
 
-        } else {
-            val allCollections = items[Vocabularies.META + "belongs-to-collection"]
-                .orEmpty().map { it.toCollection(defaultLang) }
-            val (seriesMeta, collectionsMeta) = allCollections.partition { it.first == "series" }
-
-            belongsToSeries = seriesMeta.map(Pair<String?, Collection>::second)
-            belongsToCollections = collectionsMeta.map(Pair<String?, Collection>::second)
-        }
+        belongsToSeries =
+            if (seriesMeta.isNotEmpty())
+                seriesMeta.map(Pair<String?, Collection>::second)
+            else
+                items["calibre:series"]?.firstOrNull()?.let {
+                    val name = LocalizedString.fromStrings(mapOf(it.lang to it.value))
+                    val position = firstValue("calibre:series_index")?.toDoubleOrNull()
+                    listOf(Collection(localizedName = name, position = position))
+                }.orEmpty()
     }
 
     val subjects: List<Subject>
 
     init {
         val subjectItems = items[Vocabularies.DCTERMS + "subject"].orEmpty()
-        val parsedSubjects = subjectItems.map { it.toSubject(defaultLang) }
+        val parsedSubjects = subjectItems.map { it.toSubject() }
         val hasToSplit = parsedSubjects.size == 1 && parsedSubjects.first().run {
             localizedName.translations.size == 1 && code == null && scheme == null && sortAs == null
         }
@@ -278,33 +273,15 @@ internal class PubMetadataAdapter(
     private val allContributors: Map<String?, List<Contributor>>
 
     init {
-        val creators = items[Vocabularies.DCTERMS + "creator"].orEmpty()
-            .map { it.toContributor(defaultLang, "aut") }
-        val publishers = items[Vocabularies.DCTERMS + "publisher"].orEmpty()
-            .map { it.toContributor(defaultLang, "pbl") }
-        val others = items[Vocabularies.DCTERMS + "contributor"].orEmpty()
-            .map { it.toContributor(defaultLang) }
-        val narrators = items[Vocabularies.MEDIA + "narrator"].orEmpty()
-            .map { it.toContributor(defaultLang, "nrt") }
-        val contributors = creators + publishers + narrators + others
-        val knownRoles = setOf("aut", "trl", "edt", "pbl", "art", "ill", "clr", "nrt")
-        allContributors = contributors.distributeBy(knownRoles, Contributor::roles)
-    }
+        val contributors = items[Vocabularies.DCTERMS + "creator"].orEmpty() +
+                items[Vocabularies.DCTERMS + "contributor"].orEmpty() +
+                items[Vocabularies.DCTERMS + "publisher"].orEmpty() +
+                items[Vocabularies.MEDIA + "narrator"].orEmpty()
 
-    private fun <K, V> List<V>.distributeBy(classes: Set<K>, transform: (V) -> kotlin.collections.Collection<K>): Map<K?, List<V>> {
-        /* Map all elements with [transform] and compute a [Map] with keys [null] and elements from [classes] and,
-         as values, lists of elements whose transformed values contain the key.
-         If a transformed element is in no class, it is assumed to be in [null] class. */
-
-        val map: MutableMap<K?, MutableList<V>> = mutableMapOf()
-        for (element in this) {
-            val transformed = transform(element).filter { it in classes }
-            if (transformed.isEmpty())
-                map.getOrPut(null) { mutableListOf() }.add(element)
-            for (v in transformed)
-                map.getOrPut(v) { mutableListOf() }.add(element)
-        }
-        return map
+        allContributors = contributors
+            .map(MetadataItem::toContributor)
+            .groupBy(Pair<String?, Contributor>::first)
+            .mapValues { it.value.map(Pair<String?, Contributor>::second) }
     }
 
     fun contributors(role: String?) = allContributors[role].orEmpty()
@@ -387,30 +364,42 @@ internal data class MetadataItem(
     val children: Map<String, List<MetadataItem>> = emptyMap()
 ) {
 
-    fun toSubject(defaultLang: String?): Subject {
+    fun toSubject(): Subject {
         require(property == Vocabularies.DCTERMS + "subject")
-        val values = localizedString(defaultLang)
-        val localizedSortAs = fileAs?.let { LocalizedString(it.second, if (it.first == "") defaultLang else it.first) }
+        val values = localizedString()
+        val localizedSortAs = fileAs?.let { LocalizedString(it.second, it.first) }
         return Subject(values, localizedSortAs, authority, term)
     }
 
-    fun toTitle(defaultLang: String?): Title {
+    fun toTitle(): Title {
         require(property == Vocabularies.DCTERMS + "title")
-        val values = localizedString(defaultLang)
-        val localizedSortAs = fileAs?.let { LocalizedString(it.second, if (it.first == "") defaultLang else it.first) }
+        val values = localizedString()
+        val localizedSortAs = fileAs?.let { LocalizedString(it.second, it.first) }
         return Title(values, localizedSortAs, titleType, displaySeq)
     }
 
-    fun toContributor(defaultLang: String?, defaultRole: String? = null): Contributor {
+    fun toContributor(): Pair<String?, Contributor> {
         require(property in listOf("creator", "contributor", "publisher").map { Vocabularies.DCTERMS + it } +
                 (Vocabularies.MEDIA + "narrator") + (Vocabularies.META + "belongs-to-collection"))
-        val names = localizedString(defaultLang)
-        val localizedSortAs = fileAs?.let { LocalizedString(it.second, if (it.first == "") defaultLang else it.first) }
-        return Contributor(names, localizedSortAs = localizedSortAs,
-            roles = roles(defaultRole), identifier = identifier, position = groupPosition)
+        val knownRoles = setOf("aut", "trl", "edt", "pbl", "art", "ill", "clr", "nrt")
+        val names = localizedString()
+        val localizedSortAs = fileAs?.let { LocalizedString(it.second, it.first) }
+        val roles = role.takeUnless { it in knownRoles  }?.let { setOf(it) }.orEmpty()
+        val type = when(property) {
+            Vocabularies.META + "belongs-to-collection" -> collectionType
+            Vocabularies.DCTERMS + "creator" -> "aut"
+            Vocabularies.DCTERMS + "publisher" -> "pbl"
+            Vocabularies.MEDIA + "narrator" -> "nrt"
+            else -> role.takeIf { it in knownRoles } // Vocabularies.DCTERMS + "contributor"
+        }
+
+        val contributor =  Contributor(names, localizedSortAs = localizedSortAs,
+            roles = roles, identifier = identifier, position = groupPosition)
+
+        return Pair(type, contributor)
     }
 
-    fun toCollection(defaultLang: String?) = Pair(collectionType, toContributor(defaultLang))
+    fun toCollection() = toContributor()
 
     fun toMap(): Any =
         if (children.isEmpty())
@@ -421,7 +410,8 @@ internal data class MetadataItem(
         }
 
     private val fileAs
-        get() = children[Vocabularies.META + "file-as"]?.firstOrNull()?.let { Pair(it.lang, it.value) }
+        get() = children[Vocabularies.META + "file-as"]?.firstOrNull()?.let {
+            Pair(it.lang.takeUnless { it == "" } , it.value) }
 
     private val titleType
         get() = firstValue(Vocabularies.META + "title-type")
@@ -447,18 +437,13 @@ internal data class MetadataItem(
     private val identifier
         get() = firstValue(Vocabularies.DCTERMS + "identifier")
 
-    private fun localizedString(defaultLang: String?): LocalizedString {
-        val values = mapOf(lang to value).plus(alternateScript)
-            .mapKeys { if (it.key.isEmpty()) defaultLang else it.key }
+    private val role
+        get() = firstValue(Vocabularies.META + "role")
+
+    private fun localizedString(): LocalizedString {
+        val values = mapOf(lang.takeUnless { it == "" } to value).plus(alternateScript)
         return LocalizedString.fromStrings(values)
     }
 
-    private fun roles(default: String?): Set<String> {
-        val roles = allValues(Vocabularies.META + "role")
-        return if (roles.isEmpty() && default != null) setOf(default) else roles.toSet()
-    }
-
     private fun firstValue(property: String) = children[property]?.firstOrNull()?.value
-
-    private fun allValues(property: String) = children[property]?.map(MetadataItem::value).orEmpty()
 }

@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.parser.webpub
+package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
 import org.json.JSONObject
@@ -27,7 +27,7 @@ import java.io.File
 /**
  * Parses any Readium Web Publication package or manifest, e.g. WebPub, Audiobook, DiViNa, LCPDF...
  */
-class WebPubParser(private val context: Context) : PublicationParser {
+class ReadiumWebPubParser(private val context: Context) : PublicationParser {
 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val file = File(fileAtPath)
@@ -97,7 +97,7 @@ class WebPubParser(private val context: Context) : PublicationParser {
             if (format == Format.LCP_PROTECTED_PDF) {
                 publication = publication?.copyWithPositionsFactory {
                     LcpdfPositionListFactory(
-                        context = this@WebPubParser.context.applicationContext,
+                        context = this@ReadiumWebPubParser.context.applicationContext,
                         container = container,
                         readingOrder = readingOrder
                     )

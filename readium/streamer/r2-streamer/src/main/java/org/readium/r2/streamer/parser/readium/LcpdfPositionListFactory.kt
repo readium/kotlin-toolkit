@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.parser.webpub
+package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
 import org.readium.r2.shared.format.MediaType
