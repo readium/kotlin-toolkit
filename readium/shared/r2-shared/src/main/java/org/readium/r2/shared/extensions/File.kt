@@ -9,7 +9,36 @@
 
 package org.readium.r2.shared.extensions
 
+import timber.log.Timber
 import java.io.File
+import java.io.FileInputStream
+import java.security.MessageDigest
+
+/** Computes the MD5 hash of the file. */
+fun File.md5(): String? =
+    try {
+        val md = MessageDigest.getInstance("MD5")
+        // https://stackoverflow.com/questions/10143731/android-optimal-buffer-size
+        val bufferSize = 32000
+        val buffer = ByteArray(bufferSize)
+        FileInputStream(this).use {
+            var bytes = 0
+            do {
+                bytes = it.read(buffer, 0, bufferSize)
+                if (bytes > 0) {
+                    md.update(buffer, 0, bytes)
+                }
+            } while (bytes > 0)
+        }
+
+        md.digest()
+            // ByteArray to hex string
+            .fold("") { str, it -> str + "%02x".format(it) }
+
+    } catch (e: Exception) {
+        Timber.e(e)
+        null
+    }
 
 /**
  * Returns whether the `other` is a descendant of this file.
