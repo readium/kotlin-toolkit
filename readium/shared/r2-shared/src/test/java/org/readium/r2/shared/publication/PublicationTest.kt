@@ -40,9 +40,7 @@ class PublicationTest {
                     readingOrder = readingOrder,
                     resources = resources
                 ),
-            servicesBuilder = Publication.ServicesBuilder().apply {
-                positionsServiceFactory?.let { this. positionsServiceFactory = it }
-            }
+            servicesBuilder = Publication.ServicesBuilder(positions = positionsServiceFactory)
     )
 
     @Test fun `get the default empty {positions}`() {

@@ -99,7 +99,9 @@ class PositionsServiceTest {
         }
         assertEquals(
             mapOf<String, ServiceFactory>(PositionsService::class.simpleName!! to factory),
-            Publication.ServicesBuilder().apply { positionsServiceFactory = factory }.serviceFactories
+            Publication.ServicesBuilder(
+                positions = factory
+            ).serviceFactories
         )
     }
 }
