@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.streamer.parser.webpub
+package org.readium.r2.streamer.parser.readium
 
 import org.json.JSONObject
 import org.readium.r2.shared.drm.DRM
@@ -25,7 +25,7 @@ import java.io.File
 /**
  * Parses any Readium Web Publication package or manifest, e.g. WebPub, Audiobook, DiViNa, LCPDF...
  */
-class WebPubParser : PublicationParser {
+class ReadiumWebPubParser : PublicationParser {
 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val file = File(fileAtPath)
