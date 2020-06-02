@@ -78,11 +78,43 @@ data class Publication(
             val fetcher: Fetcher
         )
 
+        /**
+         * Links which will be added to [Publication.links].
+         * It can be used to expose a web API for the service, through [Publication.get].
+         *
+         * To disambiguate the href with a publication's local resources, you should use the prefix
+         * `/~readium/`. A custom media type or rel should be used to identify the service.
+         *
+         * You can use a templated URI to accept query parameters, e.g.:
+         *
+         * ```
+         * Link(
+         *     href = "/~readium/search{?text}",
+         *     type = "application/vnd.readium.search+json",
+         *     templated = true
+         * )
+         * ```
+         */
         val links: List<Link> get () = emptyList()
 
-        fun get(link: Link, parameters: Map<String, String>  = emptyMap()): Resource? = null
+        /**
+         * A service can return a Resource to:
+         *  - respond to a request to its web API declared in links,
+         *  - serve additional resources on behalf of the publication,
+         *  - replace a publication resource by its own version.
+         *
+         * Called by [Publication.get] for each request.
+         *
+         * @return The Resource containing the response, or null if the service doesn't recognize
+         *         this request.
+         */
+        fun get(link: Link, parameters: Map<String, String> = emptyMap()): Resource? = null
 
+        /**
+         * Closes any opened file handles, removes temporary files, etc.
+         */
         fun close() {}
+
     }
 
     data class ServicesBuilder(internal var serviceFactories: MutableMap<String, ServiceFactory> = mutableMapOf()) {
