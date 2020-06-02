@@ -22,5 +22,5 @@ interface PublicationParser {
 }
 
 @Deprecated("[title] has been renamed to [fallbackTitle", ReplaceWith("parse(fileAtPath, fallbackTitle=title)"))
-fun PublicationParser.parse(fileAtPath: String, title: String = File(fileAtPath).name): PubBox? =
+fun PublicationParser.parse(fileAtPath: String, title: String): PubBox? =
     parse(fileAtPath, fallbackTitle = title)

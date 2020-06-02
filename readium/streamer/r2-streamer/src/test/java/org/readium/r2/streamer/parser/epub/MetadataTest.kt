@@ -29,20 +29,14 @@ class ContributorParsingTest {
 
     @Test
     fun `dc_creator is by default an author`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Author 1"),
-            roles = setOf("aut")
-        )
+        val contributor = Contributor(localizedName = LocalizedString("Author 1"))
         assertThat(epub2Metadata.authors).contains(contributor)
         assertThat(epub3Metadata.authors).contains(contributor)
     }
 
     @Test
-    fun `dc_publisher is by default a publisher`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Publisher 1"),
-            roles = setOf("pbl")
-        )
+    fun `dc_publisher is a publisher`() {
+        val contributor = Contributor(localizedName = LocalizedString("Publisher 1"))
         assertThat(epub2Metadata.publishers).contains(contributor)
         assertThat(epub3Metadata.publishers).contains(contributor)
     }
@@ -52,13 +46,6 @@ class ContributorParsingTest {
         val contributor = Contributor(localizedName = LocalizedString("Contributor 1"))
         assertThat(epub2Metadata.contributors).contains(contributor)
         assertThat(epub3Metadata.contributors).contains(contributor)
-    }
-
-    @Test
-    fun `Refined roles override tag names`() {
-        val contributor = Contributor(localizedName = LocalizedString("Author 2"), roles = setOf("aut"))
-        assertThat(epub2Metadata.authors).contains(contributor)
-        assertThat(epub3Metadata.authors).contains(contributor)
     }
 
     @Test
@@ -90,57 +77,42 @@ class ContributorParsingTest {
     }
 
     @Test
-    fun `Multiple roles are all parsed (epub3 only)`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Cameleon"),
-            roles = setOf("aut", "pbl")
-        )
+    fun `Only the first role is considered (epub3 only)`() {
+        val contributor = Contributor(localizedName = LocalizedString("Cameleon"))
         assertThat(epub3Metadata.authors).contains(contributor)
-        assertThat(epub3Metadata.publishers).contains(contributor)
+        assertThat(epub3Metadata.publishers).doesNotContain(contributor)
     }
 
     @Test
     fun `Media Overlays narrators are rightly parsed (epub3 only)`() {
-        val contributor = Contributor(localizedName = LocalizedString("Media Overlays Narrator"), roles = setOf("nrt"))
+        val contributor = Contributor(localizedName = LocalizedString("Media Overlays Narrator"))
         assertThat(epub3Metadata.narrators).contains(contributor)
     }
 
     @Test
     fun `Author is rightly parsed`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Author 3"),
-            roles = setOf("aut")
-        )
+        val contributor = Contributor(localizedName = LocalizedString("Author 2"))
         assertThat(epub2Metadata.authors).contains(contributor)
         assertThat(epub3Metadata.authors).contains(contributor)
     }
 
     @Test
     fun `Publisher is rightly parsed`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Publisher 2"),
-            roles = setOf("pbl")
-        )
+        val contributor = Contributor(localizedName = LocalizedString("Publisher 2")        )
         assertThat(epub2Metadata.publishers).contains(contributor)
         assertThat(epub3Metadata.publishers).contains(contributor)
     }
 
     @Test
     fun `Translator is rightly parsed`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Translator"),
-            roles = setOf("trl")
-        )
+        val contributor = Contributor(localizedName = LocalizedString("Translator"))
         assertThat(epub2Metadata.translators).contains(contributor)
         assertThat(epub3Metadata.translators).contains(contributor)
     }
 
     @Test
     fun `Artist is rightly parsed`() {
-        val contributor = Contributor(
-            localizedName = LocalizedString("Artist"),
-            roles = setOf("art")
-        )
+        val contributor = Contributor(localizedName = LocalizedString("Artist"))
         assertThat(epub2Metadata.artists).contains(contributor)
         assertThat(epub3Metadata.artists).contains(contributor)
     }
@@ -149,7 +121,7 @@ class ContributorParsingTest {
     fun `Illustrator is rightly parsed`() {
         val contributor = Contributor(
             localizedName = LocalizedString("Illustrator"),
-            roles = setOf("ill")
+            roles = emptySet()
         )
         assertThat(epub2Metadata.illustrators).contains(contributor)
         assertThat(epub3Metadata.illustrators).contains(contributor)
@@ -159,7 +131,7 @@ class ContributorParsingTest {
     fun `Colorist is rightly parsed`() {
         val contributor = Contributor(
             localizedName = LocalizedString("Colorist"),
-            roles = setOf("clr")
+            roles = emptySet()
         )
         assertThat(epub2Metadata.colorists).contains(contributor)
         assertThat(epub3Metadata.colorists).contains(contributor)
@@ -169,7 +141,7 @@ class ContributorParsingTest {
     fun `Narrator is rightly parsed`() {
         val contributor = Contributor(
             localizedName = LocalizedString("Narrator"),
-            roles = setOf("nrt")
+            roles = emptySet()
         )
         assertThat(epub2Metadata.narrators).contains(contributor)
         assertThat(epub3Metadata.narrators).contains(contributor)
@@ -177,7 +149,7 @@ class ContributorParsingTest {
 
     @Test
     fun `No more contributor than needed`() {
-        assertThat(epub2Metadata.authors).size().isEqualTo(3)
+        assertThat(epub2Metadata.authors).size().isEqualTo(2)
         assertThat(epub2Metadata.publishers).size().isEqualTo(2)
         assertThat(epub2Metadata.translators).size().isEqualTo(1)
         assertThat(epub2Metadata.editors).size().isEqualTo(1)
@@ -187,8 +159,8 @@ class ContributorParsingTest {
         assertThat(epub2Metadata.narrators).size().isEqualTo(1)
         assertThat(epub2Metadata.contributors).size().isEqualTo(3)
 
-        assertThat(epub3Metadata.authors).size().isEqualTo(4)
-        assertThat(epub3Metadata.publishers).size().isEqualTo(3)
+        assertThat(epub3Metadata.authors).size().isEqualTo(3)
+        assertThat(epub3Metadata.publishers).size().isEqualTo(2)
         assertThat(epub3Metadata.translators).size().isEqualTo(1)
         assertThat(epub3Metadata.editors).size().isEqualTo(1)
         assertThat(epub3Metadata.artists).size().isEqualTo(1)
@@ -208,14 +180,14 @@ class TitleTest {
         assertThat(epub2Metadata.localizedTitle).isEqualTo(
             LocalizedString.fromStrings(
                 mapOf(
-                    "en" to "Alice's Adventures in Wonderland"
+                    null to "Alice's Adventures in Wonderland"
                 )
             )
         )
         assertThat(epub3Metadata.localizedTitle).isEqualTo(
             LocalizedString.fromStrings(
                 mapOf(
-                    "en" to "Alice's Adventures in Wonderland",
+                    null to "Alice's Adventures in Wonderland",
                     "fr" to "Les Aventures d'Alice au pays des merveilles"
                 )
             )
@@ -249,7 +221,7 @@ class TitleTest {
     @Test
     fun `The selected subtitle has the lowest display-seq property (epub3 only)`() {
         val metadata = parsePackageDocument("package/title-multiple-subtitles.opf").metadata
-        assertThat(metadata.localizedSubtitle).isEqualTo(LocalizedString.fromStrings(mapOf("en" to "Subtitle 2")))
+        assertThat(metadata.localizedSubtitle).isEqualTo(LocalizedString.fromStrings(mapOf(null to "Subtitle 2")))
     }
 }
 
