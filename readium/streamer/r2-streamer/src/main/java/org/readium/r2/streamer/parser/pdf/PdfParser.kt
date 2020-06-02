@@ -14,6 +14,7 @@ import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.pdf.toLinks
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.services.InMemoryCoverService
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
@@ -28,24 +29,10 @@ class PdfParser(private val context: Context) : PublicationParser {
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? =
         try {
             val file = File(fileAtPath)
-
             val rootHref = "/publication.pdf"
-            val fetcher = FileFetcher(href = rootHref, path = fileAtPath)
-
             val document = PdfiumDocument.fromBytes(File(fileAtPath).readBytes(), context)
-            val links = mutableListOf<Link>()
-
-            // FIXME: CoverService
-//            document.cover?.let { cover ->
-//                val stream = ByteArrayOutputStream()
-//                if (cover.compress(Bitmap.CompressFormat.PNG, 100, stream)) {
-//                    val coverHref = "/cover.png"
-//                    container.files[coverHref] = FileContainer.File.Bytes(stream.toByteArray())
-//                    links.add(Link(href = coverHref, rels = setOf("cover"), type = MediaType.PNG.toString(), width = cover.width, height = cover.height))
-//                }
-//            }
-
             val tableOfContents = document.outline.toLinks(rootHref)
+
             val publication = Publication(
                 manifest = Manifest(
                     metadata = Metadata(
@@ -55,11 +42,12 @@ class PdfParser(private val context: Context) : PublicationParser {
                         numberOfPages = document.pageCount
                     ),
                     readingOrder = listOf(Link(href = rootHref, type = MediaType.PDF.toString())),
-                    links = links,
                     tableOfContents = tableOfContents
                 ),
+                fetcher = FileFetcher(href = rootHref, path = fileAtPath),
                 servicesBuilder = Publication.ServicesBuilder(
-                    positions = (PdfPositionsService)::create
+                    positions = (PdfPositionsService)::create,
+                    cover = document.cover?.let { InMemoryCoverService.create(it) }
                 )
             )
 
