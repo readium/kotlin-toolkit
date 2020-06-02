@@ -10,12 +10,12 @@
 package org.readium.r2.shared.util
 
 /** A [Result] type which can be used as a return type. */
-class Try<out Success, out Failure> private constructor(private val _success: Success?, private val _failure: Failure?) {
+class Try<out Success, out Failure: Throwable> private constructor(private val _success: Success?, private val _failure: Failure?) {
 
     companion object {
         fun <Success> success(success: Success) = Try(success, null)
 
-        fun <Failure> failure(failure: Failure) = Try(null, failure)
+        fun <Failure: Throwable> failure(failure: Failure) = Try(null, failure)
     }
 
     val isSuccess get() = _success != null
@@ -32,6 +32,9 @@ class Try<out Success, out Failure> private constructor(private val _success: Su
 
     fun failureOrNull() = _failure
 
+    fun get() =
+        _success ?: throw _failure!!
+
     fun <R> map(transform: (value: Success) -> R): Try<R, Failure> =
         when {
             isSuccess -> Try.success(transform(success))
@@ -39,7 +42,7 @@ class Try<out Success, out Failure> private constructor(private val _success: Su
         }
 }
 
-fun <R, S, F> Try<S, F>.flatMap(transform: (value: S) -> Try<R, F>): Try<R, F> =
+fun <R, S, F: Throwable> Try<S, F>.flatMap(transform: (value: S) -> Try<R, F>): Try<R, F> =
     when {
         isSuccess -> transform(success)
         else -> Try.failure(failure)
