@@ -46,9 +46,11 @@ import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.navigator.epub.Style
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
-import org.readium.r2.shared.*
+import org.readium.r2.shared.APPEARANCE_REF
+import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.putPublicationFrom
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
@@ -559,13 +561,13 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             if (requestCode == 2 && resultCode == Activity.RESULT_OK && data != null) {
                 val locator = data.getParcelableExtra("locator") as Locator
                 locator.locations.fragments.firstOrNull()?.let { fragment ->
+                    val fragments = fragment.split(",")
+                        .map { it.split("=") }
+                        .filter { it.size == 2 }
+                        .associate { it[0] to it[1] }
 
-                    val fragments = fragment.split(",").associate {
-                        val (left, right) = it.split("=")
-                        left to right.toInt()
-                    }
-                    if (fragments.isNotEmpty() && fragments.containsKey("i")) {
-                        val index = fragments.getValue("i").toInt()
+                    val index = fragments["i"]?.toInt()
+                    if (index != null) {
                         val searchStorage = getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
                         Handler().postDelayed({
                             if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
