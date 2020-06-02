@@ -24,7 +24,7 @@ internal class FileHandler : BaseHandler() {
     override fun handle(resource: RouterNanoHTTPD.UriResource, uri: Uri, parameters: Map<String, String>?): Response {
         val files = resource.initParameter(Files::class.java)
         val file = files.find(uri) ?: return notFoundResponse
-        return createResponse(mediaType = file.mediaType, body = file.file.readBytes())
+        return createResponse(mediaType = file.mediaType, body = file.file.inputStream())
     }
 
 }

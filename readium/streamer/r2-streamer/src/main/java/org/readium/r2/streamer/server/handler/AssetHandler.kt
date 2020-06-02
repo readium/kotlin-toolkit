@@ -17,7 +17,7 @@ import org.readium.r2.streamer.server.Assets
 /**
  * Serves files from the local file system.
  *
- * The NanoHTTPD init parameter must be an instance of `Files`.
+ * The NanoHTTPD init parameter must be an instance of `Assets`.
  */
 internal class AssetHandler : BaseHandler() {
 
