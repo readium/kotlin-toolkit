@@ -16,7 +16,6 @@ import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
-import org.readium.r2.shared.publication.services.positionsServiceFactory
 import java.net.URL
 
 class PublicationTest {
@@ -272,7 +271,7 @@ class ServicesBuilderTest {
 
     @Test
     fun testBuild() {
-        val builder = Publication.ServicesBuilder().apply {
+        val builder = Publication.ServicesBuilder(cover = null).apply {
             set(FooService::class.java) { FooServiceA() }
             set(BarService::class.java) { BarServiceA() }
         }
@@ -286,14 +285,14 @@ class ServicesBuilderTest {
 
     @Test
     fun testBuildEmpty() {
-        val builder = Publication.ServicesBuilder()
+        val builder = Publication.ServicesBuilder(cover = null)
         val services = builder.build(context)
         assertTrue(services.isEmpty())
     }
 
     @Test
     fun testSetOverwrite() {
-        val builder = Publication.ServicesBuilder().apply {
+        val builder = Publication.ServicesBuilder(cover = null).apply {
             set(FooService::class.java) { FooServiceA() }
             set(FooService::class.java) { FooServiceB() }
         }
@@ -306,7 +305,7 @@ class ServicesBuilderTest {
 
     @Test
     fun testRemoveExisting() {
-        val builder = Publication.ServicesBuilder()
+        val builder = Publication.ServicesBuilder(cover = null)
         builder.set(FooService::class.java) { FooServiceA() }
         builder.set(BarService::class.java) { BarServiceA() }
 
@@ -319,7 +318,7 @@ class ServicesBuilderTest {
 
     @Test
     fun testRemoveUnknown() {
-        val builder = Publication.ServicesBuilder()
+        val builder = Publication.ServicesBuilder(cover = null)
         builder.set(FooService::class.java) { FooServiceA() }
 
         builder.remove(BarService::class.java)
@@ -331,7 +330,7 @@ class ServicesBuilderTest {
 
     @Test
     fun testWrap() {
-        val builder = Publication.ServicesBuilder().apply {
+        val builder = Publication.ServicesBuilder(cover = null).apply {
             set(FooService::class.java) { FooServiceB() }
             set(BarService::class.java) { BarServiceA() }
         }
