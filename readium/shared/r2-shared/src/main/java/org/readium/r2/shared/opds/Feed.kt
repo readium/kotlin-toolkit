@@ -31,5 +31,4 @@ data class Feed(val title: String, val type: Int, val href: URL) : Parcelable {
     }
 }
 
-@Parcelize
-data class ParseData(val feed: Feed?, val publication: Publication?, val type: Int) : Parcelable
+data class ParseData(val feed: Feed?, val publication: Publication?, val type: Int)
