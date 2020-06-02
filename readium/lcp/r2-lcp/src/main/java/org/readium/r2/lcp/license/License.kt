@@ -18,11 +18,16 @@ import org.joda.time.DateTime
 import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
+import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
+import org.readium.r2.shared.contentTypeEncoding
+import org.readium.r2.shared.format.Format
+import org.readium.r2.shared.format.format
+import org.readium.r2.shared.format.sniffFormat
 import org.readium.r2.shared.promise
 import org.zeroturnaround.zip.ZipUtil
 import timber.log.Timber
@@ -30,11 +35,13 @@ import java.io.File
 import java.net.URL
 import java.util.*
 
-internal class License(private var documents: ValidatedDocuments,
-              private val validation: LicenseValidation,
-              private val licenses: LicensesRepository,
-              private val device: DeviceService,
-              private val network: NetworkService) : LCPLicense {
+internal class License(
+    private var documents: ValidatedDocuments,
+    private val validation: LicenseValidation,
+    private val licenses: LicensesRepository,
+    private val device: DeviceService,
+    private val network: NetworkService
+) : LCPLicense {
 
     override val license: LicenseDocument
         get() = documents.license
@@ -207,25 +214,11 @@ internal class License(private var documents: ValidatedDocuments,
         }
     }
 
-    fun moveLicense(archivePath: String, licenseData: ByteArray) {
-        val pathInZip = "META-INF/license.lcpl"
-        if (DEBUG) Timber.i("LCP moveLicense")
-        val source = File(archivePath)
-        val tmpZip = File("$archivePath.tmp")
-        tmpZip.delete()
-        source.copyTo(tmpZip)
-        source.delete()
-        if (ZipUtil.containsEntry(tmpZip, pathInZip)) {
-            ZipUtil.removeEntry(tmpZip, pathInZip)
-        }
-        ZipUtil.addEntry(tmpZip, pathInZip, licenseData, source)
-        tmpZip.delete()
-    }
-
-    fun fetchPublication(context: Context, parameters: List<Pair<String, Any?>>? = null): Promise<String, Exception> {
+    internal fun fetchPublication(context: Context, parameters: List<Pair<String, Any?>>? = null): Promise<LCPImportedPublication, Exception> {
         val license = this.documents.license
-        val title = license.link(LicenseDocument.Rel.publication)?.title
-        val url = license.url(LicenseDocument.Rel.publication)
+        val link = license.link(LicenseDocument.Rel.publication)
+        val url = link?.url
+            ?: throw ParsingError.url(rel = LicenseDocument.Rel.publication.rawValue)
 
         val properties =  Properties()
         val inputStream = context.assets.open("configs/config.properties")
@@ -245,17 +238,24 @@ internal class License(private var documents: ValidatedDocuments,
 
         }.promise() then {
             val (_, response, _) = it
-            if (DEBUG) Timber.i("LCP destination %s%s", rootDir, fileName)
+            val filepath = rootDir + fileName
+            if (DEBUG) Timber.i("LCP destination %s", filepath)
             if (DEBUG) Timber.i("LCP then  %s", response.url.toString())
 
-            rootDir + fileName
+            // Saves the License Document into the downloaded publication
+            val format = response.sniffFormat(mediaTypes = listOfNotNull(link.type)) ?: Format.EPUB
+            val container = createLicenseContainer(filepath, format)
+            container.write(license)
 
+            LCPImportedPublication(
+                localURL = filepath,
+                suggestedFilename = "${license.id}.${format.fileExtension}"
+            )
         }
     }
 
     private fun validateStatusDocument(data: ByteArray): Unit =
             validation.validate(LicenseValidation.Document.status(data)) { validatedDocuments: ValidatedDocuments?, error: Exception? -> }
-
 
 }
 

@@ -20,7 +20,7 @@ sealed class LCPError : Exception() {
     /** The status of the License is not valid, it can't be used to decrypt the publication. */
     data class licenseStatus(val error: StatusError) : LCPError()
     /** Can't read or write the License Document from its container. */
-    object licenseContainer : LCPError()
+    data class licenseContainer(val error: ContainerError) : LCPError()
     /** The interaction is not available with this License. */
     object licenseInteractionNotAvailable : LCPError()
     /** This License's profile is not supported by liblcp. */
@@ -43,26 +43,22 @@ sealed class LCPError : Exception() {
     /** An unknown low-level error was reported. */
     data class unknown(val error: Exception?) : LCPError()
 
-    open val errorDescription: String?
-        get() {
-            return when (this) {
-                is licenseIsBusy -> "Can't perform this operation at the moment."
-                is licenseIntegrity -> error.localizedMessage
-                is licenseStatus -> error.localizedMessage
-                is licenseContainer -> "Can't access the License Document."
-                is licenseInteractionNotAvailable -> "This interaction is not available."
-                is licenseProfileNotSupported -> "This License has a profile identifier that this app cannot handle, the publication cannot be processed."
-                is crlFetching -> "Can't retrieve the Certificate Revocation List."
-                is licenseRenew -> error.localizedMessage
-                is licenseReturn -> error.localizedMessage
-                is parsing -> error.localizedMessage
-                is network -> error?.localizedMessage ?: "Network error."
-                is runtime -> error
-                is unknown -> error?.localizedMessage
-                else -> TODO()
-            }
+    val errorDescription: String? get() =
+        when (this) {
+            is licenseIsBusy -> "Can't perform this operation at the moment."
+            is licenseIntegrity -> error.localizedMessage
+            is licenseStatus -> error.errorDescription
+            is licenseContainer -> "Can't access the License Document."
+            is licenseInteractionNotAvailable -> "This interaction is not available."
+            is licenseProfileNotSupported -> "This License has a profile identifier that this app cannot handle, the publication cannot be processed."
+            is crlFetching -> "Can't retrieve the Certificate Revocation List."
+            is licenseRenew -> error.errorDescription
+            is licenseReturn -> error.errorDescription
+            is parsing -> error.errorDescription
+            is network -> error?.localizedMessage ?: "Network error."
+            is runtime -> error
+            is unknown -> error?.localizedMessage
         }
-
 
     companion object {
 
@@ -122,7 +118,7 @@ sealed class LCPError : Exception() {
 /**
  * Errors while checking the status of the License, using the Status Document.
  */
-sealed class StatusError : LCPError() {
+sealed class StatusError : Exception() {
 
     /**
      * For the case (revoked, returned, cancelled, expired), app should notify the user and stop
@@ -144,7 +140,7 @@ sealed class StatusError : LCPError() {
      */
     data class revoked(val date: DateTime, val devicesCount: Int) : StatusError()
 
-    override val errorDescription: String?
+    val errorDescription: String?
         get() {
             return when (this) {
                 is cancelled -> "This license was cancelled on ${date.toLocalDate()}."
@@ -165,7 +161,7 @@ sealed class StatusError : LCPError() {
 /**
  * Errors while renewing a loan.
  */
-sealed class RenewError : LCPError() {
+sealed class RenewError : Exception() {
     /** Your publication could not be renewed properly. */
     object renewFailed : RenewError()
     /** Incorrect renewal period, your publication could not be renewed. */
@@ -173,7 +169,7 @@ sealed class RenewError : LCPError() {
     /** An unexpected error has occurred on the licensing server. */
     object unexpectedServerError : RenewError()
 
-    override val errorDescription: String?
+    val errorDescription: String?
         get() {
             return when (this) {
                 is renewFailed -> "Your publication could not be renewed properly."
@@ -186,7 +182,7 @@ sealed class RenewError : LCPError() {
 /**
  * Errors while returning a loan.
  */
-sealed class ReturnError : LCPError() {
+sealed class ReturnError : Exception() {
     /** Your publication could not be returned properly. */
     object returnFailed : ReturnError()
     /** Your publication has already been returned before or is expired. */
@@ -194,7 +190,7 @@ sealed class ReturnError : LCPError() {
     /** An unexpected error has occurred on the licensing server. */
     object unexpectedServerError : ReturnError()
 
-    override val errorDescription: String?
+    val errorDescription: String?
         get() {
             return when (this) {
                 is returnFailed -> "Your publication could not be returned properly."
@@ -207,7 +203,7 @@ sealed class ReturnError : LCPError() {
 /**
  * Errors while parsing the License or Status JSON Documents.
  */
-sealed class ParsingError : LCPError() {
+sealed class ParsingError : Exception() {
     /** The JSON is malformed and can't be parsed. */
     object malformedJSON : ParsingError()
     /** The JSON is not representing a valid License Document. */
@@ -223,7 +219,7 @@ sealed class ParsingError : LCPError() {
     /** Invalid URL for link with [rel]. */
     data class url(val rel: String) : ParsingError()
 
-    override val errorDescription: String?
+    val errorDescription: String?
         get() {
             return when (this) {
                 is malformedJSON -> "The JSON is malformed and can't be parsed."
@@ -237,7 +233,21 @@ sealed class ParsingError : LCPError() {
         }
 }
 
-sealed class LCPClientError(errorCode: Int? = null) : LCPError() {
+/**
+ * Errors while reading or writing a LCP container (LCPL, EPUB, LCPDF, etc.)
+ */
+sealed class ContainerError : Exception() {
+    /** Can't access the container, it's format is wrong. */
+    object openFailed : ContainerError()
+    /** The file at given relative path is not found in the Container. */
+    data class fileNotFound(val path: String) : ContainerError()
+    /** Can't read the file at given relative path in the Container. */
+    data class readFailed(val path: String) : ContainerError()
+    /** Can't write the file at given relative path in the Container. */
+    data class writeFailed(val path: String) : ContainerError()
+}
+
+sealed class LCPClientError(errorCode: Int? = null) : Exception() {
 
     object licenseOutOfDate : LCPClientError()
 
@@ -263,12 +273,11 @@ sealed class LCPClientError(errorCode: Int? = null) : LCPError() {
             131 -> contentKeyDecryptError
             141 -> userKeyCheckInvalid
             151 -> contentDecryptError
-//            0 -> return null
             else -> unknown
         }
     }
 
-    override val errorDescription: String?
+    val errorDescription: String?
         get() {
             return when (this) {
                 is licenseOutOfDate -> "License is out of date (check start and end date)."
@@ -285,5 +294,3 @@ sealed class LCPClientError(errorCode: Int? = null) : LCPError() {
             }
         }
 }
-
-// FIXME: Missing ContainerError (see Swift)

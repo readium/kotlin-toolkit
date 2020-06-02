@@ -9,12 +9,12 @@
 
 package org.readium.r2.lcp.license.container
 
+import org.readium.r2.lcp.ContainerError
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.LCPError
 import org.zeroturnaround.zip.ZipUtil
 import java.io.File
 import java.util.zip.ZipFile
-
 
 /**
  * Access to a License Document stored in a ZIP archive.
@@ -27,15 +27,19 @@ internal open class ZIPLicenseContainer(private val zip: String, private val pat
         val archive = try {
             ZipFile(zip)
         } catch (e: Exception) {
-            throw LCPError.licenseContainer
+            throw LCPError.licenseContainer(ContainerError.openFailed)
         }
         val entry = try {
             archive.getEntry(pathInZIP)
         } catch (e: Exception) {
-            throw LCPError.licenseContainer
+            throw LCPError.licenseContainer(ContainerError.fileNotFound(pathInZIP))
         }
 
-        return archive.getInputStream(entry).readBytes()
+        return try {
+            archive.getInputStream(entry).readBytes()
+        } catch (e: Exception) {
+            throw LCPError.licenseContainer(ContainerError.readFailed(pathInZIP))
+        }
 
     }
 
@@ -52,7 +56,7 @@ internal open class ZIPLicenseContainer(private val zip: String, private val pat
             ZipUtil.addEntry(tmpZip, pathInZIP, license.data, source)
             tmpZip.delete()
         } catch (e: Exception) {
-            throw LCPError.licenseContainer
+            throw LCPError.licenseContainer(ContainerError.writeFailed(pathInZIP))
         }
     }
 }
