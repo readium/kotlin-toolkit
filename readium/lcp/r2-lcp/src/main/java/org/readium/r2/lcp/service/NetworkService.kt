@@ -9,42 +9,85 @@
 
 package org.readium.r2.lcp.service
 
-import awaitByteArrayResponse
-import com.github.kittinunf.fuel.Fuel
+import android.net.Uri
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.lcp.BuildConfig.DEBUG
+import kotlinx.coroutines.withContext
+import org.readium.r2.lcp.LCPError
+import org.readium.r2.shared.format.Format
+import org.readium.r2.shared.format.format
 import timber.log.Timber
+import java.io.BufferedInputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
+
+
+internal typealias URLParameters = Map<String, String?>
 
 internal class NetworkService {
     enum class Method(val rawValue: String) {
-        get("GET"), post("POST"), put("PUT");
+        GET("GET"), POST("POST"), PUT("PUT");
 
         companion object {
             operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
         }
     }
 
-    fun fetch(url: String, method: Method? = Method.get, params: List<Pair<String, Any?>>? = null, completion: (status: Int, data: ByteArray?) -> Unit) = runBlocking {
+    fun fetch(url: String, method: Method = Method.GET, parameters: URLParameters = emptyMap(), completion: (status: Int, data: ByteArray?) -> Unit) = runBlocking {
+        try {
+            @Suppress("NAME_SHADOWING")
+            val url = URL(Uri.parse(url).buildUpon().appendQueryParameters(parameters).build().toString())
 
-        val (request, response, result) =
+            withContext(Dispatchers.IO) {
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = method.rawValue
+                val status = connection.responseCode
+                if (status != HttpURLConnection.HTTP_OK) {
+                    completion(status, null)
+                } else {
+                    completion(status, connection.inputStream.readBytes())
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+            completion(HttpURLConnection.HTTP_INTERNAL_ERROR, null)
+        }
+    }
 
-            when (method) {
-                Method.get -> Fuel.get(url).awaitByteArrayResponse()
-                Method.post -> Fuel.post(url, params).awaitByteArrayResponse()
-                Method.put -> Fuel.put(url, params).awaitByteArrayResponse()
-                null -> Fuel.get(url).awaitByteArrayResponse()
+    private fun Uri.Builder.appendQueryParameters(parameters: URLParameters): Uri.Builder =
+        apply {
+            for ((key, value) in parameters) {
+                if (value != null) {
+                    appendQueryParameter(key, value)
+                }
+            }
+        }
+
+    suspend fun download(url: URL, destination: File): Format? = withContext(Dispatchers.IO) {
+        try {
+            val connection = url.openConnection() as HttpURLConnection
+            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+                throw LCPError.network(Exception("Download failed with status ${connection.responseCode}"))
             }
 
-            result.fold(
-                { data ->
-                    completion(response.statusCode, data)
-                },
-                { error ->
-                    if (DEBUG) Timber.e("An error of type ${error.exception} happened: ${error.message}")
-                    completion(error.response.statusCode, null)
+            BufferedInputStream(connection.inputStream).use { input ->
+                FileOutputStream(destination).use { output ->
+                    val buf = ByteArray(2048)
+                    var n = 0
+                    while (-1 != input.read(buf).also { n = it }) {
+                        output.write(buf, 0, n)
+                    }
                 }
-        )
+            }
 
+            connection.format
+
+        } catch (e: Exception) {
+            Timber.e(e)
+            throw LCPError.network(e)
+        }
     }
 
 }

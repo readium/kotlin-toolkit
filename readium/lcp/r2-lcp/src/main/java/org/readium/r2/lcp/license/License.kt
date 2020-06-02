@@ -11,9 +11,6 @@
 package org.readium.r2.lcp.license
 
 import android.content.Context
-import com.github.kittinunf.fuel.Fuel
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.*
@@ -24,12 +21,8 @@ import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
-import org.readium.r2.shared.contentTypeEncoding
+import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.format.Format
-import org.readium.r2.shared.format.format
-import org.readium.r2.shared.format.sniffFormat
-import org.readium.r2.shared.promise
-import org.zeroturnaround.zip.ZipUtil
 import timber.log.Timber
 import java.io.File
 import java.net.URL
@@ -126,8 +119,8 @@ internal class License(
 
     override fun renewLoan(end: DateTime?, present: URLPresenter, completion: (LCPError?) -> Unit) {
 
-        fun callPUT(url: URL, parameters: List<Pair<String, Any?>>? = null, callback: (ByteArray) -> Unit) {
-            this.network.fetch(url.toString(), params = parameters, method = NetworkService.Method.put) { status, data ->
+        fun callPUT(url: URL, parameters: URLParameters, callback: (ByteArray) -> Unit) {
+            this.network.fetch(url.toString(), NetworkService.Method.PUT, parameters) { status, data ->
                 when (status) {
                     200 -> callback(data!!)
                     400 -> throw RenewError.renewFailed
@@ -138,14 +131,14 @@ internal class License(
         }
 
         // TODO needs to be tested
-        fun callHTML(url: URL, parameters: List<Pair<String, Any?>>? = null, callback: (ByteArray) -> Unit) {
+        fun callHTML(url: URL, parameters: URLParameters, callback: (ByteArray) -> Unit) {
             val statusURL = try {
                 this.license.url(LicenseDocument.Rel.status)
             } catch (e: Throwable) {
                 null
             } ?: throw LCPError.licenseInteractionNotAvailable
             present(url) {
-                this.network.fetch(statusURL.toString(), params = parameters) { status, data ->
+                this.network.fetch(statusURL.toString(), parameters = parameters) { status, data ->
                     if (status != 200) {
                         throw LCPError.network(null)
                     }
@@ -154,23 +147,23 @@ internal class License(
             }
         }
 
-        val params = this.device.asQueryParameters
+        val parameters = this.device.asQueryParameters.toMutableMap()
         end?.let {
-            params.add(Pair("end", end))
+            parameters["end"] = end.toString()
         }
         val status = this.documents.status
         val link = status?.link(StatusDocument.Rel.renew)
-        val url = link?.url(params)
+        val url = link?.url(parameters)
         if (status == null || link == null || url == null) {
             throw LCPError.licenseInteractionNotAvailable
         }
         try {
             if (link.type == "text/html") {
-                callHTML(url, params) {
+                callHTML(url, parameters) {
                     validateStatusDocument(it)
                 }
             } else {
-                callPUT(url, params) {
+                callPUT(url, parameters) {
                     validateStatusDocument(it)
                 }
             }
@@ -194,7 +187,7 @@ internal class License(
             completion(LCPError.licenseInteractionNotAvailable)
             return
         }
-        network.fetch(url.toString(), method = NetworkService.Method.put) { statusCode, data ->
+        network.fetch(url.toString(), method = NetworkService.Method.PUT) { statusCode, data ->
             when (statusCode) {
                 200 -> validateStatusDocument(data!!)
                 400 -> throw ReturnError.returnFailed
@@ -214,7 +207,7 @@ internal class License(
         }
     }
 
-    internal fun fetchPublication(context: Context, parameters: List<Pair<String, Any?>>? = null): Promise<LCPImportedPublication, Exception> {
+    internal suspend fun fetchPublication(context: Context): LCPImportedPublication {
         val license = this.documents.license
         val link = license.link(LicenseDocument.Rel.publication)
         val url = link?.url
@@ -232,26 +225,19 @@ internal class License(
         }
 
         val fileName = UUID.randomUUID().toString()
-        return Fuel.download(url.toString()).destination { _, _ ->
-            if (DEBUG) Timber.i("LCP destination %s%s", rootDir, fileName)
-            File(rootDir, fileName)
+        val destination = File(rootDir, fileName)
+        if (DEBUG) Timber.i("LCP destination $destination")
 
-        }.promise() then {
-            val (_, response, _) = it
-            val filepath = rootDir + fileName
-            if (DEBUG) Timber.i("LCP destination %s", filepath)
-            if (DEBUG) Timber.i("LCP then  %s", response.url.toString())
+        val format = network.download(url, destination) ?: Format.of(mediaType = link.type) ?: Format.EPUB
 
-            // Saves the License Document into the downloaded publication
-            val format = response.sniffFormat(mediaTypes = listOfNotNull(link.type)) ?: Format.EPUB
-            val container = createLicenseContainer(filepath, format)
-            container.write(license)
+        // Saves the License Document into the downloaded publication
+        val container = createLicenseContainer(destination.path, format)
+        container.write(license)
 
-            LCPImportedPublication(
-                localURL = filepath,
-                suggestedFilename = "${license.id}.${format.fileExtension}"
-            )
-        }
+        return LCPImportedPublication(
+            localURL = destination.path,
+            suggestedFilename = "${license.id}.${format.fileExtension}"
+        )
     }
 
     private fun validateStatusDocument(data: ByteArray): Unit =

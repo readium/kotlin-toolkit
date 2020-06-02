@@ -15,7 +15,6 @@ import android.content.SharedPreferences
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
-import org.readium.r2.lcp.LCPError
 import timber.log.Timber
 import java.io.Serializable
 import java.util.*
@@ -41,8 +40,8 @@ internal class DeviceService(private val repository: DeviceRepository, private v
             return bluetoothName ?: "Android"
         }
 
-    val asQueryParameters: MutableList<Pair<String, Any?>>
-        get() = mutableListOf("id" to id, "name" to name)
+    val asQueryParameters: URLParameters
+        get() = mapOf("id" to id, "name" to name)
 
 
     fun registerLicense(license: LicenseDocument, link: Link, completion: (ByteArray?) -> Unit) {
@@ -54,7 +53,7 @@ internal class DeviceService(private val repository: DeviceRepository, private v
                 // TODO templated url
                 val url = link.url(asQueryParameters).toString()
 
-                network.fetch(url, method = NetworkService.Method.post, params = asQueryParameters) { status, data ->
+                network.fetch(url, NetworkService.Method.POST, asQueryParameters) { status, data ->
                     if (status != 200) {
                         completion(null)
                     }
