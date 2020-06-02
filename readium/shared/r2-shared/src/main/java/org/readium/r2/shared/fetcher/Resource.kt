@@ -104,6 +104,8 @@ internal typealias ResourceTransformer = (Resource) -> Resource
 /** Creates a Resource that will always return the given [error]. */
 class FailureResource(override val link: Link, private val error: Resource.Error) : Resource {
 
+    internal constructor(link: Link, exception: Exception) : this(link, Resource.Error.Other(exception))
+
     override fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
 
     override val length:  ResourceTry<Long> = Try.failure(error)

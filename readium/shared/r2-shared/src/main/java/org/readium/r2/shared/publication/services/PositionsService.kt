@@ -85,4 +85,5 @@ var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
         if (value == null)
             serviceFactories.remove(PositionsService::class.simpleName!!)
         else
-            serviceFactories[PositionsService::class.simpleName!!] = value }
+            serviceFactories[PositionsService::class.simpleName!!] = value
+    }

@@ -288,3 +288,11 @@ fun List<Link>.allMatchesMediaType(mediaType: MediaType): Boolean = all {
 fun List<Link>.allMatchesMediaTypes(mediaTypes: List<MediaType>): Boolean = all {
     mediaTypes.any { mediaType -> mediaType.matches(it.mediaType) }
 }
+
+/**
+ * Finds all [Link]s in the collection that satisfiy the given [predicate]
+ */
+internal fun List<Link>.deepFlatFilter(predicate: (Link) -> Boolean) : List<Link> {
+    // FIXME: This should do a breadth-first traversal
+    return filter(predicate)
+}
