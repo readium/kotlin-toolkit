@@ -9,11 +9,12 @@
 
 package org.readium.r2.shared.opds
 
-import java.io.Serializable
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import java.util.*
 
-
-data class OpdsMetadata(var title: String) : Serializable {
+@Parcelize
+data class OpdsMetadata(var title: String) : Parcelable {
     var numberOfItems: Int? = null
     var itemsPerPage: Int? = null
     var currentPage: Int? = null
