@@ -39,3 +39,18 @@ fun File.md5(): String? =
         Timber.e(e)
         null
     }
+
+/**
+ * Returns whether the `other` is a descendant of this file.
+ */
+fun File.isParentOf(other: File): Boolean {
+    val canonicalThis = canonicalFile
+    var parent = other.canonicalFile.parentFile
+    while (parent != null) {
+        if (parent == canonicalThis) {
+            return true
+        }
+        parent = parent.parentFile
+    }
+    return false
+}

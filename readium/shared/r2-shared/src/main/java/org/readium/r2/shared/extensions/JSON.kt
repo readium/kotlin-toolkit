@@ -22,7 +22,9 @@ import timber.log.Timber
 fun JSONObject.toMap(): Map<String, Any> {
     val map = mutableMapOf<String, Any>()
     for (key in keys()) {
-        map[key] = unwrapJSON(get(key))
+        if (!isNull(key)) {
+            map[key] = unwrapJSON(get(key))
+        }
     }
     return map
 }
