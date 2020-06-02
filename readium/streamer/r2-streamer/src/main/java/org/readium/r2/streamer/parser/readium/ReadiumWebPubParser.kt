@@ -17,6 +17,7 @@ import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.normalize
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.EmptyContainer
@@ -94,19 +95,13 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
             val manifest = Manifest.fromJSON(JSONObject(manifestJson)) { normalize(base = "/", href = it) }
                 ?: return null
 
-            var positionsFactory: Publication.PositionListFactory? = null
-
-            if (format == Format.LCP_PROTECTED_PDF) {
-                positionsFactory = LcpdfPositionListFactory(
-                    context = this@ReadiumWebPubParser.context.applicationContext,
-                    container = container,
-                    readingOrder = manifest.readingOrder
-                )
-            }
-
             val publication = Publication(
                 manifest = manifest,
-                positionsFactory = positionsFactory
+                servicesBuilder = Publication.ServicesBuilder().apply {
+                    if (format == Format.LCP_PROTECTED_PDF) {
+                        positionsServiceFactory = LcpdfPositionsService.createFactory(context.applicationContext)
+                    }
+                }
             )
             publication.type = format.toPublicationType()
 

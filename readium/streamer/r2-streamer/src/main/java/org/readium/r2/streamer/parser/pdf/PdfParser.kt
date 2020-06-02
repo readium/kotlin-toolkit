@@ -11,9 +11,11 @@ package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
 import android.graphics.Bitmap
+import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.pdf.toLinks
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.streamer.container.FileContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
@@ -31,6 +33,7 @@ class PdfParser(private val context: Context) : PublicationParser {
             val file = File(fileAtPath)
 
             val rootHref = "/publication.pdf"
+            val fetcher = FileFetcher(href = rootHref, path = fileAtPath)
             val container = FileContainer(path = fileAtPath, mimetype = MediaType.PDF.toString())
             container.rootFile.rootFilePath = rootHref
             container.files[rootHref] = FileContainer.File.Path(fileAtPath)
@@ -60,11 +63,9 @@ class PdfParser(private val context: Context) : PublicationParser {
                     links = links,
                     tableOfContents = tableOfContents
                 ),
-                positionsFactory = PdfPositionListFactory(
-                    documentHref = rootHref,
-                    pageCount = document.pageCount,
-                    tableOfContents = tableOfContents
-                )
+                servicesBuilder = Publication.ServicesBuilder().apply {
+                    positionsServiceFactory = (PdfPositionsService)::create
+                }
             )
 
             PubBox(publication, container)
