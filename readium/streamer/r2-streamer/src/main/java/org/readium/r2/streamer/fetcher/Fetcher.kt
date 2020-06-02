@@ -21,7 +21,7 @@ class Fetcher(var publication: Publication, var container: Container, private va
     private var contentFilters: ContentFilters?
 
     init {
-        val rootFilePath = publication.internalData["rootfile"]
+        val rootFilePath = container.rootFile.rootFilePath.ifEmpty { null }
                 ?: throw Exception("Missing root file")
         if (rootFilePath.isNotEmpty() && rootFilePath.contains('/')) {
             rootFileDirectory = rootFilePath.replaceAfterLast("/", "", rootFilePath)
@@ -52,12 +52,13 @@ class Fetcher(var publication: Publication, var container: Container, private va
         return container.dataLength(relativePath)
     }
 
-    private fun getContentFilters(mimeType: String?, customResources: Resources? = null): ContentFilters {
+    private fun getContentFilters(mimeType: String?, customResources: Resources? = null): ContentFilters? {
         val mediaType = mimeType?.let { MediaType.parse(it) }
         return when (mediaType) {
             MediaType.EPUB -> ContentFiltersEpub(userPropertiesPath, customResources)
             MediaType.CBZ -> ContentFiltersCbz()
-            else -> throw Exception("Missing container or MIMEtype")
+            MediaType.LCP_PROTECTED_AUDIOBOOK, MediaType.LCP_PROTECTED_PDF -> ContentFiltersLcp()
+            else -> null
         }
     }
 }

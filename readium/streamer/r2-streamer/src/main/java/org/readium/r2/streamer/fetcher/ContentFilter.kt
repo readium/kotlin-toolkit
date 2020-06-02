@@ -13,6 +13,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layout
@@ -85,17 +86,18 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
         if (endHeadIndex == -1)
             return stream
 
-        val cssStyle = publication.cssStyle
+        val contentLayout = publication.contentLayout
 
         val endIncludes = mutableListOf<String>()
         val beginIncludes = mutableListOf<String>()
         beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\" />")
 
-        beginIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-before.css"))
-        beginIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-default.css"))
-        endIncludes.add(getHtmlLink("/"+ Injectable.Style.rawValue +"/$cssStyle-after.css"))
-        endIncludes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/touchHandling.js"))
-        endIncludes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/utils.js"))
+        beginIncludes.add(getHtmlLink("/assets/readium-css/${contentLayout.readiumCSSPath}ReadiumCSS-before.css"))
+        endIncludes.add(getHtmlLink("/assets/readium-css/${contentLayout.readiumCSSPath}ReadiumCSS-after.css"))
+        endIncludes.add(getHtmlScript("/assets/scripts/touchHandling.js"))
+        endIncludes.add(getHtmlScript("/assets/scripts/utils.js"))
+        endIncludes.add(getHtmlScript("/assets/scripts/crypto-sha256.js"))
+        endIncludes.add(getHtmlScript("/assets/scripts/highlight.js"))
 
         customResources?.let {
             // Inject all custom resourses
@@ -120,7 +122,7 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
             resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, element).toString()
             endHeadIndex += element.length
         }
-        resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, getHtmlFont("/fonts/OpenDyslexic-Regular.otf")).toString()
+        resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, getHtmlFont(fontFamily = "OpenDyslexic", href = "/assets/fonts/OpenDyslexic-Regular.otf")).toString()
         resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, "<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>\n").toString()
 
         // Inject userProperties
@@ -186,10 +188,10 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
         return resourceHtml.toByteArray().inputStream()
     }
 
-    private fun getHtmlFont(resourceName: String): String {
-        val prefix = "<style type=\"text/css\"> @font-face{font-family: \"OpenDyslexic\"; src:url(\""
+    private fun getHtmlFont(fontFamily: String, href: String): String {
+        val prefix = "<style type=\"text/css\"> @font-face{font-family: \"$fontFamily\"; src:url(\""
         val suffix = "\") format('truetype');}</style>\n"
-        return prefix + resourceName + suffix
+        return prefix + href + suffix
     }
 
     private fun getHtmlLink(resourceName: String): String {
@@ -319,9 +321,33 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
         return string
     }
 
+    private val ContentLayout.readiumCSSPath: String get() = when(this)  {
+        ContentLayout.LTR -> ""
+        ContentLayout.RTL -> "rtl/"
+        ContentLayout.CJK_VERTICAL -> "cjk-vertical/"
+        ContentLayout.CJK_HORIZONTAL -> "cjk-horizontal/"
+    }
 
 }
 
-
 internal class ContentFiltersCbz : ContentFilters
 
+/** Content filter for LCP protected packages (except EPUB). */
+internal class ContentFiltersLcp : ContentFilters {
+
+    override fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
+        val resourceLink = publication.linkWithHref(path)
+            ?: return input
+
+        return DrmDecoder().decoding(input, resourceLink, container.drm)
+    }
+
+    override fun apply(input: ByteArray, publication: Publication, container: Container, path: String): ByteArray {
+        val resourceLink = publication.linkWithHref(path)
+            ?: return input
+
+        val inputStream = input.inputStream()
+        return DrmDecoder().decoding(inputStream, resourceLink, container.drm).readBytes()
+    }
+
+}

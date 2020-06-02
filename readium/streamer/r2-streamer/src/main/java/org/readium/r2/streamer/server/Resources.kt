@@ -22,13 +22,10 @@ class Resources {
         }
     }
 
-    fun getPair(key: String): Any {
-        return resources[key] ?: ""
-    }
-
-    fun get(key: String): String =
+    fun get(key: String): String? =
         when (val resource = resources[key]) {
             is Pair<*, *> -> resource.first as? String
             else -> resource as? String
-        } ?: ""
+        }
+
 }

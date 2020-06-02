@@ -1,6 +1,6 @@
 /*
  * Module: r2-streamer-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Developers: Aferdita Muriqi, Clément Baumann, Mickaël Menu
  *
  * Copyright (c) 2018. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
@@ -9,41 +9,17 @@
 
 package org.readium.r2.streamer.server.handler
 
-import org.nanohttpd.protocols.http.IHTTPSession
-import org.nanohttpd.protocols.http.response.IStatus
+import android.net.Uri
 import org.nanohttpd.protocols.http.response.Response
-import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
-import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.server.ServingFetcher
-import timber.log.Timber
-import java.io.IOException
 
+internal class ManifestHandler : BaseHandler() {
 
-class ManifestHandler : RouterNanoHTTPD.DefaultHandler() {
-
-    override fun getMimeType(): String {
-        return MediaType.WEBPUB_MANIFEST.toString()
+    override fun handle(resource: RouterNanoHTTPD.UriResource, uri: Uri, parameters: Map<String, String>?): Response {
+        val fetcher = resource.initParameter(ServingFetcher::class.java)
+        return createResponse(mediaType = MediaType.WEBPUB_MANIFEST, body = fetcher.publication.jsonManifest)
     }
 
-    override fun getText(): String {
-        return ResponseStatus.FAILURE_RESPONSE
-    }
-
-    override fun getStatus(): IStatus {
-        return Status.OK
-    }
-
-    override fun get(uriResource: RouterNanoHTTPD.UriResource?, urlParams: Map<String, String>?, session: IHTTPSession?): Response {
-        return try {
-            val fetcher = uriResource!!.initParameter(ServingFetcher::class.java)
-            newFixedLengthResponse(status, mimeType, fetcher.publication.jsonManifest)
-        } catch (e: IOException) {
-            if (DEBUG) Timber.v(" IOException %s", e.toString())
-            newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
-        }
-
-    }
 }
