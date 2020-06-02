@@ -38,3 +38,12 @@ fun Publication.Companion.parse(path: String, format: Format): PubBox? =
 fun Publication.Companion.parse(path: String, mediaType: String? = null, fileExtension: String? = null): PubBox? =
     Format.of(File(path), mediaType = mediaType, fileExtension = fileExtension)
         ?.let { parse(path, it) }
+
+val Publication.TYPE.format: Format? get() = when (this) {
+    Publication.TYPE.EPUB -> Format.EPUB
+    Publication.TYPE.CBZ -> Format.CBZ
+    Publication.TYPE.FXL -> Format.EPUB
+    Publication.TYPE.WEBPUB -> Format.WEBPUB
+    Publication.TYPE.AUDIO -> Format.AUDIOBOOK
+    Publication.TYPE.DiViNa -> Format.DIVINA
+}

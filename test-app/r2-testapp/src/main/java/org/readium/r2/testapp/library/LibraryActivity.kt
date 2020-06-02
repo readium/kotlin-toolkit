@@ -81,6 +81,7 @@ import org.readium.r2.testapp.utils.ContentResolverUtil
 import org.readium.r2.testapp.utils.R2IntentHelper
 import org.readium.r2.testapp.utils.extension
 import org.readium.r2.testapp.utils.extensions.authorName
+import org.readium.r2.testapp.utils.extensions.format
 import org.readium.r2.testapp.utils.extensions.parse
 import org.readium.r2.testapp.utils.toFile
 import org.zeroturnaround.zip.ZipUtil
@@ -708,7 +709,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     protected fun prepareToServe(pub: PubBox?, fileName: String, absolutePath: String, add: Boolean, lcp: Boolean) {
-        val format = Format.of(File(absolutePath))
+        val format = Format.of(File(absolutePath)) ?: pub?.publication?.type?.format
         if (pub == null || format == null) {
             catalogView.snackbar("Invalid publication")
             return
@@ -793,7 +794,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 prepareWebPublication(book.href, book, add = false)
 
             } else {
-                val pub = Publication.parse(book.href)
+                val pub = Publication.parse(book.href, fileExtension = book.ext.removePrefix("."))
                 if (pub != null) {
                     if (pub.container.drm?.brand == DRM.Brand.lcp) {
                         prepareAndStartActivityWithLCP(pub.container.drm!!, pub, book, file, publicationPath, pub.publication, isNetworkAvailable)
