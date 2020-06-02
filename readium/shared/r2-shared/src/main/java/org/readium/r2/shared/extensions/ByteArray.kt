@@ -10,7 +10,9 @@
 package org.readium.r2.shared.extensions
 
 import java.io.ByteArrayOutputStream
+import java.security.MessageDigest
 import java.util.zip.Inflater
+import timber.log.Timber
 
 /**
  * Inflates a ZIP-compressed [ByteArray].
@@ -29,4 +31,16 @@ fun ByteArray.inflate(nowrap: Boolean = false, bufferSize: Int = 32 * 1024 /* 32
         }
 
         output.toByteArray()
+    }
+
+/** Computes the MD5 hash of the byte array. */
+fun ByteArray.md5(): String? =
+    try {
+        MessageDigest
+            .getInstance("MD5")
+            .digest(this)
+            .fold("") { str, it -> str + "%02x".format(it) }
+    } catch (e: Exception) {
+        Timber.e(e)
+        null
     }
