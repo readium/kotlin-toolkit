@@ -63,7 +63,6 @@ interface CoverService : Publication.Service {
     fun coverFitting(maxSize: Size): Bitmap? = cover?.scaleToFit(maxSize)
 
     override fun get(link: Link, parameters: Map<String, String>): Resource? {
-        val stream = ByteArrayOutputStream()
         val png = cover?.toPng() ?: return FailureResource(links[0], Exception("Unable to convert cover to PNG."))
         return BytesResource(links[0]) { png }
     }
@@ -95,7 +94,7 @@ var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
 /**
  *  A [CoverService] which searches a [Link] with rel `cover` in the publication's manifest.
  */
-class DefaultCoverService private constructor(val coverLinks: List<Link>, val fetcher: Fetcher) : CoverService {
+class DefaultCoverService internal constructor(val coverLinks: List<Link>, val fetcher: Fetcher) : CoverService {
 
     override val cover: Bitmap?
         get() {
@@ -121,7 +120,7 @@ class DefaultCoverService private constructor(val coverLinks: List<Link>, val fe
 /**
  * A [CoverService] which uses a provided in-memory bitmap.
  */
-class InMemoryCoverService private constructor(override val cover: Bitmap) : CoverService {
+class InMemoryCoverService internal constructor(override val cover: Bitmap) : CoverService {
 
     override val links: List<Link> = listOf(
         coverLink(cover.size)
