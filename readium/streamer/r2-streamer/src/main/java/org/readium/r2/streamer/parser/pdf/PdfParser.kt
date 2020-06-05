@@ -12,7 +12,7 @@ package org.readium.r2.streamer.parser.pdf
 import android.content.Context
 import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.pdf.toLinks
+import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCoverService
 import org.readium.r2.streamer.container.PublicationContainer
