@@ -10,7 +10,6 @@
 package org.readium.r2.streamer.server
 
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.HrefParameters
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
@@ -31,8 +30,8 @@ internal class ServingFetcher(
 
     override val links: List<Link> = emptyList()
 
-    override fun get(link: Link, parameters: HrefParameters): Resource {
-        val resource = publication.get(link, parameters)
+    override fun get(link: Link): Resource {
+        val resource = publication.get(link)
         return if (publication.type == Publication.TYPE.EPUB)
             htmlInjector.transform(resource)
         else

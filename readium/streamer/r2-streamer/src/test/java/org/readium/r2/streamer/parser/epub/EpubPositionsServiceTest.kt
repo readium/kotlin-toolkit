@@ -12,7 +12,6 @@ package org.readium.r2.streamer.parser.epub
 import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.HrefParameters
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceTry
 import org.readium.r2.shared.publication.Link
@@ -421,7 +420,7 @@ class EpubPositionsServiceTest {
 
             override val links: List<Link> = emptyList()
 
-            override fun get(link: Link, parameters: HrefParameters): Resource = object : Resource {
+            override fun get(link: Link): Resource = object : Resource {
                 override val link: Link = link
 
                 override val length = findResource(link.href)

@@ -44,10 +44,10 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             if (DEBUG) Timber.v("Method: ${session!!.method}, Uri: ${session.uri}")
             val fetcher = uriResource!!.initParameter(ServingFetcher::class.java)
 
-            val filePath = getHref(session!!.uri)
-            val link = fetcher.publication.linkWithHref(filePath)!!
+            val href = getHref(session!!)
+            val link = fetcher.publication.linkWithHref(href)!!
             val mediaType = link.mediaType ?: MediaType.BINARY
-            val resource = fetcher.get(link, urlParams.orEmpty())
+            val resource = fetcher.get(link)
             serveResponse(session, resource, mediaType.toString())
         } catch (e: Exception) {
             if (DEBUG) Timber.e(e)
@@ -151,10 +151,16 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         return createResponse(Status.OK, "text/plain", message)
     }
 
-    private fun getHref(path: String): String {
+    private fun getHref(session: IHTTPSession): String {
+        val path = session.uri
         val offset = path.indexOf("/", 0)
         val startIndex = path.indexOf("/", offset + 1)
-        return path.substring(startIndex )
+        val filePath = path.substring(startIndex)
+
+        return if (session.queryParameterString.isEmpty())
+            filePath
+        else
+            "${filePath}?${session.queryParameterString}"
     }
 
     private fun responseFromFailure(error: Resource.Error): Response {
