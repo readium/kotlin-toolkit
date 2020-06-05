@@ -13,7 +13,6 @@ import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.parser.PerResourcePositionsService
@@ -94,8 +93,8 @@ class CBZParser : PublicationParser {
         val manifest = Manifest(
             metadata = metadata,
             readingOrder = readingOrder,
-            otherCollections = listOf(
-                PublicationCollection(role = "images", links = readingOrder)
+            subCollections = mapOf(
+                "images" to listOf(PublicationCollection(links = readingOrder))
             )
         )
 

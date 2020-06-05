@@ -65,8 +65,8 @@ internal class PublicationFactory(
 
         // Compute toc and otherCollections
         val toc = navigationData["toc"].orEmpty()
-        val otherCollections =
-            navigationData.minus("toc").map { PublicationCollection(links = it.value, role = it.key) }
+        val subCollections =
+            navigationData.minus("toc").mapValues { listOf(PublicationCollection(links = it.value)) }
 
         // Build Publication object
         return Manifest(
@@ -75,7 +75,7 @@ internal class PublicationFactory(
             readingOrder = readingOrder,
             resources = resources,
             tableOfContents = toc,
-            otherCollections = otherCollections
+            subCollections = subCollections
         )
     }
 
