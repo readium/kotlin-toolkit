@@ -86,7 +86,6 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
             val content = element.getAttr("content")?.trim()?.ifEmpty { null }
                 ?: return null
             val resolvedName = resolveProperty(name, prefixMap)
-                ?: return null
             MetadataItem(resolvedName, content, element.lang, null, null, element.id)
         } else {
             val propName = element.getAttr("property")?.trim()?.ifEmpty { null }
@@ -94,7 +93,6 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
             val propValue = element.text?.trim()?.ifEmpty { null }
                 ?: return null
             val resolvedProp = resolveProperty(propName, prefixMap, DEFAULT_VOCAB.META)
-                ?: return null
             val resolvedScheme =
                 element.getAttr("scheme")?.trim()?.ifEmpty { null }?.let { resolveProperty(it, prefixMap) }
             val refines = element.getAttr("refines")?.removePrefix("#")
