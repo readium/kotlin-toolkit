@@ -17,6 +17,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.normalize
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -91,6 +92,11 @@ data class Link(
      */
     fun expandTemplate(parameters: Map<String, String>): Link =
         copy(href = URITemplate(href).expand(parameters), templated = false)
+
+    /**
+     * Computes an absolute URL to the given Link.
+     */
+    fun toURL(baseURL: String) = normalize(baseURL, href)
 
     /**
      * Serializes a [Link] to its RWPM JSON representation.
