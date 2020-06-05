@@ -338,10 +338,12 @@ class OPDS1Parser {
                 ),
 
                 links = links,
-                otherCollections = listOfNotNull(
-                    images.takeIf { it.isNotEmpty() }
-                        ?.let { PublicationCollection(role = "images", links = it) }
-                )
+                subCollections = mapOf(
+                    "images" to listOfNotNull(
+                        images.takeIf { it.isNotEmpty() }
+                        ?.let { PublicationCollection(links = it) }
+                    )
+                ).filterValues { it.isNotEmpty() }
             )
             return Publication(manifest)
         }
