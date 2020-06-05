@@ -17,6 +17,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
@@ -80,43 +81,16 @@ data class Link(
         if (!templated)
             emptyList()
         else
-            "\\{\\??([^}]+)}".toRegex()
-                .findAll(href).toList()
-                .flatMap { it.groupValues[1].split(",") }
-                .distinct()
+           URITemplate(href).parameters
     }
 
     /**
      * Expands the HREF by replacing URI template variables by the given parameters.
      *
-     * Any extra parameter is appended as query parameters.
      * See RFC 6570 on URI template.
      */
-    fun expand(parameters: Map<String, String>): String {
-        fun expandSimpleString(string: String, parameters: Map<String, String>): String =
-            string.split(",").joinToString(",") { parameters[it] ?: "" }
-
-        fun expandFormStyle(string: String, parameters: Map<String, String>): String =
-            "?" + string.split(",").joinToString("&") { "${it}=${parameters[it].orEmpty()}" }
-
-        val expanded = "\\{(\\??)([^}]+)}".toRegex().replace(href) {
-            if (it.groupValues[1].isEmpty())
-                expandSimpleString(it.groupValues[2], parameters)
-            else
-                expandFormStyle(it.groupValues[2], parameters)
-            }
-
-        val extra = parameters
-            .filterKeys { it !in templateParameters }
-            .map { "${it.key}=${it.value}" }
-            .joinToString("&")
-
-        return when {
-            extra.isBlank() -> expanded
-            expanded.indexOf('?') == -1 -> "${expanded}?${extra}"
-            else -> "${expanded}&${extra}"
-        }
-    }
+    fun expandTemplate(parameters: Map<String, String>): Link =
+        copy(href = URITemplate(href).expand(parameters), templated = false)
 
     /**
      * Serializes a [Link] to its RWPM JSON representation.

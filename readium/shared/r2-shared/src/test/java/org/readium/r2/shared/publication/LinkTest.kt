@@ -27,22 +27,7 @@ class LinkTest {
         )
     }
 
-    @Test fun `expand works fine with simple string templates`() {
-        val href =  "/url{x,hello,y}name{z,y,w}"
-        val parameters = mapOf(
-            "x" to "aaa",
-            "hello" to "Hello, world",
-            "y" to "b",
-            "z" to "45",
-            "w" to "w"
-        )
-        assertEquals(
-            "/urlaaa,Hello, world,bname45,b,w",
-            Link(href = href, templated = true).expand(parameters)
-        )
-    }
-
-    @Test fun `expand works fine with form-style ampersand-separated templates`() {
+    @Test fun `expand works fine`() {
         val href =  "/url{?x,hello,y}name"
         val parameters = mapOf(
             "x" to "aaa",
@@ -50,32 +35,8 @@ class LinkTest {
             "y" to "b"
         )
         assertEquals(
-            "/url?x=aaa&hello=Hello, world&y=bname",
-            Link(href = href, templated = true).expand(parameters)
-        )
-    }
-
-    @Test fun `expand adds extra parameters as query parameters`() {
-        assertEquals(
-            "/path?search=banana&code=14",
-            Link(href = "/path{?search}", templated = true).expand(
-                mapOf(
-                    "search" to "banana",
-                    "code" to "14"
-                )
-            )
-        )
-    }
-
-    @Test fun `expand adds a query for extra parameters`() {
-        assertEquals(
-            "/path?search=banana&code=14",
-            Link(href = "/path", templated = true).expand(
-                mapOf(
-                    "search" to "banana",
-                    "code" to "14"
-                )
-            )
+            Link(href = "/url?x=aaa&hello=Hello, world&y=bname", templated = false),
+            Link(href = href, templated = true).expandTemplate(parameters)
         )
     }
 
