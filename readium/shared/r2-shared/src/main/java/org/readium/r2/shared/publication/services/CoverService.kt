@@ -60,7 +60,7 @@ interface CoverService : Publication.Service {
      */
     fun coverFitting(maxSize: Size): Bitmap? = cover?.scaleToFit(maxSize)
 
-    override fun get(link: Link, parameters: Map<String, String>): Resource? {
+    override fun get(link: Link): Resource? {
         val png = cover?.toPng() ?: return FailureResource(links[0], Exception("Unable to convert cover to PNG."))
         return BytesResource(links[0]) { png }
     }

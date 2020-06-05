@@ -48,7 +48,7 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
         }
     }
 
-    override fun get(link: Link, parameters: HrefParameters): Resource {
+    override fun get(link: Link): Resource {
         for ((href, path) in paths) {
             if (link.href.startsWith(href)) {
                 val resourcePath = File(path, link.href.removePrefix(href)).canonicalPath

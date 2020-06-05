@@ -22,7 +22,7 @@ class TransformingFetcher(private val fetcher: Fetcher, private val transformers
 
     override val links: List<Link> get() = fetcher.links
 
-    override fun get(link: Link, parameters: HrefParameters): Resource {
+    override fun get(link: Link): Resource {
         val resource = fetcher.get(link)
         return transformers.fold(resource) { acc, transformer -> transformer(acc) }
     }

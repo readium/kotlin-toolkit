@@ -33,7 +33,7 @@ internal class RoutingFetcher(private val routes: List<Route>) : Fetcher {
 
     override val links: List<Link> = routes.flatMap { it.fetcher.links }
 
-    override fun get(link: Link, parameters: HrefParameters): Resource =
+    override fun get(link: Link): Resource =
         routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: FailureResource(link, Resource.Error.NotFound)
 
     override fun close() {

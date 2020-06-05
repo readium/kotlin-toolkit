@@ -41,7 +41,7 @@ interface PositionsService : Publication.Service {
 
     override val links get() = listOf(positionsLink)
 
-    override fun get(link: Link, parameters: Map<String, String>): Resource? =
+    override fun get(link: Link): Resource? =
         if (link.href != positionsLink.href)
             null
         else

@@ -109,7 +109,7 @@ data class Publication(
          * @return The Resource containing the response, or null if the service doesn't recognize
          *         this request.
          */
-        fun get(link: Link, parameters: Map<String, String> = emptyMap()): Resource? = null
+        fun get(link: Link): Resource? = null
 
         /**
          * Closes any opened file handles, removes temporary files, etc.
@@ -153,22 +153,21 @@ data class Publication(
     }
 
     /**
-     * Returns the resource targeted by the given [link].
+     * Returns the resource targeted by the given non-templated [link].
      *
-     * The [link].href property is searched for in the [links], [readingOrder] and [resources] properties
+     * The [link].href property is searched for in the [readingOrder], [resources] and [links] properties
      * to find the matching manifest Link. This is to make sure that
      * the Link given to the Fetcher contains all properties declared in the manifest.
      *
      * The properties are searched recursively following [Link::alternate], then [Link::children].
      * But only after comparing all the links at the current level.
-     *
-     * @param parameters Parameters used when link is templated. They must not be percent-encoded.
      */
-    fun get(link: Link, parameters: Map<String, String> = emptyMap()): Resource {
+    fun get(link: Link): Resource {
+        require(!link.templated)
         @Suppress("NAME_SHADOWING")
         val link = linkWithHref(link.href) ?: link
-        services.forEach { service -> service.get(link, parameters)?.let { return it } }
-        return fetcher.get(link, parameters)
+        services.forEach { service -> service.get(link)?.let { return it } }
+        return fetcher.get(link)
     }
 
     /**

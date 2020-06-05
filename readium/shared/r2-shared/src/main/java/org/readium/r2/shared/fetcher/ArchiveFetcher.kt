@@ -26,7 +26,7 @@ class ArchiveFetcher private constructor(private val archive: ZipFile) : Fetcher
         }
     }
 
-    override fun get(link: Link, parameters: HrefParameters): Resource =
+    override fun get(link: Link): Resource =
         ZipResource(link, archive)
 
     override fun close() = archive.close()
