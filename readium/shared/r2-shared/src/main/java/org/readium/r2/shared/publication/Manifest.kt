@@ -36,6 +36,22 @@ data class Manifest(
 ) : JSONable, Parcelable {
 
     /**
+     * Finds the first [Link] having the given [rel] in the publications's links.
+     */
+    internal fun linkWithRel(rel: String): Link? =
+        readingOrder.firstWithRel(rel)
+            ?: resources.firstWithRel(rel)
+            ?: links.firstWithRel(rel)
+
+    /**
+     * Finds all [Link]s having the given [rel] in the publications's links.
+     */
+    internal fun linksWithRel(rel: String): List<Link> =
+        listOf(readingOrder, resources, links)
+            .map { it.filterByRel(rel) }
+            .flatten()
+
+    /**
      * Serializes a [Publication] to its RWPM JSON representation.
      */
     override fun toJSON() = JSONObject().apply {

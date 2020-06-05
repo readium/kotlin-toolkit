@@ -22,8 +22,6 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
-import org.readium.r2.shared.publication.deepFlatFilter
-import java.io.ByteArrayOutputStream
 
 internal fun coverLink(size: Size) =
     Link(
@@ -108,9 +106,7 @@ class DefaultCoverService internal constructor(val coverLinks: List<Link>, val f
     companion object {
 
         fun create(context: Publication.Service.Context) = DefaultCoverService(
-            coverLinks = with(context.manifest) { listOf(readingOrder, resources, links) }
-                .map { link -> link.deepFlatFilter { "cover" in it.rels } }
-                .flatten(),
+            coverLinks = context.manifest.linksWithRel("cover"),
             fetcher = context.fetcher
         )
 

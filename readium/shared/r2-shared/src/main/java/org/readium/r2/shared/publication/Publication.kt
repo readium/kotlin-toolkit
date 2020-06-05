@@ -257,23 +257,14 @@ data class Publication(
     /**
      * Finds the first [Link] having the given [rel] in the publications's links.
      */
-    fun linkWithRel(rel: String): Link? =
-        link { it.rels.contains(rel) }
+    fun linkWithRel(rel: String): Link? = manifest.linkWithRel(rel)
 
     /**
      * Finds the first [Link] having the given [rel] matching the given [predicate], in the
      * publications' links.
      */
-    internal fun linkWithRelMatching(predicate: (String) -> Boolean): Link? {
-        for (link in links) {
-            for (rel in link.rels) {
-                if (predicate(rel)) {
-                    return link
-                }
-            }
-        }
-        return null
-    }
+    internal fun linkWithRelMatching(predicate: (String) -> Boolean): Link? =
+        links.firstOrNull { it.rels.any(predicate) }
 
     /**
      * Finds the first [Link] having the given [href] in the publications's links.
