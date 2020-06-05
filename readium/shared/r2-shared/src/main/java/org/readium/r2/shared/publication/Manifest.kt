@@ -36,7 +36,10 @@ data class Manifest(
 ) : JSONable, Parcelable {
 
     /**
-     * Finds the first [Link] having the given [rel] in the publications's links.
+     *  Finds the first [Link] with the given relation in the publication's links.
+     *
+     * Searches through (in order) [readingOrder], [resources], [links],
+     * The search is not recursive.
      */
     internal fun linkWithRel(rel: String): Link? =
         readingOrder.firstWithRel(rel)

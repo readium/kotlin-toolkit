@@ -267,17 +267,35 @@ data class Publication(
         links.firstOrNull { it.rels.any(predicate) }
 
     /**
-     * Finds the first [Link] having the given [href] in the publications's links.
-     */
-    fun linkWithHref(href: String): Link? =
-        link { it.hasHref(href) }
-
-    /**
      * Finds the first resource [Link] (asset or [readingOrder] item) at the given relative path.
      */
     fun resourceWithHref(href: String): Link? {
         return deepFind(readingOrder) { it.hasHref(href) }
             ?: deepFind(resources) { it.hasHref(href) }
+    }
+
+    /**
+     * Finds the first [Link] with the given HREF in the publication's links.
+     *
+     * Searches through (in order) [readingOrder], [resources] and [links].
+     * If there's no match, then proceeds recursively (breadth-first) through [alternate] and [children] links.
+     * If there's still no match, try again after removing any query parameter from the given [href].
+    */
+    fun linkWithHref(href: String): Link? =
+        link { it.hasHref(href) }
+            ?: link { it.hasHref(href.replaceFirst("\\?.*$".toRegex(), "")) }
+
+    /**
+     * Finds the first [Link] matching the given [predicate] in the publications's [Link]
+     * properties: [resources], [readingOrder] and [links].
+     *
+     * Searches through (in order) [readingOrder], [resources] and [links].
+     * If there's no match, then proceeds recursively (breadth-first) through [alternate] and [children] links.
+     */
+    fun link(predicate: (Link) -> Boolean): Link? {
+        return deepFind(readingOrder, predicate)
+            ?: deepFind(resources, predicate)
+            ?: deepFind(links, predicate)
     }
 
     /**
@@ -288,8 +306,10 @@ data class Publication(
         for (l in collection) {
             if (predicate(l))
                 return l
-            else
+            else {
                 deepFind(l.alternates, predicate)?.let { return it }
+                deepFind(l.children, predicate)?.let { return it }
+            }
         }
         return null
     }
@@ -309,16 +329,6 @@ data class Publication(
      */
     internal fun linksWithRole(role: String): List<Link> =
         otherCollections.firstWithRole(role)?.links ?: emptyList()
-
-    /**
-     * Finds the first [Link] matching the given [predicate] in the publications's [Link]
-     * properties: [resources], [readingOrder] and [links].
-     */
-    fun link(predicate: (Link) -> Boolean): Link? {
-        return deepFind(resources, predicate)
-            ?: deepFind(readingOrder, predicate)
-            ?: deepFind(links, predicate)
-    }
 
     /**
      * Copy the [Publication] with a different [PositionListFactory].

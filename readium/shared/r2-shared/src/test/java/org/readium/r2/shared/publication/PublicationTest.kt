@@ -209,6 +209,15 @@ class PublicationTest {
         assertEquals(link3, publication.linkWithHref("href3"))
     }
 
+    @Test fun `find the first {Link} with the given {href} without query parameters`() {
+        val link = Link(href = "http://example.com/index.html")
+        val publication = createPublication(
+            readingOrder = listOf(Link(href = "other"), link)
+        )
+
+        assertEquals(link, publication.linkWithHref("http://example.com/index.html?title=titre&action=edit"))
+    }
+
     @Test fun `find the first {Link} with the given {href} when missing`() {
         assertNull(createPublication().linkWithHref("foobar"))
     }

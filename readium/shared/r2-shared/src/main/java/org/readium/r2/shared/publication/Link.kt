@@ -194,7 +194,7 @@ fun List<Link>.indexOfFirstWithHref(href: String): Int? =
 
 /**
  * Finds the first link matching the given HREF.
- */
+ */ // FIXME: in Publication we use Link.hasHref extension to normalize href before comparing them
 fun List<Link>.firstWithHref(href: String): Link? = firstOrNull { it.href == href }
 
 /**
