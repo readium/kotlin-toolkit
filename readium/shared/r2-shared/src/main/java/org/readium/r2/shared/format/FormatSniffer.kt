@@ -12,9 +12,9 @@ package org.readium.r2.shared.format
 import android.webkit.MimeTypeMap
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.allIsAudio
-import org.readium.r2.shared.publication.allIsBitmap
-import org.readium.r2.shared.publication.allMatchesMediaType
+import org.readium.r2.shared.publication.allAreAudio
+import org.readium.r2.shared.publication.allAreBitmap
+import org.readium.r2.shared.publication.allMatchMediaType
 import java.io.File
 import java.net.URLConnection
 import java.util.*
@@ -181,14 +181,14 @@ object FormatSniffers {
         if (publication != null) {
             val isLcpProtected = context.containsZipEntryAt("license.lcpl")
 
-            if (publication.metadata.type == "http://schema.org/Audiobook" || publication.readingOrder.allIsAudio) {
+            if (publication.metadata.type == "http://schema.org/Audiobook" || publication.readingOrder.allAreAudio) {
                 return if (isManifest) Format.AUDIOBOOK_MANIFEST
                 else (if (isLcpProtected) Format.LCP_PROTECTED_AUDIOBOOK else Format.AUDIOBOOK)
             }
-            if (publication.readingOrder.allIsBitmap) {
+            if (publication.readingOrder.allAreBitmap) {
                 return if (isManifest) Format.DIVINA_MANIFEST else Format.DIVINA
             }
-            if (isLcpProtected && publication.readingOrder.allMatchesMediaType(MediaType.PDF)) {
+            if (isLcpProtected && publication.readingOrder.allMatchMediaType(MediaType.PDF)) {
                 return Format.LCP_PROTECTED_PDF
             }
             if (publication.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {

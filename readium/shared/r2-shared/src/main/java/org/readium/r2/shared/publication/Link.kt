@@ -230,41 +230,41 @@ fun List<Link>.firstWithMediaType(mediaType: MediaType): Link? = firstOrNull {
 /**
  * Returns whether all the resources in the collection are bitmaps.
  */
-val List<Link>.allIsBitmap: Boolean get() = all {
+val List<Link>.allAreBitmap: Boolean get() = all {
     it.mediaType?.isBitmap ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are audio clips.
  */
-val List<Link>.allIsAudio: Boolean get() = all {
+val List<Link>.allAreAudio: Boolean get() = all {
     it.mediaType?.isAudio ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are video clips.
  */
-val List<Link>.allIsVideo: Boolean get() = all {
+val List<Link>.allAreVideo: Boolean get() = all {
     it.mediaType?.isVideo ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are HTML documents.
  */
-val List<Link>.allIsHtml: Boolean get() = all {
+val List<Link>.allAreHtml: Boolean get() = all {
     it.mediaType?.isHtml ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are matching the given media type.
  */
-fun List<Link>.allMatchesMediaType(mediaType: MediaType): Boolean = all {
+fun List<Link>.allMatchMediaType(mediaType: MediaType): Boolean = all {
     mediaType.matches(it.mediaType)
 }
 
 /**
  * Returns whether all the resources in the collection are matching any of the given media types.
  */
-fun List<Link>.allMatchesMediaTypes(mediaTypes: List<MediaType>): Boolean = all {
+fun List<Link>.allMatchMediaTypes(mediaTypes: List<MediaType>): Boolean = all {
     mediaTypes.any { mediaType -> mediaType.matches(it.mediaType) }
 }

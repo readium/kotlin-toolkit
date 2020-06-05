@@ -10,6 +10,7 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
+import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.WriteWith
 import org.json.JSONObject
@@ -79,7 +80,8 @@ data class Metadata(
     /**
      * Computes a ReadingProgression when the value of Metadata::readingProgression is set to auto, using the publication language.
      */
-    val effectiveReadingProgression: ReadingProgression = contentLayout.readingProgression
+    @IgnoredOnParcel
+    val effectiveReadingProgression: ReadingProgression get() = contentLayout.readingProgression
 
     /**
      * Returns the [ContentLayout] for the default language.
