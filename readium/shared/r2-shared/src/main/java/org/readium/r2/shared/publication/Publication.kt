@@ -259,6 +259,11 @@ data class Publication(
     fun linkWithRel(rel: String): Link? = manifest.linkWithRel(rel)
 
     /**
+     * Finds all [Link]s having the given [rel] in the publications's links.
+     */
+     fun linksWithRel(rel: String): List<Link> = manifest.linksWithRel(rel)
+
+    /**
      * Finds the first [Link] having the given [rel] matching the given [predicate], in the
      * publications' links.
      */

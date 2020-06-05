@@ -41,15 +41,18 @@ data class Manifest(
      * Searches through (in order) [readingOrder], [resources], [links],
      * The search is not recursive.
      */
-    internal fun linkWithRel(rel: String): Link? =
+    fun linkWithRel(rel: String): Link? =
         readingOrder.firstWithRel(rel)
             ?: resources.firstWithRel(rel)
             ?: links.firstWithRel(rel)
 
     /**
      * Finds all [Link]s having the given [rel] in the publications's links.
+     *
+     * Searches through (in order) [readingOrder], [resources], [links],
+     * The search is not recursive.
      */
-    internal fun linksWithRel(rel: String): List<Link> =
+    fun linksWithRel(rel: String): List<Link> =
         listOf(readingOrder, resources, links)
             .map { it.filterByRel(rel) }
             .flatten()
