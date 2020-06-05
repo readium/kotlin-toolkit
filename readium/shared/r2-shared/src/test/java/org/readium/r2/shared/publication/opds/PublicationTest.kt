@@ -21,11 +21,11 @@ import org.readium.r2.shared.publication.Metadata
 class PublicationTest {
 
     private fun createPublication(
-        otherCollections: List<PublicationCollection> = emptyList()
+        subCollections: Map<String, List<PublicationCollection>> = emptyMap()
     ) = Publication(
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                otherCollections = otherCollections
+                subCollections = subCollections
             )
     )
 
@@ -33,8 +33,8 @@ class PublicationTest {
         val links = listOf(Link(href = "/image.png"))
         assertEquals(
             links,
-            createPublication(otherCollections = listOf(
-                PublicationCollection(role = "images", links = links)
+            createPublication(subCollections = mapOf(
+                "images" to listOf(PublicationCollection(links = links))
             )).images
         )
     }

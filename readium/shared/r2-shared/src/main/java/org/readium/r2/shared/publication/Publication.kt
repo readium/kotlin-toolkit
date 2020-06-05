@@ -61,7 +61,7 @@ data class Publication(
     val readingOrder: List<Link> get() = manifest.readingOrder
     val resources: List<Link> get() = manifest.resources
     val tableOfContents: List<Link> get() = manifest.tableOfContents
-    val otherCollections: List<PublicationCollection> get() = manifest.otherCollections
+    val subCollections: Map<String, List<PublicationCollection>> get() = manifest.subCollections
 
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
     var type: Publication.TYPE = Publication.TYPE.EPUB
@@ -332,7 +332,7 @@ data class Publication(
      * empty list.
      */
     internal fun linksWithRole(role: String): List<Link> =
-        otherCollections.firstWithRole(role)?.links ?: emptyList()
+        subCollections[role]?.firstOrNull()?.links ?: emptyList()
 
     /**
      * Copy the [Publication] with a different [PositionListFactory].

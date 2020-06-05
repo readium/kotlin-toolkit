@@ -31,7 +31,7 @@ data class Manifest(
     val readingOrder: List<Link> = emptyList(),
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
-    val otherCollections: List<PublicationCollection> = emptyList()
+    val subCollections: Map<String, List<PublicationCollection>> = emptyMap()
 
 ) : JSONable, Parcelable {
 
@@ -67,7 +67,7 @@ data class Manifest(
         put("readingOrder", readingOrder.toJSON())
         putIfNotEmpty("resources", resources)
         putIfNotEmpty("toc", tableOfContents)
-        otherCollections.appendToJSONObject(this)
+        subCollections.appendToJSONObject(this)
     }
 
     /**
@@ -115,7 +115,7 @@ data class Manifest(
             val tableOfContents = Link.fromJSONArray(json.remove("toc") as? JSONArray, normalizeHref, warnings)
 
             // Parses sub-collections from the remaining JSON properties.
-            val otherCollections = PublicationCollection.collectionsFromJSON(json, normalizeHref, warnings)
+            val subCollections = PublicationCollection.collectionsFromJSON(json, normalizeHref, warnings)
 
             return Manifest(
                 context = context,
@@ -124,7 +124,7 @@ data class Manifest(
                 readingOrder = readingOrder,
                 resources = resources,
                 tableOfContents = tableOfContents,
-                otherCollections = otherCollections
+                subCollections = subCollections
             )
         }
     }

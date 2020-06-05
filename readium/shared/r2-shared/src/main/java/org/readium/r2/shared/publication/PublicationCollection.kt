@@ -28,15 +28,12 @@ import org.readium.r2.shared.util.logging.log
  *
  * https://readium.org/webpub-manifest/schema/subcollection.schema.json
  * Can be used as extension point in the Readium Web Publication Manifest.
- *
- * @param role JSON key used to reference this collection in its parent.
  */
 @Parcelize
 data class PublicationCollection(
-    val role: String,
     val metadata: @WriteWith<JSONParceler> Map<String, Any> = emptyMap(),
     val links: List<Link> = emptyList(),
-    val otherCollections: List<PublicationCollection> = emptyList()
+    val subCollections: Map<String, List<PublicationCollection>> = emptyMap()
 ) : JSONable, Parcelable {
 
     /**
@@ -45,13 +42,13 @@ data class PublicationCollection(
     override fun toJSON() = JSONObject().apply {
         put("metadata", metadata)
         putIfNotEmpty("links", links)
-        otherCollections.appendToJSONObject(this)
+        subCollections.appendToJSONObject(this)
     }
 
     companion object {
 
-        fun fromJSON(role: String, json: Any?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): PublicationCollection? =
-            fromJSON(role, json, normalizeHref, null)
+        fun fromJSON(json: Any?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): PublicationCollection? =
+            fromJSON(json, normalizeHref, null)
 
         /**
          * Parses a [PublicationCollection] from its RWPM JSON representation.
@@ -59,27 +56,24 @@ data class PublicationCollection(
          * If the collection can't be parsed, a warning will be logged with [warnings].
          * The [links]' href and their children's will be normalized recursively using the
          * provided [normalizeHref] closure.
-         *
-         * @param role JSON key used to reference the collection in its parent.
          */
         internal fun fromJSON(
-            role: String,
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger<JsonWarning>?
         ): PublicationCollection? {
             json ?: return null
 
-            var links: List<Link>
+            val links: List<Link>
             var metadata: Map<String, Any>? = null
-            var otherCollections: List<PublicationCollection>? = null
+            var subCollections: Map<String, List<PublicationCollection>>? = null
 
             when (json) {
                 // Parses a sub-collection object.
                 is JSONObject -> {
                     links = Link.fromJSONArray(json.remove("links") as? JSONArray, normalizeHref, warnings)
                     metadata = (json.remove("metadata") as? JSONObject)?.toMap()
-                    otherCollections = collectionsFromJSON(json, normalizeHref, warnings)
+                    subCollections = collectionsFromJSON(json, normalizeHref, warnings)
                 }
 
                 // Parses an array of links.
@@ -99,18 +93,20 @@ data class PublicationCollection(
             }
 
             return PublicationCollection(
-                role = role,
                 metadata = metadata ?: emptyMap(),
                 links = links,
-                otherCollections = otherCollections ?: emptyList()
+                subCollections = subCollections ?: emptyMap()
             )
         }
 
-        fun collectionsFromJSON(json: JSONObject, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): List<PublicationCollection> =
+        fun collectionsFromJSON(
+            json: JSONObject,
+            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity
+        ): Map<String, List<PublicationCollection>> =
             collectionsFromJSON(json, normalizeHref, null)
 
         /**
-         * Parses a list of [PublicationCollection] from its RWPM JSON representation.
+         * Parses a map of [PublicationCollection] indexed by their roles from its RWPM JSON representation.
          *
          * If the collection can't be parsed, a warning will be logged with [warnings].
          * The [links]' href and their children's will be normalized recursively using the
@@ -120,20 +116,20 @@ data class PublicationCollection(
             json: JSONObject,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger<JsonWarning>?
-        ): List<PublicationCollection> {
-            val collections = mutableListOf<PublicationCollection>()
+        ): Map<String, List<PublicationCollection>> {
+            val collections = mutableMapOf<String, MutableList<PublicationCollection>>()
             for (role in json.keys().asSequence().sorted()) {
                 val subJSON = json.get(role)
 
                 // Parses a list of links or a single collection object.
-                val collection = fromJSON(role, subJSON, normalizeHref, warnings)
+                val collection = fromJSON(subJSON, normalizeHref, warnings)
                 if (collection != null) {
-                    collections.add(collection)
+                    collections.getOrPut(role) { mutableListOf() }.add(collection)
 
                 // Parses a list of collection objects.
                 } else if (subJSON is JSONArray) {
-                    collections.addAll(
-                        subJSON.mapNotNull { fromJSON(role, it, normalizeHref, warnings) }
+                    collections.getOrPut(role) { mutableListOf() }.addAll(
+                        subJSON.mapNotNull { fromJSON(it, normalizeHref, warnings) }
                     )
                 }
             }
@@ -145,39 +141,22 @@ data class PublicationCollection(
 }
 
 /**
- * Serializes a list of [PublicationCollection] into a RWPM JSON representation, where they are
- * indexed by their [role].
+ * Serializes a map of [PublicationCollection] indexed by role into a RWPM JSON representation.
  */
-internal fun List<PublicationCollection>.toJSONObject(): JSONObject =
+internal fun Map<String, List<PublicationCollection>>.toJSONObject(): JSONObject =
     appendToJSONObject(JSONObject())
 
 /**
- * Serializes a list of [PublicationCollection] into a RWPM JSON representation, where they are
- * indexed by their [role], and add them to the given [jsonObject].
+ * Serializes a map of [PublicationCollection] indexed by their role into a RWPM JSON representation
+ * and add them to the given [jsonObject].
  */
-internal fun List<PublicationCollection>.appendToJSONObject(jsonObject: JSONObject): JSONObject =
-    jsonObject.apply {
-        // Groups the sub-collections by their role.
-        val collectionsByRole = groupBy(PublicationCollection::role)
-        for ((role, collections) in collectionsByRole) {
+internal fun Map<String, List<PublicationCollection>>.appendToJSONObject(jsonObject: JSONObject): JSONObject =
+    jsonObject.also {
+        for ((role, collections) in this) {
             if (collections.size == 1) {
-                putIfNotEmpty(role, collections.first())
+                it.putIfNotEmpty(role, collections.first())
             } else {
-                putIfNotEmpty(role, collections)
+                it.putIfNotEmpty(role, collections)
             }
         }
     }
-
-/**
- * Returns the first [PublicationCollection] with the given [role].
- * This is not recursive.
- */
-fun List<PublicationCollection>.firstWithRole(role: String): PublicationCollection? =
-    firstOrNull { it.role == role }
-
-/**
- * Returns all the [PublicationCollection] with the given [role].
- * This is not recursive.
- */
-fun List<PublicationCollection>.findAllWithRole(role: String): List<PublicationCollection> =
-    filter { it.role == role }

@@ -14,12 +14,13 @@ import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
 import org.readium.r2.shared.assertJSONEquals
+import kotlin.test.assertEquals
 
 class ManifestTest {
 
     @Test
     fun `parse minimal JSON`() {
-        Assert.assertEquals(
+        assertEquals(
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = emptyList(),
@@ -39,7 +40,7 @@ class ManifestTest {
 
     @Test
     fun `parse full JSON`() {
-        Assert.assertEquals(
+        assertEquals(
             Manifest(
                 context = listOf("https://readium.org/webpub-manifest/context.jsonld"),
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
@@ -47,7 +48,7 @@ class ManifestTest {
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
                 resources = listOf(Link(href = "/image.png", type = "image/png")),
                 tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
-                otherCollections = listOf(PublicationCollection(role = "sub", links = listOf(Link(href = "/sublink"))))
+                subCollections = mapOf("sub" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))))
             ),
             Manifest.fromJSON(
                 JSONObject(
@@ -80,7 +81,7 @@ class ManifestTest {
 
     @Test
     fun `parse JSON {context} as array`() {
-        Assert.assertEquals(
+        assertEquals(
             Manifest(
                 context = listOf("context1", "context2"),
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
@@ -125,7 +126,7 @@ class ManifestTest {
     // {readingOrder} used to be {spine}, so we parse {spine} as a fallback.
     @Test
     fun `parse JSON {spine} as {readingOrder}`() {
-        Assert.assertEquals(
+        assertEquals(
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
@@ -149,7 +150,7 @@ class ManifestTest {
 
     @Test
     fun `parse JSON ignores {readingOrder} without {type}`() {
-        Assert.assertEquals(
+        assertEquals(
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
@@ -174,7 +175,7 @@ class ManifestTest {
 
     @Test
     fun `parse JSON ignores {resources} without {type}`() {
-        Assert.assertEquals(
+        assertEquals(
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
@@ -250,7 +251,7 @@ class ManifestTest {
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
                 resources = listOf(Link(href = "/image.png", type = "image/png")),
                 tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
-                otherCollections = listOf(PublicationCollection(role = "sub", links = listOf(Link(href = "/sublink"))))
+                subCollections = mapOf("sub" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))))
             ).toJSON()
         )
     }
