@@ -20,8 +20,7 @@ import org.readium.r2.shared.toJSON
 
 private val positionsLink = Link(
     href= "/~readium/positions",
-    type = "application/vnd.readium.position-list+json",
-    rels = setOf("http://readium.org/position-list")
+    type = "application/vnd.readium.position-list+json"
 )
 
 /**
