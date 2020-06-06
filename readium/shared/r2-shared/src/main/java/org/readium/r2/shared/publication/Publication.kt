@@ -159,8 +159,7 @@ data class Publication(
      * to find the matching manifest Link. This is to make sure that
      * the Link given to the Fetcher contains all properties declared in the manifest.
      *
-     * The properties are searched recursively following [Link::alternate], then [Link::children].
-     * But only after comparing all the links at the current level.
+     * The properties are searched recursively following [Link::alternate] and [Link::children].
      */
     fun get(link: Link): Resource {
         require(!link.templated)
@@ -281,9 +280,9 @@ data class Publication(
     /**
      * Finds the first [Link] with the given HREF in the publication's links.
      *
-     * Searches through (in order) [readingOrder], [resources] and [links].
-     * If there's no match, then proceeds recursively (breadth-first) through [alternate] and [children] links.
-     * If there's still no match, try again after removing any query parameter from the given [href].
+     * Searches through (in order) [readingOrder], [resources] and [links]
+     * recursively following [alternate] and [children] links.
+     * If there's no match, try again after removing any query parameter from the given [href].
     */
     fun linkWithHref(href: String): Link? =
         link { it.hasHref(href) }
@@ -293,8 +292,9 @@ data class Publication(
      * Finds the first [Link] matching the given [predicate] in the publications's [Link]
      * properties: [resources], [readingOrder] and [links].
      *
-     * Searches through (in order) [readingOrder], [resources] and [links].
-     * If there's no match, then proceeds recursively (breadth-first) through [alternate] and [children] links.
+     * Searches through (in order) [readingOrder], [resources] and [links]
+     * recursively following [alternate] and [children] links.
+     * The search order is unspecified.
      */
     fun link(predicate: (Link) -> Boolean): Link? {
         return deepFind(readingOrder, predicate)
@@ -306,7 +306,6 @@ data class Publication(
      * Finds the first [Link] in [collection] that satisfies the given [predicate]
      */
     private fun deepFind(collection: List<Link>, predicate: (Link) -> Boolean) : Link? {
-        // FIXME: This should do a breadth-first traversal
         for (l in collection) {
             if (predicate(l))
                 return l
