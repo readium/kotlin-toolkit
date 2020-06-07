@@ -89,8 +89,8 @@ internal class LcpDecryptionTransformer(val drm: DRM) {
     ) : Resource {
 
         init {
-            assert(!resource.link.isDeflated)
-            assert(resource.link.isCbcEncrypted)
+            require(!resource.link.isDeflated)
+            require(resource.link.isCbcEncrypted)
         }
 
         override val link: Link get() = resource.link
