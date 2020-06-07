@@ -171,9 +171,9 @@ data class Publication(
      */
     fun get(link: Link): Resource {
         require(!link.templated)
+        services.forEach { service -> service.get(link)?.let { return it } }
         @Suppress("NAME_SHADOWING")
         val link = linkWithHref(link.href) ?: link
-        services.forEach { service -> service.get(link)?.let { return it } }
         return fetcher.get(link)
     }
 
