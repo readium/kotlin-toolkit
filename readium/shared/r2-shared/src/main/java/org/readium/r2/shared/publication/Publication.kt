@@ -281,6 +281,7 @@ data class Publication(
     /**
      * Finds the first resource [Link] (asset or [readingOrder] item) at the given relative path.
      */
+    @Deprecated("Use [linkWithHref] instead.", ReplaceWith("linkWithHref(href)"))
     fun resourceWithHref(href: String): Link? {
         return deepFind(readingOrder) { it.hasHref(href) }
             ?: deepFind(resources) { it.hasHref(href) }

@@ -231,6 +231,7 @@ class PublicationTest {
         assertNull(createPublication().linkWithHref("foobar"))
     }
 
+    @Suppress("DEPRECATION")
     @Test fun `find the first resource {Link} with the given {href}`() {
         val link1 = Link(href = "href1")
         val link2 = Link(href = "href2")
