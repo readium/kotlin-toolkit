@@ -47,9 +47,7 @@ class Fetcher(var publication: Publication, var container: Container, private va
 
     fun dataLength(path: String): Long {
         val relativePath = rootFileDirectory.plus(path)
-
-        publication.resourceWithHref(path) ?: throw Exception("Missing file")
-        return container.dataLength(relativePath)
+        return container.dataLength(relativePath).takeUnless { it == 0L } ?: throw Exception("Missing file")
     }
 
     private fun getContentFilters(mimeType: String?, customResources: Resources? = null): ContentFilters? {
