@@ -23,7 +23,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
 
-internal fun coverLink(size: Size) =
+private fun coverLink(size: Size) =
     Link(
         href = "/~readium/cover",
         type = "image/png",

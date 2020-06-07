@@ -191,8 +191,10 @@ data class Link(
 
 }
 
+// FIXME: in Publication we use Link.hasHref extension to normalize href before comparing them
+
 /**
- * Returns the first [Link] with the given [href], or [null] if not found.
+ * Returns the first [Link] with the given [href], or null if not found.
  */
 fun List<Link>.indexOfFirstWithHref(href: String): Int? =
     indexOfFirst { it.href == href }
@@ -200,7 +202,7 @@ fun List<Link>.indexOfFirstWithHref(href: String): Int? =
 
 /**
  * Finds the first link matching the given HREF.
- */ // FIXME: in Publication we use Link.hasHref extension to normalize href before comparing them
+ */
 fun List<Link>.firstWithHref(href: String): Link? = firstOrNull { it.href == href }
 
 /**

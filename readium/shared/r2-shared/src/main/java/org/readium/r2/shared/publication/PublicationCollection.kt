@@ -141,7 +141,7 @@ data class PublicationCollection(
 }
 
 /**
- * Serializes a map of [PublicationCollection] indexed by role into a RWPM JSON representation.
+ * Serializes a map of [PublicationCollection] indexed by their role into a RWPM JSON representation.
  */
 internal fun Map<String, List<PublicationCollection>>.toJSONObject(): JSONObject =
     appendToJSONObject(JSONObject())

@@ -21,6 +21,7 @@ import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.log
 
 /**
+ * Contributor Object for the Readium Web Publication Manifest.
  * https://readium.org/webpub-manifest/schema/contributor-object.schema.json
  *
  * @param localizedName The name of the contributor.

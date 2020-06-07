@@ -31,9 +31,15 @@ import java.net.URLEncoder
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
-
 /**
- * Shared model for a Readium Publication.
+ * The Publication shared model is the entry-point for all the metadata and services
+ * related to a Readium publication.
+ *
+ * @param manifest The manifest holding the publication metadata extracted from the publication file.
+ * @param fetcher The underlying fetcher used to read publication resources.
+ * The default implementation returns Resource.Error.NotFound for all HREFs.
+ * @param servicesBuilder Holds the list of service factories used to create the instances of
+ * Publication.Service attached to this Publication.
  * @param type The kind of publication it is ( Epub, Cbz, ... )
  * @param version The version of the publication, if the type needs any.
  * @param positionsFactory Factory used to build lazily the [positions].
@@ -53,8 +59,7 @@ data class Publication(
     // FIXME: This is not specified and need to be refactored
     var internalData: MutableMap<String, String> = mutableMapOf()
 ) {
-    private val services: List<Service> = servicesBuilder.build(Service.Context(manifest, fetcher))
-
+    // Shortcuts to manifest properties
     val context: List<String> get() = manifest.context
     val metadata: Metadata get() = manifest.metadata
     val links: List<Link> get() = manifest.links
@@ -66,6 +71,9 @@ data class Publication(
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
     var type: Publication.TYPE = Publication.TYPE.EPUB
     var version: Double = 0.0
+
+    // Build services
+    private val services: List<Service> = servicesBuilder.build(Service.Context(manifest, fetcher))
 
     /**
      * Base interface to be implemented by all publication services.
@@ -106,7 +114,7 @@ data class Publication(
          *
          * Called by [Publication.get] for each request.
          *
-         * @return The Resource containing the response, or null if the service doesn't recognize
+         * @return The [Resource] containing the response, or null if the service doesn't recognize
          *         this request.
          */
         fun get(link: Link): Resource? = null
@@ -138,7 +146,7 @@ data class Publication(
             serviceFactories[serviceType.simpleName] = factory
         }
 
-        /** Removes any service factory producing the given kind of service. */
+        /** Removes the service factory producing the given kind of service, if any. */
         fun <T> remove(serviceType: Class<T>) {
             requireNotNull(serviceType.simpleName)
             serviceFactories.remove(serviceType.simpleName)
@@ -156,8 +164,8 @@ data class Publication(
      * Returns the resource targeted by the given non-templated [link].
      *
      * The [link].href property is searched for in the [readingOrder], [resources] and [links] properties
-     * to find the matching manifest Link. This is to make sure that
-     * the Link given to the Fetcher contains all properties declared in the manifest.
+     * to find the matching manifest [Link]. This is to make sure that
+     * the [Link] given to the [fetcher] contains all properties declared in the [manifest].
      *
      * The properties are searched recursively following [Link::alternate] and [Link::children].
      */
@@ -170,7 +178,7 @@ data class Publication(
     }
 
     /**
-     * Returns the resource targeted by the given [href].
+     * Returns the resource targeted by the given [href]. Equivalent to get(Link(href: href))).
      */
     fun get(href: String): Resource =
         get(Link(href = href))
@@ -222,7 +230,8 @@ data class Publication(
     /**
      * Returns the RWPM JSON representation for this [Publication]'s manifest, as a string.
      */
-    val jsonManifest: String = manifest.toJSON().toString().replace("\\/", "/")
+    val jsonManifest: String
+        get() = manifest.toJSON().toString().replace("\\/", "/")
 
     /**
      * Returns the URL where this [Publication] is served.
@@ -286,7 +295,7 @@ data class Publication(
     */
     fun linkWithHref(href: String): Link? =
         link { it.hasHref(href) }
-            ?: link { it.hasHref(href.replaceFirst("[?#].*$".toRegex(), "")) }
+            ?: link { it.hasHref(href.takeWhile { it !in "#?" }) }
 
     /**
      * Finds the first [Link] matching the given [predicate] in the publications's [Link]

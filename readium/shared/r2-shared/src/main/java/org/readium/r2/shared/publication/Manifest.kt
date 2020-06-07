@@ -21,6 +21,9 @@ import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
+/**
+ * Holds the metadata of a Readium publication, as described in the Readium Web Publication Manifest.
+ */
 @Parcelize
 data class Manifest(
     val context: List<String> = emptyList(),
