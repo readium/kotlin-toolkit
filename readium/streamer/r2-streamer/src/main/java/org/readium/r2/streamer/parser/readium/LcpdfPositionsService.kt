@@ -12,11 +12,12 @@ package org.readium.r2.streamer.parser.readium
 import android.content.Context
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.util.pdf.PdfDocument
+import org.readium.r2.streamer.extensions.readBytes
 import org.readium.r2.streamer.parser.pdf.PdfiumDocument
 import timber.log.Timber
 
