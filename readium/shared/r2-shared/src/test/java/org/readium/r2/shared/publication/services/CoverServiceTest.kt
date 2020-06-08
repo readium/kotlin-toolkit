@@ -11,11 +11,15 @@ package org.readium.r2.shared.publication.services
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Size
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -28,6 +32,7 @@ class CoverServiceTest {
     private val coverBitmap: Bitmap
     private val coverPath: String
     private val coverLink: Link
+    private val publication: Publication
 
     init {
         val cover = CoverServiceTest::class.java.getResource("cover.jpg")
@@ -36,6 +41,18 @@ class CoverServiceTest {
         coverBitmap = BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.size)
         coverPath = cover.path
         coverLink = Link(href = coverPath, type = "image/jpeg", width = 598, height = 800)
+
+        publication = Publication(
+            manifest = Manifest(
+                metadata = Metadata(
+                    localizedTitle = LocalizedString("title")
+                ),
+                resources = listOf(
+                    Link(href = coverPath, rels = setOf("cover"))
+                )
+            ),
+            fetcher = FileFetcher(coverPath, coverPath)
+        )
     }
 
     @Test
@@ -68,10 +85,15 @@ class CoverServiceTest {
     }
 
     @Test
-    fun `DefaultCoverService works fine`() {
-        val fetcher = FileFetcher(coverPath, coverPath)
-        val service = DefaultCoverService(listOf(coverLink), fetcher)
-        assertTrue(coverBitmap.sameAs(service.cover))
+    fun `cover helper for Publication works fine`() {
+        assertTrue(coverBitmap.sameAs(publication.cover))
+    }
 
+    @Test
+    fun `coverFitting helper for Publication works fine`() {
+        val scaled = publication.coverFitting(Size(300, 400))
+        assertNotNull(scaled)
+        assertEquals(400, scaled.height)
+        assertEquals(299, scaled.width)
     }
 }

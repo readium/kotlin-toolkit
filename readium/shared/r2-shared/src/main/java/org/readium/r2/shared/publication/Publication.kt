@@ -23,7 +23,6 @@ import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.CoverService
-import org.readium.r2.shared.publication.services.DefaultCoverService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import java.net.URL
@@ -131,7 +130,7 @@ class Publication(
         @Suppress("UNCHECKED_CAST")
         constructor(
             positions: ServiceFactory? = null,
-            cover: ServiceFactory? = (DefaultCoverService)::create
+            cover: ServiceFactory? = null
         ) : this(mapOf(
                 PositionsService::class.java.simpleName to positions,
                 CoverService::class.java.simpleName to cover
@@ -269,7 +268,12 @@ class Publication(
     /**
      * Finds all [Link]s having the given [rel] in the publications's links.
      */
-     fun linksWithRel(rel: String): List<Link> = manifest.linksWithRel(rel)
+    fun linksWithRel(rel: String): List<Link> = manifest.linksWithRel(rel)
+
+    /**
+     * Finds the first [Link] having the given [mediaType] in the publications's links.
+     */
+    fun linkWithMediaType(mediaType: MediaType): Link? = manifest.linkWithMediaType(mediaType)
 
     /**
      * Finds the first [Link] having the given [rel] matching the given [predicate], in the

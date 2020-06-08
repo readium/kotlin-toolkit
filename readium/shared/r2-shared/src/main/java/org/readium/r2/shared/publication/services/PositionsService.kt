@@ -10,6 +10,8 @@
 package org.readium.r2.shared.publication.services
 
 import org.json.JSONObject
+import org.readium.r2.shared.extensions.mapNotNull
+import org.readium.r2.shared.extensions.toJsonOrNull
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.Link
@@ -53,20 +55,39 @@ interface PositionsService : Publication.Service {
 
 }
 
+private fun Publication.locatorsFromLink(): List<Locator>? =
+    linkWithMediaType(positionsLink.mediaType!!)
+    ?.let { get(it) }
+    ?.readAsString()
+    ?.successOrNull()
+    ?.toJsonOrNull()
+    ?.optJSONArray("positions")
+    ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }
+
 /**
  * List of all the positions in the publication, grouped by the resource reading order index.
  */
 val Publication.positionsByReadingOrder: List<List<Locator>> get() {
-    val service = findService(PositionsService::class.java)
-    return service?.positionsByReadingOrder ?: emptyList()
+    findService(PositionsService::class.java)?.let {
+        return it.positionsByReadingOrder
+    }
+
+    val locators = locatorsFromLink()
+        .orEmpty()
+        .groupBy(Locator::href)
+
+    return readingOrder.map { locators[it.href].orEmpty() }
 }
 
 /**
  * List of all the positions in the publication.
  */
 val Publication.positions: List<Locator> get() {
-    val service = findService(PositionsService::class.java)
-    return service?.positions ?: emptyList()
+    findService(PositionsService::class.java)?.let {
+        return it.positions
+    }
+
+    return locatorsFromLink().orEmpty()
 }
 
 /**

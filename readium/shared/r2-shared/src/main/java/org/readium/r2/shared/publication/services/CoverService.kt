@@ -66,17 +66,30 @@ interface CoverService : Publication.Service {
     }
 }
 
+private fun Publication.coverFromLink(): Bitmap? {
+    for (link in linksWithRel("cover")) {
+        val data = get(link).read().successOrNull() ?: continue
+        return BitmapFactory.decodeByteArray(data, 0, data.size)
+    }
+    return null
+}
+
 /**
  * Returns the publication cover as a [Bitmap] at its maximum size.
  */
-val Publication.cover: Bitmap? get() = findService(CoverService::class.java)?.cover
+val Publication.cover: Bitmap?
+    get() {
+        findService(CoverService::class.java)?.cover?.let { return it }
+        return coverFromLink()
+    }
 
 /**
  * Returns the publication cover as a [Bitmap], scaled down to fit the given [maxSize].
  */
-fun Publication.coverFitting(maxSize: Size): Bitmap? =
-    findService(CoverService::class.java)?.coverFitting(maxSize)
-
+fun Publication.coverFitting(maxSize: Size): Bitmap? {
+    findService(CoverService::class.java)?.coverFitting(maxSize)?.let { return it }
+    return cover?.scaleToFit(maxSize)
+}
 
 /** Factory to build a [CoverService]. */
 var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
@@ -87,31 +100,6 @@ var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
         else
             serviceFactories[CoverService::class.simpleName!!] = value
     }
-
-
-/**
- *  A [CoverService] which searches a [Link] with rel `cover` in the publication's manifest.
- */
-class DefaultCoverService internal constructor(val coverLinks: List<Link>, val fetcher: Fetcher) : CoverService {
-
-    override val cover: Bitmap?
-        get() {
-            for (link in coverLinks) {
-                val data = fetcher.get(link).read().successOrNull() ?: continue
-                return BitmapFactory.decodeByteArray(data, 0, data.size)
-            }
-            return null
-        }
-
-    companion object {
-
-        fun create(context: Publication.Service.Context) = DefaultCoverService(
-            coverLinks = context.manifest.linksWithRel("cover"),
-            fetcher = context.fetcher
-        )
-
-    }
-}
 
 /**
  * A [CoverService] which uses a provided in-memory bitmap.

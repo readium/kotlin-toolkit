@@ -16,6 +16,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -59,6 +60,15 @@ data class Manifest(
         listOf(readingOrder, resources, links)
             .map { it.filterByRel(rel) }
             .flatten()
+
+
+    /**
+     * Finds the first [Link] having the given [mediaType] in the publications's links.
+     */
+    fun linkWithMediaType(mediaType: MediaType): Link? =
+        readingOrder.firstWithMediaType(mediaType)
+            ?: resources.firstWithMediaType(mediaType)
+            ?: links.firstWithMediaType(mediaType)
 
     /**
      * Serializes a [Publication] to its RWPM JSON representation.
