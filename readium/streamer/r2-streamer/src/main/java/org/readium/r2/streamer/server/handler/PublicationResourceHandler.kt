@@ -157,7 +157,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         val startIndex = path.indexOf("/", offset + 1)
         val filePath = path.substring(startIndex)
 
-        return if (session.queryParameterString.isEmpty())
+        return if (session.queryParameterString.isNullOrBlank())
             filePath
         else
             "${filePath}?${session.queryParameterString}"

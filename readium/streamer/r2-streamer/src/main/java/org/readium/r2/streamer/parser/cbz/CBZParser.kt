@@ -9,22 +9,16 @@
 
 package org.readium.r2.streamer.parser.cbz
 
+import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.fetcher.ArchiveFetcher
-import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
-import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
+import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PerResourcePositionsService
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
-import timber.log.Timber
 import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
-import java.security.MessageDigest
-import kotlin.experimental.and
-
 
 @Deprecated("Use [MediaType] instead")
 class CBZConstant {
@@ -64,34 +58,23 @@ class CBZParser : PublicationParser {
         val fetcher = ArchiveFetcher.fromPath(fileAtPath)
             ?: return null
 
-        val container = try {
-            generateContainerFrom(fileAtPath)
-        } catch (e: Exception) {
-            if (DEBUG) Timber.e(e, "Could not generate container")
-            return null
-        }
-        val listFiles = try {
-            container.files
-                .filterNot { it.startsWith(".") }
-                .sorted()
+        val readingOrder = fetcher.links
+            .filter { it.mediaType?.isBitmap == true && !it.href.startsWith(".") }
+            .sortedBy { it.href }
+            .toMutableList()
 
-        } catch (e: Exception) {
-            if (DEBUG) Timber.e(e, "Missing File : META-INF/container.xml")
+        if (readingOrder.isEmpty()) {
             return null
         }
 
-        val hash = fileToMD5(fileAtPath)
-        val metadata = Metadata(identifier = hash, localizedTitle = LocalizedString(fallbackTitle))
+        // First valid resource is the cover.
+        readingOrder[0] = readingOrder[0].copy(rels = setOf("cover"))
 
-        val readingOrder = listFiles.mapIndexed { index, path ->
-            Link(
-                href = path,
-                type = Format.of(fileExtension = File(path).extension)?.mediaType.toString(),
-                rels = if (index == 0) setOf("cover") else emptySet()
-            )
-        }
         val manifest = Manifest(
-            metadata = metadata,
+            metadata = Metadata(
+                identifier = File(fileAtPath).md5(),
+                localizedTitle = LocalizedString(fallbackTitle)
+            ),
             readingOrder = readingOrder,
             subCollections = mapOf(
                 "images" to listOf(PublicationCollection(links = readingOrder))
@@ -108,41 +91,8 @@ class CBZParser : PublicationParser {
             type =  Publication.TYPE.CBZ
         }
 
+        val container = PublicationContainer(publication = publication, path = fileAtPath, mediaType = MediaType.CBZ)
         return PubBox(publication, container)
     }
 
-    private fun fileToMD5(filePath: String): String? {
-        var inputStream: InputStream? = null
-        try {
-            inputStream = FileInputStream(filePath)
-            val buffer = ByteArray(1024)
-            val digest = MessageDigest.getInstance("MD5")
-            var numRead = 0
-            while (numRead != -1) {
-                numRead = inputStream.read(buffer)
-                if (numRead > 0)
-                    digest.update(buffer, 0, numRead)
-            }
-            val md5Bytes = digest.digest()
-            return convertHashToString(md5Bytes)
-        } catch (e: Exception) {
-            return null
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close()
-                } catch (e: Exception) {
-                }
-
-            }
-        }
-    }
-
-    private fun convertHashToString(md5Bytes: ByteArray): String {
-        var returnVal = ""
-        for (i in md5Bytes.indices) {
-            returnVal += ((md5Bytes[i] and 0xff.toByte()) + 0x100).toString(16).substring(1)
-        }
-        return returnVal
-    }
 }
