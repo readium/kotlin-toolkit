@@ -44,8 +44,8 @@ internal typealias ServiceFactory = (Publication.Service.Context) -> Publication
  * @param version The version of the publication, if the type needs any.
  * @param positionsFactory Factory used to build lazily the [positions].
  */
-data class Publication(
-    private val manifest: Manifest,
+class Publication(
+    manifest: Manifest,
     private val fetcher: Fetcher = EmptyFetcher(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
     @Deprecated("Provide a [ServiceFactory] for a [PositionsService] instead.", level = DeprecationLevel.ERROR)
@@ -59,6 +59,9 @@ data class Publication(
     // FIXME: This is not specified and need to be refactored
     var internalData: MutableMap<String, String> = mutableMapOf()
 ) {
+    private val services: List<Service> = servicesBuilder.build(Service.Context(manifest, fetcher))
+    private val manifest = manifest.copy(links = manifest.links + services.map(Service::links).flatten())
+
     // Shortcuts to manifest properties
     val context: List<String> get() = manifest.context
     val metadata: Metadata get() = manifest.metadata
@@ -71,9 +74,6 @@ data class Publication(
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
     var type: Publication.TYPE = Publication.TYPE.EPUB
     var version: Double = 0.0
-
-    // Build services
-    private val services: List<Service> = servicesBuilder.build(Service.Context(manifest, fetcher))
 
     /**
      * Base interface to be implemented by all publication services.
@@ -351,7 +351,7 @@ data class Publication(
     @Suppress("DEPRECATION")
     @Deprecated("Use [Publication.copy(serviceFactories)] instead", ReplaceWith("Publication.copy(serviceFactories = listOf(positionsServiceFactory)"), level = DeprecationLevel.ERROR)
     fun copyWithPositionsFactory(createFactory: Publication.() -> PositionListFactory): Publication {
-        return run { copy(positionsFactory = createFactory()) }
+        throw NotImplementedError()
     }
 
     @Deprecated("Renamed to [listOfAudioClips]", ReplaceWith("listOfAudioClips"))
