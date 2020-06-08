@@ -15,11 +15,13 @@ import android.util.Size
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @RunWith(AndroidJUnit4::class)
+@Config(sdk = [28])
 class BitmapTest {
 
     private val bitmap: Bitmap

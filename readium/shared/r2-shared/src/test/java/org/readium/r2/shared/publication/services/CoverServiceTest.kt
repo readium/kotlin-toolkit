@@ -16,16 +16,14 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.fetcher.FileFetcher
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.LocalizedString
-import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Metadata
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.*
+import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @RunWith(AndroidJUnit4::class)
+@Config(sdk = [28])
 class CoverServiceTest {
 
     private val coverBytes: ByteArray

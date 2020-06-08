@@ -19,7 +19,7 @@ import org.readium.r2.shared.publication.Link
  *
  * The [routes] will be tested in the given order.
  */
-internal class RoutingFetcher(private val routes: List<Route>) : Fetcher {
+class RoutingFetcher(private val routes: List<Route>) : Fetcher {
 
     /**
      * Holds a child fetcher and the predicate used to determine if it can answer a request.

@@ -206,14 +206,21 @@ fun List<Link>.indexOfFirstWithHref(href: String): Int? =
 fun List<Link>.firstWithHref(href: String): Link? = firstOrNull { it.href == href }
 
 /**
+ * Finds the first link with the given relation.
+ */
+fun List<Link>.firstWithRel(rel: String): Link? = firstOrNull { it.rels.contains(rel) }
+
+/**
  * Finds all the links with the given relation.
  */
 fun List<Link>.filterByRel(rel: String): List<Link> = filter { it.rels.contains(rel) }
 
 /**
- * Finds the first link with the given relation.
+ * Finds the first link matching the given media type.
  */
-fun List<Link>.firstWithRel(rel: String): Link? = firstOrNull { it.rels.contains(rel) }
+fun List<Link>.firstWithMediaType(mediaType: MediaType): Link? = firstOrNull {
+    it.mediaType?.matches(mediaType) ?: false
+}
 
 /**
  * Finds all the links matching the given media type.
@@ -223,10 +230,10 @@ fun List<Link>.filterByMediaType(mediaType: MediaType): List<Link> = filter {
 }
 
 /**
- * Finds the first link matching the given media type.
+ * Finds all the links matching any of the given media types.
  */
-fun List<Link>.firstWithMediaType(mediaType: MediaType): Link? = firstOrNull {
-    it.mediaType?.matches(mediaType) ?: false
+fun List<Link>.filterByMediaTypes(mediaTypes: List<MediaType>): List<Link> = filter {
+    mediaTypes.any { mediaType ->  mediaType.matches(it.type) }
 }
 
 /**

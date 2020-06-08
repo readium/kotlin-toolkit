@@ -15,8 +15,6 @@ import kotlinx.android.parcel.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.putIfNotEmpty
-import org.readium.r2.shared.normalize
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
@@ -142,10 +140,6 @@ data class Locator(
         }
 
     }
-    /**
-     * Computes an absolute URL to the given Locator.
-     */
-    fun toURL(baseURL: String) = normalize(baseURL, href)
 
     /**
      * Shortcut to get a copy of the [Locator] with different [Locations] sub-properties.

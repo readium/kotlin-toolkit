@@ -44,16 +44,16 @@ class ArchiveFetcherTest {
 
         assertEquals(
             listOf(
-                "mimetype" to null,
-                "EPUB/cover.xhtml" to "text/html",
-                "EPUB/css/epub.css" to "text/css",
-                "EPUB/css/nav.css" to "text/css",
-                "EPUB/images/cover.png" to "image/png",
-                "EPUB/nav.xhtml" to "text/html",
-                "EPUB/package.opf" to null,
-                "EPUB/s04.xhtml" to "text/html",
-                "EPUB/toc.ncx" to null,
-                "META-INF/container.xml" to "text/xml"
+                "/mimetype" to null,
+                "/EPUB/cover.xhtml" to "text/html",
+                "/EPUB/css/epub.css" to "text/css",
+                "/EPUB/css/nav.css" to "text/css",
+                "/EPUB/images/cover.png" to "image/png",
+                "/EPUB/nav.xhtml" to "text/html",
+                "/EPUB/package.opf" to null,
+                "/EPUB/s04.xhtml" to "text/html",
+                "/EPUB/toc.ncx" to null,
+                "/META-INF/container.xml" to "text/xml"
             ).map { (href, type) -> Link(href = href, type = type) }.toList(),
             fetcher.links
         )

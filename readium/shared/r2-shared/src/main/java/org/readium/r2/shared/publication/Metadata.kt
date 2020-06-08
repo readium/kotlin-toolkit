@@ -15,12 +15,11 @@ import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import java.util.*
 
@@ -78,7 +77,8 @@ data class Metadata(
     val sortAs: String? get() = localizedSortAs?.string
 
     /**
-     * Computes a ReadingProgression when the value of Metadata::readingProgression is set to auto, using the publication language.
+     * Computes a [ReadingProgression] when the value of [Metadata.readingProgression] is set to
+     * auto, using the publication language.
      */
     @IgnoredOnParcel
     val effectiveReadingProgression: ReadingProgression get() = contentLayout.readingProgression
@@ -86,12 +86,12 @@ data class Metadata(
     /**
      * Returns the [ContentLayout] for the default language.
      */
-    val contentLayout: ContentLayout get() = contentLayoutForLanguage(null)
+    internal val contentLayout: ContentLayout get() = contentLayoutForLanguage(null)
 
     /**
      * Returns the [ContentLayout] for the given [language].
      */
-    fun contentLayoutForLanguage(language: String?): ContentLayout {
+    internal fun contentLayoutForLanguage(language: String?): ContentLayout {
         @Suppress("NAME_SHADOWING")
         val language = language?.ifEmpty { null }
 

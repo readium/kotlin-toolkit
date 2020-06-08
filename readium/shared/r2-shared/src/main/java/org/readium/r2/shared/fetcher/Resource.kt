@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.fetcher
 
+import org.json.JSONObject
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
@@ -25,7 +26,7 @@ interface Resource {
      * The link from which the resource was retrieved.
      *
      * It might be modified by the [Resource] to include additional metadata, e.g. the
-     * `Content-Type` HTTP header in Link::type.
+     * `Content-Type` HTTP header in [Link.type].
      */
     val link: Link
 
@@ -57,6 +58,12 @@ interface Resource {
         }
 
     /**
+     * Reads the full content as a JSON object.
+     */
+    fun readAsJson(): ResourceTry<JSONObject> =
+        readAsString(charset = Charsets.UTF_8).tryMap { JSONObject(it) }
+
+    /**
      * Creates an [InputStream] to read the content.
      */
     fun stream(): ResourceTry<InputStream> =
@@ -67,7 +74,10 @@ interface Resource {
      */
     fun close()
 
-    sealed class Error : Throwable() {
+    /**
+     * Errors occurring while accessing a resource.
+     */
+    sealed class Error(cause: Throwable? = null) : Throwable(cause) {
 
         /** Equivalent to a 404 HTTP error. */
         object NotFound : Error()
@@ -88,9 +98,11 @@ interface Resource {
         object Unavailable : Error()
 
         /** For any other error, such as HTTP 500. */
-        class Other(val exception: Exception) : Error()
+        class Other(cause: Throwable) : Error(cause)
     }
 }
+
+typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Error>
 
 /**
  * Implements the transformation of a Resource. It can be used, for example, to decrypt,
@@ -99,12 +111,12 @@ interface Resource {
  *
  * If the transformation doesn't apply, simply return resource unchanged.
  */
-internal typealias ResourceTransformer = (Resource) -> Resource
+typealias ResourceTransformer = (Resource) -> Resource
 
 /** Creates a Resource that will always return the given [error]. */
 class FailureResource(override val link: Link, private val error: Resource.Error) : Resource {
 
-    internal constructor(link: Link, exception: Exception) : this(link, Resource.Error.Other(exception))
+    internal constructor(link: Link, cause: Throwable) : this(link, Resource.Error.Other(cause))
 
     override fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
 
@@ -196,16 +208,6 @@ internal abstract class StreamResource : Resource {
                 ?: readFully().map { it.size.toLong() }
 }
 
-private fun checkedRange(range: LongRange): LongRange =
-    if (range.first >= range.last)
-        0 until 0L
-    else if (range.last - range.first + 1 > Int.MAX_VALUE)
-        throw IllegalArgumentException("Range length greater than Int.MAX_VALUE")
-    else
-        LongRange(range.first.coerceAtLeast(0), range.last)
-
-typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Error>
-
 /**
  * Maps the result with the given [transform]
  *
@@ -222,3 +224,11 @@ fun <R, S> ResourceTry<S>.tryMap(transform: (value: S) -> R): ResourceTry<R> =
 
 fun <R, S> ResourceTry<S>.tryFlatMap(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
     tryMap(transform).flatMap { it }
+
+private fun checkedRange(range: LongRange): LongRange =
+    if (range.first >= range.last)
+        0 until 0L
+    else if (range.last - range.first + 1 > Int.MAX_VALUE)
+        throw IllegalArgumentException("Range length greater than Int.MAX_VALUE")
+    else
+        LongRange(range.first.coerceAtLeast(0), range.last)
