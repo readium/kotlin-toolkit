@@ -23,6 +23,17 @@ fun String.iso8601ToDate(): Date? =
         null
     }
 
+/**
+ * If this string starts with the given [prefix], returns this string.
+ * Otherwise, returns a copy of this string after adding the [prefix].
+ */
+fun String.addPrefix(prefix: CharSequence): String {
+    if (startsWith(prefix)) {
+        return this
+    }
+    return "$prefix$this"
+}
+
 internal enum class HashAlgorithm(val key: String) {
     MD5("MD5"),
     SHA256("SHA-256")

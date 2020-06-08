@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.fetcher
 
+import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
@@ -22,7 +23,7 @@ class ArchiveFetcher private constructor(private val archive: ZipFile) : Fetcher
 
     override val links: List<Link> by lazy {
         archive.entries().toList().mapNotNull {
-            Link(href = it.name, type = Format.of(fileExtension = File(it.name).extension)?.mediaType?.toString())
+            Link(href = it.name.addPrefix("/"), type = Format.of(fileExtension = File(it.name).extension)?.mediaType?.toString())
         }
     }
 
