@@ -85,7 +85,7 @@ class CBZParser : PublicationParser {
             manifest = manifest,
             fetcher = fetcher,
             servicesBuilder = Publication.ServicesBuilder(
-                positions = PerResourcePositionsService.create(fallbackMediaType = "image/*")
+                positions = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
             )
         ).apply {
             type =  Publication.TYPE.CBZ

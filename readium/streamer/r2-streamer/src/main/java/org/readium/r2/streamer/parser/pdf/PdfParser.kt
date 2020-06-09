@@ -47,7 +47,7 @@ class PdfParser(private val context: Context) : PublicationParser {
                 fetcher = FileFetcher(href = rootHref, file = file),
                 servicesBuilder = Publication.ServicesBuilder(
                     positions = (PdfPositionsService)::create,
-                    cover = document.cover?.let { InMemoryCoverService.create(it) }
+                    cover = document.cover?.let { InMemoryCoverService.createFactory(it) }
                 )
             )
 
