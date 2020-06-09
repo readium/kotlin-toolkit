@@ -111,7 +111,7 @@ var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
 class InMemoryCoverService internal constructor(override val cover: Bitmap) : CoverService {
 
     companion object {
-        fun create(cover: Bitmap?): ServiceFactory? = { cover?.let { InMemoryCoverService(it) } }
+        fun createFactory(cover: Bitmap?): ServiceFactory? = { cover?.let { InMemoryCoverService(it) } }
     }
 
 }

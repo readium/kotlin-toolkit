@@ -127,7 +127,7 @@ class PerResourcePositionsService(
 
     companion object {
 
-        fun create(fallbackMediaType: String): (Publication.Service.Context) -> PerResourcePositionsService = {
+        fun createFactory(fallbackMediaType: String): (Publication.Service.Context) -> PerResourcePositionsService = {
             PerResourcePositionsService(
                 readingOrder = it.manifest.readingOrder,
                 fallbackMediaType = fallbackMediaType
