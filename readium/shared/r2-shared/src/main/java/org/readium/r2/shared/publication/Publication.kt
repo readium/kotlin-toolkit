@@ -141,7 +141,9 @@ class Publication(
         if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
 
         @Suppress("NAME_SHADOWING")
-        val link = linkWithHref(link.href) ?: link
+        // Parameters in href must not be lost.
+        val link = linkWithHref(link.href)?.copy(href = link.href, templated = link.templated)
+            ?: link
 
         services.forEach { service -> service.get(link)?.let { return it } }
         return fetcher.get(link)

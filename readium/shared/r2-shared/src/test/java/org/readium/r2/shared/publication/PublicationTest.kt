@@ -13,6 +13,9 @@ import org.hamcrest.CoreMatchers.instanceOf
 import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.fetcher.EmptyFetcher
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.StringResource
+import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
@@ -27,7 +30,7 @@ class PublicationTest {
         links: List<Link> = listOf(),
         readingOrder: List<Link> = emptyList(),
         resources: List<Link> = emptyList(),
-        positionsServiceFactory: ((Publication.Service.Context) -> PositionsService?)? = null
+        servicesBuilder: Publication.ServicesBuilder = Publication.ServicesBuilder()
     ) = Publication(
             manifest = Manifest(
                     metadata = Metadata(
@@ -39,7 +42,7 @@ class PublicationTest {
                     readingOrder = readingOrder,
                     resources = resources
                 ),
-            servicesBuilder = Publication.ServicesBuilder(positions = positionsServiceFactory)
+            servicesBuilder = servicesBuilder
     )
 
     @Test fun `get the default empty {positions}`() {
@@ -50,11 +53,13 @@ class PublicationTest {
         assertEquals(
             listOf(Locator(href = "locator", type = "")),
             createPublication(
-                positionsServiceFactory = { context ->
-                    object: PositionsService {
-                        override val positionsByReadingOrder: List<List<Locator>> = listOf(listOf(Locator(href = "locator", type = "")))
+                servicesBuilder = Publication.ServicesBuilder(
+                    positions = { context ->
+                        object: PositionsService {
+                            override val positionsByReadingOrder: List<List<Locator>> = listOf(listOf(Locator(href = "locator", type = "")))
+                        }
                     }
-                }
+                )
             ).positions
         )
     }
@@ -71,17 +76,19 @@ class PublicationTest {
                 )
             ),
             createPublication(
-                positionsServiceFactory = { context ->
-                    object: PositionsService {
-                        override val positionsByReadingOrder: List<List<Locator>> = listOf(
-                            listOf(
-                                Locator(href="res1", type = "text/html", title = "Loc A"),
-                                Locator(href="res1", type = "text/html", title = "Loc B")
-                            ),
-                            listOf(Locator(href="res2", type = "text/html", title = "Loc B"))
-                        )
+                servicesBuilder = Publication.ServicesBuilder(
+                    positions = { context ->
+                        object: PositionsService {
+                            override val positionsByReadingOrder: List<List<Locator>> = listOf(
+                                listOf(
+                                    Locator(href="res1", type = "text/html", title = "Loc A"),
+                                    Locator(href="res1", type = "text/html", title = "Loc B")
+                                ),
+                                listOf(Locator(href="res2", type = "text/html", title = "Loc B"))
+                            )
+                        }
                     }
-                }
+                )
             ).positionsByReadingOrder
         )
     }
@@ -274,6 +281,25 @@ class PublicationTest {
         assertNull(createPublication().linkWithHref("foobar"))
     }
 
+    @Test fun `get method passes on href parameters to services`() {
+        val service = object: Publication.Service {
+            override fun get(link: Link): Resource? {
+                assertFalse(link.templated)
+                assertEquals("param1=a&param2=b", link.href.substringAfter("?"))
+                return StringResource(link) { "test passed" }
+            }
+        }
+
+        val link = Link(href = "link?param1=a&param2=b")
+        val publication = createPublication(
+            resources = listOf(link),
+            servicesBuilder = Publication.ServicesBuilder(
+                positions = { service }
+            )
+        )
+        assertEquals("test passed", publication.get(link).readAsString().successOrNull())
+    }
+
     @Suppress("DEPRECATION")
     @Test fun `find the first resource {Link} with the given {href}`() {
         val link1 = Link(href = "href1")
@@ -400,9 +426,10 @@ class ServicesBuilderTest {
             set(BarService::class) { BarServiceA() }
         }
 
-        builder.wrap(FooService::class) { oldFactory -> { context ->
-            FooServiceC(oldFactory?.let { it(context)  as? FooService })
-        }
+        builder.wrap(FooService::class) { oldFactory ->
+            { context ->
+                FooServiceC(oldFactory?.let { it(context)  as? FooService })
+            }
         }
 
         val services = builder.build(context)
