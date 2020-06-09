@@ -32,7 +32,7 @@ class PublicationCollectionTest {
             PublicationCollection(
                 metadata = mapOf("metadata1" to "value"),
                 links = listOf(Link(href = "/link")),
-                subCollections = mapOf(
+                subcollections = mapOf(
                     "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
                     "sub2" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2")))),
                     "sub3" to listOf(
@@ -163,7 +163,7 @@ class PublicationCollectionTest {
             PublicationCollection(
                 metadata = mapOf("metadata1" to "value"),
                 links = listOf(Link(href = "/link")),
-                subCollections = mapOf(
+                subcollections = mapOf(
                     "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
                     "sub2" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2")))),
                     "sub3" to listOf(

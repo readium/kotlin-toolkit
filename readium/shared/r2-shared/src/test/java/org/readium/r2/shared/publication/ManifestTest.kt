@@ -48,7 +48,7 @@ class ManifestTest {
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
                 resources = listOf(Link(href = "/image.png", type = "image/png")),
                 tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
-                subCollections = mapOf("sub" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))))
+                subcollections = mapOf("sub" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))))
             ),
             Manifest.fromJSON(
                 JSONObject(
@@ -251,7 +251,7 @@ class ManifestTest {
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
                 resources = listOf(Link(href = "/image.png", type = "image/png")),
                 tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
-                subCollections = mapOf("sub" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))))
+                subcollections = mapOf("sub" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))))
             ).toJSON()
         )
     }

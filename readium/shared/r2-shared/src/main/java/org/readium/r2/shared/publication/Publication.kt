@@ -62,13 +62,21 @@ class Publication(
     private val manifest = manifest.copy(links = manifest.links + services.map(Service::links).flatten())
 
     // Shortcuts to manifest properties
+
     val context: List<String> get() = manifest.context
     val metadata: Metadata get() = manifest.metadata
     val links: List<Link> get() = manifest.links
+
+    /** Identifies a list of resources in reading order for the publication. */
     val readingOrder: List<Link> get() = manifest.readingOrder
+
+    /** Identifies resources that are necessary for rendering the publication. */
     val resources: List<Link> get() = manifest.resources
+
+    /** Identifies the collection that contains a table of contents. */
     val tableOfContents: List<Link> get() = manifest.tableOfContents
-    val subCollections: Map<String, List<PublicationCollection>> get() = manifest.subCollections
+
+    val subcollections: Map<String, List<PublicationCollection>> get() = manifest.subcollections
 
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
     var type: Publication.TYPE = Publication.TYPE.EPUB
@@ -271,11 +279,6 @@ class Publication(
     fun linksWithRel(rel: String): List<Link> = manifest.linksWithRel(rel)
 
     /**
-     * Finds the first [Link] having the given [mediaType] in the publications's links.
-     */
-    fun linkWithMediaType(mediaType: MediaType): Link? = manifest.linkWithMediaType(mediaType)
-
-    /**
      * Finds the first [Link] having the given [rel] matching the given [predicate], in the
      * publications' links.
      */
@@ -345,7 +348,7 @@ class Publication(
      * empty list.
      */
     internal fun linksWithRole(role: String): List<Link> =
-        subCollections[role]?.firstOrNull()?.links ?: emptyList()
+        subcollections[role]?.firstOrNull()?.links ?: emptyList()
 
     /**
      * Copy the [Publication] with a different [PositionListFactory].

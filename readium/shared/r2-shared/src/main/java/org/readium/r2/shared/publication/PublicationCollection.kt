@@ -16,11 +16,11 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.JSONParceler
-import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
 /**
@@ -33,7 +33,7 @@ import org.readium.r2.shared.util.logging.log
 data class PublicationCollection(
     val metadata: @WriteWith<JSONParceler> Map<String, Any> = emptyMap(),
     val links: List<Link> = emptyList(),
-    val subCollections: Map<String, List<PublicationCollection>> = emptyMap()
+    val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
 ) : JSONable, Parcelable {
 
     /**
@@ -42,7 +42,7 @@ data class PublicationCollection(
     override fun toJSON() = JSONObject().apply {
         put("metadata", metadata)
         putIfNotEmpty("links", links)
-        subCollections.appendToJSONObject(this)
+        subcollections.appendToJSONObject(this)
     }
 
     companion object {
@@ -66,14 +66,14 @@ data class PublicationCollection(
 
             val links: List<Link>
             var metadata: Map<String, Any>? = null
-            var subCollections: Map<String, List<PublicationCollection>>? = null
+            var subcollections: Map<String, List<PublicationCollection>>? = null
 
             when (json) {
                 // Parses a sub-collection object.
                 is JSONObject -> {
                     links = Link.fromJSONArray(json.remove("links") as? JSONArray, normalizeHref, warnings)
                     metadata = (json.remove("metadata") as? JSONObject)?.toMap()
-                    subCollections = collectionsFromJSON(json, normalizeHref, warnings)
+                    subcollections = collectionsFromJSON(json, normalizeHref, warnings)
                 }
 
                 // Parses an array of links.
@@ -95,7 +95,7 @@ data class PublicationCollection(
             return PublicationCollection(
                 metadata = metadata ?: emptyMap(),
                 links = links,
-                subCollections = subCollections ?: emptyMap()
+                subcollections = subcollections ?: emptyMap()
             )
         }
 

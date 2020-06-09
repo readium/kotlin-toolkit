@@ -25,7 +25,7 @@ class PublicationTest {
     ) = Publication(
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                subCollections = subCollections
+                subcollections = subCollections
             )
     )
 

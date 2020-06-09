@@ -16,7 +16,6 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
-import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -35,15 +34,12 @@ data class Manifest(
     val readingOrder: List<Link> = emptyList(),
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
-    val subCollections: Map<String, List<PublicationCollection>> = emptyMap()
+    val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
 
 ) : JSONable, Parcelable {
 
     /**
-     *  Finds the first [Link] with the given relation in the publication's links.
-     *
-     * Searches through (in order) [readingOrder], [resources], [links],
-     * The search is not recursive.
+     * Finds the first [Link] with the given relation in the manifest's links.
      */
     fun linkWithRel(rel: String): Link? =
         readingOrder.firstWithRel(rel)
@@ -51,24 +47,10 @@ data class Manifest(
             ?: links.firstWithRel(rel)
 
     /**
-     * Finds all [Link]s having the given [rel] in the publications's links.
-     *
-     * Searches through (in order) [readingOrder], [resources], [links],
-     * The search is not recursive.
+     * Finds all [Link]s having the given [rel] in the manifest's links.
      */
     fun linksWithRel(rel: String): List<Link> =
-        listOf(readingOrder, resources, links)
-            .map { it.filterByRel(rel) }
-            .flatten()
-
-
-    /**
-     * Finds the first [Link] having the given [mediaType] in the publications's links.
-     */
-    fun linkWithMediaType(mediaType: MediaType): Link? =
-        readingOrder.firstWithMediaType(mediaType)
-            ?: resources.firstWithMediaType(mediaType)
-            ?: links.firstWithMediaType(mediaType)
+        (readingOrder + resources + links).filterByRel(rel)
 
     /**
      * Serializes a [Publication] to its RWPM JSON representation.
@@ -80,7 +62,7 @@ data class Manifest(
         put("readingOrder", readingOrder.toJSON())
         putIfNotEmpty("resources", resources)
         putIfNotEmpty("toc", tableOfContents)
-        subCollections.appendToJSONObject(this)
+        subcollections.appendToJSONObject(this)
     }
 
     /**
@@ -127,8 +109,8 @@ data class Manifest(
 
             val tableOfContents = Link.fromJSONArray(json.remove("toc") as? JSONArray, normalizeHref, warnings)
 
-            // Parses sub-collections from the remaining JSON properties.
-            val subCollections = PublicationCollection.collectionsFromJSON(json, normalizeHref, warnings)
+            // Parses subcollections from the remaining JSON properties.
+            val subcollections = PublicationCollection.collectionsFromJSON(json, normalizeHref, warnings)
 
             return Manifest(
                 context = context,
@@ -137,7 +119,7 @@ data class Manifest(
                 readingOrder = readingOrder,
                 resources = resources,
                 tableOfContents = tableOfContents,
-                subCollections = subCollections
+                subcollections = subcollections
             )
         }
     }

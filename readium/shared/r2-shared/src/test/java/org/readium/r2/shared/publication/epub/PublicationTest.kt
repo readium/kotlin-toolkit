@@ -9,23 +9,18 @@
 
 package org.readium.r2.shared.publication.epub
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.readium.r2.shared.publication.LocalizedString
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.PublicationCollection
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.*
 
 class PublicationTest {
 
     private fun createPublication(
-        subCollections: Map<String, List<PublicationCollection>> = emptyMap()
+        subcollections: Map<String, List<PublicationCollection>> = emptyMap()
     ) = Publication(
         manifest = Manifest(
             metadata = Metadata(localizedTitle = LocalizedString("Title")),
-            subCollections = subCollections
+            subcollections = subcollections
         )
     )
 
@@ -33,7 +28,7 @@ class PublicationTest {
         val links = listOf(Link(href = "/page1.html"))
         assertEquals(
             links,
-            createPublication(subCollections = mapOf(
+            createPublication(subcollections = mapOf(
                 "pageList" to listOf(PublicationCollection( links = links))
             )).pageList
         )
@@ -47,7 +42,7 @@ class PublicationTest {
         val links = listOf(Link(href = "/landmark.html"))
         assertEquals(
             links,
-            createPublication(subCollections = mapOf(
+            createPublication(subcollections = mapOf(
                 "landmarks" to listOf(PublicationCollection(links = links))
             )
            ).landmarks
@@ -62,7 +57,7 @@ class PublicationTest {
         val links = listOf(Link(href = "/audio.mp3"))
         assertEquals(
             links,
-            createPublication(subCollections = mapOf(
+            createPublication(subcollections = mapOf(
                 "loa" to listOf(PublicationCollection(links = links))
             )).listOfAudioClips
         )
@@ -76,7 +71,7 @@ class PublicationTest {
         val links = listOf(Link(href = "/image.jpg"))
         assertEquals(
             links,
-            createPublication(subCollections = mapOf(
+            createPublication(subcollections = mapOf(
                 "loi" to listOf(PublicationCollection(links = links))
             )).listOfIllustrations
         )
@@ -90,7 +85,7 @@ class PublicationTest {
         val links = listOf(Link(href = "/table.html"))
         assertEquals(
             links,
-            createPublication(subCollections = mapOf(
+            createPublication(subcollections = mapOf(
                 "lot" to listOf(PublicationCollection(links = links)
             ))).listOfTables
         )
@@ -104,7 +99,7 @@ class PublicationTest {
         val links = listOf(Link(href = "/video.mov"))
         assertEquals(
             links,
-            createPublication(subCollections = mapOf(
+            createPublication(subcollections = mapOf(
                 "lov" to listOf(PublicationCollection(links = links))
             )).listOfVideoClips
         )
