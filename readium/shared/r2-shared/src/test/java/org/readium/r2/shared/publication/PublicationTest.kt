@@ -291,8 +291,8 @@ class ServicesBuilderTest {
     @Test
     fun testBuild() {
         val builder = Publication.ServicesBuilder(cover = null).apply {
-            set(FooService::class.java) { FooServiceA() }
-            set(BarService::class.java) { BarServiceA() }
+            set(FooService::class) { FooServiceA() }
+            set(BarService::class) { BarServiceA() }
         }
 
         val services = builder.build(context)
@@ -312,8 +312,8 @@ class ServicesBuilderTest {
     @Test
     fun testSetOverwrite() {
         val builder = Publication.ServicesBuilder(cover = null).apply {
-            set(FooService::class.java) { FooServiceA() }
-            set(FooService::class.java) { FooServiceB() }
+            set(FooService::class) { FooServiceA() }
+            set(FooService::class) { FooServiceB() }
         }
 
         val services = builder.build(context)
@@ -325,10 +325,10 @@ class ServicesBuilderTest {
     @Test
     fun testRemoveExisting() {
         val builder = Publication.ServicesBuilder(cover = null)
-        builder.set(FooService::class.java) { FooServiceA() }
-        builder.set(BarService::class.java) { BarServiceA() }
+        builder.set(FooService::class) { FooServiceA() }
+        builder.set(BarService::class) { BarServiceA() }
 
-        builder.remove(FooService::class.java)
+        builder.remove(FooService::class)
 
         val services = builder.build(context)
         assertEquals(1, services.size)
@@ -338,9 +338,9 @@ class ServicesBuilderTest {
     @Test
     fun testRemoveUnknown() {
         val builder = Publication.ServicesBuilder(cover = null)
-        builder.set(FooService::class.java) { FooServiceA() }
+        builder.set(FooService::class) { FooServiceA() }
 
-        builder.remove(BarService::class.java)
+        builder.remove(BarService::class)
 
         val services = builder.build(context)
         assertEquals(1, services.size)
@@ -350,11 +350,11 @@ class ServicesBuilderTest {
     @Test
     fun testWrap() {
         val builder = Publication.ServicesBuilder(cover = null).apply {
-            set(FooService::class.java) { FooServiceB() }
-            set(BarService::class.java) { BarServiceA() }
+            set(FooService::class) { FooServiceB() }
+            set(BarService::class) { BarServiceA() }
         }
 
-        builder.wrap(FooService::class.java) { oldFactory -> { context ->
+        builder.wrap(FooService::class) { oldFactory -> { context ->
             FooServiceC(oldFactory?.let { it(context)  as? FooService })
         }
         }

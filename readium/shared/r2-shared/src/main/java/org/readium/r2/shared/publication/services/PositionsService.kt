@@ -43,16 +43,18 @@ interface PositionsService : Publication.Service {
         if (link.href != positionsLink.href)
             null
         else
-            StringResource(positionsLink) {
-                JSONObject().apply {
-                    put("total", positions.size)
-                    put("positions", positions.toJSON())
-                }.toString()
+            positions.let {
+                StringResource(positionsLink) {
+                    JSONObject().apply {
+                        put("total", it.size)
+                        put("positions", it.toJSON())
+                    }.toString()
+                }
             }
 
 }
 
-private fun Publication.positionsFromManifest(): List<Locator>? =
+private val Publication.positionsFromManifest: List<Locator> get() =
     links.firstWithMediaType(positionsLink.mediaType!!)
         ?.let { get(it) }
         ?.readAsString()
@@ -60,6 +62,7 @@ private fun Publication.positionsFromManifest(): List<Locator>? =
         ?.toJsonOrNull()
         ?.optJSONArray("positions")
         ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }
+        .orEmpty()
 
 /**
  * List of all the positions in the publication, grouped by the resource reading order index.
@@ -69,10 +72,7 @@ val Publication.positionsByReadingOrder: List<List<Locator>> get() {
         return it.positionsByReadingOrder
     }
 
-    val locators = positionsFromManifest()
-        .orEmpty()
-        .groupBy(Locator::href)
-
+    val locators = positionsFromManifest.groupBy(Locator::href)
     return readingOrder.map { locators[it.href].orEmpty() }
 }
 
@@ -80,11 +80,8 @@ val Publication.positionsByReadingOrder: List<List<Locator>> get() {
  * List of all the positions in the publication.
  */
 val Publication.positions: List<Locator> get() {
-    findService(PositionsService::class.java)?.let {
-        return it.positions
-    }
-
-    return positionsFromManifest().orEmpty()
+    return findService(PositionsService::class.java)?.positions
+        ?: positionsFromManifest
 }
 
 /**
@@ -97,13 +94,8 @@ val Publication.positionsByResource: Map<String, List<Locator>>
 
 /** Factory to build a [PositionsService] */
 var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
-    get() = serviceFactories[PositionsService::class.simpleName]
-    set(value) {
-        if (value == null)
-            serviceFactories.remove(PositionsService::class.simpleName!!)
-        else
-            serviceFactories[PositionsService::class.simpleName!!] = value
-    }
+    get() = get(PositionsService::class)
+    set(value) = set(PositionsService::class, value)
 
 /**
  * Simple [PositionsService] for a [Publication] which generates one position per [readingOrder]

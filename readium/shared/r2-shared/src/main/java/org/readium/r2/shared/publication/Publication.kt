@@ -27,6 +27,7 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import java.net.URL
 import java.net.URLEncoder
+import kotlin.reflect.KClass
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
@@ -147,22 +148,32 @@ class Publication(
         /** Builds the actual list of publication services to use in a Publication. */
         fun build(context: Service.Context) : List<Service> = serviceFactories.values.mapNotNull { it(context) }
 
+        /** Gets the publication service factory for the given service type. */
+        operator fun <T : Service> get(serviceType: KClass<T>): ServiceFactory? {
+            val key = requireNotNull(serviceType.simpleName)
+            return serviceFactories[key]
+        }
+
         /** Sets the publication service factory for the given service type. */
-        operator fun <T> set(serviceType: Class<T>, factory: ServiceFactory) {
-            requireNotNull(serviceType.simpleName)
-            serviceFactories[serviceType.simpleName] = factory
+        operator fun <T : Service> set(serviceType: KClass<T>, factory: ServiceFactory?) {
+            val key = requireNotNull(serviceType.simpleName)
+            if (factory != null) {
+                serviceFactories[key] = factory
+            } else {
+                serviceFactories.remove(key)
+            }
         }
 
         /** Removes the service factory producing the given kind of service, if any. */
-        fun <T> remove(serviceType: Class<T>) {
-            requireNotNull(serviceType.simpleName)
-            serviceFactories.remove(serviceType.simpleName)
+        fun <T : Service> remove(serviceType: KClass<T>) {
+            val key = requireNotNull(serviceType.simpleName)
+            serviceFactories.remove(key)
         }
 
         /* Replaces the service factory associated with the given service type with the result of `transform`. */
-        fun <T> wrap(serviceType: Class<T>, transform: ((ServiceFactory)?) -> ServiceFactory) {
-            requireNotNull(serviceType.simpleName)
-            serviceFactories[serviceType.simpleName] = transform(serviceFactories[serviceType.simpleName])
+        fun <T : Service> wrap(serviceType: KClass<T>, transform: ((ServiceFactory)?) -> ServiceFactory) {
+            val key = requireNotNull(serviceType.simpleName)
+            serviceFactories[key] = transform(serviceFactories[key])
         }
 
     }

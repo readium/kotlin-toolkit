@@ -102,13 +102,8 @@ fun Publication.coverFitting(maxSize: Size): Bitmap? {
 
 /** Factory to build a [CoverService]. */
 var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
-    get() = serviceFactories[CoverService::class.simpleName]
-    set(value) {
-        if (value == null)
-            serviceFactories.remove(CoverService::class.simpleName!!)
-        else
-            serviceFactories[CoverService::class.simpleName!!] = value
-    }
+    get() = get(CoverService::class)
+    set(value) = set(CoverService::class, value)
 
 /**
  * A [CoverService] which uses a provided in-memory bitmap.
