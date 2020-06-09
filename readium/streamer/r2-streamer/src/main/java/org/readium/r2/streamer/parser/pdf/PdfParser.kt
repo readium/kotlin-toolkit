@@ -44,7 +44,7 @@ class PdfParser(private val context: Context) : PublicationParser {
                     readingOrder = listOf(Link(href = rootHref, type = MediaType.PDF.toString())),
                     tableOfContents = tableOfContents
                 ),
-                fetcher = FileFetcher(href = rootHref, path = fileAtPath),
+                fetcher = FileFetcher(href = rootHref, file = file),
                 servicesBuilder = Publication.ServicesBuilder(
                     positions = (PdfPositionsService)::create,
                     cover = document.cover?.let { InMemoryCoverService.create(it) }
