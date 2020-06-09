@@ -33,7 +33,7 @@ class EpubDeobfuscatorTest {
         val deobfuscationDir = EpubDeobfuscatorTest::class.java
             .getResource("deobfuscation/cut-cut.woff")
             ?.path
-            ?.let { File(it).parent }
+            ?.let { File(it).parentFile }
         assertNotNull(deobfuscationDir)
         fetcher = FileFetcher("/deobfuscation", deobfuscationDir)
 

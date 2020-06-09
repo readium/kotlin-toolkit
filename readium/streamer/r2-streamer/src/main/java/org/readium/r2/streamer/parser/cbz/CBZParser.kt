@@ -13,9 +13,9 @@ import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
-import org.readium.r2.streamer.parser.PerResourcePositionsService
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import java.io.File
