@@ -169,7 +169,8 @@ object FormatSniffers {
                 context.contentAsRwpm ?:
                 // ZIP package
                 context.readZipEntryAt("manifest.json")
-                    ?.let { Publication.fromJSON(JSONObject(String(it))) }
+                    ?.let { Manifest.fromJSON(JSONObject(String(it))) }
+                    ?.let { Publication(it) }
                     ?.also { isManifest = false }
             } catch (e: Exception) {
                 null
