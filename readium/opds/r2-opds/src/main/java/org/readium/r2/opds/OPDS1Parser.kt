@@ -338,7 +338,7 @@ class OPDS1Parser {
                 ),
 
                 links = links,
-                subCollections = mapOf(
+                subcollections = mapOf(
                     "images" to listOfNotNull(
                         images.takeIf { it.isNotEmpty() }
                         ?.let { PublicationCollection(links = it) }
