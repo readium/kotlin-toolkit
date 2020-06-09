@@ -99,7 +99,7 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
                 manifest = manifest,
                 servicesBuilder = Publication.ServicesBuilder().apply {
                     if (format == Format.LCP_PROTECTED_PDF) {
-                        positionsServiceFactory = LcpdfPositionsService.createFactory(context.applicationContext)
+                        positionsServiceFactory = LcpdfPositionsService.create(context.applicationContext)
                     }
                 }
             )

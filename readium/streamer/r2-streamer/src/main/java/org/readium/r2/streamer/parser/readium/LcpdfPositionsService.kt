@@ -86,7 +86,7 @@ internal class LcpdfPositionsService(
 
     companion object {
 
-        fun createFactory(context: Context): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
+        fun create(context: Context): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
             LcpdfPositionsService(
                 context = context.applicationContext,
                 readingOrder = serviceContext.manifest.readingOrder,
