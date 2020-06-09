@@ -68,7 +68,7 @@ private val Publication.positionsFromManifest: List<Locator> get() =
  * List of all the positions in the publication, grouped by the resource reading order index.
  */
 val Publication.positionsByReadingOrder: List<List<Locator>> get() {
-    findService(PositionsService::class.java)?.let {
+    findService(PositionsService::class)?.let {
         return it.positionsByReadingOrder
     }
 
@@ -80,7 +80,7 @@ val Publication.positionsByReadingOrder: List<List<Locator>> get() {
  * List of all the positions in the publication.
  */
 val Publication.positions: List<Locator> get() {
-    return findService(PositionsService::class.java)?.positions
+    return findService(PositionsService::class)?.positions
         ?: positionsFromManifest
 }
 
@@ -127,7 +127,7 @@ class PerResourcePositionsService(
 
     companion object {
 
-        fun createFactory(fallbackMediaType: String): (Publication.Service.Context) -> PerResourcePositionsService = {
+        fun create(fallbackMediaType: String): (Publication.Service.Context) -> PerResourcePositionsService = {
             PerResourcePositionsService(
                 readingOrder = it.manifest.readingOrder,
                 fallbackMediaType = fallbackMediaType

@@ -9,7 +9,8 @@
 
 package org.readium.r2.shared.util
 
-/** A lightweight implementation of URI Template (RFC 6570).
+/**
+ * A lightweight implementation of URI Template (RFC 6570).
  *
  * Only handles simple cases, fitting Readium's use cases.
  * See https://tools.ietf.org/html/rfc6570
@@ -20,10 +21,10 @@ data class URITemplate(val uri: String) {
      * List of URI template parameter keys, if the [Link] is templated.
      */
     val parameters: List<String> by lazy {
-            "\\{\\??([^}]+)}".toRegex()
-                .findAll(uri).toList()
-                .flatMap { it.groupValues[1].split(",") }
-                .distinct()
+        "\\{\\??([^}]+)}".toRegex()
+            .findAll(uri).toList()
+            .flatMap { it.groupValues[1].split(",") }
+            .distinct()
     }
 
     /**

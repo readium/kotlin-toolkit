@@ -11,6 +11,7 @@ package org.readium.r2.shared.publication
 
 import android.net.Uri
 import org.json.JSONObject
+import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.extensions.HashAlgorithm
 import org.readium.r2.shared.extensions.hash
@@ -40,7 +41,7 @@ internal typealias ServiceFactory = (Publication.Service.Context) -> Publication
  * The default implementation returns Resource.Error.NotFound for all HREFs.
  * @param servicesBuilder Holds the list of service factories used to create the instances of
  * Publication.Service attached to this Publication.
- * @param type The kind of publication it is ( Epub, Cbz, ... )
+ * @param type The kind of publication it is ( EPUB, CBZ, ... )
  * @param version The version of the publication, if the type needs any.
  * @param positionsFactory Factory used to build lazily the [positions].
  */
@@ -48,6 +49,7 @@ class Publication(
     manifest: Manifest,
     private val fetcher: Fetcher = EmptyFetcher(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
+
     @Deprecated("Provide a [ServiceFactory] for a [PositionsService] instead.", level = DeprecationLevel.ERROR)
     @Suppress("DEPRECATION")
     val positionsFactory: PositionListFactory? = null,
@@ -56,7 +58,7 @@ class Publication(
     var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
     var cssStyle: String? = null,
 
-    // FIXME: This is not specified and need to be refactored
+    @Deprecated("This will be removed in a future version. Use [Format.of] to check the format of a publication.", level = DeprecationLevel.WARNING)
     var internalData: MutableMap<String, String> = mutableMapOf()
 ) {
     private val services: List<Service> = servicesBuilder.build(Service.Context(manifest, fetcher))
@@ -84,9 +86,188 @@ class Publication(
     var version: Double = 0.0
 
     /**
+     * Returns the RWPM JSON representation for this [Publication]'s manifest, as a string.
+     */
+    val jsonManifest: String
+        get() = manifest.toJSON().toString().replace("\\/", "/")
+
+    /**
+     * The URL where this publication is served, computed from the [Link] with `self` relation.
+     */
+    val baseUrl: URL?
+        get() = links.firstWithRel("self")
+            ?.let { it.href.toUrlOrNull()?.removeLastComponent() }
+
+    /**
+     * Finds the first [Link] with the given HREF in the publication's links.
+     *
+     * Searches through (in order) [readingOrder], [resources] and [links] recursively following
+     * [alternate] and [children] links.
+     *
+     * If there's no match, try again after removing any query parameter and anchor from the
+     * given [href].
+     */
+    fun linkWithHref(href: String): Link? {
+        fun find(href: String): Link? {
+            return readingOrder.deepLinkWithHref(href)
+                ?: resources.deepLinkWithHref(href)
+                ?: links.deepLinkWithHref(href)
+        }
+
+        return find(href)
+            ?: find(href.takeWhile { it !in "#?" })
+    }
+
+    /**
+     * Finds the first [Link] having the given [rel] in the publications's links.
+     */
+    fun linkWithRel(rel: String): Link? = manifest.linkWithRel(rel)
+
+    /**
+     * Finds all [Link]s having the given [rel] in the publications's links.
+     */
+    fun linksWithRel(rel: String): List<Link> = manifest.linksWithRel(rel)
+
+    /**
+     * Returns the resource targeted by the given non-templated [link].
+     *
+     * The [link].href property is searched for in the [readingOrder], [resources] and [links] properties
+     * to find the matching manifest [Link]. This is to make sure that
+     * the [Link] given to the [fetcher] contains all properties declared in the [manifest].
+     *
+     * The properties are searched recursively following [Link::alternate] and [Link::children].
+     */
+    fun get(link: Link): Resource {
+        if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
+
+        @Suppress("NAME_SHADOWING")
+        val link = linkWithHref(link.href) ?: link
+
+        services.forEach { service -> service.get(link)?.let { return it } }
+        return fetcher.get(link)
+    }
+
+    /**
+     * Returns the resource targeted by the given [href]. Equivalent to get(Link(href: href))).
+     */
+    fun get(href: String): Resource =
+        get(Link(href = href))
+
+    /**
+     * Closes any opened resource associated with the [Publication], including [services].
+     */
+    fun close() {
+        fetcher.close()
+        services.forEach { it.close() }
+    }
+
+    /**
+     * Returns the first publication service that is an instance of [klass].
+     */
+    fun <T: Service> findService(serviceType: KClass<T>): T? =
+        services.filterIsInstance(serviceType.java).firstOrNull()
+
+    enum class TYPE {
+        EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
+    }
+
+    enum class EXTENSION(var value: String) {
+        EPUB(".epub"),
+        CBZ(".cbz"),
+        JSON(".json"),
+        DIVINA(".divina"),
+        AUDIO(".audiobook"),
+        LCPL(".lcpl"),
+        UNKNOWN("");
+
+        companion object {
+            fun fromString(type: String): EXTENSION? =
+                values().firstOrNull { it.value == type }
+        }
+    }
+
+
+    /**
+     * Sets the URL where this [Publication]'s RWPM manifest is served.
+     */
+    fun setSelfLink(href: String) {
+        manifest.links = manifest.links.toMutableList().apply {
+            removeAll { it.rels.contains("self") }
+            add(Link(href = href, type = MediaType.WEBPUB_MANIFEST.toString(), rels = setOf("self")))
+        }
+    }
+
+    /**
+     * Returns the [ContentLayout] for the default language.
+     */
+    val contentLayout: ContentLayout get() = metadata.contentLayout
+
+    /**
+     * Returns the [ContentLayout] for the given [language].
+     */
+    fun contentLayoutForLanguage(language: String?) = metadata.contentLayoutForLanguage(language)
+
+    /**
+     * Returns the [links] of the first child [PublicationCollection] with the given role, or an
+     * empty list.
+     */
+    internal fun linksWithRole(role: String): List<Link> =
+        subcollections[role]?.firstOrNull()?.links ?: emptyList()
+
+    // FIXME: Why do we need to check if there's a / at the beginning? Hrefs should be normalized everywhere
+    private fun Link.hasHref(href: String) =
+        this.href == href || this.href == "/$href"
+
+    private fun List<Link>.deepLinkWithHref(href: String): Link? {
+        for (l in this) {
+            if (l.hasHref(href))
+                return l
+            else {
+                l.alternates.deepLinkWithHref(href)?.let { return it }
+                l.children.deepLinkWithHref(href)?.let { return it }
+            }
+        }
+        return null
+    }
+
+    companion object {
+
+        /**
+         * Creates the base URL for a [Publication] locally served through HTTP, from the
+         * publication's [filename] and the HTTP server [port].
+         *
+         * Note: This is used for backward-compatibility, but ideally this should be handled by the
+         * Server, and set in the self [Link]. Unfortunately, the self [Link] is not available
+         * in the navigator at the moment without changing the code in reading apps.
+         */
+        fun localBaseUrlOf(filename: String, port: Int): String {
+            val sanitizedFilename = filename
+                .removePrefix("/")
+                .hash(HashAlgorithm.MD5)
+                .let { URLEncoder.encode(it, "UTF-8") }
+
+            return "http://127.0.0.1:$port/$sanitizedFilename"
+        }
+
+        /**
+         * Gets the absolute URL of a resource locally served through HTTP.
+         */
+        fun localUrlOf(filename: String, port: Int, href: String): String =
+            localBaseUrlOf(filename, port) + href
+
+        @Deprecated("Parse a RWPM with [Manifest::fromJSON] and then instantiate a Publication",
+            ReplaceWith("Manifest.fromJSON(manifestDict)?.let { Publication(it, fetcher = aFetcher) }",
+                "org.readium.r2.shared.publication.Publication", "org.readium.r2.shared.publication.Manifest"))
+        fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Publication? =
+            Manifest.fromJSON(json, normalizeHref, null)?.let { Publication(it) }
+
+    }
+
+    /**
      * Base interface to be implemented by all publication services.
      */
     interface Service {
+
         /**
          * Container for the context from which a service is created.
          */
@@ -134,6 +315,11 @@ class Publication(
 
     }
 
+    /**
+     * Builds a list of [Publication.Service] from a collection of service factories.
+     *
+     * Provides helpers to manipulate the list of services of a [Publication].
+     */
     data class ServicesBuilder(internal var serviceFactories: MutableMap<String, ServiceFactory>) {
 
         @Suppress("UNCHECKED_CAST")
@@ -141,9 +327,9 @@ class Publication(
             positions: ServiceFactory? = null,
             cover: ServiceFactory? = null
         ) : this(mapOf(
-                PositionsService::class.java.simpleName to positions,
-                CoverService::class.java.simpleName to cover
-            ).filterValues { it != null }.toMutableMap() as MutableMap<String, ServiceFactory>)
+            PositionsService::class.java.simpleName to positions,
+            CoverService::class.java.simpleName to cover
+        ).filterValues { it != null }.toMutableMap() as MutableMap<String, ServiceFactory>)
 
         /** Builds the actual list of publication services to use in a Publication. */
         fun build(context: Service.Context) : List<Service> = serviceFactories.values.mapNotNull { it(context) }
@@ -170,7 +356,10 @@ class Publication(
             serviceFactories.remove(key)
         }
 
-        /* Replaces the service factory associated with the given service type with the result of `transform`. */
+        /**
+         * Replaces the service factory associated with the given service type with the result of
+         * [transform].
+         */
         fun <T : Service> wrap(serviceType: KClass<T>, transform: ((ServiceFactory)?) -> ServiceFactory) {
             val key = requireNotNull(serviceType.simpleName)
             serviceFactories[key] = transform(serviceFactories[key])
@@ -179,187 +368,10 @@ class Publication(
     }
 
     /**
-     * Returns the resource targeted by the given non-templated [link].
-     *
-     * The [link].href property is searched for in the [readingOrder], [resources] and [links] properties
-     * to find the matching manifest [Link]. This is to make sure that
-     * the [Link] given to the [fetcher] contains all properties declared in the [manifest].
-     *
-     * The properties are searched recursively following [Link::alternate] and [Link::children].
-     */
-    fun get(link: Link): Resource {
-        require(!link.templated)
-        services.forEach { service -> service.get(link)?.let { return it } }
-        @Suppress("NAME_SHADOWING")
-        val link = linkWithHref(link.href) ?: link
-        return fetcher.get(link)
-    }
-
-    /**
-     * Returns the resource targeted by the given [href]. Equivalent to get(Link(href: href))).
-     */
-    fun get(href: String): Resource =
-        get(Link(href = href))
-
-    /**
-     * Closes any opened resource associated with the [Publication], including [services].
-     */
-    fun close() {
-        fetcher.close()
-        services.forEach { it.close() }
-    }
-
-    /**
-     * Returns the first publication service that is an instance of [klass].
-     */
-    fun <T: Service> findService(klass: Class<T>): T? = services.filterIsInstance(klass).firstOrNull()
-
-    /**
-     * Creates a [Publication]'s [positions].
-     *
-     * The parsers provide an implementation of this interface for each format, but a host app
-     * might want to use a custom factory to implement, for example, a caching mechanism or use a
-     * different calculation method.
-     */
-    @Deprecated("Use a [ServiceFactory] for a [PositionsService] instead.")
-    interface PositionListFactory {
-        fun create(): List<Locator>
-    }
-
-    enum class TYPE {
-        EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
-    }
-
-    enum class EXTENSION(var value: String) {
-        EPUB(".epub"),
-        CBZ(".cbz"),
-        JSON(".json"),
-        DIVINA(".divina"),
-        AUDIO(".audiobook"),
-        LCPL(".lcpl"),
-        UNKNOWN("");
-
-        companion object {
-            fun fromString(type: String): EXTENSION? =
-                EXTENSION.values().firstOrNull { it.value == type }
-        }
-    }
-
-    /**
-     * Returns the RWPM JSON representation for this [Publication]'s manifest, as a string.
-     */
-    val jsonManifest: String
-        get() = manifest.toJSON().toString().replace("\\/", "/")
-
-    /**
-     * Returns the URL where this [Publication] is served.
-     * This is computed from the self link.
-     */
-    val baseUrl: URL?
-        get() = links.firstWithRel("self")
-            ?.let { it.href.toUrlOrNull()?.removeLastComponent() }
-
-    /**
-     * Sets the URL where this [Publication]'s RWPM manifest is served.
-     */
-    fun setSelfLink(href: String) {
-        manifest.links = manifest.links.toMutableList().apply {
-            removeAll { it.rels.contains("self") }
-            add(Link(href = href, type = MediaType.WEBPUB_MANIFEST.toString(), rels = setOf("self")))
-        }
-    }
-
-    /**
-     * Returns the [ContentLayout] for the default language.
-     */
-    val contentLayout: ContentLayout get() = metadata.contentLayout
-
-    /**
-     * Returns the [ContentLayout] for the given [language].
-     */
-    fun contentLayoutForLanguage(language: String?) = metadata.contentLayoutForLanguage(language)
-
-    /**
-     * Finds the first [Link] having the given [rel] in the publications's links.
-     */
-    fun linkWithRel(rel: String): Link? = manifest.linkWithRel(rel)
-
-    /**
-     * Finds all [Link]s having the given [rel] in the publications's links.
-     */
-    fun linksWithRel(rel: String): List<Link> = manifest.linksWithRel(rel)
-
-    /**
-     * Finds the first [Link] having the given [rel] matching the given [predicate], in the
-     * publications' links.
-     */
-    internal fun linkWithRelMatching(predicate: (String) -> Boolean): Link? =
-        links.firstOrNull { it.rels.any(predicate) }
-
-    /**
-     * Finds the first resource [Link] (asset or [readingOrder] item) at the given relative path.
-     */
-    @Deprecated("Use [linkWithHref] instead.", ReplaceWith("linkWithHref(href)"))
-    fun resourceWithHref(href: String): Link? {
-        return deepFind(readingOrder) { it.hasHref(href) }
-            ?: deepFind(resources) { it.hasHref(href) }
-    }
-
-    /**
-     * Finds the first [Link] with the given HREF in the publication's links.
-     *
-     * Searches through (in order) [readingOrder], [resources] and [links]
-     * recursively following [alternate] and [children] links.
-     * If there's no match, try again after removing any query parameter and anchor from the given [href].
-    */
-    fun linkWithHref(href: String): Link? =
-        link { it.hasHref(href) }
-            ?: link { it.hasHref(href.takeWhile { it !in "#?" }) }
-
-    /**
-     * Finds the first [Link] matching the given [predicate] in the publications's [Link]
-     * properties: [resources], [readingOrder] and [links].
-     *
-     * Searches through (in order) [readingOrder], [resources] and [links]
-     * recursively following [alternate] and [children] links.
-     * The search order is unspecified.
-     */
-    fun link(predicate: (Link) -> Boolean): Link? {
-        return deepFind(readingOrder, predicate)
-            ?: deepFind(resources, predicate)
-            ?: deepFind(links, predicate)
-    }
-
-    /**
-     * Finds the first [Link] in [collection] that satisfies the given [predicate]
-     */
-    private fun deepFind(collection: List<Link>, predicate: (Link) -> Boolean) : Link? {
-        for (l in collection) {
-            if (predicate(l))
-                return l
-            else {
-                deepFind(l.alternates, predicate)?.let { return it }
-                deepFind(l.children, predicate)?.let { return it }
-            }
-        }
-        return null
-    }
-
-    // FIXME: Why do we need to check if there's a / at the beginning? Hrefs should be normalized everywhere
-    private fun Link.hasHref(href: String) =
-        this.href == href || this.href == "/$href"
-
-    /**
      * Finds the first [Link] to the publication's cover (rel = cover).
      */
+    @Deprecated("Use [Publication.cover] to get the cover as a [Bitmap]", ReplaceWith("cover"))
     val coverLink: Link? get() = linkWithRel("cover")
-
-    /**
-     * Returns the [links] of the first child [PublicationCollection] with the given role, or an
-     * empty list.
-     */
-    internal fun linksWithRole(role: String): List<Link> =
-        subcollections[role]?.firstOrNull()?.links ?: emptyList()
 
     /**
      * Copy the [Publication] with a different [PositionListFactory].
@@ -394,37 +406,36 @@ class Publication(
         )
     }
 
-    companion object {
-
-        /**
-         * Creates the base URL for a [Publication] locally served through HTTP, from the
-         * publication's [filename] and the HTTP server [port].
-         *
-         * Note: This is used for backward-compatibility, but ideally this should be handled by the
-         * Server, and set in the self [Link]. Unfortunately, the self [Link] is not available
-         * in the navigator at the moment without changing the code in reading apps.
-         */
-        fun localBaseUrlOf(filename: String, port: Int): String {
-            val sanitizedFilename = filename
-                .removePrefix("/")
-                .hash(HashAlgorithm.MD5)
-                .let { URLEncoder.encode(it, "UTF-8") }
-
-            return "http://127.0.0.1:$port/$sanitizedFilename"
-        }
-
-        /**
-         * Gets the absolute URL of a resource locally served through HTTP.
-         */
-        fun localUrlOf(filename: String, port: Int, href: String): String =
-            localBaseUrlOf(filename, port) + href
-
-        @Deprecated("Parse a RWPM with [Manifest::fromJSON] and then instantiate a Publication",
-            ReplaceWith("Manifest.fromJSON(manifestDict)?.let { Publication(it, fetcher = aFetcher) }",
-                "org.readium.r2.shared.publication.Publication", "org.readium.r2.shared.publication.Manifest"))
-        fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Publication? =
-            Manifest.fromJSON(json, normalizeHref, null)?.let { Publication(it) }
-
+    /**
+     * Finds the first resource [Link] (asset or [readingOrder] item) at the given relative path.
+     */
+    @Deprecated("Use [linkWithHref] instead.", ReplaceWith("linkWithHref(href)"))
+    fun resourceWithHref(href: String): Link? {
+        return readingOrder.deepLinkWithHref(href)
+            ?: resources.deepLinkWithHref(href)
     }
+
+    /**
+     * Creates a [Publication]'s [positions].
+     *
+     * The parsers provide an implementation of this interface for each format, but a host app
+     * might want to use a custom factory to implement, for example, a caching mechanism or use a
+     * different calculation method.
+     */
+    @Deprecated("Use a [ServiceFactory] for a [PositionsService] instead.")
+    interface PositionListFactory {
+        fun create(): List<Locator>
+    }
+
+    /**
+     * Finds the first [Link] matching the given [predicate] in the publications's [Link]
+     * properties: [resources], [readingOrder] and [links].
+     *
+     * Searches through (in order) [readingOrder], [resources] and [links]
+     * recursively following [alternate] and [children] links.
+     * The search order is unspecified.
+     */
+    @Deprecated("Use [linkWithHref()] to find a link with the given HREF", replaceWith = ReplaceWith("linkWithHref"), level = DeprecationLevel.ERROR)
+    fun link(predicate: (Link) -> Boolean): Link? = null
 
 }

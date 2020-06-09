@@ -88,7 +88,7 @@ private val Publication.coverFromManifest: Bitmap? get() {
  */
 val Publication.cover: Bitmap?
     get() {
-        findService(CoverService::class.java)?.cover?.let { return it }
+        findService(CoverService::class)?.cover?.let { return it }
         return coverFromManifest
     }
 
@@ -96,7 +96,7 @@ val Publication.cover: Bitmap?
  * Returns the publication cover as a [Bitmap], scaled down to fit the given [maxSize].
  */
 fun Publication.coverFitting(maxSize: Size): Bitmap? {
-    findService(CoverService::class.java)?.coverFitting(maxSize)?.let { return it }
+    findService(CoverService::class)?.coverFitting(maxSize)?.let { return it }
     return coverFromManifest?.scaleToFit(maxSize)
 }
 

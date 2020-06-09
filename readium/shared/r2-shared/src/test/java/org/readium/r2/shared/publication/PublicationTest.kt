@@ -146,33 +146,14 @@ class PublicationTest {
         assertNull(createPublication().baseUrl)
     }
 
-    @Test fun `find the first {Link} matching the given predicate`() {
-        val link1 = Link(href = "href1", title = "link1")
-        val link2 = Link(href = "href2", title = "link2")
-        val link3 = Link(href = "href3", title = "link3", alternates = listOf(link2))
-        val link4 = Link(href = "href4", title = "link4")
-        val link5 = Link(href = "href5", title = "link5")
-        val link6 = Link(href = "href6", title = "link6", alternates = listOf(link4, link5))
-
+    @Test fun `get {baseUrl} when it's a root`() {
         val publication = createPublication(
-                links = listOf(Link(href = "other"), link1),
-                readingOrder = listOf(Link(href = "other"), link2, link6),
-                resources = listOf(Link(href = "other"), link3)
+            links = listOf(Link(href = "http://domain.com/manifest.json", rels = setOf("self")))
         )
-
-        fun predicate(title: String) =
-                { link: Link -> link.title == title}
-
-        assertEquals(link1, publication.link(predicate("link1")))
-        assertEquals(link2, publication.link(predicate("link2")))
-        assertEquals(link3, publication.link(predicate("link3")))
-        assertEquals(link4, publication.link(predicate("link4")))
-        assertEquals(link5, publication.link(predicate("link5")))
-        assertEquals(link6, publication.link(predicate("link6")))
-    }
-
-    @Test fun `find the first {Link} with the given predicate when not found`() {
-        assertNull(createPublication().link { it.href == "foobar" })
+        assertEquals(
+            URL("http://domain.com/"),
+            publication.baseUrl
+        )
     }
 
     @Test fun `find the first {Link} with the given {rel}`() {
@@ -194,19 +175,81 @@ class PublicationTest {
         assertNull(createPublication().linkWithRel("foobar"))
     }
 
+    @Test fun `find all the links with the given {rel}`() {
+        val publication = createPublication(
+            links = listOf(
+                Link(href = "l1"),
+                Link(href = "l2", rels = setOf("rel1"))
+            ),
+            readingOrder = listOf(
+                Link(href = "l3"),
+                Link(href = "l4", rels = setOf("rel1"))
+            ),
+            resources = listOf(
+                Link(href = "l5", alternates = listOf(
+                    Link(href = "alternate", rels = setOf("rel1"))
+                )),
+                Link(href = "l6", rels = setOf("rel1"))
+            )
+        )
+
+        assertEquals(
+            listOf(
+                Link(href = "l4", rels = setOf("rel1")),
+                Link(href = "l6", rels = setOf("rel1")),
+                Link(href = "l2", rels = setOf("rel1"))
+            ),
+            publication.linksWithRel("rel1")
+        )
+    }
+
+    @Test fun `find all the links with the given {rel} when not found`() {
+        assertTrue(createPublication().linksWithRel("foobar").isEmpty())
+    }
+
     @Test fun `find the first {Link} with the given {href}`() {
         val link1 = Link(href = "href1")
         val link2 = Link(href = "href2")
         val link3 = Link(href = "href3")
+        val link4 = Link(href = "href4")
+        val link5 = Link(href = "href5")
         val publication = createPublication(
             links = listOf(Link(href = "other"), link1),
-            readingOrder = listOf(Link(href = "other"), link2),
-            resources = listOf(Link(href = "other"), link3)
+            readingOrder = listOf(
+                Link(
+                    href = "other",
+                    alternates = listOf(
+                        Link(
+                            href = "alt1",
+                            alternates = listOf(
+                                link2
+                            )
+                        )
+                    )
+                ),
+                link3
+            ),
+            resources = listOf(
+                Link(
+                    href = "other",
+                    children = listOf(
+                        Link(
+                            href = "alt1",
+                            children = listOf(
+                                link4
+                            )
+                        )
+                    )
+                ),
+                link5
+            )
         )
 
         assertEquals(link1, publication.linkWithHref("href1"))
         assertEquals(link2, publication.linkWithHref("href2"))
         assertEquals(link3, publication.linkWithHref("href3"))
+        assertEquals(link4, publication.linkWithHref("href4"))
+        assertEquals(link5, publication.linkWithHref("href5"))
     }
 
     @Test fun `find the first {Link} with the given {href} without query parameters`() {
@@ -247,10 +290,12 @@ class PublicationTest {
         assertEquals(link3, publication.resourceWithHref("href3"))
     }
 
+    @Suppress("DEPRECATION")
     @Test fun `find the first resource {Link} with the given {href} when missing`() {
         assertNull(createPublication().resourceWithHref("foobar"))
     }
 
+    @Suppress("DEPRECATION")
     @Test fun `find the cover {Link}`() {
         val coverLink = Link(href = "cover", rels = setOf("cover"))
         val publication = createPublication(
@@ -262,6 +307,7 @@ class PublicationTest {
         assertEquals(coverLink, publication.coverLink)
     }
 
+    @Suppress("DEPRECATION")
     @Test fun `find the cover {Link} when missing`() {
         val publication = createPublication(
             links = listOf(Link(href = "other")),

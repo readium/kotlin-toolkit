@@ -11,10 +11,7 @@ package org.readium.r2.shared.format
 
 import android.webkit.MimeTypeMap
 import org.json.JSONObject
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.allAreAudio
-import org.readium.r2.shared.publication.allAreBitmap
-import org.readium.r2.shared.publication.allMatchMediaType
+import org.readium.r2.shared.publication.*
 import java.io.File
 import java.net.URLConnection
 import java.util.*
@@ -83,7 +80,7 @@ object FormatSniffers {
             if (rwpm.linkWithRel("self")?.mediaType?.matches("application/opds+json") == true) {
                 return Format.OPDS2_FEED
             }
-            if (rwpm.linkWithRelMatching { it.startsWith("http://opds-spec.org/acquisition") } != null) {
+            if (rwpm.links.firstWithRelMatching { it.startsWith("http://opds-spec.org/acquisition") } != null) {
                 return Format.OPDS2_PUBLICATION
             }
         }
@@ -372,3 +369,9 @@ object FormatSniffers {
     }
 
 }
+
+/**
+ * Finds the first [Link] having the given [rel] matching the given [predicate].
+ */
+private fun List<Link>.firstWithRelMatching(predicate: (String) -> Boolean): Link? =
+    firstOrNull { it.rels.any(predicate) }
