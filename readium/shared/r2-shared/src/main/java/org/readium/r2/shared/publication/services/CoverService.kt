@@ -13,35 +13,28 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Size
 import org.readium.r2.shared.extensions.scaleToFit
-import org.readium.r2.shared.extensions.size
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.fetcher.BytesResource
 import org.readium.r2.shared.fetcher.FailureResource
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
-
-private fun coverLink(size: Size) =
-    Link(
-        href = "/~readium/cover",
-        type = "image/png",
-        rels = setOf("cover"),
-        height = size.height,
-        width = size.width
-    )
+import org.readium.r2.shared.publication.firstWithHref
 
 /**
  * Provides an easy access to a bitmap version of the publication cover.
  *
- * While at first glance, getting the cover could be seen as a helper,
- * the implementation actually depends on the publication format:
+ * While at first glance, getting the cover could be seen as a helper, the implementation actually
+ * depends on the publication format:
 
- * Some might allow vector images or even HTML pages, in which case they need to be converted to bitmaps.
- * Others require to render the cover from a specific file format, e.g. PDF.
-
- * Furthermore, a reading app might want to use a custom strategy to choose the cover image, for example by:
+ * - Some might allow vector images or even HTML pages, in which case they need to be converted to
+ *   bitmaps.
+ * - Others require to render the cover from a specific file format, e.g. PDF.
+ *
+ * Furthermore, a reading app might want to use a custom strategy to choose the cover image, for
+ * example by:
+ *
  * - iterating through the images collection for a publication parsed from an OPDS 2 feed
  * - generating a bitmap from scratch using the publication's title
  * - using a cover selected by the user.
@@ -60,16 +53,32 @@ interface CoverService : Publication.Service {
      */
     fun coverFitting(maxSize: Size): Bitmap? = cover?.scaleToFit(maxSize)
 
+    override val links: List<Link> get() = listOfNotNull(
+        cover?.let {
+            Link(
+                href = "/~readium/cover",
+                type = "image/png",
+                rels = setOf("cover"),
+                height = it.height,
+                width = it.width
+            )
+        }
+    )
+
     override fun get(link: Link): Resource? {
-        val png = cover?.toPng() ?: return FailureResource(links[0], Exception("Unable to convert cover to PNG."))
-        return BytesResource(links[0]) { png }
+        @Suppress("NAME_SHADOWING")
+        val link = links.firstWithHref(link.href) ?: return null
+        val cover = cover ?: return null
+        val png = cover.toPng() ?: return FailureResource(link, Exception("Unable to convert cover to PNG."))
+        return BytesResource(link) { png }
     }
 }
 
-private fun Publication.coverFromLink(): Bitmap? {
+private val Publication.coverFromManifest: Bitmap? get() {
     for (link in linksWithRel("cover")) {
         val data = get(link).read().successOrNull() ?: continue
-        return BitmapFactory.decodeByteArray(data, 0, data.size)
+        val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size) ?: continue
+        return bitmap
     }
     return null
 }
@@ -80,7 +89,7 @@ private fun Publication.coverFromLink(): Bitmap? {
 val Publication.cover: Bitmap?
     get() {
         findService(CoverService::class.java)?.cover?.let { return it }
-        return coverFromLink()
+        return coverFromManifest
     }
 
 /**
@@ -88,7 +97,7 @@ val Publication.cover: Bitmap?
  */
 fun Publication.coverFitting(maxSize: Size): Bitmap? {
     findService(CoverService::class.java)?.coverFitting(maxSize)?.let { return it }
-    return cover?.scaleToFit(maxSize)
+    return coverFromManifest?.scaleToFit(maxSize)
 }
 
 /** Factory to build a [CoverService]. */
@@ -105,10 +114,6 @@ var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
  * A [CoverService] which uses a provided in-memory bitmap.
  */
 class InMemoryCoverService internal constructor(override val cover: Bitmap) : CoverService {
-
-    override val links: List<Link> = listOf(
-        coverLink(cover.size)
-    )
 
     companion object {
         fun create(cover: Bitmap?): ServiceFactory? = { cover?.let { InMemoryCoverService(it) } }
