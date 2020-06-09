@@ -35,7 +35,7 @@ internal fun Bitmap.scaleToFit(maxSize: Size): Bitmap {
 
 internal val Bitmap.size get() = Size(width, height)
 
-internal fun Bitmap.toPng(quality: Int = 90): ByteArray? {
+fun Bitmap.toPng(quality: Int = 100): ByteArray? {
     val stream = ByteArrayOutputStream()
     return compress(Bitmap.CompressFormat.PNG, quality, stream).let{
         if (it) stream.toByteArray() else null
