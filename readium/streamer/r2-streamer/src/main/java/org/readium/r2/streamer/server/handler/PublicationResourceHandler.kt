@@ -157,6 +157,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             is Resource.Error.Forbidden -> Status.FORBIDDEN
             is Resource.Error.Unavailable -> Status.SERVICE_UNAVAILABLE
             is Resource.Error.Other -> Status.INTERNAL_ERROR
+            is Resource.Error.BadRequest -> Status.BAD_REQUEST
         }
         return newFixedLengthResponse(status, mimeType, ResponseStatus.FAILURE_RESPONSE)
     }
