@@ -53,6 +53,7 @@ import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.extensions.putPublication
+import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.opds.ParseData
@@ -60,6 +61,7 @@ import org.readium.r2.shared.promise
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.opds.images
+import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
@@ -347,11 +349,8 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 task {
                     getBitmapFromURL(publication.images.first().href)
                 }.then {
-                    val bitmap = it
-                    val stream = ByteArrayOutputStream()
-                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
-
-                    val book = Book(title = publication.metadata.title, author = author, href = pair.first, identifier = publicationIdentifier, cover = stream.toByteArray(), ext = Publication.EXTENSION.EPUB.value, progression = "{}")
+                    val cover = it?.toPng()
+                    val book = Book(title = publication.metadata.title, author = author, href = pair.first, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.EPUB.value, progression = "{}")
 
                     launch {
                         progress.dismiss()
@@ -725,9 +724,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             if (add) {
                 val publicationIdentifier = publication.metadata.identifier ?: ""
                 val author = publication.metadata.authorName
-                val cover = publication.coverLink
-                    ?.let { publication.get(it) }
-                    ?.read()?.successOrNull()
+                val cover = publication.cover?.toPng()
                 val book = Book(title = publication.metadata.title, author = author, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = ".${format.fileExtension}", progression = "{}")
 
                 database.books.insert(book, false)?.let { id ->
