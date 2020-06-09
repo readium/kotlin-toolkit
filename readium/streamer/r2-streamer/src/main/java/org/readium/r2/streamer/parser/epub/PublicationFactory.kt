@@ -10,9 +10,9 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.normalize
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.normalize
 
 /**
  * Creates a [Publication] model from an EPUB package's document.
@@ -65,7 +65,7 @@ internal class PublicationFactory(
 
         // Compute toc and otherCollections
         val toc = navigationData["toc"].orEmpty()
-        val subCollections =
+        val subcollections =
             navigationData.minus("toc").mapValues { listOf(PublicationCollection(links = it.value)) }
 
         // Build Publication object
@@ -75,7 +75,7 @@ internal class PublicationFactory(
             readingOrder = readingOrder,
             resources = resources,
             tableOfContents = toc,
-            subCollections = subCollections
+            subcollections = subcollections
         )
     }
 

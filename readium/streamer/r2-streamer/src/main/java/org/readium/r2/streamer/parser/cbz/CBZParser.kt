@@ -76,7 +76,7 @@ class CBZParser : PublicationParser {
                 localizedTitle = LocalizedString(fallbackTitle)
             ),
             readingOrder = readingOrder,
-            subCollections = mapOf(
+            subcollections = mapOf(
                 "images" to listOf(PublicationCollection(links = readingOrder))
             )
         )
