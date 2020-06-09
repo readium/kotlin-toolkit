@@ -91,6 +91,9 @@ interface Resource {
      */
     sealed class Error(cause: Throwable? = null) : Throwable(cause) {
 
+        /** Equivalent to a 400 HTTP error. */
+        object BadRequest : Error()
+
         /** Equivalent to a 404 HTTP error. */
         object NotFound : Error()
 
