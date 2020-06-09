@@ -26,22 +26,22 @@ import java.util.*
  * [paths] contains the reachable local paths, indexed by the exposed HREF. Sub-paths are reachable
  * as well, to be able to access a whole directory.
  */
-class FileFetcher(private val paths: Map<String, String>) : Fetcher {
+class FileFetcher(private val paths: Map<String, File>) : Fetcher {
 
-    /** Provides access to the given local [path] at [href]. */
-    constructor(href: String, path: String) : this(mapOf(href to path))
+    /** Provides access to the given local [file] at [href]. */
+    constructor(href: String, file: File) : this(mapOf(href to file))
 
     private val openedResources: MutableList<WeakReference<Resource>> = LinkedList()
 
     override val links: List<Link> by lazy {
-        paths.toSortedMap().flatMap { (href, path) ->
-            File(path).walk().mapNotNull { file ->
-                if (file.isDirectory) {
+        paths.toSortedMap().flatMap { (href, file) ->
+            file.walk().mapNotNull {
+                if (it.isDirectory) {
                     null
                 } else {
                     Link(
-                        href = File(href, file.path.removePrefix(path)).path,
-                        type = Format.of(fileExtension = file.extension)?.mediaType.toString()
+                        href = File(href, it.path.removePrefix(file.canonicalPath)).canonicalPath,
+                        type = Format.of(fileExtension = it.extension)?.mediaType.toString()
                     )
                 }
             }.toList()
@@ -49,13 +49,13 @@ class FileFetcher(private val paths: Map<String, String>) : Fetcher {
     }
 
     override fun get(link: Link): Resource {
-        for ((href, path) in paths) {
-            if (link.href.startsWith(href)) {
-                val resourcePath = File(path, link.href.removePrefix(href)).canonicalPath
+        for ((itemHref, itemFile) in paths) {
+            if (link.href.startsWith(itemHref)) {
+                val resourceFile = File(itemFile, link.href.removePrefix(itemHref))
                 // Make sure that the requested resource is [path] or one of its descendant.
-                if (resourcePath.startsWith(path)) {
+                if (resourceFile.canonicalPath.startsWith(itemFile.canonicalPath)) {
                     return try {
-                        val file = RandomAccessFile(resourcePath, "r")
+                        val file = RandomAccessFile(resourceFile, "r")
                         val resource = FileResource(link, file)
                         openedResources.add(WeakReference(resource))
                         return resource

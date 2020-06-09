@@ -17,6 +17,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Link
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import java.io.File
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -32,7 +33,7 @@ class FileFetcherTest {
         assertNotNull(text)
         val directory = FileFetcherTest::class.java.getResource("directory")
         assertNotNull(directory)
-        fetcher = FileFetcher(mapOf("/file_href" to text.path, "/dir_href" to directory.path))
+        fetcher = FileFetcher(mapOf("/file_href" to File(text.path), "/dir_href" to File(directory.path)))
     }
 
     @Test

@@ -18,6 +18,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.publication.*
 import org.robolectric.annotation.Config
+import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -49,7 +50,7 @@ class CoverServiceTest {
                     Link(href = coverPath, rels = setOf("cover"))
                 )
             ),
-            fetcher = FileFetcher(coverPath, coverPath)
+            fetcher = FileFetcher(coverPath, File(coverPath))
         )
     }
 
