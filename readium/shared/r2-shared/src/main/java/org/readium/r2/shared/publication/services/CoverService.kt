@@ -76,7 +76,7 @@ interface CoverService : Publication.Service {
 
 private val Publication.coverFromManifest: Bitmap? get() {
     for (link in linksWithRel("cover")) {
-        val data = get(link).read().successOrNull() ?: continue
+        val data = get(link).read().getOrNull() ?: continue
         val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size) ?: continue
         return bitmap
     }

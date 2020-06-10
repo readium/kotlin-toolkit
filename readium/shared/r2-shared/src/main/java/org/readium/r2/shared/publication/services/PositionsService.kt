@@ -58,7 +58,7 @@ private val Publication.positionsFromManifest: List<Locator> get() =
     links.firstWithMediaType(positionsLink.mediaType!!)
         ?.let { get(it) }
         ?.readAsString()
-        ?.successOrNull()
+        ?.getOrNull()
         ?.toJsonOrNull()
         ?.optJSONArray("positions")
         ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }

@@ -20,6 +20,7 @@ import org.robolectric.annotation.Config
 import java.io.File
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
 @RunWith(AndroidJUnit4::class)
@@ -39,93 +40,78 @@ class FileFetcherTest {
     @Test
     fun `Computing length for a missing file returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
-        val result = resource.length
-        assert(result.isFailure)
-        assertEquals(Resource.Error.NotFound, result.failure)
+        assertFailsWith<Resource.Error.NotFound> { resource.length.getOrThrow() }
     }
 
     @Test
     fun `Reading a missing file returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
-        val result = resource.read()
-        assert(result.isFailure)
-        assertEquals(Resource.Error.NotFound, result.failure)
+        assertFailsWith<Resource.Error.NotFound> { resource.read().getOrThrow() }
     }
 
     @Test
     fun `Reading an href in the map works well`() {
         val resource = fetcher.get(Link(href = "/file_href"))
-        val result = resource.read()
-        assert(result.isSuccess)
-        assertEquals("text", result.success.toString(StandardCharsets.UTF_8))
+        val result = resource.read().getOrNull()
+        assertEquals("text", result?.toString(StandardCharsets.UTF_8))
     }
 
     @Test
     fun `Reading a file in a directory works well`(){
         val resource = fetcher.get(Link(href = "/dir_href/text1.txt"))
-        val result = resource.read()
-        assert(result.isSuccess)
-        assertEquals("text1", result.success.toString(StandardCharsets.UTF_8))
+        val result = resource.read().getOrNull()
+        assertEquals("text1", result?.toString(StandardCharsets.UTF_8))
     }
 
     @Test
     fun `Reading a file in a subdirectory works well`(){
         val resource = fetcher.get(Link(href = "/dir_href/subdirectory/text2.txt"))
-        val result = resource.read()
-        assert(result.isSuccess)
-        assertEquals("text2", result.success.toString(StandardCharsets.UTF_8))
+        val result = resource.read().getOrNull()
+        assertEquals("text2", result?.toString(StandardCharsets.UTF_8))
     }
 
     @Test
     fun `Reading a directory returns NotFound`() {
         val resource = fetcher.get(Link(href = "/dir_href/subdirectory"))
-        val result = resource.read()
-        assert(result.isFailure)
-        assertEquals(Resource.Error.NotFound, result.failure)
+        assertFailsWith<Resource.Error.NotFound> { resource.read().getOrThrow() }
     }
     
     @Test
     fun `Reading a file outside the allowed directory returns NotFound`() {
         val resource = fetcher.get(Link(href = "/dir_href/../text.txt"))
-        val result = resource.read()
-        assert(result.isFailure)
-        assertEquals(Resource.Error.NotFound, result.failure)
+        assertFailsWith<Resource.Error.NotFound> { resource.read().getOrThrow() }
     }
 
     @Test
     fun `Reading a range works well`() {
         val resource = fetcher.get(Link(href = "/file_href"))
-        val result = resource.read(0..2L)
-        assert(result.isSuccess)
-        assertEquals("tex", result.success.toString(StandardCharsets.UTF_8))
+        val result = resource.read(0..2L).getOrNull()
+        assertEquals("tex", result?.toString(StandardCharsets.UTF_8))
     }
 
 
     @Test
     fun `Out of range indexes are clamped to the available length`() {
         val resource = fetcher.get(Link(href = "/file_href"))
-        val result = resource.read(-5..60L)
-        assert(result.isSuccess)
-        assertEquals("text", result.success.toString(StandardCharsets.UTF_8))
-        assertEquals(4, result.success.size)
+        val result = resource.read(-5..60L).getOrNull()
+        assertEquals("text", result?.toString(StandardCharsets.UTF_8))
+        assertEquals(4, result?.size)
     }
 
     @Test
     @Suppress("EmptyRange")
     fun `Decreasing ranges are understood as empty ones`() {
         val resource = fetcher.get(Link(href = "/file_href"))
-        val result = resource.read(60..20L)
-        assert(result.isSuccess)
-        assertEquals("", result.success.toString(StandardCharsets.UTF_8))
-        assertEquals(0, result.success.size)
+        val result = resource.read(60..20L).getOrNull()
+        assertEquals("", result?.toString(StandardCharsets.UTF_8))
+        assertEquals(0, result?.size)
     }
 
     @Test
     fun `Computing length works well`() {
         val resource = fetcher.get(Link(href = "/file_href"))
-        val result = resource.length
-        assert(result.isSuccess)
-        assertEquals(4L, result.success)
+        val result = resource.length.getOrNull()
+        assertEquals(4L, result)
     }
 
     @Test

@@ -72,7 +72,7 @@ class PositionsServiceTest {
 
         val json = service.get(Link("/~readium/positions"))
             ?.readAsString()
-            ?.successOrNull()
+            ?.getOrNull()
             ?.let {
                 JSONObject(it)
             }

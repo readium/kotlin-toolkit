@@ -15,7 +15,6 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
 import java.io.InputStream
 import java.nio.charset.Charset
 
@@ -222,12 +221,12 @@ internal abstract class StreamResource : Resource {
  * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Error.Other.
  */
 fun <R, S> ResourceTry<S>.tryMap(transform: (value: S) -> R): ResourceTry<R> =
-    when {
-        isSuccess ->
-            try { Try.success((transform(success))) }
-            catch (e: Resource.Error) { Try.failure(e) }
-            catch (e: Exception) { Try.failure(Resource.Error.Other(e)) }
-        else -> Try.failure(failure)
+    try {
+        Try.success((transform(getOrThrow())))
+    } catch (e: Resource.Error) {
+        Try.failure(e)
+    } catch (e: Exception) {
+        Try.failure(Resource.Error.Other(e))
     }
 
 fun <R, S> ResourceTry<S>.tryFlatMap(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =

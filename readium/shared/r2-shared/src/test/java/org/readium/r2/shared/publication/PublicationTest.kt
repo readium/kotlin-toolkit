@@ -15,7 +15,6 @@ import org.junit.Test
 import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.StringResource
-import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
@@ -297,7 +296,7 @@ class PublicationTest {
                 positions = { service }
             )
         )
-        assertEquals("test passed", publication.get(link).readAsString().successOrNull())
+        assertEquals("test passed", publication.get(link).readAsString().getOrNull())
     }
 
     @Suppress("DEPRECATION")

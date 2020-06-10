@@ -18,6 +18,7 @@ import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
 @RunWith(AndroidJUnit4::class)
@@ -62,59 +63,50 @@ class ArchiveFetcherTest {
     @Test
     fun `Computing length for a missing entry returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
-        val result = resource.length
-        assert(result.isFailure)
-        assertEquals(Resource.Error.NotFound, result.failure)
+        assertFailsWith<Resource.Error.NotFound> { resource.length.getOrThrow() }
     }
 
     @Test
     fun `Reading a missing entry returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
-        val result = resource.read()
-        assert(result.isFailure)
-        assertEquals(Resource.Error.NotFound, result.failure)
+        assertFailsWith<Resource.Error.NotFound> { resource.length.getOrThrow() }
     }
 
     @Test
     fun `Fully reading an entry works well`() {
         val resource = fetcher.get(Link(href = "/mimetype"))
-        val result = resource.read()
-        assert(result.isSuccess)
-        assertEquals("application/epub+zip", result.success.toString(StandardCharsets.UTF_8))
+        val result = resource.read().getOrNull()
+        assertEquals("application/epub+zip", result?.toString(StandardCharsets.UTF_8))
     }
 
     @Test
     fun `Reading a range of an entry works well`() {
         val resource = fetcher.get(Link(href = "/mimetype"))
-        val result = resource.read(0..10L)
-        assert(result.isSuccess)
-        assertEquals("application", result.success.toString(StandardCharsets.UTF_8))
-        assertEquals(11, result.success.size)
+        val result = resource.read(0..10L).getOrNull()
+        assertEquals("application", result?.toString(StandardCharsets.UTF_8))
+        assertEquals(11, result?.size)
     }
 
     @Test
     fun `Out of range indexes are clamped to the available length`() {
         val resource = fetcher.get(Link(href = "/mimetype"))
-        val result = resource.read(-5..60L)
-        assert(result.isSuccess)
-        assertEquals("application/epub+zip", result.success.toString(StandardCharsets.UTF_8))
-        assertEquals(20, result.success.size)
+        val result = resource.read(-5..60L).getOrNull()
+        assertEquals("application/epub+zip", result?.toString(StandardCharsets.UTF_8))
+        assertEquals(20, result?.size)
     }
 
     @Test
     fun `Decreasing ranges are understood as empty ones`() {
         val resource = fetcher.get(Link(href = "/mimetype"))
-        val result = resource.read(60..20L)
-        assert(result.isSuccess)
-        assertEquals("", result.success.toString(StandardCharsets.UTF_8))
-        assertEquals(0, result.success.size)
+        val result = resource.read(60..20L).getOrNull()
+        assertEquals("", result?.toString(StandardCharsets.UTF_8))
+        assertEquals(0, result?.size)
     }
 
     @Test
     fun `Computing length works well`() {
         val resource = fetcher.get(Link(href = "/mimetype"))
         val result = resource.length
-        assert(result.isSuccess)
-        assertEquals(20L, result.success)
+        assertEquals(20L, result.getOrNull())
     }
 }

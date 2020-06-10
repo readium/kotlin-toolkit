@@ -41,7 +41,7 @@ class ResourceInputStream(
         }
 
         try {
-            val bytes = resource.read(position until (position + 1)).get()
+            val bytes = resource.read(position until (position + 1)).getOrThrow()
             position += 1
             return bytes.first().toInt()
 
@@ -57,7 +57,7 @@ class ResourceInputStream(
         }
 
         try {
-            val bytes = resource.read(position until (position + len)).get()
+            val bytes = resource.read(position until (position + len)).getOrThrow()
             bytes.copyInto(
                 destination = b,
                 destinationOffset = off,
