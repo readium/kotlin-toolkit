@@ -23,7 +23,7 @@ import timber.log.Timber
 
 /**
  * Creates the [positions] for an LCP protected PDF [Publication] from its [readingOrder] and
- * [container].
+ * [fetcher].
  */
 internal class LcpdfPositionsService(
     private val context: Context,
@@ -31,7 +31,16 @@ internal class LcpdfPositionsService(
     private val fetcher: Fetcher
 ) : PositionsService {
 
-    override val positionsByReadingOrder: List<List<Locator>> by lazy {
+    override suspend fun positionsByReadingOrder(): List<List<Locator>> {
+        if (!::_positions.isInitialized)
+            _positions = computePositions()
+
+        return _positions
+    }
+
+    private lateinit var _positions: List<List<Locator>>
+
+    private suspend fun computePositions(): List<List<Locator>> {
         // Calculates the page count of each resource from the reading order.
         val resources: List<Pair<Int, Link>> = readingOrder.map { link ->
             val pageCount = openPdfAt(link)?.pageCount ?: 0
@@ -40,11 +49,11 @@ internal class LcpdfPositionsService(
 
         val totalPageCount = resources.sumBy { it.first }
         if (totalPageCount <= 0) {
-            return@lazy emptyList<List<Locator>>()
+            return emptyList()
         }
 
         var lastPositionOfPreviousResource = 0
-        return@lazy resources.map { (pageCount, link) ->
+        return resources.map { (pageCount, link) ->
             val positions = createPositionsOf(link, pageCount = pageCount, totalPageCount = totalPageCount, startPosition = lastPositionOfPreviousResource)
             lastPositionOfPreviousResource += pageCount
             positions
@@ -73,7 +82,7 @@ internal class LcpdfPositionsService(
         }
     }
 
-    private fun openPdfAt(link: Link): PdfDocument? =
+    private suspend fun openPdfAt(link: Link): PdfDocument? =
         try {
             PdfiumDocument.fromBytes(
                 bytes = fetcher.readBytes(link),

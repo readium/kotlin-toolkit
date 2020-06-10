@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.audio
 
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Manifest
@@ -16,6 +17,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
+import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import java.net.URI
@@ -39,7 +41,11 @@ class AudioBookParser : PublicationParser {
     /**
      * This functions parse a manifest.json and build PubBox object from it
      */
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
+        _parse(fileAtPath, fallbackTitle)
+    }
+
+    private suspend fun _parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
             ?: throw ContainerError.missingFile(fileAtPath)
 
@@ -51,10 +57,9 @@ class AudioBookParser : PublicationParser {
                 "$fileAtPath/$href"
             }
 
-        val manifest = fetcher.get("manifest.json")
-            .readAsJson()
-            .map { Manifest.fromJSON(it, ::normalizeHref) }
-            .getOrNull() ?: return null
+        val manifest = fetcher.readAsJsonOrNull("manifest.json")
+            ?.let { Manifest.fromJSON(it, ::normalizeHref) }
+            ?: return null
 
         val publication = Publication(
             manifest = manifest

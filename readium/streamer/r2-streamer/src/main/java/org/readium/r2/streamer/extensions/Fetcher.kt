@@ -9,6 +9,8 @@
 
 package org.readium.r2.streamer.extensions
 
+import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.fetcher.Fetcher
@@ -20,20 +22,24 @@ import java.io.File
 
 /** Returns the resource data at the given [Link]'s HREF, or throws a [Resource.Error] */
 @Throws(Resource.Error::class)
-internal fun Fetcher.readBytes(link: Link): ByteArray =
+internal suspend fun Fetcher.readBytes(link: Link): ByteArray =
     get(link).read().getOrThrow()
 
 /** Returns the resource data at the given [href], or throws a [Resource.Error] */
 @Throws(Resource.Error::class)
-internal fun Fetcher.readBytes(href: String): ByteArray =
+internal suspend fun Fetcher.readBytes(href: String): ByteArray =
     get(href).read().getOrThrow()
 
 /** Returns the resource data as an XML Document at the given [href], or null. */
-internal fun Fetcher.readAsXmlOrNull(href: String): ElementNode? =
+internal suspend fun Fetcher.readAsXmlOrNull(href: String): ElementNode? =
     get(href).readAsXml().getOrNull()
 
+/** Returns the resource data as a JSON object at the given [href], or null. */
+internal suspend fun Fetcher.readAsJsonOrNull(href: String): JSONObject? =
+    get(href).readAsJson().getOrNull()
+
 /** Creates a [Fetcher] from either an archive file, or an exploded directory. **/
-internal fun Fetcher.Companion.fromArchiveOrDirectory(path: String): Fetcher? {
+internal suspend fun Fetcher.Companion.fromArchiveOrDirectory(path: String): Fetcher? {
     val file = File(path)
     val isDirectory = tryOrNull { file.isDirectory } ?: return null
 

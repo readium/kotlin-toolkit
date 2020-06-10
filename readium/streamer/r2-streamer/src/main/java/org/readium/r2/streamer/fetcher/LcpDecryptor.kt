@@ -12,8 +12,10 @@ package org.readium.r2.streamer.fetcher
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.drm.DRMLicense
 import org.readium.r2.shared.extensions.inflate
+import org.readium.r2.shared.fetcher.BytesResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceTry
+import org.readium.r2.shared.fetcher.RoutingResource
 import org.readium.r2.shared.fetcher.flatMapCatching
 import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.Link
@@ -26,17 +28,15 @@ import java.io.IOException
  */
 internal class LcpDecryptor(val drm: DRM) {
 
-    fun transform(resource: Resource): Resource {
+    fun transform(resource: Resource): Resource = RoutingResource() {
         // Checks if the resource is encrypted and whether the encryption schemes of the resource
         // and the DRM license are the same.
         val license = drm.license
-        val link = resource.link
+        val link = resource.link()
         val encryption = link.properties.encryption
-        if (license == null || encryption == null || encryption.scheme != drm.scheme.rawValue) {
-            return resource
-        }
 
-        return when {
+        when {
+            (license == null || encryption == null || encryption.scheme != drm.scheme.rawValue) -> resource
             link.isDeflated || !link.isCbcEncrypted -> FullLcpResource(resource, license)
             else -> CbcLcpResource(resource, license)
         }
@@ -51,31 +51,12 @@ internal class LcpDecryptor(val drm: DRM) {
     private class FullLcpResource(
         private val resource: Resource,
         private val license: DRMLicense
-    ) : Resource {
+    ) : BytesResource( { Pair(resource.link(), license.decryptFully(resource)) } ) {
 
-        /** Cached decrypted data. */
-        private val bytes: ResourceTry<ByteArray> by lazy {
-            license.decryptFully(resource)
-        }
-
-        override val link: Link get() = resource.link
-
-        override val length: ResourceTry<Long> get() =
-            resource.link.properties.encryption?.originalLength
+        override suspend fun length(): ResourceTry<Long> =
+            resource.link().properties.encryption?.originalLength
                 ?.let { Try.success(it) }
-                ?: bytes.map { it.size.toLong() }
-
-        override fun read(range: LongRange?): ResourceTry<ByteArray> =
-            bytes.map {
-                if (range == null) {
-                    it
-                } else {
-                    it.copyOfRange(fromIndex = range.first.toInt(), toIndex = range.last.toInt())
-                }
-            }
-
-        override fun close() = resource.close()
-
+                ?: super.length()
     }
 
     /**
@@ -88,16 +69,11 @@ internal class LcpDecryptor(val drm: DRM) {
         private val license: DRMLicense
     ) : Resource {
 
-        init {
-            require(!resource.link.isDeflated)
-            require(resource.link.isCbcEncrypted)
-        }
-
-        override val link: Link get() = resource.link
+        override suspend fun link(): Link = resource.link()
 
         /** Plain text size. */
-        override val length: ResourceTry<Long> by lazy {
-            resource.length.flatMapCatching { length ->
+        override suspend fun length(): ResourceTry<Long> =
+            resource.length().flatMapCatching { length ->
                 if (length < 2 * AES_BLOCK_SIZE) {
                     throw Exception("Invalid CBC-encrypted stream")
                 }
@@ -113,13 +89,12 @@ internal class LcpDecryptor(val drm: DRM) {
                             (AES_BLOCK_SIZE - decryptedBytes.size) % AES_BLOCK_SIZE  // Minus padding part
                     }
             }
-        }
 
-        override fun read(range: LongRange?): ResourceTry<ByteArray> {
+        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
             return if (range == null) {
                 license.decryptFully(resource)
             } else {
-                resource.length.flatMapCatching { length ->
+                resource.length().flatMapCatching { length ->
                     val blockPosition = range.first % AES_BLOCK_SIZE
 
                     // For beginning of the cipher text, IV used for XOR.
@@ -146,7 +121,7 @@ internal class LcpDecryptor(val drm: DRM) {
                     resource.read(readPosition..(readPosition + readSize))
                         .mapCatching {
                             var bytes = license.decipher(it)
-                                ?: throw IOException("Can't decrypt the content at: ${link.href}")
+                                ?: throw IOException("Can't decrypt the content at: ${link().href}")
 
                             if (bytes.size > length) {
                                 bytes = bytes.copyOfRange(0, length.toInt())
@@ -158,7 +133,7 @@ internal class LcpDecryptor(val drm: DRM) {
             }
         }
 
-        override fun close() = resource.close()
+        override suspend fun close() = resource.close()
 
         companion object {
             private const val AES_BLOCK_SIZE = 16 // bytes
@@ -167,7 +142,7 @@ internal class LcpDecryptor(val drm: DRM) {
     }
 }
 
-private fun DRMLicense.decryptFully(resource: Resource): ResourceTry<ByteArray> =
+private suspend fun DRMLicense.decryptFully(resource: Resource): ResourceTry<ByteArray> =
     resource.read().mapCatching { it ->
         // Decrypts the resource.
         var bytes = decipher(it)
@@ -179,7 +154,7 @@ private fun DRMLicense.decryptFully(resource: Resource): ResourceTry<ByteArray> 
         bytes = bytes.copyOfRange(0, bytes.size - padding)
 
         // If the ressource was compressed using deflate, inflates it.
-        if (resource.link.isDeflated) {
+        if (resource.link().isDeflated) {
             bytes = bytes.inflate(nowrap = true)
         }
 

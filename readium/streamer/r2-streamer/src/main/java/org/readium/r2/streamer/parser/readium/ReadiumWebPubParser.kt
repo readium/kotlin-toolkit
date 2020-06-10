@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.fetcher.Fetcher
@@ -31,8 +32,11 @@ import java.io.File
  * Parses any Readium Web Publication package or manifest, e.g. WebPub, Audiobook, DiViNa, LCPDF...
  */
 class ReadiumWebPubParser(private val context: Context) : PublicationParser {
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
+        _parse(fileAtPath, fallbackTitle)
+    }
 
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
+    private suspend fun _parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val file = File(fileAtPath)
         val format = Format.of(file) ?: return null
 
@@ -56,7 +60,7 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
         return pubBox
     }
 
-    private fun parseManifest(file: File, format: Format): PubBox? {
+    private suspend fun parseManifest(file: File, format: Format): PubBox? {
         return try {
             val fetcher = FileFetcher(href = "/manifest.json", file = file)
             val manifestJson = file.readText()
@@ -68,7 +72,7 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
         }
     }
 
-    private fun parsePackage(file: File, format: Format): PubBox? {
+    private suspend fun parsePackage(file: File, format: Format): PubBox? {
         return try {
             val fetcher = Fetcher.fromArchiveOrDirectory(file.path) ?: return null
             val manifestJson = fetcher.get("/manifest.json").readAsString().getOrNull() ?: return null
@@ -81,10 +85,10 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
         }
     }
 
-    private fun parsePublication(manifestJson: String, file: File, format: Format, fetcher: Fetcher, isPackage: Boolean): PubBox? {
+    private suspend fun parsePublication(manifestJson: String, file: File, format: Format, fetcher: Fetcher, isPackage: Boolean): PubBox? {
         try {
             val drm =
-                if (fetcher.isProtectedWithLcp) DRM(DRM.Brand.lcp)
+                if (fetcher.isProtectedWithLcp()) DRM(DRM.Brand.lcp)
                 else null
 
             val manifest = Manifest.fromJSON(JSONObject(manifestJson)) { normalize(base = "/", href = it) }
@@ -122,8 +126,8 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
 
 }
 
-private val Fetcher.isProtectedWithLcp: Boolean get() =
-    get("license.lcpl").length.isSuccess
+private suspend fun Fetcher.isProtectedWithLcp(): Boolean =
+    get("license.lcpl").length().isSuccess
 
 private fun Format.toPublicationType(): Publication.TYPE =
     when (this) {

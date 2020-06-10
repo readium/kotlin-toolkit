@@ -7,7 +7,6 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-
 package org.readium.r2.streamer.parser.epub
 
 import org.assertj.core.api.Assertions.assertThat
@@ -19,6 +18,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.streamer.readBlocking
 import java.io.File
 import kotlin.test.assertNotNull
 
@@ -37,17 +37,21 @@ class EpubDeobfuscatorTest {
         assertNotNull(deobfuscationDir)
         fetcher = FileFetcher("/deobfuscation", deobfuscationDir)
 
-        val fontResult = fetcher.get(Link(href = "/deobfuscation/cut-cut.woff")).read()
+        val fontResult = fetcher.get(Link(href = "/deobfuscation/cut-cut.woff")).readBlocking()
         assert(fontResult.isSuccess)
         font = fontResult.getOrThrow()
     }
 
-    private fun deobfuscate(href: String, algorithm: String): Resource {
-        val properties = mapOf(
-            "encrypted" to  Encryption(
+    private fun deobfuscate(href: String, algorithm: String?): Resource {
+        val encryption = algorithm?.let {
+            Encryption(
                 algorithm = algorithm
             ).toJSON().toMap()
-        )
+        }
+        val properties = encryption?.let {
+            mapOf( "encrypted" to it)
+        }.orEmpty()
+
         val obfuscatedRes = fetcher.get(
             Link(
                 href = href,
@@ -62,7 +66,7 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.obf.woff",
             "http://www.idpf.org/2008/embedding"
-        ).read().getOrNull()
+        ).readBlocking().getOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
     }
 
@@ -71,7 +75,25 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.adb.woff",
             "http://ns.adobe.com/pdf/enc#RC"
-        ).read().getOrThrow()
+        ).readBlocking().getOrNull()
+        assertThat(deobfuscatedRes).isEqualTo(font)
+    }
+
+    @Test
+    fun `a resource is passed through when the link doesn't contain encryption data`() {
+        val deobfuscatedRes = deobfuscate(
+            "/deobfuscation/cut-cut.woff",
+            null
+        ).readBlocking().getOrNull()
+        assertThat(deobfuscatedRes).isEqualTo(font)
+    }
+
+    @Test
+    fun `a resource is passed through when the algorithm is unknown`() {
+        val deobfuscatedRes = deobfuscate(
+            "/deobfuscation/cut-cut.woff",
+            "unknown algorithm"
+        ).readBlocking().getOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
     }
 

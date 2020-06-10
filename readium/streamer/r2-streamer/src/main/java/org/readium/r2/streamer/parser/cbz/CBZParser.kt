@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.cbz
 
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.format.MediaType
@@ -40,11 +41,16 @@ class CBZConstant {
  */
 class CBZParser : PublicationParser {
 
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
+
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
+        _parse(fileAtPath, fallbackTitle)
+    }
+
+    suspend fun _parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val fetcher = ArchiveFetcher.fromPath(fileAtPath)
             ?: return null
 
-        val readingOrder = fetcher.links
+        val readingOrder = fetcher.links()
             .filter { it.mediaType?.isBitmap == true && !it.href.startsWith(".") }
             .sortedBy { it.href }
             .toMutableList()

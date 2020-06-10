@@ -40,7 +40,16 @@ internal class EpubPositionsService(
     private val reflowablePositionLength: Long
 ) : PositionsService {
 
-    override val positionsByReadingOrder: List<List<Locator>> by lazy {
+    override suspend fun positionsByReadingOrder(): List<List<Locator>> {
+        if (!::_positions.isInitialized)
+            _positions = computePositions()
+
+        return _positions
+    }
+
+    private lateinit var _positions: List<List<Locator>>
+
+    private suspend fun computePositions(): List<List<Locator>> {
         var lastPositionOfPreviousResource = 0
         var positions = readingOrder.map { link ->
             val positions =
@@ -72,7 +81,7 @@ internal class EpubPositionsService(
             }
         }
 
-        positions
+        return positions
     }
 
     private fun createFixed(link: Link, startPosition: Int) = listOf(
@@ -82,11 +91,11 @@ internal class EpubPositionsService(
         )
     )
 
-    private fun createReflowable(link: Link, startPosition: Int, fetcher: Fetcher): List<Locator> {
+    private suspend fun createReflowable(link: Link, startPosition: Int, fetcher: Fetcher): List<Locator> {
         // If the resource is encrypted, we use the `originalLength` declared in `encryption.xml`
         // instead of the ZIP entry length.
         val length = link.properties.encryption?.originalLength
-            ?: fetcher.get(link).length.getOrNull()
+            ?: fetcher.get(link).length().getOrNull()
             ?: return emptyList()
 
         val pageCount = ceil(length / reflowablePositionLength.toDouble()).toInt()

@@ -28,7 +28,7 @@ internal class ServingFetcher(
             customResources
         )
 
-    override val links: List<Link> = emptyList()
+    override suspend fun links(): List<Link> = emptyList()
 
     override fun get(link: Link): Resource {
         val resource = publication.get(link)
@@ -38,5 +38,5 @@ internal class ServingFetcher(
             resource
     }
 
-    override fun close() {}
+    override suspend fun close() {}
 }

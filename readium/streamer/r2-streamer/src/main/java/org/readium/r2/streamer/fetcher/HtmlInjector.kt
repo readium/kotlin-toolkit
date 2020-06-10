@@ -13,9 +13,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.fetcher.FailureResource
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.StringResource
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.RoutingResource
+import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -30,26 +31,23 @@ internal class HtmlInjector(
     val customResources: Resources? = null
 ) {
 
-    fun transform(resource: Resource): Resource =
-        if (resource.link.mediaType?.isHtml == true)
+    fun transform(resource: Resource): Resource = RoutingResource {
+        if (resource.link().mediaType?.isHtml == true)
             inject(resource)
         else
             resource
+    }
 
-    private fun inject(resource: Resource): Resource {
-        val link = resource.link
-        val result = try {
-            resource.readAsString(link.mediaType?.charset)
-        } catch (e: Resource.Error) {
-            return FailureResource(link, e)
+    private suspend fun inject(resource: Resource): Resource = StringResource {
+        val link = resource.link()
+        val res = resource.readAsString(link.mediaType?.charset).mapCatching {
+            val trimmedText = it.trim()
+                if (publication.metadata.presentation.layoutOf(link) == EpubLayout.REFLOWABLE)
+                    injectReflowableHtml(trimmedText)
+                else
+                    injectFixedLayoutHtml(trimmedText)
         }
-
-        val trimmedText = result.getOrThrow().trim()
-        val injector = if (publication.metadata.presentation.layoutOf(link) == EpubLayout.REFLOWABLE)
-            HtmlInjector::injectReflowableHtml
-        else
-            HtmlInjector::injectFixedLayoutHtml
-        return StringResource(link) { injector(this, trimmedText) }
+        Pair(link, res)
     }
 
     private fun injectReflowableHtml(content: String): String {

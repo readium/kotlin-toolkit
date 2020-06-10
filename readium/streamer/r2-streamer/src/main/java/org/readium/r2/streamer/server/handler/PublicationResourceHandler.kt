@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.server.handler
 
+import kotlinx.coroutines.runBlocking
 import org.nanohttpd.protocols.http.IHTTPSession
 import org.nanohttpd.protocols.http.NanoHTTPD.MIME_PLAINTEXT
 import org.nanohttpd.protocols.http.response.IStatus
@@ -39,8 +40,8 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     override fun get(uriResource: RouterNanoHTTPD.UriResource?, urlParams: Map<String, String>?,
-                     session: IHTTPSession?): Response? {
-        return try {
+                     session: IHTTPSession?): Response? = runBlocking {
+        try {
             if (DEBUG) Timber.v("Method: ${session!!.method}, Uri: ${session.uri}")
             val fetcher = uriResource!!.initParameter(ServingFetcher::class.java)
 
@@ -58,7 +59,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         }
     }
 
-    private fun serveResponse(session: IHTTPSession, resource: Resource, mimeType: String): Response {
+    private suspend fun serveResponse(session: IHTTPSession, resource: Resource, mimeType: String): Response {
         var response: Response?
         var rangeRequest: String? = session.headers["range"]
 
@@ -85,7 +86,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             }
 
             // Change return code and add Content-Range header when skipping is requested
-            val dataLength = resource.length.getOrThrow()
+            val dataLength = resource.length().getOrThrow()
 
             if (rangeRequest != null && startFrom >= 0) {
                 if (startFrom >= dataLength) {

@@ -9,9 +9,11 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.normalize
@@ -78,12 +80,16 @@ object EPUBConstant {
 
 class EpubParser : PublicationParser {
 
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
+        _parse(fileAtPath, fallbackTitle)
+    }
+
+    private suspend fun _parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         var fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
             ?: throw ContainerError.missingFile(fileAtPath)
 
         val drm =
-            if (fetcher.get("/META-INF/license.lcpl").length.getOrNull() != null) DRM(DRM.Brand.lcp)
+            if (fetcher.get("/META-INF/license.lcpl").length().getOrNull() != null) DRM(DRM.Brand.lcp)
             else null
 
         val opfPath = getRootFilePath(fetcher) ?: return null
@@ -133,7 +139,7 @@ class EpubParser : PublicationParser {
         return PubBox(publication, container)
     }
 
-    private fun getRootFilePath(fetcher: Fetcher): String? =
+    private suspend fun getRootFilePath(fetcher: Fetcher): String? =
         fetcher.readAsXmlOrNull("/META-INF/container.xml")
             ?.getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
@@ -150,12 +156,12 @@ class EpubParser : PublicationParser {
         }
     }
 
-    private fun parseEncryptionData(fetcher: Fetcher, drm: DRM?): Map<String, Encryption> =
+    private suspend fun parseEncryptionData(fetcher: Fetcher, drm: DRM?): Map<String, Encryption> =
         fetcher.readAsXmlOrNull("/META-INF/encryption.xml")
             ?.let { EncryptionParser.parse(it, drm) }
             ?: emptyMap()
 
-    private fun parseNavigationData(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>> =
+    private suspend fun parseNavigationData(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>> =
         if (packageDocument.epubVersion < 3.0) {
             val ncxItem = packageDocument.manifest.firstOrNull { MediaType.NCX.contains(it.mediaType) }
             ncxItem?.let {
@@ -170,7 +176,7 @@ class EpubParser : PublicationParser {
             }
         }.orEmpty()
 
-    private fun parseDisplayOptions(fetcher: Fetcher): Map<String, String> {
+    private suspend fun parseDisplayOptions(fetcher: Fetcher): Map<String, String> {
         val displayOptionsXml =
             fetcher.readAsXmlOrNull("/META-INF/com.kobobooks.display-options.xml")
             ?: fetcher.readAsXmlOrNull("/META-INF/com.kobobooks.display-options.xml")

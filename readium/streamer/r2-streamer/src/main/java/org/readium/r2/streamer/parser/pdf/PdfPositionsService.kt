@@ -29,7 +29,9 @@ internal class PdfPositionsService(
     private val tableOfContents: List<Link>
 ) : PositionsService {
 
-    override val positionsByReadingOrder: List<List<Locator>> by lazy {
+    override suspend fun positionsByReadingOrder(): List<List<Locator>> = _positions
+
+    private val _positions: List<List<Locator>> by lazy {
         // FIXME: Use the [tableOfContents] to generate the titles
         if (pageCount <= 0) {
             Timber.e("Invalid page count for a PDF document: $pageCount")

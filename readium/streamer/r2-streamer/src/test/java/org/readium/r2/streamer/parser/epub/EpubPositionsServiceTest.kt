@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.fetcher.Fetcher
@@ -27,7 +28,7 @@ class EpubPositionsServiceTest {
     fun `Positions from an empty {readingOrder}`() {
         val service = createService(readingOrder = emptyList())
 
-        assertEquals(0, service.positions.size)
+        assertEquals(0, runBlocking { service.positions().size })
     }
 
     @Test
@@ -48,7 +49,7 @@ class EpubPositionsServiceTest {
                     totalProgression = 0.0
                 )
             )),
-            service.positions
+            runBlocking { service.positions() }
         )
     }
 
@@ -93,7 +94,7 @@ class EpubPositionsServiceTest {
                     )
                 )
             ),
-            service.positions
+            runBlocking { service.positions() }
         )
     }
 
@@ -127,7 +128,7 @@ class EpubPositionsServiceTest {
                     )
                 )
             ),
-            service.positions
+            runBlocking { service.positions() }
         )
     }
 
@@ -173,7 +174,7 @@ class EpubPositionsServiceTest {
                     )
                 )
             ),
-            service.positions
+            runBlocking { service.positions() }
         )
     }
 
@@ -267,7 +268,7 @@ class EpubPositionsServiceTest {
                     )
                 )
            ),
-            service.positions
+            runBlocking { service.positions() }
         )
     }
 
@@ -303,7 +304,7 @@ class EpubPositionsServiceTest {
                     )
                 )
             ),
-            service.positions
+            runBlocking { service.positions() }
         )
     }
 
@@ -358,7 +359,7 @@ class EpubPositionsServiceTest {
                     )
                 )
             ),
-            service.positions
+            runBlocking { service.positions() }
         )
     }
 
@@ -403,7 +404,7 @@ class EpubPositionsServiceTest {
                     )
                 )
             ),
-            service.positions
+            runBlocking { service.positions() }
         )
     }
 
@@ -421,18 +422,18 @@ class EpubPositionsServiceTest {
             override val links: List<Link> = emptyList()
 
             override fun get(link: Link): Resource = object : Resource {
-                override val link: Link = link
+                override suspend fun link(): Link = link
 
-                override val length = findResource(link.href)
+                override suspend fun length() = findResource(link.href)
                     ?.let { Try.success(it.first) }
                     ?: Try.failure(Resource.Error.NotFound)
 
-                override fun read(range: LongRange?): ResourceTry<ByteArray> = Try.success(ByteArray(0))
+                override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.success(ByteArray(0))
 
-                override fun close() {}
+                override suspend fun close() {}
             }
 
-            override fun close() {}
+            override suspend fun close() {}
         },
         presentation = Presentation(layout = layout),
         reflowablePositionLength = reflowablePositionLength

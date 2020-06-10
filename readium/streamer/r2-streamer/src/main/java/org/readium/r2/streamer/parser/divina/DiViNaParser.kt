@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.divina
 
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Manifest
@@ -17,6 +18,7 @@ import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
+import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 
@@ -33,15 +35,17 @@ class DiViNaConstant {
  *                  for rendering
  */
 class DiViNaParser : PublicationParser {
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
+        _parse(fileAtPath, fallbackTitle)
+    }
 
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
+    private suspend fun _parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
             ?: throw ContainerError.missingFile(fileAtPath)
 
-        val manifest = fetcher.get("manifest.json")
-            .readAsJson()
-            .map { Manifest.fromJSON(it) }
-            .getOrNull() ?: return null
+        val manifest = fetcher.readAsJsonOrNull("manifest.json")
+            .let { Manifest.fromJSON(it) }
+            ?: return null
 
         val publication = Publication(
             manifest = manifest,

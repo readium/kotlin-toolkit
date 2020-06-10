@@ -11,56 +11,53 @@ package org.readium.r2.streamer.parser.epub
 
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
+import org.readium.r2.shared.fetcher.ProxyResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceTry
-import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.encryption.encryption
 import kotlin.experimental.xor
 
 internal class EpubDeobfuscator(private val pubId: String) {
 
-    private val algorithm2length = mapOf(
+    fun transform(resource: Resource): Resource = DeobfuscatingResource(resource)
+
+    inner class DeobfuscatingResource(resource: Resource): ProxyResource(resource) {
+
+        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+            val algorithm = resource.link().properties.encryption?.algorithm
+
+            if (algorithm !in algorithm2length.keys)
+                return resource.read(range)
+
+            return resource.read(range).mapCatching {
+                val obfuscationLength: Int = algorithm2length[algorithm]!!
+                val obfuscationKey: ByteArray = when (algorithm) {
+                    "http://ns.adobe.com/pdf/enc#RC" -> getHashKeyAdobe(pubId)
+                    else -> HASH.sha1(pubId).toHexBytes()
+                }
+
+                deobfuscate(it, range, obfuscationKey, obfuscationLength)
+                it
+            }
+        }
+    }
+
+    private val algorithm2length: Map<String, Int> = mapOf(
         "http://www.idpf.org/2008/embedding" to 1040,
         "http://ns.adobe.com/pdf/enc#RC" to 1024
     )
 
-
-    fun transform(resource: Resource): Resource {
-        val link = resource.link
-        val encryption = link.properties.encryption ?: return resource
-        val algorithm = encryption.algorithm
-        if (algorithm !in algorithm2length.keys) return resource
-
-        val obfuscationLength: Int = algorithm2length[algorithm]!!
-        val obfuscationKey: ByteArray = when (algorithm) {
-            "http://ns.adobe.com/pdf/enc#RC" -> getHashKeyAdobe(pubId)
-                else -> HASH.sha1(pubId).toHexBytes()
-        }
-
-        return deobfuscate(resource, obfuscationKey, obfuscationLength)
+    private fun deobfuscate(bytes: ByteArray, range: LongRange?, obfuscationKey: ByteArray, obfuscationLength: Int) {
+        @Suppress("NAME_SHADOWING")
+        val range = range ?: (0L until bytes.size)
+        val toDeobfuscate = Math.max(range.start, 0L) .. Math.min(range.last, obfuscationLength - 1L)
+        for (i in toDeobfuscate.map { it.toInt() })
+            bytes[i] = bytes[i].xor(obfuscationKey[i % obfuscationKey.size])
     }
-
-    private fun deobfuscate(resource: Resource, obfuscationKey: ByteArray, obfuscationLength: Int): Resource =
-        object: Resource {
-            override val link: Link = resource.link
-
-            override val length: ResourceTry<Long> = resource.length
-
-            override fun read(range: LongRange?): ResourceTry<ByteArray> = resource.read(range).map {
-                @Suppress("NAME_SHADOWING")
-                val range = range ?: (0L until it.size)
-                val toDeobfuscate = Math.max(range.start, 0L) .. Math.min(range.last, obfuscationLength - 1L)
-                for (i in toDeobfuscate.map { it.toInt() })
-                    it[i] = it[i].xor(obfuscationKey[i % obfuscationKey.size])
-                it
-            }
-
-            override fun close() = resource.close()
-        }
 
     private fun getHashKeyAdobe(pubId: String) =
         pubId.replace("urn:uuid:", "")
             .replace("-", "")
             .toHexBytes()
-
 }
