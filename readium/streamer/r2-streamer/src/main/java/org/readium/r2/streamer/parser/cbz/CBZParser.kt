@@ -14,7 +14,6 @@ import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
-import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
@@ -40,19 +39,6 @@ class CBZConstant {
  *                  for rendering
  */
 class CBZParser : PublicationParser {
-
-
-    /**
-     * Check if path exist, generate a container for CBZ file
-     *                   then check if creation was a success
-     */
-    private fun generateContainerFrom(path: String): CBZArchiveContainer {
-        val container: CBZArchiveContainer?
-        if (!File(path).exists())
-            throw ContainerError.missingFile(path)
-        container = CBZArchiveContainer(path)
-        return container
-    }
 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val fetcher = ArchiveFetcher.fromPath(fileAtPath)

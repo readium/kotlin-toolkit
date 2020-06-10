@@ -19,7 +19,7 @@ import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.epub.layout
+import org.readium.r2.shared.publication.epub.layoutOf
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.streamer.server.Resources
 import java.io.File
@@ -43,8 +43,7 @@ internal class HtmlInjector(
             return FailureResource(link, result.failure)
 
         val trimmedText = result.success.trim()
-        val injector = if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE && link.properties.layout == null
-            || link.properties.layout == EpubLayout.REFLOWABLE)
+        val injector = if (publication.metadata.presentation.layoutOf(link) == EpubLayout.REFLOWABLE)
             HtmlInjector::injectReflowableHtml
         else
             HtmlInjector::injectFixedLayoutHtml
@@ -152,8 +151,8 @@ internal class HtmlInjector(
         if (endHeadIndex == -1)
             return content
         val includes = mutableListOf<String>()
-        includes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/touchHandling.js"))
-        includes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/utils.js"))
+        includes.add(getHtmlScript("/assets/scripts/touchHandling.js"))
+        includes.add(getHtmlScript("/assets/scripts/utils.js"))
         for (element in includes) {
             resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, element).toString()
         }

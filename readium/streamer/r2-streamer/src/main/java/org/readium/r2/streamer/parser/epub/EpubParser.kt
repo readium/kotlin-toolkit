@@ -21,12 +21,11 @@ import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.streamer.container.ArchiveContainer
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.DirectoryContainer
-import org.readium.r2.streamer.fetcher.LcpDecryptionTransformer
+import org.readium.r2.streamer.fetcher.LcpDecryptor
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
@@ -114,7 +113,7 @@ class EpubParser : PublicationParser {
             ).create()
 
         val transformers = listOfNotNull(
-            container.drm?.let { LcpDecryptionTransformer(it)::transform },
+            container.drm?.let { LcpDecryptor(it)::transform },
             manifest.metadata.identifier?.let { EpubDeobfuscator(
                 it
             )::transform }

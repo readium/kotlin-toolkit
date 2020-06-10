@@ -24,7 +24,7 @@ import java.io.IOException
 /**
  * Decrypts a resource protected with LCP.
  */
-internal class LcpDecryptionTransformer(val drm: DRM) {
+internal class LcpDecryptor(val drm: DRM) {
 
     fun transform(resource: Resource): Resource {
         // Checks if the resource is encrypted and whether the encryption schemes of the resource

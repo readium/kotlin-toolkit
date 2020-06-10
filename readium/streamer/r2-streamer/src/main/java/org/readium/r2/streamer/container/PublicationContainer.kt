@@ -11,12 +11,13 @@ package org.readium.r2.streamer.container
 
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Publication
 import java.io.InputStream
 
 /**
- * Temporary solution to migrate [Publication.get] while ensuring backward compatibility with
+ * Temporary solution to migrate to [Publication.get] while ensuring backward compatibility with
  * [Container].
  */
 internal class PublicationContainer(
@@ -32,13 +33,10 @@ internal class PublicationContainer(
         return publication.get(relativePath).read().get()
     }
 
-    override fun dataLength(relativePath: String): Long {
-        return try {
+    override fun dataLength(relativePath: String): Long =
+        tryOr(0) {
             publication.get(relativePath).length.get()
-        } catch (e: Exception) {
-            0
         }
-    }
 
     override fun dataInputStream(relativePath: String): InputStream =
         publication.get(relativePath).stream().get()
