@@ -14,8 +14,8 @@ import org.readium.r2.shared.drm.DRMLicense
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceTry
-import org.readium.r2.shared.fetcher.tryFlatMap
-import org.readium.r2.shared.fetcher.tryMap
+import org.readium.r2.shared.fetcher.flatMapCatching
+import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.util.Try
@@ -97,18 +97,18 @@ internal class LcpDecryptor(val drm: DRM) {
 
         /** Plain text size. */
         override val length: ResourceTry<Long> by lazy {
-            resource.length.tryFlatMap { length ->
+            resource.length.flatMapCatching { length ->
                 if (length < 2 * AES_BLOCK_SIZE) {
                     throw Exception("Invalid CBC-encrypted stream")
                 }
 
                 val readOffset = length - (2 * AES_BLOCK_SIZE)
                 resource.read(readOffset..length)
-                    .tryMap { bytes ->
+                    .mapCatching { bytes ->
                         val decryptedBytes = license.decipher(bytes)
                             ?: throw Exception("Can't decrypt trailing size of CBC-encrypted stream")
 
-                        return@tryMap length -
+                        return@mapCatching length -
                             AES_BLOCK_SIZE -  // Minus IV or previous block
                             (AES_BLOCK_SIZE - decryptedBytes.size) % AES_BLOCK_SIZE  // Minus padding part
                     }
@@ -119,7 +119,7 @@ internal class LcpDecryptor(val drm: DRM) {
             return if (range == null) {
                 license.decryptFully(resource)
             } else {
-                resource.length.tryFlatMap { length ->
+                resource.length.flatMapCatching { length ->
                     val blockPosition = range.first % AES_BLOCK_SIZE
 
                     // For beginning of the cipher text, IV used for XOR.
@@ -144,7 +144,7 @@ internal class LcpDecryptor(val drm: DRM) {
 
                     val readSize = blocksCount * AES_BLOCK_SIZE
                     resource.read(readPosition..(readPosition + readSize))
-                        .tryMap {
+                        .mapCatching {
                             var bytes = license.decipher(it)
                                 ?: throw IOException("Can't decrypt the content at: ${link.href}")
 
@@ -168,7 +168,7 @@ internal class LcpDecryptor(val drm: DRM) {
 }
 
 private fun DRMLicense.decryptFully(resource: Resource): ResourceTry<ByteArray> =
-    resource.read().tryMap { it ->
+    resource.read().mapCatching { it ->
         // Decrypts the resource.
         var bytes = decipher(it)
             ?.takeIf { b -> b.isNotEmpty() }
