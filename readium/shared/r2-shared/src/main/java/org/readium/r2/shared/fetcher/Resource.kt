@@ -11,6 +11,8 @@ package org.readium.r2.shared.fetcher
 
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.read
+import org.readium.r2.shared.parser.xml.ElementNode
+import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
@@ -62,6 +64,12 @@ interface Resource {
      */
     fun readAsJson(): ResourceTry<JSONObject> =
         readAsString(charset = Charsets.UTF_8).tryMap { JSONObject(it) }
+
+    /**
+     * Reads the full content as an XML document.
+     */
+    fun readAsXml(): ResourceTry<ElementNode> =
+        stream().tryMap { XmlParser().parse(it) }
 
     /**
      * Creates an [InputStream] to read the content.
