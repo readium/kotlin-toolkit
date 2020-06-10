@@ -349,10 +349,11 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 task {
                     getBitmapFromURL(publication.images.first().href)
                 }.then {
-                    val cover = it?.toPng()
-                    val book = Book(title = publication.metadata.title, author = author, href = pair.first, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.EPUB.value, progression = "{}")
 
                     launch {
+                        val cover = it?.toPng()
+                        val book = Book(title = publication.metadata.title, author = author, href = pair.first, identifier = publicationIdentifier, cover = cover, ext = Publication.EXTENSION.EPUB.value, progression = "{}")
+
                         progress.dismiss()
                         database.books.insert(book, false)?.let { id ->
                             book.id = id
