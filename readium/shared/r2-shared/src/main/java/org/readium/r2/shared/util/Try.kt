@@ -35,6 +35,8 @@ class Try<out Success, out Failure: Throwable> private constructor(private val _
     fun get() =
         _success ?: throw _failure!!
 
+    fun getOrNull(): Success? = _success
+
     fun <R> map(transform: (value: Success) -> R): Try<R, Failure> =
         when {
             isSuccess -> Try.success(transform(success))

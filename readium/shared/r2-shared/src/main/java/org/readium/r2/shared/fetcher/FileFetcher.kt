@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.fetcher
 
+import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
@@ -49,9 +50,10 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
     }
 
     override fun get(link: Link): Resource {
+        val linkHref = link.href.addPrefix("/")
         for ((itemHref, itemFile) in paths) {
-            if (link.href.startsWith(itemHref)) {
-                val resourceFile = File(itemFile, link.href.removePrefix(itemHref))
+            if (linkHref.startsWith(itemHref)) {
+                val resourceFile = File(itemFile, linkHref.removePrefix(itemHref))
                 // Make sure that the requested resource is [path] or one of its descendant.
                 if (resourceFile.canonicalPath.startsWith(itemFile.canonicalPath)) {
                     return try {

@@ -39,6 +39,9 @@ interface Fetcher {
     /** Closes any opened file handles, removes temporary files, etc. */
     fun close()
 
+    // To be able to add extensions on Fetcher.Companion in other components...
+    companion object
+
 }
 
 /** A [Fetcher] providing no resources at all. */
