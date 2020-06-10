@@ -12,15 +12,16 @@ package org.readium.r2.streamer.parser.readium
 import android.content.Context
 import org.json.JSONObject
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.normalize
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positionsServiceFactory
-import org.readium.r2.streamer.container.ArchiveContainer
-import org.readium.r2.streamer.container.Container
-import org.readium.r2.streamer.container.EmptyContainer
+import org.readium.r2.streamer.container.PublicationContainer
+import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
@@ -57,10 +58,9 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
 
     private fun parseManifest(file: File, format: Format): PubBox? {
         return try {
-            val container = EmptyContainer(file.path, mimetype = format.mediaType.toString())
+            val fetcher = FileFetcher(href = "/manifest.json", file = file)
             val manifestJson = file.readText()
-            parsePublication(manifestJson, container, format, isPackage = false)
-                ?.let { PubBox(it, container) }
+            parsePublication(manifestJson, file, format, fetcher, isPackage = false)
 
         } catch(e: Exception) {
             Timber.e(e, "Failed to parse RWPM")
@@ -70,14 +70,10 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
 
     private fun parsePackage(file: File, format: Format): PubBox? {
         return try {
-            val manifestPath = "manifest.json"
-            val container = ArchiveContainer(file.path, mimetype = format.mediaType.toString()).apply {
-                rootFile.rootFilePath = manifestPath
-            }
-            val manifestJson = String(container.data(manifestPath))
+            val fetcher = Fetcher.fromArchiveOrDirectory(file.path) ?: return null
+            val manifestJson = fetcher.get("/manifest.json").readAsString().getOrNull() ?: return null
 
-            parsePublication(manifestJson, container, format, isPackage = true)
-                ?.let { PubBox(it, container) }
+            parsePublication(manifestJson, file, format, fetcher, isPackage = true)
 
         } catch (e: Exception) {
             Timber.e(e, "Failed to parse Readium WebPub package")
@@ -85,12 +81,11 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
         }
     }
 
-    private fun parsePublication(manifestJson: String, container: Container, format: Format, isPackage: Boolean): Publication? {
+    private fun parsePublication(manifestJson: String, file: File, format: Format, fetcher: Fetcher, isPackage: Boolean): PubBox? {
         try {
-            val lcpProtected = (isPackage && container.isProtectedWithLcp)
-            if (lcpProtected) {
-                container.drm = DRM(DRM.Brand.lcp)
-            }
+            val drm =
+                if (fetcher.isProtectedWithLcp) DRM(DRM.Brand.lcp)
+                else null
 
             val manifest = Manifest.fromJSON(JSONObject(manifestJson)) { normalize(base = "/", href = it) }
                 ?: return null
@@ -102,10 +97,22 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
                         positionsServiceFactory = LcpdfPositionsService.create(context.applicationContext)
                     }
                 }
-            )
-            publication.type = format.toPublicationType()
+            ).apply {
+                type = format.toPublicationType()
+            }
 
-            return publication
+            val container = PublicationContainer(
+                publication = publication,
+                path = file.canonicalPath,
+                mediaType = format.mediaType,
+                drm = drm
+            ).apply {
+                if (isPackage) {
+                    rootFile.rootFilePath = "manifest.json"
+                }
+            }
+
+            return PubBox(publication, container)
 
         } catch (e: Exception) {
             Timber.e(e, "Failed to parse RWPM")
@@ -115,9 +122,8 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
 
 }
 
-private val Container.isProtectedWithLcp: Boolean get() =
-    try { dataLength("license.lcpl") > 0 }
-    catch (e: Exception) { false }
+private val Fetcher.isProtectedWithLcp: Boolean get() =
+    get("license.lcpl").length.isSuccess
 
 private fun Format.toPublicationType(): Publication.TYPE =
     when (this) {

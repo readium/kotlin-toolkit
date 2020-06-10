@@ -14,6 +14,7 @@ import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Link
 import java.io.File
 
@@ -26,6 +27,10 @@ internal fun Fetcher.readBytes(link: Link): ByteArray =
 @Throws(Resource.Error::class)
 internal fun Fetcher.readBytes(href: String): ByteArray =
     get(href).read().get()
+
+/** Returns the resource data as an XML Document at the given [href], or null. */
+internal fun Fetcher.readAsXmlOrNull(href: String): ElementNode? =
+    get(href).readAsXml().getOrNull()
 
 /** Creates a [Fetcher] from either an archive file, or an exploded directory. **/
 internal fun Fetcher.Companion.fromArchiveOrDirectory(path: String): Fetcher? {

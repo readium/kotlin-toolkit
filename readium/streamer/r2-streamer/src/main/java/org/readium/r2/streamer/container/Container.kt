@@ -30,8 +30,12 @@ import java.io.InputStream
 interface Container {
     var rootFile: RootFile
     var drm: DRM?
+
+    @Deprecated("Use [publication.get()] to access publication content.")
     fun data(relativePath: String): ByteArray
+    @Deprecated("Use [publication.get()] to access publication content.")
     fun dataLength(relativePath: String): Long
+    @Deprecated("Use [publication.get()] to access publication content.")
     fun dataInputStream(relativePath: String): InputStream
 }
 
