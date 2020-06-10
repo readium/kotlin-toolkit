@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.publication.services
 
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
@@ -67,11 +68,11 @@ class PositionsServiceTest {
         )
 
         val service = object : PositionsService {
-            override val positionsByReadingOrder: List<List<Locator>> = positions
+            override suspend fun positionsByReadingOrder(): List<List<Locator>> = positions
         }
 
         val json = service.get(Link("/~readium/positions"))
-            ?.readAsString()
+            ?.let { runBlocking { it.readAsString() } }
             ?.getOrNull()
             ?.let {
                 JSONObject(it)
@@ -94,7 +95,7 @@ class PositionsServiceTest {
     fun `helper for ServicesBuilder works fine`() {
         val factory = { context: Publication.Service.Context ->
             object : PositionsService {
-                override val positionsByReadingOrder: List<List<Locator>> = emptyList()
+                override suspend fun positionsByReadingOrder(): List<List<Locator>> = emptyList()
             }
         }
         assertEquals(
@@ -110,7 +111,7 @@ class PerResourcePositionsServiceTest {
     fun `Positions from an empty {readingOrder}`() {
         val service = PerResourcePositionsService(readingOrder = emptyList(), fallbackMediaType = "")
 
-        Assert.assertEquals(0, service.positions.size)
+        Assert.assertEquals(0, runBlocking { service.positions().size })
     }
 
     @Test
@@ -129,7 +130,7 @@ class PerResourcePositionsServiceTest {
                     totalProgression = 0.0
                 )
             )),
-            service.positions
+            runBlocking { service.positions() }
         )
     }
 
@@ -172,7 +173,7 @@ class PerResourcePositionsServiceTest {
                     )
                 )
             ),
-            service.positions
+            runBlocking { service.positions() }
         )
     }
 
@@ -194,7 +195,7 @@ class PerResourcePositionsServiceTest {
                     totalProgression = 0.0
                 )
             )),
-            services.positions
+            runBlocking { services.positions() }
         )
     }
 

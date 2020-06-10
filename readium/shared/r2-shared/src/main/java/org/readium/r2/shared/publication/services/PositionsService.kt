@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.publication.services
 
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.toJsonOrNull
@@ -16,6 +17,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Try
 
 private val positionsLink = Link(
     href= "/~readium/positions",
@@ -28,33 +30,33 @@ private val positionsLink = Link(
 interface PositionsService : Publication.Service {
 
     /**
-     * List of all the positions in the publication, grouped by the resource reading order index.
+     * Returns the list of all the positions in the publication, grouped by the resource reading order index.
      */
-    val positionsByReadingOrder: List<List<Locator>>
+    suspend fun positionsByReadingOrder(): List<List<Locator>>
 
     /**
-     * List of all the positions in the publication.
+     * Returns the list of all the positions in the publication.
      */
-    val positions: List<Locator> get() = positionsByReadingOrder.flatten()
+    suspend fun positions(): List<Locator> = positionsByReadingOrder().flatten()
 
     override val links get() = listOf(positionsLink)
 
-    override fun get(link: Link): Resource? =
+    override fun get(link: Link): Resource? {
         if (link.href != positionsLink.href)
-            null
-        else
-            positions.let {
-                StringResource(positionsLink) {
-                    JSONObject().apply {
-                        put("total", it.size)
-                        put("positions", it.toJSON())
-                    }.toString()
-                }
-            }
+            return null
 
+        return StringResource {
+            val positions = positions()
+            val string = JSONObject().apply {
+                put("total", positions.size)
+                put("positions", positions.toJSON())
+            }.toString()
+            Pair(positionsLink, Try.success(string))
+        }
+    }
 }
 
-private val Publication.positionsFromManifest: List<Locator> get() =
+private suspend fun Publication.positionsFromManifest(): List<Locator> =
     links.firstWithMediaType(positionsLink.mediaType!!)
         ?.let { get(it) }
         ?.readAsString()
@@ -65,23 +67,23 @@ private val Publication.positionsFromManifest: List<Locator> get() =
         .orEmpty()
 
 /**
- * List of all the positions in the publication, grouped by the resource reading order index.
+ * Returns the list of all the positions in the publication, grouped by the resource reading order index.
  */
-val Publication.positionsByReadingOrder: List<List<Locator>> get() {
+suspend fun Publication.positionsByReadingOrder(): List<List<Locator>> {
     findService(PositionsService::class)?.let {
-        return it.positionsByReadingOrder
+        return it.positionsByReadingOrder()
     }
 
-    val locators = positionsFromManifest.groupBy(Locator::href)
+    val locators = positionsFromManifest().groupBy(Locator::href)
     return readingOrder.map { locators[it.href].orEmpty() }
 }
 
 /**
- * List of all the positions in the publication.
+ * Returns the list of all the positions in the publication.
  */
-val Publication.positions: List<Locator> get() {
-    return findService(PositionsService::class)?.positions
-        ?: positionsFromManifest
+suspend fun Publication.positions(): List<Locator> {
+    return findService(PositionsService::class)?.positions()
+        ?: positionsFromManifest()
 }
 
 /**
@@ -89,7 +91,7 @@ val Publication.positions: List<Locator> get() {
  */
 @Deprecated("Use [positionsByReadingOrder] instead", ReplaceWith("positionsByReadingOrder"))
 val Publication.positionsByResource: Map<String, List<Locator>>
-    get() = positions.groupBy { it.href }
+    get() = runBlocking { positions().groupBy { it.href } }
 
 
 /** Factory to build a [PositionsService] */
@@ -109,10 +111,10 @@ class PerResourcePositionsService(
     private val fallbackMediaType: String
 ) : PositionsService {
 
-    override val positionsByReadingOrder: List<List<Locator>> by lazy {
+    override suspend fun positionsByReadingOrder(): List<List<Locator>> {
         val pageCount = readingOrder.size
 
-        readingOrder.mapIndexed { index, link ->
+        return readingOrder.mapIndexed { index, link ->
             listOf(Locator(
                 href = link.href,
                 type = link.type ?: fallbackMediaType,

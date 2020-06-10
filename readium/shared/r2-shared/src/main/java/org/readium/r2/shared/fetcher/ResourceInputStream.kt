@@ -9,14 +9,22 @@
 
 package org.readium.r2.shared.fetcher
 
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import java.io.InputStream
 
 /** Input stream reading a [Resource]'s content. */
 class ResourceInputStream(
-    private val resource: Resource,
-    private val length: Long
+    private val resource: Resource
 ) : InputStream() {
+
+    private val length: Long by lazy {
+        try {
+            runBlocking { resource.length().getOrThrow() }
+        } catch (e: Exception) {
+            throw IOException("Can't get resource length")
+        }
+    }
 
     /** Current position in the resource. */
     private var position: Long = 0
@@ -41,7 +49,7 @@ class ResourceInputStream(
         }
 
         try {
-            val bytes = resource.read(position until (position + 1)).getOrThrow()
+            val bytes = runBlocking { resource.read(position until (position + 1)).getOrThrow() }
             position += 1
             return bytes.first().toInt()
 
@@ -57,7 +65,7 @@ class ResourceInputStream(
         }
 
         try {
-            val bytes = resource.read(position until (position + len)).getOrThrow()
+            val bytes = runBlocking { resource.read(position until (position + len)).getOrThrow() }
             bytes.copyInto(
                 destination = b,
                 destinationOffset = off,

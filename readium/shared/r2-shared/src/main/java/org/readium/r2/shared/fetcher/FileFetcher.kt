@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.fetcher
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
@@ -34,7 +36,7 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
 
     private val openedResources: MutableList<WeakReference<Resource>> = LinkedList()
 
-    override val links: List<Link> by lazy {
+    override suspend fun links(): List<Link> =
         paths.toSortedMap().flatMap { (href, file) ->
             file.walk().mapNotNull {
                 if (it.isDirectory) {
@@ -47,7 +49,6 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
                 }
             }.toList()
         }
-    }
 
     override fun get(link: Link): Resource {
         val linkHref = link.href.addPrefix("/")
@@ -56,35 +57,40 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
                 val resourceFile = File(itemFile, linkHref.removePrefix(itemHref))
                 // Make sure that the requested resource is [path] or one of its descendant.
                 if (resourceFile.canonicalPath.startsWith(itemFile.canonicalPath)) {
-                    return try {
-                        val file = RandomAccessFile(resourceFile, "r")
-                        val resource = FileResource(link, file)
-                        openedResources.add(WeakReference(resource))
-                        return resource
-                    } catch (e: FileNotFoundException) {
-                        FailureResource(link, Resource.Error.NotFound)
-                    } catch (e: SecurityException) {
-                        FailureResource(link, Resource.Error.Forbidden)
-                    } catch (e: Exception) {
-                        FailureResource(link, Resource.Error.Other(e))
-                    }
+                    val resource = FileResource(link, resourceFile)
+                    openedResources.add(WeakReference(resource))
+                    return resource
                 }
             }
         }
         return FailureResource(link, Resource.Error.NotFound)
     }
 
-    override fun close() {
+    override suspend fun close() {
         openedResources.mapNotNull(WeakReference<Resource>::get).forEach { it.close() }
         openedResources.clear()
     }
 
-    private class FileResource(override val link: Link, private val file: RandomAccessFile) : StreamResource() {
+    private class FileResource(val link: Link, private val file: File) : StreamResource() {
 
-        override fun stream(): ResourceTry<InputStream> {
-            val stream = Channels.newInputStream(file.channel).buffered()
-            return Try.success(stream)
+        private val randomAccessFile: ResourceTry<RandomAccessFile> by lazy {
+            try {
+                Try.success(RandomAccessFile(file, "r"))
+            } catch (e: FileNotFoundException) {
+                Try.failure(Resource.Error.NotFound)
+            } catch (e: SecurityException) {
+                Try.failure(Resource.Error.Forbidden)
+            } catch (e: Exception) {
+                Try.failure(Resource.Error.Other(e))
+            }
         }
+
+        override suspend fun link(): Link = link
+
+        override fun stream(): ResourceTry<InputStream> =
+            randomAccessFile.map{
+                Channels.newInputStream(it.channel).buffered()
+            }
 
         override val metadataLength: Long? =
             try {
@@ -93,6 +99,8 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
                 null
             }
 
-        override fun close() = file.close()
+        override suspend fun close() = withContext<Unit>(Dispatchers.IO) {
+            randomAccessFile.onSuccess { it.close() }
+        }
     }
 }

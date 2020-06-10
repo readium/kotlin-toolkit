@@ -55,6 +55,15 @@ class Try<out Success, out Failure: Throwable> private constructor(private val s
         if (isSuccess) onSuccess(success!!) else onFailure(failure!!)
 
     /**
+     * Performs the given action on the encapsulated value if this instance represents success.
+     * Returns the original Result unchanged.
+     */
+    fun onSuccess(action: (value: Success) -> Unit): Try<Success, Failure> {
+        if (isSuccess) action(success!!)
+        return this
+    }
+
+    /**
      * Returns the encapsulated value if this instance represents success or the result of onFailure function
      * for the encapsulated [Throwable] exception if it is failure.
      */

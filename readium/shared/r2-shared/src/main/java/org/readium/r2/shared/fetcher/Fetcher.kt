@@ -22,7 +22,7 @@ interface Fetcher {
      * If the medium has an inherent resource order, it should be followed.
      * Otherwise, HREFs are sorted alphabetically.
      */
-    val links: List<Link>
+    suspend fun links(): List<Link>
 
     /**
      * Returns the [Resource] at the given [link]'s HREF.
@@ -37,7 +37,7 @@ interface Fetcher {
         get(Link(href = href))
 
     /** Closes any opened file handles, removes temporary files, etc. */
-    fun close()
+    suspend fun close()
 
     // To be able to add extensions on Fetcher.Companion in other components...
     companion object
@@ -47,10 +47,10 @@ interface Fetcher {
 /** A [Fetcher] providing no resources at all. */
 class EmptyFetcher : Fetcher {
 
-    override val links: List<Link> = emptyList()
+    override suspend fun links(): List<Link> = emptyList()
 
     override fun get(link: Link): Resource = FailureResource(link, Resource.Error.NotFound)
 
-    override fun close() {}
+    override suspend fun close() {}
 
 }

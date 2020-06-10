@@ -14,10 +14,10 @@ import org.readium.r2.shared.publication.Link
 /** Delegates the creation of a [Resource] to a [closure]. */
 class ProxyFetcher(val closure: (Link) -> Resource) : Fetcher {
 
-    override val links: List<Link> = emptyList()
+    override suspend fun links(): List<Link> = emptyList()
 
     override fun get(link: Link): Resource = closure(link)
 
-    override fun close() {}
+    override suspend fun close() {}
 }
 

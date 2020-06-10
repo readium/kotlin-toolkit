@@ -10,6 +10,9 @@
 package org.readium.r2.shared.publication
 
 import android.net.Uri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.ReadiumCSSName
@@ -158,7 +161,7 @@ class Publication(
     /**
      * Closes any opened resource associated with the [Publication], including [services].
      */
-    fun close() {
+    fun close() = GlobalScope.launch {
         fetcher.close()
         services.forEach { it.close() }
     }

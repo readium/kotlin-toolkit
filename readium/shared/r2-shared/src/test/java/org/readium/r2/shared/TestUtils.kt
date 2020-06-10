@@ -9,11 +9,15 @@
 
 package org.readium.r2.shared
 
+import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.readium.r2.shared.extensions.toList
 import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.publication.Link
 import java.io.File
 import java.net.URL
 
@@ -45,3 +49,15 @@ class Fixtures(val path: String? = null) {
         File(pathAt(resourcePath))
 
 }
+
+internal fun Resource.readBlocking(range: LongRange? = null) = runBlocking { read(range) }
+
+internal fun Fetcher.readBlocking(href: String) = get(Link(href = href)).readBlocking()
+
+internal fun Resource.lengthBlocking(range: LongRange? = null) = runBlocking { length() }
+
+internal fun Fetcher.lengthBlocking(href: String) = get(Link(href = href)).lengthBlocking()
+
+internal fun Resource.linkBlocking(range: LongRange? = null) = runBlocking { link() }
+
+internal fun Fetcher.linkBlocking(href: String) = get(Link(href = href)).linkBlocking()

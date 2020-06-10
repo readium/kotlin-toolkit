@@ -13,10 +13,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Size
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.fetcher.FileFetcher
+import org.readium.r2.shared.linkBlocking
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.readBlocking
 import org.robolectric.annotation.Config
 import java.io.File
 import kotlin.test.assertEquals
@@ -61,10 +64,10 @@ class CoverServiceTest {
         assertNotNull(res)
         assertEquals(
             Link(href = "/~readium/cover", type = "image/png", width = 598, height = 800, rels = setOf("cover")),
-            res.link
+            res.linkBlocking()
         )
 
-        val bytes = res.read().getOrNull()
+        val bytes = res.readBlocking().getOrNull()
         assertNotNull(bytes)
 
         assertTrue(BitmapFactory.decodeByteArray(bytes, 0, bytes.size).sameAs(coverBitmap))
@@ -74,7 +77,7 @@ class CoverServiceTest {
     fun `helper for ServicesBuilder works fine`() {
         val factory = { context: Publication.Service.Context ->
             object : CoverService {
-                override val cover: Bitmap? = null
+                override suspend fun cover(): Bitmap? = null
             }
         }
         assertEquals(
@@ -85,12 +88,12 @@ class CoverServiceTest {
 
     @Test
     fun `cover helper for Publication works fine`() {
-        assertTrue(coverBitmap.sameAs(publication.cover))
+        assertTrue(coverBitmap.sameAs(runBlocking { publication.cover() }))
     }
 
     @Test
     fun `coverFitting helper for Publication works fine`() {
-        val scaled = publication.coverFitting(Size(300, 400))
+        val scaled = runBlocking { publication.coverFitting(Size(300, 400)) }
         assertNotNull(scaled)
         assertEquals(400, scaled.height)
         assertEquals(299, scaled.width)

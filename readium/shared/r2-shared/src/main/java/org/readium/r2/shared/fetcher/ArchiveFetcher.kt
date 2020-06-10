@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.fetcher
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
@@ -21,20 +23,25 @@ import java.util.zip.ZipFile
 /** Provides access to entries of an archive. */
 class ArchiveFetcher private constructor(private val archive: ZipFile) : Fetcher {
 
-    override val links: List<Link> by lazy {
+    override suspend fun links(): List<Link> =
         archive.entries().toList().mapNotNull {
-            Link(href = it.name.addPrefix("/"), type = Format.of(fileExtension = File(it.name).extension)?.mediaType?.toString())
+            Link(
+                href = it.name.addPrefix("/"),
+                type = Format.of(fileExtension = File(it.name).extension)?.mediaType?.toString()
+            )
         }
-    }
 
     override fun get(link: Link): Resource =
         ZipResource(link, archive)
 
-    override fun close() = archive.close()
+    override suspend fun close() = withContext(Dispatchers.IO) { archive.close() }
 
     companion object {
-        fun fromPath(path: String): ArchiveFetcher? = try {
-            ArchiveFetcher(ZipFile(path))
+        suspend fun fromPath(path: String): ArchiveFetcher? = try {
+            val zipFile = withContext(Dispatchers.IO) {
+                ZipFile(path)
+            }
+            ArchiveFetcher(zipFile)
         } catch (e: Exception) {
             null
         }
@@ -49,18 +56,17 @@ class ArchiveFetcher private constructor(private val archive: ZipFile) : Fetcher
                 Try.success(archive.getInputStream(entry))
         }
 
-        override val link: Link by lazy {
+        override suspend fun link(): Link =
             // Adds the compressed length to the original link.
             entry?.compressedSize?.takeIf { it != -1L }
                 ?.let { originalLink.addProperties(mapOf("compressedLength" to it)) }
                 ?: originalLink
-        }
 
         override val metadataLength: Long? by lazy {
             entry?.size?.takeIf { it != -1L }
         }
 
-        override fun close() {}
+        override suspend fun close() {}
 
         private val entry: ZipEntry? by lazy {
             archive.getEntry(originalLink.href.removePrefix("/"))

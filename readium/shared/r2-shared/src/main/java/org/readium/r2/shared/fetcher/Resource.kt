@@ -9,14 +9,29 @@
 
 package org.readium.r2.shared.fetcher
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
+import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.Charset
+
+
+typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Error>
+
+/**
+ * Implements the transformation of a Resource. It can be used, for example, to decrypt,
+ * deobfuscate, inject CSS or JavaScript, correct content – e.g. adding a missing dir="rtl" in an
+ * HTML document, pre-process – e.g. before indexing a publication's content, etc.
+ *
+ * If the transformation doesn't apply, simply return resource unchanged.
+ */
+typealias ResourceTransformer = (Resource) -> Resource
 
 /**
  * Acts as a proxy to an actual resource by handling read access.
@@ -24,20 +39,20 @@ import java.nio.charset.Charset
 interface Resource {
 
     /**
-     * The link from which the resource was retrieved.
+     * Returns the link from which the resource was retrieved.
      *
      * It might be modified by the [Resource] to include additional metadata, e.g. the
      * `Content-Type` HTTP header in [Link.type].
      */
-    val link: Link
+    suspend fun link(): Link
 
     /**
-     * Data length from metadata if available, or calculated from reading the bytes otherwise.
+     * Returns data length from metadata if available, or calculated from reading the bytes otherwise.
      *
      * This value must be treated as a hint, as it might not reflect the actual bytes length. To get
      * the real length, you need to read the whole resource.
      */
-    val length: ResourceTry<Long>
+    suspend fun length(): ResourceTry<Long>
 
     /**
      * Reads the bytes at the given range.
@@ -45,41 +60,35 @@ interface Resource {
      * When [range] is null, the whole content is returned. Out-of-range indexes are clamped to the
      * available length automatically.
      */
-    fun read(range: LongRange? = null): ResourceTry<ByteArray>
+    suspend fun read(range: LongRange? = null): ResourceTry<ByteArray>
 
     /**
      * Reads the full content as a [String].
      *
-     * If [charset] is null, then it is parsed from the `charset` parameter of `link.type`, or falls
-     * back on UTF-8.
+     * If [charset] is null, then it is parsed from the `charset` parameter of link().type,
+     * or falls back on UTF-8.
      */
-    fun readAsString(charset: Charset? = null): ResourceTry<String> =
+    suspend fun readAsString(charset: Charset? = null): ResourceTry<String> =
         read().mapCatching {
-            String(it, charset = charset ?: link.mediaType?.charset ?: Charsets.UTF_8)
+            String(it, charset = charset ?: link().mediaType?.charset ?: Charsets.UTF_8)
         }
 
     /**
      * Reads the full content as a JSON object.
      */
-    fun readAsJson(): ResourceTry<JSONObject> =
+    suspend fun readAsJson(): ResourceTry<JSONObject> =
         readAsString(charset = Charsets.UTF_8).mapCatching { JSONObject(it) }
 
     /**
      * Reads the full content as an XML document.
      */
-    fun readAsXml(): ResourceTry<ElementNode> =
-        stream().mapCatching { XmlParser().parse(it) }
-
-    /**
-     * Creates an [InputStream] to read the content.
-     */
-    fun stream(): ResourceTry<InputStream> =
-        length.map { ResourceInputStream(resource = this, length = it) }
+    suspend fun readAsXml(): ResourceTry<ElementNode> =
+        read().mapCatching { XmlParser().parse(ByteArrayInputStream(it)) }
 
     /**
      * Closes any opened file handles.
      */
-    fun close()
+    suspend fun close()
 
     /**
      * Errors occurring while accessing a resource.
@@ -109,110 +118,145 @@ interface Resource {
     }
 }
 
-typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Error>
-
-/**
- * Implements the transformation of a Resource. It can be used, for example, to decrypt,
- * deobfuscate, inject CSS or JavaScript, correct content – e.g. adding a missing dir="rtl" in an
- * HTML document, pre-process – e.g. before indexing a publication's content, etc.
- *
- * If the transformation doesn't apply, simply return resource unchanged.
- */
-typealias ResourceTransformer = (Resource) -> Resource
-
 /** Creates a Resource that will always return the given [error]. */
-class FailureResource(override val link: Link, private val error: Resource.Error) : Resource {
+class FailureResource(private val link: Link, private val error: Resource.Error) : Resource {
 
     internal constructor(link: Link, cause: Throwable) : this(link, Resource.Error.Other(cause))
 
-    override fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
+    override suspend fun link(): Link = link
 
-    override val length:  ResourceTry<Long> = Try.failure(error)
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
 
-    override fun close() {}
+    override suspend fun length():  ResourceTry<Long> = Try.failure(error)
+
+    override suspend fun close() {}
 }
 
-/** Creates a Resource serving an array of [bytes]. */
-open class BytesResource(override val link: Link, private val bytes: () -> ByteArray) : Resource {
-    private val byteArray by lazy(bytes)
+/** Creates a Resource serving [ByteArray] computed from a factory that can fail. */
+open class BytesResource(private val factory: suspend () -> Pair<Link, ResourceTry<ByteArray>>) : Resource {
 
-    override fun read(range: LongRange?): ResourceTry<ByteArray> {
+    private lateinit var byteArray: ResourceTry<ByteArray>
+    private lateinit var computedLink: Link
+
+    private suspend fun maybeInitData() {
+        if(!::byteArray.isInitialized || !::computedLink.isInitialized) {
+            val res = factory()
+            computedLink = res.first
+            byteArray = res.second
+        }
+    }
+
+    private suspend fun bytes(): ResourceTry<ByteArray> {
+        maybeInitData()
+        return byteArray
+    }
+
+    override suspend fun link(): Link {
+        maybeInitData()
+        return computedLink
+    }
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
         if (range == null)
-            return Try.success(byteArray)
+            return bytes()
 
         @Suppress("NAME_SHADOWING")
         val range = checkedRange(range)
-        val byteRange = byteArray.sliceArray(range.map(Long::toInt))
-        return Try.success(byteRange)
+        return bytes().map { it.sliceArray(range.map(Long::toInt)) }
     }
 
-    override val length: ResourceTry<Long> = Try.success(byteArray.size.toLong())
+    override suspend fun length(): ResourceTry<Long> = byteArray.map { it.size.toLong() }
 
-    override fun close() {}
+    override suspend fun close() {}
 }
 
-/** Creates a Resource serving a string encoded as UTF-8. */
-class StringResource(link: Link, string: () -> String) : BytesResource(link, { string().toByteArray() })
+/** Creates a Resource serving a [String] computed from a factory that can fail. */
+class StringResource(factory: suspend () -> Pair<Link, ResourceTry<String>>) : BytesResource(
+    {
+        val (link,res) = factory()
+        Pair(link, res.mapCatching { it.toByteArray() })
+    }
+)
 
 /**
  * A base class for a [Resource] which acts as a proxy to another one.
  *
  * Every function is delegating to the proxied resource, and subclasses should override some of them.
  */
-internal abstract class ResourceProxy(
-    protected val resource: Resource
-) : Resource {
+abstract class ProxyResource(protected val resource: Resource) : Resource {
 
-    override val link: Link get() = resource.link
+    override suspend fun link(): Link = resource.link()
 
-    override val length: ResourceTry<Long> get() = resource.length
+    override suspend fun length(): ResourceTry<Long> = resource.length()
 
-    override fun read(range: LongRange?): ResourceTry<ByteArray> {
-        return resource.read(range)
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = resource.read(range)
+
+    override suspend fun close() = resource.close()
+}
+
+class RoutingResource(private val resourceFactory: suspend () -> Resource) : Resource {
+
+    private lateinit var _resource: Resource
+
+    private suspend fun resource(): Resource {
+        if (!::_resource.isInitialized)
+            _resource = resourceFactory()
+
+        return _resource
     }
 
-    override fun close() = resource.close()
+    override suspend fun link(): Link = resource().link()
 
+    override suspend fun length(): ResourceTry<Long> = resource().length()
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = resource().read(range)
+
+    override suspend fun close() = resource().close()
 }
 
 internal abstract class StreamResource : Resource {
 
-    abstract override fun stream(): ResourceTry<InputStream>
+    abstract fun stream(): ResourceTry<InputStream>
 
     /** An estimate of data length from metadata */
     protected abstract val metadataLength: Long?
 
-    override fun read(range: LongRange?): ResourceTry<ByteArray> =
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
         if (range == null)
             readFully()
         else
             readRange(range)
 
-    private fun readFully(): ResourceTry<ByteArray> =
+    private suspend fun readFully(): ResourceTry<ByteArray> =
         stream().mapCatching { stream ->
-            stream.use { it.readBytes() }
+            stream.use {
+                withContext(Dispatchers.IO) {
+                    it.readBytes()
+                }
+            }
         }
 
-    private fun readRange(range: LongRange): ResourceTry<ByteArray> =
+    private suspend fun readRange(range: LongRange): ResourceTry<ByteArray> =
         stream().mapCatching { stream ->
             @Suppress("NAME_SHADOWING")
             val range = checkedRange(range)
 
-            stream.use {
-                val skipped = it.skip(range.first)
-                val length = range.last - range.first + 1
-                val bytes = it.read(length)
-                if (skipped != range.first && bytes.isNotEmpty()) {
-                    throw Exception("Unable to skip enough bytes")
+            withContext(Dispatchers.IO) {
+                stream.use {
+                    val skipped = it.skip(range.first)
+                    val length = range.last - range.first + 1
+                    val bytes = it.read(length)
+                    if (skipped != range.first && bytes.isNotEmpty()) {
+                        throw Exception("Unable to skip enough bytes")
+                    }
+                    return@use bytes
                 }
-                return@use bytes
             }
         }
 
-    override val length: ResourceTry<Long>
-        get() =
-            metadataLength?.let { Try.success(it) }
-                ?: readFully().map { it.size.toLong() }
+    override suspend fun length(): ResourceTry<Long> =
+        metadataLength?.let { Try.success(it) }
+            ?: readFully().map { it.size.toLong() }
 }
 
 /**
@@ -220,7 +264,7 @@ internal abstract class StreamResource : Resource {
  *
  * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Error.Other.
  */
-fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
+suspend fun <R, S> ResourceTry<S>.mapCatching(transform: suspend (value: S) -> R): ResourceTry<R> =
     try {
         Try.success((transform(getOrThrow())))
     } catch (e: Resource.Error) {
@@ -229,13 +273,11 @@ fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R
         Try.failure(Resource.Error.Other(e))
     }
 
-fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
+suspend fun <R, S> ResourceTry<S>.flatMapCatching(transform: suspend (value: S) -> ResourceTry<R>): ResourceTry<R> =
     mapCatching(transform).flatMap { it }
 
-private fun checkedRange(range: LongRange): LongRange =
-    if (range.first >= range.last)
-        0 until 0L
-    else if (range.last - range.first + 1 > Int.MAX_VALUE)
-        throw IllegalArgumentException("Range length greater than Int.MAX_VALUE")
-    else
-        LongRange(range.first.coerceAtLeast(0), range.last)
+private fun checkedRange(range: LongRange): LongRange = when {
+    range.first >= range.last -> 0 until 0L
+    range.last - range.first + 1 > Int.MAX_VALUE -> throw IllegalArgumentException("Range length greater than Int.MAX_VALUE")
+    else -> LongRange(range.first.coerceAtLeast(0), range.last)
+}

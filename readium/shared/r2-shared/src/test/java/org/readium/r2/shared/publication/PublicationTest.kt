@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.publication
 
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.instanceOf
 import org.junit.Assert.*
 import org.junit.Test
@@ -18,6 +19,7 @@ import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.util.Try
 import java.net.URL
 
 class PublicationTest {
@@ -45,7 +47,7 @@ class PublicationTest {
     )
 
     @Test fun `get the default empty {positions}`() {
-        assertEquals(emptyList<Locator>(), createPublication().positions)
+        assertEquals(emptyList<Locator>(), runBlocking { createPublication().positions() })
     }
 
     @Test fun `get the {positions} computed from the {PositionsService}`() {
@@ -55,11 +57,11 @@ class PublicationTest {
                 servicesBuilder = Publication.ServicesBuilder(
                     positions = { context ->
                         object: PositionsService {
-                            override val positionsByReadingOrder: List<List<Locator>> = listOf(listOf(Locator(href = "locator", type = "")))
+                            override suspend fun positionsByReadingOrder(): List<List<Locator>> = listOf(listOf(Locator(href = "locator", type = "")))
                         }
                     }
                 )
-            ).positions
+            ).let { runBlocking { it.positions() } }
         )
     }
 
@@ -78,7 +80,7 @@ class PublicationTest {
                 servicesBuilder = Publication.ServicesBuilder(
                     positions = { context ->
                         object: PositionsService {
-                            override val positionsByReadingOrder: List<List<Locator>> = listOf(
+                            override suspend fun positionsByReadingOrder(): List<List<Locator>> = listOf(
                                 listOf(
                                     Locator(href="res1", type = "text/html", title = "Loc A"),
                                     Locator(href="res1", type = "text/html", title = "Loc B")
@@ -88,7 +90,7 @@ class PublicationTest {
                         }
                     }
                 )
-            ).positionsByReadingOrder
+            ).let { runBlocking { it.positionsByReadingOrder() }  }
         )
     }
 
@@ -285,7 +287,7 @@ class PublicationTest {
             override fun get(link: Link): Resource? {
                 assertFalse(link.templated)
                 assertEquals("param1=a&param2=b", link.href.substringAfter("?"))
-                return StringResource(link) { "test passed" }
+                return StringResource { Pair(link, Try.success("test passed")) }
             }
         }
 
@@ -296,7 +298,7 @@ class PublicationTest {
                 positions = { service }
             )
         )
-        assertEquals("test passed", publication.get(link).readAsString().getOrNull())
+        assertEquals("test passed", runBlocking { publication.get(link).readAsString().getOrNull() })
     }
 
     @Suppress("DEPRECATION")

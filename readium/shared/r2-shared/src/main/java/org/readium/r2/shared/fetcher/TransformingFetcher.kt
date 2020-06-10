@@ -20,14 +20,14 @@ class TransformingFetcher(private val fetcher: Fetcher, private val transformers
     constructor(fetcher: Fetcher, transformer: ResourceTransformer)
             : this(fetcher, listOf(transformer))
 
-    override val links: List<Link> get() = fetcher.links
+    override suspend fun links(): List<Link> = fetcher.links()
 
     override fun get(link: Link): Resource {
         val resource = fetcher.get(link)
         return transformers.fold(resource) { acc, transformer -> transformer(acc) }
     }
 
-    override fun close() {
+    override suspend fun close() {
         fetcher.close()
     }
 }

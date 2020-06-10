@@ -31,12 +31,12 @@ class RoutingFetcher(private val routes: List<Route>) : Fetcher {
     constructor(local: Fetcher, remote: Fetcher)
             : this(listOf( Route(local, Link::isLocal), Route(remote) ))
 
-    override val links: List<Link> = routes.flatMap { it.fetcher.links }
+    override suspend fun links(): List<Link> = routes.flatMap { it.fetcher.links() }
 
     override fun get(link: Link): Resource =
         routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: FailureResource(link, Resource.Error.NotFound)
 
-    override fun close() {
+    override suspend fun close() {
         routes.forEach { it.fetcher.close() }
     }
 }

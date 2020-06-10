@@ -15,12 +15,19 @@ import android.util.Size
 import org.readium.r2.shared.extensions.scaleToFit
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.fetcher.BytesResource
-import org.readium.r2.shared.fetcher.FailureResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
-import org.readium.r2.shared.publication.firstWithHref
+import org.readium.r2.shared.util.Try
+
+private fun coverLink(size: Size?): Link = Link(
+    href = "/~readium/cover",
+    type = "image/png",
+    rels = setOf("cover"),
+    height = size?.height,
+    width = size?.width
+)
 
 /**
  * Provides an easy access to a bitmap version of the publication cover.
@@ -46,39 +53,32 @@ interface CoverService : Publication.Service {
      *
      * If the cover is not a bitmap format (e.g. SVG), it should be scaled down to fit the screen.
      */
-    val cover: Bitmap?
+    suspend fun cover(): Bitmap?
 
     /**
      *  Returns the publication cover as a [Bitmap], scaled down to fit the given [maxSize].
      */
-    fun coverFitting(maxSize: Size): Bitmap? = cover?.scaleToFit(maxSize)
+    suspend fun coverFitting(maxSize: Size): Bitmap? = cover()?.scaleToFit(maxSize)
 
-    override val links: List<Link> get() = listOfNotNull(
-        cover?.let {
-            Link(
-                href = "/~readium/cover",
-                type = "image/png",
-                rels = setOf("cover"),
-                height = it.height,
-                width = it.width
-            )
+    override fun get(link: Link): Resource? = BytesResource {
+        try {
+            val bitmap = cover()
+            @Suppress("NAME_SHADOWING")
+            val link = coverLink(bitmap?.let { Size(it.width, it.height) })
+            if (bitmap == null)
+                throw Resource.Error.NotFound
+            val png = bitmap.toPng() ?: throw Resource.Error.Other(Exception("Unable to convert cover to PNG."))
+            Pair(link, Try.success(png))
+        } catch (e: Resource.Error) {
+            Pair(link, Try.failure(e))
         }
-    )
-
-    override fun get(link: Link): Resource? {
-        @Suppress("NAME_SHADOWING")
-        val link = links.firstWithHref(link.href) ?: return null
-        val cover = cover ?: return null
-        val png = cover.toPng() ?: return FailureResource(link, Exception("Unable to convert cover to PNG."))
-        return BytesResource(link) { png }
     }
 }
 
-private val Publication.coverFromManifest: Bitmap? get() {
+private suspend fun Publication.coverFromManifest(): Bitmap? {
     for (link in linksWithRel("cover")) {
         val data = get(link).read().getOrNull() ?: continue
-        val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size) ?: continue
-        return bitmap
+        return BitmapFactory.decodeByteArray(data, 0, data.size) ?: continue
     }
     return null
 }
@@ -86,18 +86,17 @@ private val Publication.coverFromManifest: Bitmap? get() {
 /**
  * Returns the publication cover as a [Bitmap] at its maximum size.
  */
-val Publication.cover: Bitmap?
-    get() {
-        findService(CoverService::class)?.cover?.let { return it }
-        return coverFromManifest
+suspend fun Publication.cover(): Bitmap? {
+        findService(CoverService::class)?.cover()?.let { return it }
+        return coverFromManifest()
     }
 
 /**
  * Returns the publication cover as a [Bitmap], scaled down to fit the given [maxSize].
  */
-fun Publication.coverFitting(maxSize: Size): Bitmap? {
+suspend fun Publication.coverFitting(maxSize: Size): Bitmap? {
     findService(CoverService::class)?.coverFitting(maxSize)?.let { return it }
-    return coverFromManifest?.scaleToFit(maxSize)
+    return coverFromManifest()?.scaleToFit(maxSize)
 }
 
 /** Factory to build a [CoverService]. */
@@ -108,10 +107,12 @@ var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
 /**
  * A [CoverService] which uses a provided in-memory bitmap.
  */
-class InMemoryCoverService internal constructor(override val cover: Bitmap) : CoverService {
+class InMemoryCoverService internal constructor(private val cover: Bitmap) : CoverService {
 
     companion object {
         fun createFactory(cover: Bitmap?): ServiceFactory? = { cover?.let { InMemoryCoverService(it) } }
     }
+
+    override suspend fun cover(): Bitmap? = cover
 
 }

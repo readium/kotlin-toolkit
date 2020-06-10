@@ -11,6 +11,8 @@ package org.readium.r2.shared.extensions
 
 import android.graphics.Bitmap
 import android.util.Size
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import kotlin.math.min
 
@@ -35,9 +37,9 @@ internal fun Bitmap.scaleToFit(maxSize: Size): Bitmap {
 
 internal val Bitmap.size get() = Size(width, height)
 
-fun Bitmap.toPng(quality: Int = 100): ByteArray? {
+suspend fun Bitmap.toPng(quality: Int = 100): ByteArray? = withContext(Dispatchers.Default) {
     val stream = ByteArrayOutputStream()
-    return compress(Bitmap.CompressFormat.PNG, quality, stream).let{
+    compress(Bitmap.CompressFormat.PNG, quality, stream).let{
         if (it) stream.toByteArray() else null
     }
 }
