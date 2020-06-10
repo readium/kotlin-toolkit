@@ -39,7 +39,7 @@ class EpubDeobfuscatorTest {
 
         val fontResult = fetcher.get(Link(href = "/deobfuscation/cut-cut.woff")).read()
         assert(fontResult.isSuccess)
-        font = fontResult.success
+        font = fontResult.getOrThrow()
     }
 
     private fun deobfuscate(href: String, algorithm: String): Resource {
@@ -62,9 +62,8 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.obf.woff",
             "http://www.idpf.org/2008/embedding"
-        ).read()
-        assert(deobfuscatedRes.isSuccess)
-        assertThat(deobfuscatedRes.success).isEqualTo(font)
+        ).read().getOrNull()
+        assertThat(deobfuscatedRes).isEqualTo(font)
     }
 
     @Test
@@ -72,9 +71,8 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.adb.woff",
             "http://ns.adobe.com/pdf/enc#RC"
-        ).read()
-        assert(deobfuscatedRes.isSuccess)
-        assertThat(deobfuscatedRes.success).isEqualTo(font)
+        ).read().getOrThrow()
+        assertThat(deobfuscatedRes).isEqualTo(font)
     }
 
 }

@@ -49,7 +49,10 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             val mediaType = link.mediaType ?: MediaType.BINARY
             val resource = fetcher.get(link)
             serveResponse(session, resource, mediaType.toString())
-        } catch (e: Exception) {
+        } catch(e: Resource.Error) {
+            responseFromFailure(e)
+        }
+        catch (e: Exception) {
             if (DEBUG) Timber.e(e)
             newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
@@ -82,12 +85,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             }
 
             // Change return code and add Content-Range header when skipping is requested
-            val dataLength = resource.length.let {
-                if (it.isSuccess) {
-                    it.success
-                } else
-                    return responseFromFailure(it.failure)
-            }
+            val dataLength = resource.length.getOrThrow()
 
             if (rangeRequest != null && startFrom >= 0) {
                 if (startFrom >= dataLength) {
@@ -99,13 +97,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
                         endAt = dataLength - 1
                     }
 
-                    val data = resource.read(startFrom..endAt).let {
-                        if (it.isSuccess)
-                            it.success
-                        else
-                            return responseFromFailure(it.failure)
-                    }
-
+                    val data = resource.read(startFrom..endAt).getOrThrow()
                     response = createResponse(Status.PARTIAL_CONTENT, mimeType, data)
                     response.addHeader("Content-Length", data.size.toString())
                     response.addHeader("Content-Range", "bytes $startFrom-$endAt/$dataLength")
@@ -115,12 +107,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
                 if (etag == session.headers["if-none-match"])
                     response = createResponse(Status.NOT_MODIFIED, mimeType, "")
                 else {
-                    val data = resource.read().let {
-                        if (it.isSuccess)
-                            it.success
-                        else
-                            return responseFromFailure(it.failure)
-                    }
+                    val data = resource.read().getOrThrow()
                     response = createResponse(Status.OK, mimeType, data)
                     response.addHeader("Content-Length", data.size.toString())
                     response.addHeader("ETag", etag)

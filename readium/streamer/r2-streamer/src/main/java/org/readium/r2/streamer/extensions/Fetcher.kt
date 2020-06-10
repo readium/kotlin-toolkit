@@ -21,12 +21,12 @@ import java.io.File
 /** Returns the resource data at the given [Link]'s HREF, or throws a [Resource.Error] */
 @Throws(Resource.Error::class)
 internal fun Fetcher.readBytes(link: Link): ByteArray =
-    get(link).read().get()
+    get(link).read().getOrThrow()
 
 /** Returns the resource data at the given [href], or throws a [Resource.Error] */
 @Throws(Resource.Error::class)
 internal fun Fetcher.readBytes(href: String): ByteArray =
-    get(href).read().get()
+    get(href).read().getOrThrow()
 
 /** Returns the resource data as an XML Document at the given [href], or null. */
 internal fun Fetcher.readAsXmlOrNull(href: String): ElementNode? =

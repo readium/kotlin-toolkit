@@ -86,7 +86,7 @@ internal class EpubPositionsService(
         // If the resource is encrypted, we use the `originalLength` declared in `encryption.xml`
         // instead of the ZIP entry length.
         val length = link.properties.encryption?.originalLength
-            ?: fetcher.get(link).length.successOrNull()
+            ?: fetcher.get(link).length.getOrNull()
             ?: return emptyList()
 
         val pageCount = ceil(length / reflowablePositionLength.toDouble()).toInt()

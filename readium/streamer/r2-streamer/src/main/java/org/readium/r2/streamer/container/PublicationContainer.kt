@@ -30,15 +30,15 @@ internal class PublicationContainer(
     override var rootFile = RootFile(rootPath = path, mimetype = mediaType.toString())
 
     override fun data(relativePath: String): ByteArray {
-        return publication.get(relativePath).read().get()
+        return publication.get(relativePath).read().getOrThrow()
     }
 
     override fun dataLength(relativePath: String): Long =
         tryOr(0) {
-            publication.get(relativePath).length.get()
+            publication.get(relativePath).length.getOrThrow()
         }
 
     override fun dataInputStream(relativePath: String): InputStream =
-        publication.get(relativePath).stream().get()
+        publication.get(relativePath).stream().getOrThrow()
 
 }
