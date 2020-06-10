@@ -54,7 +54,7 @@ interface Resource {
      * back on UTF-8.
      */
     fun readAsString(charset: Charset? = null): ResourceTry<String> =
-        read().tryMap {
+        read().mapCatching {
             String(it, charset = charset ?: link.mediaType?.charset ?: Charsets.UTF_8)
         }
 
@@ -62,13 +62,13 @@ interface Resource {
      * Reads the full content as a JSON object.
      */
     fun readAsJson(): ResourceTry<JSONObject> =
-        readAsString(charset = Charsets.UTF_8).tryMap { JSONObject(it) }
+        readAsString(charset = Charsets.UTF_8).mapCatching { JSONObject(it) }
 
     /**
      * Reads the full content as an XML document.
      */
     fun readAsXml(): ResourceTry<ElementNode> =
-        stream().tryMap { XmlParser().parse(it) }
+        stream().mapCatching { XmlParser().parse(it) }
 
     /**
      * Creates an [InputStream] to read the content.
@@ -189,12 +189,12 @@ internal abstract class StreamResource : Resource {
             readRange(range)
 
     private fun readFully(): ResourceTry<ByteArray> =
-        stream().tryMap { stream ->
+        stream().mapCatching { stream ->
             stream.use { it.readBytes() }
         }
 
     private fun readRange(range: LongRange): ResourceTry<ByteArray> =
-        stream().tryMap { stream ->
+        stream().mapCatching { stream ->
             @Suppress("NAME_SHADOWING")
             val range = checkedRange(range)
 
@@ -220,7 +220,7 @@ internal abstract class StreamResource : Resource {
  *
  * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Error.Other.
  */
-fun <R, S> ResourceTry<S>.tryMap(transform: (value: S) -> R): ResourceTry<R> =
+fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
     try {
         Try.success((transform(getOrThrow())))
     } catch (e: Resource.Error) {
@@ -229,8 +229,8 @@ fun <R, S> ResourceTry<S>.tryMap(transform: (value: S) -> R): ResourceTry<R> =
         Try.failure(Resource.Error.Other(e))
     }
 
-fun <R, S> ResourceTry<S>.tryFlatMap(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
-    tryMap(transform).flatMap { it }
+fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
+    mapCatching(transform).flatMap { it }
 
 private fun checkedRange(range: LongRange): LongRange =
     if (range.first >= range.last)
