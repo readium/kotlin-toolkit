@@ -9,6 +9,7 @@
 
 package org.readium.r2.testapp.utils.extensions
 
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.parser.PubBox
@@ -36,7 +37,7 @@ fun Publication.Companion.parse(path: String, format: Format): PubBox? =
     }
 
 fun Publication.Companion.parse(path: String, mediaType: String? = null, fileExtension: String? = null): PubBox? =
-    Format.of(File(path), mediaType = mediaType, fileExtension = fileExtension)
+    runBlocking { Format.ofFile(path, mediaType = mediaType, fileExtension = fileExtension) }
         ?.let { parse(path, it) }
 
 val Publication.TYPE.format: Format? get() = when (this) {
