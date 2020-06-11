@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.format.Format
@@ -31,7 +32,7 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val file = File(fileAtPath)
-        val format = Format.of(file) ?: return null
+        val format = runBlocking { Format.ofFile(file) } ?: return null
 
         val pubBox = if (format.mediaType.isRwpm) {
             parseManifest(file, format)
