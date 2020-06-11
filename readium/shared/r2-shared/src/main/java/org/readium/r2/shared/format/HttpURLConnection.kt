@@ -14,14 +14,11 @@ import java.net.HttpURLConnection
 
 /** HttpURLConnection Format extensions */
 
-/** Sniffs the format for this [HttpURLConnection], using the default format sniffers. */
-val HttpURLConnection.format: Format? get() = sniffFormat()
-
 /**
  * Resolves the format for this [HttpURLConnection], with optional extra file extension and media type
  * hints.
  */
-fun HttpURLConnection.sniffFormat(bytes: (() -> ByteArray)? = null, mediaTypes: List<String> = emptyList(), fileExtensions: List<String> = emptyList(), sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+suspend fun HttpURLConnection.sniffFormat(bytes: (() -> ByteArray)? = null, mediaTypes: List<String> = emptyList(), fileExtensions: List<String> = emptyList(), sniffers: List<FormatSniffer> = Format.sniffers): Format? {
     val allMediaTypes = mediaTypes.toMutableList()
     val allFileExtensions = fileExtensions.toMutableList()
 
@@ -38,7 +35,7 @@ fun HttpURLConnection.sniffFormat(bytes: (() -> ByteArray)? = null, mediaTypes: 
     // TODO: The suggested filename extension, part of the HTTP header `Content-Disposition`.
 
     return if (bytes != null) {
-        Format.of(bytes = bytes, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
+        Format.ofBytes(bytes, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
     } else {
         Format.of(mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
     }

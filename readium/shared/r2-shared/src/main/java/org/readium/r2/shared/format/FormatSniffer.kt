@@ -10,6 +10,8 @@
 package org.readium.r2.shared.format
 
 import android.webkit.MimeTypeMap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Publication
 import java.io.File
@@ -22,7 +24,7 @@ import java.util.zip.ZipEntry
  *
  * @param context Holds the file metadata and cached content, which are shared among the sniffers.
  */
-typealias FormatSniffer = (context: FormatSnifferContext) -> Format?
+typealias FormatSniffer = suspend (context: FormatSnifferContext) -> Format?
 
 /**
  * Default format sniffers provided by Readium.
@@ -39,19 +41,19 @@ object FormatSniffers {
     )
 
     /** Sniffs an HTML document. */
-    fun html(context: FormatSnifferContext): Format? {
+    suspend fun html(context: FormatSnifferContext): Format? {
         if (context.hasFileExtension("htm", "html", "xht", "xhtml") || context.hasMediaType("text/html", "application/xhtml+xml")) {
             return Format.HTML
         }
         // [contentAsXml] will fail if the HTML is not a proper XML document, hence the doctype check.
-        if (context.contentAsXml?.name?.toLowerCase(Locale.ROOT) == "html" || context.contentAsString?.trimStart()?.startsWith("<!DOCTYPE html>") == true) {
+        if (context.contentAsXml()?.name?.toLowerCase(Locale.ROOT) == "html" || context.contentAsString()?.trimStart()?.startsWith("<!DOCTYPE html>") == true) {
             return Format.HTML
         }
         return null
     }
 
     /** Sniffs an OPDS document. */
-    fun opds(context: FormatSnifferContext): Format? {
+    suspend fun opds(context: FormatSnifferContext): Format? {
         // OPDS 1
         if (context.hasMediaType("application/atom+xml;type=entry;profile=opds-catalog")) {
             return Format.OPDS1_ENTRY
@@ -59,7 +61,7 @@ object FormatSniffers {
         if (context.hasMediaType("application/atom+xml;profile=opds-catalog")) {
             return Format.OPDS1_FEED
         }
-        context.contentAsXml?.let { xml ->
+        context.contentAsXml()?.let { xml ->
             if (xml.namespace == "http://www.w3.org/2005/Atom") {
                 if (xml.name == "feed") {
                     return Format.OPDS1_FEED
@@ -76,7 +78,7 @@ object FormatSniffers {
         if (context.hasMediaType("application/opds-publication+json")) {
             return Format.OPDS2_PUBLICATION
         }
-        context.contentAsRwpm?.let { rwpm ->
+        context.contentAsRwpm()?.let { rwpm ->
             if (rwpm.linkWithRel("self")?.mediaType?.matches("application/opds+json") == true) {
                 return Format.OPDS2_FEED
             }
@@ -97,7 +99,7 @@ object FormatSniffers {
     }
 
     /** Sniffs an LCP License Document. */
-    fun lcpLicense(context: FormatSnifferContext): Format? {
+    suspend fun lcpLicense(context: FormatSnifferContext): Format? {
         if (context.hasFileExtension("lcpl") || context.hasMediaType("application/vnd.readium.lcp.license.v1.0+json")) {
             return Format.LCP_LICENSE
         }
@@ -108,7 +110,7 @@ object FormatSniffers {
     }
 
     /** Sniffs a bitmap image. */
-    fun bitmap(context: FormatSnifferContext): Format? {
+    suspend fun bitmap(context: FormatSnifferContext): Format? {
         if (context.hasFileExtension("bmp", "dib") || context.hasMediaType("image/bmp", "image/x-bmp")) {
             return Format.BMP
         }
@@ -131,7 +133,7 @@ object FormatSniffers {
     }
 
     /** Sniffs a Readium Web Publication, protected or not by LCP. */
-    fun webpub(context: FormatSnifferContext): Format? {
+    suspend fun webpub(context: FormatSnifferContext): Format? {
         if (context.hasFileExtension("audiobook") || context.hasMediaType("application/audiobook+zip")) {
             return Format.AUDIOBOOK
         }
@@ -166,7 +168,7 @@ object FormatSniffers {
         val publication: Publication? =
             try {
                 // manifest.json
-                context.contentAsRwpm ?:
+                context.contentAsRwpm() ?:
                 // ZIP package
                 context.readZipEntryAt("manifest.json")
                     ?.let { Publication.fromJSON(JSONObject(String(it))) }
@@ -197,9 +199,9 @@ object FormatSniffers {
     }
 
     /** Sniffs a W3C Web Publication Manifest. */
-    fun w3cWPUB(context: FormatSnifferContext): Format? {
+    suspend fun w3cWPUB(context: FormatSnifferContext): Format? {
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@context`.
-        val content = context.contentAsString ?: ""
+        val content = context.contentAsString() ?: ""
         if (content.contains("@context") && content.contains("https://www.w3.org/ns/wp-context")) {
             return Format.W3C_WPUB_MANIFEST
         }
@@ -212,7 +214,7 @@ object FormatSniffers {
      *
      * Reference: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-mime
      */
-    fun epub(context: FormatSnifferContext): Format? {
+    suspend fun epub(context: FormatSnifferContext): Format? {
         if (context.hasFileExtension("epub") || context.hasMediaType("application/epub+zip")) {
             return Format.EPUB
         }
@@ -233,7 +235,7 @@ object FormatSniffers {
      *  - https://www.w3.org/TR/lpf/
      *  - https://www.w3.org/TR/pub-manifest/
      */
-    fun lpf(context: FormatSnifferContext): Format? {
+    suspend fun lpf(context: FormatSnifferContext): Format? {
         if (context.hasFileExtension("lpf") || context.hasMediaType("application/lpf+zip")) {
             return Format.LPF
         }
@@ -279,7 +281,7 @@ object FormatSniffers {
      *
      * Reference: https://wiki.mobileread.com/wiki/CBR_and_CBZ
      */
-    fun zip(context: FormatSnifferContext): Format? {
+    suspend fun zip(context: FormatSnifferContext): Format? {
         if (context.hasFileExtension("cbz") || context.hasMediaType("application/vnd.comicbook+zip", "application/x-cbz", "application/x-cbr")) {
             return Format.CBZ
         }
@@ -287,11 +289,11 @@ object FormatSniffers {
             return Format.ZAB
         }
 
-        if (context.contentAsZip != null) {
+        if (context.contentAsZip() != null) {
             fun isIgnored(entry: ZipEntry, file: File): Boolean =
                 entry.isDirectory || file.name.startsWith(".") || file.name == "Thumbs.db"
 
-            fun zipContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
+            suspend fun zipContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
                 context.zipEntriesAllSatisfy { entry ->
                     val file = File(entry.name)
                     isIgnored(entry, file) || fileExtensions.contains(file.extension.toLowerCase(Locale.ROOT))
@@ -313,7 +315,7 @@ object FormatSniffers {
      *
      * Reference: https://www.loc.gov/preservation/digital/formats/fdd/fdd000123.shtml
      */
-    fun pdf(context: FormatSnifferContext): Format? {
+    suspend fun pdf(context: FormatSnifferContext): Format? {
         if (context.hasFileExtension("pdf") || context.hasMediaType("application/pdf")) {
             return Format.PDF
         }
@@ -328,7 +330,7 @@ object FormatSniffers {
      * Sniffs the system-wide registered media types using [MimeTypeMap] and
      * [URLConnection.guessContentTypeFromStream].
      */
-    fun system(context: FormatSnifferContext): Format? {
+    suspend fun system(context: FormatSnifferContext): Format? {
         val mimetypes = MimeTypeMap.getSingleton()
 
         fun createFormat(mediaType: MediaType, extension: String) =
@@ -358,14 +360,14 @@ object FormatSniffers {
             return sniffExtension(extension) ?: continue
         }
 
-        context.stream()
-            ?.let { URLConnection.guessContentTypeFromStream(it) }
-            ?.let { MediaType.parse(it) }
-            ?.let {
-                return sniffMediaType(it)
-            }
-
-        return null
+        return withContext(Dispatchers.IO) {
+            context.stream()
+                ?.let { URLConnection.guessContentTypeFromStream(it) }
+                ?.let { MediaType.parse(it) }
+                ?.let {
+                    sniffMediaType(it)
+                }
+        }
     }
 
 }

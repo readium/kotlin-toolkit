@@ -14,6 +14,7 @@ import android.net.Uri
 import android.os.Looper
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.extensions.queryProjection
 import timber.log.Timber
@@ -230,7 +231,8 @@ data class Format(
             if (DEBUG && mediaType?.startsWith("/") == true) {
                 throw IllegalArgumentException("The provided media type is incorrect: $mediaType. To pass a file path, you must wrap it in a File().")
             }
-            return of(content = null, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
+            // We use `runBlocking` because checking the media type and file extension is fast.
+            return runBlocking { of(content = null, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers) }
         }
 
         /**
@@ -238,62 +240,65 @@ data class Format(
          * content.
          */
         fun of(mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
-            return of(content = null, mediaTypes = mediaTypes, fileExtensions = fileExtensions, sniffers = sniffers)
+            // We use `runBlocking` because checking the media type and file extension is fast.
+            return runBlocking { of(content = null, mediaTypes = mediaTypes, fileExtensions = fileExtensions, sniffers = sniffers) }
         }
 
         /**
          * Resolves a format from a local file path.
-         *
-         * Warning: This API should never be called from the UI thread.
          */
-        fun of(file: File, mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
-            return of(file, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
+        suspend fun ofFile(file: File, mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return ofFile(file, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
         }
 
         /**
          * Resolves a format from a local file path.
-         *
-         * Warning: This API should never be called from the UI thread.
          */
-        fun of(file: File, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+        suspend fun ofFile(file: File, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
             return of(content = FormatSnifferFileContent(file), mediaTypes = mediaTypes, fileExtensions = listOf(file.extension) + fileExtensions, sniffers = sniffers)
         }
 
         /**
-         * Resolves a format from bytes, e.g. from an HTTP response.
-         *
-         * Warning: This API should never be called from the UI thread.
+         * Resolves a format from a local file path.
          */
-        fun of(bytes: () -> ByteArray, mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
-            return of(bytes, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
+        suspend fun ofFile(path: String, mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return ofFile(File(path), mediaType = mediaType, fileExtension = fileExtension, sniffers = sniffers)
+        }
+
+        /**
+         * Resolves a format from a local file path.
+         */
+        suspend fun ofFile(path: String, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return ofFile(File(path), mediaTypes = mediaTypes, fileExtensions = fileExtensions, sniffers = sniffers)
         }
 
         /**
          * Resolves a format from bytes, e.g. from an HTTP response.
-         *
-         * Warning: This API should never be called from the UI thread.
          */
-        fun of(bytes: () -> ByteArray, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+        suspend fun ofBytes(bytes: () -> ByteArray, mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return ofBytes(bytes, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
+        }
+
+        /**
+         * Resolves a format from bytes, e.g. from an HTTP response.
+         */
+        suspend fun ofBytes(bytes: () -> ByteArray, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
             return of(content = FormatSnifferBytesContent(bytes), mediaTypes = mediaTypes, fileExtensions = fileExtensions, sniffers = sniffers)
         }
 
         /**
          * Resolves a format from a content URI and a [ContentResolver].
          * Accepts the following URI schemes: content, android.resource, file.
-         *
-         * Warning: This API should never be called from the UI thread.
          */
-        fun of(uri: Uri, contentResolver: ContentResolver, mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
-            return of(uri, contentResolver, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
+        suspend fun ofUri(uri: Uri, contentResolver: ContentResolver, mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return ofUri(uri, contentResolver, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
         }
 
         /**
          * Resolves a format from a content URI and a [ContentResolver].
          * Accepts the following URI schemes: content, android.resource, file.
-         *
-         * Warning: This API should never be called from the UI thread.
          */
-        fun of(uri: Uri, contentResolver: ContentResolver, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+        suspend fun ofUri(uri: Uri, contentResolver: ContentResolver, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
             val allMediaTypes = mediaTypes.toMutableList()
             val allFileExtensions = fileExtensions.toMutableList()
 
@@ -323,11 +328,7 @@ data class Format(
          *  - Light Sniffing checks only the provided file extension or media type hints.
          *  - Heavy Sniffing reads the bytes to perform more advanced sniffing.
          */
-        private fun of(content: FormatSnifferContent?, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer>): Format? {
-            if (content != null && Looper.myLooper() == Looper.getMainLooper()) {
-                Timber.w("Format.of() should not be called from the main thread, as it might block the UI")
-            }
-
+        private suspend fun of(content: FormatSnifferContent?, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer>): Format? {
             // Light sniffing
             var context = FormatSnifferContext(mediaTypes = mediaTypes, fileExtensions = fileExtensions)
             for (sniffer in sniffers) {
@@ -353,6 +354,36 @@ data class Format(
             // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
             // their content (for example, for RWPM).
             return FormatSniffers.system(context)
+        }
+
+        @Deprecated("Renamed to [ofFile()]", ReplaceWith("Format.ofFile(file, mediaType, fileExtension, sniffers)"))
+        fun of(file: File, mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return runBlocking { ofFile(file, listOfNotNull(mediaType), listOfNotNull(fileExtension), sniffers) }
+        }
+
+        @Deprecated("Renamed to [ofFile()]", ReplaceWith("Format.ofFile(file, mediaTypes, fileExtensions, sniffers)"))
+        fun of(file: File, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return runBlocking { ofFile(file, mediaTypes = mediaTypes, fileExtensions = listOf(file.extension) + fileExtensions, sniffers = sniffers) }
+        }
+
+        @Deprecated("Renamed to [ofBytes()]", ReplaceWith("Format.ofBytes(bytes, mediaType, fileExtension, sniffers)"))
+        fun of(bytes: () -> ByteArray, mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return runBlocking { ofBytes(bytes, listOfNotNull(mediaType), listOfNotNull(fileExtension), sniffers) }
+        }
+
+        @Deprecated("Renamed to [ofBytes()]", ReplaceWith("Format.ofBytes(bytes, mediaTypes, fileExtensions, sniffers)"))
+        fun of(bytes: () -> ByteArray, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return runBlocking { ofBytes(bytes, mediaTypes, fileExtensions, sniffers) }
+        }
+
+        @Deprecated("Renamed to [ofUri()]", ReplaceWith("Format.ofUri(uri, contentResolver, mediaType, fileExtension, sniffers)"))
+        fun of(uri: Uri, contentResolver: ContentResolver, mediaType: String? = null, fileExtension: String? = null, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return runBlocking { ofUri(uri, contentResolver, listOfNotNull(mediaType), listOfNotNull(fileExtension), sniffers) }
+        }
+
+        @Deprecated("Renamed to [ofUri()]", ReplaceWith("Format.ofUri(uri, contentResolver, mediaTypes, fileExtensions, sniffers)"))
+        fun of(uri: Uri, contentResolver: ContentResolver, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+            return runBlocking { ofUri(uri, contentResolver, mediaTypes, fileExtensions, sniffers) }
         }
 
     }

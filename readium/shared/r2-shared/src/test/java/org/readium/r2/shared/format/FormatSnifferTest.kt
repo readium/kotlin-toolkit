@@ -11,6 +11,7 @@ package org.readium.r2.shared.format
 
 import android.webkit.MimeTypeMap
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -51,33 +52,33 @@ class FormatSnifferTest {
     }
 
     @Test
-    fun `sniff from a file`() {
-        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.of(fixtures.fileAt("audiobook.json")))
+    fun `sniff from a file`() = runBlocking {
+        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.ofFile(fixtures.fileAt("audiobook.json")))
     }
 
     @Test
-    fun `sniff from bytes`() {
-        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.of({ fixtures.fileAt("audiobook.json")!!.readBytes() }))
+    fun `sniff from bytes`() = runBlocking {
+        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.ofBytes({ fixtures.fileAt("audiobook.json").readBytes() }))
     }
 
     @Test
-    fun `sniff unknown format`() {
+    fun `sniff unknown format`() = runBlocking {
         assertNull(Format.of(mediaType = "unknown/type"))
-        assertNull(Format.of(fixtures.fileAt("unknown")))
+        assertNull(Format.ofFile(fixtures.fileAt("unknown")))
     }
 
     @Test
-    fun `sniff audiobook`() {
+    fun `sniff audiobook`() = runBlocking {
         assertEquals(Format.AUDIOBOOK, Format.of(fileExtension = "audiobook"))
         assertEquals(Format.AUDIOBOOK, Format.of(mediaType = "application/audiobook+zip"))
-        assertEquals(Format.AUDIOBOOK, Format.of(fixtures.fileAt("audiobook-package.unknown")))
+        assertEquals(Format.AUDIOBOOK, Format.ofFile(fixtures.fileAt("audiobook-package.unknown")))
     }
 
     @Test
-    fun `sniff audiobook manifest`() {
+    fun `sniff audiobook manifest`() = runBlocking {
         assertEquals(Format.AUDIOBOOK_MANIFEST, Format.of(mediaType = "application/audiobook+json"))
-        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.of(fixtures.fileAt("audiobook.json")))
-        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.of(fixtures.fileAt("audiobook-wrongtype.json")))
+        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.ofFile(fixtures.fileAt("audiobook.json")))
+        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.ofFile(fixtures.fileAt("audiobook-wrongtype.json")))
     }
 
     @Test
@@ -89,32 +90,32 @@ class FormatSnifferTest {
     }
 
     @Test
-    fun `sniff CBZ`() {
+    fun `sniff CBZ`() = runBlocking {
         assertEquals(Format.CBZ, Format.of(fileExtension = "cbz"))
         assertEquals(Format.CBZ, Format.of(mediaType = "application/vnd.comicbook+zip"))
         assertEquals(Format.CBZ, Format.of(mediaType = "application/x-cbz"))
         assertEquals(Format.CBZ, Format.of(mediaType = "application/x-cbr"))
-        assertEquals(Format.CBZ, Format.of(fixtures.fileAt("cbz.unknown")))
+        assertEquals(Format.CBZ, Format.ofFile(fixtures.fileAt("cbz.unknown")))
     }
 
     @Test
-    fun `sniff DiViNa`() {
+    fun `sniff DiViNa`() = runBlocking {
         assertEquals(Format.DIVINA, Format.of(fileExtension = "divina"))
         assertEquals(Format.DIVINA, Format.of(mediaType = "application/divina+zip"))
-        assertEquals(Format.DIVINA, Format.of(fixtures.fileAt("divina-package.unknown")))
+        assertEquals(Format.DIVINA, Format.ofFile(fixtures.fileAt("divina-package.unknown")))
     }
 
     @Test
-    fun `sniff DiViNa manifest`() {
+    fun `sniff DiViNa manifest`() = runBlocking {
         assertEquals(Format.DIVINA_MANIFEST, Format.of(mediaType = "application/divina+json"))
-        assertEquals(Format.DIVINA_MANIFEST, Format.of(fixtures.fileAt("divina.json")))
+        assertEquals(Format.DIVINA_MANIFEST, Format.ofFile(fixtures.fileAt("divina.json")))
     }
 
     @Test
-    fun `sniff EPUB`() {
+    fun `sniff EPUB`() = runBlocking {
         assertEquals(Format.EPUB, Format.of(fileExtension = "epub"))
         assertEquals(Format.EPUB, Format.of(mediaType = "application/epub+zip"))
-        assertEquals(Format.EPUB, Format.of(fixtures.fileAt("epub.unknown")))
+        assertEquals(Format.EPUB, Format.ofFile(fixtures.fileAt("epub.unknown")))
     }
 
     @Test
@@ -124,15 +125,15 @@ class FormatSnifferTest {
     }
 
     @Test
-    fun `sniff HTML`() {
+    fun `sniff HTML`() = runBlocking {
         assertEquals(Format.HTML, Format.of(fileExtension = "htm"))
         assertEquals(Format.HTML, Format.of(fileExtension = "html"))
         assertEquals(Format.HTML, Format.of(fileExtension = "xht"))
         assertEquals(Format.HTML, Format.of(fileExtension = "xhtml"))
         assertEquals(Format.HTML, Format.of(mediaType = "text/html"))
         assertEquals(Format.HTML, Format.of(mediaType = "application/xhtml+xml"))
-        assertEquals(Format.HTML, Format.of(fixtures.fileAt("html.unknown")))
-        assertEquals(Format.HTML, Format.of(fixtures.fileAt("xhtml.unknown")))
+        assertEquals(Format.HTML, Format.ofFile(fixtures.fileAt("html.unknown")))
+        assertEquals(Format.HTML, Format.ofFile(fixtures.fileAt("xhtml.unknown")))
     }
 
     @Test
@@ -147,70 +148,70 @@ class FormatSnifferTest {
     }
 
     @Test
-    fun `sniff OPDS 1 feed`() {
+    fun `sniff OPDS 1 feed`() = runBlocking {
         assertEquals(Format.OPDS1_FEED, Format.of(mediaType = "application/atom+xml;profile=opds-catalog"))
-        assertEquals(Format.OPDS1_FEED, Format.of(fixtures.fileAt("opds1-feed.unknown")))
+        assertEquals(Format.OPDS1_FEED, Format.ofFile(fixtures.fileAt("opds1-feed.unknown")))
     }
 
     @Test
-    fun `sniff OPDS 1 entry`() {
+    fun `sniff OPDS 1 entry`() = runBlocking {
         assertEquals(Format.OPDS1_ENTRY, Format.of(mediaType = "application/atom+xml;type=entry;profile=opds-catalog"))
-        assertEquals(Format.OPDS1_ENTRY, Format.of(fixtures.fileAt("opds1-entry.unknown")))
+        assertEquals(Format.OPDS1_ENTRY, Format.ofFile(fixtures.fileAt("opds1-entry.unknown")))
     }
 
     @Test
-    fun `sniff OPDS 2 feed`() {
+    fun `sniff OPDS 2 feed`() = runBlocking {
         assertEquals(Format.OPDS2_FEED, Format.of(mediaType = "application/opds+json"))
-        assertEquals(Format.OPDS2_FEED, Format.of(fixtures.fileAt("opds2-feed.json")))
+        assertEquals(Format.OPDS2_FEED, Format.ofFile(fixtures.fileAt("opds2-feed.json")))
     }
 
     @Test
-    fun `sniff OPDS 2 publication`() {
+    fun `sniff OPDS 2 publication`() = runBlocking {
         assertEquals(Format.OPDS2_PUBLICATION, Format.of(mediaType = "application/opds-publication+json"))
-        assertEquals(Format.OPDS2_PUBLICATION, Format.of(fixtures.fileAt("opds2-publication.json")))
+        assertEquals(Format.OPDS2_PUBLICATION, Format.ofFile(fixtures.fileAt("opds2-publication.json")))
     }
 
     @Test
-    fun `sniff OPDS authentication document`() {
+    fun `sniff OPDS authentication document`() = runBlocking {
         assertEquals(Format.OPDS_AUTHENTICATION, Format.of(mediaType = "application/opds-authentication+json"))
         assertEquals(Format.OPDS_AUTHENTICATION, Format.of(mediaType = "application/vnd.opds.authentication.v1.0+json"))
-        assertEquals(Format.OPDS_AUTHENTICATION, Format.of(fixtures.fileAt("opds-authentication.json")))
+        assertEquals(Format.OPDS_AUTHENTICATION, Format.ofFile(fixtures.fileAt("opds-authentication.json")))
     }
 
     @Test
-    fun `sniff LCP protected audiobook`() {
+    fun `sniff LCP protected audiobook`() = runBlocking {
         assertEquals(Format.LCP_PROTECTED_AUDIOBOOK, Format.of(fileExtension = "lcpa"))
         assertEquals(Format.LCP_PROTECTED_AUDIOBOOK, Format.of(mediaType = "application/audiobook+lcp"))
-        assertEquals(Format.LCP_PROTECTED_AUDIOBOOK, Format.of(fixtures.fileAt("audiobook-lcp.unknown")))
+        assertEquals(Format.LCP_PROTECTED_AUDIOBOOK, Format.ofFile(fixtures.fileAt("audiobook-lcp.unknown")))
     }
 
     @Test
-    fun `sniff LCP protected PDF`() {
+    fun `sniff LCP protected PDF`() = runBlocking {
         assertEquals(Format.LCP_PROTECTED_PDF, Format.of(fileExtension = "lcpdf"))
         assertEquals(Format.LCP_PROTECTED_PDF, Format.of(mediaType = "application/pdf+lcp"))
-        assertEquals(Format.LCP_PROTECTED_PDF, Format.of(fixtures.fileAt("pdf-lcp.unknown")))
+        assertEquals(Format.LCP_PROTECTED_PDF, Format.ofFile(fixtures.fileAt("pdf-lcp.unknown")))
     }
 
     @Test
-    fun `sniff LCP license document`() {
+    fun `sniff LCP license document`() = runBlocking {
         assertEquals(Format.LCP_LICENSE, Format.of(fileExtension = "lcpl"))
         assertEquals(Format.LCP_LICENSE, Format.of(mediaType = "application/vnd.readium.lcp.license.v1.0+json"))
-        assertEquals(Format.LCP_LICENSE, Format.of(fixtures.fileAt("lcpl.unknown")))
+        assertEquals(Format.LCP_LICENSE, Format.ofFile(fixtures.fileAt("lcpl.unknown")))
     }
 
     @Test
-    fun `sniff LPF`() {
+    fun `sniff LPF`() = runBlocking {
         assertEquals(Format.LPF, Format.of(fileExtension = "lpf"))
         assertEquals(Format.LPF, Format.of(mediaType = "application/lpf+zip"))
-        assertEquals(Format.LPF, Format.of(fixtures.fileAt("lpf.unknown")))
-        assertEquals(Format.LPF, Format.of(fixtures.fileAt("lpf-index-html.unknown")))
+        assertEquals(Format.LPF, Format.ofFile(fixtures.fileAt("lpf.unknown")))
+        assertEquals(Format.LPF, Format.ofFile(fixtures.fileAt("lpf-index-html.unknown")))
     }
 
     @Test
-    fun `sniff PDF`() {
+    fun `sniff PDF`() = runBlocking {
         assertEquals(Format.PDF, Format.of(fileExtension = "pdf"))
         assertEquals(Format.PDF, Format.of(mediaType = "application/pdf"))
-        assertEquals(Format.PDF, Format.of(fixtures.fileAt("pdf.unknown")))
+        assertEquals(Format.PDF, Format.ofFile(fixtures.fileAt("pdf.unknown")))
     }
 
     @Test
@@ -234,32 +235,32 @@ class FormatSnifferTest {
     }
 
     @Test
-    fun `sniff WebPub`() {
+    fun `sniff WebPub`() = runBlocking {
         assertEquals(Format.WEBPUB, Format.of(fileExtension = "webpub"))
         assertEquals(Format.WEBPUB, Format.of(mediaType = "application/webpub+zip"))
-        assertEquals(Format.WEBPUB, Format.of(fixtures.fileAt("webpub-package.unknown")))
+        assertEquals(Format.WEBPUB, Format.ofFile(fixtures.fileAt("webpub-package.unknown")))
     }
 
     @Test
-    fun `sniff WebPub manifest`() {
+    fun `sniff WebPub manifest`() = runBlocking {
         assertEquals(Format.WEBPUB_MANIFEST, Format.of(mediaType = "application/webpub+json"))
-        assertEquals(Format.WEBPUB_MANIFEST, Format.of(fixtures.fileAt("webpub.json")))
+        assertEquals(Format.WEBPUB_MANIFEST, Format.ofFile(fixtures.fileAt("webpub.json")))
     }
 
     @Test
-    fun `sniff W3C WPUB manifest`() {
-        assertEquals(Format.W3C_WPUB_MANIFEST, Format.of(fixtures.fileAt("w3c-wpub.json")))
+    fun `sniff W3C WPUB manifest`() = runBlocking {
+        assertEquals(Format.W3C_WPUB_MANIFEST, Format.ofFile(fixtures.fileAt("w3c-wpub.json")))
     }
 
     @Test
-    fun `sniff ZAB`() {
+    fun `sniff ZAB`() = runBlocking {
         assertEquals(Format.ZAB, Format.of(fileExtension = "zab"))
-        assertEquals(Format.ZAB, Format.of(fixtures.fileAt("zab.unknown")))
+        assertEquals(Format.ZAB, Format.ofFile(fixtures.fileAt("zab.unknown")))
     }
 
     @Test
     fun `sniff system media types`() {
-        shadowOf(MimeTypeMap.getSingleton()).addExtensionMimeTypMapping("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        shadowOf(MimeTypeMap.getSingleton()).addExtensionMimeTypMapping("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         val xlsx = Format(
             name = "XLSX",
             mediaType = MediaType.parse("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")!!,
@@ -270,14 +271,14 @@ class FormatSnifferTest {
     }
 
     @Test
-    fun `sniff system media types from bytes`() {
-        shadowOf(MimeTypeMap.getSingleton()).addExtensionMimeTypMapping("png", "image/png");
+    fun `sniff system media types from bytes`() = runBlocking {
+        shadowOf(MimeTypeMap.getSingleton()).addExtensionMimeTypMapping("png", "image/png")
         val png = Format(
             name = "PNG",
             mediaType = MediaType.parse("image/png")!!,
             fileExtension = "png"
         )
-        assertEquals(png, Format.of(fixtures.fileAt("png.unknown")))
+        assertEquals(png, Format.ofFile(fixtures.fileAt("png.unknown")))
     }
 
 }
