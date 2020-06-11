@@ -15,7 +15,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LCPError
 import org.readium.r2.shared.format.Format
-import org.readium.r2.shared.format.format
+import org.readium.r2.shared.format.sniffFormat
 import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.File
@@ -82,7 +82,7 @@ internal class NetworkService {
                 }
             }
 
-            connection.format
+            connection.sniffFormat()
 
         } catch (e: Exception) {
             Timber.e(e)
