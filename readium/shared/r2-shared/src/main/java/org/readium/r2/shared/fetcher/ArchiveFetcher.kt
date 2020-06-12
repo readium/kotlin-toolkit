@@ -37,6 +37,7 @@ class ArchiveFetcher private constructor(private val archive: ZipFile) : Fetcher
     override suspend fun close() = withContext(Dispatchers.IO) { archive.close() }
 
     companion object {
+
         suspend fun fromPath(path: String): ArchiveFetcher? = try {
             val zipFile = withContext(Dispatchers.IO) {
                 ZipFile(path)
