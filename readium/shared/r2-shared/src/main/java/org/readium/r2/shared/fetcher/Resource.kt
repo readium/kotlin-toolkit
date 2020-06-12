@@ -9,16 +9,12 @@
 
 package org.readium.r2.shared.fetcher
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 import java.io.ByteArrayInputStream
-import java.io.InputStream
 import java.nio.charset.Charset
 
 
@@ -132,52 +128,6 @@ class FailureResource(private val link: Link, private val error: Resource.Error)
     override suspend fun close() {}
 }
 
-/** Creates a Resource serving [ByteArray] computed from a factory that can fail. */
-open class BytesResource(private val factory: suspend () -> Pair<Link, ResourceTry<ByteArray>>) : Resource {
-
-    private lateinit var byteArray: ResourceTry<ByteArray>
-    private lateinit var computedLink: Link
-
-    private suspend fun maybeInitData() {
-        if(!::byteArray.isInitialized || !::computedLink.isInitialized) {
-            val res = factory()
-            computedLink = res.first
-            byteArray = res.second
-        }
-    }
-
-    private suspend fun bytes(): ResourceTry<ByteArray> {
-        maybeInitData()
-        return byteArray
-    }
-
-    override suspend fun link(): Link {
-        maybeInitData()
-        return computedLink
-    }
-
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
-        if (range == null)
-            return bytes()
-
-        @Suppress("NAME_SHADOWING")
-        val range = checkedRange(range)
-        return bytes().map { it.sliceArray(range.map(Long::toInt)) }
-    }
-
-    override suspend fun length(): ResourceTry<Long> = byteArray.map { it.size.toLong() }
-
-    override suspend fun close() {}
-}
-
-/** Creates a Resource serving a [String] computed from a factory that can fail. */
-class StringResource(factory: suspend () -> Pair<Link, ResourceTry<String>>) : BytesResource(
-    {
-        val (link,res) = factory()
-        Pair(link, res.mapCatching { it.toByteArray() })
-    }
-)
-
 /**
  * A base class for a [Resource] which acts as a proxy to another one.
  *
@@ -214,51 +164,6 @@ class LazyResource(private val factory: suspend () -> Resource) : Resource {
     override suspend fun close() = resource().close()
 }
 
-internal abstract class StreamResource : Resource {
-
-    abstract fun stream(): ResourceTry<InputStream>
-
-    /** An estimate of data length from metadata */
-    protected abstract val metadataLength: Long?
-
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
-        if (range == null)
-            readFully()
-        else
-            readRange(range)
-
-    private suspend fun readFully(): ResourceTry<ByteArray> =
-        stream().mapCatching { stream ->
-            stream.use {
-                withContext(Dispatchers.IO) {
-                    it.readBytes()
-                }
-            }
-        }
-
-    private suspend fun readRange(range: LongRange): ResourceTry<ByteArray> =
-        stream().mapCatching { stream ->
-            @Suppress("NAME_SHADOWING")
-            val range = checkedRange(range)
-
-            withContext(Dispatchers.IO) {
-                stream.use {
-                    val skipped = it.skip(range.first)
-                    val length = range.last - range.first + 1
-                    val bytes = it.read(length)
-                    if (skipped != range.first && bytes.isNotEmpty()) {
-                        throw Exception("Unable to skip enough bytes")
-                    }
-                    return@use bytes
-                }
-            }
-        }
-
-    override suspend fun length(): ResourceTry<Long> =
-        metadataLength?.let { Try.success(it) }
-            ?: readFully().map { it.size.toLong() }
-}
-
 /**
  * Maps the result with the given [transform]
  *
@@ -275,9 +180,3 @@ suspend fun <R, S> ResourceTry<S>.mapCatching(transform: suspend (value: S) -> R
 
 suspend fun <R, S> ResourceTry<S>.flatMapCatching(transform: suspend (value: S) -> ResourceTry<R>): ResourceTry<R> =
     mapCatching(transform).flatMap { it }
-
-private fun checkedRange(range: LongRange): LongRange = when {
-    range.first >= range.last -> 0 until 0L
-    range.last - range.first + 1 > Int.MAX_VALUE -> throw IllegalArgumentException("Range length greater than Int.MAX_VALUE")
-    else -> LongRange(range.first.coerceAtLeast(0), range.last)
-}
