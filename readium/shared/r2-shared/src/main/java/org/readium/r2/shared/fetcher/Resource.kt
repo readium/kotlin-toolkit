@@ -194,13 +194,13 @@ abstract class ProxyResource(protected val resource: Resource) : Resource {
     override suspend fun close() = resource.close()
 }
 
-class RoutingResource(private val resourceFactory: suspend () -> Resource) : Resource {
+class LazyResource(private val factory: suspend () -> Resource) : Resource {
 
     private lateinit var _resource: Resource
 
     private suspend fun resource(): Resource {
         if (!::_resource.isInitialized)
-            _resource = resourceFactory()
+            _resource = factory()
 
         return _resource
     }
