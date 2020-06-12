@@ -20,6 +20,7 @@ import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -34,7 +35,7 @@ import kotlin.coroutines.CoroutineContext
 open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator {
 
     override val currentLocation: Locator?
-        get() = publication.positions[resourcePager.currentItem]
+        get() = positions[resourcePager.currentItem]
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
@@ -80,6 +81,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
     override lateinit var publicationFileName: String
+    protected lateinit var positions: List<Locator>
     override var bookId: Long = -1
 
     var resources: List<String> = emptyList()
@@ -99,6 +101,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publication = intent.getPublication(this)
+        positions = runBlocking { publication.positions() }
 
         publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title

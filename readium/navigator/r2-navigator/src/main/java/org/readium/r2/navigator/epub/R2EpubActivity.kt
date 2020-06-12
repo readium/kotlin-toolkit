@@ -38,6 +38,7 @@ import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByResource
 import java.net.URI
 import kotlin.coroutines.CoroutineContext
@@ -217,6 +218,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     override lateinit var publicationFileName: String
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
+    lateinit var positions: List<Locator>
     override var bookId: Long = -1
 
     override var allowToggleActionBar = true
@@ -241,6 +243,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         resourcesDouble = ArrayList()
 
         publication = intent.getPublication(this)
+        positions = runBlocking { publication.positions() }
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publicationIdentifier = publication.metadata.identifier!!
