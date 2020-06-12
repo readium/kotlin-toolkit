@@ -725,7 +725,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             if (add) {
                 val publicationIdentifier = publication.metadata.identifier ?: ""
                 val author = publication.metadata.authorName
-                val cover = publication.cover?.toPng()
+                val cover = publication.cover()?.toPng()
                 val book = Book(title = publication.metadata.title, author = author, href = absolutePath, identifier = publicationIdentifier, cover = cover, ext = ".${format.fileExtension}", progression = "{}")
 
                 database.books.insert(book, false)?.let { id ->
