@@ -15,7 +15,7 @@ import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.RoutingResource
+import org.readium.r2.shared.fetcher.LazyResource
 import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Publication
@@ -31,7 +31,7 @@ internal class HtmlInjector(
     val customResources: Resources? = null
 ) {
 
-    fun transform(resource: Resource): Resource = RoutingResource {
+    fun transform(resource: Resource): Resource = LazyResource {
         if (resource.link().mediaType?.isHtml == true)
             inject(resource)
         else

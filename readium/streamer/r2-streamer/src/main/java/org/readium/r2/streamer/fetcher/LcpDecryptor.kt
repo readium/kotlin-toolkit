@@ -15,7 +15,7 @@ import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.fetcher.BytesResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceTry
-import org.readium.r2.shared.fetcher.RoutingResource
+import org.readium.r2.shared.fetcher.LazyResource
 import org.readium.r2.shared.fetcher.flatMapCatching
 import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.Link
@@ -28,7 +28,7 @@ import java.io.IOException
  */
 internal class LcpDecryptor(val drm: DRM) {
 
-    fun transform(resource: Resource): Resource = RoutingResource() {
+    fun transform(resource: Resource): Resource = LazyResource {
         // Checks if the resource is encrypted and whether the encryption schemes of the resource
         // and the DRM license are the same.
         val license = drm.license
