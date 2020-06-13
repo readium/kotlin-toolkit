@@ -9,7 +9,6 @@
 
 package org.readium.r2.streamer.extensions
 
-import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.ArchiveFetcher

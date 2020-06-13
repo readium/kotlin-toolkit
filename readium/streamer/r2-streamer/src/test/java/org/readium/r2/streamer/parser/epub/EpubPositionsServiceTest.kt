@@ -419,7 +419,7 @@ class EpubPositionsServiceTest {
             private fun findResource(relativePath: String): Pair<Long, Link>? =
                 readingOrder.find { it.second.href == relativePath }
 
-            override val links: List<Link> = emptyList()
+            override suspend fun links(): List<Link> = emptyList()
 
             override fun get(link: Link): Resource = object : Resource {
                 override suspend fun link(): Link = link
