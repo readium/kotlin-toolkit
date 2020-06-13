@@ -23,13 +23,13 @@ interface Archive {
         val path: String
 
         /**
-         * Uncompressed data length.
+         * Uncompressed data size.
          */
-        val length: Long?
+        val size: Long?
         /**
-         *  Compressed data length.
+         *  Compressed data size.
          */
-        val compressedLength: Long?
+        val compressedSize: Long?
 
 
         /**
@@ -46,5 +46,8 @@ interface Archive {
 
     /** Gets the entry at the given `path`. */
     fun entry(path: String): Entry?
+
+    /** Closes the archive. */
+    fun close()
 
 }
