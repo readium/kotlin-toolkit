@@ -17,7 +17,7 @@ import java.lang.Exception
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-class JavaZip(private val archive: ZipFile) : Archive {
+internal class JavaZip(private val archive: ZipFile) : Archive {
 
     companion object {
 
@@ -36,7 +36,7 @@ class JavaZip(private val archive: ZipFile) : Archive {
 
         override val compressedSize: Long? get() = entry.compressedSize.takeUnless { it == -1L }
 
-        override fun read(range: LongRange?): ByteArray? {
+        override suspend fun read(range: LongRange?): ByteArray? {
             val stream = archive.getInputStream(entry)
 
             return if (range == null)
@@ -70,17 +70,15 @@ class JavaZip(private val archive: ZipFile) : Archive {
                 }
             }
         }
-
     }
 
-    override val entries: List<Archive.Entry> by lazy {
+    override suspend fun entries(): List<Archive.Entry> =
         archive.entries().toList().mapNotNull { Entry(it) }
-    }
 
-    override fun entry(path: String): Archive.Entry? =
+    override suspend fun entry(path: String): Archive.Entry? =
         archive.getEntry(path)?.let { Entry(it) }
 
-    override fun close() = archive.close()
+    override suspend fun close() = archive.close()
 
 }
 

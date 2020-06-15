@@ -26,28 +26,28 @@ interface Archive {
          * Uncompressed data size.
          */
         val size: Long?
+
         /**
          *  Compressed data size.
          */
         val compressedSize: Long?
-
 
         /**
          * Reads the whole content of this entry if it's a file.
          * When [range] is null, the whole content is returned. Out-of-range indexes are clamped to the
          * available length automatically.
          */
-        fun read(range: LongRange? = null): ByteArray?
+        suspend fun read(range: LongRange? = null): ByteArray?
 
     }
 
     /** List of all the archived entries. */
-    val entries: List<Entry>
+    suspend fun entries(): List<Entry>
 
     /** Gets the entry at the given `path`. */
-    fun entry(path: String): Entry?
+    suspend fun entry(path: String): Entry?
 
     /** Closes the archive. */
-    fun close()
+    suspend fun close()
 
 }

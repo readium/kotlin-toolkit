@@ -23,7 +23,7 @@ import java.io.File
 class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher {
 
     override suspend fun links(): List<Link> =
-        archive.entries.map {
+        archive.entries().map {
             Link(
                 href = it.path.addPrefix("/"),
                 type = Format.of(fileExtension = File(it.path).extension)?.mediaType?.toString()
@@ -45,32 +45,38 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
 
     private class EntryResource(val originalLink: Link, val archive: Archive) : Resource {
 
+        private lateinit var _entry: ResourceTry<Archive.Entry>
+
+        suspend fun entry(): ResourceTry<Archive.Entry> {
+            if (!::_entry.isInitialized) {
+                _entry =
+                    archive.entry(originalLink.href.removePrefix("/"))
+                    ?.let { Try.success(it) }
+                    ?: Try.failure(Resource.Error.NotFound)
+            }
+
+            return _entry
+        }
+
         override suspend fun link(): Link =
             // Adds the compressed length to the original link.
-            entry.getOrNull()
+            entry().getOrNull()
                 ?.let { originalLink.addProperties(mapOf("compressedLength" to it)) }
                 ?: originalLink
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
-            entry.mapCatching {
+            entry().mapCatching {
                 it.read(range) ?: throw Resource.Error.Other(Exception("Cannot read archive entry."))
             }
 
         override suspend fun length(): ResourceTry<Long>  =
-            metadataLength?.let { Try.success(it) }
+            metadataLength()?.let { Try.success(it) }
                 ?: read().map { it.size.toLong() }
 
         override suspend fun close() {}
 
-        private val metadataLength: Long? by lazy {
-            entry.getOrNull()?.size
-        }
-
-        private val entry: ResourceTry<Archive.Entry> by lazy {
-            archive.entry(originalLink.href.removePrefix("/"))
-                ?.let { Try.success(it) }
-                ?: Try.failure(Resource.Error.NotFound)
-        }
+        private suspend fun metadataLength(): Long? =
+            entry().getOrNull()?.size
 
     }
 

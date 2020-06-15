@@ -43,50 +43,50 @@ class JavaZipTest {
                 "EPUB/toc.ncx",
                 "META-INF/container.xml"
             ),
-            archive.entries.map { it.path }
+            runBlocking { archive.entries().map { it.path } }
         )
     }
 
     @Test
     fun `size returns null for a missing entry `() {
-        assertNull(archive.entry("unknown"))
+        assertNull(runBlocking { archive.entry("unknown") })
     }
 
     @Test
     fun `compressedSize returns null for a missing entry `() {
-        assertNull(archive.entry("unknown"))
+        assertNull(runBlocking { archive.entry("unknown") })
     }
 
     @Test
     fun `Fully reading an entry works well`() {
-        val bytes = archive.entry("mimetype")?.read()
+        val bytes = runBlocking { archive.entry("mimetype")?.read() }
         assertEquals("application/epub+zip", bytes?.toString(StandardCharsets.UTF_8))
     }
 
     @Test
     fun `Reading a range of an entry works well`() {
-        val bytes = archive.entry("mimetype")?.read(0..10L)
+        val bytes = runBlocking { archive.entry("mimetype")?.read(0..10L) }
         assertEquals("application", bytes?.toString(StandardCharsets.UTF_8))
         assertEquals(11, bytes?.size)
     }
 
     @Test
     fun `Out of range indexes are clamped to the available length`() {
-        val bytes = archive.entry("mimetype")?.read(-5..60L)
+        val bytes = runBlocking { archive.entry("mimetype")?.read(-5..60L) }
         assertEquals("application/epub+zip", bytes?.toString(StandardCharsets.UTF_8))
         assertEquals(20, bytes?.size)
     }
 
     @Test
     fun `Decreasing ranges are understood as empty ones`() {
-        val bytes = archive.entry("mimetype")?.read(60..20L)
+        val bytes = runBlocking { archive.entry("mimetype")?.read(60..20L) }
         assertEquals("", bytes?.toString(StandardCharsets.UTF_8))
         assertEquals(0, bytes?.size)
     }
 
     @Test
     fun `Computing size works well`() {
-        val size = archive.entry("mimetype")?.size
+        val size = runBlocking { archive.entry("mimetype")?.size }
         assertEquals(20L, size)
     }
 }
