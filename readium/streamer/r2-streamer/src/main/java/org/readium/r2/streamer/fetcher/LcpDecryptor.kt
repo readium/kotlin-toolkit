@@ -34,9 +34,10 @@ internal class LcpDecryptor(val drm: DRM) {
         val license = drm.license
         val link = resource.link()
         val encryption = link.properties.encryption
+        if (license == null || encryption == null || encryption.scheme != drm.scheme.rawValue)
+            return@LazyResource resource
 
         when {
-            (license == null || encryption == null || encryption.scheme != drm.scheme.rawValue) -> resource
             link.isDeflated || !link.isCbcEncrypted -> FullLcpResource(resource, license)
             else -> CbcLcpResource(resource, license)
         }
