@@ -49,10 +49,9 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
 
         suspend fun entry(): ResourceTry<Archive.Entry> {
             if (!::_entry.isInitialized) {
-                _entry =
-                    archive.entry(originalLink.href.removePrefix("/"))
-                    ?.let { Try.success(it) }
-                    ?: Try.failure(Resource.Error.NotFound)
+                _entry = ResourceTry.wrap {
+                    archive.entry(originalLink.href.removePrefix("/")) ?:  throw Resource.Error.NotFound
+                }
             }
 
             return _entry
