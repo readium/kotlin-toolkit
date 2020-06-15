@@ -15,61 +15,61 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.archive.Archive
+import org.readium.r2.shared.util.archive.JavaZip
 import java.io.File
-import java.io.InputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
 
 /** Provides access to entries of an archive. */
-class ArchiveFetcher private constructor(private val archive: ZipFile) : Fetcher {
+class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher {
 
     override suspend fun links(): List<Link> =
-        archive.entries().toList().mapNotNull {
+        archive.entries.map {
             Link(
-                href = it.name.addPrefix("/"),
-                type = Format.of(fileExtension = File(it.name).extension)?.mediaType?.toString()
+                href = it.path.addPrefix("/"),
+                type = Format.of(fileExtension = File(it.path).extension)?.mediaType?.toString()
             )
         }
 
     override fun get(link: Link): Resource =
-        ZipResource(link, archive)
+        EntryResource(link, archive)
 
     override suspend fun close() = withContext(Dispatchers.IO) { archive.close() }
 
     companion object {
-        suspend fun fromPath(path: String): ArchiveFetcher? = try {
-            val zipFile = withContext(Dispatchers.IO) {
-                ZipFile(path)
-            }
-            ArchiveFetcher(zipFile)
-        } catch (e: Exception) {
-            null
-        }
+
+        suspend fun fromPath(path: String, open: (String) -> Archive? = (JavaZip)::open): ArchiveFetcher? =
+            withContext(Dispatchers.IO) {
+                open(path)
+            }?.let { ArchiveFetcher(it) }
     }
 
-    private class ZipResource(val originalLink: Link, val archive: ZipFile) : StreamResource() {
-
-        override fun stream(): ResourceTry<InputStream> {
-            return if (entry == null)
-                Try.failure(Resource.Error.NotFound)
-            else
-                Try.success(archive.getInputStream(entry))
-        }
+    private class EntryResource(val originalLink: Link, val archive: Archive) : Resource {
 
         override suspend fun link(): Link =
             // Adds the compressed length to the original link.
-            entry?.compressedSize?.takeIf { it != -1L }
+            entry.getOrNull()
                 ?.let { originalLink.addProperties(mapOf("compressedLength" to it)) }
                 ?: originalLink
 
-        override val metadataLength: Long? by lazy {
-            entry?.size?.takeIf { it != -1L }
-        }
+        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+            entry.mapCatching {
+                it.read(range) ?: throw Resource.Error.Other(Exception("Cannot read archive entry."))
+            }
+
+        override suspend fun length(): ResourceTry<Long>  =
+            metadataLength?.let { Try.success(it) }
+                ?: read().map { it.size.toLong() }
 
         override suspend fun close() {}
 
-        private val entry: ZipEntry? by lazy {
-            archive.getEntry(originalLink.href.removePrefix("/"))
+        private val metadataLength: Long? by lazy {
+            entry.getOrNull()?.size
+        }
+
+        private val entry: ResourceTry<Archive.Entry> by lazy {
+            archive.entry(originalLink.href.removePrefix("/"))
+                ?.let { Try.success(it) }
+                ?: Try.failure(Resource.Error.NotFound)
         }
 
     }

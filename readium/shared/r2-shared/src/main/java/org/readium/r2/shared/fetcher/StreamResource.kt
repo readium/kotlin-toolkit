@@ -32,18 +32,18 @@ internal abstract class StreamResource : Resource {
 
     private suspend fun readFully(): ResourceTry<ByteArray> =
         stream().mapCatching { stream ->
-            stream.use {
-                withContext(Dispatchers.IO) {
+            withContext(Dispatchers.IO) {
+                stream.use {
                     it.readBytes()
                 }
             }
         }
 
-    private suspend fun readRange(range: LongRange): ResourceTry<ByteArray> =
-        stream().mapCatching { stream ->
-            @Suppress("NAME_SHADOWING")
-            val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+    private suspend fun readRange(range: LongRange): ResourceTry<ByteArray> {
+        @Suppress("NAME_SHADOWING")
+        val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
 
+        return stream().mapCatching { stream ->
             withContext(Dispatchers.IO) {
                 stream.use {
                     val skipped = it.skip(range.first)
@@ -56,6 +56,7 @@ internal abstract class StreamResource : Resource {
                 }
             }
         }
+    }
 
     override suspend fun length(): ResourceTry<Long> =
         metadataLength?.let { Try.success(it) }
