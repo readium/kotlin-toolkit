@@ -41,25 +41,28 @@ class Try<out Success, out Failure: Throwable> private constructor(private val s
      * Returns the encapsulated result of the given transform function applied to the encapsulated value
      * if this instance represents success or the original encapsulated [Throwable] exception if it is failure.
      */
-    fun <R> map(transform: (value: Success) -> R): Try<R, Failure> =
-        when {
-            isSuccess -> Try.success(transform(success!!))
-            else -> Try.failure(failure!!)
-        }
+    inline fun <R> map(transform: (value: Success) -> R): Try<R, Failure> =
+        if (isSuccess)
+            success(transform(getOrThrow()))
+        else
+            failure(exceptionOrNull()!!)
 
     /**
      * Returns the result of onSuccess for the encapsulated value if this instance represents success or
      * the result of onFailure function for the encapsulated Throwable exception if it is failure.
      */
-    fun <R> fold(onSuccess: (value: Success) -> R, onFailure: (exception: Throwable) -> R): R =
-        if (isSuccess) onSuccess(success!!) else onFailure(failure!!)
+    inline fun <R> fold(onSuccess: (value: Success) -> R, onFailure: (exception: Throwable) -> R): R =
+        if (isSuccess)
+            onSuccess(getOrThrow())
+        else
+            onFailure(exceptionOrNull()!!)
 
     /**
      * Performs the given action on the encapsulated value if this instance represents success.
      * Returns the original Result unchanged.
      */
-    fun onSuccess(action: (value: Success) -> Unit): Try<Success, Failure> {
-        if (isSuccess) action(success!!)
+    inline fun onSuccess(action: (value: Success) -> Unit): Try<Success, Failure> {
+        if (isSuccess) action(getOrThrow())
         return this
     }
 
@@ -67,13 +70,16 @@ class Try<out Success, out Failure: Throwable> private constructor(private val s
      * Returns the encapsulated value if this instance represents success or the result of onFailure function
      * for the encapsulated [Throwable] exception if it is failure.
      */
-    fun <R, S : R, F : Throwable> Try<S, F>.getOrElse(onFailure: (exception: F) -> R): R =
-        if (isSuccess) success!! else onFailure(failure!!)
+    inline fun <R, S : R, F : Throwable> Try<S, F>.getOrElse(onFailure: (exception: F) -> R): R =
+        if (isSuccess)
+            getOrThrow()
+        else
+            onFailure(exceptionOrNull()!!)
 
-    fun <R, S, F: Throwable> Try<S, F>.flatMap(transform: (value: S) -> Try<R, F>): Try<R, F> =
-        when {
-            isSuccess -> transform(success!!)
-            else -> Try.failure(failure!!)
-        }
+    inline fun <R, S, F: Throwable> Try<S, F>.flatMap(transform: (value: S) -> Try<R, F>): Try<R, F> =
+        if (isSuccess)
+            transform(getOrThrow())
+        else
+            failure(exceptionOrNull()!!)
 }
 

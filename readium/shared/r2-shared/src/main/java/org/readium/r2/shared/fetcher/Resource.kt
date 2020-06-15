@@ -161,7 +161,10 @@ class LazyResource(private val factory: suspend () -> Resource) : Resource {
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = resource().read(range)
 
-    override suspend fun close() = resource().close()
+    override suspend fun close() {
+        if (::_resource.isInitialized)
+            _resource.close()
+    }
 }
 
 /**
@@ -169,7 +172,7 @@ class LazyResource(private val factory: suspend () -> Resource) : Resource {
  *
  * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Error.Other.
  */
-suspend fun <R, S> ResourceTry<S>.mapCatching(transform: suspend (value: S) -> R): ResourceTry<R> =
+inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
     try {
         Try.success((transform(getOrThrow())))
     } catch (e: Resource.Error) {
@@ -178,5 +181,5 @@ suspend fun <R, S> ResourceTry<S>.mapCatching(transform: suspend (value: S) -> R
         Try.failure(Resource.Error.Other(e))
     }
 
-suspend fun <R, S> ResourceTry<S>.flatMapCatching(transform: suspend (value: S) -> ResourceTry<R>): ResourceTry<R> =
+inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
     mapCatching(transform).flatMap { it }
