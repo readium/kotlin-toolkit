@@ -12,15 +12,20 @@ package org.readium.r2.shared.fetcher
 import org.readium.r2.shared.extensions.coerceToPositiveIncreasing
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.Try
 
 
 /** Creates a Resource serving [ByteArray] computed from a factory that can fail. */
 open class BytesResource(private val factory: suspend () -> Pair<Link, ResourceTry<ByteArray>>) : Resource {
 
+    constructor(link: Link, bytes: ByteArray) : this({ Pair(link, Try.success(bytes)) })
+
+    constructor(link: Link, factory: suspend () -> ByteArray) : this({ Pair(link, Try.success(factory())) })
+
     private lateinit var byteArray: ResourceTry<ByteArray>
     private lateinit var computedLink: Link
 
-    private suspend fun maybeInitData() {
+    private suspend fun initDataIfNeeded() {
         if(!::byteArray.isInitialized || !::computedLink.isInitialized) {
             val res = factory()
             computedLink = res.first
@@ -29,12 +34,12 @@ open class BytesResource(private val factory: suspend () -> Pair<Link, ResourceT
     }
 
     private suspend fun bytes(): ResourceTry<ByteArray> {
-        maybeInitData()
+        initDataIfNeeded()
         return byteArray
     }
 
     override suspend fun link(): Link {
-        maybeInitData()
+        initDataIfNeeded()
         return computedLink
     }
 
@@ -58,4 +63,8 @@ class StringResource(factory: suspend () -> Pair<Link, ResourceTry<String>>) : B
         val (link,res) = factory()
         Pair(link, res.mapCatching { it.toByteArray() })
     }
-)
+) {
+    constructor(link: Link, string: String) : this({ Pair(link, Try.success(string)) })
+
+    constructor(link: Link, factory: suspend () -> String) : this({ Pair(link, Try.success(factory())) })
+}

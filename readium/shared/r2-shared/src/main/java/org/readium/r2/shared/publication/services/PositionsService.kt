@@ -45,13 +45,12 @@ interface PositionsService : Publication.Service {
         if (link.href != positionsLink.href)
             return null
 
-        return StringResource {
+        return StringResource(positionsLink) {
             val positions = positions()
-            val string = JSONObject().apply {
+            JSONObject().apply {
                 put("total", positions.size)
                 put("positions", positions.toJSON())
             }.toString()
-            Pair(positionsLink, Try.success(string))
         }
     }
 }
