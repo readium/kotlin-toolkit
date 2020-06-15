@@ -38,18 +38,17 @@ internal class HtmlInjector(
 
     private fun inject(resource: Resource): Resource {
         val link = resource.link
-        val result = try {
-            resource.readAsString(link.mediaType?.charset)
+        val text = try {
+            resource.readAsString(link.mediaType?.charset).getOrThrow().trim()
         } catch (e: Resource.Error) {
             return FailureResource(link, e)
         }
 
-        val trimmedText = result.getOrThrow().trim()
         val injector = if (publication.metadata.presentation.layoutOf(link) == EpubLayout.REFLOWABLE)
             HtmlInjector::injectReflowableHtml
         else
             HtmlInjector::injectFixedLayoutHtml
-        return StringResource(link) { injector(this, trimmedText) }
+        return StringResource(link) { injector(this, text) }
     }
 
     private fun injectReflowableHtml(content: String): String {
