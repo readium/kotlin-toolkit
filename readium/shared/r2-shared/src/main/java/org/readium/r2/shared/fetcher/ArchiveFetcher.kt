@@ -17,18 +17,14 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.JavaZip
+import org.readium.r2.shared.util.getOrDefault
 import java.io.File
 
 /** Provides access to entries of an archive. */
 class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher {
 
     override suspend fun links(): List<Link> =
-        archive.entries().map {
-            Link(
-                href = it.path.addPrefix("/"),
-                type = Format.of(fileExtension = File(it.path).extension)?.mediaType?.toString()
-            )
-        }
+        archive.entries().map { it.toLink() }
 
     override fun get(link: Link): Resource =
         EntryResource(link, archive)
@@ -58,14 +54,11 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
         }
 
         override suspend fun link(): Link =
-            // Adds the compressed length to the original link.
-            entry().getOrNull()
-                ?.let { originalLink.addProperties(mapOf("compressedLength" to it)) }
-                ?: originalLink
+            entry().map { it.toLink() }.getOrDefault(originalLink)
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             entry().mapCatching {
-                it.read(range) ?: throw Resource.Error.Other(Exception("Cannot read archive entry."))
+                it.read(range) ?: throw Exception("Cannot read archive entry.")
             }
 
         override suspend fun length(): ResourceTry<Long>  =
@@ -75,11 +68,17 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
         override suspend fun close() {}
 
         private suspend fun metadataLength(): Long? =
-            entry().getOrNull()?.size
+            entry().getOrNull()?.length
 
     }
-
 }
 
+private fun Archive.Entry.toLink(): Link {
+    val link = Link(
+        href = path.addPrefix("/"),
+        type = Format.of(fileExtension = File(path).extension)?.mediaType?.toString()
+    )
 
-
+    return compressedLength?.let { link.addProperties(mapOf("compressedLength" to it)) }
+        ?: link
+}

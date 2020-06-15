@@ -32,9 +32,9 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
     inner class Entry(private val entry: ZipEntry) : Archive.Entry {
         override val path: String get() = entry.name
 
-        override val size: Long? get() = entry.size.takeUnless { it == -1L }
+        override val length: Long? get() = entry.size.takeUnless { it == -1L }
 
-        override val compressedSize: Long? get() = entry.compressedSize.takeUnless { it == -1L }
+        override val compressedLength: Long? get() = entry.compressedSize.takeUnless { it == -1L }
 
         override suspend fun read(range: LongRange?): ByteArray? {
             val stream = archive.getInputStream(entry)

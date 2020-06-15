@@ -86,7 +86,7 @@ class JavaZipTest {
 
     @Test
     fun `Computing size works well`() {
-        val size = runBlocking { archive.entry("mimetype")?.size }
+        val size = runBlocking { archive.entry("mimetype")?.length }
         assertEquals(20L, size)
     }
 }

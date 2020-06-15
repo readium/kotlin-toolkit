@@ -16,6 +16,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.lengthBlocking
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.readBlocking
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
@@ -46,19 +47,25 @@ class ArchiveFetcherTest {
             addExtensionMimeTypMapping("xml", "text/xml")
         }
 
+        fun createLink(href: String, type: String?, compressedLength: Long) = Link(
+            href = href,
+            type = type,
+            properties = Properties(mapOf("compressedLength" to compressedLength))
+        )
+
         assertEquals(
             listOf(
-                "/mimetype" to null,
-                "/EPUB/cover.xhtml" to "text/html",
-                "/EPUB/css/epub.css" to "text/css",
-                "/EPUB/css/nav.css" to "text/css",
-                "/EPUB/images/cover.png" to "image/png",
-                "/EPUB/nav.xhtml" to "text/html",
-                "/EPUB/package.opf" to null,
-                "/EPUB/s04.xhtml" to "text/html",
-                "/EPUB/toc.ncx" to null,
-                "/META-INF/container.xml" to "text/xml"
-            ).map { (href, type) -> Link(href = href, type = type) }.toList(),
+                createLink("/mimetype", null, 20L),
+                createLink("/EPUB/cover.xhtml" , "text/html", 259L),
+                createLink("/EPUB/css/epub.css",  "text/css", 595L),
+                createLink("/EPUB/css/nav.css", "text/css", 306L),
+                createLink("/EPUB/images/cover.png", "image/png", 35809L),
+                createLink("/EPUB/nav.xhtml", "text/html", 2293L),
+                createLink("/EPUB/package.opf", null, 773L),
+                createLink("/EPUB/s04.xhtml", "text/html", 118269L),
+                createLink("/EPUB/toc.ncx", null, 1697),
+                createLink("/META-INF/container.xml", "text/xml", 176)
+            ),
             runBlocking { fetcher.links() }
         )
     }

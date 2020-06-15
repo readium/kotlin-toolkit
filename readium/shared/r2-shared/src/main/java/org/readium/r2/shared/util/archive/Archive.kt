@@ -23,14 +23,14 @@ interface Archive {
         val path: String
 
         /**
-         * Uncompressed data size.
+         * Uncompressed data length.
          */
-        val size: Long?
+        val length: Long?
 
         /**
-         *  Compressed data size.
+         *  Compressed data length.
          */
-        val compressedSize: Long?
+        val compressedLength: Long?
 
         /**
          * Reads the whole content of this entry if it's a file.
