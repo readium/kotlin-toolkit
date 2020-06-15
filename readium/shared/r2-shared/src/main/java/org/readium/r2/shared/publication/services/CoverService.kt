@@ -88,29 +88,28 @@ var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
  */
 abstract class GeneratedCoverService : CoverService {
 
-    private fun coverLink(size: Size? = null): Link = Link(
+    private val coverLink = Link(
         href = "/~readium/cover",
         type = "image/png",
-        rels = setOf("cover"),
-        height = size?.height,
-        width = size?.width
+        rels = setOf("cover")
     )
 
-    override val links: List<Link> = listOf(coverLink())
+    override val links: List<Link> = listOf(coverLink)
 
     abstract override suspend fun cover(): Bitmap
 
     override fun get(link: Link): Resource? {
-        if (link.href != coverLink().href)
+        if (link.href != coverLink.href)
             return null
 
         return BytesResource {
             try {
                 val bitmap = cover()
-                @Suppress("NAME_SHADOWING")
-                val link = coverLink(bitmap.let { Size(it.width, it.height) })
                 val png = bitmap.toPng() ?: throw Resource.Error.Other(Exception("Unable to convert cover to PNG."))
-                Pair(link, Try.success(png))
+                Pair(
+                    coverLink.copy(width = bitmap.width, height = bitmap.height),
+                    Try.success(png)
+                )
             } catch (e: Resource.Error) {
                 Pair(link, Try.failure(e))
             }

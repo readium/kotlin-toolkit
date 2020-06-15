@@ -20,8 +20,6 @@ import java.nio.charset.Charset
 
 typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Error>
 
-typealias ResourceTryCompanion =  Try.Companion
-
 /**
  * Implements the transformation of a Resource. It can be used, for example, to decrypt,
  * deobfuscate, inject CSS or JavaScript, correct content – e.g. adding a missing dir="rtl" in an
@@ -186,9 +184,11 @@ inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): Resour
 inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
     mapCatching(transform).flatMap { it }
 
-internal inline fun <S> ResourceTryCompanion.wrap(compute: () -> S): ResourceTry<S> =
+internal inline fun <S> Try.Companion.wrap(compute: () -> S): ResourceTry<S> =
     try {
-        Try.success(compute())
+        success(compute())
     } catch (e: Resource.Error) {
-        Try.failure(e)
+        failure(e)
+    } catch (e: Exception) {
+        failure(Resource.Error.Other(e))
     }
