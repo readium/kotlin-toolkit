@@ -22,6 +22,7 @@ import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
@@ -32,6 +33,7 @@ import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.services.positions
 import kotlin.coroutines.CoroutineContext
 
 
@@ -41,7 +43,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     private val _currentLocator = MutableLiveData<Locator?>(null)
 
     private fun notifyCurrentLocation() {
-        val locator = publication.positions[resourcePager.currentItem]
+        val locator = positions[resourcePager.currentItem]
         if (locator == currentLocator.value) {
             return
         }
@@ -95,6 +97,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
     override lateinit var publicationFileName: String
+    protected lateinit var positions: List<Locator>
     override var bookId: Long = -1
 
     var resources: List<String> = emptyList()
@@ -114,6 +117,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publication = intent.getPublication(this)
+        positions = runBlocking { publication.positions() }
 
         publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title
