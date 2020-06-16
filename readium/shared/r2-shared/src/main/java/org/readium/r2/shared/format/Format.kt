@@ -11,13 +11,11 @@ package org.readium.r2.shared.format
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.os.Looper
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.extensions.queryProjection
-import timber.log.Timber
 import java.io.File
 
 
@@ -50,18 +48,6 @@ data class Format(
         //
         // Formats used by Readium. Reading apps are welcome to extend the static constants with
         // additional formats.
-
-        val AUDIOBOOK = Format(
-            name = "Audiobook",
-            mediaType = MediaType.AUDIOBOOK,
-            fileExtension = "audiobook"
-        )
-
-        val AUDIOBOOK_MANIFEST = Format(
-            name = "Audiobook",
-            mediaType = MediaType.AUDIOBOOK_MANIFEST,
-            fileExtension = "json"
-        )
 
         val BMP = Format(
             name = "BMP",
@@ -177,6 +163,30 @@ data class Format(
             fileExtension = "png"
         )
 
+        val READIUM_AUDIOBOOK = Format(
+            name = "Readium Audiobook",
+            mediaType = MediaType.READIUM_AUDIOBOOK,
+            fileExtension = "audiobook"
+        )
+
+        val READIUM_AUDIOBOOK_MANIFEST = Format(
+            name = "Readium Audiobook",
+            mediaType = MediaType.READIUM_AUDIOBOOK_MANIFEST,
+            fileExtension = "json"
+        )
+
+        val READIUM_WEBPUB = Format(
+            name = "Readium Web Publication",
+            mediaType = MediaType.READIUM_WEBPUB,
+            fileExtension = "webpub"
+        )
+
+        val READIUM_WEBPUB_MANIFEST = Format(
+            name = "Readium Web Publication",
+            mediaType = MediaType.READIUM_WEBPUB_MANIFEST,
+            fileExtension = "json"
+        )
+
         val TIFF = Format(
             name = "TIFF",
             mediaType = MediaType.TIFF,
@@ -184,7 +194,7 @@ data class Format(
         )
 
         val W3C_WPUB_MANIFEST = Format(
-            name = "Web Publication",
+            name = "W3C Web Publication",
             mediaType = MediaType.W3C_WPUB_MANIFEST,
             fileExtension = "json"
         )
@@ -193,18 +203,6 @@ data class Format(
             name = "WebP",
             mediaType = MediaType.WEBP,
             fileExtension = "webp"
-        )
-
-        val WEBPUB = Format(
-            name = "Web Publication",
-            mediaType = MediaType.WEBPUB,
-            fileExtension = "webpub"
-        )
-
-        val WEBPUB_MANIFEST = Format(
-            name = "Web Publication",
-            mediaType = MediaType.WEBPUB_MANIFEST,
-            fileExtension = "json"
         )
 
         val ZAB = Format(
@@ -385,6 +383,15 @@ data class Format(
         fun of(uri: Uri, contentResolver: ContentResolver, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<FormatSniffer> = Format.sniffers): Format? {
             return runBlocking { ofUri(uri, contentResolver, mediaTypes, fileExtensions, sniffers) }
         }
+
+        @Deprecated("Use [READIUM_AUDIOBOOK] instead", ReplaceWith("READIUM_AUDIOBOOK"))
+        val AUDIOBOOK: Format get() = READIUM_AUDIOBOOK
+        @Deprecated("Use [READIUM_AUDIOBOOK_MANIFEST] instead", ReplaceWith("READIUM_AUDIOBOOK_MANIFEST"))
+        val AUDIOBOOK_MANIFEST: Format get() = READIUM_AUDIOBOOK_MANIFEST
+        @Deprecated("Use [READIUM_WEBPUB] instead", ReplaceWith("READIUM_WEBPUB"))
+        val WEBPUB: Format get() = READIUM_WEBPUB
+        @Deprecated("Use [READIUM_WEBPUB_MANIFEST] instead", ReplaceWith("READIUM_WEBPUB_MANIFEST"))
+        val WEBPUB_MANIFEST: Format get() = READIUM_WEBPUB_MANIFEST
 
     }
 

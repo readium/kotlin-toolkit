@@ -135,10 +135,10 @@ object FormatSniffers {
     /** Sniffs a Readium Web Publication, protected or not by LCP. */
     suspend fun webpub(context: FormatSnifferContext): Format? {
         if (context.hasFileExtension("audiobook") || context.hasMediaType("application/audiobook+zip")) {
-            return Format.AUDIOBOOK
+            return Format.READIUM_AUDIOBOOK
         }
         if (context.hasMediaType("application/audiobook+json")) {
-            return Format.AUDIOBOOK_MANIFEST
+            return Format.READIUM_AUDIOBOOK_MANIFEST
         }
 
         if (context.hasFileExtension("divina") || context.hasMediaType("application/divina+zip")) {
@@ -149,10 +149,10 @@ object FormatSniffers {
         }
 
         if (context.hasFileExtension("webpub") || context.hasMediaType("application/webpub+zip")) {
-            return Format.WEBPUB
+            return Format.READIUM_WEBPUB
         }
         if (context.hasMediaType("application/webpub+json")) {
-            return Format.WEBPUB_MANIFEST
+            return Format.READIUM_WEBPUB_MANIFEST
         }
 
         if (context.hasFileExtension("lcpa") || context.hasMediaType("application/audiobook+lcp")) {
@@ -181,8 +181,8 @@ object FormatSniffers {
             val isLcpProtected = context.containsZipEntryAt("license.lcpl")
 
             if (publication.metadata.type == "http://schema.org/Audiobook" || publication.allReadingOrderIsAudio) {
-                return if (isManifest) Format.AUDIOBOOK_MANIFEST
-                else (if (isLcpProtected) Format.LCP_PROTECTED_AUDIOBOOK else Format.AUDIOBOOK)
+                return if (isManifest) Format.READIUM_AUDIOBOOK_MANIFEST
+                else (if (isLcpProtected) Format.LCP_PROTECTED_AUDIOBOOK else Format.READIUM_AUDIOBOOK)
             }
             if (publication.allReadingOrderIsBitmap) {
                 return if (isManifest) Format.DIVINA_MANIFEST else Format.DIVINA
@@ -191,7 +191,7 @@ object FormatSniffers {
                 return Format.LCP_PROTECTED_PDF
             }
             if (publication.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
-                return if (isManifest) Format.WEBPUB_MANIFEST else Format.WEBPUB
+                return if (isManifest) Format.READIUM_WEBPUB_MANIFEST else Format.READIUM_WEBPUB
             }
         }
 

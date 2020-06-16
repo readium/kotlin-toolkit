@@ -43,22 +43,22 @@ class FormatSnifferTest {
     @Test
     fun `sniff from metadata`() {
         assertNull(Format.of(fileExtension = null))
-        assertEquals(Format.AUDIOBOOK, Format.of(fileExtension = "audiobook"))
+        assertEquals(Format.READIUM_AUDIOBOOK, Format.of(fileExtension = "audiobook"))
         assertNull(Format.of(mediaType = null))
-        assertEquals(Format.AUDIOBOOK, Format.of(mediaType = "application/audiobook+zip"))
-        assertEquals(Format.AUDIOBOOK, Format.of(mediaType = "application/audiobook+zip"))
-        assertEquals(Format.AUDIOBOOK, Format.of(mediaType = "application/audiobook+zip", fileExtension = "audiobook"))
-        assertEquals(Format.AUDIOBOOK, Format.of(mediaTypes = listOf("application/audiobook+zip"), fileExtensions = listOf("audiobook")))
+        assertEquals(Format.READIUM_AUDIOBOOK, Format.of(mediaType = "application/audiobook+zip"))
+        assertEquals(Format.READIUM_AUDIOBOOK, Format.of(mediaType = "application/audiobook+zip"))
+        assertEquals(Format.READIUM_AUDIOBOOK, Format.of(mediaType = "application/audiobook+zip", fileExtension = "audiobook"))
+        assertEquals(Format.READIUM_AUDIOBOOK, Format.of(mediaTypes = listOf("application/audiobook+zip"), fileExtensions = listOf("audiobook")))
     }
 
     @Test
     fun `sniff from a file`() = runBlocking {
-        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.ofFile(fixtures.fileAt("audiobook.json")))
+        assertEquals(Format.READIUM_AUDIOBOOK_MANIFEST, Format.ofFile(fixtures.fileAt("audiobook.json")))
     }
 
     @Test
     fun `sniff from bytes`() = runBlocking {
-        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.ofBytes({ fixtures.fileAt("audiobook.json").readBytes() }))
+        assertEquals(Format.READIUM_AUDIOBOOK_MANIFEST, Format.ofBytes({ fixtures.fileAt("audiobook.json").readBytes() }))
     }
 
     @Test
@@ -69,16 +69,16 @@ class FormatSnifferTest {
 
     @Test
     fun `sniff audiobook`() = runBlocking {
-        assertEquals(Format.AUDIOBOOK, Format.of(fileExtension = "audiobook"))
-        assertEquals(Format.AUDIOBOOK, Format.of(mediaType = "application/audiobook+zip"))
-        assertEquals(Format.AUDIOBOOK, Format.ofFile(fixtures.fileAt("audiobook-package.unknown")))
+        assertEquals(Format.READIUM_AUDIOBOOK, Format.of(fileExtension = "audiobook"))
+        assertEquals(Format.READIUM_AUDIOBOOK, Format.of(mediaType = "application/audiobook+zip"))
+        assertEquals(Format.READIUM_AUDIOBOOK, Format.ofFile(fixtures.fileAt("audiobook-package.unknown")))
     }
 
     @Test
     fun `sniff audiobook manifest`() = runBlocking {
-        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.of(mediaType = "application/audiobook+json"))
-        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.ofFile(fixtures.fileAt("audiobook.json")))
-        assertEquals(Format.AUDIOBOOK_MANIFEST, Format.ofFile(fixtures.fileAt("audiobook-wrongtype.json")))
+        assertEquals(Format.READIUM_AUDIOBOOK_MANIFEST, Format.of(mediaType = "application/audiobook+json"))
+        assertEquals(Format.READIUM_AUDIOBOOK_MANIFEST, Format.ofFile(fixtures.fileAt("audiobook.json")))
+        assertEquals(Format.READIUM_AUDIOBOOK_MANIFEST, Format.ofFile(fixtures.fileAt("audiobook-wrongtype.json")))
     }
 
     @Test
@@ -236,15 +236,15 @@ class FormatSnifferTest {
 
     @Test
     fun `sniff WebPub`() = runBlocking {
-        assertEquals(Format.WEBPUB, Format.of(fileExtension = "webpub"))
-        assertEquals(Format.WEBPUB, Format.of(mediaType = "application/webpub+zip"))
-        assertEquals(Format.WEBPUB, Format.ofFile(fixtures.fileAt("webpub-package.unknown")))
+        assertEquals(Format.READIUM_WEBPUB, Format.of(fileExtension = "webpub"))
+        assertEquals(Format.READIUM_WEBPUB, Format.of(mediaType = "application/webpub+zip"))
+        assertEquals(Format.READIUM_WEBPUB, Format.ofFile(fixtures.fileAt("webpub-package.unknown")))
     }
 
     @Test
     fun `sniff WebPub manifest`() = runBlocking {
-        assertEquals(Format.WEBPUB_MANIFEST, Format.of(mediaType = "application/webpub+json"))
-        assertEquals(Format.WEBPUB_MANIFEST, Format.ofFile(fixtures.fileAt("webpub.json")))
+        assertEquals(Format.READIUM_WEBPUB_MANIFEST, Format.of(mediaType = "application/webpub+json"))
+        assertEquals(Format.READIUM_WEBPUB_MANIFEST, Format.ofFile(fixtures.fileAt("webpub.json")))
     }
 
     @Test
