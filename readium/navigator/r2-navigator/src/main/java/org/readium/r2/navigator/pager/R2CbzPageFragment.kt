@@ -33,7 +33,7 @@ class R2CbzPageFragment : androidx.fragment.app.Fragment() {
         val v = inflater.inflate(R.layout.viewpager_fragment_cbz, container, false)
         val imageView = v.findViewById<ImageView>(R.id.imageView)
 
-        val blob = ZipUtil.unpackEntry(File(publication), resource)
+        val blob = ZipUtil.unpackEntry(File(publication), resource?.removePrefix("/"))
         blob?.let {
             val arrayInputStream = ByteArrayInputStream(it)
             val bitmap = BitmapFactory.decodeStream(arrayInputStream)
