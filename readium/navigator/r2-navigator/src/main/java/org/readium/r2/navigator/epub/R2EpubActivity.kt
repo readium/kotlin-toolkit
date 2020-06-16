@@ -20,6 +20,7 @@ import android.util.DisplayMetrics
 import android.view.ActionMode
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
@@ -42,7 +43,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
-import java.net.URI
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
 
@@ -259,8 +259,8 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         var resourceIndexDouble = 0
 
         for ((resourceIndexSingle, spineItem) in publication.readingOrder.withIndex()) {
-            val uri: String = if (URI(publicationPath).isAbsolute) {
-                if (URI(spineItem.href).isAbsolute) {
+            val uri: String = if (publicationPath.toUri().isAbsolute) {
+                if (spineItem.href.toUri().isAbsolute) {
                     spineItem.href
                 } else {
                     getAbsolute(spineItem.href, publicationPath)

@@ -29,6 +29,7 @@ import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.R2EpubActivity
+import org.readium.r2.navigator.extensions.htmlId
 import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
@@ -230,30 +231,12 @@ class R2EpubPageFragment : Fragment() {
         }
 
 
-        val locations = (webView.navigator as? R2EpubActivity)?.pendingLocator?.locations
-
-
-        locations?.fragments?.firstOrNull()?.let { fragment ->
-
-            val fragments = fragment.split(",").associate {
-                val (left, right) = it.split("=")
-                left to right.toInt()
-            }
-//            val id = fragments.getValue("id")
-            if (fragments.isEmpty()) {
-                var anchor = fragment
-                if (!anchor.startsWith("#")) {
-                    anchor = "#$anchor"
-                }
-                val href = resourceUrl + anchor
-                webView.loadUrl(href)
-            } else {
-                webView.loadUrl(resourceUrl)
-            }
-        } ?: run {
+        val id = (webView.navigator as? R2EpubActivity)?.pendingLocator?.locations?.htmlId
+        if (id != null) {
+            webView.loadUrl("$resourceUrl#$id")
+        } else {
             webView.loadUrl(resourceUrl)
         }
-
 
         return v
     }
