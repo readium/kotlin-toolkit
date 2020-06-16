@@ -22,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.extensions.page
@@ -29,6 +30,8 @@ import org.readium.r2.navigator.extensions.urlToHref
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import timber.log.Timber
 
 class PdfNavigatorFragment(
@@ -44,11 +47,21 @@ class PdfNavigatorFragment(
 
     lateinit var pdfView: PDFView
 
+    private lateinit var positionsByReadingOrder: List<List<Locator>>
+
     private var currentHref: String? = null
+
+    private val currentResourcePositions: List<Locator> get() {
+        val href = currentHref ?: return emptyList()
+        val index = publication.readingOrder.indexOfFirstWithHref(href) ?: return emptyList()
+        return positionsByReadingOrder[index]
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val context = requireContext()
         pdfView = PDFView(context, null)
+
+        positionsByReadingOrder = runBlocking { publication.positionsByReadingOrder() }
 
         val locator: Locator? = savedInstanceState?.getParcelable(KEY_LOCATOR) ?: initialLocator
         if (locator != null) {
@@ -142,8 +155,7 @@ class PdfNavigatorFragment(
     // [PDFView] Listeners
 
     private fun onPageChanged(page: Int) {
-        val href = currentHref ?: return
-        _currentLocator.value = publication.positionsByResource[href]?.getOrNull(page)
+        _currentLocator.value = currentResourcePositions.getOrNull(page)
     }
 
     private fun onTap(e: MotionEvent?): Boolean {
