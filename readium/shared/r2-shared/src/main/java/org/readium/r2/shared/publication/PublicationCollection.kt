@@ -160,3 +160,11 @@ internal fun Map<String, List<PublicationCollection>>.appendToJSONObject(jsonObj
             }
         }
     }
+
+@Deprecated("Use [subcollections[role].firstOrNull()] instead", ReplaceWith("subcollections[role].firstOrNull()"))
+fun Map<String, List<PublicationCollection>>.firstWithRole(role: String): PublicationCollection? =
+    get(role)?.firstOrNull()
+
+@Deprecated("Use [subcollections[role]] instead", ReplaceWith("subcollections[role]"))
+fun Map<String, List<PublicationCollection>>.findAllWithRole(role: String): List<PublicationCollection> =
+    get(role) ?: emptyList()

@@ -11,13 +11,13 @@ package org.readium.r2.shared.extensions
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Bundle
 import org.readium.r2.shared.BuildConfig
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
-import java.lang.IllegalArgumentException
 import java.util.*
 
 private val extraKey = "publicationId"
@@ -53,12 +53,37 @@ fun Intent.getPublication(activity: Activity): Publication {
     return publication
 }
 
+fun Intent.getPublicationOrNull(activity: Activity): Publication? {
+    if (hasExtra("publication")) {
+        if (BuildConfig.DEBUG) {
+            throw deprecationException
+        } else {
+            Timber.e(deprecationException)
+        }
+    }
+
+    return getStringExtra(extraKey)?.let { PublicationRepository.get(it) }
+}
+
 fun Intent.destroyPublication(activity: Activity) {
     if (activity.isFinishing) {
         getStringExtra(extraKey)?.let {
             PublicationRepository.remove(it)
         }
     }
+}
+
+fun Bundle.putPublication(publication: Publication) {
+    val id = PublicationRepository.add(publication)
+    putString(extraKey, id)
+}
+
+fun Bundle.putPublicationFrom(activity: Activity) {
+    putString(extraKey, activity.intent.getStringExtra(extraKey))
+}
+
+fun Bundle.getPublicationOrNull(): Publication? {
+    return getString(extraKey)?.let { PublicationRepository.get(it) }
 }
 
 /**

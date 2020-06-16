@@ -400,6 +400,9 @@ class Publication(
     @Deprecated("Refactored as a property", ReplaceWith("baseUrl"))
     fun baseUrl(): URL? = baseUrl
 
+    @Deprecated("Renamed [subcollections]", ReplaceWith("subcollections"))
+    val otherCollections: Map<String, List<PublicationCollection>> get() = subcollections
+
     @Deprecated("Use [setSelfLink] instead", ReplaceWith("setSelfLink"))
     fun addSelfLink(endPoint: String, baseURL: URL) {
         setSelfLink(Uri.parse(baseURL.toString())
@@ -441,5 +444,8 @@ class Publication(
      */
     @Deprecated("Use [linkWithHref()] to find a link with the given HREF", replaceWith = ReplaceWith("linkWithHref"), level = DeprecationLevel.ERROR)
     fun link(predicate: (Link) -> Boolean): Link? = null
+
+    @Deprecated("Use [jsonManifest] instead", ReplaceWith("jsonManifest"))
+    fun toJSON() = JSONObject(jsonManifest)
 
 }
