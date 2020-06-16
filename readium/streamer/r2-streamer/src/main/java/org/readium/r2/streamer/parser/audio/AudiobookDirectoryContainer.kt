@@ -15,4 +15,4 @@ import org.readium.r2.streamer.container.DirectoryContainer
 
 interface AudioBookContainer : Container
 
-class AudioBookDirectoryContainer(path: String) : AudioBookContainer, DirectoryContainer(path, MediaType.AUDIOBOOK.toString())
+class AudioBookDirectoryContainer(path: String) : AudioBookContainer, DirectoryContainer(path, MediaType.READIUM_AUDIOBOOK.toString())
