@@ -17,7 +17,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.JavaZip
-import org.readium.r2.shared.util.getOrDefault
 import java.io.File
 
 /** Provides access to entries of an archive. */
@@ -46,15 +45,20 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
         suspend fun entry(): ResourceTry<Archive.Entry> {
             if (!::_entry.isInitialized) {
                 _entry = ResourceTry.wrap {
-                    archive.entry(originalLink.href.removePrefix("/")) ?:  throw Resource.Error.NotFound
+                    archive.entry(originalLink.href.removePrefix("/"))
+                        ?: throw Resource.Error.NotFound
                 }
             }
 
             return _entry
         }
 
-        override suspend fun link(): Link =
-            entry().map { it.toLink() }.getOrDefault(originalLink)
+        override suspend fun link(): Link {
+            val compressedLength = entry().map { it.compressedLength }.getOrNull()
+                ?: return originalLink
+
+            return originalLink.addProperties(mapOf("compressedLength" to compressedLength))
+        }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             entry().mapCatching {

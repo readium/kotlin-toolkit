@@ -15,6 +15,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.lengthBlocking
+import org.readium.r2.shared.linkBlocking
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.readBlocking
@@ -119,4 +120,18 @@ class ArchiveFetcherTest {
         val result = resource.lengthBlocking()
         assertEquals(20L, result.getOrNull())
     }
+
+    @Test
+    fun `Original link properties are kept`() {
+        val resource = fetcher.get(Link(href = "/mimetype", properties = Properties(mapOf("other" to "property"))))
+
+        assertEquals(
+            Link(href = "/mimetype", properties = Properties(mapOf(
+                "other" to "property",
+                "compressedLength" to 20L
+            ))),
+            resource.linkBlocking()
+        )
+    }
+
 }

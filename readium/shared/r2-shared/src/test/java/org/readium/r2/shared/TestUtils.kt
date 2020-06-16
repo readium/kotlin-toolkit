@@ -12,7 +12,7 @@ package org.readium.r2.shared
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.readium.r2.shared.extensions.toList
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.fetcher.Fetcher
@@ -54,10 +54,10 @@ internal fun Resource.readBlocking(range: LongRange? = null) = runBlocking { rea
 
 internal fun Fetcher.readBlocking(href: String) = get(Link(href = href)).readBlocking()
 
-internal fun Resource.lengthBlocking(range: LongRange? = null) = runBlocking { length() }
+internal fun Resource.lengthBlocking() = runBlocking { length() }
 
 internal fun Fetcher.lengthBlocking(href: String) = get(Link(href = href)).lengthBlocking()
 
-internal fun Resource.linkBlocking(range: LongRange? = null) = runBlocking { link() }
+internal fun Resource.linkBlocking() = runBlocking { link() }
 
 internal fun Fetcher.linkBlocking(href: String) = get(Link(href = href)).linkBlocking()
