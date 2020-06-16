@@ -11,6 +11,8 @@ package org.readium.r2.shared.format
 
 import android.content.ContentResolver
 import android.net.Uri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -20,7 +22,7 @@ import java.io.InputStream
 internal interface FormatSnifferContent {
 
     /** Reads the whole content as raw bytes. */
-    fun read(): ByteArray?
+    suspend fun read(): ByteArray?
 
     /**
      * Raw bytes stream of the content.
@@ -28,13 +30,13 @@ internal interface FormatSnifferContent {
      * A byte stream can be useful when sniffers only need to read a few bytes at the beginning of
      * the file.
      */
-    fun stream(): InputStream?
+    suspend fun stream(): InputStream?
 }
 
 /** Used to sniff a local file. */
 internal class FormatSnifferFileContent(val file: File) : FormatSnifferContent {
 
-    override fun read(): ByteArray? =
+    override suspend fun read(): ByteArray? = withContext(Dispatchers.IO) {
         try {
             // We only read files smaller than 100KB to avoid an [OutOfMemoryError].
             if (file.length() > 100000) {
@@ -46,8 +48,9 @@ internal class FormatSnifferFileContent(val file: File) : FormatSnifferContent {
             Timber.e(e)
             null
         }
+    }
 
-    override fun stream(): InputStream? =
+    override suspend fun stream(): InputStream? =
         try {
             file.inputStream().buffered()
         } catch (e: Exception) {
@@ -60,27 +63,35 @@ internal class FormatSnifferFileContent(val file: File) : FormatSnifferContent {
 /** Used to sniff a bytes array. */
 internal class FormatSnifferBytesContent(val getBytes: () -> ByteArray) : FormatSnifferContent {
 
-    private val bytes by lazy { getBytes() }
+    private lateinit var _bytes: ByteArray
 
-    override fun read(): ByteArray? = bytes
+    private suspend fun bytes(): ByteArray {
+        if (!this::_bytes.isInitialized) {
+            _bytes = withContext(Dispatchers.IO) { getBytes() }
+        }
+        return _bytes
+    }
 
-    override fun stream(): InputStream? =
-        ByteArrayInputStream(bytes)
+    override suspend fun read(): ByteArray? = bytes()
+
+    override suspend fun stream(): InputStream? =
+        ByteArrayInputStream(bytes())
 
 }
 
 /** Used to sniff a content URI. */
 internal class FormatSnifferUriContent(val uri: Uri, val contentResolver: ContentResolver) : FormatSnifferContent {
 
-    override fun read(): ByteArray? =
+    override suspend fun read(): ByteArray? =
         stream()?.readBytes()
 
-    override fun stream(): InputStream? =
+    override suspend fun stream(): InputStream? = withContext(Dispatchers.IO) {
         try {
             contentResolver.openInputStream(uri)
         } catch (e: Exception) {
             Timber.e(e)
             null
         }
+    }
 
 }

@@ -10,7 +10,6 @@
 package org.readium.r2.shared.publication
 
 import android.net.Uri
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -198,7 +197,7 @@ class Publication(
     fun setSelfLink(href: String) {
         manifest.links = manifest.links.toMutableList().apply {
             removeAll { it.rels.contains("self") }
-            add(Link(href = href, type = MediaType.WEBPUB_MANIFEST.toString(), rels = setOf("self")))
+            add(Link(href = href, type = MediaType.READIUM_WEBPUB_MANIFEST.toString(), rels = setOf("self")))
         }
     }
 
