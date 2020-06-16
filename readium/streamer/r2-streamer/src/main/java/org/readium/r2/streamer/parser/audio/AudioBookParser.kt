@@ -27,7 +27,7 @@ import java.net.URI
 class AudioBookConstant {
     companion object {
         @Deprecated("Use [MediaType.AUDIOBOOK.toString()] instead", replaceWith = ReplaceWith("MediaType.AUDIOBOOK.toString()"))
-        val mimetype get() = MediaType.AUDIOBOOK.toString()
+        val mimetype get() = MediaType.READIUM_AUDIOBOOK.toString()
     }
 }
 

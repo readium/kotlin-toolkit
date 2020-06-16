@@ -30,7 +30,7 @@ class MediaOverlayHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     override fun getMimeType(): String {
-        return MediaType.WEBPUB_MANIFEST.toString()
+        return MediaType.READIUM_WEBPUB_MANIFEST.toString()
     }
 
     override fun getStatus(): IStatus {

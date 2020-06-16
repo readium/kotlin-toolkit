@@ -19,7 +19,7 @@ internal class ManifestHandler : BaseHandler() {
 
     override fun handle(resource: RouterNanoHTTPD.UriResource, uri: Uri, parameters: Map<String, String>?): Response {
         val fetcher = resource.initParameter(ServingFetcher::class.java)
-        return createResponse(mediaType = MediaType.WEBPUB_MANIFEST, body = fetcher.publication.jsonManifest)
+        return createResponse(mediaType = MediaType.READIUM_WEBPUB_MANIFEST, body = fetcher.publication.jsonManifest)
     }
 
 }

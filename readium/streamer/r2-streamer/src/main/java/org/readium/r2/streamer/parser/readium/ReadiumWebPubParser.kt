@@ -38,7 +38,7 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
 
     private suspend fun _parse(fileAtPath: String, fallbackTitle: String): PubBox? {
         val file = File(fileAtPath)
-        val format = Format.of(file) ?: return null
+        val format = runBlocking { Format.ofFile(file) } ?: return null
 
         val pubBox = if (format.mediaType.isRwpm) {
             parseManifest(file, format)
@@ -131,7 +131,7 @@ private suspend fun Fetcher.isProtectedWithLcp(): Boolean =
 
 private fun Format.toPublicationType(): Publication.TYPE =
     when (this) {
-        Format.AUDIOBOOK, Format.AUDIOBOOK_MANIFEST -> Publication.TYPE.AUDIO
+        Format.READIUM_AUDIOBOOK, Format.READIUM_AUDIOBOOK_MANIFEST -> Publication.TYPE.AUDIO
         Format.DIVINA, Format.DIVINA_MANIFEST -> Publication.TYPE.DiViNa
         else -> Publication.TYPE.WEBPUB
     }
