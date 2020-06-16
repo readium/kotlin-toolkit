@@ -303,7 +303,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                                 dismiss()
                                 parseIntentPublication(url.toString())
                             }
-                            Format.AUDIOBOOK, Format.AUDIOBOOK_MANIFEST, Format.DIVINA, Format.DIVINA_MANIFEST -> {
+                            Format.READIUM_AUDIOBOOK, Format.READIUM_AUDIOBOOK_MANIFEST, Format.DIVINA, Format.DIVINA_MANIFEST -> {
                                 editTextHref!!.error = "Import ${format.name} via URL not supported yet."
                                 editTextHref!!.requestFocus()
                             }
@@ -950,7 +950,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         launch {
             when (format) {
-                Format.DIVINA, Format.AUDIOBOOK -> {
+                Format.DIVINA, Format.READIUM_AUDIOBOOK -> {
                     val output = File(publicationPath)
                     if (!output.exists()) {
                         if (!output.mkdir()) {

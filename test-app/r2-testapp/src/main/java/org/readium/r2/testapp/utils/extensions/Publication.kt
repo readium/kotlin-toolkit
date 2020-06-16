@@ -18,7 +18,6 @@ import org.readium.r2.streamer.parser.cbz.CBZParser
 import org.readium.r2.streamer.parser.divina.DiViNaParser
 import org.readium.r2.streamer.parser.epub.EpubParser
 import timber.log.Timber
-import java.io.File
 
 fun Publication.Companion.parse(path: String, format: Format): PubBox? =
     try {
@@ -26,7 +25,7 @@ fun Publication.Companion.parse(path: String, format: Format): PubBox? =
             Format.EPUB -> EpubParser()
             Format.CBZ -> CBZParser()
             Format.DIVINA -> DiViNaParser()
-            Format.AUDIOBOOK -> AudioBookParser()
+            Format.READIUM_AUDIOBOOK -> AudioBookParser()
             else -> null
 
         }?.parse(path)
@@ -44,7 +43,7 @@ val Publication.TYPE.format: Format? get() = when (this) {
     Publication.TYPE.EPUB -> Format.EPUB
     Publication.TYPE.CBZ -> Format.CBZ
     Publication.TYPE.FXL -> Format.EPUB
-    Publication.TYPE.WEBPUB -> Format.WEBPUB
-    Publication.TYPE.AUDIO -> Format.AUDIOBOOK
+    Publication.TYPE.WEBPUB -> Format.READIUM_WEBPUB
+    Publication.TYPE.AUDIO -> Format.READIUM_AUDIOBOOK
     Publication.TYPE.DiViNa -> Format.DIVINA
 }
