@@ -52,7 +52,7 @@ open class BytesResource(private val factory: suspend () -> Pair<Link, ResourceT
         return bytes().map { it.sliceArray(range.map(Long::toInt)) }
     }
 
-    override suspend fun length(): ResourceTry<Long> = byteArray.map { it.size.toLong() }
+    override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
 
     override suspend fun close() {}
 }
