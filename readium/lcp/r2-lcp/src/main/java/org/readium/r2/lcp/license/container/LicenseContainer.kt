@@ -9,6 +9,7 @@
 
 package org.readium.r2.lcp.license.container
 
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.ContainerError
 import org.readium.r2.lcp.LCPError
 import org.readium.r2.lcp.license.model.LicenseDocument
@@ -25,7 +26,7 @@ internal interface LicenseContainer {
 }
 
 internal fun createLicenseContainer(filepath: String, mediaTypes: List<String> = emptyList()): LicenseContainer {
-    val format = Format.of(File(filepath), mediaTypes = mediaTypes, fileExtensions = emptyList())
+    val format = runBlocking { Format.ofFile(filepath, mediaTypes = mediaTypes, fileExtensions = emptyList()) }
         ?: throw LCPError.licenseContainer(ContainerError.openFailed)
     return createLicenseContainer(filepath, format)
 }
