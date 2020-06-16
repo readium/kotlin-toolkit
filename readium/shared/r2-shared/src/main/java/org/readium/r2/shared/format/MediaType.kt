@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.format
 
-import java.lang.IllegalArgumentException
 import java.nio.charset.Charset
 import java.util.*
 
@@ -217,12 +216,12 @@ class MediaType private constructor(string: String) {
 
     /** Returns whether this media type is of a Readium Web Publication Manifest. */
     val isRwpm: Boolean get() =
-        matchesAny(AUDIOBOOK_MANIFEST, DIVINA_MANIFEST, WEBPUB_MANIFEST)
+        matchesAny(READIUM_AUDIOBOOK_MANIFEST, DIVINA_MANIFEST, READIUM_WEBPUB_MANIFEST)
 
     /** Returns whether this media type is of a publication file. */
     val isPublication: Boolean get() = matchesAny(
-        AUDIOBOOK, AUDIOBOOK_MANIFEST, CBZ, DIVINA, DIVINA_MANIFEST, EPUB, LCP_PROTECTED_AUDIOBOOK,
-        LCP_PROTECTED_PDF, LPF, PDF, W3C_WPUB_MANIFEST, WEBPUB, WEBPUB_MANIFEST, ZAB
+        READIUM_AUDIOBOOK, READIUM_AUDIOBOOK_MANIFEST, CBZ, DIVINA, DIVINA_MANIFEST, EPUB, LCP_PROTECTED_AUDIOBOOK,
+        LCP_PROTECTED_PDF, LPF, PDF, W3C_WPUB_MANIFEST, READIUM_WEBPUB, READIUM_WEBPUB_MANIFEST, ZAB
     )
 
     companion object {
@@ -242,8 +241,6 @@ class MediaType private constructor(string: String) {
         val AAC = MediaType("audio/aac")
         val ACSM = MediaType("application/vnd.adobe.adept+xml")
         val AIFF = MediaType("audio/aiff")
-        val AUDIOBOOK = MediaType("application/audiobook+zip")
-        val AUDIOBOOK_MANIFEST = MediaType("application/audiobook+json")
         val AVI = MediaType("video/x-msvideo")
         val BINARY = MediaType("application/octet-stream")
         val BMP = MediaType("image/bmp")
@@ -277,6 +274,10 @@ class MediaType private constructor(string: String) {
         val OTF = MediaType("font/otf")
         val PDF = MediaType("application/pdf")
         val PNG = MediaType("image/png")
+        val READIUM_AUDIOBOOK = MediaType("application/audiobook+zip")
+        val READIUM_AUDIOBOOK_MANIFEST = MediaType("application/audiobook+json")
+        val READIUM_WEBPUB = MediaType("application/webpub+zip")
+        val READIUM_WEBPUB_MANIFEST = MediaType("application/webpub+json")
         val SMIL = MediaType("application/smil+xml")
         val SVG = MediaType("image/svg+xml")
         val TEXT = MediaType("text/plain")
@@ -287,14 +288,21 @@ class MediaType private constructor(string: String) {
         val WEBM_AUDIO = MediaType("audio/webm")
         val WEBM_VIDEO = MediaType("video/webm")
         val WEBP = MediaType("image/webp")
-        val WEBPUB = MediaType("application/webpub+zip")
-        val WEBPUB_MANIFEST = MediaType("application/webpub+json")
         val WOFF = MediaType("font/woff")
         val WOFF2 = MediaType("font/woff2")
         val XHTML = MediaType("application/xhtml+xml")
         val XML = MediaType("application/xml")
         val ZAB = MediaType("application/x.readium.zab+zip")  // non-existent
         val ZIP = MediaType("application/zip")
+
+        @Deprecated("Use [READIUM_AUDIOBOOK] instead", ReplaceWith("READIUM_AUDIOBOOK"))
+        val AUDIOBOOK: MediaType get() = READIUM_AUDIOBOOK
+        @Deprecated("Use [READIUM_AUDIOBOOK_MANIFEST] instead", ReplaceWith("READIUM_AUDIOBOOK_MANIFEST"))
+        val AUDIOBOOK_MANIFEST: MediaType get() = READIUM_AUDIOBOOK_MANIFEST
+        @Deprecated("Use [READIUM_WEBPUB] instead", ReplaceWith("READIUM_WEBPUB"))
+        val WEBPUB: MediaType get() = READIUM_WEBPUB
+        @Deprecated("Use [READIUM_WEBPUB_MANIFEST] instead", ReplaceWith("READIUM_WEBPUB_MANIFEST"))
+        val WEBPUB_MANIFEST: MediaType get() = READIUM_WEBPUB_MANIFEST
 
     }
 

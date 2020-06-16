@@ -14,14 +14,11 @@ import org.readium.r2.shared.extensions.extension
 
 /** Fuel Format extensions */
 
-/** Sniffs the format for this [Response], using the default format sniffers. */
-val Response.format: Format? get() = sniffFormat()
-
 /**
  * Resolves the format for this [Response], with optional extra file extension and media type
  * hints.
  */
-fun Response.sniffFormat(mediaTypes: List<String> = emptyList(), fileExtensions: List<String> = emptyList(), sniffers: List<FormatSniffer> = Format.sniffers): Format? {
+suspend fun Response.sniffFormat(mediaTypes: List<String> = emptyList(), fileExtensions: List<String> = emptyList(), sniffers: List<FormatSniffer> = Format.sniffers): Format? {
     val allMediaTypes = mediaTypes.toMutableList()
     val allFileExtensions = fileExtensions.toMutableList()
 
@@ -37,5 +34,5 @@ fun Response.sniffFormat(mediaTypes: List<String> = emptyList(), fileExtensions:
 
     // TODO: The suggested filename extension, part of the HTTP header `Content-Disposition`.
 
-    return Format.of(bytes = { data }, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
+    return Format.ofBytes({ data }, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
 }

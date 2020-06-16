@@ -177,7 +177,7 @@ data class Publication(
     fun setSelfLink(href: String) {
         links = links.toMutableList().apply {
             removeAll { it.rels.contains("self") }
-            add(Link(href = href, type = MediaType.WEBPUB_MANIFEST.toString(), rels = setOf("self")))
+            add(Link(href = href, type = MediaType.READIUM_WEBPUB_MANIFEST.toString(), rels = setOf("self")))
         }
     }
 

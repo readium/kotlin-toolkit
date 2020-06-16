@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.format
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
@@ -84,48 +86,73 @@ class FormatSnifferContext internal constructor(
      * It will extract the charset parameter from the media type hints to figure out an encoding.
      * Otherwise, fallback on UTF-8.
      */
-    val contentAsString: String? by lazy {
-        content?.read()?.toString(charset ?: Charset.defaultCharset())
+    suspend fun contentAsString(): String? {
+        if (!loadedContentAsString) {
+            loadedContentAsString = true
+            _contentAsString = content?.read()?.toString(charset ?: Charset.defaultCharset())
+        }
+        return _contentAsString
     }
 
+    private var loadedContentAsString: Boolean = false
+    private var _contentAsString: String? = null
+
     /** Content as an XML document. */
-    val contentAsXml: ElementNode? by lazy {
-        try {
-            stream()?.let { XmlParser().parse(it) }
-        } catch (e: Exception) {
-            null
+    suspend fun contentAsXml(): ElementNode? {
+        if (!loadedContentAsXml) {
+            loadedContentAsXml = true
+            _contentAsXml = withContext(Dispatchers.IO) {
+                try {
+                    stream()?.let { XmlParser().parse(it) }
+                } catch (e: Exception) {
+                    null
+                }
+            }
         }
+
+        return _contentAsXml
     }
+
+    private var loadedContentAsXml: Boolean = false
+    private var _contentAsXml: ElementNode? = null
 
     /**
      * Content as a ZIP archive.
      * Warning: ZIP is only supported for a local file, for now.
      */
-    val contentAsZip: ZipFile? by lazy {
-        try {
-            (content as? FormatSnifferFileContent)?.let {
-                ZipFile(it.file)
+    suspend fun contentAsZip(): ZipFile? {
+        if (!loadedContentAsZip) {
+            loadedContentAsZip = true
+            _contentAsZip = withContext(Dispatchers.IO) {
+                try {
+                    (content as? FormatSnifferFileContent)?.let {
+                        ZipFile(it.file)
+                    }
+                } catch (e: Exception) {
+                    null
+                }
             }
-        } catch (e: Exception) {
-            null
         }
+
+        return _contentAsZip
     }
+
+    private var loadedContentAsZip: Boolean = false
+    private var _contentAsZip: ZipFile? = null
 
     /**
      * Content parsed from JSON.
      */
-    val contentAsJson: JSONObject? by lazy {
+    suspend fun contentAsJson(): JSONObject? =
         try {
-            contentAsString?.let { JSONObject(it) }
+            contentAsString()?.let { JSONObject(it) }
         } catch (e: Exception) {
             null
         }
-    }
 
     /** Publication parsed from the content. */
-    val contentAsRwpm: Publication? by lazy {
-        Publication.fromJSON(contentAsJson)
-    }
+    suspend fun contentAsRwpm(): Publication? =
+        Publication.fromJSON(contentAsJson())
 
     /**
      * Raw bytes stream of the content.
@@ -133,7 +160,7 @@ class FormatSnifferContext internal constructor(
      * A byte stream can be useful when sniffers only need to read a few bytes at the beginning of
      * the file.
      */
-    fun stream(): InputStream? = content?.stream()
+    suspend fun stream(): InputStream? = content?.stream()
 
     /**
      * Reads the file signature, aka magic number, at the beginning of the content, up to [length]
@@ -141,8 +168,8 @@ class FormatSnifferContext internal constructor(
      *
      * i.e. https://en.wikipedia.org/wiki/List_of_file_signatures
      */
-    fun readFileSignature(length: Int): String? =
-        try {
+    suspend fun readFileSignature(length: Int): String? = withContext(Dispatchers.IO) {
+            try {
             stream()?.let {
                 val buffer = ByteArray(length)
                 it.read(buffer, 0, length)
@@ -151,21 +178,22 @@ class FormatSnifferContext internal constructor(
         } catch (e: Exception) {
             null
         }
+    }
 
     /**
      * Returns whether the content is a JSON object containing all of the given root keys.
      */
-    internal fun containsJsonKeys(vararg keys: String): Boolean {
-        val json = contentAsJson ?: return false
+    internal suspend fun containsJsonKeys(vararg keys: String): Boolean {
+        val json = contentAsJson() ?: return false
         return json.keys().asSequence().toSet().containsAll(keys.toList())
     }
 
     /**
      * Returns whether a ZIP entry exists in this file.
      */
-    internal fun containsZipEntryAt(path: String): Boolean =
+    internal suspend fun containsZipEntryAt(path: String): Boolean =
         try {
-            contentAsZip?.getEntry(path) != null
+            contentAsZip()?.getEntry(path) != null
         } catch (e: Exception) {
             false
         }
@@ -173,22 +201,25 @@ class FormatSnifferContext internal constructor(
     /**
      * Returns the ZIP entry data at the given [path] in this file.
      */
-    internal fun readZipEntryAt(path: String): ByteArray? {
-        val archive = contentAsZip ?: return null
-        return try {
-            val entry = archive.getEntry(path)
-            archive.getInputStream(entry).readBytes()
-        } catch (e: Exception) {
-            null
+    internal suspend fun readZipEntryAt(path: String): ByteArray? {
+        val archive = contentAsZip() ?: return null
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val entry = archive.getEntry(path)
+                archive.getInputStream(entry).readBytes()
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 
     /**
      * Returns whether all the ZIP entry paths satisfy the given `predicate`.
      */
-    internal fun zipEntriesAllSatisfy(predicate: (ZipEntry) -> Boolean): Boolean =
+    internal suspend fun zipEntriesAllSatisfy(predicate: (ZipEntry) -> Boolean): Boolean =
         try {
-            contentAsZip?.entries()?.asSequence()?.all(predicate) == true
+            contentAsZip()?.entries()?.asSequence()?.all(predicate) == true
         } catch (e: Exception) {
             false
         }
