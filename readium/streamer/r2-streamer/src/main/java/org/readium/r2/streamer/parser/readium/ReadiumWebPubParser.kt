@@ -15,6 +15,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.FileFetcher
+import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.normalize
@@ -23,6 +24,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
+import org.readium.r2.streamer.fetcher.LcpDecryptor
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
@@ -91,11 +93,21 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser {
                 if (fetcher.isProtectedWithLcp()) DRM(DRM.Brand.lcp)
                 else null
 
+            @Suppress("NAME_SHADOWING")
+            var fetcher = fetcher
+
+            if (drm?.brand == DRM.Brand.lcp) {
+                fetcher = TransformingFetcher(fetcher, listOfNotNull(
+                    LcpDecryptor(drm)::transform
+                ))
+            }
+
             val manifest = Manifest.fromJSON(JSONObject(manifestJson)) { normalize(base = "/", href = it) }
                 ?: return null
 
             val publication = Publication(
                 manifest = manifest,
+                fetcher = fetcher,
                 servicesBuilder = Publication.ServicesBuilder().apply {
                     if (format == Format.LCP_PROTECTED_PDF) {
                         positionsServiceFactory = LcpdfPositionsService.create(context.applicationContext)
