@@ -38,6 +38,7 @@ import com.mcxiaoke.koi.ext.onClick
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
@@ -304,7 +305,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                                 dismiss()
                                 parseIntentPublication(url.toString())
                             }
-                            Format.AUDIOBOOK, Format.AUDIOBOOK_MANIFEST, Format.DIVINA, Format.DIVINA_MANIFEST -> {
+                            Format.READIUM_AUDIOBOOK, Format.READIUM_AUDIOBOOK_MANIFEST, Format.DIVINA, Format.DIVINA_MANIFEST -> {
                                 editTextHref!!.error = "Import ${format.name} via URL not supported yet."
                                 editTextHref!!.requestFocus()
                             }
@@ -709,7 +710,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     protected fun prepareToServe(pub: PubBox?, fileName: String, absolutePath: String, add: Boolean, lcp: Boolean) {
-        val format = Format.of(File(absolutePath)) ?: pub?.publication?.type?.format
+        val format = runBlocking { Format.ofFile(absolutePath) } ?: pub?.publication?.type?.format
         if (pub == null || format == null) {
             catalogView.snackbar("Invalid publication")
             return
@@ -906,7 +907,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
             } then {
                 val uri = data.data
-                val format = uri?.let { Format.of(it, contentResolver) }
+                val format = uri?.let { runBlocking { Format.ofUri(it, contentResolver) } }
                 if (format != null) {
                     if (format == Format.LCP_LICENSE) {
                         processLcpActivityResult(uri, progress, isNetworkAvailable)
@@ -943,7 +944,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         launch {
             when (format) {
-                Format.DIVINA, Format.AUDIOBOOK -> {
+                Format.DIVINA, Format.READIUM_AUDIOBOOK -> {
                     val output = File(publicationPath)
                     if (!output.exists()) {
                         if (!output.mkdir()) {
