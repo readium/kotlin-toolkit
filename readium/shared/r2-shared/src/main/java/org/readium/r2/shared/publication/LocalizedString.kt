@@ -136,7 +136,7 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
          *   }
          * ]
          */
-        internal fun fromJSON(json: Any?, warnings: WarningLogger<JsonWarning>?): LocalizedString? {
+        internal fun fromJSON(json: Any?, warnings: WarningLogger?): LocalizedString? {
             json ?: return null
 
             return when (json) {
@@ -149,7 +149,7 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
             }
         }
 
-        private fun fromJSONObject(json: JSONObject, warnings: WarningLogger<JsonWarning>?): LocalizedString? {
+        private fun fromJSONObject(json: JSONObject, warnings: WarningLogger?): LocalizedString? {
             val translations = mutableMapOf<String?, Translation>()
             for (key in json.keys()) {
                 val string = json.optNullableString(key)

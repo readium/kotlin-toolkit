@@ -87,7 +87,7 @@ data class Contributor(
         internal fun fromJSON(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger?
         ): Contributor? {
             json ?: return null
 
@@ -125,7 +125,7 @@ data class Contributor(
         internal fun fromJSONArray(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger?
         ): List<Contributor> {
             return when(json) {
                 is String, is JSONObject ->

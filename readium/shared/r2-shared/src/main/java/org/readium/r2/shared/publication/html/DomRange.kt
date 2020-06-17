@@ -79,7 +79,7 @@ data class DomRange(
             fun fromJSON(json: JSONObject?): Point? =
                 fromJSON(json, null)
 
-            internal fun fromJSON(json: JSONObject?, warnings: WarningLogger<JsonWarning>?): Point? {
+            internal fun fromJSON(json: JSONObject?, warnings: WarningLogger?): Point? {
                 val cssSelector = json?.optNullableString("cssSelector")
                 val textNodeIndex = json?.optPositiveInt("textNodeIndex")
                 if (cssSelector == null || textNodeIndex == null) {
@@ -110,7 +110,7 @@ data class DomRange(
         fun fromJSON(json: JSONObject?): DomRange? =
             fromJSON(json, null)
 
-        internal fun fromJSON(json: JSONObject?, warnings: WarningLogger<JsonWarning>?): DomRange? {
+        internal fun fromJSON(json: JSONObject?, warnings: WarningLogger?): DomRange? {
             val start = Point.fromJSON(json?.optJSONObject("start"))
             if (start == null) {
                 warnings?.log(DomRange::class.java, "[start] is required", json)

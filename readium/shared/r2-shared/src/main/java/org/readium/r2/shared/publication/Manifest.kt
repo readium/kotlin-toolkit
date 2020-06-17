@@ -85,7 +85,7 @@ data class Manifest(
         internal fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger?
         ): Manifest? {
             json ?: return null
 

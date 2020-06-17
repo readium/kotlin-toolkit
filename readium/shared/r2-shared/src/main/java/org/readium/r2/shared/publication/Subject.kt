@@ -82,7 +82,7 @@ data class Subject(
         internal fun fromJSON(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger?
         ): Subject? {
             json ?: return null
 
@@ -119,7 +119,7 @@ data class Subject(
         internal fun fromJSONArray(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger?
         ): List<Subject> {
             return when(json) {
                 is String, is JSONObject ->

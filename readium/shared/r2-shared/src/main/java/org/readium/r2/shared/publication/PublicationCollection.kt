@@ -60,7 +60,7 @@ data class PublicationCollection(
         internal fun fromJSON(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger?
         ): PublicationCollection? {
             json ?: return null
 
@@ -115,7 +115,7 @@ data class PublicationCollection(
         internal fun collectionsFromJSON(
             json: JSONObject,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger?
         ): Map<String, List<PublicationCollection>> {
             val collections = mutableMapOf<String, MutableList<PublicationCollection>>()
             for (role in json.keys().asSequence().sorted()) {

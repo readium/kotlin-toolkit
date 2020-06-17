@@ -20,6 +20,7 @@ import org.readium.r2.shared.extensions.parseObjects
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.Warning
 import org.readium.r2.shared.util.logging.log
 
 /**
@@ -54,7 +55,7 @@ data class Acquisition(
          * Creates an [Acquisition] from its JSON representation.
          * If the acquisition can't be parsed, a warning will be logged with [warnings].
          */
-        internal fun fromJSON(json: JSONObject?, warnings: WarningLogger<JsonWarning>?): Acquisition? {
+        internal fun fromJSON(json: JSONObject?, warnings: WarningLogger?): Acquisition? {
             val type = json?.optNullableString("type")
             if (type == null) {
                 warnings?.log(Acquisition::class.java, "[type] is required", json)
@@ -76,7 +77,7 @@ data class Acquisition(
          */
         internal fun fromJSONArray(
             json: JSONArray?,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger?
         ): List<Acquisition> {
             return json.parseObjects { fromJSON(it as? JSONObject, warnings) }
         }

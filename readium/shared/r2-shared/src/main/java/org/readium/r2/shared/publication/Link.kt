@@ -137,7 +137,7 @@ data class Link(
         internal fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger?
         ): Link? {
             val href = json?.optNullableString("href")
             if (href == null) {
@@ -174,7 +174,7 @@ data class Link(
         internal fun fromJSONArray(
             json: JSONArray?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger?
         ): List<Link> {
             return json.parseObjects { fromJSON(it as? JSONObject, normalizeHref, warnings) }
         }

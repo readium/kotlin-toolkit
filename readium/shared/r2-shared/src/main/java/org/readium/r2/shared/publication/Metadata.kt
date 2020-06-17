@@ -156,7 +156,7 @@ data class Metadata(
         internal fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger?
         ): Metadata? {
             json ?: return null
             val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)
