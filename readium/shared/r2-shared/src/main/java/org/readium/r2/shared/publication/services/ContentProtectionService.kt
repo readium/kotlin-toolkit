@@ -212,7 +212,7 @@ interface ContentProtectionService: Publication.Service {
 
 private val Publication.protectionService: ContentProtectionService?
     get() {
-        findService(ContentProtectionService::class.java)?.let { return it }
+        findService(ContentProtectionService::class)?.let { return it }
         /* TODO: return links.firstWithMediaType(RouteHandler.ContentProtectionHandler.link.mediaType!!)?.let {
             WebContentProtection(it)
         } */
