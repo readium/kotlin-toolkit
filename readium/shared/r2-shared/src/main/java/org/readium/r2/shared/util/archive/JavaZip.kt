@@ -17,7 +17,7 @@ import java.lang.Exception
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-internal class JavaZip(private val archive: ZipFile) : Archive {
+class JavaZip(private val archive: ZipFile) : Archive {
 
     companion object {
 
