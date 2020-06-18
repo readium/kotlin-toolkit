@@ -60,7 +60,7 @@ class Publication(
     var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
     var cssStyle: String? = null,
 
-    @Deprecated("This will be removed in a future version. Use [Format.of] to check the format of a publication.", level = DeprecationLevel.WARNING)
+    @Deprecated("This will be removed in a future version. Use [Format.of] to check the format of a publication.", level = DeprecationLevel.ERROR)
     var internalData: MutableMap<String, String> = mutableMapOf()
 ) {
     private val services: List<Service> = servicesBuilder.build(Service.Context(manifest, fetcher))
@@ -85,6 +85,8 @@ class Publication(
 
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
     var type: Publication.TYPE = Publication.TYPE.EPUB
+
+    @Deprecated("Version is not available any more.", level = DeprecationLevel.ERROR)
     var version: Double = 0.0
 
     /**
