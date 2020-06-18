@@ -11,14 +11,11 @@ package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.os.ParcelFileDescriptor
 import com.shockwave.pdfium.PdfiumCore
 import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 import org.readium.r2.shared.extensions.md5
-import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.pdf.PdfDocument
 import timber.log.Timber
-import java.io.File
 
 internal class PdfiumDocument private constructor(
     val core: PdfiumCore,
@@ -63,21 +60,6 @@ internal class PdfiumDocument private constructor(
                 core = core,
                 document = document,
                 identifier = bytes.md5(),
-                pageCount = core.getPageCount(document)
-            )
-        }
-
-        fun fromPath(path: String, context: Context): PdfiumDocument? {
-            // FIXME: Extract the identifier from the file, it's not exposed by PdfiumCore
-            val identifier = tryOrNull { File(path).readBytes() }?.md5()
-            val fd = ParcelFileDescriptor.open(File(path), ParcelFileDescriptor.MODE_READ_ONLY)
-            val core = PdfiumCore(context.applicationContext)
-            val document = core.newDocument(fd)
-
-            return PdfiumDocument(
-                core = core,
-                document = document,
-                identifier = identifier,
                 pageCount = core.getPageCount(document)
             )
         }
