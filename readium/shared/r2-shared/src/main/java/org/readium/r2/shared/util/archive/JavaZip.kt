@@ -21,7 +21,7 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
 
     companion object {
 
-        fun open(path: String): Archive? =
+        suspend fun open(path: String): Archive? =
             try {
                 ZipFile(path)
             } catch (e: Exception) {
@@ -35,6 +35,8 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
         override val length: Long? get() = entry.size.takeUnless { it == -1L }
 
         override val compressedLength: Long? get() = entry.compressedSize.takeUnless { it == -1L }
+
+        override val isDirectory: Boolean get() = entry.isDirectory
 
         override suspend fun read(range: LongRange?): ByteArray? {
             val stream = archive.getInputStream(entry)

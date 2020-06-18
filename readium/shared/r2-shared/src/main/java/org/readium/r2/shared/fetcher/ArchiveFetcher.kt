@@ -23,7 +23,7 @@ import java.io.File
 class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher {
 
     override suspend fun links(): List<Link> =
-        archive.entries().map { it.toLink() }
+        archive.entries().filterNot { it.isDirectory }.map { it.toLink() }
 
     override fun get(link: Link): Resource =
         EntryResource(link, archive)
@@ -32,7 +32,7 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
 
     companion object {
 
-        suspend fun fromPath(path: String, open: (String) -> Archive? = (JavaZip)::open): ArchiveFetcher? =
+        suspend fun fromPath(path: String, open: suspend (String) -> Archive? = { JavaZip.open(it) }): ArchiveFetcher? =
             withContext(Dispatchers.IO) {
                 open(path)
             }?.let { ArchiveFetcher(it) }

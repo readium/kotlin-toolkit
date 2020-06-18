@@ -33,6 +33,11 @@ interface Archive {
         val compressedLength: Long?
 
         /**
+         * Whether this is a directory entry or not.
+         */
+        val isDirectory: Boolean
+
+        /**
          * Reads the whole content of this entry if it's a file.
          * When [range] is null, the whole content is returned. Out-of-range indexes are clamped to the
          * available length automatically.
