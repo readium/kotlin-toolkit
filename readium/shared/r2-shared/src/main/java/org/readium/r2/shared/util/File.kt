@@ -7,9 +7,9 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.shared.format
+package org.readium.r2.shared.util
 
-import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.format.Format
 import java.lang.Exception
 
 /**
@@ -17,9 +17,10 @@ import java.lang.Exception
  *
  * Used to cache the Format to avoid computing it at different locations.
  */
-data class File(
+class File private constructor(
     val file: java.io.File,
-    val mediaType: String? = null
+    private val mediaTypeHint: String? = null,
+    private val knownFormat: Format? = null
 ) {
     /**
      * Creates a File from a path and its known mediaType.
@@ -27,24 +28,29 @@ data class File(
      * @param path Absolute path to the file or directory.
      * @param mediaType If the file's media type is already known, providing it will improve performances.
      */
-    constructor(path: String, mediaType: String? = null) : this(java.io.File(path), mediaType)
+    constructor(path: String, mediaType: String? = null) : this(java.io.File(path), mediaTypeHint = mediaType)
 
     /**
-     * Creates a File from a path and an already resolved format.
+     *  Creates a File from a path and an already resolved format.
      */
-    constructor(path: String, format: Format): this(path, format.mediaType.toString()) {
-        _format = Try.success(format)
-    }
+    constructor(path: String, format: Format) : this(java.io.File(path), knownFormat = format)
 
     /**
      * Absolute path on the file system.
      */
-    val path: String = file.canonicalPath
+    val path: String = file.absolutePath
 
     /**
      * Last path component, or filename.
      */
     val name: String = file.name
+
+    /**
+     * Whether the path points to a directory.
+     *
+     * This can be used to open exploded publication archives.
+     */
+    val isDirectory: Boolean get() = file.isDirectory
 
     private lateinit var _format: Try<Format, Exception>
 
@@ -53,18 +59,21 @@ data class File(
      */
     suspend fun format(): Format? {
         if (!::_format.isInitialized) {
-            _format = Format.ofFile(file, mediaType)
+            val format = knownFormat
+                ?: Format.ofFile(file, mediaTypeHint)
+            _format = format
                 ?.let { Try.success(it) }
-                ?: Try.failure(Exception("Unable to detect format"))
+                ?: Try.failure(Exception("Unable to detect format."))
         }
 
         return _format.getOrNull()
     }
 
-    /**
-     * Whether the path points to a directory.
-     *
-     * This can be used to open exploded publication archives.
-     */
-    val isDirectory: Boolean get() = file.isDirectory
+    override fun equals(other: Any?): Boolean {
+        val otherFile = other as? File ?: return false
+
+        return otherFile.file == file
+    }
+
+    override fun hashCode(): Int = file.hashCode()
 }
