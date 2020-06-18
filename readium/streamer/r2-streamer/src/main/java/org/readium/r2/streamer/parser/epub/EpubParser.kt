@@ -13,14 +13,17 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.TransformingFetcher
+import org.readium.r2.shared.util.File
+import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.normalize
 import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
@@ -28,7 +31,7 @@ import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
 import org.readium.r2.streamer.fetcher.LcpDecryptor
 import org.readium.r2.streamer.parser.PubBox
-import org.readium.r2.streamer.parser.PublicationParser
+import org.readium.r2.streamer.PublicationParser
 
 object EPUBConstant {
 
@@ -77,88 +80,113 @@ object EPUBConstant {
     )
 }
 
+/**
+ * Parses a Publication from an EPUB publication.
+ */
+class EpubParser :  PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 
-class EpubParser : PublicationParser {
+    override suspend fun parse(
+        file: File,
+        fetcher: Fetcher,
+        fallbackTitle: String,
+        warnings: WarningLogger?
+    ): Try<PublicationParser.PublicationBuilder, Throwable>? {
 
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
-        _parse(fileAtPath, fallbackTitle)
+        if (file.format() != Format.EPUB)
+            return null
+
+        return try {
+            Try.success(makeBuilder(fetcher, fallbackTitle, warnings))
+        } catch (e: Exception) {
+            Try.failure(e)
+        }
     }
 
-    private suspend fun _parse(fileAtPath: String, fallbackTitle: String): PubBox? {
+    override fun parse(
+        fileAtPath: String,
+        fallbackTitle: String
+    ): PubBox? = runBlocking {
+
+        val file = File(fileAtPath)
+
         var fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
             ?: throw ContainerError.missingFile(fileAtPath)
 
-        val drm =
-            if (fetcher.get("/META-INF/license.lcpl").length().getOrNull() != null) DRM(DRM.Brand.lcp)
-            else null
+        val drm = if (fetcher.isProtectedWithLcp()) DRM(DRM.Brand.lcp) else null
+        if (drm?.brand == DRM.Brand.lcp) {
+            fetcher = TransformingFetcher(fetcher, LcpDecryptor(drm)::transform)
+        }
 
-        val opfPath = getRootFilePath(fetcher) ?: return null
-        val opfXmlDocument = fetcher.readAsXmlOrNull(opfPath) ?: return null
-        val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath) ?: return null
+        val builder = try {
+            makeBuilder(fetcher, fallbackTitle)
+        } catch (e: Exception) {
+            return@runBlocking null
+        }
+
+        with(builder) {
+            val opfPath = getRootFilePath(fetcher)
+            val publication = Publication(manifest, fetcher, servicesBuilder).apply {
+                type = Publication.TYPE.EPUB
+
+                // This might need to be moved as it's not really about parsing the EPUB but it
+                // sets values needed (in UserSettings & ContentFilter)
+                setLayoutStyle()
+            }
+
+            val container = PublicationContainer(
+                fetcher = fetcher,
+                path = file.file.canonicalPath,
+                mediaType = MediaType.EPUB,
+                drm = drm
+            ).apply {
+                rootFile.rootFilePath = opfPath
+            }
+
+            PubBox(publication, container)
+        }
+    }
+
+    private suspend fun makeBuilder(fetcher: Fetcher, fallbackTitle: String, warnings: WarningLogger? = null)
+            : PublicationParser.PublicationBuilder {
+
+        val opfPath = getRootFilePath(fetcher)
+        val opfXmlDocument = fetcher.get(opfPath).readAsXml().getOrThrow()
+        val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
+            ?:  throw Exception("Invalid OPF file.")
 
         val manifest = PublicationFactory(
                 fallbackTitle = fallbackTitle,
                 packageDocument = packageDocument,
                 navigationData = parseNavigationData(packageDocument, fetcher),
-                encryptionData = parseEncryptionData(fetcher, drm),
+                encryptionData = parseEncryptionData(fetcher),
                 displayOptions = parseDisplayOptions(fetcher)
             ).create()
 
-        fetcher = TransformingFetcher(fetcher, listOfNotNull(
-            drm?.let { LcpDecryptor(it)::transform },
-            manifest.metadata.identifier?.let { EpubDeobfuscator(it)::transform }
-        ))
+        @Suppress("NAME_SHADOWING")
+        var fetcher = fetcher
+        manifest.metadata.identifier?.let {
+            fetcher = TransformingFetcher(fetcher, EpubDeobfuscator(it)::transform)
+        }
 
-        val publication = Publication(
+        return PublicationParser.PublicationBuilder(
             manifest = manifest,
             fetcher = fetcher,
             servicesBuilder = Publication.ServicesBuilder(
                 positions = (EpubPositionsService)::create
             )
-        ).apply {
-            internalData["type"] = "epub"
-            internalData["rootfile"] = opfPath
-
-            type = Publication.TYPE.EPUB
-            version = packageDocument.epubVersion
-
-            // This might need to be moved as it's not really about parsing the EPUB but it
-            // sets values needed (in UserSettings & ContentFilter)
-            setLayoutStyle()
-        }
-
-        val container = PublicationContainer(
-            publication = publication,
-            path = fileAtPath,
-            mediaType = MediaType.EPUB,
-            drm = drm
-        ).apply {
-            rootFile.rootFilePath = opfPath
-        }
-
-        return PubBox(publication, container)
+        )
     }
 
-    private suspend fun getRootFilePath(fetcher: Fetcher): String? =
+    private suspend fun getRootFilePath(fetcher: Fetcher): String =
         fetcher.readAsXmlOrNull("/META-INF/container.xml")
             ?.getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")
+            ?: throw Exception("Unable to find an OPF file.")
 
-    private fun Publication.setLayoutStyle() {
-        cssStyle = contentLayout.cssId
-        EPUBConstant.userSettingsUIPreset[contentLayout]?.let {
-            if (type == Publication.TYPE.WEBPUB) {
-                userSettingsUIPreset = EPUBConstant.forceScrollPreset
-            } else {
-                userSettingsUIPreset = it
-            }
-        }
-    }
-
-    private suspend fun parseEncryptionData(fetcher: Fetcher, drm: DRM?): Map<String, Encryption> =
+    private suspend fun parseEncryptionData(fetcher: Fetcher): Map<String, Encryption> =
         fetcher.readAsXmlOrNull("/META-INF/encryption.xml")
-            ?.let { EncryptionParser.parse(it, drm) }
+            ?.let { EncryptionParser.parse(it) }
             ?: emptyMap()
 
     private suspend fun parseNavigationData(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>> =
@@ -198,3 +226,17 @@ class EpubParser : PublicationParser {
     }
 
 }
+
+internal fun Publication.setLayoutStyle() {
+    cssStyle = contentLayout.cssId
+    EPUBConstant.userSettingsUIPreset[contentLayout]?.let {
+        userSettingsUIPreset =
+            if (type == Publication.TYPE.WEBPUB) //FIXME : this is never true
+             EPUBConstant.forceScrollPreset
+            else
+                it
+    }
+}
+
+private suspend fun Fetcher.isProtectedWithLcp(): Boolean =
+    get("/META-INF/license.lcpl").length().isSuccess

@@ -12,7 +12,9 @@ package org.readium.r2.streamer
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.util.File
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.Try
 
 internal fun Resource.readBlocking(range: LongRange? = null) = runBlocking { read(range) }
 
@@ -25,3 +27,6 @@ internal fun Fetcher.lengthBlocking(href: String) = get(Link(href = href)).lengt
 internal fun Resource.linkBlocking(range: LongRange? = null) = runBlocking { link() }
 
 internal fun Fetcher.linkBlocking(href: String) = get(Link(href = href)).linkBlocking()
+
+internal fun PublicationParser.parseBlocking(file: File, fetcher: Fetcher):
+        Try<PublicationParser.PublicationBuilder, Throwable>? = runBlocking { parse(file, fetcher) }

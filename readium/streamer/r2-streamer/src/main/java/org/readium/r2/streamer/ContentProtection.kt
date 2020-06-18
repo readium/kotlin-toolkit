@@ -10,7 +10,7 @@
 package org.readium.r2.streamer
 
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.format.File
+import org.readium.r2.shared.util.File
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Try

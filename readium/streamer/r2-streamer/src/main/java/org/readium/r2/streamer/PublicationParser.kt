@@ -10,10 +10,12 @@
 package org.readium.r2.streamer
 
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.format.File
+import org.readium.r2.shared.util.File
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.streamer.extensions.toTitle
 
 /**
  *  Parses a Publication from a file.
@@ -37,8 +39,8 @@ interface PublicationParser {
      * Can be used to report publication authoring mistakes,
      * to warn users of potential rendering issues or help authors debug their publications.
      */
-    suspend fun parse(file: File, fetcher: Fetcher, fallbackTitle: String = file.name, warnings: WarningLogger? = null)
-            : StreamerTry<PublicationBuilder>?
+    suspend fun parse(file: File, fetcher: Fetcher, fallbackTitle: String = file.toTitle(), warnings: WarningLogger? = null)
+            : Try<PublicationBuilder, Throwable>?
 
     /**
      * Builds a Publication from its components.

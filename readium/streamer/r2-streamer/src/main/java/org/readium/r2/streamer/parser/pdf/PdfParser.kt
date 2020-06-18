@@ -10,61 +10,102 @@
 package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
+import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.FileFetcher
+import org.readium.r2.shared.util.File
+import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCoverService
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
-import org.readium.r2.streamer.parser.PublicationParser
-import timber.log.Timber
-import java.io.File
+import org.readium.r2.streamer.PublicationParser
+import java.lang.Exception
 
 /**
  * Parses a PDF file into a Readium [Publication].
  */
-class PdfParser(private val context: Context) : PublicationParser {
+class PdfParser(
+    private val context: Context,
+    private val openPdf:  suspend (ByteArray) -> PdfDocument? = { PdfiumDocument.fromBytes(it, context.applicationContext) }
+) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? =
-        try {
-            val file = File(fileAtPath)
-            val rootHref = "/publication.pdf"
-            val document = PdfiumDocument.fromBytes(File(fileAtPath).readBytes(), context)
-            val tableOfContents = document.outline.toLinks(rootHref)
+    override suspend fun parse(
+        file: File,
+        fetcher: Fetcher,
+        fallbackTitle: String,
+        warnings: WarningLogger?
+    ): Try<PublicationParser.PublicationBuilder, Throwable>? {
 
+        if (file.format() != Format.PDF)
+            return null
+
+        return try {
+            Try.success(makeBuilder(file, fetcher, fallbackTitle))
+        } catch (e: Exception) {
+            Try.failure(e)
+        }
+    }
+
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
+
+        val file = File(fileAtPath)
+        val baseFetcher = FileFetcher(href = "/${file.name}", file = file.file)
+        val builder = try {
+            makeBuilder(file, baseFetcher, fallbackTitle)
+        } catch (e: Exception) {
+            return@runBlocking null
+        }
+
+        with(builder) {
             val publication = Publication(
-                manifest = Manifest(
-                    metadata = Metadata(
-                        identifier = document.identifier ?: file.name,
-                        localizedTitle = LocalizedString(document.title?.ifEmpty { null } ?: file.toTitle()),
-                        authors = listOfNotNull(document.author).map { Contributor(name = it) },
-                        numberOfPages = document.pageCount
-                    ),
-                    readingOrder = listOf(Link(href = rootHref, type = MediaType.PDF.toString())),
-                    tableOfContents = tableOfContents
-                ),
-                fetcher = FileFetcher(href = rootHref, file = file),
-                servicesBuilder = Publication.ServicesBuilder(
-                    positions = (PdfPositionsService)::create,
-                    cover = document.cover?.let { InMemoryCoverService.createFactory(it) }
-                )
+                manifest = manifest,
+                fetcher = fetcher,
+                servicesBuilder = servicesBuilder
             )
 
             val container = PublicationContainer(
-                publication = publication,
-                path = fileAtPath,
+                fetcher = fetcher,
+                path = file.file.canonicalPath,
                 mediaType = MediaType.PDF
             )
 
             PubBox(publication, container)
-
-        } catch (e: Exception) {
-            Timber.e(e)
-            null
         }
+    }
 
-    private fun File.toTitle(): String =
-        nameWithoutExtension.replace("_", " ")
+    private suspend fun makeBuilder(file: File, fetcher: Fetcher, fallbackTitle:  String)
+            : PublicationParser.PublicationBuilder {
+
+        val fileHref = fetcher.links().firstOrNull { it.mediaType == MediaType.PDF }?.href
+            ?: throw Exception("Unable to find PDF file.")
+        val fileBytes = fetcher.get(fileHref).read().getOrThrow()
+        val document = openPdf(fileBytes)
+            ?: throw Exception("Unable to open PDF file.")
+        val tableOfContents = document.outline.toLinks(fileHref)
+
+        val manifest = Manifest(
+            metadata = Metadata(
+                identifier = document.identifier ?: file.name,
+                localizedTitle = LocalizedString(document.title?.ifBlank { null } ?: fallbackTitle),
+                authors = listOfNotNull(document.author).map { Contributor(name = it) },
+                numberOfPages = document.pageCount
+            ),
+            readingOrder = listOf(Link(href = fileHref, type = MediaType.PDF.toString())),
+            tableOfContents = tableOfContents
+        )
+
+        val servicesBuilder = Publication.ServicesBuilder(
+            positions = (PdfPositionsService)::create,
+            cover = document.cover?.let { InMemoryCoverService.createFactory(it) }
+        )
+
+        return PublicationParser.PublicationBuilder(manifest, fetcher, servicesBuilder)
+    }
 
 }

@@ -11,11 +11,9 @@ package org.readium.r2.streamer
 
 import android.app.Dialog
 import android.content.Context
-import org.readium.r2.shared.extensions.addPrefix
-import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.FileFetcher
-import org.readium.r2.shared.format.File
+import org.readium.r2.shared.util.File
+import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
@@ -23,7 +21,16 @@ import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.JavaZip
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.pdf.PdfDocument
+import org.readium.r2.streamer.extensions.fromFile
+import org.readium.r2.streamer.extensions.toTitle
+import org.readium.r2.streamer.parser.audio.AudioParser
+import org.readium.r2.streamer.parser.epub.EpubParser
+import org.readium.r2.streamer.parser.epub.setLayoutStyle
+import org.readium.r2.streamer.parser.image.ImageParser
+import org.readium.r2.streamer.parser.pdf.PdfParser
 import org.readium.r2.streamer.parser.pdf.PdfiumDocument
+import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
+import java.io.FileNotFoundException
 
 typealias OnAskCredentialsCallback = (dialog: Dialog, sender: Any?, callback: (String?) -> Unit) -> Unit
 
@@ -52,16 +59,25 @@ class Streamer(
     context: Context,
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
-    val contentProtections: List<ContentProtection> = emptyList(),
-    val openArchive: (String) -> Archive? = (JavaZip)::open,
-    val openPdf: (String) -> PdfDocument? = { PdfiumDocument.fromPath(it, context.applicationContext) },
-    val onCreateManifest: (File, Manifest) -> Manifest = { _, manifest -> manifest },
-    val onCreateFetcher: (File, Manifest, Fetcher) -> Fetcher = { _, _, fetcher -> fetcher },
-    val onCreateServices: (File, Manifest, Publication.ServicesBuilder) -> Unit = { _, _, _ -> Unit },
-    val onAskCredentials: OnAskCredentialsCallback = { _, _, _ -> Unit }
+    private val contentProtections: List<ContentProtection> = emptyList(),
+    private val openArchive: suspend (String) -> Archive? = (JavaZip)::open,
+    private val openPdf: suspend (ByteArray) -> PdfDocument? = { PdfiumDocument.fromBytes(it, context.applicationContext) },
+    private val onCreateManifest: (File, Manifest) -> Manifest = { _, manifest -> manifest },
+    private val onCreateFetcher: (File, Manifest, Fetcher) -> Fetcher = { _, _, fetcher -> fetcher },
+    private val onCreateServices: (File, Manifest, Publication.ServicesBuilder) -> Unit = { _, _, _ -> Unit },
+    private val onAskCredentials: OnAskCredentialsCallback = { _, _, _ -> Unit }
 ) {
 
-    private val defaultParsers: List<PublicationParser> = listOf()
+    private val defaultParsers: List<PublicationParser> by lazy {
+        listOf(
+            EpubParser(),
+            PdfParser(context.applicationContext, openPdf),
+            ReadiumWebPubParser(context.applicationContext),
+            ImageParser(),
+            AudioParser()
+        )
+    }
+
     private val parsers: List<PublicationParser> = parsers +
         if (ignoreDefaultParsers) defaultParsers else emptyList()
 
@@ -91,26 +107,28 @@ class Streamer(
      */
     suspend fun open(
         file: File,
-        fallbackTitle: String = file.name,
+        fallbackTitle: String = file.toTitle(),
         askCredentials: Boolean,
         credentials: String? = null,
         sender: Any? = null,
         warnings: WarningLogger? = null
     ): StreamerTry<Publication>? {
 
-        val leafFetcher = ArchiveFetcher.fromPath(file.path, openArchive)
-            ?: run {
-                val suffix = file.format()?.fileExtension?.addPrefix(".").orEmpty()
-                FileFetcher("/publication${suffix}", file.file)
-            }
+        val baseFetcher = try {
+            Fetcher.fromFile(file.file, openArchive)
+        } catch (e: SecurityException) {
+            return Try.failure(Error.Forbidden(e))
+        } catch(e: FileNotFoundException) {
+            return Try.failure(Error.ParsingFailed(e))
+        }
 
         return try {
             val protectedFile = contentProtections
-                .lazyMapFirstNotNullOrNull { it.open(file, leafFetcher, askCredentials, credentials, sender, onAskCredentials) }
+                .lazyMapFirstNotNullOrNull { it.open(file, baseFetcher, askCredentials, credentials, sender, onAskCredentials) }
                 ?.getOrThrow()
 
             val builder = parsers
-                .lazyMapFirstNotNullOrNull { it.parse(protectedFile?.file ?: file, leafFetcher, fallbackTitle, warnings) }
+                .lazyMapFirstNotNullOrNull { it.parse(protectedFile?.file ?: file, baseFetcher, fallbackTitle, warnings) }
                 ?.getOrThrow()
                 ?: return null // no parser is able to parse publication
 
@@ -118,7 +136,10 @@ class Streamer(
             val fetcher = onCreateFetcher(file, manifest, builder.fetcher)
             onCreateServices(file, manifest, builder.servicesBuilder)
 
-            val publication = Publication(manifest, fetcher, servicesBuilder = builder.servicesBuilder)
+            // FIXME : hack before refactoring Publication.{type, cssStyle, userSettingsUIPresetPublication}
+            val publication = Publication(manifest, fetcher, servicesBuilder = builder.servicesBuilder).apply {
+                addLegacyProperties(file.format())
+            }
             Try.success(publication)
 
         } catch (e: Error) {
@@ -132,6 +153,13 @@ class Streamer(
             return transform(it) ?: continue
         }
         return null
+    }
+
+    private fun Publication.addLegacyProperties(format: Format?) {
+        type = format.toPublicationType()
+
+        if (format == Format.EPUB)
+            setLayoutStyle()
     }
 
     /**
@@ -163,3 +191,12 @@ class Streamer(
 
     }
 }
+
+
+internal fun Format?.toPublicationType(): Publication.TYPE =
+    when (this) {
+        Format.READIUM_AUDIOBOOK, Format.READIUM_AUDIOBOOK_MANIFEST, Format.LCP_PROTECTED_AUDIOBOOK -> Publication.TYPE.AUDIO
+        Format.DIVINA, Format.DIVINA_MANIFEST -> Publication.TYPE.DiViNa
+        Format.CBZ -> Publication.TYPE.CBZ
+        else -> Publication.TYPE.WEBPUB
+    }
