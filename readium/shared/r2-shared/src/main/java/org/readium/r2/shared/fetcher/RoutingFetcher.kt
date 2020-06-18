@@ -26,15 +26,30 @@ class RoutingFetcher(private val routes: List<Route>) : Fetcher {
      *
      * The default value for [accepts] means that the fetcher will accept any link.
      */
-    class Route(val fetcher: Fetcher, val accepts: (Link) -> Boolean = { true })
+    class Route(
+        val fetcher: Fetcher,
+        val accepts: (Link) -> Boolean = { true },
+        val transform: (Link) -> Link = { it }
+    )
+
+    constructor(fetcher: Fetcher, transform: (Link) -> Link)
+            : this(listOf( Route(fetcher, transform = transform) ))
 
     constructor(local: Fetcher, remote: Fetcher)
-            : this(listOf( Route(local, Link::isLocal), Route(remote) ))
+            : this(listOf( Route(local, accepts = Link::isLocal), Route(remote) ))
 
-    override suspend fun links(): List<Link> = routes.flatMap { it.fetcher.links() }
+    override suspend fun links(): List<Link> = routes.flatMap { route ->
+        route.fetcher.links().map { route.transform(it) }
+    }
 
-    override fun get(link: Link): Resource =
-        routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: FailureResource(link, Resource.Error.NotFound)
+    override fun get(link: Link): Resource {
+        val route = routes.firstOrNull { it.accepts(link) }
+            ?: return FailureResource(link, Resource.Error.NotFound)
+
+        with(route) {
+            return fetcher.get(transform(link))
+        }
+     }
 
     override suspend fun close() {
         routes.forEach { it.fetcher.close() }
