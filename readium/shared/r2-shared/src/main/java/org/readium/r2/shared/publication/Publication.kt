@@ -374,6 +374,35 @@ class Publication(
     }
 
     /**
+     * Errors occurring while opening a Publication.
+     */
+    sealed class OpeningError(cause: Throwable? = null) : Throwable(cause) {
+
+        class ParsingFailed(cause: Throwable) : OpeningError(cause)
+
+        /**
+         * Returned when we're not allowed to open the Publication at all, for example because it expired.
+         *
+         * The Content Protection can provide a custom underlying error as an associated value.
+         */
+        class Forbidden(cause: Throwable?) : OpeningError(cause)
+
+        /**
+         * Returned when the Content Protection can't open the Publication at the moment, for example because of a networking error.
+         *
+         * This error is generally temporary, so the operation can be retried or postponed.
+         */
+        class Unavailable(cause: Throwable?) : OpeningError(cause)
+
+        /**
+         * Returned when the credentials – either from the credentials parameter, or from an external source – are incorrect,
+         * and we can't create a locked Publication object, e.g. for a password-protected ZIP.
+         */
+        object IncorrectCredentials: OpeningError()
+
+    }
+
+    /**
      * Finds the first [Link] to the publication's cover (rel = cover).
      */
     @Deprecated("Use [Publication.cover] to get the cover as a [Bitmap]", ReplaceWith("cover"))
