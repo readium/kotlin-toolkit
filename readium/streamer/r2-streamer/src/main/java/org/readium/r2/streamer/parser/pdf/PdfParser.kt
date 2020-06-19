@@ -12,9 +12,9 @@ package org.readium.r2.streamer.parser.pdf
 import android.content.Context
 import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCoverService
+import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
@@ -55,7 +55,11 @@ class PdfParser(private val context: Context) : PublicationParser {
                 publication = publication,
                 path = fileAtPath,
                 mediaType = MediaType.PDF
-            )
+            ).apply {
+                // Necessary to serve the PDF through the PublicationServer, because the Server
+                // checks the presence of `rootFilePath`
+                rootFile.rootFilePath = "publication.pdf"
+            }
 
             PubBox(publication, container)
 
