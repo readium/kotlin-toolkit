@@ -9,12 +9,13 @@
 
 package org.readium.r2.streamer
 
-import android.app.Dialog
 import android.content.Context
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.Format
+import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.OnAskCredentialsCallback
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
@@ -32,9 +33,7 @@ import org.readium.r2.streamer.parser.pdf.PdfiumDocument
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 import java.io.FileNotFoundException
 
-typealias OnAskCredentialsCallback = (dialog: Dialog, sender: Any?, callback: (String?) -> Unit) -> Unit
-
-typealias StreamerTry<SuccessT> = Try<SuccessT, Streamer.Error>
+internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningError>
 
 /**
  *  Opens a Publication using a list of parsers.
@@ -112,14 +111,14 @@ class Streamer(
         credentials: String? = null,
         sender: Any? = null,
         warnings: WarningLogger? = null
-    ): StreamerTry<Publication>? {
+    ): PublicationTry<Publication>? {
 
         val baseFetcher = try {
             Fetcher.fromFile(file.file, openArchive)
         } catch (e: SecurityException) {
-            return Try.failure(Error.Forbidden(e))
+            return Try.failure(Publication.OpeningError.Forbidden(e))
         } catch(e: FileNotFoundException) {
-            return Try.failure(Error.ParsingFailed(e))
+            return Try.failure(Publication.OpeningError.ParsingFailed(e))
         }
 
         return try {
@@ -142,7 +141,7 @@ class Streamer(
             }
             Try.success(publication)
 
-        } catch (e: Error) {
+        } catch (e: Publication.OpeningError) {
             Try.failure(e)
         }
     }
@@ -161,37 +160,7 @@ class Streamer(
         if (format == Format.EPUB)
             setLayoutStyle()
     }
-
-    /**
-     * Errors occurring while opening a Publication.
-     */
-    sealed class Error(cause: Throwable? = null) : Throwable(cause) {
-
-        class ParsingFailed(cause: Throwable) : Error(cause)
-
-        /**
-         * Returned when we're not allowed to open the Publication at all, for example because it expired.
-         *
-         * The Content Protection can provide a custom underlying error as an associated value.
-         */
-        class Forbidden(cause: Throwable?) : Error(cause)
-
-        /**
-         * Returned when the Content Protection can't open the Publication at the moment, for example because of a networking error.
-         *
-         * This error is generally temporary, so the operation can be retried or postponed.
-         */
-        class Unavailable(cause: Throwable?) : Error(cause)
-
-        /**
-         * Returned when the credentials – either from the credentials parameter, or from an external source – are incorrect,
-         * and we can't create a locked Publication object, e.g. for a password-protected ZIP.
-         */
-        object IncorrectCredentials: Error()
-
-    }
 }
-
 
 internal fun Format?.toPublicationType(): Publication.TYPE =
     when (this) {
