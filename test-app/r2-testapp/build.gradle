@@ -166,7 +166,6 @@ dependencies {
     implementation "nl.komponents.kovenant:kovenant-jvm:$KOVENANT_VERSION"
     implementation "nl.komponents.kovenant:kovenant-functional:$KOVENANT_VERSION"
 
-    implementation 'org.zeroturnaround:zt-zip:1.13'
     implementation 'joda-time:joda-time:2.9.9'
     implementation 'org.slf4j:slf4j-nop:1.7.25'
 

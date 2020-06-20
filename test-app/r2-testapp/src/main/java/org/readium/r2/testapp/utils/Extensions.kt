@@ -14,6 +14,8 @@ import android.content.Context
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileFilter
 import java.io.InputStream
@@ -38,7 +40,7 @@ fun File.listFilesSafely(filter: FileFilter? = null): List<File> {
     return array?.toList() ?: emptyList()
 }
 
-fun InputStream.toFile(path: String) {
+suspend fun InputStream.toFile(path: String) = withContext(Dispatchers.IO) {
     use { input ->
         File(path).outputStream().use { input.copyTo(it) }
     }

@@ -9,7 +9,6 @@
 
 package org.readium.r2.testapp
 
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -25,45 +24,25 @@ import android.widget.TextView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.mcxiaoke.koi.ext.fileExtension
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
-import org.jetbrains.anko.design.longSnackbar
 import org.readium.r2.lcp.*
 import org.readium.r2.shared.drm.DRM
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.streamer.parser.PubBox
-import org.readium.r2.testapp.BuildConfig.DEBUG
-import org.readium.r2.testapp.db.Book
+import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.drm.DRMFulfilledPublication
-import org.readium.r2.testapp.drm.DRMLibraryService
-import org.readium.r2.testapp.drm.LCPLibraryActivityService
 import org.readium.r2.testapp.library.LibraryActivity
-import org.readium.r2.testapp.utils.extensions.parse
-import timber.log.Timber
-import java.io.File
 import java.net.URL
-import kotlin.coroutines.CoroutineContext
+import java.util.Locale
 
-class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineScope, DRMLibraryService, LCPAuthenticating, LCPAuthenticationDelegate {
-
-
-    /**
-     * Context of this scope.
-     */
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main
+class CatalogActivity : LibraryActivity(), LCPAuthenticating, LCPAuthenticationDelegate {
 
     private lateinit var lcpService: LCPService
 
-    private var currenProgressDialog: ProgressDialog? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         lcpService = R2MakeLCPService(this)
+        contentProtections = listOf(LCPContentProtection(lcpService, this))
         super.onCreate(savedInstanceState)
-        listener = this
     }
 
     private var authenticationCallbacks: MutableMap<String, (String?) -> Unit> = mutableMapOf()
@@ -72,37 +51,12 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
         get() = DRM.Brand.lcp
 
     override fun canFulfill(file: String): Boolean =
-            file.fileExtension().toLowerCase() == "lcpl"
+            file.fileExtension().toLowerCase(Locale.ROOT) == "lcpl"
 
-    override fun fulfill(byteArray: ByteArray, completion: (Any?) -> Unit) {
-        lcpService.importPublication(byteArray, this) { result, error ->
-            result?.let {
-                val publication = DRMFulfilledPublication(localURL = result.localURL, suggestedFilename = result.suggestedFilename)
-                lcpService.retrieveLicense(result.localURL, this) { license, error ->
-                    completion(publication)
-                }
-            }
-            error?.let {
-                completion(error)
-            }
-            if (result == null && error == null) {
-                completion(null)
-            }
-        }
-    }
-
-    override fun loadPublication(publication: String, drm: DRM, completion: (Any?) -> Unit) {
-        lcpService.retrieveLicense(publication, this) { license, error ->
-            license?.let {
-                drm.license = license
-                completion(drm)
-            } ?: run {
-                error?.let {
-                    completion(error)
-                }
-            }
-        }
-    }
+    override suspend fun fulfill(byteArray: ByteArray): Try<DRMFulfilledPublication, Exception> =
+        lcpService.importPublication(byteArray, this)
+            .map { DRMFulfilledPublication(it.localURL, it.suggestedFilename) }
+            .recover { Exception(it.errorDescription, it) }
 
     override fun authenticate(license: LCPAuthenticatedLicense, passphrase: String) {
         val callback = authenticationCallbacks.remove(license.document.id) ?: return
@@ -120,12 +74,6 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
 
         fun promptPassphrase(reason: String? = null) {
             launch {
-
-                currenProgressDialog?.let {
-                    if (it.isShowing) {
-                        it.dismiss()
-                    }
-                }
 
                 // Initialize a new instance of LayoutInflater service
                 val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -190,12 +138,6 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                 }
 
                 confirmButton.setOnClickListener {
-                    currenProgressDialog?.let {
-                        if (!it.isShowing) {
-                            it.show()
-                        }
-                    }
-
                     authenticate(license, password.text.toString())
                     mPopupWindow.dismiss()
                 }
@@ -261,104 +203,5 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
 
         promptPassphrase(reason.name)
 
-    }
-
-    override fun parseIntentLcpl(uriString: String, networkAvailable: Boolean) {
-        val uri: Uri? = Uri.parse(uriString)
-        uri?.let {
-            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
-            progress.show()
-
-            currenProgressDialog = progress
-            Thread {
-                val bytes = try {
-                    URL(uri.toString()).openStream().readBytes()
-                } catch (e: Exception) {
-                    contentResolver.openInputStream(uri)?.readBytes()
-                }
-
-                bytes?.let { it1 ->
-                    fulfill(it1) { result ->
-                        if (result is Exception) {
-
-                            progress.dismiss()
-                            catalogView.longSnackbar("${(result as LCPError).errorDescription}")
-
-                        } else {
-                            result?.let {
-                                val publication = result as DRMFulfilledPublication
-
-                                if (DEBUG) Timber.d(publication.localURL)
-                                if (DEBUG) Timber.d(publication.suggestedFilename)
-                                val file = File(publication.localURL)
-                                launch {
-                                    val pub = Publication.parse(publication.localURL, fileExtension = File(publication.suggestedFilename).extension)
-                                    if (pub != null) {
-                                        prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
-                                        progress.dismiss()
-                                        catalogView.longSnackbar("publication added to your library")
-                                    }
-                                }
-                            } ?: run {
-                                progress.dismiss()
-                            }
-                        }
-                    }
-                }
-            }.start()
-        }
-    }
-
-
-    override fun prepareAndStartActivityWithLCP(drm: DRM, pub: PubBox, book: Book, file: File, publicationPath: String, publication: Publication, networkAvailable: Boolean) {
-        loadPublication(file.absolutePath, drm) {
-            launch {
-
-                if (it is Exception) {
-
-                    catalogView.longSnackbar("${(it as LCPError).errorDescription}")
-
-                } else {
-                    prepareAndStartActivity(pub, book, file, publicationPath, publication)
-                }
-            }
-        }
-    }
-
-    override fun processLcpActivityResult(uri: Uri, progress: ProgressDialog, networkAvailable: Boolean) {
-
-        currenProgressDialog = progress
-
-        val bytes = contentResolver.openInputStream(uri)?.readBytes()
-        bytes?.let {
-
-            fulfill(bytes) { result ->
-
-                if (result is Exception) {
-
-                    progress.dismiss()
-                    catalogView.longSnackbar("${(result as LCPError).errorDescription}")
-
-                } else {
-                    result?.let {
-                        val publication = result as DRMFulfilledPublication
-
-                        if (DEBUG) Timber.d(result.localURL)
-                        if (DEBUG) Timber.d(result.suggestedFilename)
-                        val file = File(result.localURL)
-                        launch {
-                            val pub = Publication.parse(result.localURL, fileExtension = File(result.suggestedFilename).extension)
-                            if (pub != null) {
-                                prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
-                                progress.dismiss()
-                                catalogView.longSnackbar("publication added to your library")
-                            }
-                        }
-                    } ?: run {
-                        progress.dismiss()
-                    }
-                }
-            }
-        }
     }
 }
