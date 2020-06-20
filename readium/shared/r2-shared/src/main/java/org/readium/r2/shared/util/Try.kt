@@ -48,8 +48,8 @@ class Try<out Success, out Failure: Throwable> private constructor(private val s
             failure(exceptionOrNull()!!)
 
     /**
-     * Returns the result of onSuccess for the encapsulated value if this instance represents success or
-     * the result of onFailure function for the encapsulated Throwable exception if it is failure.
+     * Returns the result of [onSuccess] for the encapsulated value if this instance represents success or
+     * the result of [onFailure] function for the encapsulated [Throwable] exception if it is failure.
      */
     inline fun <R> fold(onSuccess: (value: Success) -> R, onFailure: (exception: Throwable) -> R): R =
         if (isSuccess)
@@ -59,10 +59,19 @@ class Try<out Success, out Failure: Throwable> private constructor(private val s
 
     /**
      * Performs the given action on the encapsulated value if this instance represents success.
-     * Returns the original Result unchanged.
+     * Returns the original [Try] unchanged.
      */
     inline fun onSuccess(action: (value: Success) -> Unit): Try<Success, Failure> {
         if (isSuccess) action(getOrThrow())
+        return this
+    }
+
+    /**
+     * Performs the given action on the encapsulated [Throwable] exception if this instance represents failure.
+     * Returns the original [Try] unchanged.
+     */
+    inline fun onFailure(action: (exception: Failure) -> Unit): Try<Success, Failure> {
+        if (isFailure) action(exceptionOrNull()!!)
         return this
     }
 
@@ -74,7 +83,7 @@ class Try<out Success, out Failure: Throwable> private constructor(private val s
 }
 
 /**
- * Returns the encapsulated value if this instance represents success or the defaultValue if it is failure.
+ * Returns the encapsulated value if this instance represents success or the [defaultValue] if it is failure.
  */
 fun <R, S : R, F : Throwable> Try<S, F>.getOrDefault(defaultValue: R): R =
     if (isSuccess)
@@ -83,7 +92,7 @@ fun <R, S : R, F : Throwable> Try<S, F>.getOrDefault(defaultValue: R): R =
         defaultValue
 
 /**
- * Returns the encapsulated value if this instance represents success or the result of onFailure function
+ * Returns the encapsulated value if this instance represents success or the result of [onFailure] function
  * for the encapsulated [Throwable] exception if it is failure.
  */
 inline fun <R, S : R, F : Throwable> Try<S, F>.getOrElse(onFailure: (exception: F) -> R): R =
