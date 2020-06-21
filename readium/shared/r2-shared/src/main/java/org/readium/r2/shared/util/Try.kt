@@ -80,6 +80,16 @@ class Try<out Success, out Failure: Throwable> private constructor(private val s
             transform(getOrThrow())
         else
             Try.failure(exceptionOrNull()!!)
+
+    /**
+     * Returns the encapsulated result of the given transform function applied to the encapsulated |Throwable] exception
+     * if this instance represents failure or the original encapsulated value if it is success.
+     */
+    inline fun <R : Throwable> recover(transform: (exception: Failure) -> R): Try<Success, R> =
+        if (isFailure)
+            Try.failure(transform(exceptionOrNull()!!))
+        else
+            Try.success(getOrThrow())
 }
 
 /**
