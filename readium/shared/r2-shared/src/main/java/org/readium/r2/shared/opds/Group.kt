@@ -9,13 +9,10 @@
 
 package org.readium.r2.shared.opds
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
-@Parcelize
-data class Group(val title: String) : Parcelable {
+data class Group(val title: String) {
     var metadata: OpdsMetadata = OpdsMetadata(title = title)
     var links = mutableListOf<Link>()
     var publications = mutableListOf<Publication>()
