@@ -36,6 +36,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.*
+import org.jetbrains.anko.design.BuildConfig.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.extensions.putPublication
@@ -63,6 +64,7 @@ import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
 import org.readium.r2.testapp.utils.ContentResolverUtil
 import org.readium.r2.testapp.utils.extensions.authorName
+import org.readium.r2.testapp.utils.extensions.blockingProgressDialog
 import org.readium.r2.testapp.utils.extensions.download
 import org.readium.r2.testapp.utils.extensions.moveTo
 import org.readium.r2.testapp.utils.extensions.toFile
@@ -341,7 +343,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                             ?: return@setOnClickListener
 
                         launch {
-                            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+                            val progress = blockingProgressDialog(getString(R.string.progress_wait_while_downloading_book))
                                 .apply { show() }
 
                             val downloadedFile = url.toTempFile() ?: return@launch
@@ -398,7 +400,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         val uri = intent.data ?: return
 
         launch {
-            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+            val progress = blockingProgressDialog(getString(R.string.progress_wait_while_downloading_book))
                 .apply { show() }
 
             uri.toTempFile()
@@ -450,14 +452,13 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             .onSuccess {
                 addPublicationToDatabase(libraryFile, it)
                     .let {
-                        Timber.d("unable to add publication to the database")
                         progress?.dismiss()
-                        if (foreground) {
-                            if (it)
-                                catalogView.longSnackbar("publication added to your library")
-                            else
-                                catalogView.longSnackbar("unable to add publication to the database")
-                        }
+                        if (it && foreground)
+                            catalogView.longSnackbar("publication added to your library")
+                        else if (foreground)
+                            catalogView.longSnackbar("unable to add publication to the database")
+                        else
+                            Timber.d("unable to add publication to the database")
                     }
             }
             .onFailure {
@@ -573,7 +574,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
     }
 
     override fun recyclerViewListClicked(v: View, position: Int) {
-        val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_book))
+        val progress = blockingProgressDialog(getString(R.string.progress_wait_while_preparing_book))
         progress.show()
         launch {
             val book = books[position]
