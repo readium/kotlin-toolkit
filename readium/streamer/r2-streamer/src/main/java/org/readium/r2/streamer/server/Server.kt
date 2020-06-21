@@ -81,8 +81,8 @@ abstract class AbstractServer(private var port: Int, private val context: Contex
         }
     }
 
-    fun addEpub(publication: Publication, container: Container, fileName: String, userPropertiesPath: String?) {
-        if (container.rootFile.rootFilePath.isEmpty()) {
+    fun addEpub(publication: Publication, container: Container?, fileName: String, userPropertiesPath: String?) {
+        if (container?.rootFile?.rootFilePath?.isEmpty() == true) {
             return
         }
         val baseUrl = URL(Publication.localBaseUrlOf(filename = fileName, port = port))
