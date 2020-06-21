@@ -17,6 +17,7 @@ import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.OnAskCredentialsCallback
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.protectionServiceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.JavaZip
@@ -78,7 +79,7 @@ class Streamer(
     }
 
     private val parsers: List<PublicationParser> = parsers +
-        if (ignoreDefaultParsers) defaultParsers else emptyList()
+        if (!ignoreDefaultParsers) defaultParsers else emptyList()
 
     /**
      * Parses a Publication from the given file.
@@ -111,7 +112,7 @@ class Streamer(
         credentials: String? = null,
         sender: Any? = null,
         warnings: WarningLogger? = null
-    ): PublicationTry<Publication>? {
+    ): PublicationTry<Publication> {
 
         val baseFetcher = try {
             Fetcher.fromFile(file.file, openArchive)
@@ -127,13 +128,20 @@ class Streamer(
                 ?.getOrThrow()
 
             val builder = parsers
-                .lazyMapFirstNotNullOrNull { it.parse(protectedFile?.file ?: file, baseFetcher, fallbackTitle, warnings) }
+                .lazyMapFirstNotNullOrNull { it.parse(
+                    protectedFile?.file ?: file,
+                    protectedFile?.fetcher ?: baseFetcher,
+                    fallbackTitle,
+                    warnings) }
                 ?.getOrThrow()
-                ?: return null // no parser is able to parse publication
+                ?: throw Publication.OpeningError.UnsupportedFormat
 
             val manifest = onCreateManifest(file, builder.manifest)
             val fetcher = onCreateFetcher(file, manifest, builder.fetcher)
-            onCreateServices(file, manifest, builder.servicesBuilder)
+            val servicesBuilder = builder.servicesBuilder.apply {
+                protectionServiceFactory = protectedFile?.protectionServiceFactory
+            }
+            onCreateServices(file, manifest, servicesBuilder)
 
             // FIXME : hack before refactoring Publication.{type, cssStyle, userSettingsUIPresetPublication}
             val publication = Publication(manifest, fetcher, servicesBuilder = builder.servicesBuilder).apply {
@@ -167,5 +175,6 @@ internal fun Format?.toPublicationType(): Publication.TYPE =
         Format.READIUM_AUDIOBOOK, Format.READIUM_AUDIOBOOK_MANIFEST, Format.LCP_PROTECTED_AUDIOBOOK -> Publication.TYPE.AUDIO
         Format.DIVINA, Format.DIVINA_MANIFEST -> Publication.TYPE.DiViNa
         Format.CBZ -> Publication.TYPE.CBZ
+        Format.EPUB -> Publication.TYPE.EPUB
         else -> Publication.TYPE.WEBPUB
     }
