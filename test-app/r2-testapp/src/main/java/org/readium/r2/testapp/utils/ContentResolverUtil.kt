@@ -19,6 +19,7 @@ import android.provider.MediaStore
 import android.text.TextUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.testapp.utils.extensions.toFile
 import java.io.*
 import java.net.URL
 

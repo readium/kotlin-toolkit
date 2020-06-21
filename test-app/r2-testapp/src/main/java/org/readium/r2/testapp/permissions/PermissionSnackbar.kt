@@ -15,7 +15,7 @@ import android.widget.Button
 import android.widget.TextView
 import com.google.android.material.snackbar.Snackbar
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.utils.color
+import org.readium.r2.testapp.utils.extensions.color
 
 
 object PermissionSnackbar {

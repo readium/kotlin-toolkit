@@ -11,6 +11,7 @@
 package org.readium.r2.testapp.library
 
 import android.annotation.SuppressLint
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -61,11 +62,10 @@ import org.readium.r2.testapp.opds.OPDSListActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
 import org.readium.r2.testapp.utils.ContentResolverUtil
-import org.readium.r2.testapp.utils.R2IntentHelper
 import org.readium.r2.testapp.utils.extensions.authorName
 import org.readium.r2.testapp.utils.extensions.download
 import org.readium.r2.testapp.utils.extensions.moveTo
-import org.readium.r2.testapp.utils.toFile
+import org.readium.r2.testapp.utils.extensions.toFile
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
@@ -141,13 +141,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
 
         booksAdapter = BooksAdapter(this, books, this)
 
-        launch {
-            intent.getStringExtra(R2IntentHelper.URI)
-                ?.let { Uri.parse(it) }
-                ?.copyToTemp()
-                ?.let { importPublication(it) }
-
-        }
+        importPublicationFromIntent(intent)
 
         coordinatorLayout {
             lparams {
@@ -303,10 +297,10 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
 
         for (element in samples) {
             val file = withContext(Dispatchers.IO) {
-                assets.open("Samples/$element").copyToTemp()
+                assets.open("Samples/$element").toTempFile()
             }
             if (file != null)
-                importPublication(file, background = true)
+                importPublication(file)
             else if (BuildConfig.DEBUG)
                 error("Unable to load sample into the library")
         }
@@ -347,7 +341,10 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                             ?: return@setOnClickListener
 
                         launch {
-                            val downloadedFile = url.downloadToTemp() ?: return@launch
+                            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+                                .apply { show() }
+
+                            val downloadedFile = url.toTempFile() ?: return@launch
                             val file =
                                 if (downloadedFile.format()?.mediaType?.isRwpm == true)
                                      // originalUrl is kept
@@ -356,7 +353,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                                     // originalUrl is set to null
                                     SharedFile(downloadedFile.path, originalUrl = null)
 
-                            importPublication(file)
+                            importPublication(file, progress)
                         }
                     }
                 }
@@ -387,30 +384,31 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         startActivityForResult(intent, 1)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
+        super.onActivityResult(requestCode, resultCode, intent)
         require(requestCode == 1)
 
-        // The document selected by the user won't be returned in the intent.
-        // Instead, a URI to that document will be contained in the return intent
-        // provided to this method as a parameter.
-        // Pull that URI using resultData.getData().
+        // This method is called when the user has chosen a publication from the document picker.
+        // The URI to the publication is available as `intent.data`.
 
-       launch {
-           data?.data
-               ?.copyToTemp()
-               ?.let { importPublication(it) }
-       }
+        intent?.let { importPublicationFromIntent(it) }
     }
 
-    private suspend fun importPublication(sourceFile: SharedFile, background: Boolean = false) {
-        val progress =
-            if (background)
-                null
-            else
-                indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
-                    .apply { show() }
+    private fun importPublicationFromIntent(intent: Intent) {
+        val uri = intent.data ?: return
 
+        launch {
+            val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+                .apply { show() }
+
+            uri.toTempFile()
+                ?.let { importPublication(it, progress) }
+                ?: progress.dismiss()
+        }
+    }
+
+    private suspend fun importPublication(sourceFile: SharedFile, progress: ProgressDialog? = null) {
+        val foreground = progress != null
 
         val publicationFile =
             if (sourceFile.format() != Format.LCP_LICENSE)
@@ -418,14 +416,14 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             else {
                 fulfill(sourceFile.file.readBytes()).fold(
                     {
-                        val format = SharedFile(it.suggestedFilename).format()
+                        val format = Format.of(fileExtension = File(it.suggestedFilename).extension)
                         SharedFile(it.localURL, format = format)
                     },
                     {
                         tryOrNull { sourceFile.file.delete() }
                         Timber.d(it)
                         progress?.dismiss()
-                        if (!background) catalogView.longSnackbar("fulfillment error: ${it.message}")
+                        if (foreground) catalogView.longSnackbar("fulfillment error: ${it.message}")
                         return
                     }
                 )
@@ -444,7 +442,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             Timber.d(e)
             tryOrNull { publicationFile.file.delete() }
             progress?.dismiss()
-            if (!background) catalogView.longSnackbar("unable to move publication into the library")
+            if (foreground) catalogView.longSnackbar("unable to move publication into the library")
             return
         }
 
@@ -454,7 +452,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                     .let {
                         Timber.d("unable to add publication to the database")
                         progress?.dismiss()
-                        if (!background) {
+                        if (foreground) {
                             if (it)
                                 catalogView.longSnackbar("publication added to your library")
                             else
@@ -466,7 +464,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 tryOrNull { libraryFile.file.delete() }
                 Timber.d(it)
                 progress?.dismiss()
-                if (!background) catalogView.longSnackbar("failed to open publication")
+                if (foreground) catalogView.longSnackbar("failed to open publication")
             }
     }
 
@@ -507,8 +505,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             false
     }
 
-
-    private suspend fun URL.downloadToTemp(): SharedFile? = tryOrNull {
+    private suspend fun URL.toTempFile(): SharedFile? = tryOrNull {
         val filename = UUID.randomUUID().toString()
         val file = File(R2DIRECTORY + filename)
         download(file.path).let {
@@ -519,14 +516,15 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         }
     }
 
-    private suspend fun Uri.copyToTemp(): SharedFile? = tryOrNull {
+    private suspend fun Uri.toTempFile(): SharedFile? = tryOrNull {
         val filename = UUID.randomUUID().toString()
-        val file = File(R2DIRECTORY + filename)
+        val format = Format.ofUri(this, contentResolver)
+        val file = SharedFile(R2DIRECTORY + filename, format = format)
         ContentResolverUtil.getContentInputStream(this@LibraryActivity, this, file.path)
-        return SharedFile(file.path)
+        return file
     }
 
-    private suspend fun InputStream.copyToTemp(): SharedFile? = tryOrNull {
+    private suspend fun InputStream.toTempFile(): SharedFile? = tryOrNull {
         val filename = UUID.randomUUID().toString()
         SharedFile(R2DIRECTORY + filename).also { toFile(it.path) }
     }
@@ -580,7 +578,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         launch {
             val book = books[position]
 
-            val file = tryOrNull { URL(book.href).downloadToTemp() } // remote URL
+            val file = tryOrNull { URL(book.href).toTempFile() } // remote URL
                 ?: SharedFile(book.href) // local file
 
             streamer.open(file, askCredentials = true)
@@ -589,15 +587,11 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                     progress.dismiss()
                     catalogView.longSnackbar("unable to open publication") }
                 .onSuccess {
-                    prepareAndStartActivity(it, book, file)
+                    prepareToServe(it, file)
                     progress.dismiss()
+                    startActivity(file, book, it)
                 }
         }
-    }
-
-    private fun prepareAndStartActivity(publication: Publication, book: Book, file: SharedFile) {
-        prepareToServe(publication, file)
-        startActivity(file, book, publication)
     }
 
     private fun prepareToServe(publication: Publication, file: SharedFile) {
