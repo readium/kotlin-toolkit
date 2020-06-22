@@ -36,7 +36,6 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.*
-import org.jetbrains.anko.design.BuildConfig.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.extensions.putPublication
@@ -620,7 +619,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             val book = books[position]
 
             val file = tryOrNull { URL(book.href).toTempFile() } // remote URL
-                ?: SharedFile(book.href) // local file
+                ?: SharedFile(book.href, format = Format.of(fileExtension = book.ext.removePrefix("."))) // local file
 
             streamer.open(file, askCredentials = true)
                 .onFailure {
