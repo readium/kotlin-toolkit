@@ -29,6 +29,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
+import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -44,7 +45,6 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.positions
-import org.readium.r2.shared.publication.services.positionsByResource
 import java.net.URI
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil

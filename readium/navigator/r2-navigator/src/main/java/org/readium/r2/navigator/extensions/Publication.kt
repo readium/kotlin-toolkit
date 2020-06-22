@@ -9,8 +9,11 @@
 
 package org.readium.r2.navigator.extensions
 
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.positions
 import java.net.URL
 
 /** Computes an absolute URL to the given HREF. */
@@ -23,3 +26,11 @@ internal fun Publication.urlToHref(href: String): URL? {
     }
     return tryOrNull { URL(urlString) }
 }
+
+// These extensions will be removed in the next release, with `PositionsService`.
+
+internal val Publication.positionsSync: List<Locator>
+    get() = runBlocking { positions() }
+
+internal val Publication.positionsByResource: Map<String, List<Locator>>
+    get() = runBlocking { positions().groupBy { it.href } }

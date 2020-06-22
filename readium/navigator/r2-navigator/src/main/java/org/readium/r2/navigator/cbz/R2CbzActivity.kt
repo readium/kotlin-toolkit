@@ -52,6 +52,8 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         navigatorDelegate?.locationDidChange(navigator = this, locator = locator)
     }
 
+    override val currentLocation: Locator?
+        get() = currentLocator.value
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)

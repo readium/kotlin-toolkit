@@ -27,6 +27,8 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.extensions.urlToHref
+import org.readium.r2.shared.FragmentNavigator
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -34,6 +36,7 @@ import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import timber.log.Timber
 
+@PdfSupport @FragmentNavigator
 class PdfNavigatorFragment(
     private val publication: Publication,
     private val initialLocator: Locator? = null,
