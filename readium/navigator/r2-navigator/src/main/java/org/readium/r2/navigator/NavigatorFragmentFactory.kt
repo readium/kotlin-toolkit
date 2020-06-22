@@ -12,15 +12,19 @@ package org.readium.r2.navigator
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
+import org.readium.r2.shared.FragmentNavigator
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 
+@FragmentNavigator
 class NavigatorFragmentFactory(
     private val publication: Publication,
     private val initialLocator: Locator? = null,
     private val listener: Navigator.Listener? = null
 ) : FragmentFactory() {
 
+    @OptIn(PdfSupport::class)
     override fun instantiate(classLoader: ClassLoader, className: String): Fragment =
         when (className) {
             PdfNavigatorFragment::class.java.name -> PdfNavigatorFragment(publication, initialLocator, listener)
