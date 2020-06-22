@@ -9,11 +9,14 @@
 
 package org.readium.r2.shared.publication
 
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.readium.r2.shared.assertJSONEquals
-import java.io.Serializable
+import org.readium.r2.shared.publication.services.positions
+import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import java.net.URL
 
 class PublicationTest {
@@ -238,7 +241,7 @@ class PublicationTest {
     }
 
     @Test fun `get the default empty {positions}`() {
-        assertEquals(emptyList<Locator>(), createPublication().positions)
+        assertEquals(emptyList<Locator>(), createPublication().positionsSync)
     }
 
     @Test fun `get the {positions} computed from the {positionsFactory}`() {
@@ -249,22 +252,26 @@ class PublicationTest {
                     override fun create(): List<Locator> =
                         listOf(Locator(href = "locator", type = ""))
                 }
-            ).positions
+            ).positionsSync
         )
     }
 
-    @Test fun `get the {positionsByResource} computed from the {positionsFactory}`() {
+    @Test fun `get the {positionsByReadingOrder} computed from the {positionsFactory}`() {
         assertEquals(
-            mapOf(
-                "res1" to listOf(
+            listOf(
+                listOf(
                     Locator(href="res1", type = "text/html", title = "Loc A"),
                     Locator(href="res1", type = "text/html", title = "Loc B")
                 ),
-                "res2" to listOf(
+                listOf(
                     Locator(href="res2", type = "text/html", title = "Loc B")
                 )
             ),
             createPublication(
+                readingOrder = listOf(
+                    Link(href = "res1"),
+                    Link(href = "res2")
+                ),
                 positionsFactory = object : Publication.PositionListFactory {
                     override fun create(): List<Locator> = listOf(
                         Locator(href="res1", type = "text/html", title = "Loc A"),
@@ -272,7 +279,7 @@ class PublicationTest {
                         Locator(href="res1", type = "text/html", title = "Loc B")
                     )
                 }
-            ).positionsByResource
+            ).positionsByReadingOrderSync
         )
     }
 
@@ -444,3 +451,7 @@ class PublicationTest {
     }
 
 }
+
+private val Publication.positionsSync: List<Locator> get() = runBlocking { positions() }
+
+private val Publication.positionsByReadingOrderSync: List<List<Locator>> get() = runBlocking { positionsByReadingOrder() }
