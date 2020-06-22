@@ -77,6 +77,7 @@ import java.net.ServerSocket
 import java.net.URL
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.zip.ZipFile
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -514,7 +515,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 SharedFile(file.path, originalUrl = this.toString())
             else
                 null
-        }
+        }?.explodeIfNecessary()
     }
 
     private suspend fun Uri.toTempFile(): SharedFile? = tryOrNull {
@@ -522,13 +523,52 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         val format = Format.ofUri(this, contentResolver)
         val file = SharedFile(R2DIRECTORY + filename, format = format)
         ContentResolverUtil.getContentInputStream(this@LibraryActivity, this, file.path)
-        return file
+        return file.explodeIfNecessary()
     }
 
     private suspend fun InputStream.toTempFile(): SharedFile? = tryOrNull {
         val filename = UUID.randomUUID().toString()
-        SharedFile(R2DIRECTORY + filename).also { toFile(it.path) }
+        SharedFile(R2DIRECTORY + filename)
+            .also { toFile(it.path) }
+            .explodeIfNecessary()
     }
+
+    // Because of the way navigators work so far, DiViNa and Audiobooks must be exploded
+    // before being added to the user library.
+    private suspend fun SharedFile.explodeIfNecessary(): SharedFile {
+        if (format() !in with(Format) { listOf( DIVINA, READIUM_AUDIOBOOK ) })
+            return this
+
+        return try {
+            val dirPath = R2DIRECTORY + UUID.randomUUID().toString()
+            withContext(Dispatchers.IO) {
+                File(dirPath).mkdir().takeIf { true } ?: throw IOException()
+                ZipFile(file).extractTo(dirPath)
+                tryOrNull { this@explodeIfNecessary.file.delete() }
+            }
+            SharedFile(
+                dirPath,
+                format = format()
+            )
+        } catch (e: Exception) {
+            this
+        }
+    }
+
+    private fun ZipFile.extractTo(path: String) =
+        use { zip ->
+            zip.entries().asSequence()
+                .filterNot { it.isDirectory }
+                .forEach { entry ->
+                zip.getInputStream(entry).use { input ->
+                    val file = File(path, entry.name)
+                    file.parentFile?.mkdirs()
+                    file.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+            }
+        }
 
     override fun recyclerViewListLongClicked(v: View, position: Int) {
         //Inflating the layout
