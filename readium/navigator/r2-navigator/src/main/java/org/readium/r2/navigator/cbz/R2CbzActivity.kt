@@ -16,6 +16,8 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
@@ -28,6 +30,7 @@ import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
+import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.extensions.destroyPublication
@@ -36,8 +39,19 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positions
 import kotlin.coroutines.CoroutineContext
 
-
 open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator {
+
+    private class R2CbzPageFragmentFactory(
+        private val publication: Publication
+    ) : FragmentFactory() {
+
+        override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
+            return when (className) {
+                R2CbzPageFragment::class.java.name -> R2CbzPageFragment(publication)
+                else -> super.instantiate(classLoader, className)
+            }
+        }
+    }
 
     override val currentLocator: LiveData<Locator?> get() = _currentLocator
     private val _currentLocator = MutableLiveData<Locator?>(null)
@@ -126,6 +140,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
         resources = publication.readingOrder.map { it.href }
 
+        supportFragmentManager.fragmentFactory = R2CbzPageFragmentFactory(publication)
 
         resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
 
