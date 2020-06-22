@@ -17,12 +17,18 @@ import java.lang.Exception
  *
  * Used to cache the Format to avoid computing it at different locations.
  */
-class File private constructor(
-    val file: java.io.File,
-    val originalUrl: String? = null,
-    private val mediaTypeHint: String? = null,
-    private val knownFormat: Format? = null
-) {
+class File private constructor(val file: java.io.File, val originalUrl: String? = null) {
+
+    private var mediaTypeHint: String? = null
+    private var knownFormat: Format? = null
+
+    private constructor(file: java.io.File, mediaType: String? = null, format: Format? = null, originalUrl: String? = null) :
+            this(file, originalUrl) {
+
+        mediaTypeHint = mediaType
+        knownFormat = format
+    }
+
     /**
      * Creates a File from a path and its known mediaType.
      *
@@ -30,13 +36,13 @@ class File private constructor(
      * @param mediaType If the file's media type is already known, providing it will improve performances.
      */
     constructor(path: String, mediaType: String? = null, originalUrl: String? = null) :
-            this(java.io.File(path), originalUrl = originalUrl, mediaTypeHint = mediaType)
+            this(java.io.File(path), mediaType = mediaType, originalUrl = originalUrl)
 
     /**
      *  Creates a File from a path and an already resolved format.
      */
     constructor(path: String, format: Format?, originalUrl: String? = null) :
-            this(java.io.File(path), originalUrl = originalUrl, knownFormat = format)
+            this(java.io.File(path), originalUrl = originalUrl, format = format)
 
     /**
      * Absolute path on the file system.
@@ -71,12 +77,4 @@ class File private constructor(
 
         return _format.getOrNull()
     }
-
-    override fun equals(other: Any?): Boolean {
-        val otherFile = other as? File ?: return false
-
-        return otherFile.file == file
-    }
-
-    override fun hashCode(): Int = file.hashCode()
 }
