@@ -21,6 +21,8 @@ import android.view.ActionMode
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
 import org.json.JSONException
@@ -35,9 +37,15 @@ import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.getAbsolute
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.publication.services.positions
+import org.readium.r2.shared.publication.services.positionsByResource
+import java.net.URI
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
 
@@ -215,6 +223,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     override lateinit var publicationFileName: String
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
+    lateinit var positions: List<Locator>
     override var bookId: Long = -1
 
     override var allowToggleActionBar = true
@@ -239,6 +248,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         resourcesDouble = ArrayList()
 
         publication = intent.getPublication(this)
+        positions = runBlocking { publication.positions() }
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publicationIdentifier = publication.metadata.identifier!!
@@ -404,21 +414,8 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     private val currentFragment: R2EpubPageFragment? get() =
         r2PagerAdapter.mFragments.get(r2PagerAdapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
 
-    override val currentLocation: Locator? get() {
-        val resource = publication.readingOrder[resourcePager.currentItem]
-        val progression = currentFragment?.webView?.progression ?: 0.0
-        val positions = publication.positionsByResource[resource.href]
-            ?: return null
-        val positionIndex = ceil(progression * (positions.size - 1)).toInt()
-        return positions[positionIndex]
-            .copyWithLocations(progression = progression)
-    }
-
-    /**
-     * Last current location notified.
-     * Used to avoid sending twice the same location.
-     */
-    private var notifiedCurrentLocation: Locator? = null
+    override val currentLocator: LiveData<Locator?> get() = _currentLocator
+    private val _currentLocator = MutableLiveData<Locator?>(null)
 
     /**
      * While scrolling we receive a lot of new current locations, so we use a coroutine job to
@@ -432,13 +429,20 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         debounceLocationNotificationJob = launch {
             delay(100L)
 
-            val delegate = navigatorDelegate ?: return@launch
-            val locator = currentLocation ?: return@launch
-            if (locator == notifiedCurrentLocation) {
+            val resource = publication.readingOrder[resourcePager.currentItem]
+            val progression = currentFragment?.webView?.progression ?: 0.0
+            val positions = publication.positionsByResource[resource.href]
+                ?: return@launch
+            val positionIndex = ceil(progression * (positions.size - 1)).toInt()
+            val locator = positions[positionIndex]
+                .copyWithLocations(progression = progression)
+
+            if (locator == currentLocator.value) {
                 return@launch
             }
-            notifiedCurrentLocation = locator
-            delegate.locationDidChange(navigator = navigator, locator = locator)
+
+            _currentLocator.postValue(locator)
+            navigatorDelegate?.locationDidChange(navigator = navigator, locator = locator)
         }
     }
 
