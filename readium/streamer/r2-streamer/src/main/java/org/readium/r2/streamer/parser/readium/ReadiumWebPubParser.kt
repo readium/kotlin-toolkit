@@ -123,15 +123,17 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser, org
         fetcher: Fetcher
     ): PublicationParser.PublicationBuilder {
 
-        val manifestHref =
-            if (file.format()?.mediaType?.isRwpm == true)
-                fetcher.links().firstOrNull()?.href ?: throw IllegalStateException("Empty fetcher.")
-            else
-                "/manifest.json"
+        val manifest =
+            if (file.format()?.mediaType?.isRwpm == true) {
+                val href = fetcher.links().firstOrNull()?.href ?: error("Empty fetcher.")
+                val manifestJson = fetcher.get(href).readAsString().getOrThrow()
+                Manifest.fromJSON(JSONObject(manifestJson)) { normalize(base = file.originalUrl ?: file.path, href = it) }
+            } else {
+                val href = "/manifest.json"
+                val manifestJson = fetcher.get(href).readAsString().getOrThrow()
+                 Manifest.fromJSON(JSONObject(manifestJson)) { normalize(base = "/", href = it) }
 
-        val manifestJson = fetcher.get(manifestHref).readAsString().getOrThrow()
-        val manifest = Manifest.fromJSON(JSONObject(manifestJson)) { normalize(base = "/", href = it) }
-            ?: throw Exception("Failed to parse RWPM.")
+            } ?: throw Exception("Failed to parse RWPM.")
 
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
