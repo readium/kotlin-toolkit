@@ -122,6 +122,19 @@ class ArchiveFetcherTest {
     }
 
     @Test
+    fun `Computing a directory length returns NotFound`() {
+        val resource = fetcher.get(Link(href = "/EPUB"))
+        assertFailsWith<Resource.Error.NotFound> { resource.lengthBlocking().getOrThrow() }
+    }
+
+    @Test
+    fun `Computing the length of a missing file returns NotFound`() {
+        val resource = fetcher.get(Link(href = "/unknown"))
+        assertFailsWith<Resource.Error.NotFound> { resource.lengthBlocking().getOrThrow() }
+    }
+
+
+    @Test
     fun `Original link properties are kept`() {
         val resource = fetcher.get(Link(href = "/mimetype", properties = Properties(mapOf("other" to "property"))))
 

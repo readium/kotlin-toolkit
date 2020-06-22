@@ -118,6 +118,18 @@ class FileFetcherTest {
     }
 
     @Test
+    fun `Computing a directory length returns NotFound`() {
+        val resource = fetcher.get(Link(href = "/dir_href/subdirectory"))
+        assertFailsWith<Resource.Error.NotFound> { resource.lengthBlocking().getOrThrow() }
+    }
+
+    @Test
+    fun `Computing the length of a missing file returns NotFound`() {
+        val resource = fetcher.get(Link(href = "/unknown"))
+        assertFailsWith<Resource.Error.NotFound> { resource.lengthBlocking().getOrThrow() }
+    }
+
+    @Test
     fun `Computing links works well`() {
         Shadows.shadowOf(MimeTypeMap.getSingleton()).apply {
             addExtensionMimeTypMapping("txt", "text/plain")
