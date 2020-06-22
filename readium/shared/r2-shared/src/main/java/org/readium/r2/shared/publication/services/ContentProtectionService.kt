@@ -18,6 +18,7 @@ import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ServiceFactory
 import java.net.URLDecoder
 import java.util.Locale
 
@@ -218,6 +219,12 @@ private val Publication.protectionService: ContentProtectionService?
         } */
         return null
     }
+
+/** Factory to build a [ContentProtectionService]. */
+var Publication.ServicesBuilder.protectionServiceFactory: ServiceFactory?
+    get() = get(ContentProtectionService::class)
+    set(value) = set(ContentProtectionService::class, value)
+
 
 /**
  * Returns whether this Publication is protected by a Content Protection technology.

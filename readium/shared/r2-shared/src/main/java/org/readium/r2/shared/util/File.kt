@@ -19,6 +19,7 @@ import java.lang.Exception
  */
 class File private constructor(
     val file: java.io.File,
+    val originalUrl: String? = null,
     private val mediaTypeHint: String? = null,
     private val knownFormat: Format? = null
 ) {
@@ -28,12 +29,14 @@ class File private constructor(
      * @param path Absolute path to the file or directory.
      * @param mediaType If the file's media type is already known, providing it will improve performances.
      */
-    constructor(path: String, mediaType: String? = null) : this(java.io.File(path), mediaTypeHint = mediaType)
+    constructor(path: String, mediaType: String? = null, originalUrl: String? = null) :
+            this(java.io.File(path), originalUrl = originalUrl, mediaTypeHint = mediaType)
 
     /**
      *  Creates a File from a path and an already resolved format.
      */
-    constructor(path: String, format: Format) : this(java.io.File(path), knownFormat = format)
+    constructor(path: String, format: Format?, originalUrl: String? = null) :
+            this(java.io.File(path), originalUrl = originalUrl, knownFormat = format)
 
     /**
      * Absolute path on the file system.

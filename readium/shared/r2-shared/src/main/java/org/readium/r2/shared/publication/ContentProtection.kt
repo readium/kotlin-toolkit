@@ -64,12 +64,12 @@ interface ContentProtection {
      * - Discarding the provided fetcher altogether and creating a new one to handle access restrictions.
      *   For example, by creating an HTTPFetcher which will inject a Bearer Token in requests.
      *
-     * @property contentProtectionServiceFactory Factory for the Content Protection Publication Service
+     * @property protectionServiceFactory Factory for the Content Protection Publication Service
      * that will be added to the created Publication by the Streamer.
      */
     data class ProtectedFile(
         val file: File,
         val fetcher: Fetcher,
-        val contentProtectionServiceFactory: ((Publication.Service.Context) -> ContentProtectionService?)?
+        val protectionServiceFactory: ((Publication.Service.Context) -> ContentProtectionService?)?
     )
 }
