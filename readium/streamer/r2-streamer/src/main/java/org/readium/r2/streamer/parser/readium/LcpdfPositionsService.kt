@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Link
@@ -25,6 +26,7 @@ import timber.log.Timber
  * Creates the [positions] for an LCP protected PDF [Publication] from its [readingOrder] and
  * [fetcher].
  */
+@OptIn(PdfSupport::class)
 internal class LcpdfPositionsService(
     private val context: Context,
     private val readingOrder: List<Link>,

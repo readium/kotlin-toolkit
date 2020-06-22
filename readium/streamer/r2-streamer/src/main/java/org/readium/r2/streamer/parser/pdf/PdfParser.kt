@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
@@ -24,6 +25,7 @@ import java.io.File
 /**
  * Parses a PDF file into a Readium [Publication].
  */
+@PdfSupport
 class PdfParser(private val context: Context) : PublicationParser {
 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? =
