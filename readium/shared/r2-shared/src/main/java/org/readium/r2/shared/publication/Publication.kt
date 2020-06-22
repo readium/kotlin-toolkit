@@ -378,6 +378,8 @@ class Publication(
      */
     sealed class OpeningError(cause: Throwable? = null) : Throwable(cause) {
 
+        object UnsupportedFormat : OpeningError()
+
         class ParsingFailed(cause: Throwable) : OpeningError(cause)
 
         /**
