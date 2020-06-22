@@ -64,8 +64,11 @@ internal suspend fun Fetcher.Companion.fromFile(
     openArchive: suspend (String) -> Archive? = { JavaZip.open(it) }
 ): Fetcher =
     when {
-        file.isDirectory -> FileFetcher(href = "/", file = file)
-        file.exists() -> ArchiveFetcher.fromPath(file.path, openArchive)
-            ?: FileFetcher(href = "/${file.name}", file = file)
-        else -> throw FileNotFoundException(file.path)
+        file.isDirectory ->
+            FileFetcher(href = "/", file = file)
+        file.exists() ->
+            ArchiveFetcher.fromPath(file.path, openArchive)
+                ?: FileFetcher(href = "/${file.name}", file = file)
+        else ->
+            throw FileNotFoundException(file.path)
     }
