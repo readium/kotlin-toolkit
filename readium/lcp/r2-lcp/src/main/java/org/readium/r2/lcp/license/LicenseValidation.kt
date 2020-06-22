@@ -64,6 +64,7 @@ internal sealed class State {
     data class registerDevice(val documents: ValidatedDocuments, val link: Link) : State()
     data class valid(val documents: ValidatedDocuments) : State()
     data class failure(val error: Exception) : State()
+    object cancelled : State()
 }
 
 
@@ -200,8 +201,8 @@ internal class LicenseValidation(
                 transitionTo(State.failure(it.error))
             }
             on<Event.cancelled> {
-                if (DEBUG) Timber.tag("LicenseValidation").d("State.start)")
-                transitionTo(State.start)
+                if (DEBUG) Timber.tag("LicenseValidation").d("State.cancelled)")
+                transitionTo(State.cancelled)
             }
         }
         state<State.validateIntegrity> {
@@ -390,6 +391,7 @@ internal class LicenseValidation(
             when (licenseValidation.stateMachine.state) {
                 is State.valid -> observer((licenseValidation.stateMachine.state as State.valid).documents, null)
                 is State.failure -> observer(null, (licenseValidation.stateMachine.state as State.failure).error)
+                is State.cancelled -> observer(null, null)
                 else -> notified = false
             }
             if (notified && policy != ObserverPolicy.always) {
