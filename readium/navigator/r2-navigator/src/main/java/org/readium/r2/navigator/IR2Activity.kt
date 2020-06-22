@@ -73,7 +73,7 @@ interface Navigator {
 
 interface NavigatorDelegate {
     @Deprecated("Observe [currentLocator] instead")
-    fun locationDidChange(navigator: Navigator? = null, locator: Locator)
+    fun locationDidChange(navigator: Navigator? = null, locator: Locator) {}
 }
 
 
