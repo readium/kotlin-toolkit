@@ -33,17 +33,17 @@ class PublicationTest {
         resources: List<Link> = emptyList(),
         servicesBuilder: Publication.ServicesBuilder = Publication.ServicesBuilder()
     ) = Publication(
-            manifest = Manifest(
-                    metadata = Metadata(
-                        localizedTitle = LocalizedString(title),
-                        languages = listOf(language),
-                        readingProgression = readingProgression
-                    ),
-                    links = links,
-                    readingOrder = readingOrder,
-                    resources = resources
-                ),
-            servicesBuilder = servicesBuilder
+        manifest = Manifest(
+            metadata = Metadata(
+                localizedTitle = LocalizedString(title),
+                languages = listOf(language),
+                readingProgression = readingProgression
+            ),
+            links = links,
+            readingOrder = readingOrder,
+            resources = resources
+        ),
+        servicesBuilder = servicesBuilder
     )
 
     @Test fun `get the default empty {positions}`() {

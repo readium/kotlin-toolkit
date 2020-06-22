@@ -10,6 +10,7 @@
 package org.readium.r2.shared.util.pdf
 
 import android.graphics.Bitmap
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Link
 
@@ -18,6 +19,7 @@ import org.readium.r2.shared.publication.Link
  *
  * This is not used to render a PDF document, only to access its metadata.
  */
+@PdfSupport
 interface PdfDocument {
 
     /**
@@ -77,9 +79,11 @@ interface PdfDocument {
  * @param documentHref HREF of the PDF document in the [Publication] to which the links are
  *        relative to.
  */
+@PdfSupport
 fun List<PdfDocument.OutlineNode>.toLinks(documentHref: String): List<Link> =
     map { it.toLink(documentHref) }
 
+@PdfSupport
 fun PdfDocument.OutlineNode.toLink(documentHref: String): Link =
     Link(
         href = "$documentHref#page=$pageNumber",
