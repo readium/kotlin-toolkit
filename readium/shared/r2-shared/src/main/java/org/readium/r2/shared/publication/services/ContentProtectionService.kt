@@ -195,7 +195,7 @@ interface ContentProtectionService: Publication.Service {
          */
         fun print(pageCount: Int): Boolean
 
-        object UnrestrictedUserRights: UserRights {
+        object UnrestrictedUserRights : UserRights {
             override val canCopy: Boolean = true
 
             override fun canCopy(text: String): Boolean = true
@@ -207,6 +207,20 @@ interface ContentProtectionService: Publication.Service {
             override fun canPrint(pageCount: Int): Boolean = true
 
             override fun print(pageCount: Int): Boolean = true
+        }
+
+        object AllRestrictedUserRights : UserRights {
+            override val canCopy: Boolean = false
+
+            override fun canCopy(text: String): Boolean = false
+
+            override fun copy(text: String): Boolean = false
+
+            override val canPrint: Boolean = false
+
+            override fun canPrint(pageCount: Int): Boolean = false
+
+            override fun print(pageCount: Int): Boolean  = false
         }
     }
 }
