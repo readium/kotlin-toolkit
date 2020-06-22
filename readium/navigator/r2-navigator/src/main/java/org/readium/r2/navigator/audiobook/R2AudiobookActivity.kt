@@ -147,7 +147,12 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
             
         if (this.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
 
-            mediaPlayer = R2MediaPlayer(publication.readingOrder, this)
+            val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
+            val readingOrderOverHttp = publication.readingOrder.map {
+                val newHref = Publication.localUrlOf(filename = publicationFileName, port = port ?: 0, href = it.href)
+                it.copy(href = newHref)
+            }
+            mediaPlayer = R2MediaPlayer(readingOrderOverHttp, this)
 
             mediaPlayer?.goTo(currentResource)
 
