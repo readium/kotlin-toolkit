@@ -10,6 +10,7 @@
 package org.readium.r2.streamer
 
 import android.content.Context
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.Format
@@ -55,13 +56,14 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  *    This is used by ZIP and PDF password protections.
  *    The default implementation of this callback presents a dialog using native components when possible.
  */
+
 class Streamer(
     context: Context,
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
     private val contentProtections: List<ContentProtection> = emptyList(),
     private val openArchive: suspend (String) -> Archive? = (JavaZip)::open,
-    private val openPdf: suspend (ByteArray) -> PdfDocument? = { PdfiumDocument.fromBytes(it, context.applicationContext) },
+    //private val openPdf: suspend (ByteArray) -> PdfDocument? = { PdfiumDocument.fromBytes(it, context.applicationContext) },
     private val onCreateManifest: (File, Manifest) -> Manifest = { _, manifest -> manifest },
     private val onCreateFetcher: (File, Manifest, Fetcher) -> Fetcher = { _, _, fetcher -> fetcher },
     private val onCreateServices: (File, Manifest, Publication.ServicesBuilder) -> Unit = { _, _, _ -> Unit },
@@ -71,7 +73,7 @@ class Streamer(
     private val defaultParsers: List<PublicationParser> by lazy {
         listOf(
             EpubParser(),
-            PdfParser(context.applicationContext, openPdf),
+            //PdfParser(context.applicationContext, openPdf),
             ReadiumWebPubParser(context.applicationContext),
             ImageParser(),
             AudioParser()

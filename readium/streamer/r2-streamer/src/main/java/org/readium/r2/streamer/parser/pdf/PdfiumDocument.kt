@@ -12,11 +12,13 @@ package org.readium.r2.streamer.parser.pdf
 import android.content.Context
 import android.graphics.Bitmap
 import com.shockwave.pdfium.PdfiumCore
-import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.util.pdf.PdfDocument
 import timber.log.Timber
+import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 
+@OptIn(PdfSupport::class)
 internal class PdfiumDocument private constructor(
     val core: PdfiumCore,
     val document: _PdfiumDocument,
@@ -85,6 +87,7 @@ private fun PdfiumCore.renderCover(document: _PdfiumDocument): Bitmap? {
     }
 }
 
+@OptIn(PdfSupport::class)
 private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
     PdfDocument.OutlineNode(
         title = title,

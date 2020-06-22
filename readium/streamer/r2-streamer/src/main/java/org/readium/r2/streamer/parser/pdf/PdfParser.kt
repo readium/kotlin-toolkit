@@ -12,16 +12,17 @@ package org.readium.r2.streamer.parser.pdf
 import android.content.Context
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCoverService
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.pdf.PdfDocument
+import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.PublicationParser
@@ -30,6 +31,7 @@ import java.lang.Exception
 /**
  * Parses a PDF file into a Readium [Publication].
  */
+@PdfSupport
 class PdfParser(
     private val context: Context,
     private val openPdf:  suspend (ByteArray) -> PdfDocument? = { PdfiumDocument.fromBytes(it, context.applicationContext) }
