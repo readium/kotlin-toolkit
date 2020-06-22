@@ -94,7 +94,10 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
 
         override val metadataLength: Long? =
             try {
-                file.length()
+                if (file.isFile)
+                    file.length()
+                else
+                    null
             } catch (e: Exception) {
                 null
             }
