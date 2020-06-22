@@ -14,13 +14,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.lifecycle.Observer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import org.readium.r2.navigator.Navigator
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.cbz.R2CbzActivity
 import org.readium.r2.shared.extensions.putPublicationFrom
-import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.BooksDatabase
 import org.readium.r2.testapp.library.LibraryActivity
@@ -38,11 +39,6 @@ import kotlin.coroutines.CoroutineContext
  *
  */
 class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
-
-    override fun locationDidChange(navigator: Navigator?, locator: Locator) {
-        Timber.d("locationDidChange position ${locator.locations.position ?: 0}/${publication.positions.size} $locator")
-        booksDB.books.saveProgression(locator, bookId)
-    }
 
     /**
      * Context of this scope.
@@ -64,6 +60,16 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
 
         navigatorDelegate = this
         bookId = intent.getLongExtra("bookId", -1)
+
+        launch {
+            val positionCount = publication.positions().size
+
+            currentLocator.observe(this@ComicActivity, Observer { locator ->
+                locator ?: return@Observer
+                Timber.d("locationDidChange position ${locator.locations.position ?: 0}/${positionCount} $locator")
+                booksDB.books.saveProgression(locator, bookId)
+            })
+        }
 
         toggleActionBar()
 

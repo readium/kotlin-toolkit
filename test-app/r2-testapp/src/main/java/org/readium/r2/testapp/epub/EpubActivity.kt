@@ -28,6 +28,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.widget.TextViewCompat
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_epub.*
@@ -40,7 +41,6 @@ import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import org.json.JSONException
 import org.json.JSONObject
-import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.epub.R2EpubActivity
 import org.readium.r2.navigator.epub.Style
@@ -54,6 +54,7 @@ import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
@@ -75,16 +76,6 @@ import kotlin.coroutines.CoroutineContext
  *
  */
 class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, VisualNavigatorDelegate, OutlineTableViewControllerDelegate*/ {
-
-    override fun locationDidChange(navigator: Navigator?, locator: Locator) {
-        Timber.d("locationDidChange position ${locator.locations.position ?: 0}/${publication.positions.size} $locator")
-        booksDB.books.saveProgression(locator, bookId)
-
-        if (this::screenReader.isInitialized && locator.locations.progression == 0.0) {
-            screenReader.currentUtterance = 0
-        }
-    }
-
 
     /**
      * Context of this scope.
@@ -142,6 +133,22 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
 
         navigatorDelegate = this
         bookId = intent.getLongExtra("bookId", -1)
+
+
+        launch {
+            val positionCount = publication.positions().size
+
+            currentLocator.observe(this@EpubActivity, Observer { locator ->
+                locator ?: return@Observer
+
+                Timber.d("locationDidChange position ${locator.locations.position ?: 0}/${positionCount} $locator")
+                booksDB.books.saveProgression(locator, bookId)
+
+                if (::screenReader.isInitialized && locator.locations.progression == 0.0) {
+                    screenReader.currentUtterance = 0
+                }
+            })
+        }
 
         Handler().postDelayed({
             launch {
@@ -496,7 +503,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 val resourceHref = resource.href
                 val resourceType = resource.type ?: ""
                 val resourceTitle = resource.title ?: ""
-                val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocation?.locations?.progression!!)?.let {
+                val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocator.value?.locations?.progression!!)?.let {
                     it
                 }
 
@@ -507,7 +514,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                         resourceHref,
                         resourceType,
                         resourceTitle,
-                        Locator.Locations(progression = currentLocation?.locations?.progression, position = currentPage?.toInt()),
+                        Locator.Locations(progression = currentLocator.value?.locations?.progression, position = currentPage?.toInt()),
                         Locator.Text()
                 )
 
@@ -820,12 +827,12 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         val resourceHref = resource.href
         val resourceType = resource.type ?: ""
         val resourceTitle = resource.title ?: ""
-        val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocation?.locations?.progression!!)?.let {
+        val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocator.value?.locations?.progression!!)?.let {
             it
         }
 
         val highlightLocations = highlight.locator.locations.copy(
-            progression = currentLocation?.locations?.progression,
+            progression = currentLocator.value?.locations?.progression,
             position = currentPage?.toInt()
         )
         val locationText = highlight.locator.text
