@@ -13,13 +13,15 @@ import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
 
-internal class LCPContentProtectionService(license: LCPLicense) : ContentProtectionService {
+internal class LCPContentProtectionService(license: LCPLicense?) : ContentProtectionService {
 
-    override val isLocked: Boolean = false
+    override val isLocked: Boolean = license != null
 
     override val credentials: String? = null
 
-    override val rights: ContentProtectionService.UserRights = LCPUserRights(license)
+    override val rights: ContentProtectionService.UserRights =
+        license?.let { LCPUserRights(it) }
+            ?: ContentProtectionService.UserRights.AllRestrictedUserRights
 
     override val name: LocalizedString = LocalizedString("Readium LCP")
 
@@ -49,7 +51,7 @@ internal class LCPContentProtectionService(license: LCPLicense) : ContentProtect
 
     companion object {
 
-        fun createFactory(license: LCPLicense): (Publication.Service.Context) -> LCPContentProtectionService =
+        fun createFactory(license: LCPLicense?): (Publication.Service.Context) -> LCPContentProtectionService =
             { LCPContentProtectionService(license) }
 
     }

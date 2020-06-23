@@ -17,7 +17,6 @@ import org.readium.r2.shared.publication.OnAskCredentialsCallback
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.Try
-import java.lang.IllegalStateException
 
 class LCPContentProtection(
     private val lcpService: LCPService,
@@ -44,7 +43,7 @@ class LCPContentProtection(
         return try {
             val license = lcpService
                 .retrieveLicense(file,  lcpAuthenticating.takeIf { askCredentials })
-                .getOrThrow()
+                ?.getOrThrow()
             val protectedFile = ContentProtection.ProtectedFile(
                 file,
                 TransformingFetcher(fetcher, LCPDecryptor(license)::transform),
@@ -60,22 +59,11 @@ class LCPContentProtection(
 
 private fun LCPError.toOpeningError() = when (this) {
     is LCPError.licenseIsBusy,
-    is LCPError.crlFetching,
     is LCPError.network,
-    is LCPError.runtime,
-    is LCPError.unknown ->
+    is LCPError.licenseContainer->
         Publication.OpeningError.Unavailable(this)
-    is LCPError.licenseIntegrity,
-    is LCPError.licenseStatus,
-    is LCPError.licenseContainer,
-    is LCPError.licenseInteractionNotAvailable,
-    is LCPError.licenseProfileNotSupported,
-    is LCPError.licenseRenew,
-    is LCPError.parsing ->
+    is LCPError.licenseStatus ->
         Publication.OpeningError.Forbidden(this)
-    else -> // this should never happen
-        if (BuildConfig.DEBUG)
-            throw IllegalStateException(this)
-        else
-            Publication.OpeningError.Unavailable(this)
+    else ->
+        Publication.OpeningError.ParsingFailed(this)
 }

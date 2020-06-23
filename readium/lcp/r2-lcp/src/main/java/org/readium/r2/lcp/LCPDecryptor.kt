@@ -12,6 +12,7 @@ package org.readium.r2.lcp
 import org.readium.r2.shared.drm.DRMLicense
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.fetcher.BytesResource
+import org.readium.r2.shared.fetcher.FailureResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceTry
 import org.readium.r2.shared.fetcher.LazyResource
@@ -25,7 +26,7 @@ import java.io.IOException
 /**
  * Decrypts a resource protected with LCP.
  */
-internal class LCPDecryptor(val license: LCPLicense) {
+internal class LCPDecryptor(val license: LCPLicense?) {
 
     fun transform(resource: Resource): Resource = LazyResource {
         // Checks if the resource is encrypted and whether the encryption schemes of the resource
@@ -36,6 +37,7 @@ internal class LCPDecryptor(val license: LCPLicense) {
             return@LazyResource resource
 
         when {
+            license == null -> FailureResource(link, Resource.Error.Forbidden)
             link.isDeflated || !link.isCbcEncrypted -> FullLcpResource(resource, license)
             else -> CbcLcpResource(resource, license)
         }

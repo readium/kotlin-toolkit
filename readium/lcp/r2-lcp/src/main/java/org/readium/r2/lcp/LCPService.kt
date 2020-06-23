@@ -55,14 +55,16 @@ interface LCPService {
      */
     fun retrieveLicense(publication: String, authentication: LCPAuthenticating?, completion: (LCPLicense?, LCPError?) -> Unit)
 
-    suspend fun retrieveLicense(file: File, authentication: LCPAuthenticating?): Try<LCPLicense, LCPError> =
+    suspend fun retrieveLicense(file: File, authentication: LCPAuthenticating?): Try<LCPLicense, LCPError>? =
         suspendCoroutine { cont ->
             retrieveLicense(file.path, authentication) { license, error ->
                 cont.resume(
-                    if (license == null)
-                        Try.failure(error!!)
-                    else
+                    if (license != null)
                         Try.success(license)
+                    else if (error != null)
+                        Try.failure(error)
+                    else
+                        null
                 )
             }
         }
