@@ -5,6 +5,8 @@
 A parser for OPDS 1.x and 2.0 written in Kotlin using the [Readium-2 shared model](https://github.com/readium/r2-shared-kotlin) 
 and [Readium Web Publication Manifest](https://github.com/readium/webpub-manifest).
 
+[Changes and releases are documented in the Changelog](CHANGELOG.md)
+
 ## Features
 
 - [x] Abstract model
