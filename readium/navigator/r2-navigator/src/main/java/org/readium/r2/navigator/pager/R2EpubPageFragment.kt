@@ -235,7 +235,7 @@ class R2EpubPageFragment : Fragment() {
         if (id != null) {
             webView.loadUrl("$resourceUrl#$id")
         } else {
-            webView.loadUrl(resourceUrl)
+            resourceUrl?.let { webView.loadUrl(it) }
         }
 
         return v
