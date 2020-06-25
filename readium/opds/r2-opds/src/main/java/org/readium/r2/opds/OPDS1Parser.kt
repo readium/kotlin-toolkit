@@ -45,8 +45,6 @@ object Namespaces {
 class OPDS1Parser {
     companion object {
 
-        private lateinit var feed: Feed
-
         fun parseURL(url: URL): Promise<ParseData, Exception> {
             return Fuel.get(url.toString(), null).promise() then {
                 val (_, _, result) = it
@@ -65,16 +63,15 @@ class OPDS1Parser {
         fun parse(xmlData: ByteArray, url: URL): ParseData {
             val root = XmlParser().parse(xmlData.inputStream())
             return if (root.name == "feed")
-                ParseData(parseFeed(xmlData, url), null, 1)
+                ParseData(parseFeed(root, url), null, 1)
             else
-                ParseData(null, parseEntry(xmlData), 1)
+                ParseData(null, parseEntry(root, url), 1)
         }
 
-        private fun parseFeed(xmlData: ByteArray, url: URL): Feed {
-            val root = XmlParser().parse(xmlData.inputStream())
+        private fun parseFeed(root: ElementNode, url: URL): Feed {
             val feedTitle = root.getFirst("title", Namespaces.Atom)?.text
                     ?: throw Exception(OPDSParserError.MissingTitle.name)
-            feed = Feed(feedTitle, 1, url)
+            val feed = Feed(feedTitle, 1, url)
             val tmpDate = root.getFirst("updated", Namespaces.Atom)?.text
             feed.metadata.modified = tmpDate?.let { DateTime(it).toDate() }
 
@@ -91,12 +88,12 @@ class OPDS1Parser {
             for (entry in root.get("entry", Namespaces.Atom)) {
                 var isNavigation = true
                 var collectionLink: Link? = null
-                val links = entry.get("link", Namespaces.Opds)
+                val links = entry.get("link", Namespaces.Atom)
                 for (link in links) {
                     val href = link.getAttr("href")
                     val rel = link.getAttr("rel")
                     if (rel != null) {
-                        if (rel == "http://opds-spec.org/acquisition") {
+                        if (rel.startsWith("http://opds-spec.org/acquisition")) {
                             isNavigation = false
                         }
                         if (href != null && (rel == "collection" || rel == "http://opds-spec.org/group")) {
@@ -109,7 +106,7 @@ class OPDS1Parser {
                     }
                 }
                 if ((!isNavigation)) {
-                    val publication = parseEntry(entry)
+                    val publication = parseEntry(entry, baseUrl = url)
                     if (publication != null) {
                         collectionLink?.let {
                             addPublicationInGroup(feed, publication, it)
@@ -166,11 +163,6 @@ class OPDS1Parser {
                 }
             }
             return feed
-        }
-
-        private fun parseEntry(xmlData: ByteArray): Publication? {
-            val document = XmlParser().parse(xmlData.inputStream())
-            return parseEntry(entry = document)
         }
 
         private fun parseMimeType(mimeTypeString: String): MimeTypeParameters {
@@ -243,7 +235,7 @@ class OPDS1Parser {
 
         }
 
-        private fun parseEntry(entry: ElementNode): Publication? {
+        private fun parseEntry(entry: ElementNode, baseUrl: URL): Publication? {
             // A title is mandatory
             val title = entry.getFirst("title", Namespaces.Atom)?.text
                 ?: return null
@@ -274,7 +266,7 @@ class OPDS1Parser {
                     }
 
                     Link(
-                        href = getAbsolute(href, feed.href.toString()),
+                        href = getAbsolute(href, baseUrl.toString()),
                         type = element.getAttr("type"),
                         title = element.getAttr("title"),
                         rels = listOfNotNull(rel).toSet(),
