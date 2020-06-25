@@ -221,21 +221,23 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
 
-                val locator = data.getParcelableExtra("locator") as Locator
+                val locator = data.getParcelableExtra("locator") as? Locator
 
-                fun setCurrent(resources: List<String>) {
-                    for (index in 0 until resources.count()) {
-                        val resource = resources[index]
-                        if (resource.endsWith(locator.href)) {
-                            resourcePager.currentItem = index
-                            break
+                locator?.let {
+                    fun setCurrent(resources: List<String>) {
+                        for (index in 0 until resources.count()) {
+                            val resource = resources[index]
+                            if (resource.endsWith(locator.href)) {
+                                resourcePager.currentItem = index
+                                break
+                            }
                         }
                     }
+
+                    resourcePager.adapter = adapter
+
+                    setCurrent(resources)
                 }
-
-                resourcePager.adapter = adapter
-
-                setCurrent(resources)
 
                 if (supportActionBar!!.isShowing && allowToggleActionBar) {
                     resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
