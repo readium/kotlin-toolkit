@@ -1,11 +1,11 @@
 # Migration Guide
 
 [unreleased]: https://github.com/readium/r2-testapp-kotlin/compare/master...HEAD
-[x.x.x]: https://github.com/readium/r2-testapp-kotlin/compare/V2.1.0-beta.4...x.x.x
+[V3.0.0-beta.1]: https://github.com/readium/r2-testapp-kotlin/compare/V2.1.0-beta.4...V3.0.0-beta.1
 
 All migration steps necessary in reading apps to upgrade to major versions of the Readium toolkit will be documented in this file.
 
-## [Unreleased]
+## [V3.0.0-beta.1]
 
 With this new release, we started a process of modernization of the Readium Kotlin toolkit to:
 
