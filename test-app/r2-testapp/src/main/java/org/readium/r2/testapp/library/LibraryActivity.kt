@@ -76,7 +76,6 @@ import java.net.ServerSocket
 import java.net.URL
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.zip.ZipFile
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -576,7 +575,10 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
 
     override fun recyclerViewListClicked(v: View, position: Int) {
         val progress = blockingProgressDialog(getString(R.string.progress_wait_while_preparing_book))
+        /*
+        FIXME: if the progress dialog were shown, the LCP popup window would not be accessible to the user.
         progress.show()
+         */
         launch {
             val book = books[position]
 
