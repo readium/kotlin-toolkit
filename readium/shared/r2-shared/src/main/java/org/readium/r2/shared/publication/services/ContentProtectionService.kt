@@ -216,7 +216,7 @@ private sealed class RouteHandler {
                 ?: return FailureResource(link, Resource.Error.BadRequest(
                     IllegalArgumentException("'text' parameter is required")
                 ))
-            val peek = parameters["peek"].toBooleanOrNull(false)
+            val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
                 ?: return FailureResource(link, Resource.Error.BadRequest(
                     IllegalArgumentException("if present, 'peek' must be true or false")
                 ))
@@ -251,7 +251,7 @@ private sealed class RouteHandler {
                 ?: return FailureResource(link, Resource.Error.BadRequest(
                     IllegalArgumentException("'pageCount' must be a positive integer")
                 ))
-            val peek = parameters["peek"].toBooleanOrNull(false)
+            val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
                 ?: return FailureResource(link, Resource.Error.BadRequest(
                     IllegalArgumentException("if present, 'peek' must be true or false")
                 ))
@@ -265,10 +265,9 @@ private sealed class RouteHandler {
         }
     }
 
-    fun String?.toBooleanOrNull(default: Boolean): Boolean? = when (this?.toLowerCase(Locale.getDefault())) {
+    fun String.toBooleanOrNull(): Boolean? = when (this.toLowerCase(Locale.getDefault())) {
         "true" -> true
         "false" -> false
-        null -> default
         else -> null
     }
 
