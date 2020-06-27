@@ -17,7 +17,7 @@ import java.lang.Exception
  *
  * Used to cache the Format to avoid computing it at different locations.
  */
-class File private constructor(val file: java.io.File, val originalUrl: String? = null) {
+class File private constructor(val file: java.io.File, val sourceUrl: String? = null) {
 
     private var mediaTypeHint: String? = null
     private var knownFormat: Format? = null
