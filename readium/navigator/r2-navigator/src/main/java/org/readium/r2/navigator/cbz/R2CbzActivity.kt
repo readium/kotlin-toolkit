@@ -138,8 +138,6 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title
 
-        resources = publication.readingOrder.map { it.href }
-
         supportFragmentManager.fragmentFactory = R2CbzPageFragmentFactory(publication)
 
         resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
@@ -150,7 +148,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
         })
 
-        adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
+        adapter = R2PagerAdapter(supportFragmentManager, publication.readingOrder, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
 
         resourcePager.adapter = adapter
 

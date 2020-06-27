@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import kotlin.coroutines.CoroutineContext
 
@@ -29,8 +30,8 @@ class R2CbzPageFragment(private val publication: Publication)
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    private val href: String
-        get() = requireArguments().getString("href")!!
+    private val link: Link
+        get() = requireArguments().getParcelable<Link>("link")!!
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -38,7 +39,7 @@ class R2CbzPageFragment(private val publication: Publication)
         val imageView = view.findViewById<ImageView>(R.id.imageView)
 
        launch {
-           publication.get(href)
+           publication.get(link)
                .read()
                .getOrNull()
                ?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
