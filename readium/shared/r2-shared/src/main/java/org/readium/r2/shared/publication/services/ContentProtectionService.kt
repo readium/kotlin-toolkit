@@ -19,109 +19,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
-import java.net.URLDecoder
 import java.util.Locale
-
-private sealed class RouteHandler {
-
-    companion object {
-        fun route(link: Link): RouteHandler? {
-            val path = URLDecoder.decode(link.href, "UTF-8").takeWhile { it != '?' }
-            return handlers[path]
-        }
-
-        val handlers = mapOf(
-            ContentProtectionHandler.link.href to ContentProtectionHandler,
-            RightsCopyHandler.link.href to RightsCopyHandler,
-            RightsPrintHandler.link.href to RightsPrintHandler
-        )
-
-        val links = handlers.values.map { it.link }
-    }
-
-    abstract val link: Link
-
-    abstract fun handleRequest(link: Link, service: ContentProtectionService): Resource
-
-    object ContentProtectionHandler : RouteHandler() {
-
-        override val link = Link(
-            href = "/~readium/content-protection",
-            type = "application/vnd.readium.content-protection+json"
-        )
-
-        override fun handleRequest(link: Link, service: ContentProtectionService): Resource =
-            StringResource(link) {
-                JSONObject().apply {
-                    put("isLocked", service.isLocked)
-                    service.name?.let { putIfNotEmpty("name", it) }
-                    put("rights", service.rights.toJSON())
-                }.toString()
-            }
-    }
-
-    object RightsCopyHandler : RouteHandler() {
-
-        override val link: Link = Link(
-            href = "/~readium/rights/copy{?text,peek}",
-            type = "application/vnd.readium.rights.copy+json",
-            templated = true
-        )
-
-        override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
-            val parameters = link.href.queryParameters()
-            val text = parameters["text"]
-                ?: return FailureResource(link, Resource.Error.BadRequest)
-            val peek = parameters["peek"]?.toBooleanOrNull(false)
-                ?: return FailureResource(link, Resource.Error.BadRequest)
-
-            val returnLink = Link(href = link.href)
-            val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
-
-            return if (copyAllowed)
-                FailureResource(returnLink, Resource.Error.Forbidden)
-            else
-                StringResource(returnLink) { "" }
-        }
-    }
-
-    object RightsPrintHandler : RouteHandler() {
-
-        override val link = Link(
-            href = "/~readium/rights/print{?pageCount,peek}",
-            type = "application/vnd.readium.rights.print+json",
-            templated = true
-        )
-
-        override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
-            val parameters = link.href.queryParameters()
-            val pageCount = parameters["pageCount"]?.toIntOrNull()
-                ?: return FailureResource(link, Resource.Error.BadRequest)
-            val peek = parameters["peek"]?.toBooleanOrNull(false)
-                ?: return FailureResource(link, Resource.Error.BadRequest)
-
-            val returnLink = Link(href = link.href)
-            val printAllowed = with(service.rights) { if (peek) canPrint(pageCount) else print(pageCount) }
-
-            return if (printAllowed)
-                FailureResource(returnLink, Resource.Error.Forbidden)
-            else
-                StringResource(returnLink) { "" }
-        }
-    }
-
-    fun String?.toBooleanOrNull(default: Boolean): Boolean? = when (this?.toLowerCase(Locale.getDefault())) {
-        "true" -> true
-        "false" -> false
-        null -> default
-        else -> null
-    }
-
-    fun ContentProtectionService.UserRights.toJSON() = JSONObject().apply {
-        put("canCopy", canCopy)
-        put("canPrint", canPrint)
-    }
-}
 
 interface ContentProtectionService: Publication.Service {
 
@@ -235,7 +133,7 @@ private val Publication.protectionService: ContentProtectionService?
     }
 
 /** Factory to build a [ContentProtectionService]. */
-var Publication.ServicesBuilder.protectionServiceFactory: ServiceFactory?
+var Publication.ServicesBuilder.contentProtectionServiceFactory: ServiceFactory?
     get() = get(ContentProtectionService::class)
     set(value) = set(ContentProtectionService::class, value)
 
@@ -259,3 +157,109 @@ val Publication.protectionLocalizedName: LocalizedString?
 
 val Publication.protectionName: String?
     get() = protectionLocalizedName?.string
+
+
+private sealed class RouteHandler {
+
+    companion object {
+
+        private val handlers = listOf(
+            ContentProtectionHandler,
+            RightsCopyHandler,
+            RightsPrintHandler
+        )
+
+        val links = handlers.map { it.link }
+
+        fun route(link: Link): RouteHandler? = handlers.firstOrNull { it.acceptRequest(link) }
+    }
+
+    abstract val link: Link
+
+    abstract fun acceptRequest(link: Link): Boolean
+
+    abstract fun handleRequest(link: Link, service: ContentProtectionService): Resource
+
+    object ContentProtectionHandler : RouteHandler() {
+
+        override val link = Link(
+            href = "/~readium/content-protection",
+            type = "application/vnd.readium.content-protection+json"
+        )
+
+        override fun acceptRequest(link: Link): Boolean = link.href == this.link.href
+
+        override fun handleRequest(link: Link, service: ContentProtectionService): Resource =
+            StringResource(link) {
+                JSONObject().apply {
+                    put("isLocked", service.isLocked)
+                    service.name?.let { putIfNotEmpty("name", it) }
+                    put("rights", service.rights.toJSON())
+                }.toString()
+            }
+    }
+
+    object RightsCopyHandler : RouteHandler() {
+
+        override val link: Link = Link(
+            href = "/~readium/rights/copy{?text,peek}",
+            type = "application/vnd.readium.rights.copy+json",
+            templated = true
+        )
+
+        override fun acceptRequest(link: Link): Boolean = link.href.startsWith("/~readium/rights/copy")
+
+        override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
+            val parameters = link.href.queryParameters()
+            val text = parameters["text"]
+                ?: return FailureResource(link, Resource.Error.BadRequest)
+            val peek = parameters["peek"].toBooleanOrNull(false)
+                ?: return FailureResource(link, Resource.Error.BadRequest)
+
+            val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
+
+            return if (copyAllowed)
+                FailureResource(link, Resource.Error.Forbidden)
+            else
+                StringResource(link, "true")
+        }
+    }
+
+    object RightsPrintHandler : RouteHandler() {
+
+        override val link = Link(
+            href = "/~readium/rights/print{?pageCount,peek}",
+            type = "application/vnd.readium.rights.print+json",
+            templated = true
+        )
+
+        override fun acceptRequest(link: Link): Boolean = link.href.startsWith("/~readium/rights/print")
+
+        override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
+            val parameters = link.href.queryParameters()
+            val pageCount = parameters["pageCount"]?.toIntOrNull()
+                ?: return FailureResource(link, Resource.Error.BadRequest)
+            val peek = parameters["peek"].toBooleanOrNull(false)
+                ?: return FailureResource(link, Resource.Error.BadRequest)
+
+            val printAllowed = with(service.rights) { if (peek) canPrint(pageCount) else print(pageCount) }
+
+            return if (printAllowed)
+                FailureResource(link, Resource.Error.Forbidden)
+            else
+                StringResource(link, "true")
+        }
+    }
+
+    fun String?.toBooleanOrNull(default: Boolean): Boolean? = when (this?.toLowerCase(Locale.getDefault())) {
+        "true" -> true
+        "false" -> false
+        null -> default
+        else -> null
+    }
+
+    fun ContentProtectionService.UserRights.toJSON() = JSONObject().apply {
+        put("canCopy", canCopy)
+        put("canPrint", canPrint)
+    }
+}
