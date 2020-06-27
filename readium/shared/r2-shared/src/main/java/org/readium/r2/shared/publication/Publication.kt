@@ -134,30 +134,13 @@ class Publication(
 
     /**
      * Returns the resource targeted by the given non-templated [link].
-     *
-     * The [link].href property is searched for in the [readingOrder], [resources] and [links] properties
-     * to find the matching manifest [Link]. This is to make sure that
-     * the [Link] given to the [fetcher] contains all properties declared in the [manifest].
-     *
-     * The properties are searched recursively following [Link::alternate] and [Link::children].
      */
     fun get(link: Link): Resource {
         if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
 
-        @Suppress("NAME_SHADOWING")
-        // Parameters in href must not be lost.
-        val link = linkWithHref(link.href)?.copy(href = link.href, templated = link.templated)
-            ?: link
-
         services.forEach { service -> service.get(link)?.let { return it } }
         return fetcher.get(link)
     }
-
-    /**
-     * Returns the resource targeted by the given [href]. Equivalent to get(Link(href: href))).
-     */
-    fun get(href: String): Resource =
-        get(Link(href = href))
 
     /**
      * Closes any opened resource associated with the [Publication], including [services].
