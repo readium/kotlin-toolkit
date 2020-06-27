@@ -47,8 +47,10 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
             val href = getHref(session!!)
             val link = fetcher.publication.linkWithHref(href)!!
-            val mediaType = link.mediaType ?: MediaType.BINARY
+                .copy(href = href) // query parameters must be kept
+
             val resource = fetcher.get(link)
+            val mediaType = link.mediaType ?: MediaType.BINARY
             serveResponse(session, resource, mediaType.toString())
         } catch(e: Resource.Error) {
             responseFromFailure(e)
