@@ -22,8 +22,8 @@ class File private constructor(val file: java.io.File, val sourceUrl: String? = 
     private var mediaTypeHint: String? = null
     private var knownFormat: Format? = null
 
-    private constructor(file: java.io.File, mediaType: String? = null, format: Format? = null, originalUrl: String? = null) :
-            this(file, originalUrl) {
+    private constructor(file: java.io.File, mediaType: String? = null, format: Format? = null, sourceUrl: String? = null) :
+            this(file, sourceUrl) {
 
         mediaTypeHint = mediaType
         knownFormat = format
@@ -35,14 +35,14 @@ class File private constructor(val file: java.io.File, val sourceUrl: String? = 
      * @param path Absolute path to the file or directory.
      * @param mediaType If the file's media type is already known, providing it will improve performances.
      */
-    constructor(path: String, mediaType: String? = null, originalUrl: String? = null) :
-            this(java.io.File(path), mediaType = mediaType, originalUrl = originalUrl)
+    constructor(path: String, mediaType: String? = null, sourceUrl: String? = null) :
+            this(java.io.File(path), mediaType = mediaType, sourceUrl = sourceUrl)
 
     /**
      *  Creates a File from a path and an already resolved format.
      */
-    constructor(path: String, format: Format?, originalUrl: String? = null) :
-            this(java.io.File(path), originalUrl = originalUrl, format = format)
+    constructor(path: String, format: Format?, sourceUrl: String? = null) :
+            this(java.io.File(path), sourceUrl = sourceUrl, format = format)
 
     /**
      * Absolute path on the file system.
