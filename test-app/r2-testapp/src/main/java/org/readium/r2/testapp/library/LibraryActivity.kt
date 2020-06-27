@@ -435,7 +435,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         val libraryFile = SharedFile(
             R2DIRECTORY + fileName,
             format = publicationFile.format(),
-            originalUrl = publicationFile.originalUrl
+            originalUrl = publicationFile.sourceUrl
         )
 
         try {
@@ -480,7 +480,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         val book = Book(
             title = publication.metadata.title,
             author = author,
-            href = file.originalUrl ?: file.path,
+            href = file.sourceUrl ?: file.path,
             identifier = publicationIdentifier,
             cover = cover,
             ext = ".$extension",
