@@ -18,7 +18,7 @@ import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.OnAskCredentialsCallback
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.protectionServiceFactory
+import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.JavaZip
@@ -141,7 +141,7 @@ class Streamer(
             val manifest = onCreateManifest(file, builder.manifest)
             val fetcher = onCreateFetcher(file, manifest, builder.fetcher)
             val servicesBuilder = builder.servicesBuilder.apply {
-                protectionServiceFactory = protectedFile?.protectionServiceFactory
+                contentProtectionServiceFactory = protectedFile?.protectionServiceFactory
             }
             onCreateServices(file, manifest, servicesBuilder)
 
