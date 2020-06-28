@@ -128,9 +128,7 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser, org
                     .readAsString()
                     .getOrThrow()
                 Manifest.fromJSON(JSONObject(manifestJson))
-
-            }
-            else {
+            } else {
                 val manifestLink = fetcher.links()
                     .firstOrNull { it.href == "/manifest.json" }
                     ?: error("Unable to find a manifest link.")
