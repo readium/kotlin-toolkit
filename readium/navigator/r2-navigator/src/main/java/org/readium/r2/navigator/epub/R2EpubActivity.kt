@@ -20,7 +20,6 @@ import android.util.DisplayMetrics
 import android.view.ActionMode
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
@@ -30,6 +29,7 @@ import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.extensions.positionsByResource
+import org.readium.r2.navigator.extensions.withLocalUrl
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -37,7 +37,6 @@ import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
-import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -45,7 +44,6 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.positions
-import java.net.URI
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
 
@@ -255,7 +253,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
         title = null
 
-        val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
+        val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())!!.toInt()
 
         // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
         var doublePageIndex = 0
@@ -264,30 +262,22 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         var resourceIndexDouble = 0
 
         for ((resourceIndexSingle, spineItem) in publication.readingOrder.withIndex()) {
-            val uri: String = if (publicationPath.toUri().isAbsolute) {
-                if (spineItem.href.toUri().isAbsolute) {
-                    spineItem.href
-                } else {
-                    getAbsolute(spineItem.href, publicationPath)
-                }
-            } else {
-                Publication.localUrlOf(filename = publicationFileName, port = port ?: 0, href = spineItem.href)
-            }
-            resourcesSingle.add(Pair(resourceIndexSingle, uri))
+            val href: String = spineItem.withLocalUrl(publicationFileName, port).href
+            resourcesSingle.add(Pair(resourceIndexSingle, href))
 
             // add first page to the right,
             if (resourceIndexDouble == 0) {
                 doublePageLeft = ""
-                doublePageRight = uri
+                doublePageRight = href
                 resourcesDouble.add(Triple(resourceIndexDouble, doublePageLeft, doublePageRight))
                 resourceIndexDouble++
             } else {
                 // add double pages, left & right
                 if (doublePageIndex == 0) {
-                    doublePageLeft = uri
+                    doublePageLeft = href
                     doublePageIndex = 1
                 } else {
-                    doublePageRight = uri
+                    doublePageRight = href
                     doublePageIndex = 0
                     resourcesDouble.add(Triple(resourceIndexDouble, doublePageLeft, doublePageRight))
                     resourceIndexDouble++
