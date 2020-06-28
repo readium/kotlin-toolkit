@@ -81,7 +81,6 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser, org
         }
 
         val drm = if (baseFetcher.isProtectedWithLcp()) DRM(DRM.Brand.lcp) else null
-        @Suppress("NAME_SHADOWING")
         if (drm?.brand == DRM.Brand.lcp) {
             baseFetcher = TransformingFetcher(baseFetcher, LcpDecryptor(drm)::transform)
         }

@@ -108,7 +108,7 @@ class Streamer(
      */
     suspend fun open(
         file: File,
-        fallbackTitle: String = file.toTitle(),
+        fallbackTitle: String = file.name,
         askCredentials: Boolean,
         credentials: String? = null,
         sender: Any? = null,
