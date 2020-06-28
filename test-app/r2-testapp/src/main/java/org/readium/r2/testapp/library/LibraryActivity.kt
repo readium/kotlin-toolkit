@@ -45,7 +45,7 @@ import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
-import org.readium.r2.shared.util.File as SharedFile
+import org.readium.r2.shared.util.File as R2File
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
@@ -298,7 +298,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
 
         for (element in samples) {
             val file = withContext(Dispatchers.IO) {
-                assets.open("Samples/$element").toTempFile()
+                assets.open("Samples/$element").copyToTempFile()
             }
             if (file != null)
                 importPublication(file)
@@ -342,19 +342,12 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                             ?: return@setOnClickListener
 
                         launch {
-                            val progress = blockingProgressDialog(getString(R.string.progress_wait_while_downloading_book))
-                                .apply { show() }
+                            val progress =
+                                blockingProgressDialog(getString(R.string.progress_wait_while_downloading_book))
+                                    .apply { show() }
 
-                            val downloadedFile = url.toTempFile() ?: return@launch
-                            val file =
-                                if (downloadedFile.format()?.mediaType?.isRwpm == true)
-                                     // originalUrl is kept
-                                    downloadedFile
-                                else
-                                    // originalUrl is set to null
-                                    SharedFile(downloadedFile.path, originalUrl = null)
-
-                            importPublication(file, progress)
+                            val downloadedFile = url.copyToTempFile() ?: return@launch
+                            importPublication(downloadedFile, progress)
                         }
                     }
                 }
@@ -402,13 +395,13 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             val progress = blockingProgressDialog(getString(R.string.progress_wait_while_downloading_book))
                 .apply { show() }
 
-            uri.toTempFile()
+            uri.copyToTempFile()
                 ?.let { importPublication(it, progress) }
                 ?: progress.dismiss()
         }
     }
 
-    private suspend fun importPublication(sourceFile: SharedFile, progress: ProgressDialog? = null) {
+    private suspend fun importPublication(sourceFile: R2File, progress: ProgressDialog? = null) {
         val foreground = progress != null
 
         val publicationFile =
@@ -418,7 +411,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 fulfill(sourceFile.file.readBytes()).fold(
                     {
                         val format = Format.of(fileExtension = File(it.suggestedFilename).extension)
-                        SharedFile(it.localURL, format = format)
+                        R2File(it.localURL, format = format)
                     },
                     {
                         tryOrNull { sourceFile.file.delete() }
@@ -431,10 +424,10 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             }
 
         val fileName = UUID.randomUUID().toString()
-        val libraryFile = SharedFile(
+        val libraryFile = R2File(
             R2DIRECTORY + fileName,
             format = publicationFile.format(),
-            originalUrl = publicationFile.sourceUrl
+            sourceUrl = publicationFile.sourceUrl
         )
 
         try {
@@ -447,18 +440,40 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             return
         }
 
+        val extension = libraryFile.let {
+            it.format()?.fileExtension
+                ?: it.file.extension
+        }
+
+        val isRwpm = libraryFile.format()?.mediaType?.isRwpm ?: false
+
+        val bddHref =
+            if (!isRwpm)
+                libraryFile.path
+            else
+                libraryFile.sourceUrl
+                    ?: run {
+                        Timber.e("Trying to add a RWPM to the database from a file without sourceUrl.")
+                        progress?.dismiss()
+                        return
+                    }
+
         streamer.open(libraryFile, askCredentials = false)
             .onSuccess {
-                addPublicationToDatabase(libraryFile, it)
-                    .let {
-                        progress?.dismiss()
-                        if (it && foreground)
-                            catalogView.longSnackbar("publication added to your library")
-                        else if (foreground)
-                            catalogView.longSnackbar("unable to add publication to the database")
+                addPublicationToDatabase(bddHref, extension, it).let {success ->
+                    progress?.dismiss()
+                    val msg =
+                        if (success)
+                            "publication added to your library"
                         else
-                            Timber.d("unable to add publication to the database")
-                    }
+                            "unable to add publication to the database"
+                    if (foreground)
+                        catalogView.longSnackbar(msg)
+                    else
+                        Timber.d(msg)
+                    if (success && isRwpm)
+                        tryOrNull { libraryFile.file.delete() }
+                }
             }
             .onFailure {
                 tryOrNull { libraryFile.file.delete() }
@@ -468,18 +483,15 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             }
     }
 
-    private suspend fun addPublicationToDatabase(file: SharedFile, publication: Publication): Boolean {
+    private suspend fun addPublicationToDatabase(href: String, extension: String, publication: Publication): Boolean {
         val publicationIdentifier = publication.metadata.identifier ?: ""
         val author = publication.metadata.authorName
         val cover = publication.cover()?.toPng()
-        val extension = file.let {
-            it.format()?.fileExtension
-                ?:  it.file.extension
-        }
+
         val book = Book(
             title = publication.metadata.title,
             author = author,
-            href = file.sourceUrl ?: file.path,
+            href = href,
             identifier = publicationIdentifier,
             cover = cover,
             ext = ".$extension",
@@ -499,34 +511,34 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             return true
         }
 
-        return if (alertDuplicates && showDuplicateBookAlert(book))
+        return if (alertDuplicates && confirmAddDuplicateBook(book))
             addBookToDatabase(book, alertDuplicates = false)
         else
             false
     }
 
-    private suspend fun URL.toTempFile(): SharedFile? = tryOrNull {
+    private suspend fun URL.copyToTempFile(): R2File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
         val file = File(R2DIRECTORY + filename)
         download(file.path).let {
             if (it)
-                SharedFile(file.path, originalUrl = this.toString())
+                R2File(file.path, sourceUrl = this.toString())
             else
                 null
         }
     }
 
-    private suspend fun Uri.toTempFile(): SharedFile? = tryOrNull {
+    private suspend fun Uri.copyToTempFile(): R2File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
         val format = Format.ofUri(this, contentResolver)
-        val file = SharedFile(R2DIRECTORY + filename, format = format)
+        val file = R2File(R2DIRECTORY + filename, format = format)
         ContentResolverUtil.getContentInputStream(this@LibraryActivity, this, file.path)
         return file
     }
 
-    private suspend fun InputStream.toTempFile(): SharedFile? = tryOrNull {
+    private suspend fun InputStream.copyToTempFile(): R2File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
-        SharedFile(R2DIRECTORY + filename)
+        R2File(R2DIRECTORY + filename)
             .also { toFile(it.path) }
     }
 
@@ -556,7 +568,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         }
     }
 
-    private suspend fun showDuplicateBookAlert(book: Book) = suspendCoroutine<Boolean> { cont ->
+    private suspend fun confirmAddDuplicateBook(book: Book) = suspendCoroutine<Boolean> { cont ->
         alert(Appcompat, "Publication already exists") {
             positiveButton("Add anyway") {
                 it.dismiss()
@@ -582,8 +594,8 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         launch {
             val book = books[position]
 
-            val file = tryOrNull { URL(book.href).toTempFile() } // remote URL
-                ?: SharedFile(book.href, format = Format.of(fileExtension = book.ext.removePrefix("."))) // local file
+            val file = tryOrNull { URL(book.href).copyToTempFile() } // remote URL
+                ?: R2File(book.href, format = Format.of(fileExtension = book.ext.removePrefix("."))) // local file
 
             streamer.open(file, askCredentials = true)
                 .onFailure {
@@ -598,14 +610,14 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         }
     }
 
-    private fun prepareToServe(publication: Publication, file: SharedFile) {
+    private fun prepareToServe(publication: Publication, file: R2File) {
         val key = publication.metadata.identifier ?: publication.metadata.title
         preferences.edit().putString("$key-publicationPort", localPort.toString()).apply()
         val userProperties = applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
         server.addEpub(publication, null, "/${file.name}", userProperties)
     }
 
-    private fun startActivity(file: SharedFile, book: Book, publication: Publication) {
+    private fun startActivity(file: R2File, book: Book, publication: Publication) {
         val intent = Intent(this, when (publication.type) {
             Publication.TYPE.AUDIO -> AudiobookActivity::class.java
             Publication.TYPE.CBZ -> ComicActivity::class.java
