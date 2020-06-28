@@ -33,13 +33,13 @@ interface PublicationParser {
      * If the file is not an archive, it will be reachable at the HREF /publication.<file.format.fileExtension>,
      * e.g. with a PDF.
      * @param fallbackTitle Publication's title is mandatory,
-     * but some formats might not have a way of declaring a title (e.g. CBZ).
+     * but some formats might not have a way of declaring a title.
      * In which case, fallbackTitle will be used.
      * @param warnings used to broadcast non-fatal parsing warnings.
      * Can be used to report publication authoring mistakes,
      * to warn users of potential rendering issues or help authors debug their publications.
      */
-    suspend fun parse(file: File, fetcher: Fetcher, fallbackTitle: String = file.toTitle(), warnings: WarningLogger? = null)
+    suspend fun parse(file: File, fetcher: Fetcher, fallbackTitle: String, warnings: WarningLogger? = null)
             : Try<PublicationBuilder, Throwable>?
 
     /**

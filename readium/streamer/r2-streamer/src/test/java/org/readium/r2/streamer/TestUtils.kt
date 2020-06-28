@@ -28,5 +28,5 @@ internal fun Resource.linkBlocking(range: LongRange? = null) = runBlocking { lin
 
 internal fun Fetcher.linkBlocking(href: String) = get(Link(href = href)).linkBlocking()
 
-internal fun PublicationParser.parseBlocking(file: File, fetcher: Fetcher):
-        Try<PublicationParser.PublicationBuilder, Throwable>? = runBlocking { parse(file, fetcher) }
+internal fun PublicationParser.parseBlocking(file: File, fetcher: Fetcher, fallbackTitle: String = "fallbackTitle"):
+        Try<PublicationParser.PublicationBuilder, Throwable>? = runBlocking { parse(file, fetcher, fallbackTitle) }

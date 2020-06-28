@@ -21,7 +21,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
-import org.readium.r2.shared.util.archive.JavaZip
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.streamer.extensions.fromFile
@@ -62,7 +61,7 @@ class Streamer(
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
     private val contentProtections: List<ContentProtection> = emptyList(),
-    private val openArchive: suspend (String) -> Archive? = (JavaZip)::open,
+    private val openArchive: suspend (String) -> Archive? = (Archive)::open,
     //private val openPdf: suspend (ByteArray) -> PdfDocument? = { PdfiumDocument.fromBytes(it, context.applicationContext) },
     private val onCreateManifest: (File, Manifest) -> Manifest = { _, manifest -> manifest },
     private val onCreateFetcher: (File, Manifest, Fetcher) -> Fetcher = { _, _, fetcher -> fetcher },
@@ -135,6 +134,7 @@ class Streamer(
                     protectedFile?.fetcher ?: baseFetcher,
                     fallbackTitle,
                     warnings) }
+                ?.recover { Publication.OpeningError.ParsingFailed(it) }
                 ?.getOrThrow()
                 ?: throw Publication.OpeningError.UnsupportedFormat
 
