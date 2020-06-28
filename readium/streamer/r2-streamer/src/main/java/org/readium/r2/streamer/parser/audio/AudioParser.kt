@@ -19,7 +19,6 @@ import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
@@ -35,44 +34,15 @@ import java.lang.Exception
  */
 class AudioParser :  PublicationParser {
 
-    private val audioExtensions = listOf(
-        "aac", "aiff", "alac", "flac", "m4a", "m4b", "mp3",
-        "ogg", "oga", "mogg", "opus", "wav", "webm"
-    )
-
     override suspend fun parse(
         file: File,
         fetcher: Fetcher,
         fallbackTitle: String,
         warnings: WarningLogger?
-    ): Try<PublicationParser.PublicationBuilder, Throwable>? {
+    ): PublicationParser.PublicationBuilder? {
 
         if (!accepts(file, fetcher))
             return null
-
-        return try {
-            Try.success(createBuilder(file, fetcher, fallbackTitle))
-        } catch (e: Exception) {
-            Try.failure(e)
-        }
-    }
-
-    private suspend fun accepts(file: File, fetcher: Fetcher): Boolean {
-        if (file.format() == Format.ZAB)
-            return true
-
-        val allowedExtensions = audioExtensions +
-            listOf("asx", "bio", "m3u", "m3u8", "pla", "pls", "smil", "txt", "vlc", "wpl", "xspf", "zpl")
-
-        if (fetcher.links().filterNot { File(it.href).isHiddenOrThumbs }
-                .all { File(it.href).lowercasedExtension in allowedExtensions })
-            return true
-
-        return false
-    }
-
-    private suspend fun createBuilder(file: File, fetcher: Fetcher, fallbackTitle: String):
-            PublicationParser.PublicationBuilder {
 
         val readingOrder = fetcher.links()
             .filter { link -> with(File(link.href)) { lowercasedExtension in audioExtensions && !isHiddenOrThumbs } }
@@ -101,4 +71,23 @@ class AudioParser :  PublicationParser {
             )
         )
     }
+
+    private suspend fun accepts(file: File, fetcher: Fetcher): Boolean {
+        if (file.format() == Format.ZAB)
+            return true
+
+        val allowedExtensions = audioExtensions +
+                listOf("asx", "bio", "m3u", "m3u8", "pla", "pls", "smil", "txt", "vlc", "wpl", "xspf", "zpl")
+
+        if (fetcher.links().filterNot { File(it.href).isHiddenOrThumbs }
+                .all { File(it.href).lowercasedExtension in allowedExtensions })
+            return true
+
+        return false
+    }
+
+    private val audioExtensions = listOf(
+        "aac", "aiff", "alac", "flac", "m4a", "m4b", "mp3",
+        "ogg", "oga", "mogg", "opus", "wav", "webm"
+    )
 }

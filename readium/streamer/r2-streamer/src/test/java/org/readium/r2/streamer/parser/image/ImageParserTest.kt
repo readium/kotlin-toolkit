@@ -52,7 +52,7 @@ class ImageParserTest {
 
     @Test
     fun `readingOrder is sorted alphabetically`() {
-        val builder = parser.parseBlocking(cbzFile, cbzFetcher)?.getOrNull()
+        val builder = parser.parseBlocking(cbzFile, cbzFetcher)
         assertNotNull(builder)
         val readingOrder = builder.manifest.readingOrder
             .map { it.href.removePrefix("/Cory Doctorow's Futuristic Tales of the Here and Now") }
@@ -62,7 +62,7 @@ class ImageParserTest {
 
     @Test
     fun `the cover is the first item in the readingOrder`() {
-        val builder = parser.parseBlocking(cbzFile, cbzFetcher)?.getOrNull()
+        val builder = parser.parseBlocking(cbzFile, cbzFetcher)
         assertNotNull(builder)
         with(builder.manifest.readingOrder) {
             assertEquals(
@@ -73,14 +73,14 @@ class ImageParserTest {
 
     @Test
     fun `title is based on archive's root directory when any`() {
-        val builder = parser.parseBlocking(cbzFile, cbzFetcher)?.getOrNull()
+        val builder = parser.parseBlocking(cbzFile, cbzFetcher)
         assertNotNull(builder)
         assertEquals("Cory Doctorow's Futuristic Tales of the Here and Now", builder.manifest.metadata.title)
     }
 
     @Test
     fun `title is based on filename when publication is a file`() {
-        val builder = parser.parseBlocking(jpgFile, jpgFetcher)?.getOrNull()
+        val builder = parser.parseBlocking(jpgFile, jpgFetcher)
         assertNotNull(builder)
         assertEquals("futuristic tales", builder.manifest.metadata.title)
     }

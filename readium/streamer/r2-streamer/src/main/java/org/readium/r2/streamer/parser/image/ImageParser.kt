@@ -19,7 +19,6 @@ import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
@@ -39,34 +38,10 @@ class ImageParser : PublicationParser {
         fetcher: Fetcher,
         fallbackTitle: String,
         warnings: WarningLogger?
-    ): Try<PublicationParser.PublicationBuilder, Throwable>? {
+    ): PublicationParser.PublicationBuilder? {
 
         if (!accepts(file, fetcher))
             return null
-
-        return try {
-            Try.success(createBuilder(file, fetcher, fallbackTitle))
-        } catch (e: Exception) {
-            Try.failure(e)
-        }
-    }
-
-    private suspend fun accepts(file: File, fetcher: Fetcher): Boolean {
-        if (file.format() == Format.CBZ)
-            return true
-
-        val allowedExtensions = listOf("acbf", "txt", "xml")
-
-        if (fetcher.links()
-                .filterNot { File(it.href).isHiddenOrThumbs }
-                .all { it.mediaType?.isBitmap == true || File(it.href).lowercasedExtension in allowedExtensions })
-            return true
-
-        return false
-    }
-
-    private suspend fun createBuilder(file: File, fetcher: Fetcher, fallbackTitle: String):
-            PublicationParser.PublicationBuilder {
 
         val readingOrder = fetcher.links()
             .filter { !File(it.href).isHiddenOrThumbs && it.mediaType?.isBitmap == true }
@@ -99,4 +74,17 @@ class ImageParser : PublicationParser {
         )
     }
 
+    private suspend fun accepts(file: File, fetcher: Fetcher): Boolean {
+        if (file.format() == Format.CBZ)
+            return true
+
+        val allowedExtensions = listOf("acbf", "txt", "xml")
+
+        if (fetcher.links()
+                .filterNot { File(it.href).isHiddenOrThumbs }
+                .all { it.mediaType?.isBitmap == true || File(it.href).lowercasedExtension in allowedExtensions })
+            return true
+
+        return false
+    }
 }

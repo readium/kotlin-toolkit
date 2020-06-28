@@ -56,7 +56,6 @@ class CBZParser : PublicationParser {
             ?: throw ContainerError.missingFile(fileAtPath)
 
         val publication = imageParser.parse(file, fetcher, fallbackTitle)
-            ?.getOrNull()
             ?.build()
             ?.apply { type = Publication.TYPE.CBZ }
             ?: return null

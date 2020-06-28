@@ -28,6 +28,7 @@ import org.readium.r2.streamer.parser.epub.setLayoutStyle
 import org.readium.r2.streamer.parser.image.ImageParser
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 import java.io.FileNotFoundException
+import java.lang.Exception
 
 internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningError>
 
@@ -139,16 +140,17 @@ class Streamer(
 
         val builder = parsers
             .lazyMapFirstNotNullOrNull {
-                it.parse(
-                    protectedFile?.file ?: file,
-                    protectedFile?.fetcher ?: baseFetcher,
-                    fallbackTitle,
-                    warnings
-                )
-            }
-            ?.recover { Publication.OpeningError.ParsingFailed(it) }
-            ?.getOrThrow()
-            ?: throw Publication.OpeningError.UnsupportedFormat
+                try {
+                    it.parse(
+                        protectedFile?.file ?: file,
+                        protectedFile?.fetcher ?: baseFetcher,
+                        fallbackTitle,
+                        warnings
+                    )
+                } catch (e: Exception) {
+                    throw Publication.OpeningError.ParsingFailed(e)
+                }
+            } ?: throw Publication.OpeningError.UnsupportedFormat
 
         builder.apply {
             manifest = onCreateManifest(file, manifest)

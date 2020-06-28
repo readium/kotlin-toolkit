@@ -22,7 +22,6 @@ import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
@@ -90,59 +89,10 @@ class EpubParser :  PublicationParser, org.readium.r2.streamer.parser.Publicatio
         fetcher: Fetcher,
         fallbackTitle: String,
         warnings: WarningLogger?
-    ): Try<PublicationParser.PublicationBuilder, Throwable>? {
+    ): PublicationParser.PublicationBuilder? {
 
         if (file.format() != Format.EPUB)
             return null
-
-        return try {
-            Try.success(createBuilder(fetcher, fallbackTitle, warnings))
-        } catch (e: Exception) {
-            Try.failure(e)
-        }
-    }
-
-    override fun parse(
-        fileAtPath: String,
-        fallbackTitle: String
-    ): PubBox? = runBlocking {
-
-        val file = File(fileAtPath)
-
-        var fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
-            ?: throw ContainerError.missingFile(fileAtPath)
-
-        val drm = if (fetcher.isProtectedWithLcp()) DRM(DRM.Brand.lcp) else null
-        if (drm?.brand == DRM.Brand.lcp) {
-            fetcher = TransformingFetcher(fetcher, LcpDecryptor(drm)::transform)
-        }
-
-        val publication = try {
-            createBuilder(fetcher, fallbackTitle).build()
-        } catch (e: Exception) {
-            return@runBlocking null
-        }.apply {
-                type = Publication.TYPE.EPUB
-
-                // This might need to be moved as it's not really about parsing the EPUB but it
-                // sets values needed (in UserSettings & ContentFilter)
-                setLayoutStyle()
-        }
-
-        val container = PublicationContainer(
-            publication = publication,
-            path = file.file.canonicalPath,
-            mediaType = MediaType.EPUB,
-            drm = drm
-        ).apply {
-            rootFile.rootFilePath = getRootFilePath(fetcher)
-        }
-
-        PubBox(publication, container)
-    }
-
-    private suspend fun createBuilder(fetcher: Fetcher, fallbackTitle: String, warnings: WarningLogger? = null)
-            : PublicationParser.PublicationBuilder {
 
         val opfPath = getRootFilePath(fetcher)
         val opfXmlDocument = fetcher.get(opfPath).readAsXml().getOrThrow()
@@ -170,6 +120,48 @@ class EpubParser :  PublicationParser, org.readium.r2.streamer.parser.Publicatio
                 positions = (EpubPositionsService)::create
             )
         )
+    }
+
+    override fun parse(
+        fileAtPath: String,
+        fallbackTitle: String
+    ): PubBox? = runBlocking {
+
+        val file = File(fileAtPath)
+
+        var fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
+            ?: throw ContainerError.missingFile(fileAtPath)
+
+        val drm = if (fetcher.isProtectedWithLcp()) DRM(DRM.Brand.lcp) else null
+        if (drm?.brand == DRM.Brand.lcp) {
+            fetcher = TransformingFetcher(fetcher, LcpDecryptor(drm)::transform)
+        }
+
+        val builder = try {
+            parse(file, fetcher, fallbackTitle)
+        } catch (e: Exception) {
+            return@runBlocking null
+        } ?: return@runBlocking null
+
+        val publication = builder.build()
+            .apply {
+                type = Publication.TYPE.EPUB
+
+                // This might need to be moved as it's not really about parsing the EPUB but it
+                // sets values needed (in UserSettings & ContentFilter)
+                setLayoutStyle()
+            }
+
+        val container = PublicationContainer(
+            publication = publication,
+            path = file.file.canonicalPath,
+            mediaType = MediaType.EPUB,
+            drm = drm
+        ).apply {
+            rootFile.rootFilePath = getRootFilePath(fetcher)
+        }
+
+        PubBox(publication, container)
     }
 
     private suspend fun getRootFilePath(fetcher: Fetcher): String =
