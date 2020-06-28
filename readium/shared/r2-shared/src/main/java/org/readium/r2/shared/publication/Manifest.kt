@@ -16,8 +16,10 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.extensions.removeLastComponent
+import org.readium.r2.shared.extensions.toUrlOrNull
+import org.readium.r2.shared.normalize
 import org.readium.r2.shared.toJSON
-import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
@@ -72,8 +74,10 @@ data class Manifest(
 
     companion object {
 
-        fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Manifest? =
-            fromJSON(json, normalizeHref, null)
+        fun fromJSON(
+            json: JSONObject?,
+            ignoreSelfLink: Boolean = false
+        ): Manifest? = fromJSON(json,  ignoreSelfLink, null)
 
         /**
          * Parses a [Publication] from its RWPM JSON representation.
@@ -84,10 +88,27 @@ data class Manifest(
          */
         internal fun fromJSON(
             json: JSONObject?,
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
+            ignoreSelfLink: Boolean,
             warnings: WarningLogger?
         ): Manifest? {
             json ?: return null
+
+            val selfHref =
+                if (ignoreSelfLink)
+                    null
+                else
+                    Link.fromJSONArray(json.get("links") as? JSONArray, warnings = warnings)
+                        .firstWithRel("self")
+                        ?.href
+                        ?.toUrlOrNull()
+                        ?.removeLastComponent()
+                        ?.toString()
+
+            val normalizeHref =
+                if (selfHref != null)
+                    { href: String -> normalize(selfHref.toString(), href) }
+                else
+                    { href: String -> normalize("/", href) }
 
             val context = json.optStringsFromArrayOrSingle("@context", remove = true)
 
