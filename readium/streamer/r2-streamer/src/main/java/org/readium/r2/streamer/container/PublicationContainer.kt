@@ -18,6 +18,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.fetcher.ResourceTry
 import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import java.io.InputStream
 
@@ -26,7 +27,7 @@ import java.io.InputStream
  * [Container].
  */
 internal class PublicationContainer(
-    private val fetcher: Fetcher,
+    private val publication: Publication,
     path: String,
     mediaType: MediaType,
     override var drm: DRM? = null
@@ -35,18 +36,20 @@ internal class PublicationContainer(
     override var rootFile = RootFile(rootPath = path, mimetype = mediaType.toString())
 
     override fun data(relativePath: String): ByteArray = runBlocking {
-        fetcher.get(relativePath).read().getOrThrow()
+        publication.get(relativePath).read().getOrThrow()
     }
 
     override fun dataLength(relativePath: String): Long = runBlocking {
         tryOr(0) {
-            fetcher.get(relativePath).length().getOrThrow()
+            publication.get(relativePath).length().getOrThrow()
         }
     }
 
     override fun dataInputStream(relativePath: String): InputStream = runBlocking {
-        fetcher.get(relativePath).stream()
+        publication.get(relativePath).stream()
     }
+
+    private fun Publication.get(href: String) = get(Link(href))
 }
 
 

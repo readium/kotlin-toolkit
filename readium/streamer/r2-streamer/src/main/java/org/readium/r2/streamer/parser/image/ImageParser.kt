@@ -25,8 +25,6 @@ import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
-import org.readium.r2.streamer.extensions.hrefCommonFirstComponent
-import org.readium.r2.streamer.extensions.toTitle
 import java.lang.Exception
 
 /**
@@ -47,7 +45,7 @@ class ImageParser : PublicationParser {
             return null
 
         return try {
-            Try.success(makeBuilder(file, fetcher, fallbackTitle))
+            Try.success(createBuilder(file, fetcher, fallbackTitle))
         } catch (e: Exception) {
             Try.failure(e)
         }
@@ -67,7 +65,7 @@ class ImageParser : PublicationParser {
         return false
     }
 
-    private suspend fun makeBuilder(file: File, fetcher: Fetcher, fallbackTitle: String):
+    private suspend fun createBuilder(file: File, fetcher: Fetcher, fallbackTitle: String):
             PublicationParser.PublicationBuilder {
 
         val readingOrder = fetcher.links()

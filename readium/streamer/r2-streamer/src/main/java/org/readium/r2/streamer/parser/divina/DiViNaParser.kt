@@ -57,7 +57,7 @@ class DiViNaParser : PublicationParser {
         }
 
         val container = PublicationContainer(
-            fetcher = fetcher,
+            publication = publication,
             path = fileAtPath,
             mediaType = MediaType.DIVINA
         )

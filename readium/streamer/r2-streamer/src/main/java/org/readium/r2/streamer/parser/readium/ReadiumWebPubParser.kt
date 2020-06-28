@@ -61,7 +61,7 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser, org
             return null
 
         return try {
-            Try.success(makeBuilder(file, fetcher))
+            Try.success(createBuilder(file, fetcher))
         } catch (e: Exception) {
             Try.failure(e)
         }
@@ -84,38 +84,27 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser, org
             baseFetcher = TransformingFetcher(baseFetcher, LcpDecryptor(drm)::transform)
         }
 
-        val builder = try {
-            makeBuilder(file, baseFetcher)
+        val publication = try {
+            createBuilder(file, baseFetcher).build()
         } catch (e: Exception) {
             return@runBlocking null
+        }.apply { type = format.toPublicationType() }
+
+        val container = PublicationContainer(
+            publication = publication,
+            path = file.file.canonicalPath,
+            mediaType = format.mediaType,
+            drm = drm
+        ).apply {
+            if (!format.mediaType.isRwpm) {
+                rootFile.rootFilePath = "manifest.json"
+            }
         }
 
-        with(builder) {
-            val publication = Publication(
-                manifest = manifest,
-                fetcher = fetcher,
-                servicesBuilder = servicesBuilder
-            ).apply {
-                type = format.toPublicationType()
-            }
-
-
-            val container = PublicationContainer(
-                fetcher = fetcher,
-                path = file.file.canonicalPath,
-                mediaType = format.mediaType,
-                drm = drm
-            ).apply {
-                if (!format.mediaType.isRwpm) {
-                    rootFile.rootFilePath = "manifest.json"
-                }
-            }
-
-            PubBox(publication, container)
-        }
+        PubBox(publication, container)
     }
 
-    private suspend fun makeBuilder(
+    private suspend fun createBuilder(
         file: File,
         fetcher: Fetcher
     ): PublicationParser.PublicationBuilder {

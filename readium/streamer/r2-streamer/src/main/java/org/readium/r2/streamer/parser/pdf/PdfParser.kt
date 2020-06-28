@@ -48,7 +48,7 @@ class PdfParser(
             return null
 
         return try {
-            Try.success(makeBuilder(file, fetcher, fallbackTitle))
+            Try.success(createBuilder(file, fetcher, fallbackTitle))
         } catch (e: Exception) {
             Try.failure(e)
         }
@@ -58,30 +58,22 @@ class PdfParser(
 
         val file = File(fileAtPath)
         val baseFetcher = FileFetcher(href = "/${file.name}", file = file.file)
-        val builder = try {
-            makeBuilder(file, baseFetcher, fallbackTitle)
+        val publication = try {
+            createBuilder(file, baseFetcher, fallbackTitle).build()
         } catch (e: Exception) {
             return@runBlocking null
         }
 
-        with(builder) {
-            val publication = Publication(
-                manifest = manifest,
-                fetcher = fetcher,
-                servicesBuilder = servicesBuilder
-            )
+        val container = PublicationContainer(
+            publication = publication,
+            path = file.file.canonicalPath,
+            mediaType = MediaType.PDF
+        )
 
-            val container = PublicationContainer(
-                fetcher = fetcher,
-                path = file.file.canonicalPath,
-                mediaType = MediaType.PDF
-            )
-
-            PubBox(publication, container)
-        }
+        PubBox(publication, container)
     }
 
-    private suspend fun makeBuilder(file: File, fetcher: Fetcher, fallbackTitle:  String)
+    private suspend fun createBuilder(file: File, fetcher: Fetcher, fallbackTitle:  String)
             : PublicationParser.PublicationBuilder {
 
         val fileHref = fetcher.links().firstOrNull { it.mediaType == MediaType.PDF }?.href

@@ -55,27 +55,19 @@ class CBZParser : PublicationParser {
         val fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
             ?: throw ContainerError.missingFile(fileAtPath)
 
-        val builder = imageParser.parse(file, fetcher, fallbackTitle)
+        val publication = imageParser.parse(file, fetcher, fallbackTitle)
             ?.getOrNull()
+            ?.build()
+            ?.apply { type = Publication.TYPE.CBZ }
             ?: return null
 
-        with(builder) {
-            val publication = Publication(
-                manifest = manifest,
-                fetcher = fetcher,
-                servicesBuilder = servicesBuilder
-            ).apply {
-                type = Publication.TYPE.CBZ
-            }
+        val container = PublicationContainer(
+            publication = publication,
+            path = file.file.canonicalPath,
+            mediaType = MediaType.CBZ
+        )
 
-            val container = PublicationContainer(
-                fetcher = fetcher,
-                path = file.file.canonicalPath,
-                mediaType = MediaType.CBZ
-            )
-
-            return PubBox(publication, container)
-        }
+        return PubBox(publication, container)
     }
 
 }

@@ -49,16 +49,8 @@ class AudioBookParser : PublicationParser {
         val fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
             ?: throw ContainerError.missingFile(fileAtPath)
 
-        fun normalizeHref(href: String): String =
-            if (URI(href).isAbsolute) {
-                href
-            } else {
-                // FIXME: Why the HREF is absolute on the local file system??
-                "$fileAtPath/$href"
-            }
-
         val manifest = fetcher.readAsJsonOrNull("manifest.json")
-            ?.let { Manifest.fromJSON(it, normalizeHref = ::normalizeHref) }
+            ?.let { Manifest.fromJSON(it, ignoreSelfLink = true) }
             ?: return null
 
         val publication = Publication(
@@ -68,7 +60,7 @@ class AudioBookParser : PublicationParser {
         }
 
         val container = PublicationContainer(
-            fetcher = fetcher,
+            publication =  publication,
             path = fileAtPath,
             mediaType = MediaType.READIUM_AUDIOBOOK
         )

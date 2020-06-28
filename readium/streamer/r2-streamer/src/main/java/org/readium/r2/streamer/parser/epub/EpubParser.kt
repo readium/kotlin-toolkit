@@ -96,7 +96,7 @@ class EpubParser :  PublicationParser, org.readium.r2.streamer.parser.Publicatio
             return null
 
         return try {
-            Try.success(makeBuilder(fetcher, fallbackTitle, warnings))
+            Try.success(createBuilder(fetcher, fallbackTitle, warnings))
         } catch (e: Exception) {
             Try.failure(e)
         }
@@ -117,36 +117,31 @@ class EpubParser :  PublicationParser, org.readium.r2.streamer.parser.Publicatio
             fetcher = TransformingFetcher(fetcher, LcpDecryptor(drm)::transform)
         }
 
-        val builder = try {
-            makeBuilder(fetcher, fallbackTitle)
+        val publication = try {
+            createBuilder(fetcher, fallbackTitle).build()
         } catch (e: Exception) {
             return@runBlocking null
-        }
-
-        with(builder) {
-            val opfPath = getRootFilePath(fetcher)
-            val publication = Publication(manifest, fetcher, servicesBuilder).apply {
+        }.apply {
                 type = Publication.TYPE.EPUB
 
                 // This might need to be moved as it's not really about parsing the EPUB but it
                 // sets values needed (in UserSettings & ContentFilter)
                 setLayoutStyle()
-            }
-
-            val container = PublicationContainer(
-                fetcher = fetcher,
-                path = file.file.canonicalPath,
-                mediaType = MediaType.EPUB,
-                drm = drm
-            ).apply {
-                rootFile.rootFilePath = opfPath
-            }
-
-            PubBox(publication, container)
         }
+
+        val container = PublicationContainer(
+            publication = publication,
+            path = file.file.canonicalPath,
+            mediaType = MediaType.EPUB,
+            drm = drm
+        ).apply {
+            rootFile.rootFilePath = getRootFilePath(fetcher)
+        }
+
+        PubBox(publication, container)
     }
 
-    private suspend fun makeBuilder(fetcher: Fetcher, fallbackTitle: String, warnings: WarningLogger? = null)
+    private suspend fun createBuilder(fetcher: Fetcher, fallbackTitle: String, warnings: WarningLogger? = null)
             : PublicationParser.PublicationBuilder {
 
         val opfPath = getRootFilePath(fetcher)
