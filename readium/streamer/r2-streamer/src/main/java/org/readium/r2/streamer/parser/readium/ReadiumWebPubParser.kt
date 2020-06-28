@@ -17,7 +17,6 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.normalize
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
@@ -121,15 +120,27 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser, org
         fetcher: Fetcher
     ): PublicationParser.PublicationBuilder {
 
-        val manifestHref =
-            if (file.format()?.mediaType?.isRwpm == true)
-                fetcher.links().firstOrNull()?.href ?: error("Empty fetcher.")
-            else
-                "/manifest.json"
+        val manifest =
+            if (file.format()?.mediaType?.isRwpm == true) {
+                val manifestLink = fetcher.links().firstOrNull()
+                    ?: error("Empty fetcher.")
+                val manifestJson = fetcher.get(manifestLink)
+                    .readAsString()
+                    .getOrThrow()
+                Manifest.fromJSON(JSONObject(manifestJson))
 
-        val manifestJson = fetcher.get(manifestHref).readAsString().getOrThrow()
-        val manifest = Manifest.fromJSON(JSONObject(manifestJson))
-            ?: throw Exception("Failed to parse RWPM.")
+            }
+            else {
+                val manifestLink = fetcher.links()
+                    .firstOrNull { it.href == "/manifest.json" }
+                    ?: error("Unable to find a manifest link.")
+                val manifestJson = fetcher.get(manifestLink)
+                    .readAsString()
+                    .getOrThrow()
+                Manifest.fromJSON(JSONObject(manifestJson), ignoreSelfLink = true)
+            }
+                ?: throw Exception("Failed to parse RWPM.")
+
 
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html

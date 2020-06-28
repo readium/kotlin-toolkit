@@ -92,8 +92,6 @@ abstract class AbstractServer(private var port: Int, private val context: Contex
             customResources
         )
 
-        publication.setSelfLink("$baseUrl/manifest.json")
-
         // NanoHTTPD expects percent-decoded routes.
         val basePath =
             try { URLDecoder.decode(baseUrl.path, "UTF-8") }

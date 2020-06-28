@@ -58,7 +58,7 @@ class AudioBookParser : PublicationParser {
             }
 
         val manifest = fetcher.readAsJsonOrNull("manifest.json")
-            ?.let { Manifest.fromJSON(it, ::normalizeHref) }
+            ?.let { Manifest.fromJSON(it, normalizeHref = ::normalizeHref) }
             ?: return null
 
         val publication = Publication(
@@ -70,7 +70,7 @@ class AudioBookParser : PublicationParser {
         val container = PublicationContainer(
             fetcher = fetcher,
             path = fileAtPath,
-            mediaType = MediaType.AUDIOBOOK
+            mediaType = MediaType.READIUM_AUDIOBOOK
         )
 
         return PubBox(publication, container)
