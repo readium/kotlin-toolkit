@@ -361,6 +361,8 @@ class Publication(
 
         object UnsupportedFormat : OpeningError()
 
+        object NotFound : OpeningError()
+
         class ParsingFailed(cause: Throwable) : OpeningError(cause)
 
         /**

@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.File
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Try
 
-typealias OnAskCredentialsCallback = (dialog: Dialog, sender: Any?, callback: (String?) -> Unit) -> Unit
+typealias OnAskCredentials = (dialog: Dialog, sender: Any?, callback: (String?) -> Unit) -> Unit
 
 /**
  * Bridge between a Content Protection technology and the Streamer.
@@ -43,7 +43,7 @@ interface ContentProtection {
         askCredentials: Boolean,
         credentials: String?,
         sender: Any?,
-        onAskCredentials: OnAskCredentialsCallback?
+        onAskCredentials: OnAskCredentials?
     ): Try<ProtectedFile, Publication.OpeningError>?
 
     /**
