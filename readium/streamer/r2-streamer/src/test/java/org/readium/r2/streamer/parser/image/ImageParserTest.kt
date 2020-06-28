@@ -77,11 +77,4 @@ class ImageParserTest {
         assertNotNull(builder)
         assertEquals("Cory Doctorow's Futuristic Tales of the Here and Now", builder.manifest.metadata.title)
     }
-
-    @Test
-    fun `title is based on filename when publication is a file`() {
-        val builder = parser.parseBlocking(jpgFile, jpgFetcher)
-        assertNotNull(builder)
-        assertEquals("futuristic tales", builder.manifest.metadata.title)
-    }
 }
