@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.util.archive
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.coerceToPositiveIncreasing
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.requireLengthFitInt
@@ -17,13 +19,15 @@ import java.lang.Exception
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-class JavaZip(private val archive: ZipFile) : Archive {
+internal class JavaZip(private val archive: ZipFile) : Archive {
 
     companion object {
 
         suspend fun open(path: String): Archive? =
             try {
-                ZipFile(path)
+                withContext(Dispatchers.IO) {
+                    ZipFile(path)
+                }
             } catch (e: Exception) {
                 null
             }?.let { JavaZip(it) }
