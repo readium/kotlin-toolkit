@@ -10,31 +10,32 @@
 package org.readium.r2.streamer
 
 import android.content.Context
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.OnAskCredentialsCallback
+import org.readium.r2.shared.publication.OnAskCredentials
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.streamer.extensions.fromFile
-import org.readium.r2.streamer.extensions.toTitle
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.epub.setLayoutStyle
 import org.readium.r2.streamer.parser.image.ImageParser
-import org.readium.r2.streamer.parser.pdf.PdfParser
-import org.readium.r2.streamer.parser.pdf.PdfiumDocument
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 import java.io.FileNotFoundException
 
 internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningError>
+
+typealias OnCreateManifest = (File, Manifest) -> Manifest
+
+typealias OnCreateFetcher = (File, Manifest, Fetcher) -> Fetcher
+
+typealias OnCreateServices = (File, Manifest, Publication.ServicesBuilder) -> Unit
 
 /**
  *  Opens a Publication using a list of parsers.
@@ -63,10 +64,10 @@ class Streamer(
     private val contentProtections: List<ContentProtection> = emptyList(),
     private val openArchive: suspend (String) -> Archive? = (Archive)::open,
     //private val openPdf: suspend (ByteArray) -> PdfDocument? = { PdfiumDocument.fromBytes(it, context.applicationContext) },
-    private val onCreateManifest: (File, Manifest) -> Manifest = { _, manifest -> manifest },
-    private val onCreateFetcher: (File, Manifest, Fetcher) -> Fetcher = { _, _, fetcher -> fetcher },
-    private val onCreateServices: (File, Manifest, Publication.ServicesBuilder) -> Unit = { _, _, _ -> Unit },
-    private val onAskCredentials: OnAskCredentialsCallback = { _, _, _ -> Unit }
+    private val onCreateManifest: OnCreateManifest = { _, manifest -> manifest },
+    private val onCreateFetcher: OnCreateFetcher = { _, _, fetcher -> fetcher },
+    private val onCreateServices: OnCreateServices = { _, _, _ -> Unit },
+    private val onAskCredentials: OnAskCredentials = { _, _, _ -> Unit }
 ) {
 
     private val defaultParsers: List<PublicationParser> by lazy {
@@ -113,47 +114,58 @@ class Streamer(
         credentials: String? = null,
         sender: Any? = null,
         warnings: WarningLogger? = null
-    ): PublicationTry<Publication> {
+    ): PublicationTry<Publication> = try {
 
         val baseFetcher = try {
             Fetcher.fromFile(file.file, openArchive)
         } catch (e: SecurityException) {
-            return Try.failure(Publication.OpeningError.Forbidden(e))
-        } catch(e: FileNotFoundException) {
-            return Try.failure(Publication.OpeningError.ParsingFailed(e))
+            throw Publication.OpeningError.Forbidden(e)
+        } catch (e: FileNotFoundException) {
+            throw Publication.OpeningError.NotFound
         }
 
-        return try {
-            val protectedFile = contentProtections
-                .lazyMapFirstNotNullOrNull { it.open(file, baseFetcher, askCredentials, credentials, sender, onAskCredentials) }
-                ?.getOrThrow()
+        val protectedFile = contentProtections
+            .lazyMapFirstNotNullOrNull {
+                it.open(
+                    file,
+                    baseFetcher,
+                    askCredentials,
+                    credentials,
+                    sender,
+                    onAskCredentials
+                )
+            }
+            ?.getOrThrow()
 
-            val builder = parsers
-                .lazyMapFirstNotNullOrNull { it.parse(
+        val builder = parsers
+            .lazyMapFirstNotNullOrNull {
+                it.parse(
                     protectedFile?.file ?: file,
                     protectedFile?.fetcher ?: baseFetcher,
                     fallbackTitle,
-                    warnings) }
-                ?.recover { Publication.OpeningError.ParsingFailed(it) }
-                ?.getOrThrow()
-                ?: throw Publication.OpeningError.UnsupportedFormat
+                    warnings
+                )
+            }
+            ?.recover { Publication.OpeningError.ParsingFailed(it) }
+            ?.getOrThrow()
+            ?: throw Publication.OpeningError.UnsupportedFormat
 
-            val manifest = onCreateManifest(file, builder.manifest)
-            val fetcher = onCreateFetcher(file, manifest, builder.fetcher)
-            val servicesBuilder = builder.servicesBuilder.apply {
+        builder.apply {
+            manifest = onCreateManifest(file, manifest)
+            fetcher = onCreateFetcher(file, manifest, fetcher)
+            servicesBuilder.apply {
                 contentProtectionServiceFactory = protectedFile?.protectionServiceFactory
             }
             onCreateServices(file, manifest, servicesBuilder)
-
-            // FIXME : hack before refactoring Publication.{type, cssStyle, userSettingsUIPresetPublication}
-            val publication = Publication(manifest, fetcher, servicesBuilder = builder.servicesBuilder).apply {
-                addLegacyProperties(file.format())
-            }
-            Try.success(publication)
-
-        } catch (e: Publication.OpeningError) {
-            Try.failure(e)
         }
+
+        val publication = builder.build()
+            .apply { addLegacyProperties(file.format()) }
+
+        Try.success(publication)
+
+    } catch (e: Publication.OpeningError) {
+        Try.failure(e)
     }
 
     @Suppress("UNCHECKED_CAST")

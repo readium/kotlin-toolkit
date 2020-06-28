@@ -49,8 +49,15 @@ interface PublicationParser {
      * so a builder is useful to pass the parts around.
      */
     data class PublicationBuilder(
-        val manifest: Manifest,
-        val fetcher: Fetcher,
-        val servicesBuilder: Publication.ServicesBuilder
-    )
+        var manifest: Manifest,
+        var fetcher: Fetcher,
+        var servicesBuilder: Publication.ServicesBuilder
+    ) {
+
+        fun build(): Publication = Publication(
+            manifest = manifest,
+            fetcher = fetcher,
+            servicesBuilder = servicesBuilder
+        )
+    }
 }
