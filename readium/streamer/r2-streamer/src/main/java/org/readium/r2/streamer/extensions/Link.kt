@@ -15,7 +15,8 @@ import org.readium.r2.shared.publication.Link
 
 /** Returns a [File] to the directory containing all links, if there is such a directory. */
 internal fun List<Link>.hrefCommonFirstComponent(): File? =
-    map { with(File(it.href)) { firstComponent } }
-        .distinctBy{ it.file }
+    map { it.href.removePrefix("/").substringBefore("/")  }
+        .distinct()
         .takeIf { it.size == 1 }
         ?.firstOrNull()
+        ?.let { File(it) }

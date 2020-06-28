@@ -71,3 +71,13 @@ internal suspend fun Fetcher.Companion.fromFile(
         else ->
             throw FileNotFoundException(file.path)
     }
+
+internal suspend fun Fetcher.guessTitle(): String? {
+    val firstLink = links().firstOrNull() ?: return null
+    val commonFirstComponent = links().hrefCommonFirstComponent() ?: return null
+
+    if (commonFirstComponent.name == firstLink.href.removePrefix("/"))
+       return null
+
+    return commonFirstComponent.toTitle()
+}

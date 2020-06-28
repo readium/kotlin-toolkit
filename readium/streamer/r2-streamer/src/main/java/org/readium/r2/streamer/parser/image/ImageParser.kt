@@ -22,6 +22,7 @@ import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.streamer.PublicationParser
+import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
 import org.readium.r2.streamer.extensions.hrefCommonFirstComponent
@@ -77,7 +78,7 @@ class ImageParser : PublicationParser {
         if (readingOrder.isEmpty())
             throw Exception("No bitmap found in the publication.")
 
-        val title = fetcher.links().hrefCommonFirstComponent()?.toTitle()
+        val title = fetcher.guessTitle()
             ?: fallbackTitle
 
         // First valid resource is the cover.

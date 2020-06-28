@@ -9,10 +9,7 @@
 
 package org.readium.r2.streamer.extensions
 
-import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -35,6 +32,15 @@ class LinkTest {
         )
     }
 
+
+    @Test
+    fun `hrefCommonFirstComponent is correct when there is only one file in the root`() {
+        assertEquals(
+            "im1.jpg",
+            listOf(Link("/im1.jpg")).hrefCommonFirstComponent()?.name
+        )
+    }
+
     @Test
     fun `hrefCommonFirstComponent is correct when all files are in the same directory`() {
         assertEquals(
@@ -46,6 +52,5 @@ class LinkTest {
             ).hrefCommonFirstComponent()?.name
         )
     }
-
 
 }
