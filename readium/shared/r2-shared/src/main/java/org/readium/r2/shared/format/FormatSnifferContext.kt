@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import java.io.InputStream
 import java.nio.charset.Charset
@@ -152,7 +153,8 @@ class FormatSnifferContext internal constructor(
 
     /** Publication parsed from the content. */
     suspend fun contentAsRwpm(): Publication? =
-        Publication.fromJSON(contentAsJson())
+            Manifest.fromJSON(contentAsJson())
+                ?.let { Publication(it) }
 
     /**
      * Raw bytes stream of the content.
