@@ -76,8 +76,8 @@ data class Manifest(
 
         fun fromJSON(
             json: JSONObject?,
-            ignoreSelfLink: Boolean = false
-        ): Manifest? = fromJSON(json,  ignoreSelfLink, null)
+            packaged: Boolean = false
+        ): Manifest? = fromJSON(json,  packaged, null)
 
         /**
          * Parses a [Publication] from its RWPM JSON representation.
@@ -88,27 +88,24 @@ data class Manifest(
          */
         internal fun fromJSON(
             json: JSONObject?,
-            ignoreSelfLink: Boolean,
+            packaged: Boolean,
             warnings: WarningLogger?
         ): Manifest? {
             json ?: return null
 
-            val selfHref =
-                if (ignoreSelfLink)
-                    null
+            val baseUrl =
+                if (packaged)
+                    "/"
                 else
-                    Link.fromJSONArray(json.get("links") as? JSONArray, warnings = warnings)
+                   Link.fromJSONArray(json.optJSONArray("links"), warnings = warnings)
                         .firstWithRel("self")
                         ?.href
                         ?.toUrlOrNull()
                         ?.removeLastComponent()
                         ?.toString()
+                        ?: "/"
 
-            val normalizeHref =
-                if (selfHref != null)
-                    { href: String -> normalize(selfHref.toString(), href) }
-                else
-                    { href: String -> normalize("/", href) }
+            val normalizeHref = { href: String -> normalize(baseUrl, href) }
 
             val context = json.optStringsFromArrayOrSingle("@context", remove = true)
 
@@ -119,6 +116,7 @@ data class Manifest(
             }
 
             val links = Link.fromJSONArray(json.remove("links") as? JSONArray, normalizeHref, warnings)
+                .map { if (!packaged || "self" !in it.rels) it else it.copy(rels = it.rels - "self" + "alternate") }
 
             // [readingOrder] used to be [spine], so we parse [spine] as a fallback.
             val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JSONArray
