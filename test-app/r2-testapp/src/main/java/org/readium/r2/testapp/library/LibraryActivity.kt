@@ -13,7 +13,6 @@ package org.readium.r2.testapp.library
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Rect
 import android.net.Uri
@@ -40,6 +39,7 @@ import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.readium.r2.shared.Injectable
+import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.extensions.tryOrNull
@@ -64,6 +64,7 @@ import org.readium.r2.testapp.opds.OPDSListActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
 import org.readium.r2.testapp.utils.ContentResolverUtil
+import org.readium.r2.testapp.utils.NavigatorContract
 import org.readium.r2.testapp.utils.extensions.authorName
 import org.readium.r2.testapp.utils.extensions.blockingProgressDialog
 import org.readium.r2.testapp.utils.extensions.download
@@ -111,6 +112,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
     private lateinit var catalogView: androidx.recyclerview.widget.RecyclerView
     private lateinit var alertDialog: AlertDialog
     private lateinit var documentPickerLauncher: ActivityResultLauncher<String>
+    private lateinit var navigatorLauncher: ActivityResultLauncher<NavigatorContract.PublicationData>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -147,6 +149,16 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
 
         documentPickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let { importPublicationFromUri(it) }
+        }
+
+        navigatorLauncher = registerForActivityResult(NavigatorContract()) { pubData: NavigatorContract.PublicationData? ->
+            if (pubData == null)
+                return@registerForActivityResult
+
+            tryOrNull { pubData.publication.close() }
+            Timber.d("Publication closed")
+            if (pubData.deleteOnResult)
+                tryOrNull { pubData.file.file.delete() }
         }
 
         intent.data?.let { importPublicationFromUri(it) }
@@ -567,7 +579,8 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         launch {
             val book = books[position]
 
-            val file = tryOrNull { URL(book.href).copyToTempFile() } // remote URL
+            val remoteUrl = tryOrNull { URL(book.href).copyToTempFile() }
+            val file =  remoteUrl // remote URL
                 ?: R2File(book.href, format = Format.of(fileExtension = book.ext.removePrefix("."))) // local file
 
             streamer.open(file, askCredentials = true)
@@ -578,7 +591,9 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 .onSuccess {
                     prepareToServe(it, file)
                     progress.dismiss()
-                    startActivity(file, book, it)
+                    navigatorLauncher.launch(
+                        NavigatorContract.PublicationData(file, it, deleteOnResult = remoteUrl != null )
+                    )
                 }
         }
     }
@@ -588,26 +603,6 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         preferences.edit().putString("$key-publicationPort", localPort.toString()).apply()
         val userProperties = applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
         server.addEpub(publication, null, "/${file.name}", userProperties)
-    }
-
-    private fun startActivity(file: R2File, book: Book, publication: Publication) {
-        val intent = Intent(this, when (publication.type) {
-            Publication.TYPE.AUDIO -> AudiobookActivity::class.java
-            Publication.TYPE.CBZ -> ComicActivity::class.java
-            Publication.TYPE.DiViNa -> DiViNaActivity::class.java
-            else -> EpubActivity::class.java
-        })
-
-        intent.apply {
-            putPublication(publication)
-            putExtra("publicationPath", file.path)
-            putExtra("publicationFileName", book.fileName)
-            putExtra("bookId", book.id)
-            // This may raise a TransactionTooLargeException.
-            // putExtra("cover", book.cover)
-        }
-
-        startActivity(intent)
     }
 
     class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
