@@ -32,19 +32,19 @@ fun Intent.putPublicationFrom(activity: Activity) {
     putExtra(extraKey, activity.intent.getStringExtra(extraKey))
 }
 
-fun Intent.getPublication(activity: Activity): Publication {
+fun Intent.getPublication(activity: Activity?): Publication {
     if (hasExtra("publication")) {
         if (BuildConfig.DEBUG) {
             throw deprecationException
         } else {
             Timber.e(deprecationException)
         }
-        activity.finish()
+        activity?.finish()
     }
 
     val publication = getStringExtra(extraKey)?.let { PublicationRepository.get(it) }
     if (publication == null) {
-        activity.finish()
+        activity?.finish()
         // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
         val metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
         return Publication(Manifest(metadata = metadata))
@@ -65,8 +65,8 @@ fun Intent.getPublicationOrNull(activity: Activity): Publication? {
     return getStringExtra(extraKey)?.let { PublicationRepository.get(it) }
 }
 
-fun Intent.destroyPublication(activity: Activity) {
-    if (activity.isFinishing) {
+fun Intent.destroyPublication(activity: Activity?) {
+    if (activity == null || activity.isFinishing) {
         getStringExtra(extraKey)?.let {
             PublicationRepository.remove(it)
         }
