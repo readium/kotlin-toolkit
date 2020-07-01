@@ -25,6 +25,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.mcxiaoke.koi.ext.onClick
@@ -108,6 +110,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
 
     private lateinit var catalogView: androidx.recyclerview.widget.RecyclerView
     private lateinit var alertDialog: AlertDialog
+    private lateinit var documentPickerLauncher: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,7 +145,11 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
 
         booksAdapter = BooksAdapter(this, books, this)
 
-        importPublicationFromIntent(intent)
+        documentPickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { importPublicationFromUri(it) }
+        }
+
+        intent.data?.let { importPublicationFromUri(it) }
 
         coordinatorLayout {
             lparams {
@@ -182,7 +189,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                                     text = context.getString(R.string.select_from_your_device)
                                     onClick {
                                         alertDialog.dismiss()
-                                        showDocumentPicker()
+                                        documentPickerLauncher.launch("*/*")
                                     }
                                 }
                                 button {
@@ -201,7 +208,6 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 margin = dip(16)
             }
         }
-
     }
 
     override fun onStart() {
@@ -356,40 +362,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         }.show()
     }
 
-    private fun showDocumentPicker() {
-        // ACTION_GET_DOCUMENT allows to import a system file by creating a copy of it
-        // with access to every app that manages files
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-
-        // Filter to only show results that can be "opened", such as a
-        // file (as opposed to a list of contacts or timezones)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-
-        // Filter to show only epubs, using the image MIME data type.
-        // To search for all documents available via installed storage providers,
-        // it would be "*/*".
-        intent.type = "*/*"
-//        val mimeTypes = arrayOf(
-//                "application/epub+zip",
-//                "application/x-cbz"
-//        )
-//        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
-
-        startActivityForResult(intent, 1)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        super.onActivityResult(requestCode, resultCode, intent)
-        require(requestCode == 1)
-
-        // This method is called when the user has chosen a publication from the document picker.
-        // The URI to the publication is available as `intent.data`.
-
-        intent?.let { importPublicationFromIntent(it) }
-    }
-
-    private fun importPublicationFromIntent(intent: Intent) {
-        val uri = intent.data ?: return
+    private fun importPublicationFromUri(uri: Uri) {
 
         launch {
             val progress = blockingProgressDialog(getString(R.string.progress_wait_while_downloading_book))
