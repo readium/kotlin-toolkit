@@ -358,6 +358,11 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         }
     }
 
+    override fun finish() {
+        setResult(Activity.RESULT_OK, intent)
+        super.finish()
+    }
+
     override fun onResume() {
         super.onResume()
         mediaPlayer?.resume()
@@ -376,7 +381,6 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer?.stop()
-        intent.destroyPublication(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

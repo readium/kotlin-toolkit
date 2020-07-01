@@ -165,10 +165,9 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        intent.destroyPublication(this)
+    override fun finish() {
+        setResult(Activity.RESULT_OK, intent)
+        super.finish()
     }
 
     override fun onStart() {
