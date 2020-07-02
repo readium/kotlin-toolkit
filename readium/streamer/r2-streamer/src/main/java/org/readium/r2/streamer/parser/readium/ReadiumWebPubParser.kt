@@ -44,20 +44,7 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser, org
         warnings: WarningLogger?
     ): PublicationParser.PublicationBuilder? {
 
-        val supportedFormats = with(Format) {
-            listOf(
-                READIUM_AUDIOBOOK,
-                READIUM_AUDIOBOOK_MANIFEST,
-                LCP_PROTECTED_AUDIOBOOK,
-                READIUM_WEBPUB,
-                READIUM_WEBPUB_MANIFEST,
-                DIVINA,
-                DIVINA_MANIFEST,
-                LCP_PROTECTED_PDF
-            )
-        }
-
-        if (file.format() !in supportedFormats)
+        if (file.format()?.mediaType?.isReadiumWebPubProfile in listOf(false, null))
             return null
 
         val manifest =
