@@ -387,24 +387,26 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 2 && resultCode == Activity.RESULT_OK) {
             if (data != null) {
-                val locator = data.getParcelableExtra("locator") as Locator
+                val locator = data.getParcelableExtra("locator") as? Locator
 
-                // href is the link to the page in the toc
-                var href = locator.href
+                locator?.let {
+                    // href is the link to the page in the toc
+                    var href = locator.href
 
-                if (href.indexOf("#") > 0) {
-                    href = href.substring(0, href.indexOf("#"))
-                }
-
-                var index = 0
-                for (resource in publication.readingOrder) {
-                    if (resource.href.endsWith(href)) {
-                        currentResource = index
-                        break
+                    if (href.indexOf("#") > 0) {
+                        href = href.substring(0, href.indexOf("#"))
                     }
-                    index++
+
+                    var index = 0
+                    for (resource in publication.readingOrder) {
+                        if (resource.href.endsWith(href)) {
+                            currentResource = index
+                            break
+                        }
+                        index++
+                    }
+                    seekLocation = locator.locations
                 }
-                seekLocation = locator.locations
 
                 isSeekNeeded = true
 

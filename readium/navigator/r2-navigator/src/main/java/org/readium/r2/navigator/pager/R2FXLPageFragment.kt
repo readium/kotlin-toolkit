@@ -134,7 +134,7 @@ class R2FXLPageFragment : Fragment() {
             true
         }
 
-        webView.loadUrl(resourceUrl)
+        resourceUrl?.let { webView.loadUrl(it) }
     }
 
     companion object {
