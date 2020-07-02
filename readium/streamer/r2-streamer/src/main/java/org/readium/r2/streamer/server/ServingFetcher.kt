@@ -39,8 +39,10 @@ internal class ServingFetcher(
     }
 
     override fun get(href: String): Resource {
-        val link = publication.linkWithHref(href)!!
-            .copy(href = href) // query parameters must be kept
+        val link = publication.linkWithHref(href)
+            ?.copy(href = href) // query parameters must be kept
+            ?: Link(href = href)
+
         return get(link)
     }
 
