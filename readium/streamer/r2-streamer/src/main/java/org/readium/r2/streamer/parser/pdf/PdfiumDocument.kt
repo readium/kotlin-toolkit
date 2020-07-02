@@ -14,6 +14,7 @@ import android.graphics.Bitmap
 import com.shockwave.pdfium.PdfiumCore
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.md5
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.util.pdf.PdfDocument
 import timber.log.Timber
 import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
@@ -46,6 +47,11 @@ internal class PdfiumDocument private constructor(
     }
 
     companion object {
+
+        internal suspend  fun open(resource: Resource, context: Context) =
+            resource.read()
+                .getOrNull()
+                ?.let { fromBytes(it, context) }
 
         /**
          * Creates a [PdfiumDocument] from raw bytes.

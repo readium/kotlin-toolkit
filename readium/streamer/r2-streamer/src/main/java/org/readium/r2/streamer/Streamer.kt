@@ -10,7 +10,9 @@
 package org.readium.r2.streamer
 
 import android.content.Context
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
@@ -21,11 +23,13 @@ import org.readium.r2.shared.publication.services.contentProtectionServiceFactor
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.streamer.extensions.fromFile
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.epub.setLayoutStyle
 import org.readium.r2.streamer.parser.image.ImageParser
+import org.readium.r2.streamer.parser.pdf.PdfiumDocument
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 import java.io.FileNotFoundException
 import java.lang.Exception
@@ -58,13 +62,14 @@ typealias OnCreateServices = (File, Manifest, Publication.ServicesBuilder) -> Un
  *    The default implementation of this callback presents a dialog using native components when possible.
  */
 
-class Streamer(
+@OptIn(PdfSupport::class)
+class Streamer constructor(
     context: Context,
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
     private val contentProtections: List<ContentProtection> = emptyList(),
     private val openArchive: suspend (String) -> Archive? = (Archive)::open,
-    //private val openPdf: suspend (ByteArray) -> PdfDocument? = { PdfiumDocument.fromBytes(it, context.applicationContext) },
+    private val openPdf: suspend (Resource) -> PdfDocument? = { PdfiumDocument.open(it, context.applicationContext) },
     private val onCreateManifest: OnCreateManifest = { _, manifest -> manifest },
     private val onCreateFetcher: OnCreateFetcher = { _, _, fetcher -> fetcher },
     private val onCreateServices: OnCreateServices = { _, _, _ -> Unit },
