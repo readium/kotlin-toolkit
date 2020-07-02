@@ -18,6 +18,7 @@ import org.readium.r2.shared.publication.Contributor
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.Subject
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.presentation.Presentation
@@ -88,7 +89,7 @@ typealias RenditionSpread = Presentation.Spread
 
 @Deprecated("Use [Publication::fromJSON] instead", ReplaceWith("Publication.fromJSON(pubDict)", "org.readium.r2.shared.publication.Publication"))
 fun parsePublication(pubDict: JSONObject): org.readium.r2.shared.publication.Publication {
-    return org.readium.r2.shared.publication.Publication.fromJSON(pubDict)
+    return org.readium.r2.shared.publication.Manifest.fromJSON(pubDict)?.let { Publication(it) }
         ?: throw Exception("Invalid publication")
 }
 
