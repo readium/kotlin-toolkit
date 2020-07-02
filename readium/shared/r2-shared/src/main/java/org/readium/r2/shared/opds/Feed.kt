@@ -24,11 +24,6 @@ data class Feed(
     var publications: MutableList<Publication> = mutableListOf(),
     var navigation: MutableList<Link> = mutableListOf(),
     var context: MutableList<String> = mutableListOf()
-
-    internal fun getSearchLinkHref(): String? {
-        val searchLink = links.firstOrNull { it.rels.contains("search") }
-        return searchLink?.href
-    }
-}
+)
 
 data class ParseData(val feed: Feed?, val publication: Publication?, val type: Int)
