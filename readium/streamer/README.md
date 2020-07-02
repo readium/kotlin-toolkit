@@ -2,3 +2,4 @@
 [![Release](https://jitpack.io/v/readium/r2-streamer-kotlin.svg)](https://jitpack.io/#readium/r2-streamer-kotlin)
 # r2-streamer-kotlin
 
+[Changes and releases are documented in the Changelog](CHANGELOG.md)
