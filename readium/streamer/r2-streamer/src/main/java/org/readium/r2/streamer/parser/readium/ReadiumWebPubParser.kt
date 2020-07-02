@@ -75,7 +75,7 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser, org
                 val manifestJson = fetcher.get(manifestLink)
                     .readAsString()
                     .getOrThrow()
-                Manifest.fromJSON(JSONObject(manifestJson), ignoreSelfLink = true)
+                Manifest.fromJSON(JSONObject(manifestJson), packaged = true)
             }
                 ?: throw Exception("Failed to parse RWPM.")
 

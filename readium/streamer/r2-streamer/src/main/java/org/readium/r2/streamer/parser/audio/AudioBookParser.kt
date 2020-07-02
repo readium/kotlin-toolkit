@@ -20,8 +20,6 @@ import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
 import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
-import java.net.URI
-
 
 
 class AudioBookConstant {
@@ -50,7 +48,7 @@ class AudioBookParser : PublicationParser {
             ?: throw ContainerError.missingFile(fileAtPath)
 
         val manifest = fetcher.readAsJsonOrNull("manifest.json")
-            ?.let { Manifest.fromJSON(it, ignoreSelfLink = true) }
+            ?.let { Manifest.fromJSON(it, packaged = true) }
             ?: return null
 
         val publication = Publication(
