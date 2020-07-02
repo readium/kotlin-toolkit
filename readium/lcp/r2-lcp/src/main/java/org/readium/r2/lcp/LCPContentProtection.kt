@@ -13,7 +13,7 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
-import org.readium.r2.shared.publication.OnAskCredentialsCallback
+import org.readium.r2.shared.publication.OnAskCredentials
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.Try
@@ -29,7 +29,7 @@ class LCPContentProtection(
         askCredentials: Boolean,
         credentials: String?,
         sender: Any?,
-        onAskCredentials: OnAskCredentialsCallback?
+        onAskCredentials: OnAskCredentials?
     ): Try<ContentProtection.ProtectedFile, Publication.OpeningError>? {
 
         val isProtectedWithLcp = when (file.format()) {
