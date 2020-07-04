@@ -16,8 +16,8 @@ interface Archive {
 
     companion object {
 
-        suspend fun open(path: String): Archive? = JavaZip.open(path)
-
+        suspend fun open(path: String): Archive? =
+            JavaZip.open(path) ?: ExplodedArchive.open(path)
     }
 
     /**

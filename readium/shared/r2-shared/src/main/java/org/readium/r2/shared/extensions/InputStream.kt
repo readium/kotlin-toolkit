@@ -16,6 +16,7 @@ package org.readium.r2.shared.extensions
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.Exception
 
 /**
  * Copies this stream to the given output stream, returning the number of bytes copied
@@ -47,3 +48,29 @@ internal fun InputStream.read(limit: Long): ByteArray {
     copyTo(buffer, limit)
     return buffer.toByteArray()
 }
+
+internal fun InputStream.readRange(range: LongRange): ByteArray? {
+    @Suppress("NAME_SHADOWING")
+    val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+
+    use {
+        return try {
+            val skipped = it.skip(range.first)
+            val length = range.last - range.first + 1
+            val bytes = it.read(length)
+            if (skipped != range.first && bytes.isNotEmpty()) {
+                throw Exception("Unable to skip enough bytes")
+            }
+            bytes
+        } catch (e: Exception) {
+            null
+        }
+    }
+}
+
+internal fun InputStream.readFully(): ByteArray? =
+    try {
+        use { it.readBytes() }
+    } catch (e: Exception) {
+        null
+    }
