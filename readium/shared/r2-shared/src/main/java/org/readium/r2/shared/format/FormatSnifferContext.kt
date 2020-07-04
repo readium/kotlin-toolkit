@@ -16,11 +16,10 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.archive.Archive
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.util.*
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
 
 
 /**
@@ -118,28 +117,24 @@ class FormatSnifferContext internal constructor(
     private var _contentAsXml: ElementNode? = null
 
     /**
-     * Content as a ZIP archive.
-     * Warning: ZIP is only supported for a local file, for now.
+     * Content as an Archive instance.
+     * Warning: Archive is only supported for a local file, for now.
      */
-    suspend fun contentAsZip(): ZipFile? {
-        if (!loadedContentAsZip) {
-            loadedContentAsZip = true
-            _contentAsZip = withContext(Dispatchers.IO) {
-                try {
-                    (content as? FormatSnifferFileContent)?.let {
-                        ZipFile(it.file)
-                    }
-                } catch (e: Exception) {
-                    null
+    suspend fun contentAsArchive(): Archive? {
+        if (!loadedContentAsArchive) {
+            loadedContentAsArchive = true
+            _contentAsArchive = withContext(Dispatchers.IO) {
+                (content as? FormatSnifferFileContent)?.let {
+                    Archive.open(it.file.path)
                 }
             }
         }
 
-        return _contentAsZip
+        return _contentAsArchive
     }
 
-    private var loadedContentAsZip: Boolean = false
-    private var _contentAsZip: ZipFile? = null
+    private var loadedContentAsArchive: Boolean = false
+    private var _contentAsArchive: Archive? = null
 
     /**
      * Content parsed from JSON.
@@ -191,39 +186,25 @@ class FormatSnifferContext internal constructor(
     }
 
     /**
-     * Returns whether a ZIP entry exists in this file.
+     * Returns whether an Archive entry exists in this file.
      */
-    internal suspend fun containsZipEntryAt(path: String): Boolean =
-        try {
-            contentAsZip()?.getEntry(path) != null
-        } catch (e: Exception) {
-            false
-        }
+    internal suspend fun containsArchiveEntryAt(path: String): Boolean =
+            contentAsArchive()?.entry(path) != null
 
     /**
-     * Returns the ZIP entry data at the given [path] in this file.
+     * Returns the Archive entry data at the given [path] in this file.
      */
-    internal suspend fun readZipEntryAt(path: String): ByteArray? {
-        val archive = contentAsZip() ?: return null
+    internal suspend fun readArchiveEntryAt(path: String): ByteArray? {
+        val archive = contentAsArchive() ?: return null
 
         return withContext(Dispatchers.IO) {
-            try {
-                val entry = archive.getEntry(path)
-                archive.getInputStream(entry).readBytes()
-            } catch (e: Exception) {
-                null
-            }
+            archive.entry(path)?.read()
         }
     }
 
     /**
-     * Returns whether all the ZIP entry paths satisfy the given `predicate`.
+     * Returns whether all the Archive entry paths satisfy the given `predicate`.
      */
-    internal suspend fun zipEntriesAllSatisfy(predicate: (ZipEntry) -> Boolean): Boolean =
-        try {
-            contentAsZip()?.entries()?.asSequence()?.all(predicate) == true
-        } catch (e: Exception) {
-            false
-        }
-
+    internal suspend fun archiveEntriesAllSatisfy(predicate: (Archive.Entry) -> Boolean): Boolean =
+        contentAsArchive()?.entries()?.all(predicate) == true
 }
