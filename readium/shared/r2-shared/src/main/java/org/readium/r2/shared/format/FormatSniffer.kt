@@ -165,33 +165,32 @@ object FormatSniffers {
         // Reads a RWPM, either from a manifest.json file, or from a manifest.json archive entry, if
         // the file is an archive.
         var isManifest = true
-        val publication: Publication? =
+        val manifest: Manifest? =
             try {
                 // manifest.json
                 context.contentAsRwpm() ?:
                 // Archive package
                 context.readArchiveEntryAt("manifest.json")
                     ?.let { Manifest.fromJSON(JSONObject(String(it))) }
-                    ?.let { Publication(it) }
                     ?.also { isManifest = false }
             } catch (e: Exception) {
                 null
             }
 
-        if (publication != null) {
+        if (manifest != null) {
             val isLcpProtected = context.containsArchiveEntryAt("license.lcpl")
 
-            if (publication.metadata.type == "http://schema.org/Audiobook" || publication.readingOrder.allAreAudio) {
+            if (manifest.metadata.type == "http://schema.org/Audiobook" || manifest.readingOrder.allAreAudio) {
                 return if (isManifest) Format.READIUM_AUDIOBOOK_MANIFEST
                 else (if (isLcpProtected) Format.LCP_PROTECTED_AUDIOBOOK else Format.READIUM_AUDIOBOOK)
             }
-            if (publication.readingOrder.allAreBitmap) {
+            if (manifest.readingOrder.allAreBitmap) {
                 return if (isManifest) Format.DIVINA_MANIFEST else Format.DIVINA
             }
-            if (isLcpProtected && publication.readingOrder.allMatchMediaType(MediaType.PDF)) {
+            if (isLcpProtected && manifest.readingOrder.allMatchMediaType(MediaType.PDF)) {
                 return Format.LCP_PROTECTED_PDF
             }
-            if (publication.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
+            if (manifest.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
                 return if (isManifest) Format.READIUM_WEBPUB_MANIFEST else Format.READIUM_WEBPUB
             }
         }

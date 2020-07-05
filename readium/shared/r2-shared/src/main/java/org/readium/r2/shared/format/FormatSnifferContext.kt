@@ -147,9 +147,8 @@ class FormatSnifferContext internal constructor(
         }
 
     /** Publication parsed from the content. */
-    suspend fun contentAsRwpm(): Publication? =
+    suspend fun contentAsRwpm(): Manifest? =
             Manifest.fromJSON(contentAsJson())
-                ?.let { Publication(it) }
 
     /**
      * Raw bytes stream of the content.
