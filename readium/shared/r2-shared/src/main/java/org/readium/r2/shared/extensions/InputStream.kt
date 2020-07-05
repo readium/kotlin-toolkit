@@ -13,6 +13,8 @@
 
 package org.readium.r2.shared.extensions
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -49,28 +51,35 @@ internal fun InputStream.read(limit: Long): ByteArray {
     return buffer.toByteArray()
 }
 
-internal fun InputStream.readRange(range: LongRange): ByteArray? {
+internal suspend fun InputStream.readRange(range: LongRange): ByteArray? {
     @Suppress("NAME_SHADOWING")
     val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
 
-    use {
-        return try {
-            val skipped = it.skip(range.first)
-            val length = range.last - range.first + 1
-            val bytes = it.read(length)
-            if (skipped != range.first && bytes.isNotEmpty()) {
-                throw Exception("Unable to skip enough bytes")
+    return use {
+        try {
+            withContext(Dispatchers.IO) {
+                val skipped = it.skip(range.first)
+                val length = range.last - range.first + 1
+                val bytes = it.read(length)
+                if (skipped != range.first && bytes.isNotEmpty()) {
+                    throw Exception("Unable to skip enough bytes")
+                }
+                bytes
             }
-            bytes
+
         } catch (e: Exception) {
             null
         }
     }
 }
 
-internal fun InputStream.readFully(): ByteArray? =
+internal suspend fun InputStream.readFully(): ByteArray? =
     try {
-        use { it.readBytes() }
+        use {
+            withContext(Dispatchers.IO) {
+                it.readBytes()
+            }
+        }
     } catch (e: Exception) {
         null
     }

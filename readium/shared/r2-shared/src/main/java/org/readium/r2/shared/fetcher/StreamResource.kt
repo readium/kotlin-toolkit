@@ -13,6 +13,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.coerceToPositiveIncreasing
 import org.readium.r2.shared.extensions.read
+import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.extensions.readRange
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.Try
 import java.io.InputStream
@@ -31,32 +33,14 @@ internal abstract class StreamResource : Resource {
             readRange(range)
 
     private suspend fun readFully(): ResourceTry<ByteArray> =
-        stream().mapCatching { stream ->
-            withContext(Dispatchers.IO) {
-                stream.use {
-                    it.readBytes()
-                }
-            }
+        stream().mapCatching {
+            it.readFully() ?: throw Exception("Unable to read stream.")
         }
 
-    private suspend fun readRange(range: LongRange): ResourceTry<ByteArray> {
-        @Suppress("NAME_SHADOWING")
-        val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
-
-        return stream().mapCatching { stream ->
-            withContext(Dispatchers.IO) {
-                stream.use {
-                    val skipped = it.skip(range.first)
-                    val length = range.last - range.first + 1
-                    val bytes = it.read(length)
-                    if (skipped != range.first && bytes.isNotEmpty()) {
-                        throw Exception("Unable to skip enough bytes")
-                    }
-                    return@use bytes
-                }
-            }
+    private suspend fun readRange(range: LongRange): ResourceTry<ByteArray> =
+        stream().mapCatching {
+            it.readRange(range) ?: throw Exception("Unable to read stream.")
         }
-    }
 
     override suspend fun length(): ResourceTry<Long> =
         metadataLength?.let { Try.success(it) }
