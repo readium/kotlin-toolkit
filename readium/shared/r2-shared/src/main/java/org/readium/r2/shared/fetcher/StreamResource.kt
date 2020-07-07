@@ -33,14 +33,10 @@ internal abstract class StreamResource : Resource {
             readRange(range)
 
     private suspend fun readFully(): ResourceTry<ByteArray> =
-        stream().mapCatching {
-            it.readFully() ?: throw Exception("Unable to read stream.")
-        }
+        stream().mapCatching { it.readFully() }
 
     private suspend fun readRange(range: LongRange): ResourceTry<ByteArray> =
-        stream().mapCatching {
-            it.readRange(range) ?: throw Exception("Unable to read stream.")
-        }
+        stream().mapCatching { it.readRange(range) }
 
     override suspend fun length(): ResourceTry<Long> =
         metadataLength?.let { Try.success(it) }

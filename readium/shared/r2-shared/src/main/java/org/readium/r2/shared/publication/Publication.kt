@@ -28,6 +28,7 @@ import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.CoverService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
+import java.lang.Exception
 import java.net.URL
 import java.net.URLEncoder
 import kotlin.reflect.KClass
@@ -147,8 +148,11 @@ class Publication(
      * Closes any opened resource associated with the [Publication], including [services].
      */
     fun close() = GlobalScope.launch {
-        fetcher.close()
-        services.forEach { it.close() }
+        try {
+            fetcher.close()
+            services.forEach { it.close() }
+        } catch (e: Exception) {
+        }
     }
 
     /**

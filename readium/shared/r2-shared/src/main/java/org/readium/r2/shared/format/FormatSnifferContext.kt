@@ -12,6 +12,8 @@ package org.readium.r2.shared.format
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Manifest
@@ -188,7 +190,7 @@ class FormatSnifferContext internal constructor(
      * Returns whether an Archive entry exists in this file.
      */
     internal suspend fun containsArchiveEntryAt(path: String): Boolean =
-            contentAsArchive()?.entry(path) != null
+        tryOrNull { contentAsArchive()?.entry(path) } != null
 
     /**
      * Returns the Archive entry data at the given [path] in this file.
@@ -197,7 +199,7 @@ class FormatSnifferContext internal constructor(
         val archive = contentAsArchive() ?: return null
 
         return withContext(Dispatchers.IO) {
-            archive.entry(path)?.read()
+            tryOrNull { archive.entry(path).read() }
         }
     }
 
@@ -205,5 +207,5 @@ class FormatSnifferContext internal constructor(
      * Returns whether all the Archive entry paths satisfy the given `predicate`.
      */
     internal suspend fun archiveEntriesAllSatisfy(predicate: (Archive.Entry) -> Boolean): Boolean =
-        contentAsArchive()?.entries()?.all(predicate) == true
+        tryOr(false) { contentAsArchive()?.entries()?.all(predicate) == true }
 }

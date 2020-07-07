@@ -16,6 +16,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -60,13 +61,8 @@ class ArchiveTest(val archive: Archive) {
     }
 
     @Test
-    fun `size returns null for a missing entry `() {
-        assertNull(runBlocking { archive.entry("unknown") })
-    }
-
-    @Test
-    fun `compressedSize returns null for a missing entry `() {
-        assertNull(runBlocking { archive.entry("unknown") })
+    fun `Attempting to get a missing entry throws`() {
+        assertFails { runBlocking { archive.entry("unknown") } }
     }
 
     @Test

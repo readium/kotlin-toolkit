@@ -291,7 +291,7 @@ object FormatSniffers {
 
         if (context.contentAsArchive() != null) {
             fun isIgnored(entry: Archive.Entry, file: File): Boolean =
-                entry.isDirectory || file.name.startsWith(".") || file.name == "Thumbs.db"
+                file.name.startsWith(".") || file.name == "Thumbs.db"
 
             suspend fun archiveContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
                 context.archiveEntriesAllSatisfy { entry ->
