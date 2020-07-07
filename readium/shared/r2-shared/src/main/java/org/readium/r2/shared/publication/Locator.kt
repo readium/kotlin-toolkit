@@ -170,10 +170,7 @@ data class Locator(
 
     companion object {
 
-        fun fromJSON(json: JSONObject?): Locator? =
-            fromJSON(json, null)
-
-        internal fun fromJSON(json: JSONObject?, warnings: WarningLogger?): Locator? {
+        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Locator? {
             val href = json?.optNullableString("href")
             val type = json?.optNullableString("type")
             if (href == null || type == null) {
