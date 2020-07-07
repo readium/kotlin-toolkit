@@ -1,8 +1,8 @@
 /*
- * Module: r2-streamer-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
+ * Module: r2-shared-kotlin
+ * Developers: Aferdita Muriqi, Clément Baumannn, Quentin Gliosca
  *
- * Copyright (c) 2018. Readium Foundation. All rights reserved.
+ * Copyright (c) 2020. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
@@ -13,78 +13,50 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.fetcher.StringResource
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.LazyResource
+import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.epub.layout
+import org.readium.r2.shared.publication.epub.layoutOf
 import org.readium.r2.shared.publication.presentation.presentation
-import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.server.Resources
 import java.io.File
-import java.io.InputStream
 
-internal interface ContentFilters {
-    fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
-        return input
+internal class HtmlInjector(
+    val publication: Publication,
+    val userPropertiesPath: String?,
+    val customResources: Resources? = null
+) {
+
+    fun transform(resource: Resource): Resource = LazyResource {
+        if (resource.link().mediaType?.isHtml == true)
+            inject(resource)
+        else
+            resource
     }
 
-    fun apply(input: ByteArray, publication: Publication, container: Container, path: String): ByteArray {
-        return input
-    }
-}
-
-internal class ContentFiltersEpub(private val userPropertiesPath: String?, private var customResources: Resources?) : ContentFilters {
-
-    override fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
-        publication.linkWithHref(path)?.let { resourceLink ->
-
-            var decodedInputStream = DrmDecoder().decoding(input, resourceLink, container.drm)
-            decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
-            if (resourceLink.mediaType?.isHtml == true) {
-                decodedInputStream = if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE && resourceLink.properties.layout == null
-                        || resourceLink.properties.layout == EpubLayout.REFLOWABLE) {
-                    injectReflowableHtml(decodedInputStream, publication)
-                } else {
-                    injectFixedLayoutHtml(decodedInputStream)
-                }
-            }
-
-            return decodedInputStream
-        } ?: run {
-            return input
+    private suspend fun inject(resource: Resource): Resource = StringResource {
+        val link = resource.link()
+        val res = resource.readAsString(link.mediaType?.charset).mapCatching {
+            val trimmedText = it.trim()
+                if (publication.metadata.presentation.layoutOf(link) == EpubLayout.REFLOWABLE)
+                    injectReflowableHtml(trimmedText)
+                else
+                    injectFixedLayoutHtml(trimmedText)
         }
-
+        Pair(link, res)
     }
 
-    override fun apply(input: ByteArray, publication: Publication, container: Container, path: String): ByteArray {
-        publication.linkWithHref(path)?.let { resourceLink ->
-            val inputStream = input.inputStream()
-            var decodedInputStream = DrmDecoder().decoding(inputStream, resourceLink, container.drm)
-            decodedInputStream = FontDecoder().decoding(decodedInputStream, publication, path)
-            if (resourceLink.mediaType?.isHtml == true
-                    && publication.baseUrl != null) {
-                decodedInputStream =
-                        if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE && (resourceLink.properties.layout == null
-                                        || resourceLink.properties.layout == EpubLayout.REFLOWABLE)) {
-                            injectReflowableHtml(decodedInputStream, publication)
-                        } else {
-                            injectFixedLayoutHtml(decodedInputStream)
-                        }
-            }
-            return decodedInputStream.readBytes()
-        } ?: run {
-            return input
-        }
-    }
-
-    private fun injectReflowableHtml(stream: InputStream, publication: Publication): InputStream {
-        val data = stream.readBytes()
-        var resourceHtml = String(data).trim()
+    private fun injectReflowableHtml(content: String): String {
+        var resourceHtml = content
         // Inject links to css and js files
         var beginHeadIndex = resourceHtml.indexOf("<head>", 0, false) + 6
         var endHeadIndex = resourceHtml.indexOf("</head>", 0, false)
         if (endHeadIndex == -1)
-            return stream
+            return content
 
         val contentLayout = publication.contentLayout
 
@@ -147,7 +119,7 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
 
         resourceHtml = applyDirectionAttribute(resourceHtml, publication)
 
-        return resourceHtml.toByteArray().inputStream()
+        return resourceHtml
     }
 
     private fun applyDirectionAttribute(resourceHtml: String, publication: Publication): String {
@@ -173,19 +145,18 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
         return resourceHtml1
     }
 
-    private fun injectFixedLayoutHtml(stream: InputStream): InputStream {
-        val data = stream.readBytes()
-        var resourceHtml = String(data) //UTF-8
+    private fun injectFixedLayoutHtml(content: String): String {
+        var resourceHtml = content
         val endHeadIndex = resourceHtml.indexOf("</head>", 0, false)
         if (endHeadIndex == -1)
-            return stream
+            return content
         val includes = mutableListOf<String>()
-        includes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/touchHandling.js"))
-        includes.add(getHtmlScript("/"+ Injectable.Script.rawValue +"/utils.js"))
+        includes.add(getHtmlScript("/assets/scripts/touchHandling.js"))
+        includes.add(getHtmlScript("/assets/scripts/utils.js"))
         for (element in includes) {
             resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, element).toString()
         }
-        return resourceHtml.toByteArray().inputStream()
+        return resourceHtml
     }
 
     private fun getHtmlFont(fontFamily: String, href: String): String {
@@ -251,7 +222,6 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
             }
         }
     }
-
 
     private fun applyPreset(preset: Pair<ReadiumCSSName, Boolean?>): JSONObject {
         val readiumCSSProperty = JSONObject()
@@ -326,28 +296,6 @@ internal class ContentFiltersEpub(private val userPropertiesPath: String?, priva
         ContentLayout.RTL -> "rtl/"
         ContentLayout.CJK_VERTICAL -> "cjk-vertical/"
         ContentLayout.CJK_HORIZONTAL -> "cjk-horizontal/"
-    }
-
-}
-
-internal class ContentFiltersCbz : ContentFilters
-
-/** Content filter for LCP protected packages (except EPUB). */
-internal class ContentFiltersLcp : ContentFilters {
-
-    override fun apply(input: InputStream, publication: Publication, container: Container, path: String): InputStream {
-        val resourceLink = publication.linkWithHref(path)
-            ?: return input
-
-        return DrmDecoder().decoding(input, resourceLink, container.drm)
-    }
-
-    override fun apply(input: ByteArray, publication: Publication, container: Container, path: String): ByteArray {
-        val resourceLink = publication.linkWithHref(path)
-            ?: return input
-
-        val inputStream = input.inputStream()
-        return DrmDecoder().decoding(inputStream, resourceLink, container.drm).readBytes()
     }
 
 }

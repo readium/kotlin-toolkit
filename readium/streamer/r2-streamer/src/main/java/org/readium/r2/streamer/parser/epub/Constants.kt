@@ -9,14 +9,6 @@
 
 package org.readium.r2.streamer.parser.epub
 
-internal object Paths {
-    const val LCPL: String = "META-INF/license.lcpl"
-    const val CONTAINER = "META-INF/container.xml"
-    const val ENCRYPTION = "META-INF/encryption.xml"
-    const val KOBO_DISPLAY_OPTIONS = "META-INF/com.kobobooks.display-options.xml"
-    const val IBOOKS_DISPLAY_OPTIONS = "META-INF/com.kobobooks.display-options.xml"
-}
-
 internal object Namespaces {
     const val OPC = "urn:oasis:names:tc:opendocument:xmlns:container"
     const val ENC = "http://www.w3.org/2001/04/xmlenc#"

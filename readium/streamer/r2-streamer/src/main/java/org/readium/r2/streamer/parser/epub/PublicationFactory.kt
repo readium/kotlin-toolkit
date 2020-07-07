@@ -10,9 +10,9 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.normalize
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.normalize
 
 /**
  * Creates a [Publication] model from an EPUB package's document.
@@ -51,7 +51,7 @@ internal class PublicationFactory(
 
     private val itemrefByIdref = spine.itemrefs.associateBy(Itemref::idref)
 
-    fun create(): Publication {
+    fun create(): Manifest {
         // Compute metadata
         val metadata = pubMetadata.metadata()
         val metadataLinks = links.mapNotNull(::mapEpubLink)
@@ -65,21 +65,18 @@ internal class PublicationFactory(
 
         // Compute toc and otherCollections
         val toc = navigationData["toc"].orEmpty()
-        val otherCollections =
-            navigationData.minus("toc").map { PublicationCollection(links = it.value, role = it.key) }
+        val subcollections =
+            navigationData.minus("toc").mapValues { listOf(PublicationCollection(links = it.value)) }
 
         // Build Publication object
-        return Publication(
+        return Manifest(
             metadata = metadata,
             links = metadataLinks,
             readingOrder = readingOrder,
             resources = resources,
             tableOfContents = toc,
-            otherCollections = otherCollections
-        ).apply {
-            type = Publication.TYPE.EPUB
-            version = epubVersion
-        }
+            subcollections = subcollections
+        )
     }
 
     /** Compute a Publication [Link] from an Epub metadata link */

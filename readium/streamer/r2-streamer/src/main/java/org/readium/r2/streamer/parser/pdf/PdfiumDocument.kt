@@ -14,7 +14,7 @@ import android.graphics.Bitmap
 import com.shockwave.pdfium.PdfiumCore
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.md5
-import org.readium.r2.shared.pdf.PdfDocument
+import org.readium.r2.shared.util.pdf.PdfDocument
 import timber.log.Timber
 import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 

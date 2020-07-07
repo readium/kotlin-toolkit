@@ -13,13 +13,13 @@ import android.net.Uri
 import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.streamer.fetcher.Fetcher
+import org.readium.r2.streamer.server.ServingFetcher
 
 internal class ManifestHandler : BaseHandler() {
 
     override fun handle(resource: RouterNanoHTTPD.UriResource, uri: Uri, parameters: Map<String, String>?): Response {
-        val fetcher = resource.initParameter(Fetcher::class.java)
-        return createResponse(mediaType = MediaType.READIUM_WEBPUB_MANIFEST, body = fetcher.publication.manifest.toByteArray())
+        val fetcher = resource.initParameter(ServingFetcher::class.java)
+        return createResponse(mediaType = MediaType.READIUM_WEBPUB_MANIFEST, body = fetcher.publication.jsonManifest)
     }
 
 }

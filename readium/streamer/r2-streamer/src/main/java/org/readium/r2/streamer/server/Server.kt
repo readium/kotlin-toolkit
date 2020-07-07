@@ -16,7 +16,6 @@ import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.Container
-import org.readium.r2.streamer.fetcher.Fetcher
 import org.readium.r2.streamer.server.handler.*
 import timber.log.Timber
 import java.io.File
@@ -87,7 +86,11 @@ abstract class AbstractServer(private var port: Int, private val context: Contex
             return
         }
         val baseUrl = URL(Publication.localBaseUrlOf(filename = fileName, port = port))
-        val fetcher = Fetcher(publication, container, userPropertiesPath, customResources)
+        val fetcher = ServingFetcher(
+            publication,
+            userPropertiesPath,
+            customResources
+        )
 
         publication.setSelfLink("$baseUrl/manifest.json")
 

@@ -9,25 +9,16 @@
 
 package org.readium.r2.streamer.parser.cbz
 
-import android.net.Uri
-import android.os.Build
-import android.text.TextUtils
-import org.readium.r2.shared.format.Format
+import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.extensions.md5
+import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
-import org.readium.r2.streamer.BuildConfig.DEBUG
-import org.readium.r2.streamer.container.ContainerError
-import org.readium.r2.streamer.parser.PerResourcePositionListFactory
+import org.readium.r2.shared.publication.services.PerResourcePositionsService
+import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
-import timber.log.Timber
 import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
-import java.nio.file.Paths
-import java.security.MessageDigest
-import kotlin.experimental.and
-
 
 @Deprecated("Use [MediaType] instead")
 class CBZConstant {
@@ -51,93 +42,49 @@ class CBZConstant {
 class CBZParser : PublicationParser {
 
 
-    /**
-     * Check if path exist, generate a container for CBZ file
-     *                   then check if creation was a success
-     */
-    private fun generateContainerFrom(path: String): CBZArchiveContainer {
-        val container: CBZArchiveContainer?
-        if (!File(path).exists())
-            throw ContainerError.missingFile(path)
-        container = CBZArchiveContainer(path)
-        return container
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
+        _parse(fileAtPath, fallbackTitle)
     }
 
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
-        val container = try {
-            generateContainerFrom(fileAtPath)
-        } catch (e: Exception) {
-            if (DEBUG) Timber.e(e, "Could not generate container")
-            return null
-        }
-        val listFiles = try {
-            container.files
-                .filterNot { it.startsWith(".") }
-                .sorted()
+    suspend fun _parse(fileAtPath: String, fallbackTitle: String): PubBox? {
+        val fetcher = ArchiveFetcher.fromPath(fileAtPath)
+            ?: return null
 
-        } catch (e: Exception) {
-            if (DEBUG) Timber.e(e, "Missing File : META-INF/container.xml")
+        val readingOrder = fetcher.links()
+            .filter { it.mediaType?.isBitmap == true && !it.href.startsWith(".") }
+            .sortedBy { it.href }
+            .toMutableList()
+
+        if (readingOrder.isEmpty()) {
             return null
         }
 
-        val hash = fileToMD5(fileAtPath)
-        val metadata = Metadata(identifier = hash, localizedTitle = LocalizedString(fallbackTitle))
+        // First valid resource is the cover.
+        readingOrder[0] = readingOrder[0].copy(rels = setOf("cover"))
 
-        val readingOrder = listFiles.mapIndexed { index, path ->
-            Link(
-                href = path,
-                type = Format.of(fileExtension = File(path).extension)?.mediaType.toString(),
-                rels = if (index == 0) setOf("cover") else emptySet()
-            )
-        }
-        val publication = Publication(
-            metadata = metadata,
-            readingOrder = readingOrder,
-            otherCollections = listOf(
-                PublicationCollection(role = "images", links = readingOrder)
+        val manifest = Manifest(
+            metadata = Metadata(
+                identifier = File(fileAtPath).md5(),
+                localizedTitle = LocalizedString(fallbackTitle)
             ),
-            positionsFactory = PerResourcePositionListFactory(
-                readingOrder = readingOrder,
-                fallbackMediaType = "image/*"
+            readingOrder = readingOrder,
+            subcollections = mapOf(
+                "images" to listOf(PublicationCollection(links = readingOrder))
             )
         )
 
-        publication.type = Publication.TYPE.CBZ
+        val publication = Publication(
+            manifest = manifest,
+            fetcher = fetcher,
+            servicesBuilder = Publication.ServicesBuilder(
+                positions = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
+            )
+        ).apply {
+            type =  Publication.TYPE.CBZ
+        }
+
+        val container = PublicationContainer(publication = publication, path = fileAtPath, mediaType = MediaType.CBZ)
         return PubBox(publication, container)
     }
 
-    private fun fileToMD5(filePath: String): String? {
-        var inputStream: InputStream? = null
-        try {
-            inputStream = FileInputStream(filePath)
-            val buffer = ByteArray(1024)
-            val digest = MessageDigest.getInstance("MD5")
-            var numRead = 0
-            while (numRead != -1) {
-                numRead = inputStream.read(buffer)
-                if (numRead > 0)
-                    digest.update(buffer, 0, numRead)
-            }
-            val md5Bytes = digest.digest()
-            return convertHashToString(md5Bytes)
-        } catch (e: Exception) {
-            return null
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close()
-                } catch (e: Exception) {
-                }
-
-            }
-        }
-    }
-
-    private fun convertHashToString(md5Bytes: ByteArray): String {
-        var returnVal = ""
-        for (i in md5Bytes.indices) {
-            returnVal += ((md5Bytes[i] and 0xff.toByte()) + 0x100).toString(16).substring(1)
-        }
-        return returnVal
-    }
 }

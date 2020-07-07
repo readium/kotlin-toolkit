@@ -10,16 +10,16 @@
 package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
-import android.graphics.Bitmap
 import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.pdf.toLinks
 import org.readium.r2.shared.publication.*
-import org.readium.r2.streamer.container.FileContainer
+import org.readium.r2.shared.publication.services.InMemoryCoverService
+import org.readium.r2.shared.util.pdf.toLinks
+import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import timber.log.Timber
-import java.io.ByteArrayOutputStream
 import java.io.File
 
 /**
@@ -31,41 +31,37 @@ class PdfParser(private val context: Context) : PublicationParser {
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? =
         try {
             val file = File(fileAtPath)
-
             val rootHref = "/publication.pdf"
-            val container = FileContainer(path = fileAtPath, mimetype = MediaType.PDF.toString())
-            container.rootFile.rootFilePath = rootHref
-            container.files[rootHref] = FileContainer.File.Path(fileAtPath)
-
             val document = PdfiumDocument.fromBytes(File(fileAtPath).readBytes(), context)
-            val links = mutableListOf<Link>()
-
-            document.cover?.let { cover ->
-                val stream = ByteArrayOutputStream()
-                if (cover.compress(Bitmap.CompressFormat.PNG, 100, stream)) {
-                    val coverHref = "/cover.png"
-                    container.files[coverHref] = FileContainer.File.Bytes(stream.toByteArray())
-                    links.add(Link(href = coverHref, rels = setOf("cover"), type = MediaType.PNG.toString(), width = cover.width, height = cover.height))
-                }
-            }
-
             val tableOfContents = document.outline.toLinks(rootHref)
+
             val publication = Publication(
-                metadata = Metadata(
-                    identifier = document.identifier ?: file.name,
-                    localizedTitle = LocalizedString(document.title?.ifEmpty { null } ?: file.toTitle()),
-                    authors = listOfNotNull(document.author).map { Contributor(name = it) },
-                    numberOfPages = document.pageCount
-                ),
-                readingOrder = listOf(Link(href = rootHref, type = MediaType.PDF.toString())),
-                links = links,
-                tableOfContents = tableOfContents,
-                positionsFactory = PdfPositionListFactory(
-                    documentHref = rootHref,
-                    pageCount = document.pageCount,
+                manifest = Manifest(
+                    metadata = Metadata(
+                        identifier = document.identifier ?: file.name,
+                        localizedTitle = LocalizedString(document.title?.ifEmpty { null } ?: file.toTitle()),
+                        authors = listOfNotNull(document.author).map { Contributor(name = it) },
+                        numberOfPages = document.pageCount
+                    ),
+                    readingOrder = listOf(Link(href = rootHref, type = MediaType.PDF.toString())),
                     tableOfContents = tableOfContents
+                ),
+                fetcher = FileFetcher(href = rootHref, file = file),
+                servicesBuilder = Publication.ServicesBuilder(
+                    positions = (PdfPositionsService)::create,
+                    cover = document.cover?.let { InMemoryCoverService.createFactory(it) }
                 )
             )
+
+            val container = PublicationContainer(
+                publication = publication,
+                path = fileAtPath,
+                mediaType = MediaType.PDF
+            ).apply {
+                // Necessary to serve the PDF through the PublicationServer, because the Server
+                // checks the presence of `rootFilePath`
+                rootFile.rootFilePath = "publication.pdf"
+            }
 
             PubBox(publication, container)
 

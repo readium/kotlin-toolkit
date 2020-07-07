@@ -9,17 +9,18 @@
 
 package org.readium.r2.streamer.parser.audio
 
-import org.json.JSONObject
+import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.container.ContainerError
+import org.readium.r2.streamer.container.PublicationContainer
+import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
+import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
-import timber.log.Timber
-import java.io.File
 import java.net.URI
-import java.nio.charset.Charset
 
 
 
@@ -27,8 +28,6 @@ class AudioBookConstant {
     companion object {
         @Deprecated("Use [MediaType.AUDIOBOOK.toString()] instead", replaceWith = ReplaceWith("MediaType.AUDIOBOOK.toString()"))
         val mimetype get() = MediaType.READIUM_AUDIOBOOK.toString()
-
-        internal const val manifestPath = "manifest.json"
     }
 }
 
@@ -39,58 +38,41 @@ class AudioBookConstant {
  */
 class AudioBookParser : PublicationParser {
 
-
-    /**
-     * Check if path exist, generate a container for CBZ file
-     *                   then check if creation was a success
-     */
-    private fun generateContainerFrom(path: String): AudioBookDirectoryContainer {
-        val container: AudioBookDirectoryContainer?
-
-        if (!File(path).exists())
-            throw ContainerError.missingFile(path)
-        container = AudioBookDirectoryContainer(path)
-        return container
-    }
-
     /**
      * This functions parse a manifest.json and build PubBox object from it
      */
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? {
+    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
+        _parse(fileAtPath, fallbackTitle)
+    }
 
-        //Building container
-        val container = try {
-            generateContainerFrom(fileAtPath)
-        } catch (e: Exception) {
-            if (DEBUG) Timber.e(e, "Could not generate container")
-            return null
-        }
-        val data = try {
-            container.data(AudioBookConstant.manifestPath)
-        } catch (e: Exception) {
-            if (DEBUG) Timber.e(e, "Missing File : ${AudioBookConstant.manifestPath}")
-            return null
-        }
+    private suspend fun _parse(fileAtPath: String, fallbackTitle: String): PubBox? {
+        val fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
+            ?: throw ContainerError.missingFile(fileAtPath)
 
-        //Building publication object from manifest.json
-        //Getting manifest.json
-        val stringManifest = data.toString(Charset.defaultCharset())
-        val json = JSONObject(stringManifest)
-
-        //Parsing manifest.json & building publication object
-        val hrefNormalizer = { href: String ->
+        fun normalizeHref(href: String): String =
             if (URI(href).isAbsolute) {
-            href
+                href
             } else {
-                fileAtPath + "/" + href
+                // FIXME: Why the HREF is absolute on the local file system??
+                "$fileAtPath/$href"
             }
+
+        val manifest = fetcher.readAsJsonOrNull("manifest.json")
+            ?.let { Manifest.fromJSON(it, ::normalizeHref) }
+            ?: return null
+
+        val publication = Publication(
+            manifest = manifest
+        ).apply {
+            type = Publication.TYPE.AUDIO
         }
 
-        val publication = Publication.fromJSON(json, hrefNormalizer)
+        val container = PublicationContainer(
+            publication = publication,
+            path = fileAtPath,
+            mediaType = MediaType.AUDIOBOOK
+        )
 
-        publication?.type = Publication.TYPE.AUDIO
-
-        return publication?.let { PubBox(it, container) }
-
+        return PubBox(publication, container)
     }
 }

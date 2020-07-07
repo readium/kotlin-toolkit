@@ -11,28 +11,38 @@ package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.pdf.PdfDocument
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.streamer.container.Container
-import org.readium.r2.streamer.fetcher.DrmDecoder
+import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.util.pdf.PdfDocument
+import org.readium.r2.streamer.extensions.readBytes
 import org.readium.r2.streamer.parser.pdf.PdfiumDocument
 import timber.log.Timber
 
 /**
  * Creates the [positions] for an LCP protected PDF [Publication] from its [readingOrder] and
- * [container].
+ * [fetcher].
  */
 @OptIn(PdfSupport::class)
-internal class LcpdfPositionListFactory(
+internal class LcpdfPositionsService(
     private val context: Context,
-    private val container: Container,
-    private val readingOrder: List<Link>
-) : Publication.PositionListFactory {
+    private val readingOrder: List<Link>,
+    private val fetcher: Fetcher
+) : PositionsService {
 
-    override fun create(): List<Locator> {
+    override suspend fun positionsByReadingOrder(): List<List<Locator>> {
+        if (!::_positions.isInitialized)
+            _positions = computePositions()
+
+        return _positions
+    }
+
+    private lateinit var _positions: List<List<Locator>>
+
+    private suspend fun computePositions(): List<List<Locator>> {
         // Calculates the page count of each resource from the reading order.
         val resources: List<Pair<Int, Link>> = readingOrder.map { link ->
             val pageCount = openPdfAt(link)?.pageCount ?: 0
@@ -45,7 +55,7 @@ internal class LcpdfPositionListFactory(
         }
 
         var lastPositionOfPreviousResource = 0
-        return resources.flatMap { (pageCount, link) ->
+        return resources.map { (pageCount, link) ->
             val positions = createPositionsOf(link, pageCount = pageCount, totalPageCount = totalPageCount, startPosition = lastPositionOfPreviousResource)
             lastPositionOfPreviousResource += pageCount
             positions
@@ -74,16 +84,27 @@ internal class LcpdfPositionListFactory(
         }
     }
 
-    private fun openPdfAt(link: Link): PdfDocument? =
+    private suspend fun openPdfAt(link: Link): PdfDocument? =
         try {
-            container.dataInputStream(link.href)
-                .let { decoder.decoding(it, link, container.drm) }
-                .let { PdfiumDocument.fromBytes(it.readBytes(), context) }
+            PdfiumDocument.fromBytes(
+                bytes = fetcher.readBytes(link),
+                context = context
+            )
         } catch (e: Exception) {
             Timber.e(e)
             null
         }
 
-    private val decoder = DrmDecoder()
+    companion object {
+
+        fun create(context: Context): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
+            LcpdfPositionsService(
+                context = context.applicationContext,
+                readingOrder = serviceContext.manifest.readingOrder,
+                fetcher = serviceContext.fetcher
+            )
+        }
+
+    }
 
 }

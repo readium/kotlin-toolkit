@@ -13,14 +13,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.contains
 import org.readium.r2.shared.publication.epub.layout
 import org.readium.r2.shared.publication.presentation.*
 
-fun parsePackageDocument(path: String, displayOptions: String? = null): Publication {
+fun parsePackageDocument(path: String, displayOptions: String? = null): Manifest {
     val pub = PackageDocument::class.java.getResourceAsStream(path)
         ?.let { XmlParser().parse(it) }
         ?.let { PackageDocument.parse(it, "OEBPS/content.opf") }
@@ -55,15 +55,6 @@ class ReadingProgressionTest {
     fun `Rtl page progression direction is rightly parsed`() {
         assertThat(parsePackageDocument("package/progression-rtl.opf").metadata.readingProgression)
             .isEqualTo(ReadingProgression.RTL)
-    }
-}
-
-class PackageMiscTest {
-    @Test
-    fun `Version is rightly parsed`() {
-        assertThat(parsePackageDocument("package/version-epub2.opf").version).isEqualTo(2.0)
-        assertThat(parsePackageDocument("package/version-epub3.opf").version).isEqualTo(3.0)
-        assertThat(parsePackageDocument("package/version-default.opf").version).isEqualTo(1.2)
     }
 }
 
