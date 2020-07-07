@@ -214,6 +214,10 @@ class MediaType private constructor(string: String) {
     val isAudio: Boolean get() =
         type == "audio"
 
+    /** Returns whether this media type is of a video clip. */
+    val isVideo: Boolean get() =
+        type == "video"
+
     /** Returns whether this media type is of a Readium Web Publication Manifest. */
     val isRwpm: Boolean get() =
         matchesAny(READIUM_AUDIOBOOK_MANIFEST, DIVINA_MANIFEST, READIUM_WEBPUB_MANIFEST)

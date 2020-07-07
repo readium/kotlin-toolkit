@@ -13,7 +13,7 @@ import android.webkit.MimeTypeMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.*
 import java.io.File
 import java.net.URLConnection
 import java.util.*
@@ -82,7 +82,7 @@ object FormatSniffers {
             if (rwpm.linkWithRel("self")?.mediaType?.matches("application/opds+json") == true) {
                 return Format.OPDS2_FEED
             }
-            if (rwpm.linkWithRelMatching { it.startsWith("http://opds-spec.org/acquisition") } != null) {
+            if (rwpm.links.firstWithRelMatching { it.startsWith("http://opds-spec.org/acquisition") } != null) {
                 return Format.OPDS2_PUBLICATION
             }
         }
@@ -171,7 +171,8 @@ object FormatSniffers {
                 context.contentAsRwpm() ?:
                 // ZIP package
                 context.readZipEntryAt("manifest.json")
-                    ?.let { Publication.fromJSON(JSONObject(String(it))) }
+                    ?.let { Manifest.fromJSON(JSONObject(String(it))) }
+                    ?.let { Publication(it) }
                     ?.also { isManifest = false }
             } catch (e: Exception) {
                 null
@@ -180,14 +181,14 @@ object FormatSniffers {
         if (publication != null) {
             val isLcpProtected = context.containsZipEntryAt("license.lcpl")
 
-            if (publication.metadata.type == "http://schema.org/Audiobook" || publication.allReadingOrderIsAudio) {
+            if (publication.metadata.type == "http://schema.org/Audiobook" || publication.readingOrder.allAreAudio) {
                 return if (isManifest) Format.READIUM_AUDIOBOOK_MANIFEST
                 else (if (isLcpProtected) Format.LCP_PROTECTED_AUDIOBOOK else Format.READIUM_AUDIOBOOK)
             }
-            if (publication.allReadingOrderIsBitmap) {
+            if (publication.readingOrder.allAreBitmap) {
                 return if (isManifest) Format.DIVINA_MANIFEST else Format.DIVINA
             }
-            if (isLcpProtected && publication.allReadingOrderMatchesAnyOf(MediaType.PDF)) {
+            if (isLcpProtected && publication.readingOrder.allMatchMediaType(MediaType.PDF)) {
                 return Format.LCP_PROTECTED_PDF
             }
             if (publication.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
@@ -371,3 +372,9 @@ object FormatSniffers {
     }
 
 }
+
+/**
+ * Finds the first [Link] having the given [rel] matching the given [predicate].
+ */
+private fun List<Link>.firstWithRelMatching(predicate: (String) -> Boolean): Link? =
+    firstOrNull { it.rels.any(predicate) }

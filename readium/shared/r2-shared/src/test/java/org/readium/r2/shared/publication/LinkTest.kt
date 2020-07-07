@@ -1,3 +1,13 @@
+/*
+ * Module: r2-shared-kotlin
+ * Developers: Mickaël Menu, Quentin Gliosca
+ *
+ * Copyright (c) 2020. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ */
+
+
 package org.readium.r2.shared.publication
 
 import org.json.JSONArray
@@ -8,6 +18,27 @@ import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.toJSON
 
 class LinkTest {
+
+    @Test fun `templateParameters works fine`() {
+        val href =  "/url{?x,hello,y}name{z,y,w}"
+        assertEquals(
+            listOf("x", "hello", "y", "z", "w"),
+            Link(href = href, templated = true).templateParameters
+        )
+    }
+
+    @Test fun `expand works fine`() {
+        val href =  "/url{?x,hello,y}name"
+        val parameters = mapOf(
+            "x" to "aaa",
+            "hello" to "Hello, world",
+            "y" to "b"
+        )
+        assertEquals(
+            Link(href = "/url?x=aaa&hello=Hello, world&y=bname", templated = false),
+            Link(href = href, templated = true).expandTemplate(parameters)
+        )
+    }
 
     @Test fun `parse minimal JSON`() {
         assertEquals(
@@ -212,6 +243,59 @@ class LinkTest {
                 Link(href = "http://child1"),
                 Link(href = "http://child2")
             ).toJSON()
+        )
+    }
+
+    @Test
+    fun `Make a copy after adding the given {properties}`() {
+        val link = Link(
+            href = "http://href",
+            type = "application/pdf",
+            templated = true,
+            title = "Link Title",
+            rels = setOf("publication", "cover"),
+            properties = Properties(otherProperties = mapOf("orientation" to "landscape")),
+            height = 1024,
+            width = 768,
+            bitrate = 74.2,
+            duration = 45.6,
+            languages = listOf("fr"),
+            alternates = listOf(
+                Link(href = "/alternate1"),
+                Link(href = "/alternate2")
+            ),
+            children = listOf(
+                Link(href = "http://child1"),
+                Link(href = "http://child2")
+            )
+        )
+
+        assertJSONEquals(
+            JSONObject("""{
+                "href": "http://href",
+                "type": "application/pdf",
+                "templated": true,
+                "title": "Link Title",
+                "rel": ["publication", "cover"],
+                "properties": {
+                    "orientation": "landscape",
+                    "additional": "property"
+                },
+                "height": 1024,
+                "width": 768,
+                "bitrate": 74.2,
+                "duration": 45.6,
+                "language": ["fr"],
+                "alternate": [
+                    {"href": "/alternate1", "templated": false},
+                    {"href": "/alternate2", "templated": false}
+                ],
+                "children": [
+                    {"href": "http://child1", "templated": false},
+                    {"href": "http://child2", "templated": false}
+                ]
+            }"""),
+            link.addProperties(mapOf("additional" to "property")).toJSON()
         )
     }
 

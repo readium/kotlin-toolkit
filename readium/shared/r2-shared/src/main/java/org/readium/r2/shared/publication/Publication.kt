@@ -10,77 +10,172 @@
 package org.readium.r2.shared.publication
 
 import android.net.Uri
-import android.os.Parcelable
-import kotlinx.android.parcel.IgnoredOnParcel
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.parcel.RawValue
-import org.json.JSONArray
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
-import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.extensions.HashAlgorithm
+import org.readium.r2.shared.extensions.hash
+import org.readium.r2.shared.extensions.removeLastComponent
+import org.readium.r2.shared.extensions.toUrlOrNull
+import org.readium.r2.shared.fetcher.EmptyFetcher
+import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
-import org.readium.r2.shared.toJSON
-import org.readium.r2.shared.util.logging.JsonWarning
-import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.logging.log
+import org.readium.r2.shared.publication.services.CoverService
+import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.publication.services.positions
 import java.net.URL
 import java.net.URLEncoder
+import kotlin.reflect.KClass
+
+internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
 /**
- * Shared model for a Readium Publication.
+ * The Publication shared model is the entry-point for all the metadata and services
+ * related to a Readium publication.
  *
- * @param type The kind of publication it is ( Epub, Cbz, ... )
+ * @param manifest The manifest holding the publication metadata extracted from the publication file.
+ * @param fetcher The underlying fetcher used to read publication resources.
+ * The default implementation returns Resource.Error.NotFound for all HREFs.
+ * @param servicesBuilder Holds the list of service factories used to create the instances of
+ * Publication.Service attached to this Publication.
+ * @param type The kind of publication it is ( EPUB, CBZ, ... )
  * @param version The version of the publication, if the type needs any.
  * @param positionsFactory Factory used to build lazily the [positions].
  */
-@Parcelize
-data class Publication(
-    val context: List<String> = emptyList(),
-    val metadata: Metadata,
-    // FIXME: Currently Readium requires to set the [Link] with [rel] "self" when adding it to the
-    //     server. So we need to keep [links] as a mutable property.
-    var links: List<Link> = emptyList(),
-    val readingOrder: List<Link> = emptyList(),
-    val resources: List<Link> = emptyList(),
-    val tableOfContents: List<Link> = emptyList(),
-    val otherCollections: List<PublicationCollection> = emptyList(),
-    @Suppress("DEPRECATION") val positionsFactory: @RawValue PositionListFactory? = null,
+class Publication(
+    manifest: Manifest,
+    private val fetcher: Fetcher = EmptyFetcher(),
+    private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
 
-    // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
-    var type: TYPE = TYPE.EPUB,
-    var version: Double = 0.0,
+    @Deprecated("Provide a [ServiceFactory] for a [PositionsService] instead.", level = DeprecationLevel.ERROR)
+    @Suppress("DEPRECATION")
+    val positionsFactory: PositionListFactory? = null,
 
     // FIXME: To refactor after specifying the User and Rendition Settings API
     var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
     var cssStyle: String? = null,
 
-    // FIXME: This is not specified and need to be refactored
+    @Deprecated("This will be removed in a future version. Use [Format.of] to check the format of a publication.", level = DeprecationLevel.WARNING)
     var internalData: MutableMap<String, String> = mutableMapOf()
+) {
+    private val services: List<Service> = servicesBuilder.build(Service.Context(manifest, fetcher))
+    private val manifest = manifest.copy(links = manifest.links + services.map(Service::links).flatten())
 
-) : JSONable, Parcelable {
+    // Shortcuts to manifest properties
+
+    val context: List<String> get() = manifest.context
+    val metadata: Metadata get() = manifest.metadata
+    val links: List<Link> get() = manifest.links
+
+    /** Identifies a list of resources in reading order for the publication. */
+    val readingOrder: List<Link> get() = manifest.readingOrder
+
+    /** Identifies resources that are necessary for rendering the publication. */
+    val resources: List<Link> get() = manifest.resources
+
+    /** Identifies the collection that contains a table of contents. */
+    val tableOfContents: List<Link> get() = manifest.tableOfContents
+
+    val subcollections: Map<String, List<PublicationCollection>> get() = manifest.subcollections
+
+    // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
+    var type: Publication.TYPE = Publication.TYPE.EPUB
+    var version: Double = 0.0
 
     /**
-     * Creates a [Publication]'s [positions].
-     *
-     * The parsers provide an implementation of this interface for each format, but a host app
-     * might want to use a custom factory to implement, for example, a caching mechanism or use a
-     * different calculation method.
+     * Returns the RWPM JSON representation for this [Publication]'s manifest, as a string.
      */
-    @Deprecated("This will be replaced by `PositionsService` in the next release, don't create your own implementation")
-    interface PositionListFactory {
-        fun create(): List<Locator>
+    val jsonManifest: String
+        get() = manifest.toJSON().toString().replace("\\/", "/")
+
+    /**
+     * The URL where this publication is served, computed from the [Link] with `self` relation.
+     */
+    val baseUrl: URL?
+        get() = links.firstWithRel("self")
+            ?.let { it.href.toUrlOrNull()?.removeLastComponent() }
+
+    /**
+     * Finds the first [Link] with the given HREF in the publication's links.
+     *
+     * Searches through (in order) [readingOrder], [resources] and [links] recursively following
+     * [alternate] and [children] links.
+     *
+     * If there's no match, try again after removing any query parameter and anchor from the
+     * given [href].
+     */
+    fun linkWithHref(href: String): Link? {
+        fun find(href: String): Link? {
+            return readingOrder.deepLinkWithHref(href)
+                ?: resources.deepLinkWithHref(href)
+                ?: links.deepLinkWithHref(href)
+        }
+
+        return find(href)
+            ?: find(href.takeWhile { it !in "#?" })
     }
 
-    @Parcelize
-    enum class TYPE : Parcelable {
+    /**
+     * Finds the first [Link] having the given [rel] in the publications's links.
+     */
+    fun linkWithRel(rel: String): Link? = manifest.linkWithRel(rel)
+
+    /**
+     * Finds all [Link]s having the given [rel] in the publications's links.
+     */
+    fun linksWithRel(rel: String): List<Link> = manifest.linksWithRel(rel)
+
+    /**
+     * Returns the resource targeted by the given non-templated [link].
+     *
+     * The [link].href property is searched for in the [readingOrder], [resources] and [links] properties
+     * to find the matching manifest [Link]. This is to make sure that
+     * the [Link] given to the [fetcher] contains all properties declared in the [manifest].
+     *
+     * The properties are searched recursively following [Link::alternate] and [Link::children].
+     */
+    fun get(link: Link): Resource {
+        if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
+
+        @Suppress("NAME_SHADOWING")
+        // Parameters in href must not be lost.
+        val link = linkWithHref(link.href)?.copy(href = link.href, templated = link.templated)
+            ?: link
+
+        services.forEach { service -> service.get(link)?.let { return it } }
+        return fetcher.get(link)
+    }
+
+    /**
+     * Returns the resource targeted by the given [href]. Equivalent to get(Link(href: href))).
+     */
+    fun get(href: String): Resource =
+        get(Link(href = href))
+
+    /**
+     * Closes any opened resource associated with the [Publication], including [services].
+     */
+    fun close() = GlobalScope.launch {
+        fetcher.close()
+        services.forEach { it.close() }
+    }
+
+    /**
+     * Returns the first publication service that is an instance of [klass].
+     */
+    fun <T: Service> findService(serviceType: KClass<T>): T? =
+        services.filterIsInstance(serviceType.java).firstOrNull()
+
+    enum class TYPE {
         EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
     }
 
-    @Parcelize
-    enum class EXTENSION(var value: String) : Parcelable {
+    enum class EXTENSION(var value: String) {
         EPUB(".epub"),
         CBZ(".cbz"),
         JSON(".json"),
@@ -91,34 +186,16 @@ data class Publication(
 
         companion object {
             fun fromString(type: String): EXTENSION? =
-                EXTENSION.values().firstOrNull { it.value == type }
+                values().firstOrNull { it.value == type }
         }
     }
 
-    @IgnoredOnParcel
-    internal lateinit var _positions: List<Locator>
-    internal val isPositionInitialized: Boolean get() = ::_positions.isInitialized
-
-    /**
-     * Returns the RWPM JSON representation for this manifest, as a string.
-     */
-    val manifest: String
-        get() = toJSON().toString()
-            .replace("\\/", "/")
-
-    /**
-     * Returns the URL where this [Publication] is served.
-     * This is computed from the [self] link.
-     */
-    val baseUrl: URL? get() =
-        linkWithRel("self")
-            ?.let { URL(it.href).removeLastComponent() }
 
     /**
      * Sets the URL where this [Publication]'s RWPM manifest is served.
      */
     fun setSelfLink(href: String) {
-        links = links.toMutableList().apply {
+        manifest.links = manifest.links.toMutableList().apply {
             removeAll { it.rels.contains("self") }
             add(Link(href = href, type = MediaType.READIUM_WEBPUB_MANIFEST.toString(), rels = setOf("self")))
         }
@@ -127,201 +204,44 @@ data class Publication(
     /**
      * Returns the [ContentLayout] for the default language.
      */
-    val contentLayout: ContentLayout get() = contentLayoutForLanguage(null)
+    val contentLayout: ContentLayout get() = metadata.contentLayout
 
     /**
      * Returns the [ContentLayout] for the given [language].
      */
-    fun contentLayoutForLanguage(language: String?): ContentLayout {
-        @Suppress("NAME_SHADOWING")
-        val language = language?.ifEmpty { null }
-
-        return ContentLayout.from(
-            language = language ?: metadata.languages.firstOrNull() ?: "",
-            readingProgression = metadata.readingProgression
-        )
-    }
-
-    /**
-     * Finds the first [Link] matching the given [predicate] in the publications's [Link]
-     * properties: [resources], [readingOrder] and [links].
-     */
-    fun link(predicate: (Link) -> Boolean): Link? {
-        return deepFind(resources, predicate)
-            ?: deepFind(readingOrder, predicate)
-            ?: deepFind(links, predicate)
-    }
-
-    /**
-     * Finds the first [Link] having the given [rel] in the publications's links.
-     */
-    fun linkWithRel(rel: String): Link? =
-        link { it.rels.contains(rel) }
-
-    /**
-     * Finds the first [Link] having the given [rel] matching the given [predicate], in the
-     * publications' links.
-     */
-    internal fun linkWithRelMatching(predicate: (String) -> Boolean): Link? {
-        for (link in links) {
-            for (rel in link.rels) {
-                if (predicate(rel)) {
-                    return link
-                }
-            }
-        }
-        return null
-    }
-
-    /**
-     * Finds the first [Link] having the given [href] in the publications's links.
-     */
-    fun linkWithHref(href: String): Link? =
-        link { it.hasHref(href) }
-
-    /**
-     * Finds the first resource [Link] (asset or [readingOrder] item) at the given relative path.
-     */
-    fun resourceWithHref(href: String): Link? {
-        return deepFind(readingOrder) { it.hasHref(href) }
-            ?: deepFind(resources) { it.hasHref(href) }
-    }
-
-    /**
-     * Finds the first [Link] in [collection] that satisfies the given [predicate]
-     */
-    private fun deepFind(collection: List<Link>, predicate: (Link) -> Boolean) : Link? {
-        for (l in collection) {
-            if (predicate(l))
-                return l
-            else
-                deepFind(l.alternates, predicate)?.let { return it }
-        }
-        return null
-    }
-
-
-    // FIXME: Why do we need to check if there's a / at the beginning? Hrefs should be normalized everywhere
-    private fun Link.hasHref(href: String) =
-        this.href == href || this.href == "/$href"
-
-    /**
-     * Finds the first [Link] to the publication's cover ([rel] = cover).
-     */
-    val coverLink: Link? get() = linkWithRel("cover")
-
-    /**
-     * Serializes a [Publication] to its RWPM JSON representation.
-     */
-    override fun toJSON() = JSONObject().apply {
-        putIfNotEmpty("@context", context)
-        put("metadata", metadata.toJSON())
-        put("links", links.toJSON())
-        put("readingOrder", readingOrder.toJSON())
-        putIfNotEmpty("resources", resources)
-        putIfNotEmpty("toc", tableOfContents)
-        otherCollections.appendToJSONObject(this)
-    }
+    fun contentLayoutForLanguage(language: String?) = metadata.contentLayoutForLanguage(language)
 
     /**
      * Returns the [links] of the first child [PublicationCollection] with the given role, or an
      * empty list.
      */
     internal fun linksWithRole(role: String): List<Link> =
-        otherCollections.firstWithRole(role)?.links ?: emptyList()
+        subcollections[role]?.firstOrNull()?.links ?: emptyList()
 
-    /**
-     * Copy the [Publication] with a different [PositionListFactory].
-     * The provided closure will be used to build the [PositionListFactory], with [this] being the
-     * [Publication].
-     */
-    fun copyWithPositionsFactory(createFactory: Publication.() -> PositionListFactory): Publication {
-        return run { copy(positionsFactory = createFactory()) }
+    // FIXME: Why do we need to check if there's a / at the beginning? Hrefs should be normalized everywhere
+    private fun Link.hasHref(href: String) =
+        this.href == href || this.href == "/$href"
+
+    private fun List<Link>.deepLinkWithHref(href: String): Link? {
+        for (l in this) {
+            if (l.hasHref(href))
+                return l
+            else {
+                l.alternates.deepLinkWithHref(href)?.let { return it }
+                l.children.deepLinkWithHref(href)?.let { return it }
+            }
+        }
+        return null
     }
 
-    /**
-     * Returns whether all the resources in the reading order are bitmaps.
-     */
-    internal val allReadingOrderIsBitmap: Boolean get() =
-        readingOrder.all {
-            it.mediaType?.isBitmap == true
-        }
-
-    /**
-     * Returns whether all the resources in the reading order are audio clips.
-     */
-    internal val allReadingOrderIsAudio: Boolean get() =
-        readingOrder.all {
-            it.mediaType?.isAudio == true
-        }
-
-    /**
-     * Returns whether all the resources in the reading order are contained in any of the given media types.
-     */
-    internal fun allReadingOrderMatchesAnyOf(vararg mediaTypes: MediaType): Boolean =
-        readingOrder.all { link ->
-            mediaTypes.any { link.mediaType?.matches(it) == true }
-        }
-
     companion object {
-
-        fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Publication? =
-            fromJSON(json, normalizeHref, null)
-
-        /**
-         * Parses a [Publication] from its RWPM JSON representation.
-         *
-         * If the publication can't be parsed, a warning will be logged with [warnings].
-         * https://readium.org/webpub-manifest/
-         * https://readium.org/webpub-manifest/schema/publication.schema.json
-         */
-        internal fun fromJSON(
-            json: JSONObject?,
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
-        ): Publication? {
-            json ?: return null
-
-            val context = json.optStringsFromArrayOrSingle("@context", remove = true)
-
-            val metadata = Metadata.fromJSON(json.remove("metadata") as? JSONObject, normalizeHref, warnings)
-            if (metadata == null) {
-                warnings?.log(Publication::class.java, "[metadata] is required", json)
-                return null
-            }
-
-            val links = Link.fromJSONArray(json.remove("links") as? JSONArray, normalizeHref, warnings)
-
-            // [readingOrder] used to be [spine], so we parse [spine] as a fallback.
-            val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JSONArray
-            val readingOrder = Link.fromJSONArray(readingOrderJSON, normalizeHref, warnings)
-                .filter { it.type != null }
-
-            val resources = Link.fromJSONArray(json.remove("resources") as? JSONArray, normalizeHref, warnings)
-                .filter { it.type != null }
-
-            val tableOfContents = Link.fromJSONArray(json.remove("toc") as? JSONArray, normalizeHref, warnings)
-
-            // Parses sub-collections from the remaining JSON properties.
-            val otherCollections = PublicationCollection.collectionsFromJSON(json, normalizeHref, warnings)
-
-            return Publication(
-                context = context,
-                metadata = metadata,
-                links = links,
-                readingOrder = readingOrder,
-                resources = resources,
-                tableOfContents = tableOfContents,
-                otherCollections = otherCollections
-            )
-        }
 
         /**
          * Creates the base URL for a [Publication] locally served through HTTP, from the
          * publication's [filename] and the HTTP server [port].
          *
          * Note: This is used for backward-compatibility, but ideally this should be handled by the
-         * [Server], and set in the self [Link]. Unfortunately, the self [Link] is not available
+         * Server, and set in the self [Link]. Unfortunately, the self [Link] is not available
          * in the navigator at the moment without changing the code in reading apps.
          */
         fun localBaseUrlOf(filename: String, port: Int): String {
@@ -339,13 +259,138 @@ data class Publication(
         fun localUrlOf(filename: String, port: Int, href: String): String =
             localBaseUrlOf(filename, port) + href
 
+        @Deprecated("Parse a RWPM with [Manifest::fromJSON] and then instantiate a Publication",
+            ReplaceWith("Manifest.fromJSON(manifestDict)?.let { Publication(it, fetcher = aFetcher) }",
+                "org.readium.r2.shared.publication.Publication", "org.readium.r2.shared.publication.Manifest"))
+        fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Publication? =
+            Manifest.fromJSON(json, normalizeHref, null)?.let { Publication(it) }
+
     }
 
-    @IgnoredOnParcel
+    /**
+     * Base interface to be implemented by all publication services.
+     */
+    interface Service {
+
+        /**
+         * Container for the context from which a service is created.
+         */
+        data class Context(
+            val manifest: Manifest,
+            val fetcher: Fetcher
+        )
+
+        /**
+         * Links which will be added to [Publication.links].
+         * It can be used to expose a web API for the service, through [Publication.get].
+         *
+         * To disambiguate the href with a publication's local resources, you should use the prefix
+         * `/~readium/`. A custom media type or rel should be used to identify the service.
+         *
+         * You can use a templated URI to accept query parameters, e.g.:
+         *
+         * ```
+         * Link(
+         *     href = "/~readium/search{?text}",
+         *     type = "application/vnd.readium.search+json",
+         *     templated = true
+         * )
+         * ```
+         */
+        val links: List<Link> get () = emptyList()
+
+        /**
+         * A service can return a Resource to:
+         *  - respond to a request to its web API declared in links,
+         *  - serve additional resources on behalf of the publication,
+         *  - replace a publication resource by its own version.
+         *
+         * Called by [Publication.get] for each request.
+         *
+         * @return The [Resource] containing the response, or null if the service doesn't recognize
+         *         this request.
+         */
+        fun get(link: Link): Resource? = null
+
+        /**
+         * Closes any opened file handles, removes temporary files, etc.
+         */
+        fun close() {}
+
+    }
+
+    /**
+     * Builds a list of [Publication.Service] from a collection of service factories.
+     *
+     * Provides helpers to manipulate the list of services of a [Publication].
+     */
+    data class ServicesBuilder(internal var serviceFactories: MutableMap<String, ServiceFactory>) {
+
+        @Suppress("UNCHECKED_CAST")
+        constructor(
+            positions: ServiceFactory? = null,
+            cover: ServiceFactory? = null
+        ) : this(mapOf(
+            PositionsService::class.java.simpleName to positions,
+            CoverService::class.java.simpleName to cover
+        ).filterValues { it != null }.toMutableMap() as MutableMap<String, ServiceFactory>)
+
+        /** Builds the actual list of publication services to use in a Publication. */
+        fun build(context: Service.Context) : List<Service> = serviceFactories.values.mapNotNull { it(context) }
+
+        /** Gets the publication service factory for the given service type. */
+        operator fun <T : Service> get(serviceType: KClass<T>): ServiceFactory? {
+            val key = requireNotNull(serviceType.simpleName)
+            return serviceFactories[key]
+        }
+
+        /** Sets the publication service factory for the given service type. */
+        operator fun <T : Service> set(serviceType: KClass<T>, factory: ServiceFactory?) {
+            val key = requireNotNull(serviceType.simpleName)
+            if (factory != null) {
+                serviceFactories[key] = factory
+            } else {
+                serviceFactories.remove(key)
+            }
+        }
+
+        /** Removes the service factory producing the given kind of service, if any. */
+        fun <T : Service> remove(serviceType: KClass<T>) {
+            val key = requireNotNull(serviceType.simpleName)
+            serviceFactories.remove(key)
+        }
+
+        /**
+         * Replaces the service factory associated with the given service type with the result of
+         * [transform].
+         */
+        fun <T : Service> wrap(serviceType: KClass<T>, transform: ((ServiceFactory)?) -> ServiceFactory) {
+            val key = requireNotNull(serviceType.simpleName)
+            serviceFactories[key] = transform(serviceFactories[key])
+        }
+
+    }
+
+    /**
+     * Finds the first [Link] to the publication's cover (rel = cover).
+     */
+    @Deprecated("Use [Publication.cover] to get the cover as a [Bitmap]", ReplaceWith("cover"))
+    val coverLink: Link? get() = linkWithRel("cover")
+
+    /**
+     * Copy the [Publication] with a different [PositionListFactory].
+     * The provided closure will be used to build the [PositionListFactory], with this being the
+     * [Publication].
+     */
+    @Suppress("DEPRECATION")
+    @Deprecated("Use [Publication.copy(serviceFactories)] instead", ReplaceWith("Publication.copy(serviceFactories = listOf(positionsServiceFactory)"), level = DeprecationLevel.ERROR)
+    fun copyWithPositionsFactory(createFactory: Publication.() -> PositionListFactory): Publication {
+        throw NotImplementedError()
+    }
+
     @Deprecated("Renamed to [listOfAudioClips]", ReplaceWith("listOfAudioClips"))
     val listOfAudioFiles: List<Link> = listOfAudioClips
 
-    @IgnoredOnParcel
     @Deprecated("Renamed to [listOfVideoClips]", ReplaceWith("listOfVideoClips"))
     val listOfVideos: List<Link> = listOfVideoClips
 
@@ -355,8 +400,8 @@ data class Publication(
     @Deprecated("Refactored as a property", ReplaceWith("baseUrl"))
     fun baseUrl(): URL? = baseUrl
 
-    @Deprecated("Refactored as a property", ReplaceWith("manifest"))
-    fun manifest(): String = manifest
+    @Deprecated("Renamed [subcollections]", ReplaceWith("subcollections"))
+    val otherCollections: Map<String, List<PublicationCollection>> get() = subcollections
 
     @Deprecated("Use [setSelfLink] instead", ReplaceWith("setSelfLink"))
     fun addSelfLink(endPoint: String, baseURL: URL) {
@@ -367,5 +412,40 @@ data class Publication(
             .toString()
         )
     }
+
+    /**
+     * Finds the first resource [Link] (asset or [readingOrder] item) at the given relative path.
+     */
+    @Deprecated("Use [linkWithHref] instead.", ReplaceWith("linkWithHref(href)"))
+    fun resourceWithHref(href: String): Link? {
+        return readingOrder.deepLinkWithHref(href)
+            ?: resources.deepLinkWithHref(href)
+    }
+
+    /**
+     * Creates a [Publication]'s [positions].
+     *
+     * The parsers provide an implementation of this interface for each format, but a host app
+     * might want to use a custom factory to implement, for example, a caching mechanism or use a
+     * different calculation method.
+     */
+    @Deprecated("Use a [ServiceFactory] for a [PositionsService] instead.")
+    interface PositionListFactory {
+        fun create(): List<Locator>
+    }
+
+    /**
+     * Finds the first [Link] matching the given [predicate] in the publications's [Link]
+     * properties: [resources], [readingOrder] and [links].
+     *
+     * Searches through (in order) [readingOrder], [resources] and [links]
+     * recursively following [alternate] and [children] links.
+     * The search order is unspecified.
+     */
+    @Deprecated("Use [linkWithHref()] to find a link with the given HREF", replaceWith = ReplaceWith("linkWithHref"), level = DeprecationLevel.ERROR)
+    fun link(predicate: (Link) -> Boolean): Link? = null
+
+    @Deprecated("Use [jsonManifest] instead", ReplaceWith("jsonManifest"))
+    fun toJSON() = JSONObject(jsonManifest)
 
 }

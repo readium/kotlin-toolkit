@@ -315,6 +315,13 @@ class MediaTypeTest {
     }
 
     @Test
+    fun `is video`() {
+        assertFalse(MediaType.parse("text/html")!!.isVideo)
+        assertTrue(MediaType.parse("video/unknown")!!.isVideo)
+        assertTrue(MediaType.parse("video/mpeg;param=value")!!.isVideo)
+    }
+
+    @Test
     fun `is RWPM`() {
         assertFalse(MediaType.parse("text/html")!!.isRwpm)
         assertTrue(MediaType.parse("application/audiobook+json")!!.isRwpm)

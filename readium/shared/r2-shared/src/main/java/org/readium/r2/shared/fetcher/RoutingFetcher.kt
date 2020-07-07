@@ -19,7 +19,7 @@ import org.readium.r2.shared.publication.Link
  *
  * The [routes] will be tested in the given order.
  */
-internal class RoutingFetcher(private val routes: List<Route>) : Fetcher {
+class RoutingFetcher(private val routes: List<Route>) : Fetcher {
 
     /**
      * Holds a child fetcher and the predicate used to determine if it can answer a request.
@@ -31,10 +31,12 @@ internal class RoutingFetcher(private val routes: List<Route>) : Fetcher {
     constructor(local: Fetcher, remote: Fetcher)
             : this(listOf( Route(local, Link::isLocal), Route(remote) ))
 
-    override fun get(link: Link, parameters: HrefParameters): Resource =
+    override suspend fun links(): List<Link> = routes.flatMap { it.fetcher.links() }
+
+    override fun get(link: Link): Resource =
         routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: FailureResource(link, Resource.Error.NotFound)
 
-    override fun close() {
+    override suspend fun close() {
         routes.forEach { it.fetcher.close() }
     }
 }

@@ -10,7 +10,7 @@
 package org.readium.r2.shared.publication
 
 import org.json.JSONObject
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.readium.r2.shared.assertJSONEquals
 
@@ -55,6 +55,22 @@ class PropertiesTest {
                     "other-property2" to listOf(42)
                 )
             ).toJSON()
+        )
+    }
+
+    @Test fun `copy after adding the given {properties}`() {
+        val properties = Properties(otherProperties = mapOf<String, Any>(
+            "other-property1" to "value",
+            "other-property2" to listOf(42)
+        ))
+
+        assertJSONEquals(
+            JSONObject("""{
+                "other-property1": "value",
+                "other-property2": [42],
+                "additional": "property"
+            }"""),
+            properties.add(mapOf("additional" to "property")).toJSON()
         )
     }
 

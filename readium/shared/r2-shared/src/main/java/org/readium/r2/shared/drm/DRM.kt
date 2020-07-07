@@ -43,12 +43,3 @@ interface DRMLicense: Serializable {
     val canCopy: Boolean
     fun copy(text: String): String?
 }
-
-val DRMLicense.encryptionProfile: String?
-    get() = null
-
-val DRMLicense.canCopy: Boolean
-    get() = true
-
-fun DRMLicense.copy(text: String): String? =
-        if (canCopy) text else null

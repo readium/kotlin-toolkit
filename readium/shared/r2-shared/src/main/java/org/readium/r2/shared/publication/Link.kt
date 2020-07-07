@@ -10,15 +10,17 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
+import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.normalize
+import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
 /**
@@ -73,6 +75,30 @@ data class Link(
         type?.let { MediaType.parse(it) }
 
     /**
+     * List of URI template parameter keys, if the [Link] is templated.
+     */
+    @IgnoredOnParcel
+    val templateParameters: List<String> by lazy {
+        if (!templated)
+            emptyList()
+        else
+           URITemplate(href).parameters
+    }
+
+    /**
+     * Expands the HREF by replacing URI template variables by the given parameters.
+     *
+     * See RFC 6570 on URI template.
+     */
+    fun expandTemplate(parameters: Map<String, String>): Link =
+        copy(href = URITemplate(href).expand(parameters), templated = false)
+
+    /**
+     * Computes an absolute URL to the given Link.
+     */
+    fun toURL(baseURL: String) = normalize(baseURL, href)
+
+    /**
      * Serializes a [Link] to its RWPM JSON representation.
      */
     override fun toJSON(): JSONObject = JSONObject().apply {
@@ -90,6 +116,12 @@ data class Link(
         putIfNotEmpty("alternate", alternates)
         putIfNotEmpty("children", children)
     }
+
+    /**
+     * Makes a copy of this [Link] after merging in the given additional other [properties].
+     */
+    fun addProperties(properties: Map<String, Any>): Link =
+        copy(properties = this.properties.add(properties))
 
     companion object {
 
@@ -159,9 +191,89 @@ data class Link(
 
 }
 
+// FIXME: in Publication we use Link.hasHref extension to normalize href before comparing them
+
 /**
- * Returns the first [Link] with the given [href], or [null] if not found.
+ * Returns the first [Link] with the given [href], or null if not found.
  */
 fun List<Link>.indexOfFirstWithHref(href: String): Int? =
     indexOfFirst { it.href == href }
         .takeUnless { it == -1 }
+
+/**
+ * Finds the first link matching the given HREF.
+ */
+fun List<Link>.firstWithHref(href: String): Link? = firstOrNull { it.href == href }
+
+/**
+ * Finds the first link with the given relation.
+ */
+fun List<Link>.firstWithRel(rel: String): Link? = firstOrNull { it.rels.contains(rel) }
+
+/**
+ * Finds all the links with the given relation.
+ */
+fun List<Link>.filterByRel(rel: String): List<Link> = filter { it.rels.contains(rel) }
+
+/**
+ * Finds the first link matching the given media type.
+ */
+fun List<Link>.firstWithMediaType(mediaType: MediaType): Link? = firstOrNull {
+    it.mediaType?.matches(mediaType) ?: false
+}
+
+/**
+ * Finds all the links matching the given media type.
+ */
+fun List<Link>.filterByMediaType(mediaType: MediaType): List<Link> = filter {
+    it.mediaType?.matches(mediaType) ?: false
+}
+
+/**
+ * Finds all the links matching any of the given media types.
+ */
+fun List<Link>.filterByMediaTypes(mediaTypes: List<MediaType>): List<Link> = filter {
+    mediaTypes.any { mediaType ->  mediaType.matches(it.type) }
+}
+
+/**
+ * Returns whether all the resources in the collection are bitmaps.
+ */
+val List<Link>.allAreBitmap: Boolean get() = all {
+    it.mediaType?.isBitmap ?: false
+}
+
+/**
+ * Returns whether all the resources in the collection are audio clips.
+ */
+val List<Link>.allAreAudio: Boolean get() = all {
+    it.mediaType?.isAudio ?: false
+}
+
+/**
+ * Returns whether all the resources in the collection are video clips.
+ */
+val List<Link>.allAreVideo: Boolean get() = all {
+    it.mediaType?.isVideo ?: false
+}
+
+/**
+ * Returns whether all the resources in the collection are HTML documents.
+ */
+val List<Link>.allAreHtml: Boolean get() = all {
+    it.mediaType?.isHtml ?: false
+}
+
+/**
+ * Returns whether all the resources in the collection are matching the given media type.
+ */
+fun List<Link>.allMatchMediaType(mediaType: MediaType): Boolean = all {
+    mediaType.matches(it.mediaType)
+}
+
+/**
+ * Returns whether all the resources in the collection are matching any of the given media types.
+ */
+fun List<Link>.allMatchMediaTypes(mediaTypes: List<MediaType>): Boolean = all {
+    mediaTypes.any { mediaType -> mediaType.matches(it.mediaType) }
+}

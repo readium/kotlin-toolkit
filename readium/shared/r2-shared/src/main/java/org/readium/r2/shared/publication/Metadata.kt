@@ -10,16 +10,16 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
+import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import java.util.*
 
@@ -75,6 +75,31 @@ data class Metadata(
      * Returns the default translation string for the [localizedSortAs].
      */
     val sortAs: String? get() = localizedSortAs?.string
+
+    /**
+     * Computes a [ReadingProgression] when the value of [Metadata.readingProgression] is set to
+     * auto, using the publication language.
+     */
+    @IgnoredOnParcel
+    val effectiveReadingProgression: ReadingProgression get() = contentLayout.readingProgression
+
+    /**
+     * Returns the [ContentLayout] for the default language.
+     */
+    internal val contentLayout: ContentLayout get() = contentLayoutForLanguage(null)
+
+    /**
+     * Returns the [ContentLayout] for the given [language].
+     */
+    internal fun contentLayoutForLanguage(language: String?): ContentLayout {
+        @Suppress("NAME_SHADOWING")
+        val language = language?.ifEmpty { null }
+
+        return ContentLayout.from(
+            language = language ?: languages.firstOrNull() ?: "",
+            readingProgression = readingProgression
+        )
+    }
 
     /**
      * Serializes a [Metadata] to its RWPM JSON representation.

@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.shared.pdf
+package org.readium.r2.shared.util.pdf
 
 import android.graphics.Bitmap
 import org.readium.r2.shared.PdfSupport

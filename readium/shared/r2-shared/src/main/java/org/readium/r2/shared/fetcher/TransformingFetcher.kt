@@ -15,17 +15,19 @@ import org.readium.r2.shared.publication.Link
  * Transforms the resources' content of a child fetcher using a list of [ResourceTransformer]
  * functions.
  */
-internal class TransformingFetcher(private val fetcher: Fetcher, private val transformers: List<ResourceTransformer>) : Fetcher {
+class TransformingFetcher(private val fetcher: Fetcher, private val transformers: List<ResourceTransformer>) : Fetcher {
 
     constructor(fetcher: Fetcher, transformer: ResourceTransformer)
             : this(fetcher, listOf(transformer))
 
-    override fun get(link: Link, parameters: HrefParameters): Resource {
+    override suspend fun links(): List<Link> = fetcher.links()
+
+    override fun get(link: Link): Resource {
         val resource = fetcher.get(link)
         return transformers.fold(resource) { acc, transformer -> transformer(acc) }
     }
 
-    override fun close() {
+    override suspend fun close() {
         fetcher.close()
     }
 }

@@ -18,8 +18,9 @@ class PublicationCollectionTest {
 
     @Test fun `parse minimal JSON`() {
         assertEquals(
-            PublicationCollection(role = "guided", links = listOf(Link(href = "/link"))),
-            PublicationCollection.fromJSON("guided", JSONObject("""{
+            PublicationCollection(
+                links = listOf(Link(href = "/link"))),
+            PublicationCollection.fromJSON(JSONObject("""{
                 "metadata": {},
                 "links": [{"href": "/link"}]
             }"""))
@@ -29,17 +30,18 @@ class PublicationCollectionTest {
     @Test fun `parse full JSON`() {
         assertEquals(
             PublicationCollection(
-                role = "guided",
                 metadata = mapOf("metadata1" to "value"),
                 links = listOf(Link(href = "/link")),
-                otherCollections = listOf(
-                    PublicationCollection(role = "sub1", links = listOf(Link(href = "/sublink"))),
-                    PublicationCollection(role = "sub2", links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))),
-                    PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink3"))),
-                    PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink4")))
+                subcollections = mapOf(
+                    "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                    "sub2" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2")))),
+                    "sub3" to listOf(
+                        PublicationCollection(links = listOf(Link(href = "/sublink3"))),
+                        PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                    )
                 )
             ),
-            PublicationCollection.fromJSON("guided", JSONObject("""{
+            PublicationCollection.fromJSON(JSONObject("""{
                 "metadata": {
                     "metadata1": "value"
                 },
@@ -72,16 +74,18 @@ class PublicationCollectionTest {
     }
 
     @Test fun `parse null JSON`() {
-        assertNull(PublicationCollection.fromJSON("guided", null))
+        assertNull(PublicationCollection.fromJSON(null))
     }
 
     @Test fun `parse multiple JSON collections`() {
         assertEquals(
-            listOf(
-                PublicationCollection(role = "sub1", links = listOf(Link(href = "/sublink"))),
-                PublicationCollection(role = "sub2", links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))),
-                PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink3"))),
-                PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink4")))
+            mapOf(
+                "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                "sub2" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2")))),
+                "sub3" to listOf(
+                    PublicationCollection(links = listOf(Link(href = "/sublink3"))),
+                    PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                )
             ),
             PublicationCollection.collectionsFromJSON(JSONObject("""{
                 "sub1": {
@@ -115,7 +119,7 @@ class PublicationCollectionTest {
                 "metadata": {},
                 "links": [{"href": "/link", "templated": false}]
             }"""),
-            PublicationCollection(role = "guided", links = listOf(Link(href = "/link"))).toJSON()
+            PublicationCollection(links = listOf(Link(href = "/link"))).toJSON()
         )
     }
 
@@ -157,14 +161,15 @@ class PublicationCollectionTest {
                 ]
             }"""),
             PublicationCollection(
-                role = "guided",
                 metadata = mapOf("metadata1" to "value"),
                 links = listOf(Link(href = "/link")),
-                otherCollections = listOf(
-                    PublicationCollection(role = "sub1", links = listOf(Link(href = "/sublink"))),
-                    PublicationCollection(role = "sub2", links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))),
-                    PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink3"))),
-                    PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink4")))
+                subcollections = mapOf(
+                    "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                    "sub2" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2")))),
+                    "sub3" to listOf(
+                        PublicationCollection(links = listOf(Link(href = "/sublink3"))),
+                        PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                    )
                 )
             ).toJSON()
         )
@@ -201,48 +206,14 @@ class PublicationCollectionTest {
                     }
                 ]
             }"""),
-            listOf(
-                PublicationCollection(role = "sub1", links = listOf(Link(href = "/sublink"))),
-                PublicationCollection(role = "sub2", links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))),
-                PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink3"))),
-                PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink4")))
+            mapOf(
+                "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                "sub2" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2")))),
+                "sub3" to listOf(
+                    PublicationCollection(links = listOf(Link(href = "/sublink3"))),
+                    PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                )
             ).toJSONObject()
         )
     }
-
-    @Test fun `get first collection by role`() {
-        assertEquals(
-            PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink3"))),
-            listOf(
-                PublicationCollection(role = "sub1", links = listOf(Link(href = "/sublink"))),
-                PublicationCollection(role = "sub2", links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))),
-                PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink3"))),
-                PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink4")))
-            ).firstWithRole("sub3")
-        )
-    }
-
-    @Test fun `get first collection by role when missing`() {
-        assertNull(emptyList<PublicationCollection>().firstWithRole("sub"))
-    }
-
-    @Test fun `get all the collections by role`() {
-        assertEquals(
-            listOf(
-                PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink3"))),
-                PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink4")))
-            ),
-            listOf(
-                PublicationCollection(role = "sub1", links = listOf(Link(href = "/sublink"))),
-                PublicationCollection(role = "sub2", links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))),
-                PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink3"))),
-                PublicationCollection(role = "sub3", links = listOf(Link(href = "/sublink4")))
-            ).findAllWithRole("sub3")
-        )
-    }
-
-    @Test fun `get all the collections by role when missing`() {
-        assertEquals(0, emptyList<PublicationCollection>().findAllWithRole("sub").size)
-    }
-
 }
