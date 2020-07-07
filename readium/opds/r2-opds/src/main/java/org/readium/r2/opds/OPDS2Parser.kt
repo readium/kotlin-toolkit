@@ -18,6 +18,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.opds.*
 import org.readium.r2.shared.promise
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import java.net.URL
 
@@ -54,7 +55,7 @@ class OPDS2Parser {
             return if (isFeed(jsonData)) {
                 ParseData(parseFeed(jsonData, url), null, 2)
             } else {
-                ParseData(null, Publication.fromJSON(JSONObject(String(jsonData))), 2)
+                ParseData(null, Manifest.fromJSON(JSONObject(String(jsonData)))?.let { Publication(it) }, 2)
             }
         }
 
@@ -193,8 +194,8 @@ class OPDS2Parser {
         private fun parsePublications(feed: Feed, publications: JSONArray) {
             for (i in 0 until publications.length()) {
                 val pubDict = publications.getJSONObject(i)
-                Publication.fromJSON(pubDict)?.let { pub ->
-                    feed.publications.add(pub)
+                Manifest.fromJSON(pubDict)?.let { manifest ->
+                    feed.publications.add(Publication(manifest))
                 }
             }
         }
@@ -243,8 +244,8 @@ class OPDS2Parser {
                             ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
                     for (j in 0 until publications.length()) {
                         val pubDict = publications.getJSONObject(j)
-                        Publication.fromJSON(pubDict)?.let { pub ->
-                            group.publications.add(pub)
+                        Manifest.fromJSON(pubDict)?.let { manifest ->
+                            group.publications.add(Publication(manifest))
                         }
                     }
                 }

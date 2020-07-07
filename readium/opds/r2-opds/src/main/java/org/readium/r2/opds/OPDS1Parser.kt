@@ -280,7 +280,7 @@ class OPDS1Parser {
 
             links = links - images
 
-            return Publication(
+            val manifest = Manifest(
                 metadata = Metadata(
                     identifier = entry.getFirst("identifier", Namespaces.Dc)?.text
                         ?: entry.getFirst("id", Namespaces.Atom)?.text,
@@ -330,11 +330,14 @@ class OPDS1Parser {
                 ),
 
                 links = links,
-                otherCollections = listOfNotNull(
-                    images.takeIf { it.isNotEmpty() }
-                        ?.let { PublicationCollection(role = "images", links = it) }
-                )
+                subcollections = mapOf(
+                    "images" to listOfNotNull(
+                        images.takeIf { it.isNotEmpty() }
+                        ?.let { PublicationCollection(links = it) }
+                    )
+                ).filterValues { it.isNotEmpty() }
             )
+            return Publication(manifest)
         }
 
         private fun addFacet(feed: Feed, link: Link, title: String) {
