@@ -11,6 +11,7 @@ package org.readium.r2.navigator
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.FragmentNavigator
 import org.readium.r2.shared.PdfSupport
@@ -20,6 +21,8 @@ import org.readium.r2.shared.publication.Publication
 @FragmentNavigator
 class NavigatorFragmentFactory(
     private val publication: Publication,
+    private val publicationPath: String,
+    private val publicationFileName: String,
     private val initialLocator: Locator? = null,
     private val listener: Navigator.Listener? = null
 ) : FragmentFactory() {
@@ -28,6 +31,7 @@ class NavigatorFragmentFactory(
     override fun instantiate(classLoader: ClassLoader, className: String): Fragment =
         when (className) {
             PdfNavigatorFragment::class.java.name -> PdfNavigatorFragment(publication, initialLocator, listener)
+            EpubNavigatorFragment::class.java.name -> EpubNavigatorFragment(publication, publicationPath, publicationFileName, initialLocator, listener)
             else -> super.instantiate(classLoader, className)
         }
 

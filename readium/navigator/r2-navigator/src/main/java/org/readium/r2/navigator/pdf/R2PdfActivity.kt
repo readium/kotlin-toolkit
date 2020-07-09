@@ -22,14 +22,18 @@ import org.readium.r2.shared.publication.Publication
 class R2PdfActivity : AppCompatActivity() {
 
     private lateinit var publication: Publication
+    private lateinit var publicationPath: String
+    private lateinit var publicationFileName: String
 
     @OptIn(FragmentNavigator::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         publication = intent.getPublication(this)
+        publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
+        publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
 
-        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication)
+        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, publicationPath, publicationFileName)
 
         setContentView(R.layout.activity_r2_pdf)
     }

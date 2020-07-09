@@ -60,6 +60,7 @@ class R2PagerAdapter(fm: FragmentManager, private val resources: List<Any>, priv
                 }
                 Publication.TYPE.CBZ -> R2CbzPageFragment.newInstance(publicationPath, resources[position] as String)
                 Publication.TYPE.DiViNa -> TODO()
+                Publication.TYPE.PDF -> TODO()
             }
 
     override fun getCount(): Int {
