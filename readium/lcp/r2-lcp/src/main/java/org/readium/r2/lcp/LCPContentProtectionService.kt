@@ -15,13 +15,13 @@ import org.readium.r2.shared.publication.services.ContentProtectionService
 
 internal class LCPContentProtectionService(license: LCPLicense?) : ContentProtectionService {
 
-    override val isLocked: Boolean = license != null
+    override val isRestricted: Boolean = license != null
 
     override val credentials: String? = null
 
     override val rights: ContentProtectionService.UserRights =
         license?.let { LCPUserRights(it) }
-            ?: ContentProtectionService.UserRights.AllRestrictedUserRights
+            ?: ContentProtectionService.UserRights.AllRestricted
 
     override val name: LocalizedString = LocalizedString("Readium LCP")
 
