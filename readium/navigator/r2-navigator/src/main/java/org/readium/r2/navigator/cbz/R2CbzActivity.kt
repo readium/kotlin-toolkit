@@ -16,6 +16,8 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
@@ -28,6 +30,7 @@ import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
+import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.extensions.destroyPublication
@@ -36,8 +39,19 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positions
 import kotlin.coroutines.CoroutineContext
 
-
 open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator {
+
+    private class R2CbzPageFragmentFactory(
+        private val publication: Publication
+    ) : FragmentFactory() {
+
+        override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
+            return when (className) {
+                R2CbzPageFragment::class.java.name -> R2CbzPageFragment(publication)
+                else -> super.instantiate(classLoader, className)
+            }
+        }
+    }
 
     override val currentLocator: LiveData<Locator?> get() = _currentLocator
     private val _currentLocator = MutableLiveData<Locator?>(null)
@@ -124,8 +138,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         publicationIdentifier = publication.metadata.identifier!!
         title = publication.metadata.title
 
-        resources = publication.readingOrder.map { it.href }
-
+        supportFragmentManager.fragmentFactory = R2CbzPageFragmentFactory(publication)
 
         resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
 
@@ -135,7 +148,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
         })
 
-        adapter = R2PagerAdapter(supportFragmentManager, resources, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
+        adapter = R2PagerAdapter(supportFragmentManager, publication.readingOrder, publication.metadata.title, Publication.TYPE.CBZ, publicationPath)
 
         resourcePager.adapter = adapter
 
@@ -152,10 +165,9 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        intent.destroyPublication(this)
+    override fun finish() {
+        setResult(Activity.RESULT_OK, intent)
+        super.finish()
     }
 
     override fun onStart() {

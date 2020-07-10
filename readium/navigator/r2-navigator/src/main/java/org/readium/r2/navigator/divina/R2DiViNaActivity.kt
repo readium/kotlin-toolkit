@@ -10,6 +10,7 @@
 package org.readium.r2.navigator.divina
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -101,10 +102,14 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
         }
     }
 
+    override fun finish() {
+        setResult(Activity.RESULT_OK, intent)
+        super.finish()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         divinaWebView.evaluateJavascript("if (player) { player.destroy(); };", null)
-        intent.destroyPublication(this)
     }
 }
 

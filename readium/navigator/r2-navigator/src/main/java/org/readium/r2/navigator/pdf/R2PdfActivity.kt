@@ -9,6 +9,7 @@
 
 package org.readium.r2.navigator.pdf
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import org.readium.r2.navigator.NavigatorFragmentFactory
@@ -36,6 +37,11 @@ class R2PdfActivity : AppCompatActivity() {
         supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, publicationPath, publicationFileName)
 
         setContentView(R.layout.activity_r2_pdf)
+    }
+
+    override fun finish() {
+        setResult(Activity.RESULT_OK, intent)
+        super.finish()
     }
 
 }

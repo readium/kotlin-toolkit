@@ -15,44 +15,38 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
-import org.zeroturnaround.zip.ZipUtil
-import java.io.ByteArrayInputStream
-import java.io.File
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
+import kotlin.coroutines.CoroutineContext
 
 
-class R2CbzPageFragment : androidx.fragment.app.Fragment() {
+class R2CbzPageFragment(private val publication: Publication)
+    : androidx.fragment.app.Fragment(), CoroutineScope  {
 
-    private val publication: String?
-        get() = arguments!!.getString("publication")
-    private val resource: String?
-        get() = arguments!!.getString("resource")
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
+
+    private val link: Link
+        get() = requireArguments().getParcelable<Link>("link")!!
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        val v = inflater.inflate(R.layout.viewpager_fragment_cbz, container, false)
-        val imageView = v.findViewById<ImageView>(R.id.imageView)
+        val view = inflater.inflate(R.layout.viewpager_fragment_cbz, container, false)
+        val imageView = view.findViewById<ImageView>(R.id.imageView)
 
-        val blob = ZipUtil.unpackEntry(File(publication), resource?.removePrefix("/"))
-        blob?.let {
-            val arrayInputStream = ByteArrayInputStream(it)
-            val bitmap = BitmapFactory.decodeStream(arrayInputStream)
-            imageView.setImageBitmap(bitmap)
-        }
+       launch {
+           publication.get(link)
+               .read()
+               .getOrNull()
+               ?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
+               ?.let { imageView.setImageBitmap(it) }
+       }
 
-        return v
-    }
-
-    companion object {
-
-        fun newInstance(publication: String, resource: String): R2CbzPageFragment {
-            val args = Bundle()
-            args.putString("publication", publication)
-            args.putString("resource", resource)
-            val fragment = R2CbzPageFragment()
-            fragment.arguments = args
-            return fragment
-        }
+       return view
     }
 
 }

@@ -9,6 +9,7 @@
 
 package org.readium.r2.navigator.epub
 
+import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
@@ -28,16 +29,12 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.FragmentNavigator
-import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.presentation
 import kotlin.coroutines.CoroutineContext
 
 
@@ -97,12 +94,13 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         setContentView(R.layout.activity_r2_epub)
 
         resourcePager = findViewById<View>(R.id.epub_navigator).rootView.findViewById(R.id.resourcePager)
+
+        title = null
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        intent.destroyPublication(this)
+    override fun finish() {
+        setResult(Activity.RESULT_OK, intent)
+        super.finish()
     }
 
     override fun onResume() {
