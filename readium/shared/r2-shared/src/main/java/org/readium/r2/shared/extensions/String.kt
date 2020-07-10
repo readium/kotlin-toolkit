@@ -13,6 +13,7 @@ import org.joda.time.DateTime
 import org.json.JSONException
 import org.json.JSONObject
 import java.net.URL
+import java.net.URLDecoder
 import java.security.MessageDigest
 import java.util.*
 
@@ -58,3 +59,10 @@ internal fun String.toJsonOrNull(): JSONObject? =
     } catch (e: JSONException) {
         null
     }
+
+internal fun String.queryParameters(): Map<String, String> = URLDecoder.decode(this, "UTF-8")
+    .substringAfter("?") // query start
+    .takeWhile { it != '#' } // anchor start
+    .split("&")
+    .mapNotNull { it.split("=").takeIf { it.size == 2 } }
+    .associate { Pair(it[0], it[1]) }

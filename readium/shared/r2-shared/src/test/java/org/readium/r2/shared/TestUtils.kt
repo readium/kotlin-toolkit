@@ -52,12 +52,12 @@ class Fixtures(val path: String? = null) {
 
 internal fun Resource.readBlocking(range: LongRange? = null) = runBlocking { read(range) }
 
-internal fun Fetcher.readBlocking(href: String) = get(Link(href = href)).readBlocking()
+internal fun Fetcher.readBlocking(href: String) = runBlocking { get(Link(href = href)).use { it.readBlocking() } }
 
 internal fun Resource.lengthBlocking() = runBlocking { length() }
 
-internal fun Fetcher.lengthBlocking(href: String) = get(Link(href = href)).lengthBlocking()
+internal fun Fetcher.lengthBlocking(href: String) = runBlocking { get(Link(href = href)).use { it.lengthBlocking() } }
 
 internal fun Resource.linkBlocking() = runBlocking { link() }
 
-internal fun Fetcher.linkBlocking(href: String) = get(Link(href = href)).linkBlocking()
+internal fun Fetcher.linkBlocking(href: String) = runBlocking { get(Link(href = href)).use { it.linkBlocking() } }

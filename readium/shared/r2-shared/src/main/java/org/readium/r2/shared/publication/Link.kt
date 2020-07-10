@@ -17,9 +17,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.normalize
 import org.readium.r2.shared.util.URITemplate
-import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
@@ -94,11 +92,6 @@ data class Link(
         copy(href = URITemplate(href).expand(parameters), templated = false)
 
     /**
-     * Computes an absolute URL to the given Link.
-     */
-    fun toURL(baseURL: String) = normalize(baseURL, href)
-
-    /**
      * Serializes a [Link] to its RWPM JSON representation.
      */
     override fun toJSON(): JSONObject = JSONObject().apply {
@@ -125,19 +118,16 @@ data class Link(
 
     companion object {
 
-        fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Link? =
-            fromJSON(json, normalizeHref, null)
-
         /**
          * Creates an [Link] from its RWPM JSON representation.
          * It's [href] and its children's recursively will be normalized using the provided
          * [normalizeHref] closure.
          * If the link can't be parsed, a warning will be logged with [warnings].
          */
-        internal fun fromJSON(
+        fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger? = null
         ): Link? {
             val href = json?.optNullableString("href")
             if (href == null) {
@@ -162,19 +152,16 @@ data class Link(
             )
         }
 
-        fun fromJSONArray(json: JSONArray?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): List<Link> =
-            fromJSONArray(json, normalizeHref, null)
-
         /**
          * Creates a list of [Link] from its RWPM JSON representation.
          * It's [href] and its children's recursively will be normalized using the provided
          * [normalizeHref] closure.
          * If a link can't be parsed, a warning will be logged with [warnings].
          */
-        internal fun fromJSONArray(
+        fun fromJSONArray(
             json: JSONArray?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger? = null
         ): List<Link> {
             return json.parseObjects { fromJSON(it as? JSONObject, normalizeHref, warnings) }
         }
@@ -190,8 +177,6 @@ data class Link(
         get() = rels.toList()
 
 }
-
-// FIXME: in Publication we use Link.hasHref extension to normalize href before comparing them
 
 /**
  * Returns the first [Link] with the given [href], or null if not found.

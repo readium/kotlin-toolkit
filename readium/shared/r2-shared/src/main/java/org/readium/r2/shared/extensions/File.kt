@@ -14,7 +14,11 @@ import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
 
-/** Computes the MD5 hash of the file. */
+/**
+ * Computes the MD5 hash of the file.
+ *
+ * Returns null if [File] is a directory or a file that failed to be read.
+ */
 fun File.md5(): String? =
     try {
         val md = MessageDigest.getInstance("MD5")

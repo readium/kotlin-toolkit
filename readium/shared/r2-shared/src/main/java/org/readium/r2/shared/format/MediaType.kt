@@ -222,6 +222,13 @@ class MediaType private constructor(string: String) {
     val isRwpm: Boolean get() =
         matchesAny(READIUM_AUDIOBOOK_MANIFEST, DIVINA_MANIFEST, READIUM_WEBPUB_MANIFEST)
 
+    /** Returns whether this media type is of a Readium Web Publication profile. */
+    val isReadiumWebPubProfile: Boolean get() =  matchesAny(
+        READIUM_WEBPUB, READIUM_WEBPUB_MANIFEST,
+        READIUM_AUDIOBOOK, READIUM_AUDIOBOOK_MANIFEST, LCP_PROTECTED_AUDIOBOOK,
+        DIVINA, DIVINA_MANIFEST, LCP_PROTECTED_PDF
+    )
+
     /** Returns whether this media type is of a publication file. */
     val isPublication: Boolean get() = matchesAny(
         READIUM_AUDIOBOOK, READIUM_AUDIOBOOK_MANIFEST, CBZ, DIVINA, DIVINA_MANIFEST, EPUB, LCP_PROTECTED_AUDIOBOOK,

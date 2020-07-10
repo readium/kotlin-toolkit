@@ -9,10 +9,17 @@
 
 package org.readium.r2.shared.util.pdf
 
+import android.content.Context
 import android.graphics.Bitmap
 import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.archive.Archive
+import org.readium.r2.shared.util.archive.JavaZip
+
+@PdfSupport
+typealias OpenPdfDocument = suspend (Resource) -> PdfDocument?
 
 /**
  * Represents a PDF document.
@@ -70,6 +77,9 @@ interface PdfDocument {
         val pageNumber: Int,  // Starts from 1.
         val children: List<OutlineNode>
     )
+
+    // To allow extensions on the Companion object.
+    companion object { }
 
 }
 

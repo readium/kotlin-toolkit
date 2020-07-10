@@ -68,9 +68,6 @@ data class Subject(
 
     companion object {
 
-        fun fromJSON(json: Any?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Subject? =
-            fromJSON(json, normalizeHref, null)
-
         /**
          * Parses a [Subject] from its RWPM JSON representation.
          *
@@ -79,10 +76,10 @@ data class Subject(
          * provided [normalizeHref] closure.
          * If the subject can't be parsed, a warning will be logged with [warnings].
          */
-        internal fun fromJSON(
+        fun fromJSON(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger? = null
         ): Subject? {
             json ?: return null
 
@@ -106,9 +103,6 @@ data class Subject(
             )
         }
 
-        fun fromJSONArray(json: Any?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): List<Subject> =
-            fromJSONArray(json, normalizeHref, null)
-
         /**
          * Creates a list of [Subject] from its RWPM JSON representation.
          *
@@ -116,10 +110,10 @@ data class Subject(
          * provided [normalizeHref] closure.
          * If a subject can't be parsed, a warning will be logged with [warnings].
          */
-        internal fun fromJSONArray(
+        fun fromJSONArray(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger<JsonWarning>?
+            warnings: WarningLogger? = null
         ): List<Subject> {
             return when(json) {
                 is String, is JSONObject ->

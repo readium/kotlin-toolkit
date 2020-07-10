@@ -87,9 +87,34 @@ interface Resource {
     suspend fun close()
 
     /**
+     * Executes the given block function on this resource and then closes it down correctly whether an exception is thrown or not.
+     */
+    suspend fun <R> use(block: suspend (Resource) -> R): R {
+        var exception: Throwable? = null
+        try {
+            return block(this)
+        } catch (e: Throwable) {
+            exception = e
+            throw e
+        } finally {
+            if (exception == null)
+                close()
+            else
+                try {
+                    close()
+                } catch (closeException: Throwable) {
+                    exception.addSuppressed(closeException)
+                }
+        }
+    }
+
+    /**
      * Errors occurring while accessing a resource.
      */
     sealed class Error(cause: Throwable? = null) : Throwable(cause) {
+
+        /** Equivalent to a 400 HTTP error. */
+        class BadRequest(cause: Throwable? = null) : Error(cause)
 
         /** Equivalent to a 404 HTTP error. */
         object NotFound : Error()
