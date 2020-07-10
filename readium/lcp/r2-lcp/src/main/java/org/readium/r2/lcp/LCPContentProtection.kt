@@ -33,8 +33,8 @@ class LCPContentProtection(
     ): Try<ContentProtection.ProtectedFile, Publication.OpeningError>? {
 
         val isProtectedWithLcp = when (file.format()) {
-            Format.EPUB -> fetcher.get("/META-INF/license.lcpl").length().isSuccess
-            else -> fetcher.get("/license.lcpl").length().isSuccess
+            Format.EPUB -> fetcher.get("/META-INF/license.lcpl").use { it.length().isSuccess }
+            else -> fetcher.get("/license.lcpl").use { it.length().isSuccess }
         }
 
         if (!isProtectedWithLcp)
