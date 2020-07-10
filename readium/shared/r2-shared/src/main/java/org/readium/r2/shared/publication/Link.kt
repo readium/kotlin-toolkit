@@ -118,19 +118,16 @@ data class Link(
 
     companion object {
 
-        fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Link? =
-            fromJSON(json, normalizeHref, null)
-
         /**
          * Creates an [Link] from its RWPM JSON representation.
          * It's [href] and its children's recursively will be normalized using the provided
          * [normalizeHref] closure.
          * If the link can't be parsed, a warning will be logged with [warnings].
          */
-        internal fun fromJSON(
+        fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger?
+            warnings: WarningLogger? = null
         ): Link? {
             val href = json?.optNullableString("href")
             if (href == null) {
@@ -155,19 +152,16 @@ data class Link(
             )
         }
 
-        fun fromJSONArray(json: JSONArray?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): List<Link> =
-            fromJSONArray(json, normalizeHref, null)
-
         /**
          * Creates a list of [Link] from its RWPM JSON representation.
          * It's [href] and its children's recursively will be normalized using the provided
          * [normalizeHref] closure.
          * If a link can't be parsed, a warning will be logged with [warnings].
          */
-        internal fun fromJSONArray(
+        fun fromJSONArray(
             json: JSONArray?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
-            warnings: WarningLogger?
+            warnings: WarningLogger? = null
         ): List<Link> {
             return json.parseObjects { fromJSON(it as? JSONObject, normalizeHref, warnings) }
         }

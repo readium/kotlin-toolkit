@@ -58,14 +58,11 @@ data class Availability(
 
     companion object {
 
-        fun fromJSON(json: JSONObject?): Availability? =
-            fromJSON(json, null)
-
         /**
          * Creates an [Availability] from its JSON representation.
          * If the availability can't be parsed, a warning will be logged with [warnings].
          */
-        internal fun fromJSON(json: JSONObject?, warnings: WarningLogger?): Availability? {
+        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Availability? {
             val state = State(json?.optNullableString("state"))
             if (state == null) {
                 warnings?.log(Availability::class.java, "[state] is required", json)

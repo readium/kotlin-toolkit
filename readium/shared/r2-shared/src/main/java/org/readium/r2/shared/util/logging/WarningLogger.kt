@@ -11,6 +11,8 @@ package org.readium.r2.shared.util.logging
 
 import org.json.JSONObject
 
+
+// FIXME: Mark this interface as functional to benefit from the SAM-conversion in Kotlin 1.4 https://blog.jetbrains.com/kotlin/2020/03/kotlin-1-4-m1-released/#new-type-inference
 /**
  * Interface to be implemented by third-party apps if they want to observe warnings raised, for
  * example, during the parsing of a [Publication].
