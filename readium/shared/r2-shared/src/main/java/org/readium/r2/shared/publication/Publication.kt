@@ -28,6 +28,7 @@ import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.CoverService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
+import timber.log.Timber
 import java.lang.Exception
 import java.net.URL
 import java.net.URLEncoder
@@ -150,8 +151,16 @@ class Publication(
     fun close() = GlobalScope.launch {
         try {
             fetcher.close()
-            services.forEach { it.close() }
         } catch (e: Exception) {
+            Timber.e(e)
+        }
+
+        services.forEach {
+            try {
+                it.close()
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
         }
     }
 

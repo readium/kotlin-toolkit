@@ -47,10 +47,12 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
             val stream = withContext(Dispatchers.IO) {
                 archive.getInputStream(entry)
             }
-            return if (range == null)
-                stream.readFully()
-            else
-                stream.readRange(range)
+            return stream.use {
+                if (range == null)
+                    it.readFully()
+                else
+                    it.readRange(range)
+            }
         }
     }
 

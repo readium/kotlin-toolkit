@@ -55,22 +55,18 @@ internal suspend fun InputStream.readRange(range: LongRange): ByteArray {
     @Suppress("NAME_SHADOWING")
     val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
 
-    return use {
-        withContext(Dispatchers.IO) {
-            val skipped = it.skip(range.first)
-            val length = range.last - range.first + 1
-            val bytes = it.read(length)
-            if (skipped != range.first && bytes.isNotEmpty()) {
-                throw Exception("Unable to skip enough bytes")
-            }
-            bytes
+    return withContext(Dispatchers.IO) {
+        val skipped = skip(range.first)
+        val length = range.last - range.first + 1
+        val bytes = read(length)
+        if (skipped != range.first && bytes.isNotEmpty()) {
+            throw Exception("Unable to skip enough bytes")
         }
+        bytes
     }
 }
 
 internal suspend fun InputStream.readFully(): ByteArray =
-    use {
-        withContext(Dispatchers.IO) {
-            it.readBytes()
-        }
+    withContext(Dispatchers.IO) {
+        readBytes()
     }

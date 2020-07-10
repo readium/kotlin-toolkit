@@ -148,7 +148,7 @@ class FormatSnifferContext internal constructor(
             null
         }
 
-    /** Publication parsed from the content. */
+    /** Readium Web Publication Manifest parsed from the content. */
     suspend fun contentAsRwpm(): Manifest? =
             Manifest.fromJSON(contentAsJson())
 

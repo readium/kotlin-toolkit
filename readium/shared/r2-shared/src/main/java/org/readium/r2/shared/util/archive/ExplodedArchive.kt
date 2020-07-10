@@ -11,12 +11,16 @@ package org.readium.r2.shared.util.archive
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.readRange
 import org.readium.r2.shared.extensions.tryOr
 import java.io.File
 
-internal class ExplodedArchive(private val file: File)  : Archive {
+/**
+ * An archive exploded on the file system as a directory.
+ */
+internal class ExplodedArchive(private val directory: File)  : Archive {
 
     companion object {
 
@@ -32,7 +36,7 @@ internal class ExplodedArchive(private val file: File)  : Archive {
 
     private inner class Entry(private val file: File) : Archive.Entry {
 
-        override val path: String get() = file.path
+        override val path: String get() = file.relativeTo(directory).path
 
         override val length: Long? = file.length()
 
@@ -43,23 +47,25 @@ internal class ExplodedArchive(private val file: File)  : Archive {
                 file.inputStream()
             }
 
-            return if (range == null)
-                stream.readFully()
-            else
-                stream.readRange(range)
+            return stream.use {
+                if (range == null)
+                    it.readFully()
+                else
+                    it.readRange(range)
+            }
         }
     }
 
     override suspend fun entries(): List<Archive.Entry> =
-        file.walk()
+        directory.walk()
             .filter { it.isFile }
-            .map { Entry(it.relativeTo(file)) }
+            .map { Entry(it) }
             .toList()
 
     override suspend fun entry(path: String): Archive.Entry {
-        val file = File(file, path)
+        val file = File(directory, path)
 
-        if (!file.isFile)
+        if (!directory.isParentOf(file) || !file.isFile)
             throw Exception("No file entry at path $path.")
 
         return Entry(file)

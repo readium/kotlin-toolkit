@@ -42,7 +42,7 @@ interface Archive {
         val compressedLength: Long?
 
         /**
-         * Reads the whole content of this entry if it's a file.
+         * Reads the whole content of this entry.
          * When [range] is null, the whole content is returned. Out-of-range indexes are clamped to the
          * available length automatically.
          */

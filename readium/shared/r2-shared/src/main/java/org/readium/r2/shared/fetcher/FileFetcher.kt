@@ -16,6 +16,7 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
+import timber.log.Timber
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -110,6 +111,7 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
                 try {
                     it.close()
                 } catch (e: java.lang.Exception) {
+                    Timber.e(e)
                 }
             }
         }
