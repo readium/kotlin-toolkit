@@ -15,6 +15,7 @@ import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.OnAskCredentials
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.Try
 
@@ -45,9 +46,13 @@ class LCPContentProtection(
                 .retrieveLicense(file,  lcpAuthenticating.takeIf { askCredentials })
                 ?.getOrThrow()
             val protectedFile = ContentProtection.ProtectedFile(
-                file,
-                TransformingFetcher(fetcher, LCPDecryptor(license)::transform),
-                LCPContentProtectionService.createFactory(license)
+                file = file,
+                fetcher = TransformingFetcher(fetcher, LCPDecryptor(license)::transform),
+                onCreateServices = { _, _, servicesBuilder ->
+                    servicesBuilder.apply {
+                        contentProtectionServiceFactory = LCPContentProtectionService.createFactory(license)
+                    }
+                }
             )
             Try.success(protectedFile)
 
