@@ -12,6 +12,7 @@ package org.readium.r2.navigator.epub
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -27,6 +28,7 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.FragmentNavigator
 import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
@@ -34,10 +36,12 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.presentation.presentation
 import kotlin.coroutines.CoroutineContext
 
 
-open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator {
+open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator, Navigator.VisualListener {
 
     /**
      * Locator waiting to be loaded in the navigator.
@@ -61,10 +65,21 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
     override var allowToggleActionBar = true
 
-
     lateinit var adapter: R2PagerAdapter
 
     protected var navigatorDelegate: NavigatorDelegate? = null
+
+    private val r2PagerAdapter: R2PagerAdapter
+        get() = resourcePager.adapter as R2PagerAdapter
+
+    private val currentFragment: R2EpubPageFragment? get() =
+        r2PagerAdapter.mFragments.get(r2PagerAdapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
+
+    private val navigatorFragment: EpubNavigatorFragment? get() =
+        supportFragmentManager.fragments.filterIsInstance<EpubNavigatorFragment>().first()
+
+    override val currentLocator: LiveData<Locator?> get() = _currentLocator
+    private val _currentLocator = MutableLiveData<Locator?>(null)
 
     @OptIn(FragmentNavigator::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,7 +92,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publicationIdentifier = publication.metadata.identifier!!
 
-        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, publicationPath, publicationFileName)
+        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, publicationPath, publicationFileName, initialLocator = pendingLocator, listener = this)
 
         setContentView(R.layout.activity_r2_epub)
 
@@ -118,11 +133,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         }
     }
 
-    private val r2PagerAdapter: R2PagerAdapter
-        get() = resourcePager.adapter as R2PagerAdapter
 
-    private val currentFragment: R2EpubPageFragment? get() =
-        r2PagerAdapter.mFragments.get(r2PagerAdapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
 
     override val readingProgression: ReadingProgression
         get() = TODO("Not yet implemented")
@@ -135,24 +146,53 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         TODO("Not yet implemented")
     }
 
-    override val currentLocator: LiveData<Locator?> get() = _currentLocator
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
+        navigatorFragment?.go(locator, animated, completion)
+
+        if (allowToggleActionBar && supportActionBar!!.isShowing) {
+            resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE)
+        }
+
+        return true
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
+        return navigatorFragment?.go(link, animated, completion) ?: false
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
+        return navigatorFragment?.goForward(animated, completion) ?: false
     }
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
+        return navigatorFragment?.goBackward(animated, completion) ?: false
     }
 
-    private val _currentLocator = MutableLiveData<Locator?>(null)
+    override fun onTap(point: PointF): Boolean {
+        if (allowToggleActionBar) {
+            launch {
+                if (supportActionBar!!.isShowing) {
+                    resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                            or View.SYSTEM_UI_FLAG_IMMERSIVE)
+                } else {
+                    resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+                }
+            }
+        }
+        return super.onTap(point)
+    }
+
 
     override fun currentSelection(callback: (Locator?) -> Unit) {
         currentFragment?.webView?.getCurrentSelectionInfo {
@@ -171,7 +211,6 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
             )
             callback(locator)
         }
-
     }
 
     override fun showHighlight(highlight: Highlight) {
