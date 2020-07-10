@@ -28,11 +28,18 @@ import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.CoverService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
+import org.readium.r2.shared.util.File
 import java.net.URL
 import java.net.URLEncoder
 import kotlin.reflect.KClass
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
+
+typealias OnCreateManifest = (File, Manifest) -> Manifest
+
+typealias OnCreateFetcher = (File, Manifest, Fetcher) -> Fetcher
+
+typealias OnCreateServices = (File, Manifest, Publication.ServicesBuilder) -> Unit
 
 /**
  * The Publication shared model is the entry-point for all the metadata and services
