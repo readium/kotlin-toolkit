@@ -72,11 +72,15 @@ interface ContentProtection {
      *
      * @property protectionServiceFactory Factory for the Content Protection Publication Service
      * that will be added to the created Publication by the Streamer.
+     *
+     * @property onCreateManifest Called before creating the Publication, to modify the parsed [Manifest]
+     * if desired.
      */
     data class ProtectedFile(
         val file: File,
         val fetcher: Fetcher,
-        val protectionServiceFactory: ((Publication.Service.Context) -> ContentProtectionService?)?
+        val protectionServiceFactory: ((Publication.Service.Context) -> ContentProtectionService?)? = null,
+        val onCreateManifest: ((File, Manifest) -> Manifest)? = null
     )
 
 }
