@@ -10,15 +10,16 @@
 package org.readium.r2.streamer.parser.cbz
 
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.extensions.md5
-import org.readium.r2.shared.fetcher.ArchiveFetcher
+import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.services.PerResourcePositionsService
+import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
+import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
-import java.io.File
+import org.readium.r2.streamer.parser.image.ImageParser
 
 @Deprecated("Use [MediaType] instead")
 class CBZConstant {
@@ -41,49 +42,30 @@ class CBZConstant {
  */
 class CBZParser : PublicationParser {
 
+    private val imageParser = ImageParser()
 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
-        _parse(fileAtPath, fallbackTitle)
+        makePubBox(fileAtPath, fallbackTitle)
     }
 
-    suspend fun _parse(fileAtPath: String, fallbackTitle: String): PubBox? {
-        val fetcher = ArchiveFetcher.fromPath(fileAtPath)
+    private suspend fun makePubBox(fileAtPath: String, fallbackTitle: String): PubBox? {
+
+        val file = File(fileAtPath)
+
+        val fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
+            ?: throw ContainerError.missingFile(fileAtPath)
+
+        val publication = imageParser.parse(file, fetcher, fallbackTitle)
+            ?.build()
+            ?.apply { type = Publication.TYPE.CBZ }
             ?: return null
 
-        val readingOrder = fetcher.links()
-            .filter { it.mediaType?.isBitmap == true && !it.href.startsWith(".") }
-            .sortedBy { it.href }
-            .toMutableList()
-
-        if (readingOrder.isEmpty()) {
-            return null
-        }
-
-        // First valid resource is the cover.
-        readingOrder[0] = readingOrder[0].copy(rels = setOf("cover"))
-
-        val manifest = Manifest(
-            metadata = Metadata(
-                identifier = File(fileAtPath).md5(),
-                localizedTitle = LocalizedString(fallbackTitle)
-            ),
-            readingOrder = readingOrder,
-            subcollections = mapOf(
-                "images" to listOf(PublicationCollection(links = readingOrder))
-            )
+        val container = PublicationContainer(
+            publication = publication,
+            path = file.file.canonicalPath,
+            mediaType = MediaType.CBZ
         )
 
-        val publication = Publication(
-            manifest = manifest,
-            fetcher = fetcher,
-            servicesBuilder = Publication.ServicesBuilder(
-                positions = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
-            )
-        ).apply {
-            type =  Publication.TYPE.CBZ
-        }
-
-        val container = PublicationContainer(publication = publication, path = fileAtPath, mediaType = MediaType.CBZ)
         return PubBox(publication, container)
     }
 

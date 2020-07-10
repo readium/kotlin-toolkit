@@ -46,22 +46,19 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             val fetcher = uriResource!!.initParameter(ServingFetcher::class.java)
 
             val href = getHref(session!!)
-            val link = fetcher.publication.linkWithHref(href)!!
-            val mediaType = link.mediaType ?: MediaType.BINARY
-            val resource = fetcher.get(link)
-            serveResponse(session, resource, mediaType.toString())
+            fetcher.get(href).use { serveResponse(session, it) }
         } catch(e: Resource.Error) {
             responseFromFailure(e)
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             if (DEBUG) Timber.e(e)
             newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }
     }
 
-    private suspend fun serveResponse(session: IHTTPSession, resource: Resource, mimeType: String): Response {
+    private suspend fun serveResponse(session: IHTTPSession, resource: Resource): Response {
         var response: Response?
         var rangeRequest: String? = session.headers["range"]
+        val mimeType = (resource.link().mediaType ?: MediaType.BINARY).toString()
 
         try {
             // Calculate etag
@@ -157,6 +154,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             is Resource.Error.Forbidden -> Status.FORBIDDEN
             is Resource.Error.Unavailable -> Status.SERVICE_UNAVAILABLE
             is Resource.Error.Other -> Status.INTERNAL_ERROR
+            is Resource.Error.BadRequest -> Status.BAD_REQUEST
         }
         return newFixedLengthResponse(status, mimeType, ResponseStatus.FAILURE_RESPONSE)
     }

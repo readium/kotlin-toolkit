@@ -20,8 +20,6 @@ import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
 import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
-import java.net.URI
-
 
 
 class AudioBookConstant {
@@ -49,16 +47,8 @@ class AudioBookParser : PublicationParser {
         val fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
             ?: throw ContainerError.missingFile(fileAtPath)
 
-        fun normalizeHref(href: String): String =
-            if (URI(href).isAbsolute) {
-                href
-            } else {
-                // FIXME: Why the HREF is absolute on the local file system??
-                "$fileAtPath/$href"
-            }
-
         val manifest = fetcher.readAsJsonOrNull("manifest.json")
-            ?.let { Manifest.fromJSON(it, ::normalizeHref) }
+            ?.let { Manifest.fromJSON(it, packaged = true) }
             ?: return null
 
         val publication = Publication(
@@ -68,9 +58,9 @@ class AudioBookParser : PublicationParser {
         }
 
         val container = PublicationContainer(
-            publication = publication,
+            publication =  publication,
             path = fileAtPath,
-            mediaType = MediaType.AUDIOBOOK
+            mediaType = MediaType.READIUM_AUDIOBOOK
         )
 
         return PubBox(publication, container)

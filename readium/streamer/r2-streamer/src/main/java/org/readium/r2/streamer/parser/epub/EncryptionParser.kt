@@ -15,18 +15,18 @@ import org.readium.r2.shared.normalize
 import org.readium.r2.shared.parser.xml.ElementNode
 
 internal object EncryptionParser {
-    fun parse(document: ElementNode, drm: DRM?): Map<String, Encryption> =
+    fun parse(document: ElementNode): Map<String, Encryption> =
         document.get("EncryptedData", Namespaces.ENC)
-            .mapNotNull { parseEncryptedData(it, drm) }
+            .mapNotNull { parseEncryptedData(it) }
             .toMap()
 
-    private fun parseEncryptedData(node: ElementNode, drm: DRM?): Pair<String, Encryption>? {
+    private fun parseEncryptedData(node: ElementNode): Pair<String, Encryption>? {
         val resourceURI = node.getFirst("CipherData", Namespaces.ENC)
             ?.getFirst("CipherReference", Namespaces.ENC)?.getAttr("URI")
             ?: return null
         val retrievalMethod = node.getFirst("KeyInfo", Namespaces.SIG)
             ?.getFirst("RetrievalMethod", Namespaces.SIG)?.getAttr("URI")
-        val scheme = if (retrievalMethod == "license.lcpl#/encryption/content_key" && drm?.brand == DRM.Brand.lcp)
+        val scheme = if (retrievalMethod == "license.lcpl#/encryption/content_key")
             DRM.Scheme.lcp.rawValue else null
         val algorithm = node.getFirst("EncryptionMethod", Namespaces.ENC)
             ?.getAttr("Algorithm")
@@ -37,7 +37,8 @@ internal object EncryptionParser {
         val compressionMethod = compression?.second
         val enc = Encryption(
             scheme = scheme,
-            profile = drm?.license?.encryptionProfile,
+            /* profile = drm?.license?.encryptionProfile,
+            FIXME: This has probably never worked. Profile needs to be filled somewhere, though. */
             algorithm = algorithm,
             compression = compressionMethod,
             originalLength = originalLength

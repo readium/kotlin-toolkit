@@ -14,6 +14,7 @@ import android.graphics.Bitmap
 import com.shockwave.pdfium.PdfiumCore
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.md5
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.util.pdf.PdfDocument
 import timber.log.Timber
 import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
@@ -47,13 +48,18 @@ internal class PdfiumDocument private constructor(
 
     companion object {
 
+        internal suspend  fun open(resource: Resource, context: Context) =
+            resource.use { res ->
+                res.read().getOrNull()?.let { fromBytes(it, context) }
+            }
+
         /**
          * Creates a [PdfiumDocument] from raw bytes.
          *
          * @param href HREF of the PDF document in the [Publication], used to generate the table of
          *        contents.
          */
-        fun fromBytes(bytes: ByteArray, context: Context): PdfiumDocument {
+        private fun fromBytes(bytes: ByteArray, context: Context): PdfiumDocument {
             val core = PdfiumCore(context.applicationContext)
             val document = core.newDocument(bytes)
 
@@ -94,3 +100,8 @@ private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
         pageNumber = pageIdx.toInt() + 1,
         children = children.map { it.toOutlineNode() }
     )
+
+/** Pdfium is the default implementation. */
+@PdfSupport
+suspend fun PdfDocument.Companion.open(resource: Resource, context: Context): PdfDocument? =
+    PdfiumDocument.open(resource, context)

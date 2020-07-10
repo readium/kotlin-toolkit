@@ -17,14 +17,12 @@ import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.parser.xml.XmlParser
 
 class EncryptionParserTest {
-    fun parseEncryption(path: String, drm: DRM? = null): Map<String, Encryption> {
+    fun parseEncryption(path: String): Map<String, Encryption> {
         val res = EncryptionParserTest::class.java.getResourceAsStream(path)
         checkNotNull(res)
         val document = XmlParser().parse(res)
-        return EncryptionParser.parse(document, drm)
+        return EncryptionParser.parse(document)
     }
-
-    val lcpDrm = DRM(DRM.Brand.lcp)
 
     val lcpChap1 = entry(
         "/OEBPS/xhtml/chapter01.xhtml", Encryption(
@@ -48,12 +46,12 @@ class EncryptionParserTest {
 
     @Test
     fun `Check EncryptionParser with namespace prefixes`() {
-        assertThat(parseEncryption("encryption/encryption-lcp-prefixes.xml", lcpDrm)).contains(lcpChap1, lcpChap2)
+        assertThat(parseEncryption("encryption/encryption-lcp-prefixes.xml")).contains(lcpChap1, lcpChap2)
     }
 
     @Test
     fun `Check EncryptionParser with default namespaces`() {
-        assertThat(parseEncryption("encryption/encryption-lcp-xmlns.xml", lcpDrm)).contains(lcpChap1, lcpChap2)
+        assertThat(parseEncryption("encryption/encryption-lcp-xmlns.xml")).contains(lcpChap1, lcpChap2)
     }
 
     @Test

@@ -9,7 +9,6 @@
 
 package org.readium.r2.streamer.parser.readium
 
-import android.content.Context
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.format.MediaType
@@ -17,9 +16,9 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.util.pdf.OpenPdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.streamer.extensions.readBytes
-import org.readium.r2.streamer.parser.pdf.PdfiumDocument
 import timber.log.Timber
 
 /**
@@ -28,7 +27,7 @@ import timber.log.Timber
  */
 @OptIn(PdfSupport::class)
 internal class LcpdfPositionsService(
-    private val context: Context,
+    private val openPdf: OpenPdfDocument,
     private val readingOrder: List<Link>,
     private val fetcher: Fetcher
 ) : PositionsService {
@@ -86,10 +85,7 @@ internal class LcpdfPositionsService(
 
     private suspend fun openPdfAt(link: Link): PdfDocument? =
         try {
-            PdfiumDocument.fromBytes(
-                bytes = fetcher.readBytes(link),
-                context = context
-            )
+            openPdf(fetcher.get(link))
         } catch (e: Exception) {
             Timber.e(e)
             null
@@ -97,9 +93,9 @@ internal class LcpdfPositionsService(
 
     companion object {
 
-        fun create(context: Context): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
+        fun create(openPdf: OpenPdfDocument): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
             LcpdfPositionsService(
-                context = context.applicationContext,
+                openPdf = openPdf,
                 readingOrder = serviceContext.manifest.readingOrder,
                 fetcher = serviceContext.fetcher
             )
