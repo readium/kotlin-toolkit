@@ -14,12 +14,6 @@ package org.readium.r2.shared.util.archive
  */
 interface Archive {
 
-    companion object {
-
-        suspend fun open(path: String): Archive? = JavaZip.open(path)
-
-    }
-
     /**
      * Holds an archive entry's metadata.
      */
@@ -60,5 +54,11 @@ interface Archive {
 
     /** Closes the archive. */
     suspend fun close()
+
+    companion object {
+
+        suspend fun open(path: String): Archive? = JavaZip.open(path)
+
+    }
 
 }
