@@ -17,20 +17,21 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.text.TextUtils
-import org.readium.r2.testapp.BuildConfig.DEBUG
-import org.zeroturnaround.zip.commons.IOUtils
-import timber.log.Timber
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.readium.r2.testapp.utils.extensions.toFile
 import java.io.*
 import java.net.URL
 
 object ContentResolverUtil {
 
-    fun getContentInputStream(context: Context, uri: Uri, publicationPath: String) {
+    suspend fun getContentInputStream(context: Context, uri: Uri, publicationPath: String) = withContext(Dispatchers.IO) {
         try {
             val path = getRealPath(context, uri)
             if (path != null) {
-                copyFile(File(path), File(publicationPath))
+                File(path).copyTo(File(publicationPath))
             } else {
+
                 val input = URL(uri.toString()).openStream()
                 input.toFile(publicationPath)
             }
@@ -39,21 +40,6 @@ object ContentResolverUtil {
             input?.let {
                 input.toFile(publicationPath)
             }
-        }
-    }
-
-    fun copyFile(src: File, dst: File) {
-        var `in`: InputStream? = null
-        var out: OutputStream? = null
-        try {
-            `in` = FileInputStream(src)
-            out = FileOutputStream(dst)
-            IOUtils.copy(`in`, out)
-        } catch (ioe: IOException) {
-            if (DEBUG) Timber.e(ioe)
-        } finally {
-            IOUtils.closeQuietly(out)
-            IOUtils.closeQuietly(`in`)
         }
     }
 

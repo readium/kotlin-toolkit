@@ -11,26 +11,44 @@
 package org.readium.r2.testapp.utils
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import org.readium.r2.testapp.BuildConfig.DEBUG
+import org.readium.r2.testapp.CatalogActivity
 import timber.log.Timber
 
-/**
- * Created by aferditamuriqi on 1/16/18.
- */
-
 class R2DispatcherActivity : Activity() {
-    private val mMapper = R2IntentMapper(this, R2IntentHelper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        try {
-            mMapper.dispatchIntent(intent)
-        } catch (iae: IllegalArgumentException) {
-            if (DEBUG) Timber.e(iae, "Deep links  - Invalid URI")
-        } finally {
-            finish()
-        }
+        dispatchIntent(intent)
+        finish()
     }
+
+    private fun dispatchIntent(intent: Intent) {
+        val uri = uriFromIntent(intent)
+            ?: run {
+                Timber.d("Got an empty intent.")
+                return
+            }
+        val newIntent = Intent(this, CatalogActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            data = uri
+        }
+        startActivity(newIntent)
+    }
+
+    private fun uriFromIntent(intent: Intent): Uri? =
+        when (intent.action) {
+            Intent.ACTION_SEND -> {
+                if ("text/plain" == intent.type) {
+                    intent.getStringExtra(Intent.EXTRA_TEXT).let { Uri.parse(it) }
+                } else {
+                    intent.getParcelableExtra(Intent.EXTRA_STREAM)
+                }
+            }
+            else -> {
+                intent.data
+            }
+        }
 }

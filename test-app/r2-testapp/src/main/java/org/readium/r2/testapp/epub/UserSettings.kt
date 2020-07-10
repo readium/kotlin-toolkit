@@ -27,7 +27,7 @@ import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.*
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.utils.color
+import org.readium.r2.testapp.utils.extensions.color
 import java.io.File
 
 class UserSettings(var preferences: SharedPreferences, val context: Context, private val UIPreset: MutableMap<ReadiumCSSName, Boolean>) {

@@ -42,7 +42,7 @@ import org.readium.r2.lcp.LCPService
 import org.readium.r2.lcp.R2MakeLCPService
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.testapp.BuildConfig.DEBUG
-import org.readium.r2.testapp.utils.color
+import org.readium.r2.testapp.utils.extensions.color
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
