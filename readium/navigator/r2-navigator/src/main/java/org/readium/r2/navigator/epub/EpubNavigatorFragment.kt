@@ -3,6 +3,7 @@ package org.readium.r2.navigator.epub
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -330,6 +331,11 @@ class EpubNavigatorFragment(
             }
         }
         return true
+    }
+
+    override fun toggleActionBar() {
+        val listener = (listener as? Navigator.VisualListener) ?: return
+        listener.onTap(PointF(0F, 0F))
     }
 
     private val r2PagerAdapter: R2PagerAdapter
