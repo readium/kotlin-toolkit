@@ -249,6 +249,8 @@ internal class LicenseValidation(
 //                throw error
             }
         }
+        state<State.cancelled> {
+        }
         onTransition { transition ->
             val validTransition = transition as? StateMachine.Transition.Valid
             validTransition?.let {
