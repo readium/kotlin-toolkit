@@ -16,8 +16,12 @@ import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.persistence.Database
 import org.readium.r2.lcp.service.*
 import org.readium.r2.shared.drm.DRMLicense
+import org.readium.r2.shared.util.File
+import org.readium.r2.shared.util.Try
 import java.io.Serializable
 import java.net.URL
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * Service used to fulfill and access protected publications.
@@ -33,12 +37,37 @@ interface LCPService {
      */
     fun importPublication(lcpl: ByteArray, authentication: LCPAuthenticating?, completion: (LCPImportedPublication?, LCPError?) -> Unit)
 
+    suspend fun importPublication(lcpl: ByteArray, authentication: LCPAuthenticating?): Try<LCPImportedPublication, LCPError> =
+        suspendCoroutine { cont ->
+            importPublication(lcpl, authentication) { publication, error ->
+                cont.resume(
+                    if (publication == null)
+                        Try.failure(error!!)
+                    else
+                        Try.success(publication)
+                )
+            }
+        }
+
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
      * its content.
      */
     fun retrieveLicense(publication: String, authentication: LCPAuthenticating?, completion: (LCPLicense?, LCPError?) -> Unit)
 
+    suspend fun retrieveLicense(file: File, authentication: LCPAuthenticating?): Try<LCPLicense, LCPError>? =
+        suspendCoroutine { cont ->
+            retrieveLicense(file.path, authentication) { license, error ->
+                cont.resume(
+                    if (license != null)
+                        Try.success(license)
+                    else if (error != null)
+                        Try.failure(error)
+                    else
+                        null
+                )
+            }
+        }
 }
 
 /**
