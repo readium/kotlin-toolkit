@@ -17,6 +17,9 @@ import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.OnAskCredentials
+import org.readium.r2.shared.publication.OnCreateFetcher
+import org.readium.r2.shared.publication.OnCreateManifest
+import org.readium.r2.shared.publication.OnCreateServices
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.Try
@@ -36,12 +39,6 @@ import java.io.FileNotFoundException
 import java.lang.Exception
 
 internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningError>
-
-typealias OnCreateManifest = (File, Manifest) -> Manifest
-
-typealias OnCreateFetcher = (File, Manifest, Fetcher) -> Fetcher
-
-typealias OnCreateServices = (File, Manifest, Publication.ServicesBuilder) -> Unit
 
 /**
  * Opens a Publication using a list of parsers.
@@ -115,7 +112,9 @@ class Streamer constructor(
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> = try {
 
-        val baseFetcher = try {
+        @Suppress("NAME_SHADOWING")
+        var file = file
+        var fetcher = try {
             Fetcher.fromFile(file.file, openArchive)
         } catch (e: SecurityException) {
             throw Publication.OpeningError.Forbidden(e)
@@ -127,7 +126,7 @@ class Streamer constructor(
             .lazyMapFirstNotNullOrNull {
                 it.open(
                     file,
-                    baseFetcher,
+                    fetcher,
                     askCredentials,
                     credentials,
                     sender,
@@ -136,12 +135,17 @@ class Streamer constructor(
             }
             ?.getOrThrow()
 
+        if (protectedFile != null) {
+            file = protectedFile.file
+            fetcher = protectedFile.fetcher
+        }
+
         val builder = parsers
             .lazyMapFirstNotNullOrNull {
                 try {
                     it.parse(
-                        protectedFile?.file ?: file,
-                        protectedFile?.fetcher ?: baseFetcher,
+                        file,
+                        fetcher,
                         fallbackTitle,
                         warnings
                     )
@@ -151,11 +155,10 @@ class Streamer constructor(
             } ?: throw Publication.OpeningError.UnsupportedFormat
 
         builder.apply {
+            protectedFile?.onCreateManifest?.let { manifest = it(file, manifest) }
             manifest = onCreateManifest(file, manifest)
             fetcher = onCreateFetcher(file, manifest, fetcher)
-            servicesBuilder.apply {
-                contentProtectionServiceFactory = protectedFile?.protectionServiceFactory
-            }
+            protectedFile?.onCreateServices?.let { it(file, manifest, servicesBuilder) }
             onCreateServices(file, manifest, servicesBuilder)
         }
 
