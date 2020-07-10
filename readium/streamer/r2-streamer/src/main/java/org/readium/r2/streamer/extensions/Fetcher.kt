@@ -24,20 +24,20 @@ import java.io.FileNotFoundException
 /** Returns the resource data at the given [Link]'s HREF, or throws a [Resource.Error] */
 @Throws(Resource.Error::class)
 internal suspend fun Fetcher.readBytes(link: Link): ByteArray =
-    get(link).read().getOrThrow()
+    get(link).use { it.read().getOrThrow() }
 
 /** Returns the resource data at the given [href], or throws a [Resource.Error] */
 @Throws(Resource.Error::class)
 internal suspend fun Fetcher.readBytes(href: String): ByteArray =
-    get(href).read().getOrThrow()
+    get(href).use { it.read().getOrThrow() }
 
 /** Returns the resource data as an XML Document at the given [href], or null. */
 internal suspend fun Fetcher.readAsXmlOrNull(href: String): ElementNode? =
-    get(href).readAsXml().getOrNull()
+    get(href).use { it.readAsXml().getOrNull() }
 
 /** Returns the resource data as a JSON object at the given [href], or null. */
 internal suspend fun Fetcher.readAsJsonOrNull(href: String): JSONObject? =
-    get(href).readAsJson().getOrNull()
+    get(href).use { it.readAsJson().getOrNull() }
 
 /** Creates a [Fetcher] from either an archive file, or an exploded directory. **/
 internal suspend fun Fetcher.Companion.fromArchiveOrDirectory(

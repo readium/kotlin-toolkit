@@ -46,12 +46,10 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             val fetcher = uriResource!!.initParameter(ServingFetcher::class.java)
 
             val href = getHref(session!!)
-            val resource = fetcher.get(href)
-            serveResponse(session, resource)
+            fetcher.get(href).use { serveResponse(session, it) }
         } catch(e: Resource.Error) {
             responseFromFailure(e)
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             if (DEBUG) Timber.e(e)
             newFixedLengthResponse(Status.INTERNAL_ERROR, mimeType, ResponseStatus.FAILURE_RESPONSE)
         }

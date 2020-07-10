@@ -51,17 +51,19 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser, org
             if (file.format()?.mediaType?.isRwpm == true) {
                 val manifestLink = fetcher.links().firstOrNull()
                     ?: error("Empty fetcher.")
-                val manifestJson = fetcher.get(manifestLink)
-                    .readAsString()
+                val manifestJson = fetcher.get(manifestLink).use {
+                    it.readAsString()
                     .getOrThrow()
+                }
                 Manifest.fromJSON(JSONObject(manifestJson))
             } else {
                 val manifestLink = fetcher.links()
                     .firstOrNull { it.href == "/manifest.json" }
                     ?: error("Unable to find a manifest link.")
-                val manifestJson = fetcher.get(manifestLink)
-                    .readAsString()
+                val manifestJson = fetcher.get(manifestLink).use {
+                    it.readAsString()
                     .getOrThrow()
+                }
                 Manifest.fromJSON(JSONObject(manifestJson), packaged = true)
             }
                 ?: throw Exception("Failed to parse RWPM.")
@@ -130,4 +132,4 @@ class ReadiumWebPubParser(private val context: Context) : PublicationParser, org
 }
 
 private suspend fun Fetcher.isProtectedWithLcp(): Boolean =
-    get("license.lcpl").length().isSuccess
+    get("license.lcpl").use { it.length().isSuccess }

@@ -17,15 +17,15 @@ import org.readium.r2.shared.publication.Link
 
 internal fun Resource.readBlocking(range: LongRange? = null) = runBlocking { read(range) }
 
-internal fun Fetcher.readBlocking(href: String) = get(Link(href = href)).readBlocking()
+internal fun Fetcher.readBlocking(href: String) = runBlocking { get(Link(href = href)).use {  it.readBlocking() } }
 
 internal fun Resource.lengthBlocking(range: LongRange? = null) = runBlocking { length() }
 
-internal fun Fetcher.lengthBlocking(href: String) = get(Link(href = href)).lengthBlocking()
+internal fun Fetcher.lengthBlocking(href: String) = runBlocking { get(Link(href = href)).use { it.lengthBlocking() } }
 
 internal fun Resource.linkBlocking(range: LongRange? = null) = runBlocking { link() }
 
-internal fun Fetcher.linkBlocking(href: String) = get(Link(href = href)).linkBlocking()
+internal fun Fetcher.linkBlocking(href: String) = runBlocking { get(Link(href = href)).use { it.linkBlocking() } }
 
 internal fun PublicationParser.parseBlocking(file: File, fetcher: Fetcher, fallbackTitle: String = "fallbackTitle"):
         PublicationParser.PublicationBuilder? = runBlocking { parse(file, fetcher, fallbackTitle) }

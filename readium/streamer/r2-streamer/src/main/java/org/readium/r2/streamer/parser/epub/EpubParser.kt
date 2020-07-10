@@ -226,4 +226,4 @@ internal fun Publication.setLayoutStyle() {
 }
 
 private suspend fun Fetcher.isProtectedWithLcp(): Boolean =
-    get("/META-INF/license.lcpl").length().isSuccess
+    get("/META-INF/license.lcpl").use { it.length().isSuccess }
