@@ -112,9 +112,6 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
                 .mapValues { (_, string) -> Translation(string = string) }
         )
 
-        fun fromJSON(json: Any?): LocalizedString? =
-            fromJSON(json, null)
-
         /**
          * Parses a [LocalizedString] from its RWPM JSON representation.
          * If the localized string can't be parsed, a warning will be logged with [warnings].
@@ -136,7 +133,7 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
          *   }
          * ]
          */
-        internal fun fromJSON(json: Any?, warnings: WarningLogger?): LocalizedString? {
+        fun fromJSON(json: Any?, warnings: WarningLogger? = null): LocalizedString? {
             json ?: return null
 
             return when (json) {

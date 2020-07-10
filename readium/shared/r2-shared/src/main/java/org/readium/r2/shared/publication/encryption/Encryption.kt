@@ -52,14 +52,11 @@ data class Encryption(
 
     companion object {
 
-        fun fromJSON(json: JSONObject?): Encryption? =
-            fromJSON(json, null)
-
         /**
          * Creates an [Encryption] from its RWPM JSON representation.
          * If the encryption can't be parsed, a warning will be logged with [warnings].
          */
-        internal fun fromJSON(json: JSONObject?, warnings: WarningLogger?): Encryption? {
+        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Encryption? {
             val algorithm = json?.optNullableString("algorithm")
             if (algorithm.isNullOrEmpty()) {
                 warnings?.log(Encryption::class.java, "[algorithm] is required", json)

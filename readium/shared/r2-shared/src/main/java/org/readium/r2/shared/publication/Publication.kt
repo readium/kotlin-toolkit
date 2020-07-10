@@ -372,29 +372,35 @@ class Publication(
      */
     sealed class OpeningError(cause: Throwable? = null) : Throwable(cause) {
 
+        /**
+         * The file format could not be recognized by any parser.
+         */
         object UnsupportedFormat : OpeningError()
 
+        /**
+         * The publication file was not found on the file system.
+         */
         object NotFound : OpeningError()
 
+        /**
+         * The publication parser failed with the given underlying exception.
+         */
         class ParsingFailed(cause: Throwable) : OpeningError(cause)
 
         /**
-         * Returned when we're not allowed to open the Publication at all, for example because it expired.
-         *
-         * The Content Protection can provide a custom underlying error as an associated value.
+         * We're not allowed to open the publication at all, for example because it expired.
          */
         class Forbidden(cause: Throwable?) : OpeningError(cause)
 
         /**
-         * Returned when the Content Protection can't open the Publication at the moment, for example because of a networking error.
-         *
-         * This error is generally temporary, so the operation can be retried or postponed.
+         * The publication can't be opened at the moment, for example because of a networking error.
+         * This error is generally temporary, so the operation may be retried or postponed.
          */
         class Unavailable(cause: Throwable?) : OpeningError(cause)
 
         /**
-         * Returned when the credentials – either from the credentials parameter, or from an external source – are incorrect,
-         * and we can't create a locked Publication object, e.g. for a password-protected ZIP.
+         * The provided credentials are incorrect and we can't open the publication in a
+         * `restricted` state (e.g. for a password-protected ZIP).
          */
         object IncorrectCredentials: OpeningError()
 

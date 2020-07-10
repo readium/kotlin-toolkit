@@ -74,11 +74,6 @@ data class Manifest(
 
     companion object {
 
-        fun fromJSON(
-            json: JSONObject?,
-            packaged: Boolean = false
-        ): Manifest? = fromJSON(json,  packaged, null)
-
         /**
          * Parses a [Publication] from its RWPM JSON representation.
          *
@@ -86,10 +81,10 @@ data class Manifest(
          * https://readium.org/webpub-manifest/
          * https://readium.org/webpub-manifest/schema/publication.schema.json
          */
-        internal fun fromJSON(
+        fun fromJSON(
             json: JSONObject?,
-            packaged: Boolean,
-            warnings: WarningLogger?
+            packaged: Boolean = false,
+            warnings: WarningLogger? = null
         ): Manifest? {
             json ?: return null
 
