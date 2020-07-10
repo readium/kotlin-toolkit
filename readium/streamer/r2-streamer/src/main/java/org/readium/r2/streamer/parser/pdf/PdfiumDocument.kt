@@ -49,9 +49,9 @@ internal class PdfiumDocument private constructor(
     companion object {
 
         internal suspend  fun open(resource: Resource, context: Context) =
-            resource.read()
-                .getOrNull()
-                ?.let { fromBytes(it, context) }
+            resource.use { res ->
+                res.read().getOrNull()?.let { fromBytes(it, context) }
+            }
 
         /**
          * Creates a [PdfiumDocument] from raw bytes.
@@ -59,7 +59,7 @@ internal class PdfiumDocument private constructor(
          * @param href HREF of the PDF document in the [Publication], used to generate the table of
          *        contents.
          */
-        fun fromBytes(bytes: ByteArray, context: Context): PdfiumDocument {
+        private fun fromBytes(bytes: ByteArray, context: Context): PdfiumDocument {
             val core = PdfiumCore(context.applicationContext)
             val document = core.newDocument(bytes)
 
@@ -100,3 +100,8 @@ private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
         pageNumber = pageIdx.toInt() + 1,
         children = children.map { it.toOutlineNode() }
     )
+
+/** Pdfium is the default implementation. */
+@PdfSupport
+suspend fun PdfDocument.Companion.open(resource: Resource, context: Context): PdfDocument? =
+    PdfiumDocument.open(resource, context)

@@ -12,7 +12,6 @@ package org.readium.r2.streamer
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
@@ -23,13 +22,15 @@ import org.readium.r2.shared.publication.services.contentProtectionServiceFactor
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.pdf.OpenPdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.streamer.extensions.fromFile
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.epub.setLayoutStyle
 import org.readium.r2.streamer.parser.image.ImageParser
-import org.readium.r2.streamer.parser.pdf.PdfiumDocument
+import org.readium.r2.streamer.parser.pdf.PdfParser
+import org.readium.r2.streamer.parser.pdf.open
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 import java.io.FileNotFoundException
 import java.lang.Exception
@@ -43,25 +44,26 @@ typealias OnCreateFetcher = (File, Manifest, Fetcher) -> Fetcher
 typealias OnCreateServices = (File, Manifest, Publication.ServicesBuilder) -> Unit
 
 /**
- *  Opens a Publication using a list of parsers.
+ * Opens a Publication using a list of parsers.
  *
- *  @param parsers Parsers used to open a publication, in addition to the default parsers.
- *    The provided parsers take precedence over the default parsers.
- *    This can be used to provide custom parsers, or a different configuration for default parsers.
- *  @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
- *    Can be used if you want to support only a subset of Readium's parsers.
- *  @param openArchive Opens an archive (e.g. ZIP, RAR), optionally protected by credentials.
- *    The default implementation uses java.zip package and passwords are not supported with it.
- *  @param openPdf Parses a PDF document, optionally protected by password.
- *    The default implementation uses Pdfium.
- *  @param onCreateManifest Called before creating the Publication, to modify the parsed Manifest if desired.
- *  @param onCreateFetcher Called before creating the Publication, to modify its root fetcher.
- *  @param onCreateServices Called before creating the Publication, to modify its list of service factories.
- *  @param onAskCredentials Called when a content protection wants to prompt the user for its credentials.
- *    This is used by ZIP and PDF password protections.
- *    The default implementation of this callback presents a dialog using native components when possible.
+ * The [Streamer] is configured to use Readium's default parsers, which you can bypass using
+ * [ignoreDefaultParsers]. However, you can provide additional [parsers] which will take precedence
+ * over the default ones. This can also be used to provide an alternative configuration of a
+ * default parser.
+ *
+ * @param context Application context.
+ * @param parsers Parsers used to open a publication, in addition to the default parsers.
+ * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
+ * @param openArchive Opens an archive (e.g. ZIP, RAR), optionally protected by credentials.
+ * @param openPdf Parses a PDF document, optionally protected by password.
+ * @param onCreateManifest Called before creating the Publication, to modify the parsed [Manifest]
+ *   if desired.
+ * @param onCreateFetcher Called before creating the Publication, to modify its root fetcher.
+ * @param onCreateServices Called before creating the Publication, to modify its list of service
+ *   factories.
+ * @param onAskCredentials Called when a content protection wants to prompt the user for its
+ *   credentials.
  */
-
 @OptIn(PdfSupport::class)
 class Streamer constructor(
     context: Context,
@@ -69,49 +71,40 @@ class Streamer constructor(
     ignoreDefaultParsers: Boolean = false,
     private val contentProtections: List<ContentProtection> = emptyList(),
     private val openArchive: suspend (String) -> Archive? = (Archive)::open,
-    private val openPdf: suspend (Resource) -> PdfDocument? = { PdfiumDocument.open(it, context.applicationContext) },
+    private val openPdf: OpenPdfDocument = { PdfDocument.open(it, context) },
     private val onCreateManifest: OnCreateManifest = { _, manifest -> manifest },
     private val onCreateFetcher: OnCreateFetcher = { _, _, fetcher -> fetcher },
     private val onCreateServices: OnCreateServices = { _, _, _ -> Unit },
     private val onAskCredentials: OnAskCredentials = { _, _, _ -> Unit }
 ) {
 
-    private val defaultParsers: List<PublicationParser> by lazy {
-        listOf(
-            EpubParser(),
-            //PdfParser(context.applicationContext, openPdf),
-            ReadiumWebPubParser(context.applicationContext),
-            ImageParser(),
-            AudioParser()
-        )
-    }
-
-    private val parsers: List<PublicationParser> = parsers +
-        if (!ignoreDefaultParsers) defaultParsers else emptyList()
-
     /**
-     * Parses a Publication from the given file.
+     * Parses a [Publication] from the given file.
      *
-     * Returns null if the file was not recognized by any parser, or a Streamer.Error in case of failure.
+     * If you are opening the publication to render it in a Navigator, you must set [askCredentials]
+     * to true to prompt the user for its credentials when the publication is protected. However,
+     * set it to false if you just want to import the [Publication] without reading its content, to
+     * avoid prompting the user.
+     *
+     * When using Content Protections, you can use [sender] to provide a free object which can be
+     * used to give some context. For example, it could be the source Activity or Fragment which
+     * would be used to present a credentials dialog.
+     *
+     * The [warnings] logger can be used to observe non-fatal parsing warnings, caused by
+     * publication authoring mistakes. This can be useful to warn users of potential rendering
+     * issues.
      *
      * @param file Path to the publication file..
-     * @param fallbackTitle The Publication's title is mandatory, but some formats might not have a way of declaring a title (e.g. CBZ).
-     *   In which case, fallbackTitle will be used.
-     *   The default implementation uses the filename as the fallback title.
+     * @param fallbackTitle The Publication's title is mandatory, but some formats might not have a
+     *   way of declaring a title (e.g. CBZ). In which case, [fallbackTitle] will be used.
      * @param askCredentials Indicates whether the user can be prompted for its credentials.
-     *   This should be set to true when you want to render a publication in a Navigator.
-     *   When false, Content Protections are allowed to do background requests, but not to present a UI to the user.
-     * @param credentials Credentials that Content Protections can use to attempt to unlock a publication, for example a password.
-     *   Supporting string credentials is entirely optional for Content Protections, this is only provided as a convenience.
-     *   The format is free-form: it can be a simple password, or a structured format such as JSON or XML.
-     * @param sender
-     *   Free object that can be used by reading apps to give some context to the Content Protections.
-     *   For example, it could be the source Activity/ViewController which would be used to present a credentials dialog.
-     *   Content Protections are not supposed to use this parameter directly.
-     *   Instead, it should be forwarded to the reading app if an interaction is needed.
+     * @param credentials Credentials that Content Protections can use to attempt to unlock a
+     *   publication, for example a password.
+     * @param sender Free object that can be used by reading apps to give some UX context when
+     *   presenting dialogs.
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
-     *   Can be used to report publication authoring mistakes,
-     *   to warn users of potential rendering issues or help authors debug their publications.
+     * @return Null if the file was not recognized by any parser, or a [Publication.OpeningError]
+     *   in case of failure.
      */
     suspend fun open(
         file: File,
@@ -174,6 +167,19 @@ class Streamer constructor(
     } catch (e: Publication.OpeningError) {
         Try.failure(e)
     }
+
+    private val defaultParsers: List<PublicationParser> by lazy {
+        listOf(
+            EpubParser(),
+            PdfParser(context, openPdf),
+            ReadiumWebPubParser(openPdf),
+            ImageParser(),
+            AudioParser()
+        )
+    }
+
+    private val parsers: List<PublicationParser> = parsers +
+        if (!ignoreDefaultParsers) defaultParsers else emptyList()
 
     @Suppress("UNCHECKED_CAST")
     private suspend fun <T, R> List<T>.lazyMapFirstNotNullOrNull(transform: suspend (T) -> R): R? {

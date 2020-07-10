@@ -20,6 +20,7 @@ import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCoverService
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.pdf.OpenPdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.streamer.container.PublicationContainer
@@ -32,8 +33,8 @@ import java.lang.Exception
  */
 @PdfSupport
 class PdfParser(
-    private val context: Context,
-    private val openPdf:  suspend (ByteArray) -> PdfDocument? = { PdfiumDocument.fromBytes(it, context.applicationContext) }
+    context: Context,
+    private val openPdf: OpenPdfDocument = { PdfDocument.open(it, context.applicationContext) }
 ) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 
     override suspend fun parse(
@@ -48,8 +49,7 @@ class PdfParser(
 
         val fileHref = fetcher.links().firstOrNull { it.mediaType == MediaType.PDF }?.href
             ?: throw Exception("Unable to find PDF file.")
-        val fileBytes = fetcher.get(fileHref).use { it.read().getOrThrow() }
-        val document = openPdf(fileBytes)
+        val document = openPdf(fetcher.get(fileHref))
             ?: throw Exception("Unable to open PDF file.")
         val tableOfContents = document.outline.toLinks(fileHref)
 
