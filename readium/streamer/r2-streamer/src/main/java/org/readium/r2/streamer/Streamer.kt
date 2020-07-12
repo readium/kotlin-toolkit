@@ -78,7 +78,7 @@ class Streamer constructor(
     /**
      * Parses a [Publication] from the given file.
      *
-     * If you are opening the publication to render it in a Navigator, you must set [askCredentials]
+     * If you are opening the publication to render it in a Navigator, you must set [allowUserInteraction]
      * to true to prompt the user for its credentials when the publication is protected. However,
      * set it to false if you just want to import the [Publication] without reading its content, to
      * avoid prompting the user.
@@ -94,7 +94,7 @@ class Streamer constructor(
      * @param file Path to the publication file..
      * @param fallbackTitle The Publication's title is mandatory, but some formats might not have a
      *   way of declaring a title (e.g. CBZ). In which case, [fallbackTitle] will be used.
-     * @param askCredentials Indicates whether the user can be prompted for its credentials.
+     * @param allowUserInteraction Indicates whether the user can be prompted, for example for its credentials.
      * @param credentials Credentials that Content Protections can use to attempt to unlock a
      *   publication, for example a password.
      * @param sender Free object that can be used by reading apps to give some UX context when
@@ -106,7 +106,7 @@ class Streamer constructor(
     suspend fun open(
         file: File,
         fallbackTitle: String = file.name,
-        askCredentials: Boolean,
+        allowUserInteraction: Boolean,
         credentials: String? = null,
         sender: Any? = null,
         warnings: WarningLogger? = null
@@ -127,7 +127,7 @@ class Streamer constructor(
                 it.open(
                     file,
                     fetcher,
-                    askCredentials,
+                    allowUserInteraction,
                     credentials,
                     sender,
                     onAskCredentials
