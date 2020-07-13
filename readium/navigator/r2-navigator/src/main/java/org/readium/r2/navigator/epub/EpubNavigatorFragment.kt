@@ -2,6 +2,7 @@ package org.readium.r2.navigator.epub
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -37,7 +38,7 @@ class EpubNavigatorFragment(
         private val initialLocator: Locator? = null,
         internal val listener: Navigator.Listener? = null,
         private val baseUrl: String? = null
-): Fragment(), CoroutineScope, VisualNavigator {
+): Fragment(), CoroutineScope, VisualNavigator, R2BasicWebView.Listener {
 
     /**
      * Context of this scope.
@@ -271,6 +272,10 @@ class EpubNavigatorFragment(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun onProgressionChanged(progression: Double) {
+        notifyCurrentLocation()
+    }
+
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
         launch {
             if (resourcePager.currentItem < resourcePager.adapter!!.count - 1) {
@@ -324,6 +329,11 @@ class EpubNavigatorFragment(
 
     private val currentFragment: R2EpubPageFragment? get() =
         r2PagerAdapter.mFragments.get(r2PagerAdapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
+
+    override fun onTap(point: PointF): Boolean {
+        (this.listener as Navigator.VisualListener).onTap(point)
+        return super.onTap(point)
+    }
 
     override val readingProgression: ReadingProgression
         get() = TODO("Not yet implemented")

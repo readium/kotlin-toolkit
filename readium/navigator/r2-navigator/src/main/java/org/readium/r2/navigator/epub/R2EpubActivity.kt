@@ -141,15 +141,15 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         get() = TODO("Not yet implemented")
 
     override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
+        return navigatorFragment.goLeft(animated, completion)
     }
 
     override fun goRight(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
+        return navigatorFragment.goRight(animated, completion)
     }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        navigatorFragment?.go(locator, animated, completion)
+        navigatorFragment.go(locator, animated, completion)
 
         if (allowToggleActionBar && supportActionBar!!.isShowing) {
             resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -164,31 +164,15 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
-        return navigatorFragment?.go(link, animated, completion) ?: false
+        return navigatorFragment.go(link, animated, completion)
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        return navigatorFragment?.goForward(animated, completion) ?: false
+        return navigatorFragment.goForward(animated, completion)
     }
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        return navigatorFragment?.goBackward(animated, completion) ?: false
-    }
-
-    override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
-        super<IR2Activity>.onPageChanged(pageIndex, totalPages, url)
-    }
-
-    override fun onPageEnded(end: Boolean) {
-        super<IR2Activity>.onPageEnded(end)
-    }
-
-    override fun onPageLoaded() {
-        super<IR2Activity>.onPageLoaded()
-    }
-
-    override fun onProgressionChanged(progression: Double) {
-        super.progressionDidChange(progression)
+        return navigatorFragment.goBackward(animated, completion)
     }
 
     override fun onTap(point: PointF): Boolean {

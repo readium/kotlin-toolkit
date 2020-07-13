@@ -55,8 +55,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, 
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         divinaWebView = findViewById(R.id.divinaWebView)
-        divinaWebView.activity = this
-        divinaWebView.listener = this
+        //divinaWebView.listener = this
 
         publication = intent.getPublication(this)
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
@@ -101,18 +100,6 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, 
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
             }
         }
-    }
-
-    override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onPageEnded(end: Boolean) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onPageLoaded() {
-        TODO("Not yet implemented")
     }
 
     override fun finish() {

@@ -67,10 +67,6 @@ interface Navigator {
     }
 
     interface VisualListener : Listener {
-        fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {}
-        fun onPageEnded(end: Boolean) {}
-        fun onPageLoaded() {}
-        fun onProgressionChanged(progression: Double) {}
         fun onTap(point: PointF): Boolean = false
     }
 }

@@ -93,9 +93,8 @@ class R2FXLPageFragment : Fragment() {
     private fun setupWebView(webView: R2BasicWebView, resourceUrl: String?) {
         val navigatorFragment = parentFragmentManager.findFragmentById(R.id.epub_navigator)
 
-        webView.fragment = navigatorFragment as EpubNavigatorFragment
-        webView.listener = navigatorFragment.listener as Navigator.VisualListener
-        webView.navigator = navigatorFragment
+        webView.navigator = navigatorFragment as Navigator
+        webView.listener = navigatorFragment as R2BasicWebView.Listener
 
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
