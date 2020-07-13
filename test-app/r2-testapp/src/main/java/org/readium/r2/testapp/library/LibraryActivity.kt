@@ -570,6 +570,8 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         FIXME: if the progress dialog were shown, the LCP popup window would not be accessible to the user.
         progress.show()
          */
+        progress.dismiss()
+
         launch {
             val book = books[position]
 
