@@ -39,12 +39,13 @@ interface ContentProtection {
      * [Fetcher].
      *
      * @return A [ProtectedFile] in case of success, null if the file is not protected by this
-     * technology or a [Publication.OpeningError] if the file can't be successfully opened.
+     * technology or a [Publication.OpeningError] if the file can't be successfully opened,
+     * even in restricted mode.
      */
     suspend fun open(
         file: File,
         fetcher: Fetcher,
-        askCredentials: Boolean,
+        allowUserInteraction: Boolean,
         credentials: String?,
         sender: Any?,
         onAskCredentials: OnAskCredentials?

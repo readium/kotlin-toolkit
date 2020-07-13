@@ -34,6 +34,11 @@ interface ContentProtectionService: Publication.Service {
     val isRestricted: Boolean
 
     /**
+     * The error raised when trying to unlock the [Publication], if any.
+     */
+    val error: String?
+
+    /**
      * Credentials used to unlock this [Publication].
      */
     val credentials: String?
@@ -178,6 +183,13 @@ val Publication.isProtected: Boolean
 val Publication.isRestricted: Boolean
     get() = protectionService?.isRestricted
         ?: false
+
+
+/**
+ * The error raised when trying to unlock the [Publication], if any.
+ */
+val Publication.protectionError: String?
+    get() = protectionService?.error
 
 /**
  * Credentials used to unlock this [Publication].
