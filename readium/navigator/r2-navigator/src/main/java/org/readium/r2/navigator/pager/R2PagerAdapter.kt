@@ -17,7 +17,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
 
-class R2PagerAdapter(val fm: FragmentManager, private val resources: List<Any>, private val title: String, private val type: Publication.TYPE, private val publicationPath: String) : R2FragmentPagerAdapter(fm) {
+class R2PagerAdapter(val fm: FragmentManager, private val resources: List<Any>, private val title: String, private val type: Publication.TYPE, private val publicationPath: String = "") : R2FragmentPagerAdapter(fm) {
 
     private var currentFragment: Fragment? = null
     private var previousFragment: Fragment? = null

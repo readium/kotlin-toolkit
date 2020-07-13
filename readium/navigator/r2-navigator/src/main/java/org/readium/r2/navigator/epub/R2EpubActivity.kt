@@ -72,8 +72,8 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     private val currentFragment: R2EpubPageFragment? get() =
         r2PagerAdapter.mFragments.get(r2PagerAdapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
 
-    private val navigatorFragment: EpubNavigatorFragment? get() =
-        supportFragmentManager.fragments.filterIsInstance<EpubNavigatorFragment>().first()
+    private val navigatorFragment: EpubNavigatorFragment get() =
+        supportFragmentManager.findFragmentById(R.id.epub_navigator) as EpubNavigatorFragment
 
     override val currentLocator: LiveData<Locator?> get() = _currentLocator
     private val _currentLocator = MutableLiveData<Locator?>(null)
@@ -85,15 +85,19 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         publication = intent.getPublication(this)
-        publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publicationIdentifier = publication.metadata.identifier!!
 
-        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, publicationPath, publicationFileName, initialLocator = pendingLocator, listener = this)
+        val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())!!.toInt()
+        val baseUrl = Publication.localBaseUrlOf(publicationFileName, port)
+
+        val initialLocator = intent.getParcelableExtra("locator") as? Locator
+
+        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, initialLocator, this, baseUrl)
 
         setContentView(R.layout.activity_r2_epub)
 
-        resourcePager = findViewById<View>(R.id.epub_navigator).rootView.findViewById(R.id.resourcePager)
+        resourcePager = navigatorFragment.resourcePager
 
         title = null
     }
@@ -171,26 +175,26 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         return navigatorFragment?.goBackward(animated, completion) ?: false
     }
 
-    override fun onTap(point: PointF): Boolean {
-        if (allowToggleActionBar) {
-            launch {
-                if (supportActionBar!!.isShowing) {
-                    resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                            or View.SYSTEM_UI_FLAG_IMMERSIVE)
-                } else {
-                    resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-                }
-            }
-        }
-        return super.onTap(point)
+    override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
+        super<IR2Activity>.onPageChanged(pageIndex, totalPages, url)
     }
 
+    override fun onPageEnded(end: Boolean) {
+        super<IR2Activity>.onPageEnded(end)
+    }
+
+    override fun onPageLoaded() {
+        super<IR2Activity>.onPageLoaded()
+    }
+
+    override fun onProgressionChanged(progression: Double) {
+        super.progressionDidChange(progression)
+    }
+
+    override fun onTap(point: PointF): Boolean {
+        toggleActionBar()
+        return super.onTap(point)
+    }
 
     override fun currentSelection(callback: (Locator?) -> Unit) {
         currentFragment?.webView?.getCurrentSelectionInfo {

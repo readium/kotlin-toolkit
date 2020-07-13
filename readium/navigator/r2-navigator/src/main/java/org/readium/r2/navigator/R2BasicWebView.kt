@@ -10,6 +10,7 @@
 package org.readium.r2.navigator
 
 import android.content.Context
+import android.graphics.PointF
 import android.os.Build
 import android.text.Html
 import android.util.AttributeSet
@@ -27,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.publication.ReadingProgression
@@ -38,8 +40,9 @@ import org.readium.r2.shared.publication.ReadingProgression
 
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
-    lateinit var activity: AppCompatActivity
-    lateinit var listener: IR2Activity
+    lateinit var activity: IR2Activity
+    lateinit var fragment: EpubNavigatorFragment
+    lateinit var listener: Navigator.VisualListener
     lateinit var navigator: Navigator
 
     var progression: Double = 0.0
@@ -73,9 +76,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {
+            val activity = (fragment.requireActivity() as AppCompatActivity)
             activity.supportActionBar?.let {
-                if (it.isShowing && listener.allowToggleActionBar) {
-                    listener.resourcePager?.systemUiVisibility = (
+                if (it.isShowing && (activity as IR2Activity).allowToggleActionBar) {
+                    fragment.resourcePager?.systemUiVisibility = (
                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                             or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -85,9 +89,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                         )
                 }
             }
-            val scrollMode = listener.preferences.getBoolean(SCROLL_REF, false)
+            val scrollMode = fragment.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
-                if (listener.publication.contentLayout.readingProgression == ReadingProgression.RTL) {
+                if (fragment.publication.contentLayout.readingProgression == ReadingProgression.RTL) {
                     this@R2BasicWebView.evaluateJavascript("scrollRightRTL();") { result ->
                         if (result.contains("edge")) {
                             navigator.goBackward(animated = animated)
@@ -108,9 +112,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     open fun scrollLeft(animated: Boolean = false) {
         uiScope.launch {
+            val activity = (fragment.requireActivity() as AppCompatActivity)
             activity.supportActionBar?.let {
-                if (it.isShowing && listener.allowToggleActionBar) {
-                    listener.resourcePager?.systemUiVisibility = (
+                if (it.isShowing && (activity as IR2Activity).allowToggleActionBar) {
+                    fragment.resourcePager?.systemUiVisibility = (
                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                             or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -120,9 +125,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                         )
                 }
             }
-            val scrollMode = listener.preferences.getBoolean(SCROLL_REF, false)
+            val scrollMode = fragment.preferences.getBoolean(SCROLL_REF, false)
             if (scrollMode) {
-                if (listener.publication.contentLayout.readingProgression == ReadingProgression.RTL) {
+                if (fragment.publication.contentLayout.readingProgression == ReadingProgression.RTL) {
                     this@R2BasicWebView.evaluateJavascript("scrollLeftRTL();") { result ->
                         if (result.contains("edge")) {
                             navigator.goForward(animated = animated)
@@ -144,12 +149,12 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun progressionDidChange(positionString: String) {
         progression = positionString.toDouble()
-        listener.progressionDidChange(progression)
+        listener.onProgressionChanged(progression)
     }
 
     @android.webkit.JavascriptInterface
     fun centerTapped() {
-        listener.toggleActionBar()
+        listener.onTap(PointF(0F, 0F))
     }
 
     @android.webkit.JavascriptInterface
@@ -168,7 +173,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                     val safe = Jsoup.clean(aside, Whitelist.relaxed())
 
                     // Initialize a new instance of LayoutInflater service
-                    val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                    val inflater = fragment.requireActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
                     // Inflate the custom layout/view
                     val customView = inflater.inflate(R.layout.popup_footnote, null)
@@ -239,7 +244,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${listener.publication.contentLayout.readingProgression.value}\");", null)
+        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${fragment.publication.contentLayout.readingProgression.value}\");", null)
     }
 
     fun setScrollMode(scrollMode: Boolean) {

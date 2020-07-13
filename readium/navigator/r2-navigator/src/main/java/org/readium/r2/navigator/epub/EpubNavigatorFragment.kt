@@ -2,11 +2,7 @@ package org.readium.r2.navigator.epub
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.Color
-import android.graphics.PointF
-import android.graphics.Rect
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,8 +13,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
-import org.json.JSONException
-import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.extensions.positionsByResource
@@ -39,12 +33,11 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
 
 class EpubNavigatorFragment(
-        override val publication: Publication,
-        override val publicationPath: String,
-        override val publicationFileName: String,
+        internal val publication: Publication,
         private val initialLocator: Locator? = null,
-        private val listener: Navigator.Listener? = null
-): Fragment(), IR2Activity, IR2Selectable, IR2Highlightable, CoroutineScope, Navigator {
+        internal val listener: Navigator.Listener? = null,
+        private val baseUrl: String? = null
+): Fragment(), CoroutineScope, VisualNavigator {
 
     /**
      * Context of this scope.
@@ -58,10 +51,9 @@ class EpubNavigatorFragment(
     private lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
     private lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
 
-    override lateinit var preferences: SharedPreferences
-    override lateinit var resourcePager: R2ViewPager
-    override lateinit var publicationIdentifier: String
-    override var bookId: Long = -1
+    internal lateinit var preferences: SharedPreferences
+    internal lateinit var resourcePager: R2ViewPager
+    internal lateinit var publicationIdentifier: String
 
     var currentPagerPosition: Int = 0
     lateinit var adapter: R2PagerAdapter
@@ -84,8 +76,6 @@ class EpubNavigatorFragment(
         positions = runBlocking { publication.positions() }
         publicationIdentifier = publication.metadata.identifier!!
 
-        val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
-
         val supportFragmentManager = currentActivity.supportFragmentManager
 
         // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
@@ -95,15 +85,7 @@ class EpubNavigatorFragment(
         var resourceIndexDouble = 0
 
         for ((resourceIndexSingle, spineItem) in publication.readingOrder.withIndex()) {
-            val uri: String = if (publicationPath.toUri().isAbsolute) {
-                if (spineItem.href.toUri().isAbsolute) {
-                    spineItem.href
-                } else {
-                    getAbsolute(spineItem.href, publicationPath)
-                }
-            } else {
-                Publication.localUrlOf(filename = publicationFileName, port = port ?: 0, href = spineItem.href)
-            }
+            val uri: String = baseUrl + spineItem.href
             resourcesSingle.add(Pair(resourceIndexSingle, uri))
 
             // add first page to the right,
@@ -133,21 +115,21 @@ class EpubNavigatorFragment(
 
 
         if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
-            adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB, publicationPath)
+            adapter = R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.EPUB)
             resourcePager.type = Publication.TYPE.EPUB
         } else {
             resourcePager.type = Publication.TYPE.FXL
             adapter = when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
                 1 -> {
-                    R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                    R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL)
                 }
                 2 -> {
-                    R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                    R2PagerAdapter(supportFragmentManager, resourcesDouble, publication.metadata.title, Publication.TYPE.FXL)
                 }
                 else -> {
                     // TODO based on device
                     // TODO decide if 1 page or 2 page
-                    R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL, publicationPath)
+                    R2PagerAdapter(supportFragmentManager, resourcesSingle, publication.metadata.title, Publication.TYPE.FXL)
                 }
             }
         }
@@ -190,6 +172,10 @@ class EpubNavigatorFragment(
             }
 
         })
+
+        if (initialLocator != null) {
+            go(initialLocator)
+        }
 
         return view
     }
@@ -333,16 +319,22 @@ class EpubNavigatorFragment(
         return true
     }
 
-    override fun toggleActionBar() {
-        val listener = (listener as? Navigator.VisualListener) ?: return
-        listener.onTap(PointF(0F, 0F))
-    }
-
     private val r2PagerAdapter: R2PagerAdapter
         get() = resourcePager.adapter as R2PagerAdapter
 
     private val currentFragment: R2EpubPageFragment? get() =
         r2PagerAdapter.mFragments.get(r2PagerAdapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
+
+    override val readingProgression: ReadingProgression
+        get() = TODO("Not yet implemented")
+
+    override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun goRight(animated: Boolean, completion: () -> Unit): Boolean {
+        TODO("Not yet implemented")
+    }
 
     override val currentLocator: LiveData<Locator?> get() = _currentLocator
     private val _currentLocator = MutableLiveData<Locator?>(null)
@@ -376,106 +368,106 @@ class EpubNavigatorFragment(
         }
     }
 
-    override fun currentSelection(callback: (Locator?) -> Unit) {
-        currentFragment?.webView?.getCurrentSelectionInfo {
-            val selection = JSONObject(it)
-            val resource = publication.readingOrder[resourcePager.currentItem]
-            val resourceHref = resource.href
-            val resourceType = resource.type ?: ""
-            val locations = Locator.Locations.fromJSON(selection.getJSONObject("locations"))
-            val text = Locator.Text.fromJSON(selection.getJSONObject("text"))
-
-            val locator = Locator(
-                    href = resourceHref,
-                    type = resourceType,
-                    locations = locations,
-                    text = text
-            )
-            callback(locator)
-        }
-    }
-
-    override fun showHighlight(highlight: Highlight) {
-        currentFragment?.webView?.run {
-            val colorJson = JSONObject().apply {
-                put("red", Color.red(highlight.color))
-                put("green", Color.green(highlight.color))
-                put("blue", Color.blue(highlight.color))
-            }
-            createHighlight(highlight.locator.toJSON().toString(), colorJson.toString()) {
-                if (highlight.annotationMarkStyle.isNullOrEmpty().not())
-                    createAnnotation(highlight.id)
-            }
-        }
-    }
-
-    override fun showHighlights(highlights: Array<Highlight>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun hideHighlightWithID(id: String) {
-        currentFragment?.webView?.destroyHighlight(id)
-        currentFragment?.webView?.destroyHighlight(id.replace("HIGHLIGHT", "ANNOTATION"))
-    }
-
-    override fun hideAllHighlights() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun rectangleForHighlightWithID(id: String, callback: (Rect?) -> Unit) {
-        currentFragment?.webView?.rectangleForHighlightWithID(id) {
-            val rect = JSONObject(it).run {
-                try {
-                    val display = currentActivity.windowManager.defaultDisplay
-                    val metrics = DisplayMetrics()
-                    display.getMetrics(metrics)
-                    val left = getDouble("left")
-                    val width = getDouble("width")
-                    val top = getDouble("top") * metrics.density
-                    val height = getDouble("height") * metrics.density
-                    Rect(left.toInt(), top.toInt(), width.toInt() + left.toInt(), top.toInt() + height.toInt())
-                } catch (e: JSONException) {
-                    null
-                }
-            }
-            callback(rect)
-        }
-    }
-
-    override fun rectangleForHighlightAnnotationMarkWithID(id: String): Rect? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun registerHighlightAnnotationMarkStyle(name: String, css: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun highlightActivated(id: String) {
-    }
-
-    override fun highlightAnnotationMarkActivated(id: String) {
-    }
-
-    fun createHighlight(color: Int, callback: (Highlight) -> Unit) {
-        currentSelection { locator ->
-            val colorJson = JSONObject().apply {
-                put("red", Color.red(color))
-                put("green", Color.green(color))
-                put("blue", Color.blue(color))
-            }
-
-            currentFragment?.webView?.createHighlight(locator?.toJSON().toString(), colorJson.toString()) {
-                val json = JSONObject(it)
-                val id = json.getString("id")
-                callback(
-                        Highlight(
-                                id,
-                                locator!!,
-                                color,
-                                Style.highlight
-                        )
-                )
-            }
-        }
-    }
+//    override fun currentSelection(callback: (Locator?) -> Unit) {
+//        currentFragment?.webView?.getCurrentSelectionInfo {
+//            val selection = JSONObject(it)
+//            val resource = publication.readingOrder[resourcePager.currentItem]
+//            val resourceHref = resource.href
+//            val resourceType = resource.type ?: ""
+//            val locations = Locator.Locations.fromJSON(selection.getJSONObject("locations"))
+//            val text = Locator.Text.fromJSON(selection.getJSONObject("text"))
+//
+//            val locator = Locator(
+//                    href = resourceHref,
+//                    type = resourceType,
+//                    locations = locations,
+//                    text = text
+//            )
+//            callback(locator)
+//        }
+//    }
+//
+//    override fun showHighlight(highlight: Highlight) {
+//        currentFragment?.webView?.run {
+//            val colorJson = JSONObject().apply {
+//                put("red", Color.red(highlight.color))
+//                put("green", Color.green(highlight.color))
+//                put("blue", Color.blue(highlight.color))
+//            }
+//            createHighlight(highlight.locator.toJSON().toString(), colorJson.toString()) {
+//                if (highlight.annotationMarkStyle.isNullOrEmpty().not())
+//                    createAnnotation(highlight.id)
+//            }
+//        }
+//    }
+//
+//    override fun showHighlights(highlights: Array<Highlight>) {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//    }
+//
+//    override fun hideHighlightWithID(id: String) {
+//        currentFragment?.webView?.destroyHighlight(id)
+//        currentFragment?.webView?.destroyHighlight(id.replace("HIGHLIGHT", "ANNOTATION"))
+//    }
+//
+//    override fun hideAllHighlights() {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//    }
+//
+//    override fun rectangleForHighlightWithID(id: String, callback: (Rect?) -> Unit) {
+//        currentFragment?.webView?.rectangleForHighlightWithID(id) {
+//            val rect = JSONObject(it).run {
+//                try {
+//                    val display = currentActivity.windowManager.defaultDisplay
+//                    val metrics = DisplayMetrics()
+//                    display.getMetrics(metrics)
+//                    val left = getDouble("left")
+//                    val width = getDouble("width")
+//                    val top = getDouble("top") * metrics.density
+//                    val height = getDouble("height") * metrics.density
+//                    Rect(left.toInt(), top.toInt(), width.toInt() + left.toInt(), top.toInt() + height.toInt())
+//                } catch (e: JSONException) {
+//                    null
+//                }
+//            }
+//            callback(rect)
+//        }
+//    }
+//
+//    override fun rectangleForHighlightAnnotationMarkWithID(id: String): Rect? {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//    }
+//
+//    override fun registerHighlightAnnotationMarkStyle(name: String, css: String) {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//    }
+//
+//    override fun highlightActivated(id: String) {
+//    }
+//
+//    override fun highlightAnnotationMarkActivated(id: String) {
+//    }
+//
+//    fun createHighlight(color: Int, callback: (Highlight) -> Unit) {
+//        currentSelection { locator ->
+//            val colorJson = JSONObject().apply {
+//                put("red", Color.red(color))
+//                put("green", Color.green(color))
+//                put("blue", Color.blue(color))
+//            }
+//
+//            currentFragment?.webView?.createHighlight(locator?.toJSON().toString(), colorJson.toString()) {
+//                val json = JSONObject(it)
+//                val id = json.getString("id")
+//                callback(
+//                        Highlight(
+//                                id,
+//                                locator!!,
+//                                color,
+//                                Style.highlight
+//                        )
+//                )
+//            }
+//        }
+//    }
 }

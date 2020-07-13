@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.IR2Activity
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.shared.extensions.destroyPublication
@@ -30,7 +31,7 @@ import org.readium.r2.shared.publication.Publication
 import kotlin.coroutines.CoroutineContext
 
 
-open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
+open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Navigator.VisualListener {
 
     /**
      * Context of this scope.
@@ -100,6 +101,18 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity {
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
             }
         }
+    }
+
+    override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onPageEnded(end: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onPageLoaded() {
+        TODO("Not yet implemented")
     }
 
     override fun finish() {

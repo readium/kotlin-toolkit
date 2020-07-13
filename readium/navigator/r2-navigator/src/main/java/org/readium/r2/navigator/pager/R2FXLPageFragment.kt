@@ -24,6 +24,7 @@ import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
 
@@ -31,13 +32,13 @@ import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
 class R2FXLPageFragment : Fragment() {
 
     private val firstResourceUrl: String?
-        get() = arguments!!.getString("firstUrl")
+        get() = requireArguments().getString("firstUrl")
 
     private val secondResourceUrl: String?
-        get() = arguments!!.getString("secondUrl")
+        get() = requireArguments().getString("secondUrl")
 
     private val bookTitle: String?
-        get() = arguments!!.getString("title")
+        get() = requireArguments().getString("title")
 
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -90,9 +91,11 @@ class R2FXLPageFragment : Fragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView(webView: R2BasicWebView, resourceUrl: String?) {
-        webView.activity = activity as AppCompatActivity
-        webView.listener = activity as IR2Activity
-        webView.navigator = activity as Navigator
+        val navigatorFragment = parentFragmentManager.findFragmentById(R.id.epub_navigator)
+
+        webView.fragment = navigatorFragment as EpubNavigatorFragment
+        webView.listener = navigatorFragment.listener as Navigator.VisualListener
+        webView.navigator = navigatorFragment
 
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false

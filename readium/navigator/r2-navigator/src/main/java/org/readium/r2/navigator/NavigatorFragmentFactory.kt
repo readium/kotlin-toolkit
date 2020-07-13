@@ -21,17 +21,16 @@ import org.readium.r2.shared.publication.Publication
 @FragmentNavigator
 class NavigatorFragmentFactory(
     private val publication: Publication,
-    private val publicationPath: String,
-    private val publicationFileName: String,
     private val initialLocator: Locator? = null,
-    private val listener: Navigator.Listener? = null
+    private val listener: Navigator.Listener? = null,
+    private val baseUrl: String? = null
 ) : FragmentFactory() {
 
     @OptIn(PdfSupport::class)
     override fun instantiate(classLoader: ClassLoader, className: String): Fragment =
         when (className) {
             PdfNavigatorFragment::class.java.name -> PdfNavigatorFragment(publication, initialLocator, listener)
-            EpubNavigatorFragment::class.java.name -> EpubNavigatorFragment(publication, publicationPath, publicationFileName, initialLocator, listener)
+            EpubNavigatorFragment::class.java.name -> EpubNavigatorFragment(publication, initialLocator, listener, baseUrl)
             else -> super.instantiate(classLoader, className)
         }
 
