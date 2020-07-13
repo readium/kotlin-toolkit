@@ -336,7 +336,7 @@ class EpubNavigatorFragment(
     }
 
     override val readingProgression: ReadingProgression
-        get() = TODO("Not yet implemented")
+        get() = publication.contentLayout.readingProgression
 
     override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
         TODO("Not yet implemented")
