@@ -48,15 +48,20 @@ class ArchiveFetcherTest {
             addExtensionMimeTypMapping("xml", "text/xml")
         }
 
-        fun createLink(href: String, type: String?, compressedLength: Long) = Link(
+        fun createLink(href: String, type: String?, compressedLength: Long? = null) = Link(
             href = href,
             type = type,
-            properties = Properties(mapOf("compressedLength" to compressedLength))
+            properties =
+                Properties(
+                    compressedLength
+                        ?.let {mapOf("compressedLength" to compressedLength) }
+                        ?: mapOf()
+                )
         )
 
         assertEquals(
             listOf(
-                createLink("/mimetype", null, 20L),
+                createLink("/mimetype", null),
                 createLink("/EPUB/cover.xhtml" , "text/html", 259L),
                 createLink("/EPUB/css/epub.css",  "text/css", 595L),
                 createLink("/EPUB/css/nav.css", "text/css", 306L),
@@ -140,8 +145,7 @@ class ArchiveFetcherTest {
 
         assertEquals(
             Link(href = "/mimetype", properties = Properties(mapOf(
-                "other" to "property",
-                "compressedLength" to 20L
+                "other" to "property"
             ))),
             resource.linkBlocking()
         )

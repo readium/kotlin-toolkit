@@ -10,28 +10,43 @@
 package org.readium.r2.shared.util.archive
 
 import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class JavaZipTest {
 
-    private val archive: Archive
+@RunWith(Parameterized::class)
+class ArchiveTest(val archive: Archive) {
 
-    init {
-        val epub = JavaZipTest::class.java.getResource("epub.epub")
-        assertNotNull(epub)
-        val zipArchive = runBlocking { JavaZip.open(epub.path) }
-        assertNotNull(zipArchive)
-        archive = zipArchive
+    companion object {
+
+        @Parameterized.Parameters
+        @JvmStatic
+        fun archives(): List<Archive> {
+            val epubZip = ArchiveTest::class.java.getResource("epub.epub")
+            assertNotNull(epubZip)
+            val zipArchive = runBlocking { Archive.open(epubZip.path) }
+            assertNotNull(zipArchive)
+
+            val epubExploded = ArchiveTest::class.java.getResource("epub")
+            assertNotNull(epubExploded)
+            val explodedArchive = runBlocking { Archive.open(epubExploded.path) }
+            assertNotNull(explodedArchive)
+
+            return listOf(zipArchive, explodedArchive)
+        }
     }
 
     @Test
     fun `Entry list is correct`() {
-        assertEquals(
-            listOf(
+        assertThat(runBlocking { archive.entries().map { it.path } })
+            .contains(
                 "mimetype",
                 "EPUB/cover.xhtml",
                 "EPUB/css/epub.css",
@@ -42,19 +57,12 @@ class JavaZipTest {
                 "EPUB/s04.xhtml",
                 "EPUB/toc.ncx",
                 "META-INF/container.xml"
-            ),
-            runBlocking { archive.entries().map { it.path } }
-        )
+            )
     }
 
     @Test
-    fun `size returns null for a missing entry `() {
-        assertNull(runBlocking { archive.entry("unknown") })
-    }
-
-    @Test
-    fun `compressedSize returns null for a missing entry `() {
-        assertNull(runBlocking { archive.entry("unknown") })
+    fun `Attempting to get a missing entry throws`() {
+        assertFails { runBlocking { archive.entry("unknown") } }
     }
 
     @Test

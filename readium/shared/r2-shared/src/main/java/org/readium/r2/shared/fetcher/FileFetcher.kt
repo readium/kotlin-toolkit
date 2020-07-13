@@ -12,9 +12,11 @@ package org.readium.r2.shared.fetcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
+import timber.log.Timber
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -39,13 +41,15 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
     override suspend fun links(): List<Link> =
         paths.toSortedMap().flatMap { (href, file) ->
             file.walk().mapNotNull {
-                if (it.isDirectory) {
-                    null
-                } else {
-                    Link(
-                        href = File(href, it.path.removePrefix(file.canonicalPath)).canonicalPath,
-                        type = Format.of(fileExtension = it.extension)?.mediaType.toString()
-                    )
+                tryOrNull {
+                    if (it.isDirectory) {
+                        null
+                    } else {
+                        Link(
+                            href = File(href, it.path.removePrefix(file.canonicalPath)).canonicalPath,
+                            type = Format.of(fileExtension = it.extension)?.mediaType.toString()
+                        )
+                    }
                 }
             }.toList()
         }
@@ -103,7 +107,13 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
             }
 
         override suspend fun close() = withContext<Unit>(Dispatchers.IO) {
-            randomAccessFile.onSuccess { it.close() }
+            randomAccessFile.onSuccess {
+                try {
+                    it.close()
+                } catch (e: java.lang.Exception) {
+                    Timber.e(e)
+                }
+            }
         }
     }
 }
