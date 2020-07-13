@@ -437,7 +437,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                         return
                     }
 
-        streamer.open(libraryFile, askCredentials = false)
+        streamer.open(libraryFile, allowUserInteraction = false)
             .onSuccess {
                 addPublicationToDatabase(bddHref, extension, it).let {success ->
                     progress?.dismiss()
@@ -577,7 +577,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             val file =  remoteUrl // remote URL
                 ?: R2File(book.href, format = Format.of(fileExtension = book.ext.removePrefix("."))) // local file
 
-            streamer.open(file, askCredentials = true)
+            streamer.open(file, allowUserInteraction = true)
                 .onFailure {
                     Timber.d(it)
                     progress.dismiss()
