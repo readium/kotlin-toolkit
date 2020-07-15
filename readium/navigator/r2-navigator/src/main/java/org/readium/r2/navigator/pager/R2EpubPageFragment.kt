@@ -13,6 +13,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Base64
 import android.util.DisplayMetrics
 import android.view.KeyEvent
@@ -30,6 +31,7 @@ import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.extensions.htmlId
 import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.publication.Locator
 import java.io.IOException
 import java.io.InputStream
 
@@ -74,8 +76,8 @@ class R2EpubPageFragment : Fragment() {
         webView.navigator = navigatorFragment as Navigator
         webView.listener = navigatorFragment as R2BasicWebView.Listener
 
+        webView.setScrollMode(scrollMode)
         webView.settings.javaScriptEnabled = true
-        webView.scrollMode = scrollMode
         webView.isVerticalScrollBarEnabled = false
         webView.isHorizontalScrollBarEnabled = false
         webView.settings.useWideViewPort = true
@@ -141,40 +143,40 @@ class R2EpubPageFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
-//                val currentFragment: R2EpubPageFragment = (webView.fragment.resourcePager?.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
-//
-//                if (this@R2EpubPageFragment.tag == currentFragment.tag) {
-//                    val epubNavigator = (webView.navigator as? EpubNavigatorFragment)
-//                    var locations = epubNavigator?.pendingLocator?.locations
-//                    epubNavigator?.pendingLocator = null
-//
-//                    // TODO this seems to be needed, will need to test more
-//                    if (url!!.indexOf("#") > 0) {
-//                        val id = url.substring(url.indexOf('#'))
-//                        webView.loadUrl("javascript:scrollAnchor($id);")
-//                        locations = Locator.Locations(fragments = listOf(id))
-//                    }
-//
-//                    if (locations != null && locations.fragments.isEmpty()) {
-//                        locations.progression?.let { progression ->
-//                            currentFragment.webView.progression = progression
-//
-//                            if (webView.scrollMode) {
-//                                currentFragment.webView.scrollToPosition(progression)
-//                            } else {
-//                                // FIXME: We need a better way to wait, because if the value is too low it fails
-//                                (object : CountDownTimer(200, 1) {
-//                                    override fun onTick(millisUntilFinished: Long) {}
-//                                    override fun onFinish() {
-//                                        currentFragment.webView.calculateCurrentItem()
-//                                        currentFragment.webView.setCurrentItem(currentFragment.webView.mCurItem, false)
-//                                    }
-//                                }).start()
-//                            }
-//                        }
-//                    }
-//
-//                }
+                val epubNavigator = (webView.navigator as? EpubNavigatorFragment)
+                val currentFragment: R2EpubPageFragment = (epubNavigator?.resourcePager?.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
+
+                if (this@R2EpubPageFragment.tag == currentFragment.tag) {
+                    var locations = epubNavigator.pendingLocator?.locations
+                    epubNavigator.pendingLocator = null
+
+                    // TODO this seems to be needed, will need to test more
+                    if (url!!.indexOf("#") > 0) {
+                        val id = url.substring(url.indexOf('#'))
+                        webView.loadUrl("javascript:scrollAnchor($id);")
+                        locations = Locator.Locations(fragments = listOf(id))
+                    }
+
+                    if (locations != null && locations.fragments.isEmpty()) {
+                        locations.progression?.let { progression ->
+                            currentFragment.webView.progression = progression
+
+                            if (webView.scrollMode) {
+                                currentFragment.webView.scrollToPosition(progression)
+                            } else {
+                                // FIXME: We need a better way to wait, because if the value is too low it fails
+                                (object : CountDownTimer(200, 1) {
+                                    override fun onTick(millisUntilFinished: Long) {}
+                                    override fun onFinish() {
+                                        currentFragment.webView.calculateCurrentItem()
+                                        currentFragment.webView.setCurrentItem(currentFragment.webView.mCurItem, false)
+                                    }
+                                }).start()
+                            }
+                        }
+                    }
+
+                }
                 webView.listener.onPageLoaded()
             }
 

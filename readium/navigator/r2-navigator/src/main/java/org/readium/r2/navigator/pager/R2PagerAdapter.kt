@@ -68,7 +68,6 @@ class R2PagerAdapter(val fm: FragmentManager, private val resources: List<Any>, 
                         }
                     }
                 Publication.TYPE.DiViNa -> TODO()
-                Publication.TYPE.PDF -> TODO()
             }
 
     override fun getCount(): Int {

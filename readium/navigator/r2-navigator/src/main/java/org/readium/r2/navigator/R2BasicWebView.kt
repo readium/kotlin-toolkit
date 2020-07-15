@@ -48,10 +48,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     var resourceUrl: String? = null
 
     var scrollMode: Boolean = false
-     set(scrollMode: Boolean) {
-         this.evaluateJavascript("setScrollMode($scrollMode)", null)
-         field = scrollMode
-     }
+      private set
 
     var callback: OnOverScrolledCallback? = null
 
@@ -227,6 +224,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     fun scrollToPosition(progression: Double) {
         this.evaluateJavascript("scrollToPosition(\"$progression\", \"${readingProgression.value}\");", null)
+    }
+
+    fun setScrollMode(scrollMode: Boolean) {
+        this.evaluateJavascript("setScrollMode($scrollMode)", null)
+        this.scrollMode = scrollMode
     }
 
     fun setProperty(key: String, value: String) {
