@@ -47,6 +47,7 @@ import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
+import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.File as R2File
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
@@ -112,7 +113,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
     private lateinit var catalogView: androidx.recyclerview.widget.RecyclerView
     private lateinit var alertDialog: AlertDialog
     private lateinit var documentPickerLauncher: ActivityResultLauncher<String>
-    private lateinit var navigatorLauncher: ActivityResultLauncher<NavigatorContract.PublicationData>
+    private lateinit var navigatorLauncher: ActivityResultLauncher<NavigatorContract.Input>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,7 +152,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             uri?.let { importPublicationFromUri(it) }
         }
 
-        navigatorLauncher = registerForActivityResult(NavigatorContract()) { pubData: NavigatorContract.PublicationData? ->
+        navigatorLauncher = registerForActivityResult(NavigatorContract()) { pubData: NavigatorContract.Output? ->
             if (pubData == null)
                 return@registerForActivityResult
 
@@ -577,6 +578,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         progress.show()
          */
         launch {
+            val booksDB = BooksDatabase(this@LibraryActivity)
             val book = books[position]
 
             val remoteUrl = tryOrNull { URL(book.href).copyToTempFile() }
@@ -592,7 +594,14 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                     prepareToServe(it, file)
                     progress.dismiss()
                     navigatorLauncher.launch(
-                        NavigatorContract.PublicationData(file, it, deleteOnResult = remoteUrl != null )
+                        NavigatorContract.Input(
+                            file = file,
+                            publication = it,
+                            bookId = book.id,
+                            initialLocator = book.id?.let { id -> booksDB.books.currentLocator(id) },
+                            drm = it.isProtected,
+                            deleteOnResult = remoteUrl != null
+                        )
                     )
                 }
         }

@@ -233,11 +233,6 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         })
         search_listView.adapter = searchResultAdapter
         search_listView.layoutManager = LinearLayoutManager(this)
-
-        // Loads the last read location
-        booksDB.books.currentLocator(bookId)?.let {
-            go(it, false, {})
-        }
     }
 
 
