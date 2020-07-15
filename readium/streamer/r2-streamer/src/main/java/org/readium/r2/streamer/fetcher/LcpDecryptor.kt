@@ -52,12 +52,18 @@ internal class LcpDecryptor(val drm: DRM) {
     private class FullLcpResource(
         private val resource: Resource,
         private val license: DRMLicense
-    ) : BytesResource( { Pair(resource.link(), license.decryptFully(resource)) } ) {
+    ) : BytesResource() {
+
+        override suspend fun link(): Link = resource.link()
+
+        override suspend fun bytes(): ResourceTry<ByteArray> = license.decryptFully(resource)
 
         override suspend fun length(): ResourceTry<Long> =
             resource.link().properties.encryption?.originalLength
                 ?.let { Try.success(it) }
                 ?: super.length()
+
+        override suspend fun close() = resource.close()
     }
 
     /**
@@ -144,7 +150,7 @@ internal class LcpDecryptor(val drm: DRM) {
 }
 
 private suspend fun DRMLicense.decryptFully(resource: Resource): ResourceTry<ByteArray> =
-    resource.read().mapCatching { it ->
+    resource.read().mapCatching {
         // Decrypts the resource.
         var bytes = decipher(it)
             ?.takeIf { b -> b.isNotEmpty() }
