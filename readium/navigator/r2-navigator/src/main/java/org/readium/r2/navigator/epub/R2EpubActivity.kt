@@ -43,11 +43,6 @@ import kotlin.coroutines.CoroutineContext
 open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator, Navigator.VisualListener {
 
     /**
-     * Locator waiting to be loaded in the navigator.
-     */
-    internal var pendingLocator: Locator? = null
-
-    /**
      * Context of this scope.
      */
     override val coroutineContext: CoroutineContext
@@ -59,7 +54,6 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     override lateinit var publicationFileName: String
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
-    lateinit var positions: List<Locator>
     override var bookId: Long = -1
 
     override var allowToggleActionBar = true
@@ -76,6 +70,8 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
     private val navigatorFragment: EpubNavigatorFragment get() =
         supportFragmentManager.findFragmentById(R.id.epub_navigator) as EpubNavigatorFragment
+
+    private val positions: List<Locator> get() = navigatorFragment.positions
 
     override val currentLocator: LiveData<Locator?>
         get() = navigatorFragment.currentLocator
