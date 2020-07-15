@@ -22,8 +22,9 @@ import android.view.ActionMode
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.navigator.*
@@ -76,8 +77,8 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     private val navigatorFragment: EpubNavigatorFragment get() =
         supportFragmentManager.findFragmentById(R.id.epub_navigator) as EpubNavigatorFragment
 
-    override val currentLocator: LiveData<Locator?> get() = _currentLocator
-    private val _currentLocator = MutableLiveData<Locator?>(null)
+    override val currentLocator: LiveData<Locator?>
+        get() = navigatorFragment.currentLocator
 
     @OptIn(FragmentNavigator::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,10 +143,8 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         }
     }
 
-
-
     override val readingProgression: ReadingProgression
-        get() = TODO("Not yet implemented")
+        get() = navigatorFragment.readingProgression
 
     override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
         return navigatorFragment.goLeft(animated, completion)
