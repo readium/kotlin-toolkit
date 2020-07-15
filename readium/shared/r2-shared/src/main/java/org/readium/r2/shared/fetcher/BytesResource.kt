@@ -15,33 +15,19 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 
 
-/** Creates a Resource serving [ByteArray] computed from a factory that can fail. */
-open class BytesResource(private val factory: suspend () -> Pair<Link, ResourceTry<ByteArray>>) : Resource {
-
-    constructor(link: Link, bytes: ByteArray) : this({ Pair(link, Try.success(bytes)) })
-
-    constructor(link: Link, factory: suspend () -> ByteArray) : this({ Pair(link, Try.success(factory())) })
+/** Creates a Resource serving [ByteArray] or an error if the [ByteArray] cannot be initialized. */
+abstract class BytesResource : Resource {
 
     private lateinit var byteArray: ResourceTry<ByteArray>
-    private lateinit var computedLink: Link
 
-    private suspend fun initDataIfNeeded() {
-        if(!::byteArray.isInitialized || !::computedLink.isInitialized) {
-            val res = factory()
-            computedLink = res.first
-            byteArray = res.second
+    private suspend fun cachedBytes(): ResourceTry<ByteArray> {
+        if(!::byteArray.isInitialized) {
+            byteArray = bytes()
         }
-    }
-
-    private suspend fun bytes(): ResourceTry<ByteArray> {
-        initDataIfNeeded()
         return byteArray
     }
 
-    override suspend fun link(): Link {
-        initDataIfNeeded()
-        return computedLink
-    }
+    abstract suspend fun bytes(): ResourceTry<ByteArray>
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
         if (range == null)
@@ -49,22 +35,20 @@ open class BytesResource(private val factory: suspend () -> Pair<Link, ResourceT
 
         @Suppress("NAME_SHADOWING")
         val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
-        return bytes().map { it.sliceArray(range.map(Long::toInt)) }
+        return cachedBytes().map { it.sliceArray(range.map(Long::toInt)) }
     }
 
-    override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
-
-    override suspend fun close() {}
+    override suspend fun length(): ResourceTry<Long> = cachedBytes().map { it.size.toLong() }
 }
 
-/** Creates a Resource serving a [String] computed from a factory that can fail. */
-class StringResource(factory: suspend () -> Pair<Link, ResourceTry<String>>) : BytesResource(
-    {
-        val (link,res) = factory()
-        Pair(link, res.mapCatching { it.toByteArray() })
-    }
-) {
-    constructor(link: Link, string: String) : this({ Pair(link, Try.success(string)) })
+/** Creates a Resource serving a [String]. */
+class StringResource(val link: Link, val factory: suspend () -> String) : BytesResource() {
 
-    constructor(link: Link, factory: suspend () -> String) : this({ Pair(link, Try.success(factory())) })
+    constructor(link: Link, string: String) : this(link, { string })
+
+    override suspend fun bytes(): ResourceTry<ByteArray> = Try.success(factory().toByteArray())
+
+    override suspend fun link(): Link = link()
+
+    override suspend fun close() {}
 }

@@ -16,6 +16,7 @@ import org.readium.r2.shared.extensions.scaleToFit
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.fetcher.BytesResource
 import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.ResourceTry
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
@@ -102,17 +103,32 @@ abstract class GeneratedCoverService : CoverService {
         if (link.href != coverLink.href)
             return null
 
-        return BytesResource {
-            try {
-                val bitmap = cover()
-                val png = bitmap.toPng() ?: throw Resource.Error.Other(Exception("Unable to convert cover to PNG."))
-                Pair(
-                    coverLink.copy(width = bitmap.width, height = bitmap.height),
-                    Try.success(png)
-                )
-            } catch (e: Resource.Error) {
-                Pair(link, Try.failure(e))
+        return object: BytesResource() {
+
+            private lateinit var cover: Bitmap
+
+            private suspend fun cachedCover(): Bitmap {
+                if(!::cover.isInitialized) {
+                    cover = cover()
+                }
+                return cover
             }
+
+            override suspend fun bytes(): ResourceTry<ByteArray> =
+                try {
+                    val bitmap = cachedCover()
+                    val png = bitmap.toPng() ?: throw Resource.Error.Other(Exception("Unable to convert cover to PNG."))
+                    Try.success(png)
+                } catch (e: Resource.Error) {
+                    Try.failure(e)
+                }
+
+            override suspend fun link(): Link = coverLink.copy(width = cachedCover().width, height = cachedCover().height)
+
+            override suspend fun close() {}
+
+
+
         }
     }
 }
