@@ -49,7 +49,7 @@ class R2EpubPageFragment : Fragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val navigatorFragment = parentFragmentManager.findFragmentById(R.id.epub_navigator)
+        val navigatorFragment = parentFragmentManager.findFragmentByTag(getString(R.string.epub_navigator_tag))
 
         val v = inflater.inflate(R.layout.viewpager_fragment_epub, container, false)
         val preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
