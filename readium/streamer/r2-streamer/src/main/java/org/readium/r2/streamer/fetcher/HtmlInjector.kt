@@ -14,9 +14,11 @@ import org.json.JSONObject
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.fetcher.BytesResource
+import org.readium.r2.shared.fetcher.CachingTransformingResource
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.LazyResource
+import org.readium.r2.shared.fetcher.ResourceTry
 import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Link
@@ -37,25 +39,23 @@ internal class HtmlInjector(
 
         val link = resource.link()
         if (link.mediaType?.isHtml == true)
-            inject(resource)    
+            inject(resource)
         else
             resource
     }
 
-    private suspend fun inject(resource: Resource): Resource = object : BytesResource() {
+    private suspend fun inject(resource: Resource): Resource = object : CachingTransformingResource(resource) {
 
-        override suspend fun link() = resource.link()
-
-        override suspend fun bytes() = resource.readAsString(link().mediaType?.charset).mapCatching {
-            val trimmedText = it.trim()
-             val res = if (publication.metadata.presentation.layoutOf(link()) == EpubLayout.REFLOWABLE)
+        override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
+            resource.read().mapCatching {
+                val trimmedText = it.toString(link().mediaType?.charset ?: Charsets.UTF_8).trim()
+                val res = if (publication.metadata.presentation.layoutOf(link()) == EpubLayout.REFLOWABLE)
                     injectReflowableHtml(trimmedText)
                 else
                     injectFixedLayoutHtml(trimmedText)
-            res.toByteArray()
-        }
+                res.toByteArray()
+            }
 
-        override suspend fun close() = resource.close()
     }
 
     private fun injectReflowableHtml(content: String): String {

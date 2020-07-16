@@ -12,7 +12,7 @@ package org.readium.r2.streamer.fetcher
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.drm.DRMLicense
 import org.readium.r2.shared.extensions.inflate
-import org.readium.r2.shared.fetcher.BytesResource
+import org.readium.r2.shared.fetcher.CachingTransformingResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceTry
 import org.readium.r2.shared.fetcher.LazyResource
@@ -50,20 +50,17 @@ internal class LcpDecryptor(val drm: DRM) {
      * resource, for example when the resource is deflated before encryption.
      */
     private class FullLcpResource(
-        private val resource: Resource,
+        resource: Resource,
         private val license: DRMLicense
-    ) : BytesResource() {
+    ) : CachingTransformingResource(resource) {
 
-        override suspend fun link(): Link = resource.link()
-
-        override suspend fun bytes(): ResourceTry<ByteArray> = license.decryptFully(resource)
+        override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
+            license.decryptFully(data, resource.link().isDeflated)
 
         override suspend fun length(): ResourceTry<Long> =
             resource.link().properties.encryption?.originalLength
                 ?.let { Try.success(it) }
                 ?: super.length()
-
-        override suspend fun close() = resource.close()
     }
 
     /**
@@ -92,14 +89,14 @@ internal class LcpDecryptor(val drm: DRM) {
                             ?: throw Exception("Can't decrypt trailing size of CBC-encrypted stream")
 
                         return@mapCatching length -
-                            AES_BLOCK_SIZE -  // Minus IV or previous block
-                            (AES_BLOCK_SIZE - decryptedBytes.size) % AES_BLOCK_SIZE  // Minus padding part
+                                AES_BLOCK_SIZE -  // Minus IV or previous block
+                                (AES_BLOCK_SIZE - decryptedBytes.size) % AES_BLOCK_SIZE  // Minus padding part
                     }
             }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
             return if (range == null) {
-                license.decryptFully(resource)
+                license.decryptFully(resource.read(), isDeflated = false)
             } else {
                 resource.length().flatMapCatching { length ->
                     val blockPosition = range.first % AES_BLOCK_SIZE
@@ -149,8 +146,8 @@ internal class LcpDecryptor(val drm: DRM) {
     }
 }
 
-private suspend fun DRMLicense.decryptFully(resource: Resource): ResourceTry<ByteArray> =
-    resource.read().mapCatching {
+private fun DRMLicense.decryptFully(data:  ResourceTry<ByteArray>, isDeflated: Boolean): ResourceTry<ByteArray> =
+    data.mapCatching {
         // Decrypts the resource.
         var bytes = decipher(it)
             ?.takeIf { b -> b.isNotEmpty() }
@@ -161,7 +158,7 @@ private suspend fun DRMLicense.decryptFully(resource: Resource): ResourceTry<Byt
         bytes = bytes.copyOfRange(0, bytes.size - padding)
 
         // If the ressource was compressed using deflate, inflates it.
-        if (resource.link().isDeflated) {
+        if (isDeflated) {
             bytes = bytes.inflate(nowrap = true)
         }
 
