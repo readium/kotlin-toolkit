@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.Try
 
 internal class LCPContentProtectionService(license: LCPLicense?, error: String?) : ContentProtectionService {
 
-    override val isRestricted: Boolean = license != null
+    override val isRestricted: Boolean = license == null
 
     override val error: String? = error
 
