@@ -13,9 +13,12 @@
 
 package org.readium.r2.shared.extensions
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.Exception
 
 /**
  * Copies this stream to the given output stream, returning the number of bytes copied
@@ -47,3 +50,23 @@ internal fun InputStream.read(limit: Long): ByteArray {
     copyTo(buffer, limit)
     return buffer.toByteArray()
 }
+
+internal suspend fun InputStream.readRange(range: LongRange): ByteArray {
+    @Suppress("NAME_SHADOWING")
+    val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+
+    return withContext(Dispatchers.IO) {
+        val skipped = skip(range.first)
+        val length = range.last - range.first + 1
+        val bytes = read(length)
+        if (skipped != range.first && bytes.isNotEmpty()) {
+            throw Exception("Unable to skip enough bytes")
+        }
+        bytes
+    }
+}
+
+internal suspend fun InputStream.readFully(): ByteArray =
+    withContext(Dispatchers.IO) {
+        readBytes()
+    }

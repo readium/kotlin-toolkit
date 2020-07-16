@@ -12,23 +12,32 @@ package org.readium.r2.shared.fetcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
+import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.JavaZip
+import timber.log.Timber
 import java.io.File
 
 /** Provides access to entries of an archive. */
 class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher {
 
     override suspend fun links(): List<Link> =
-        archive.entries().filterNot { it.isDirectory }.map { it.toLink() }
+        tryOr(emptyList()) { archive.entries() }
+            .map { it.toLink() }
 
     override fun get(link: Link): Resource =
         EntryResource(link, archive)
 
-    override suspend fun close() = withContext(Dispatchers.IO) { archive.close() }
+    override suspend fun close() = withContext(Dispatchers.IO) {
+        try {
+            archive.close()
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+    }
 
     companion object {
 
@@ -44,9 +53,11 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
 
         suspend fun entry(): ResourceTry<Archive.Entry> {
             if (!::_entry.isInitialized) {
-                _entry = ResourceTry.wrap {
-                    archive.entry(originalLink.href.removePrefix("/"))
-                        ?: throw Resource.Error.NotFound
+                _entry = try {
+                    val entry = archive.entry(originalLink.href.removePrefix("/"))
+                    Try.success(entry)
+                } catch (e: Exception) {
+                    Try.failure(Resource.Error.NotFound)
                 }
             }
 
@@ -62,7 +73,7 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             entry().mapCatching {
-                it.read(range) ?: throw Exception("Cannot read archive entry.")
+                it.read(range)
             }
 
         override suspend fun length(): ResourceTry<Long>  =
