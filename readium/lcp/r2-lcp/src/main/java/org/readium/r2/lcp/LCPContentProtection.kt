@@ -56,10 +56,8 @@ class LCPContentProtection(
         val protectedFile = ContentProtection.ProtectedFile(
             file = file,
             fetcher = TransformingFetcher(fetcher, LCPDecryptor(license?.getOrNull())::transform),
-            onCreateServices = { _, _, servicesBuilder ->
-                servicesBuilder.apply {
-                    contentProtectionServiceFactory = serviceFactory
-                }
+            onCreatePublication = {
+                servicesBuilder.contentProtectionServiceFactory = serviceFactory
             }
         )
 
