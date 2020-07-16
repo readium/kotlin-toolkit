@@ -17,7 +17,6 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.toJSON
-import org.readium.r2.shared.util.Try
 
 private val positionsLink = Link(
     href= "/~readium/positions",

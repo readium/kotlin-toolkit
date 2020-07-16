@@ -10,6 +10,8 @@
 package org.readium.r2.shared.fetcher
 
 import org.json.JSONObject
+import org.readium.r2.shared.extensions.coerceToPositiveIncreasing
+import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
@@ -168,6 +170,72 @@ abstract class ProxyResource(protected val resource: Resource) : Resource {
 
     override suspend fun close() = resource.close()
 }
+
+class CachingResource(protected val resource: Resource) : Resource {
+
+    private lateinit var _link: Link
+    private lateinit var _length: ResourceTry<Long>
+    private lateinit var _bytes: ResourceTry<ByteArray>
+
+    override suspend fun link(): Link {
+        if (!::_link.isInitialized) {
+            _link = resource.link()
+        }
+        return _link
+    }
+
+    override suspend fun length(): ResourceTry<Long> {
+        if (!::_length.isInitialized) {
+            _length = resource.length()
+        }
+        return _length
+    }
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+        if (!::_bytes.isInitialized) {
+            _bytes = resource.read()
+        }
+
+        if (range == null)
+            return _bytes
+
+        @Suppress("NAME_SHADOWING")
+        val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+        return _bytes.map { it.sliceArray(range.map(Long::toInt)) }
+    }
+
+    override suspend fun close() = resource.close()
+}
+
+abstract class CachingTransformingResource(protected val resource: Resource) : Resource {
+
+    abstract suspend fun transform(data: ResourceTry<ByteArray>):  ResourceTry<ByteArray>
+
+    private lateinit var _bytes: ResourceTry<ByteArray>
+
+    private suspend fun bytes(): ResourceTry<ByteArray> {
+        if(!::_bytes.isInitialized) {
+            _bytes = transform(resource.read())
+        }
+        return _bytes
+    }
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+        if (range == null)
+            return bytes()
+
+        @Suppress("NAME_SHADOWING")
+        val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+        return bytes().map { it.sliceArray(range.map(Long::toInt)) }
+    }
+
+    override suspend fun close() = resource.close()
+
+    override suspend fun link(): Link = resource.link()
+
+    override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
+}
+
 
 class LazyResource(private val factory: suspend () -> Resource) : Resource {
 

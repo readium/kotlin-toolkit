@@ -14,41 +14,39 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 
+sealed class BaseBytesResource(val link: Link, val bytes: suspend () -> ByteArray) : Resource {
 
-/** Creates a Resource serving [ByteArray] or an error if the [ByteArray] cannot be initialized. */
-abstract class BytesResource : Resource {
+    private lateinit var _bytes: ByteArray
 
-    private lateinit var byteArray: ResourceTry<ByteArray>
-
-    private suspend fun cachedBytes(): ResourceTry<ByteArray> {
-        if(!::byteArray.isInitialized) {
-            byteArray = bytes()
-        }
-        return byteArray
-    }
-
-    abstract suspend fun bytes(): ResourceTry<ByteArray>
+    override suspend fun link(): Link = link
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+        if (!::_bytes.isInitialized)
+            _bytes = bytes()
+
         if (range == null)
-            return bytes()
+            return Try.success(_bytes)
 
         @Suppress("NAME_SHADOWING")
         val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
-        return cachedBytes().map { it.sliceArray(range.map(Long::toInt)) }
+        return Try.success(_bytes.sliceArray(range.map(Long::toInt)))
     }
 
-    override suspend fun length(): ResourceTry<Long> = cachedBytes().map { it.size.toLong() }
+    override suspend fun length(): ResourceTry<Long> =
+        read().map { it.size.toLong() }
+
+    override suspend fun close() {}
+}
+
+/** Creates a Resource serving [ByteArray]. */
+class BytesResource(link: Link, bytes: suspend () -> ByteArray) : BaseBytesResource(link, bytes) {
+
+    constructor(link: Link, bytes: ByteArray) : this(link, { bytes })
+
 }
 
 /** Creates a Resource serving a [String]. */
-class StringResource(val link: Link, val factory: suspend () -> String) : BytesResource() {
+class StringResource(link: Link, string: suspend () -> String) : BaseBytesResource(link, { string().toByteArray() }) {
 
     constructor(link: Link, string: String) : this(link, { string })
-
-    override suspend fun bytes(): ResourceTry<ByteArray> = Try.success(factory().toByteArray())
-
-    override suspend fun link(): Link = link()
-
-    override suspend fun close() {}
 }
