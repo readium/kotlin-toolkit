@@ -36,7 +36,11 @@ interface Fetcher {
     fun get(href: String): Resource =
         get(Link(href = href))
 
-    /** Closes any opened file handles, removes temporary files, etc. */
+    /**
+     * Closes any opened file handles, removes temporary files, etc.
+     *
+     * If the Fetcher is already closed then invoking this method has no effect.
+     */
     suspend fun close()
 
     // To be able to add extensions on Fetcher.Companion in other components...

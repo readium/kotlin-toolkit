@@ -83,6 +83,8 @@ interface Resource {
 
     /**
      * Closes any opened file handles.
+     *
+     * If the Resource is already closed then invoking this method has no effect.
      */
     suspend fun close()
 

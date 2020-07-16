@@ -14,10 +14,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.util.archive.Archive
 import java.io.File
 import java.net.URLConnection
 import java.util.*
-import java.util.zip.ZipEntry
 
 /**
  * Determines if the provided content matches a known format.
@@ -37,7 +37,7 @@ object FormatSniffers {
      */
     val all: List<FormatSniffer> = listOf(
         ::html, ::opds, ::lcpLicense, ::bitmap,
-        ::webpub, ::w3cWPUB, ::epub, ::lpf, ::zip, ::pdf
+        ::webpub, ::w3cWPUB, ::epub, ::lpf, ::archive, ::pdf
     )
 
     /** Sniffs an HTML document. */
@@ -162,36 +162,35 @@ object FormatSniffers {
             return Format.LCP_PROTECTED_PDF
         }
 
-        // Reads a RWPM, either from a manifest.json file, or from a manifest.json ZIP entry, if
-        // the file is a ZIP archive.
+        // Reads a RWPM, either from a manifest.json file, or from a manifest.json archive entry, if
+        // the file is an archive.
         var isManifest = true
-        val publication: Publication? =
+        val manifest: Manifest? =
             try {
                 // manifest.json
                 context.contentAsRwpm() ?:
-                // ZIP package
-                context.readZipEntryAt("manifest.json")
+                // Archive package
+                context.readArchiveEntryAt("manifest.json")
                     ?.let { Manifest.fromJSON(JSONObject(String(it))) }
-                    ?.let { Publication(it) }
                     ?.also { isManifest = false }
             } catch (e: Exception) {
                 null
             }
 
-        if (publication != null) {
-            val isLcpProtected = context.containsZipEntryAt("license.lcpl")
+        if (manifest != null) {
+            val isLcpProtected = context.containsArchiveEntryAt("license.lcpl")
 
-            if (publication.metadata.type == "http://schema.org/Audiobook" || publication.readingOrder.allAreAudio) {
+            if (manifest.metadata.type == "http://schema.org/Audiobook" || manifest.readingOrder.allAreAudio) {
                 return if (isManifest) Format.READIUM_AUDIOBOOK_MANIFEST
                 else (if (isLcpProtected) Format.LCP_PROTECTED_AUDIOBOOK else Format.READIUM_AUDIOBOOK)
             }
-            if (publication.readingOrder.allAreBitmap) {
+            if (manifest.readingOrder.allAreBitmap) {
                 return if (isManifest) Format.DIVINA_MANIFEST else Format.DIVINA
             }
-            if (isLcpProtected && publication.readingOrder.allMatchMediaType(MediaType.PDF)) {
+            if (isLcpProtected && manifest.readingOrder.allMatchMediaType(MediaType.PDF)) {
                 return Format.LCP_PROTECTED_PDF
             }
-            if (publication.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
+            if (manifest.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
                 return if (isManifest) Format.READIUM_WEBPUB_MANIFEST else Format.READIUM_WEBPUB
             }
         }
@@ -220,7 +219,7 @@ object FormatSniffers {
             return Format.EPUB
         }
 
-        val mimetype = context.readZipEntryAt("mimetype")
+        val mimetype = context.readArchiveEntryAt("mimetype")
             ?.let { String(it, charset = Charsets.US_ASCII).trim() }
         if (mimetype == "application/epub+zip") {
             return Format.EPUB
@@ -240,12 +239,12 @@ object FormatSniffers {
         if (context.hasFileExtension("lpf") || context.hasMediaType("application/lpf+zip")) {
             return Format.LPF
         }
-        if (context.containsZipEntryAt("index.html")) {
+        if (context.containsArchiveEntryAt("index.html")) {
             return Format.LPF
         }
 
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@context`.
-        context.readZipEntryAt("publication.json")
+        context.readArchiveEntryAt("publication.json")
             ?.let { String(it) }
             ?.let { manifest ->
                 if (manifest.contains("@context") && manifest.contains("https://www.w3.org/ns/pub-context")) {
@@ -278,11 +277,11 @@ object FormatSniffers {
     )
 
     /**
-     * Sniffs a simple ZIP-based format, like Comic Book Archive or Zipped Audio Book.
+     * Sniffs a simple Archive-based format, like Comic Book Archive or Zipped Audio Book.
      *
      * Reference: https://wiki.mobileread.com/wiki/CBR_and_CBZ
      */
-    suspend fun zip(context: FormatSnifferContext): Format? {
+    suspend fun archive(context: FormatSnifferContext): Format? {
         if (context.hasFileExtension("cbz") || context.hasMediaType("application/vnd.comicbook+zip", "application/x-cbz", "application/x-cbr")) {
             return Format.CBZ
         }
@@ -290,20 +289,20 @@ object FormatSniffers {
             return Format.ZAB
         }
 
-        if (context.contentAsZip() != null) {
-            fun isIgnored(entry: ZipEntry, file: File): Boolean =
-                entry.isDirectory || file.name.startsWith(".") || file.name == "Thumbs.db"
+        if (context.contentAsArchive() != null) {
+            fun isIgnored(entry: Archive.Entry, file: File): Boolean =
+                file.name.startsWith(".") || file.name == "Thumbs.db"
 
-            suspend fun zipContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
-                context.zipEntriesAllSatisfy { entry ->
-                    val file = File(entry.name)
+            suspend fun archiveContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
+                context.archiveEntriesAllSatisfy { entry ->
+                    val file = File(entry.path)
                     isIgnored(entry, file) || fileExtensions.contains(file.extension.toLowerCase(Locale.ROOT))
                 }
 
-            if (zipContainsOnlyExtensions(CBZ_EXTENSIONS)) {
+            if (archiveContainsOnlyExtensions(CBZ_EXTENSIONS)) {
                 return Format.CBZ
             }
-            if (zipContainsOnlyExtensions(ZAB_EXTENSIONS)) {
+            if (archiveContainsOnlyExtensions(ZAB_EXTENSIONS)) {
                 return Format.ZAB
             }
         }
