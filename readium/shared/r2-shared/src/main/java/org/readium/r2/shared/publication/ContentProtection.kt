@@ -71,18 +71,14 @@ interface ContentProtection {
      *   restrictions. For example, by creating an HTTPFetcher which will inject a Bearer Token in
      *   requests.
      *
-     * @property onCreateServices Called before creating the Publication, to modify its list of service
-     * factories. Can be use to add a Content Protection Service to the Publication that will be created
-     * by the Streamer.
-     *
-     * @property onCreateManifest Called before creating the Publication, to modify the parsed [Manifest]
-     * if desired.
+     * @property onCreatePublication Called on every parsed Publication.Builder.
+     * It can be used to modify the `Manifest`, the root [Fetcher] or the list of service factories
+     * of a [Publication].
      */
     data class ProtectedFile(
         val file: File,
         val fetcher: Fetcher,
-        val onCreateServices: OnCreateServices? = null,
-        val onCreateManifest: OnCreateManifest? = null
+        val onCreatePublication: Publication.Builder.() -> Unit = {}
     )
 
 }
