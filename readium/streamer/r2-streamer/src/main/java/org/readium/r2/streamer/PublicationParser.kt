@@ -37,24 +37,6 @@ interface PublicationParser {
      * Can be used to report publication authoring mistakes,
      * to warn users of potential rendering issues or help authors debug their publications.
      */
-    suspend fun parse(file: File, fetcher: Fetcher, fallbackTitle: String, warnings: WarningLogger? = null): PublicationBuilder?
+    suspend fun parse(file: File, fetcher: Fetcher, fallbackTitle: String, warnings: WarningLogger? = null): Publication.Builder?
 
-    /**
-     * Builds a Publication from its components.
-     *
-     * A Publication's construction is distributed over the Streamer and its parsers,
-     * so a builder is useful to pass the parts around.
-     */
-    data class PublicationBuilder(
-        var manifest: Manifest,
-        var fetcher: Fetcher,
-        var servicesBuilder: Publication.ServicesBuilder
-    ) {
-
-        fun build(): Publication = Publication(
-            manifest = manifest,
-            fetcher = fetcher,
-            servicesBuilder = servicesBuilder
-        )
-    }
 }

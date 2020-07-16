@@ -42,7 +42,7 @@ class PdfParser(
         fetcher: Fetcher,
         fallbackTitle: String,
         warnings: WarningLogger?
-    ): PublicationParser.PublicationBuilder? {
+    ): Publication.Builder? {
 
         if (file.format() != Format.PDF)
             return null
@@ -69,7 +69,7 @@ class PdfParser(
             cover = document.cover?.let { InMemoryCoverService.createFactory(it) }
         )
 
-        return PublicationParser.PublicationBuilder(manifest, fetcher, servicesBuilder)
+        return Publication.Builder(manifest, fetcher, servicesBuilder)
     }
 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
