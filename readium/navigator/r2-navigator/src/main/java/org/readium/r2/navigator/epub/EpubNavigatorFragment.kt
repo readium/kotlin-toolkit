@@ -48,12 +48,12 @@ class EpubNavigatorFragment(
 
 
     lateinit var positions: List<Locator>
+    lateinit var resourcePager: R2ViewPager
 
     private lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
     private lateinit var resourcesDouble: ArrayList<Triple<Int, String, String>>
 
     internal lateinit var preferences: SharedPreferences
-    internal lateinit var resourcePager: R2ViewPager
     internal lateinit var publicationIdentifier: String
 
     var currentPagerPosition: Int = 0
