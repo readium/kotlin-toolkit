@@ -49,7 +49,7 @@ internal typealias ServiceFactory = (Publication.Service.Context) -> Publication
  * @param version The version of the publication, if the type needs any.
  * @param positionsFactory Factory used to build lazily the [positions].
  */
-data class Publication(
+class Publication(
     private val manifest: Manifest,
     private val fetcher: Fetcher = EmptyFetcher(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
@@ -271,7 +271,7 @@ data class Publication(
         /**
          * Container for the context from which a service is created.
          */
-        data class Context(
+        class Context(
             val manifest: Manifest,
             val fetcher: Fetcher
         )
@@ -320,7 +320,7 @@ data class Publication(
      *
      * Provides helpers to manipulate the list of services of a [Publication].
      */
-    data class ServicesBuilder(internal var serviceFactories: MutableMap<String, ServiceFactory>) {
+    class ServicesBuilder(internal var serviceFactories: MutableMap<String, ServiceFactory>) {
 
         @Suppress("UNCHECKED_CAST")
         constructor(
@@ -412,7 +412,7 @@ data class Publication(
      * A Publication's construction is distributed over the Streamer and its parsers,
      * so a builder is useful to pass the parts around.
      */
-    data class Builder(
+    class Builder(
         var manifest: Manifest,
         var fetcher: Fetcher,
         var servicesBuilder: ServicesBuilder
