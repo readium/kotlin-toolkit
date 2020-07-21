@@ -11,6 +11,7 @@ package org.readium.r2.navigator
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
+import org.readium.r2.navigator.cbz.ImageNavigatorFragment
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.FragmentNavigator
@@ -31,7 +32,7 @@ class NavigatorFragmentFactory(
         when (className) {
             PdfNavigatorFragment::class.java.name -> PdfNavigatorFragment(publication, initialLocator, listener)
             EpubNavigatorFragment::class.java.name -> EpubNavigatorFragment(publication, initialLocator, listener, baseUrl)
+            ImageNavigatorFragment::class.java.name -> ImageNavigatorFragment(publication, initialLocator, listener)
             else -> super.instantiate(classLoader, className)
         }
-
 }
