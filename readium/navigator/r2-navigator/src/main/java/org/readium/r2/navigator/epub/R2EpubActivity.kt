@@ -58,8 +58,6 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
     override var allowToggleActionBar = true
 
-    lateinit var adapter: R2PagerAdapter
-
     protected var navigatorDelegate: NavigatorDelegate? = null
 
     private val r2PagerAdapter: R2PagerAdapter
