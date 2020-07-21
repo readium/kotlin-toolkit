@@ -58,7 +58,7 @@ class EpubNavigatorFragment(
 
     var currentPagerPosition: Int = 0
     lateinit var adapter: R2PagerAdapter
-    lateinit var currentActivity: FragmentActivity
+    private lateinit var currentActivity: FragmentActivity
 
     protected var navigatorDelegate: NavigatorDelegate? = null
 
@@ -66,7 +66,7 @@ class EpubNavigatorFragment(
         currentActivity = requireActivity()
         val view = inflater.inflate(R.layout.activity_r2_viewpager, container, false)
 
-        preferences = currentActivity.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+        preferences = requireContext().getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         resourcePager = view.findViewById(R.id.resourcePager)
         resourcePager.type = Publication.TYPE.EPUB
