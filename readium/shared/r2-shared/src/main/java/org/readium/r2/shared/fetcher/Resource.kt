@@ -113,7 +113,7 @@ interface Resource {
     /**
      * Errors occurring while accessing a resource.
      */
-    sealed class Error(cause: Throwable? = null) : Throwable(cause) {
+    sealed class Error(cause: Throwable? = null) : Exception(cause) {
 
         /** Equivalent to a 400 HTTP error. */
         class BadRequest(cause: Throwable? = null) : Error(cause)
