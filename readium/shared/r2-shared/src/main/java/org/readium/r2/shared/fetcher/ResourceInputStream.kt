@@ -15,35 +15,55 @@ import java.io.InputStream
 
 /** Input stream reading a [Resource]'s content. */
 class ResourceInputStream(
-    private val resource: Resource
+    private val resource: Resource,
+    val range: LongRange? = null
 ) : InputStream() {
 
-    private val length: Long by lazy {
-        try {
+    private var isClosed = false
+
+    private val end: Long by lazy {
+        val resourceLength = try {
             runBlocking { resource.length().getOrThrow() }
         } catch (e: Exception) {
             throw IOException("Can't get resource length")
         }
+
+        if (range == null)
+            resourceLength
+        else {
+            kotlin.math.min(resourceLength, range.last + 1)
+        }
+
     }
 
     /** Current position in the resource. */
-    private var position: Long = 0
+    private var position: Long = range?.start ?: 0
 
     /**
      * The currently marked position in the stream. Defaults to 0.
      */
     private var mark: Long = 0
 
-    override fun available(): Int = (length - position).toInt()
+    @Throws(IOException::class)
+    override fun available(): Int {
+        checkNotClosed()
+        return (end - position).toInt()
+    }
 
+    @Throws(IOException::class)
     override fun skip(n: Long): Long = synchronized(this) {
-        val newPosition = (position + n).coerceAtMost(length)
+        checkNotClosed()
+
+        val newPosition = (position + n).coerceAtMost(end)
         val skipped = position - newPosition
         position = newPosition
         skipped
     }
 
-    override fun read(): Int {
+    @Throws(IOException::class)
+    override fun read(): Int = synchronized(this) {
+        checkNotClosed()
+
         if (available() <= 0) {
             return -1
         }
@@ -59,18 +79,21 @@ class ResourceInputStream(
     }
 
     @Throws(IOException::class)
-    override fun read(b: ByteArray, off: Int, len: Int): Int {
+    override fun read(b: ByteArray, off: Int, len: Int): Int = synchronized(this) {
+        checkNotClosed()
+
         if (available() <= 0) {
             return -1
         }
 
         try {
-            val bytes = runBlocking { resource.read(position until (position + len)).getOrThrow() }
+            val bytesToRead = len.coerceAtMost(available())
+            val bytes = runBlocking { resource.read(position until (position + bytesToRead)).getOrThrow() }
             bytes.copyInto(
                 destination = b,
                 destinationOffset = off,
                 startIndex = 0,
-                endIndex = len.coerceAtMost(bytes.size)
+                endIndex = bytes.size
             )
             position += bytes.size
             return bytes.size
@@ -82,12 +105,32 @@ class ResourceInputStream(
 
     override fun markSupported(): Boolean = true
 
+    @Throws(IOException::class)
     override fun mark(readlimit: Int) = synchronized(this) {
+        checkNotClosed()
         mark = position
     }
 
+    @Throws(IOException::class)
     override fun reset() = synchronized(this) {
+        checkNotClosed()
         position = mark
+    }
+
+    /**
+     * Closes the underlying resource.
+     */
+    override fun close() = synchronized(this) {
+        if (isClosed)
+            return
+
+        isClosed = true
+        runBlocking { resource.close() }
+    }
+
+    private fun checkNotClosed() {
+        if (isClosed)
+            throw IOException("InputStream is closed.")
     }
 
 }
