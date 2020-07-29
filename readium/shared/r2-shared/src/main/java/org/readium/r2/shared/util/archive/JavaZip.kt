@@ -60,7 +60,9 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
 
         private fun readRange(range: LongRange, stream: InputStream): ByteArray? {
             @Suppress("NAME_SHADOWING")
-            val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+            val range = range
+                .coerceToPositiveIncreasing()
+                .requireLengthFitInt()
 
             stream.use {
                 return try {

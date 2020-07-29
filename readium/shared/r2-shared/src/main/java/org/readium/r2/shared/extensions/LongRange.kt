@@ -17,4 +17,4 @@ internal fun LongRange.coerceToPositiveIncreasing() =
 
 internal fun LongRange.coerceLastAtMost(max: Long) = LongRange(first, last.coerceAtMost(max))
 
-internal fun LongRange.requireLengthFitInt() = require(last - first + 1 <= Int.MAX_VALUE)
+internal fun LongRange.requireLengthFitInt() = this.apply { require(last - first + 1 <= Int.MAX_VALUE) }

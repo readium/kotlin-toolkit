@@ -200,7 +200,9 @@ class CachingResource(protected val resource: Resource) : Resource {
             return _bytes
 
         @Suppress("NAME_SHADOWING")
-        val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+        val range = range
+            .coerceToPositiveIncreasing()
+            .requireLengthFitInt()
         return _bytes.map { it.sliceArray(range.map(Long::toInt)) }
     }
 
@@ -225,7 +227,9 @@ abstract class CachingTransformingResource(protected val resource: Resource) : R
             return bytes()
 
         @Suppress("NAME_SHADOWING")
-        val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+        val range = range
+            .coerceToPositiveIncreasing()
+            .requireLengthFitInt()
         return bytes().map { it.sliceArray(range.map(Long::toInt)) }
     }
 

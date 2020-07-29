@@ -32,7 +32,7 @@ sealed class BaseBytesResource(val link: Link, val bytes: suspend () -> ByteArra
         val range = range
             .coerceToPositiveIncreasing()
             .coerceLastAtMost(_bytes.size - 1L)
-            .apply { requireLengthFitInt() }
+            .requireLengthFitInt()
 
         return Try.success(_bytes.sliceArray(range.map(Long::toInt)))
     }

@@ -41,7 +41,9 @@ internal abstract class StreamResource : Resource {
 
     private suspend fun readRange(range: LongRange): ResourceTry<ByteArray> {
         @Suppress("NAME_SHADOWING")
-        val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+        val range = range
+            .coerceToPositiveIncreasing()
+            .requireLengthFitInt()
 
         return stream().mapCatching { stream ->
             withContext(Dispatchers.IO) {
