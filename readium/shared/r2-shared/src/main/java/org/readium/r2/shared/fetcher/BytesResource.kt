@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.fetcher
 
+import org.readium.r2.shared.extensions.coerceLastAtMost
 import org.readium.r2.shared.extensions.coerceToPositiveIncreasing
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.Link
@@ -28,7 +29,11 @@ sealed class BaseBytesResource(val link: Link, val bytes: suspend () -> ByteArra
             return Try.success(_bytes)
 
         @Suppress("NAME_SHADOWING")
-        val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+        val range = range
+            .coerceToPositiveIncreasing()
+            .coerceLastAtMost(_bytes.size - 1L)
+            .apply { requireLengthFitInt() }
+
         return Try.success(_bytes.sliceArray(range.map(Long::toInt)))
     }
 

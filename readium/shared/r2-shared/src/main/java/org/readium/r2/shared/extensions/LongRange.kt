@@ -15,4 +15,6 @@ internal fun LongRange.coerceToPositiveIncreasing() =
     else
         LongRange(first.coerceAtLeast(0), last.coerceAtLeast(0))
 
+internal fun LongRange.coerceLastAtMost(max: Long) = LongRange(first, last.coerceAtMost(max))
+
 internal fun LongRange.requireLengthFitInt() = require(last - first + 1 <= Int.MAX_VALUE)
