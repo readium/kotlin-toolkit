@@ -49,7 +49,7 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * @param openArchive Opens an archive (e.g. ZIP, RAR), optionally protected by credentials.
  * @param openPdf Parses a PDF document, optionally protected by password.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
- *   the `Manifest`, the root [Fetcher] or the list of service factories of a [Publication].
+ *   the [Manifest], the root [Fetcher] or the list of service factories of a [Publication].
  * @param onAskCredentials Called when a content protection wants to prompt the user for its
  *   credentials.
  */
