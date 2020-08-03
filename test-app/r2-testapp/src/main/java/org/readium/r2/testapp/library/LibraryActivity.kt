@@ -599,7 +599,6 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                             publication = it,
                             bookId = book.id,
                             initialLocator = book.id?.let { id -> booksDB.books.currentLocator(id) },
-                            drm = it.isProtected,
                             deleteOnResult = remoteUrl != null
                         )
                     )

@@ -32,7 +32,6 @@ class NavigatorContract : ActivityResultContract<NavigatorContract.Input, Naviga
         val publication: Publication,
         val bookId: Long?,
         val initialLocator: Locator? = null,
-        val drm: Boolean = false,
         val deleteOnResult: Boolean = false
     )
 
@@ -55,7 +54,6 @@ class NavigatorContract : ActivityResultContract<NavigatorContract.Input, Naviga
             putExtra("bookId", input.bookId)
             putExtra("publicationPath", input.file.path)
             putExtra("publicationFileName", input.file.name)
-            putExtra("drm", input.drm)
             putExtra("deleteOnResult", input.deleteOnResult)
             if (input.initialLocator != null) {
                 putExtra("locator", input.initialLocator)

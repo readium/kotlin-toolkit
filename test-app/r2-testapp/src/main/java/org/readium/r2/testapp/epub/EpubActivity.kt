@@ -34,6 +34,7 @@ import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_epub.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.anko.appcompat.v7.coroutines.onClose
 import org.jetbrains.anko.indeterminateProgressDialog
@@ -54,6 +55,7 @@ import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.DRMManagementActivity
@@ -150,11 +152,10 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
             })
         }
 
-        Handler().postDelayed({
-            launch {
-                menuDrm?.isVisible = intent.getBooleanExtra("drm", false)
-            }
-        }, 100)
+        launch {
+            delay(100)
+            menuDrm?.isVisible = publication.isProtected
+        }
 
         val appearancePref = preferences.getInt(APPEARANCE_REF, 0)
         val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
