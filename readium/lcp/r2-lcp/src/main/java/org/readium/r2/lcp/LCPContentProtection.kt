@@ -15,6 +15,7 @@ import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.OnAskCredentials
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.Try
 
@@ -26,7 +27,7 @@ class LCPContentProtection(
     override suspend fun open(
         file: File,
         fetcher: Fetcher,
-        askCredentials: Boolean,
+        allowUserInteraction: Boolean,
         credentials: String?,
         sender: Any?,
         onAskCredentials: OnAskCredentials?
@@ -40,30 +41,26 @@ class LCPContentProtection(
         if (!isProtectedWithLcp)
             return null
 
-        return try {
-            val license = lcpService
-                .retrieveLicense(file,  lcpAuthenticating.takeIf { askCredentials })
-                ?.getOrThrow()
-            val protectedFile = ContentProtection.ProtectedFile(
-                file,
-                TransformingFetcher(fetcher, LCPDecryptor(license)::transform),
-                LCPContentProtectionService.createFactory(license)
-            )
-            Try.success(protectedFile)
+        val license = lcpService
+            .retrieveLicense(file,  lcpAuthenticating.takeIf { allowUserInteraction })
 
-        } catch (e: LCPError) {
-            Try.failure(e.toOpeningError())
+        val error = when {
+            license == null -> null
+            license.isFailure -> license.exceptionOrNull()!!
+            else -> null
         }
-    }
-}
 
-private fun LCPError.toOpeningError() = when (this) {
-    is LCPError.licenseIsBusy,
-    is LCPError.network,
-    is LCPError.licenseContainer->
-        Publication.OpeningError.Unavailable(this)
-    is LCPError.licenseStatus ->
-        Publication.OpeningError.Forbidden(this)
-    else ->
-        Publication.OpeningError.ParsingFailed(this)
+        val serviceFactory = LCPContentProtectionService
+            .createFactory(license?.getOrNull(), error)
+
+        val protectedFile = ContentProtection.ProtectedFile(
+            file = file,
+            fetcher = TransformingFetcher(fetcher, LCPDecryptor(license?.getOrNull())::transform),
+            onCreatePublication = {
+                servicesBuilder.contentProtectionServiceFactory = serviceFactory
+            }
+        )
+
+        return Try.success(protectedFile)
+    }
 }
