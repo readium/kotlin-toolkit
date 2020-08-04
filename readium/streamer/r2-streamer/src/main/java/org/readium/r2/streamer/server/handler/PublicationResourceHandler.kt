@@ -65,6 +65,10 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     private suspend fun serveResponse(session: IHTTPSession, resource: Resource): Response {
+        // Depending on the nature of the Response, either resource is closed here,
+        // or the responsibility of closing it is forwarded to the created ResourceInputStream.
+        // In the latter case, NanoHTTPd will close it at the end of the transmission.
+
         var rangeRequest: String? = session.headers["range"]
         val mimeType = (resource.link().mediaType ?: MediaType.BINARY).toString()
 
