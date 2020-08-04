@@ -194,7 +194,7 @@ class CachingResource(protected val resource: Resource) : Resource {
 
     override suspend fun length(): ResourceTry<Long> {
         if (!::_length.isInitialized) {
-            _length = resource.length()
+            _length = if (::_bytes.isInitialized) _bytes.map { it.size.toLong() } else resource.length()
         }
         return _length
     }
