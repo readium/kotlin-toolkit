@@ -60,7 +60,7 @@ class CoverServiceTest {
     @Test
     fun `get works fine`() {
         val service = InMemoryCoverService(coverBitmap)
-        val res = service.get(Link("/~readium/cover"))
+        val res = service.get(Link("/~readium/cover", rels = setOf("cover")))
         assertNotNull(res)
         assertEquals(
             Link(href = "/~readium/cover", type = "image/png", width = 598, height = 800, rels = setOf("cover")),
