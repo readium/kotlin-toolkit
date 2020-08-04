@@ -171,6 +171,14 @@ abstract class ProxyResource(protected val resource: Resource) : Resource {
     override suspend fun close() = resource.close()
 }
 
+/**
+ * Caches the members of [resource] on first access, to optimize subsequent accesses.
+ *
+ * This can be useful when reading [resource] is expensive.
+ *
+ * Warning: bytes are read and cached entirely the first time, even if only a [range] is requested.
+ * So this is not appropriate for large resources.
+ */
 class CachingResource(protected val resource: Resource) : Resource {
 
     private lateinit var _link: Link
