@@ -216,18 +216,20 @@ fun Resource.cached(): Resource =
     if (this is CachingResource) this
     else CachingResource(this)
 
-abstract class CachingTransformingResource(protected val resource: Resource) : Resource {
+/**
+ * Transforms the bytes of [resource] on-the-fly.
+ *
+ * Warning: The transformation runs on the full content of [resource], so it's not appropriate for
+ * large resources which can't be held in memory. Also, wrapping a [TransformingResource] in a
+ * [CachingResource] can be a good idea to cache the result of the transformation in case multiple
+ * ranges will be read.
+ */
+abstract class TransformingResource(resource: Resource) : ProxyResource(resource) {
 
     abstract suspend fun transform(data: ResourceTry<ByteArray>):  ResourceTry<ByteArray>
 
-    private lateinit var _bytes: ResourceTry<ByteArray>
-
-    private suspend fun bytes(): ResourceTry<ByteArray> {
-        if(!::_bytes.isInitialized) {
-            _bytes = transform(resource.read())
-        }
-        return _bytes
-    }
+    private suspend fun bytes(): ResourceTry<ByteArray> =
+        transform(resource.read())
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
         if (range == null)
@@ -240,14 +242,12 @@ abstract class CachingTransformingResource(protected val resource: Resource) : R
         return bytes().map { it.sliceArray(range.map(Long::toInt)) }
     }
 
-    override suspend fun close() = resource.close()
-
-    override suspend fun link(): Link = resource.link()
-
     override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
 }
 
-
+/**
+ * Wraps a [Resource] which will be created only when first accessing one of its members.
+ */
 class LazyResource(private val factory: suspend () -> Resource) : Resource {
 
     private lateinit var _resource: Resource
