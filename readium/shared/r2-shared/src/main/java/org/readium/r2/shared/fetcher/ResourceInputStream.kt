@@ -13,7 +13,11 @@ import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import java.io.InputStream
 
-/** Input stream reading a [Resource]'s content. */
+/**
+ * Input stream reading a [Resource]'s content.
+ *
+ * The underlying resource will be automatically closed at the same time that this stream is.
+ * */
 class ResourceInputStream(
     private val resource: Resource,
     val range: LongRange? = null
