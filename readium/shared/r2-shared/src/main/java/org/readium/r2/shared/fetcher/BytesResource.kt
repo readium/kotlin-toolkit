@@ -9,62 +9,49 @@
 
 package org.readium.r2.shared.fetcher
 
+import org.readium.r2.shared.extensions.coerceLastAtMost
 import org.readium.r2.shared.extensions.coerceToPositiveIncreasing
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 
+sealed class BaseBytesResource(val link: Link, val bytes: suspend () -> ByteArray) : Resource {
 
-/** Creates a Resource serving [ByteArray] computed from a factory that can fail. */
-open class BytesResource(private val factory: suspend () -> Pair<Link, ResourceTry<ByteArray>>) : Resource {
+    private lateinit var _bytes: ByteArray
 
-    constructor(link: Link, bytes: ByteArray) : this({ Pair(link, Try.success(bytes)) })
-
-    constructor(link: Link, factory: suspend () -> ByteArray) : this({ Pair(link, Try.success(factory())) })
-
-    private lateinit var byteArray: ResourceTry<ByteArray>
-    private lateinit var computedLink: Link
-
-    private suspend fun initDataIfNeeded() {
-        if(!::byteArray.isInitialized || !::computedLink.isInitialized) {
-            val res = factory()
-            computedLink = res.first
-            byteArray = res.second
-        }
-    }
-
-    private suspend fun bytes(): ResourceTry<ByteArray> {
-        initDataIfNeeded()
-        return byteArray
-    }
-
-    override suspend fun link(): Link {
-        initDataIfNeeded()
-        return computedLink
-    }
+    override suspend fun link(): Link = link
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+        if (!::_bytes.isInitialized)
+            _bytes = bytes()
+
         if (range == null)
-            return bytes()
+            return Try.success(_bytes)
 
         @Suppress("NAME_SHADOWING")
-        val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
-        return bytes().map { it.sliceArray(range.map(Long::toInt)) }
+        val range = range
+            .coerceToPositiveIncreasing()
+            .coerceLastAtMost(_bytes.size - 1L)
+            .requireLengthFitInt()
+
+        return Try.success(_bytes.sliceArray(range.map(Long::toInt)))
     }
 
-    override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
+    override suspend fun length(): ResourceTry<Long> =
+        read().map { it.size.toLong() }
 
     override suspend fun close() {}
 }
 
-/** Creates a Resource serving a [String] computed from a factory that can fail. */
-class StringResource(factory: suspend () -> Pair<Link, ResourceTry<String>>) : BytesResource(
-    {
-        val (link,res) = factory()
-        Pair(link, res.mapCatching { it.toByteArray() })
-    }
-) {
-    constructor(link: Link, string: String) : this({ Pair(link, Try.success(string)) })
+/** Creates a Resource serving [ByteArray]. */
+class BytesResource(link: Link, bytes: suspend () -> ByteArray) : BaseBytesResource(link, bytes) {
 
-    constructor(link: Link, factory: suspend () -> String) : this({ Pair(link, Try.success(factory())) })
+    constructor(link: Link, bytes: ByteArray) : this(link, { bytes })
+
+}
+
+/** Creates a Resource serving a [String]. */
+class StringResource(link: Link, string: suspend () -> String) : BaseBytesResource(link, { string().toByteArray() }) {
+
+    constructor(link: Link, string: String) : this(link, { string })
 }

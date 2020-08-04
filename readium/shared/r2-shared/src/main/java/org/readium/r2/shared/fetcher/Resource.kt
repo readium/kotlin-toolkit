@@ -10,6 +10,8 @@
 package org.readium.r2.shared.fetcher
 
 import org.json.JSONObject
+import org.readium.r2.shared.extensions.coerceToPositiveIncreasing
+import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
@@ -107,13 +109,23 @@ interface Resource {
                 } catch (closeException: Throwable) {
                     exception.addSuppressed(closeException)
                 }
+
         }
+    }
+
+    companion object {
+        /**
+         * Creates a cached resource wrapping this resource.
+         */
+        fun Resource.cached(): Resource =
+            if (this is CachingResource) this
+            else CachingResource(this)
     }
 
     /**
      * Errors occurring while accessing a resource.
      */
-    sealed class Error(cause: Throwable? = null) : Throwable(cause) {
+    sealed class Error(cause: Throwable? = null) : Exception(cause) {
 
         /** Equivalent to a 400 HTTP error. */
         class BadRequest(cause: Throwable? = null) : Error(cause)
@@ -171,6 +183,84 @@ abstract class ProxyResource(protected val resource: Resource) : Resource {
     override suspend fun close() = resource.close()
 }
 
+/**
+ * Caches the members of [resource] on first access, to optimize subsequent accesses.
+ *
+ * This can be useful when reading [resource] is expensive.
+ *
+ * Warning: bytes are read and cached entirely the first time, even if only a [range] is requested.
+ * So this is not appropriate for large resources.
+ */
+class CachingResource(protected val resource: Resource) : Resource {
+
+    private lateinit var _link: Link
+    private lateinit var _length: ResourceTry<Long>
+    private lateinit var _bytes: ResourceTry<ByteArray>
+
+    override suspend fun link(): Link {
+        if (!::_link.isInitialized) {
+            _link = resource.link()
+        }
+        return _link
+    }
+
+    override suspend fun length(): ResourceTry<Long> {
+        if (!::_length.isInitialized) {
+            _length = if (::_bytes.isInitialized) _bytes.map { it.size.toLong() } else resource.length()
+        }
+        return _length
+    }
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+        if (!::_bytes.isInitialized) {
+            _bytes = resource.read()
+        }
+
+        if (range == null)
+            return _bytes
+
+        @Suppress("NAME_SHADOWING")
+        val range = range
+            .coerceToPositiveIncreasing()
+            .requireLengthFitInt()
+        return _bytes.map { it.sliceArray(range.map(Long::toInt)) }
+    }
+
+    override suspend fun close() = resource.close()
+}
+
+/**
+ * Transforms the bytes of [resource] on-the-fly.
+ *
+ * Warning: The transformation runs on the full content of [resource], so it's not appropriate for
+ * large resources which can't be held in memory. Also, wrapping a [TransformingResource] in a
+ * [CachingResource] can be a good idea to cache the result of the transformation in case multiple
+ * ranges will be read.
+ */
+abstract class TransformingResource(resource: Resource) : ProxyResource(resource) {
+
+    abstract suspend fun transform(data: ResourceTry<ByteArray>):  ResourceTry<ByteArray>
+
+    private suspend fun bytes(): ResourceTry<ByteArray> =
+        transform(resource.read())
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+        if (range == null)
+            return bytes()
+
+        @Suppress("NAME_SHADOWING")
+        val range = range
+            .coerceToPositiveIncreasing()
+            .requireLengthFitInt()
+        return bytes().map { it.sliceArray(range.map(Long::toInt)) }
+    }
+
+    override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
+}
+
+/**
+ * Wraps a [Resource] which will be created only when first accessing one of its members.
+ */
 class LazyResource(private val factory: suspend () -> Resource) : Resource {
 
     private lateinit var _resource: Resource
