@@ -45,8 +45,8 @@ class LCPContentProtection(
             .retrieveLicense(file,  lcpAuthenticating.takeIf { allowUserInteraction })
 
         val error = when {
-            license == null -> "The credentials prompt was cancelled."
-            license.isFailure -> license.exceptionOrNull()!!.errorDescription
+            license == null -> null
+            license.isFailure -> license.exceptionOrNull()!!
             else -> null
         }
 

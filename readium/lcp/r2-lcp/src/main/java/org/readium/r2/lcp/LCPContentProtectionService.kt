@@ -12,13 +12,12 @@ package org.readium.r2.lcp
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
-import org.readium.r2.shared.util.Try
 
-internal class LCPContentProtectionService(license: LCPLicense?, error: String?) : ContentProtectionService {
+internal class LCPContentProtectionService(license: LCPLicense?, error: Exception?) : ContentProtectionService {
 
     override val isRestricted: Boolean = license == null
 
-    override val error: String? = error
+    override val error: Exception? = error
 
     override val credentials: String? = null
 
@@ -54,7 +53,7 @@ internal class LCPContentProtectionService(license: LCPLicense?, error: String?)
 
     companion object {
 
-        fun createFactory(license:  LCPLicense?, error: String?): (Publication.Service.Context) -> LCPContentProtectionService =
+        fun createFactory(license:  LCPLicense?, error: Exception?): (Publication.Service.Context) -> LCPContentProtectionService =
             { LCPContentProtectionService(license, error) }
 
     }

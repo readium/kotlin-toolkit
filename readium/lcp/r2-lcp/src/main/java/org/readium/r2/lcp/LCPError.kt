@@ -43,6 +43,9 @@ sealed class LCPError : Exception() {
     /** An unknown low-level error was reported. */
     data class unknown(val error: Exception?) : LCPError()
 
+    override val message: String?
+        get() = errorDescription
+
     val errorDescription: String? get() =
         when (this) {
             is licenseIsBusy -> "Can't perform this operation at the moment."
