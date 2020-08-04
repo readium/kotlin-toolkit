@@ -11,7 +11,7 @@ package org.readium.r2.lcp
 
 import org.readium.r2.shared.drm.DRMLicense
 import org.readium.r2.shared.extensions.inflate
-import org.readium.r2.shared.fetcher.BytesResource
+import org.readium.r2.shared.fetcher.TransformingResource
 import org.readium.r2.shared.fetcher.FailureResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceTry
@@ -50,9 +50,12 @@ internal class LCPDecryptor(val license: LCPLicense?) {
      * resource, for example when the resource is deflated before encryption.
      */
     private class FullLcpResource(
-        private val resource: Resource,
+        resource: Resource,
         private val license: DRMLicense
-    ) : BytesResource( { Pair(resource.link(), license.decryptFully(resource)) } ) {
+    ) : TransformingResource(resource) {
+
+        override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
+            license.decryptFully(data, resource.link().isDeflated)
 
         override suspend fun length(): ResourceTry<Long> =
             resource.link().properties.encryption?.originalLength
@@ -93,7 +96,7 @@ internal class LCPDecryptor(val license: LCPLicense?) {
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
             return if (range == null) {
-                license.decryptFully(resource)
+                license.decryptFully(resource.read(), isDeflated = false)
             } else {
                 resource.length().flatMapCatching { length ->
                     val blockPosition = range.first % AES_BLOCK_SIZE
@@ -143,8 +146,8 @@ internal class LCPDecryptor(val license: LCPLicense?) {
     }
 }
 
-private suspend fun DRMLicense.decryptFully(resource: Resource): ResourceTry<ByteArray> =
-    resource.read().mapCatching { it ->
+private fun DRMLicense.decryptFully(data:  ResourceTry<ByteArray>, isDeflated: Boolean): ResourceTry<ByteArray> =
+    data.mapCatching {
         // Decrypts the resource.
         var bytes = decipher(it)
             ?.takeIf { b -> b.isNotEmpty() }
@@ -155,7 +158,7 @@ private suspend fun DRMLicense.decryptFully(resource: Resource): ResourceTry<Byt
         bytes = bytes.copyOfRange(0, bytes.size - padding)
 
         // If the ressource was compressed using deflate, inflates it.
-        if (resource.link().isDeflated) {
+        if (isDeflated) {
             bytes = bytes.inflate(nowrap = true)
         }
 
