@@ -14,7 +14,9 @@ import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.publication.Publication.TYPE.WEBPUB
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import java.net.URL
@@ -47,7 +49,7 @@ class PublicationTest {
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = emptyList(),
                 readingOrder = emptyList()
-            ),
+            ).apply { type = WEBPUB },
             Publication.fromJSON(JSONObject("""{
                 "metadata": {"title": "Title"},
                 "links": [],
@@ -66,7 +68,7 @@ class PublicationTest {
                 resources = listOf(Link(href = "/image.png", type = "image/png")),
                 tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
                 otherCollections = listOf(PublicationCollection(role = "sub", links = listOf(Link(href = "/sublink"))))
-            ),
+            ).apply { type = WEBPUB },
             Publication.fromJSON(JSONObject("""{
                 "@context": "https://readium.org/webpub-manifest/context.jsonld",
                 "metadata": {"title": "Title"},
@@ -99,7 +101,7 @@ class PublicationTest {
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
-            ),
+            ).apply { type = WEBPUB },
             Publication.fromJSON(JSONObject("""{
                 "@context": ["context1", "context2"],
                 "metadata": {"title": "Title"},
@@ -131,7 +133,7 @@ class PublicationTest {
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
-            ),
+            ).apply { type = WEBPUB },
             Publication.fromJSON(JSONObject("""{
                 "metadata": {"title": "Title"},
                 "links": [
@@ -150,7 +152,7 @@ class PublicationTest {
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html"))
-            ),
+            ).apply { type = WEBPUB },
             Publication.fromJSON(JSONObject("""{
                 "metadata": {"title": "Title"},
                 "links": [
@@ -171,7 +173,7 @@ class PublicationTest {
                 links = listOf(Link(href = "/manifest.json", rels = setOf("self"))),
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
                 resources = listOf(Link(href = "/withtype", type = "text/html"))
-            ),
+            ).apply { type = WEBPUB },
             Publication.fromJSON(JSONObject("""{
                 "metadata": {"title": "Title"},
                 "links": [
@@ -186,6 +188,17 @@ class PublicationTest {
                 ]
             }"""))
         )
+    }
+
+    @Test fun `parse JSON computes the Publication {type} from the manifest content`() {
+        val fixtures = Fixtures("format")
+        fun parseAt(path: String): Publication =
+            Publication.fromJSON(JSONObject(fixtures.fileAt(path).readText()))!!
+
+        assertEquals(Publication.TYPE.AUDIO, parseAt("audiobook.json").type)
+        assertEquals(Publication.TYPE.DiViNa, parseAt("divina.json").type)
+        assertEquals(WEBPUB, parseAt("webpub.json").type)
+        assertEquals(WEBPUB, parseAt("opds2-publication.json").type)
     }
 
     @Test fun `get minimal JSON`() {

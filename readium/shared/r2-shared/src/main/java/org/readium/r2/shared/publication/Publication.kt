@@ -243,7 +243,7 @@ data class Publication(
      * Returns whether all the resources in the reading order are bitmaps.
      */
     internal val allReadingOrderIsBitmap: Boolean get() =
-        readingOrder.all {
+        allReadingOrderMatches {
             it.mediaType?.isBitmap == true
         }
 
@@ -251,7 +251,7 @@ data class Publication(
      * Returns whether all the resources in the reading order are audio clips.
      */
     internal val allReadingOrderIsAudio: Boolean get() =
-        readingOrder.all {
+        allReadingOrderMatches {
             it.mediaType?.isAudio == true
         }
 
@@ -259,9 +259,12 @@ data class Publication(
      * Returns whether all the resources in the reading order are contained in any of the given media types.
      */
     internal fun allReadingOrderMatchesAnyOf(vararg mediaTypes: MediaType): Boolean =
-        readingOrder.all { link ->
+        allReadingOrderMatches { link ->
             mediaTypes.any { link.mediaType?.matches(it) == true }
         }
+
+    private fun allReadingOrderMatches(predicate: (Link) -> Boolean): Boolean =
+        readingOrder.isNotEmpty() && readingOrder.all(predicate)
 
     companion object {
 
@@ -313,7 +316,13 @@ data class Publication(
                 resources = resources,
                 tableOfContents = tableOfContents,
                 otherCollections = otherCollections
-            )
+            ).apply {
+                type = when {
+                    metadata.type == "http://schema.org/Audiobook" || allReadingOrderIsAudio -> TYPE.AUDIO
+                    allReadingOrderIsBitmap -> TYPE.DiViNa
+                    else -> TYPE.WEBPUB
+                }
+            }
         }
 
         /**
