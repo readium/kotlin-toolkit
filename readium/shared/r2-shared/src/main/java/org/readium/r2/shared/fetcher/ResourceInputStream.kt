@@ -42,7 +42,7 @@ class ResourceInputStream(
     /**
      * The currently marked position in the stream. Defaults to 0.
      */
-    private var mark: Long = 0
+    private var mark: Long = range?.start ?: 0
 
     @Throws(IOException::class)
     override fun available(): Int {
