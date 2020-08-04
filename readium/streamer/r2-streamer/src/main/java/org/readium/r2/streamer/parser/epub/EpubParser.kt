@@ -89,7 +89,7 @@ class EpubParser :  PublicationParser, org.readium.r2.streamer.parser.Publicatio
         fetcher: Fetcher,
         fallbackTitle: String,
         warnings: WarningLogger?
-    ): PublicationParser.PublicationBuilder? {
+    ): Publication.Builder? {
 
         if (file.format() != Format.EPUB)
             return null
@@ -113,7 +113,7 @@ class EpubParser :  PublicationParser, org.readium.r2.streamer.parser.Publicatio
             fetcher = TransformingFetcher(fetcher, EpubDeobfuscator(it)::transform)
         }
 
-        return PublicationParser.PublicationBuilder(
+        return Publication.Builder(
             manifest = manifest,
             fetcher = fetcher,
             servicesBuilder = Publication.ServicesBuilder(
