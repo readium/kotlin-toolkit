@@ -107,7 +107,17 @@ interface Resource {
                 } catch (closeException: Throwable) {
                     exception.addSuppressed(closeException)
                 }
+
         }
+    }
+
+    companion object {
+        /**
+         * Creates a cached resource wrapping this resource.
+         */
+        fun Resource.cached(): Resource =
+            if (this is CachingResource) this
+            else CachingResource(this)
     }
 
     /**
@@ -216,13 +226,6 @@ class CachingResource(protected val resource: Resource) : Resource {
 
     override suspend fun close() = resource.close()
 }
-
-/**
- * Creates a cached resource wrapping this resource.
- */
-fun Resource.cached(): Resource =
-    if (this is CachingResource) this
-    else CachingResource(this)
 
 /**
  * Transforms the bytes of [resource] on-the-fly.
