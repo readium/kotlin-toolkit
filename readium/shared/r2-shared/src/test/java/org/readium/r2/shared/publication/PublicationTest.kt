@@ -19,7 +19,6 @@ import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
-import org.readium.r2.shared.util.Try
 import java.net.URL
 
 class PublicationTest {
@@ -363,12 +362,12 @@ class ServicesBuilderTest {
 
     @Test
     fun testBuild() {
-        val builder = Publication.ServicesBuilder(cover = null).apply {
-            set(FooService::class) { FooServiceA() }
-            set(BarService::class) { BarServiceA() }
-        }
-
-        val services = builder.build(context)
+        val services = Publication.ServicesBuilder(cover = null)
+            .apply {
+                set(FooService::class) { FooServiceA() }
+                set(BarService::class) { BarServiceA() }
+            }
+            .build(context)
 
         assertEquals(2, services.size)
         assertThat(services[0], instanceOf(FooServiceA::class.java))
@@ -384,12 +383,12 @@ class ServicesBuilderTest {
 
     @Test
     fun testSetOverwrite() {
-        val builder = Publication.ServicesBuilder(cover = null).apply {
-            set(FooService::class) { FooServiceA() }
-            set(FooService::class) { FooServiceB() }
-        }
-
-        val services = builder.build(context)
+        val services = Publication.ServicesBuilder(cover = null)
+            .apply {
+                set(FooService::class) { FooServiceA() }
+                set(FooService::class) { FooServiceB() }
+            }
+            .build(context)
 
         assertEquals(1, services.size)
         assertThat(services[0], instanceOf(FooServiceB::class.java))
@@ -397,43 +396,45 @@ class ServicesBuilderTest {
 
     @Test
     fun testRemoveExisting() {
-        val builder = Publication.ServicesBuilder(cover = null)
-        builder.set(FooService::class) { FooServiceA() }
-        builder.set(BarService::class) { BarServiceA() }
+        val services = Publication.ServicesBuilder(cover = null)
+            .apply {
+                set(FooService::class) { FooServiceA() }
+                set(BarService::class) { BarServiceA() }
+                remove(FooService::class)
+            }
+            .build(context)
 
-        builder.remove(FooService::class)
-
-        val services = builder.build(context)
         assertEquals(1, services.size)
         assertThat(services[0], instanceOf(BarServiceA::class.java))
     }
 
     @Test
     fun testRemoveUnknown() {
-        val builder = Publication.ServicesBuilder(cover = null)
-        builder.set(FooService::class) { FooServiceA() }
+        val services = Publication.ServicesBuilder(cover = null)
+            .apply {
+                set(FooService::class) { FooServiceA() }
+                remove(BarService::class)
+            }
+            .build(context)
 
-        builder.remove(BarService::class)
-
-        val services = builder.build(context)
         assertEquals(1, services.size)
         assertThat(services[0], instanceOf(FooServiceA::class.java))
     }
 
     @Test
     fun testWrap() {
-        val builder = Publication.ServicesBuilder(cover = null).apply {
-            set(FooService::class) { FooServiceB() }
-            set(BarService::class) { BarServiceA() }
-        }
-
-        builder.wrap(FooService::class) { oldFactory ->
-            { context ->
-                FooServiceC(oldFactory?.let { it(context)  as? FooService })
+        val services = Publication.ServicesBuilder(cover = null)
+            .apply {
+                set(FooService::class) { FooServiceB() }
+                set(BarService::class) { BarServiceA() }
+                wrap(FooService::class) { oldFactory ->
+                    { context ->
+                        FooServiceC(oldFactory?.let { it(context) as? FooService })
+                    }
+                }
             }
-        }
+            .build(context)
 
-        val services = builder.build(context)
         assertEquals(2, services.size)
         assertThat(services[0], instanceOf(FooServiceC::class.java))
         assertThat((services[0] as? FooServiceC)?.wrapped,  instanceOf(FooServiceB::class.java))
