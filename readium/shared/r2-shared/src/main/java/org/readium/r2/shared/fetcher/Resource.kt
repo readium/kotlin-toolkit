@@ -209,6 +209,13 @@ class CachingResource(protected val resource: Resource) : Resource {
     override suspend fun close() = resource.close()
 }
 
+/**
+ * Creates a cached resource wrapping this resource.
+ */
+fun Resource.cached(): Resource =
+    if (this is CachingResource) this
+    else CachingResource(this)
+
 abstract class CachingTransformingResource(protected val resource: Resource) : Resource {
 
     abstract suspend fun transform(data: ResourceTry<ByteArray>):  ResourceTry<ByteArray>
