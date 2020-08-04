@@ -11,7 +11,7 @@ package org.readium.r2.lcp
 
 import org.readium.r2.shared.drm.DRMLicense
 import org.readium.r2.shared.extensions.inflate
-import org.readium.r2.shared.fetcher.CachingTransformingResource
+import org.readium.r2.shared.fetcher.TransformingResource
 import org.readium.r2.shared.fetcher.FailureResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceTry
@@ -52,7 +52,7 @@ internal class LCPDecryptor(val license: LCPLicense?) {
     private class FullLcpResource(
         resource: Resource,
         private val license: DRMLicense
-    ) : CachingTransformingResource(resource) {
+    ) : TransformingResource(resource) {
 
         override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
             license.decryptFully(data, resource.link().isDeflated)
