@@ -13,9 +13,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.LazyResource
+import org.readium.r2.shared.fetcher.ResourceTry
+import org.readium.r2.shared.fetcher.TransformingResource
 import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Publication
@@ -32,22 +33,26 @@ internal class HtmlInjector(
 ) {
 
     fun transform(resource: Resource): Resource = LazyResource {
-        if (resource.link().mediaType?.isHtml == true)
+
+        val link = resource.link()
+        if (link.mediaType?.isHtml == true)
             inject(resource)
         else
             resource
     }
 
-    private suspend fun inject(resource: Resource): Resource = StringResource {
-        val link = resource.link()
-        val res = resource.readAsString(link.mediaType?.charset).mapCatching {
-            val trimmedText = it.trim()
-                if (publication.metadata.presentation.layoutOf(link) == EpubLayout.REFLOWABLE)
+    private suspend fun inject(resource: Resource): Resource = object : TransformingResource(resource) {
+
+        override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
+            resource.read().mapCatching {
+                val trimmedText = it.toString(link().mediaType?.charset ?: Charsets.UTF_8).trim()
+                val res = if (publication.metadata.presentation.layoutOf(link()) == EpubLayout.REFLOWABLE)
                     injectReflowableHtml(trimmedText)
                 else
                     injectFixedLayoutHtml(trimmedText)
-        }
-        Pair(link, res)
+                res.toByteArray()
+            }
+
     }
 
     private fun injectReflowableHtml(content: String): String {
