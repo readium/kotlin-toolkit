@@ -15,10 +15,8 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
-import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.OnAskCredentials
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -37,12 +35,6 @@ import java.lang.Exception
 
 internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningError>
 
-typealias OnCreateManifest = (File, Manifest) -> Manifest
-
-typealias OnCreateFetcher = (File, Manifest, Fetcher) -> Fetcher
-
-typealias OnCreateServices = (File, Manifest, Publication.ServicesBuilder) -> Unit
-
 /**
  * Opens a Publication using a list of parsers.
  *
@@ -56,11 +48,8 @@ typealias OnCreateServices = (File, Manifest, Publication.ServicesBuilder) -> Un
  * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
  * @param openArchive Opens an archive (e.g. ZIP, RAR), optionally protected by credentials.
  * @param openPdf Parses a PDF document, optionally protected by password.
- * @param onCreateManifest Called before creating the Publication, to modify the parsed [Manifest]
- *   if desired.
- * @param onCreateFetcher Called before creating the Publication, to modify its root fetcher.
- * @param onCreateServices Called before creating the Publication, to modify its list of service
- *   factories.
+ * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
+ *   the [Manifest], the root [Fetcher] or the list of service factories of a [Publication].
  * @param onAskCredentials Called when a content protection wants to prompt the user for its
  *   credentials.
  */
@@ -72,16 +61,14 @@ class Streamer constructor(
     private val contentProtections: List<ContentProtection> = emptyList(),
     private val openArchive: suspend (String) -> Archive? = (Archive)::open,
     private val openPdf: OpenPdfDocument = { PdfDocument.open(it, context) },
-    private val onCreateManifest: OnCreateManifest = { _, manifest -> manifest },
-    private val onCreateFetcher: OnCreateFetcher = { _, _, fetcher -> fetcher },
-    private val onCreateServices: OnCreateServices = { _, _, _ -> Unit },
+    private val onCreatePublication: Publication.Builder.() -> Unit = {},
     private val onAskCredentials: OnAskCredentials = { _, _, _ -> Unit }
 ) {
 
     /**
      * Parses a [Publication] from the given file.
      *
-     * If you are opening the publication to render it in a Navigator, you must set [askCredentials]
+     * If you are opening the publication to render it in a Navigator, you must set [allowUserInteraction]
      * to true to prompt the user for its credentials when the publication is protected. However,
      * set it to false if you just want to import the [Publication] without reading its content, to
      * avoid prompting the user.
@@ -97,7 +84,7 @@ class Streamer constructor(
      * @param file Path to the publication file..
      * @param fallbackTitle The Publication's title is mandatory, but some formats might not have a
      *   way of declaring a title (e.g. CBZ). In which case, [fallbackTitle] will be used.
-     * @param askCredentials Indicates whether the user can be prompted for its credentials.
+     * @param allowUserInteraction Indicates whether the user can be prompted, for example for its credentials.
      * @param credentials Credentials that Content Protections can use to attempt to unlock a
      *   publication, for example a password.
      * @param sender Free object that can be used by reading apps to give some UX context when
@@ -109,13 +96,16 @@ class Streamer constructor(
     suspend fun open(
         file: File,
         fallbackTitle: String = file.name,
-        askCredentials: Boolean,
+        allowUserInteraction: Boolean,
         credentials: String? = null,
         sender: Any? = null,
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> = try {
 
-        val baseFetcher = try {
+        @Suppress("NAME_SHADOWING")
+        var file = file
+        var onCreatePublication = onCreatePublication
+        var fetcher = try {
             Fetcher.fromFile(file.file, openArchive)
         } catch (e: SecurityException) {
             throw Publication.OpeningError.Forbidden(e)
@@ -127,8 +117,8 @@ class Streamer constructor(
             .lazyMapFirstNotNullOrNull {
                 it.open(
                     file,
-                    baseFetcher,
-                    askCredentials,
+                    fetcher,
+                    allowUserInteraction,
                     credentials,
                     sender,
                     onAskCredentials
@@ -136,12 +126,21 @@ class Streamer constructor(
             }
             ?.getOrThrow()
 
+        if (protectedFile != null) {
+            file = protectedFile.file
+            fetcher = protectedFile.fetcher
+            onCreatePublication = {
+                apply(protectedFile.onCreatePublication)
+                apply(this@Streamer.onCreatePublication)
+            }
+        }
+
         val builder = parsers
             .lazyMapFirstNotNullOrNull {
                 try {
                     it.parse(
-                        protectedFile?.file ?: file,
-                        protectedFile?.fetcher ?: baseFetcher,
+                        file,
+                        fetcher,
                         fallbackTitle,
                         warnings
                     )
@@ -150,16 +149,9 @@ class Streamer constructor(
                 }
             } ?: throw Publication.OpeningError.UnsupportedFormat
 
-        builder.apply {
-            manifest = onCreateManifest(file, manifest)
-            fetcher = onCreateFetcher(file, manifest, fetcher)
-            servicesBuilder.apply {
-                contentProtectionServiceFactory = protectedFile?.protectionServiceFactory
-            }
-            onCreateServices(file, manifest, servicesBuilder)
-        }
-
-        val publication = builder.build()
+        val publication = builder
+            .apply(onCreatePublication)
+            .build()
             .apply { addLegacyProperties(file.format()) }
 
         Try.success(publication)

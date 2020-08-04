@@ -9,7 +9,6 @@
 
 package org.readium.r2.streamer.parser.readium
 
-import android.content.Context
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.shared.PdfSupport
@@ -45,7 +44,7 @@ class ReadiumWebPubParser(private val openPdf: OpenPdfDocument? = null) : Public
         fetcher: Fetcher,
         fallbackTitle: String,
         warnings: WarningLogger?
-    ): PublicationParser.PublicationBuilder? {
+    ): Publication.Builder? {
 
         if (file.format()?.mediaType?.isReadiumWebPubProfile != true)
             return null
@@ -88,7 +87,7 @@ class ReadiumWebPubParser(private val openPdf: OpenPdfDocument? = null) : Public
         }
         val servicesBuilder = Publication.ServicesBuilder(positions = positionsService)
 
-        return PublicationParser.PublicationBuilder(manifest, fetcher, servicesBuilder)
+        return Publication.Builder(manifest, fetcher, servicesBuilder)
     }
 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {

@@ -39,7 +39,7 @@ class AudioParser :  PublicationParser {
         fetcher: Fetcher,
         fallbackTitle: String,
         warnings: WarningLogger?
-    ): PublicationParser.PublicationBuilder? {
+    ): Publication.Builder? {
 
         if (!accepts(file, fetcher))
             return null
@@ -63,7 +63,7 @@ class AudioParser :  PublicationParser {
             readingOrder = readingOrder
         )
 
-        return PublicationParser.PublicationBuilder(
+        return Publication.Builder(
             manifest = manifest,
             fetcher = fetcher,
             servicesBuilder = Publication.ServicesBuilder(
