@@ -13,15 +13,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.fetcher.BytesResource
-import org.readium.r2.shared.fetcher.CachingTransformingResource
-import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.LazyResource
 import org.readium.r2.shared.fetcher.ResourceTry
+import org.readium.r2.shared.fetcher.TransformingResource
 import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.ContentLayout
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layoutOf
@@ -44,7 +41,7 @@ internal class HtmlInjector(
             resource
     }
 
-    private suspend fun inject(resource: Resource): Resource = object : CachingTransformingResource(resource) {
+    private suspend fun inject(resource: Resource): Resource = object : TransformingResource(resource) {
 
         override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
             resource.read().mapCatching {
