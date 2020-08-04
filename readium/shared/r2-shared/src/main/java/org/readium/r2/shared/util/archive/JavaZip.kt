@@ -11,10 +11,8 @@ package org.readium.r2.shared.util.archive
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.coerceToPositiveIncreasing
-import org.readium.r2.shared.extensions.read
-import org.readium.r2.shared.extensions.requireLengthFitInt
-import java.io.InputStream
+import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.extensions.readRange
 import java.lang.Exception
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
@@ -33,60 +31,44 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
             }?.let { JavaZip(it) }
         }
 
-    inner class Entry(private val entry: ZipEntry) : Archive.Entry {
+    private inner class Entry(private val entry: ZipEntry) : Archive.Entry {
         override val path: String get() = entry.name
 
         override val length: Long? get() = entry.size.takeUnless { it == -1L }
 
-        override val compressedLength: Long? get() = entry.compressedSize.takeUnless { it == -1L }
-
-        override val isDirectory: Boolean get() = entry.isDirectory
-
-        override suspend fun read(range: LongRange?): ByteArray? {
-            val stream = archive.getInputStream(entry)
-
-            return if (range == null)
-                readFully(stream)
-            else
-                readRange(range, stream)
-        }
-
-        private fun readFully(stream: InputStream): ByteArray? =
-            try {
-                stream.use { it.readBytes() }
-            } catch (e: Exception) {
-                null
-            }
-
-        private fun readRange(range: LongRange, stream: InputStream): ByteArray? {
-            @Suppress("NAME_SHADOWING")
-            val range = range
-                .coerceToPositiveIncreasing()
-                .requireLengthFitInt()
-
-            stream.use {
-                return try {
-                    val skipped = it.skip(range.first)
-                    val length = range.last - range.first + 1
-                    val bytes = it.read(length)
-                    if (skipped != range.first && bytes.isNotEmpty()) {
-                        throw Exception("Unable to skip enough bytes")
-                    }
-                    bytes
-                } catch (e: Exception) {
+        override val compressedLength: Long?
+            get() =
+                if (entry.method == ZipEntry.STORED || entry.method == -1)
                     null
-                }
+                else
+                    entry.compressedSize.takeUnless { it == -1L }
+
+        override suspend fun read(range: LongRange?): ByteArray {
+            val stream = withContext(Dispatchers.IO) {
+                archive.getInputStream(entry)
+            }
+            return stream.use {
+                if (range == null)
+                    it.readFully()
+                else
+                    it.readRange(range)
             }
         }
     }
 
     override suspend fun entries(): List<Archive.Entry> =
-        archive.entries().toList().mapNotNull { Entry(it) }
+        archive.entries().toList().filterNot { it.isDirectory }.mapNotNull { Entry(it) }
 
-    override suspend fun entry(path: String): Archive.Entry? =
-        archive.getEntry(path)?.let { Entry(it) }
+    override suspend fun entry(path: String): Archive.Entry {
+        val entry = archive.getEntry(path)
+            ?: throw Exception("No file entry at path $path.")
 
-    override suspend fun close() = archive.close()
+        return Entry(entry)
+    }
+
+    override suspend fun close() = withContext(Dispatchers.IO) {
+        archive.close()
+    }
 
 }
 

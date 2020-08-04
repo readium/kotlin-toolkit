@@ -39,12 +39,13 @@ interface ContentProtection {
      * [Fetcher].
      *
      * @return A [ProtectedFile] in case of success, null if the file is not protected by this
-     * technology or a [Publication.OpeningError] if the file can't be successfully opened.
+     * technology or a [Publication.OpeningError] if the file can't be successfully opened,
+     * even in restricted mode.
      */
     suspend fun open(
         file: File,
         fetcher: Fetcher,
-        askCredentials: Boolean,
+        allowUserInteraction: Boolean,
         credentials: String?,
         sender: Any?,
         onAskCredentials: OnAskCredentials?
@@ -70,13 +71,14 @@ interface ContentProtection {
      *   restrictions. For example, by creating an HTTPFetcher which will inject a Bearer Token in
      *   requests.
      *
-     * @property protectionServiceFactory Factory for the Content Protection Publication Service
-     * that will be added to the created Publication by the Streamer.
+     * @property onCreatePublication Called on every parsed Publication.Builder.
+     * It can be used to modify the `Manifest`, the root [Fetcher] or the list of service factories
+     * of a [Publication].
      */
     data class ProtectedFile(
         val file: File,
         val fetcher: Fetcher,
-        val protectionServiceFactory: ((Publication.Service.Context) -> ContentProtectionService?)?
+        val onCreatePublication: Publication.Builder.() -> Unit = {}
     )
 
 }

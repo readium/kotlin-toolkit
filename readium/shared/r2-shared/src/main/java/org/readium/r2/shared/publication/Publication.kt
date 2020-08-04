@@ -28,6 +28,8 @@ import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.CoverService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
+import timber.log.Timber
+import java.lang.Exception
 import java.net.URL
 import java.net.URLEncoder
 import kotlin.reflect.KClass
@@ -48,7 +50,7 @@ internal typealias ServiceFactory = (Publication.Service.Context) -> Publication
  * @param positionsFactory Factory used to build lazily the [positions].
  */
 class Publication(
-    manifest: Manifest,
+    private val manifest: Manifest,
     private val fetcher: Fetcher = EmptyFetcher(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
 
@@ -63,25 +65,25 @@ class Publication(
     @Deprecated("This will be removed in a future version. Use [Format.of] to check the format of a publication.", level = DeprecationLevel.ERROR)
     var internalData: MutableMap<String, String> = mutableMapOf()
 ) {
-    private val services: List<Service> = servicesBuilder.build(Service.Context(manifest, fetcher))
-    private val manifest = manifest.copy(links = manifest.links + services.map(Service::links).flatten())
+    private val _services: List<Service> = servicesBuilder.build(Service.Context(manifest, fetcher))
+    private val _manifest = manifest.copy(links = manifest.links + _services.map(Service::links).flatten())
 
     // Shortcuts to manifest properties
 
-    val context: List<String> get() = manifest.context
-    val metadata: Metadata get() = manifest.metadata
-    val links: List<Link> get() = manifest.links
+    val context: List<String> get() = _manifest.context
+    val metadata: Metadata get() = _manifest.metadata
+    val links: List<Link> get() = _manifest.links
 
     /** Identifies a list of resources in reading order for the publication. */
-    val readingOrder: List<Link> get() = manifest.readingOrder
+    val readingOrder: List<Link> get() = _manifest.readingOrder
 
     /** Identifies resources that are necessary for rendering the publication. */
-    val resources: List<Link> get() = manifest.resources
+    val resources: List<Link> get() = _manifest.resources
 
     /** Identifies the collection that contains a table of contents. */
-    val tableOfContents: List<Link> get() = manifest.tableOfContents
+    val tableOfContents: List<Link> get() = _manifest.tableOfContents
 
-    val subcollections: Map<String, List<PublicationCollection>> get() = manifest.subcollections
+    val subcollections: Map<String, List<PublicationCollection>> get() = _manifest.subcollections
 
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
     var type: Publication.TYPE = Publication.TYPE.EPUB
@@ -93,7 +95,7 @@ class Publication(
      * Returns the RWPM JSON representation for this [Publication]'s manifest, as a string.
      */
     val jsonManifest: String
-        get() = manifest.toJSON().toString().replace("\\/", "/")
+        get() = _manifest.toJSON().toString().replace("\\/", "/")
 
     /**
      * The URL where this publication is served, computed from the [Link] with `self` relation.
@@ -126,12 +128,12 @@ class Publication(
     /**
      * Finds the first [Link] having the given [rel] in the publications's links.
      */
-    fun linkWithRel(rel: String): Link? = manifest.linkWithRel(rel)
+    fun linkWithRel(rel: String): Link? = _manifest.linkWithRel(rel)
 
     /**
      * Finds all [Link]s having the given [rel] in the publications's links.
      */
-    fun linksWithRel(rel: String): List<Link> = manifest.linksWithRel(rel)
+    fun linksWithRel(rel: String): List<Link> = _manifest.linksWithRel(rel)
 
     /**
      * Returns the resource targeted by the given non-templated [link].
@@ -139,23 +141,34 @@ class Publication(
     fun get(link: Link): Resource {
         if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
 
-        services.forEach { service -> service.get(link)?.let { return it } }
+        _services.forEach { service -> service.get(link)?.let { return it } }
         return fetcher.get(link)
     }
 
     /**
-     * Closes any opened resource associated with the [Publication], including [services].
+     * Closes any opened resource associated with the [Publication], including services.
      */
     fun close() = GlobalScope.launch {
-        fetcher.close()
-        services.forEach { it.close() }
+        try {
+            fetcher.close()
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+
+        _services.forEach {
+            try {
+                it.close()
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        }
     }
 
     /**
      * Returns the first publication service that is an instance of [klass].
      */
     fun <T: Service> findService(serviceType: KClass<T>): T? =
-        services.filterIsInstance(serviceType.java).firstOrNull()
+        _services.filterIsInstance(serviceType.java).firstOrNull()
 
     enum class TYPE {
         EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
@@ -180,7 +193,7 @@ class Publication(
      * Sets the URL where this [Publication]'s RWPM manifest is served.
      */
     fun setSelfLink(href: String) {
-        manifest.links = manifest.links.toMutableList().apply {
+        _manifest.links = _manifest.links.toMutableList().apply {
             removeAll { it.rels.contains("self") }
             add(Link(href = href, type = MediaType.READIUM_WEBPUB_MANIFEST.toString(), rels = setOf("self")))
         }
@@ -258,7 +271,7 @@ class Publication(
         /**
          * Container for the context from which a service is created.
          */
-        data class Context(
+        class Context(
             val manifest: Manifest,
             val fetcher: Fetcher
         )
@@ -307,7 +320,7 @@ class Publication(
      *
      * Provides helpers to manipulate the list of services of a [Publication].
      */
-    data class ServicesBuilder(internal var serviceFactories: MutableMap<String, ServiceFactory>) {
+    class ServicesBuilder(internal var serviceFactories: MutableMap<String, ServiceFactory>) {
 
         @Suppress("UNCHECKED_CAST")
         constructor(
@@ -391,6 +404,25 @@ class Publication(
          */
         object IncorrectCredentials: OpeningError()
 
+    }
+
+    /**
+     * Builds a Publication from its components.
+     *
+     * A Publication's construction is distributed over the Streamer and its parsers,
+     * so a builder is useful to pass the parts around.
+     */
+    class Builder(
+        var manifest: Manifest,
+        var fetcher: Fetcher,
+        var servicesBuilder: ServicesBuilder
+    ) {
+
+        fun build(): Publication = Publication(
+            manifest = manifest,
+            fetcher = fetcher,
+            servicesBuilder = servicesBuilder
+        )
     }
 
     /**
