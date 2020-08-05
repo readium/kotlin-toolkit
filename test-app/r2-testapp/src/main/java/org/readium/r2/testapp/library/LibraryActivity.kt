@@ -866,10 +866,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
     protected fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication, coverByteArray: ByteArray? = null) {
         prepareToServe(pub, book.fileName!!, file.absolutePath, add = false, lcp = false)
-        startActivity(publicationPath, book, publication, coverByteArray)
+        startActivity(publicationPath, book, publication, coverByteArray, drm = pub?.container?.drm != null)
     }
 
-    private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null) {
+    private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null, drm: Boolean = false) {
         val intent = Intent(this, when (publication.type) {
             Publication.TYPE.AUDIO -> AudiobookActivity::class.java
             Publication.TYPE.CBZ -> ComicActivity::class.java
@@ -883,6 +883,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             putExtra("publicationFileName", book.fileName)
             putExtra("bookId", book.id)
             putExtra("cover", coverByteArray)
+            putExtra("drm", drm)
         }
 
         startActivity(intent)
