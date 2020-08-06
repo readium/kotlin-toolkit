@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
@@ -53,8 +52,6 @@ class ImageNavigatorFragment(
 
     var currentPagerPosition: Int = 0
     var resources: List<String> = emptyList()
-
-    protected var navigatorDelegate: NavigatorDelegate? = null
 
     private class R2CbzPageFragmentFactory(
             private val publication: Publication
@@ -152,7 +149,6 @@ class ImageNavigatorFragment(
         }
 
         _currentLocator.postValue(locator)
-        navigatorDelegate?.locationDidChange(navigator = this, locator = locator)
     }
 
     override val readingProgression: ReadingProgression

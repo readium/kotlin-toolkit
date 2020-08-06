@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
@@ -15,14 +14,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.R
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.COLUMN_COUNT_REF
-import org.readium.r2.shared.SCROLL_REF
-import org.readium.r2.shared.getAbsolute
+import org.readium.r2.shared.*
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -33,11 +31,12 @@ import org.readium.r2.shared.publication.services.positions
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
 
+@FragmentNavigator
 class EpubNavigatorFragment(
-        internal val publication: Publication,
-        private val initialLocator: Locator? = null,
-        internal val listener: Navigator.Listener? = null,
-        private val baseUrl: String? = null
+    internal val publication: Publication,
+    private val baseUrl: String,
+    private val initialLocator: Locator? = null,
+    internal val listener: Navigator.Listener? = null
 ): Fragment(), CoroutineScope, VisualNavigator, R2BasicWebView.Listener {
 
     /**
@@ -378,106 +377,4 @@ class EpubNavigatorFragment(
         }
     }
 
-//    override fun currentSelection(callback: (Locator?) -> Unit) {
-//        currentFragment?.webView?.getCurrentSelectionInfo {
-//            val selection = JSONObject(it)
-//            val resource = publication.readingOrder[resourcePager.currentItem]
-//            val resourceHref = resource.href
-//            val resourceType = resource.type ?: ""
-//            val locations = Locator.Locations.fromJSON(selection.getJSONObject("locations"))
-//            val text = Locator.Text.fromJSON(selection.getJSONObject("text"))
-//
-//            val locator = Locator(
-//                    href = resourceHref,
-//                    type = resourceType,
-//                    locations = locations,
-//                    text = text
-//            )
-//            callback(locator)
-//        }
-//    }
-//
-//    override fun showHighlight(highlight: Highlight) {
-//        currentFragment?.webView?.run {
-//            val colorJson = JSONObject().apply {
-//                put("red", Color.red(highlight.color))
-//                put("green", Color.green(highlight.color))
-//                put("blue", Color.blue(highlight.color))
-//            }
-//            createHighlight(highlight.locator.toJSON().toString(), colorJson.toString()) {
-//                if (highlight.annotationMarkStyle.isNullOrEmpty().not())
-//                    createAnnotation(highlight.id)
-//            }
-//        }
-//    }
-//
-//    override fun showHighlights(highlights: Array<Highlight>) {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//    }
-//
-//    override fun hideHighlightWithID(id: String) {
-//        currentFragment?.webView?.destroyHighlight(id)
-//        currentFragment?.webView?.destroyHighlight(id.replace("HIGHLIGHT", "ANNOTATION"))
-//    }
-//
-//    override fun hideAllHighlights() {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//    }
-//
-//    override fun rectangleForHighlightWithID(id: String, callback: (Rect?) -> Unit) {
-//        currentFragment?.webView?.rectangleForHighlightWithID(id) {
-//            val rect = JSONObject(it).run {
-//                try {
-//                    val display = currentActivity.windowManager.defaultDisplay
-//                    val metrics = DisplayMetrics()
-//                    display.getMetrics(metrics)
-//                    val left = getDouble("left")
-//                    val width = getDouble("width")
-//                    val top = getDouble("top") * metrics.density
-//                    val height = getDouble("height") * metrics.density
-//                    Rect(left.toInt(), top.toInt(), width.toInt() + left.toInt(), top.toInt() + height.toInt())
-//                } catch (e: JSONException) {
-//                    null
-//                }
-//            }
-//            callback(rect)
-//        }
-//    }
-//
-//    override fun rectangleForHighlightAnnotationMarkWithID(id: String): Rect? {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//    }
-//
-//    override fun registerHighlightAnnotationMarkStyle(name: String, css: String) {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//    }
-//
-//    override fun highlightActivated(id: String) {
-//    }
-//
-//    override fun highlightAnnotationMarkActivated(id: String) {
-//    }
-//
-//    fun createHighlight(color: Int, callback: (Highlight) -> Unit) {
-//        currentSelection { locator ->
-//            val colorJson = JSONObject().apply {
-//                put("red", Color.red(color))
-//                put("green", Color.green(color))
-//                put("blue", Color.blue(color))
-//            }
-//
-//            currentFragment?.webView?.createHighlight(locator?.toJSON().toString(), colorJson.toString()) {
-//                val json = JSONObject(it)
-//                val id = json.getString("id")
-//                callback(
-//                        Highlight(
-//                                id,
-//                                locator!!,
-//                                color,
-//                                Style.highlight
-//                        )
-//                )
-//            }
-//        }
-//    }
 }

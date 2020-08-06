@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,11 +39,14 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positions
 import kotlin.coroutines.CoroutineContext
 
+@OptIn(FragmentNavigator::class)
 open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator, Navigator.VisualListener {
 
     private val navigatorFragment: ImageNavigatorFragment
         get() = supportFragmentManager.findFragmentById(R.id.image_navigator) as ImageNavigatorFragment
 
+
+    protected var navigatorDelegate: NavigatorDelegate? = null
 
     private val positions: List<Locator> get() = navigatorFragment.positions
 
@@ -95,7 +99,6 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     var resources: List<String> = emptyList()
     lateinit var adapter: R2PagerAdapter
 
-    @FragmentNavigator
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_r2_viewpager)
@@ -111,11 +114,17 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
         val initialLocator = intent.getParcelableExtra("locator") as? Locator
 
-        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, initialLocator, this)
+        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, initialLocator = initialLocator, listener = this)
 
         setContentView(R.layout.activity_r2_image)
 
         resourcePager = navigatorFragment.resourcePager
+
+        navigatorFragment.currentLocator.observe(this, Observer { locator ->
+            locator ?: return@Observer
+            @Suppress("DEPRECATION")
+            navigatorDelegate?.locationDidChange(this, locator)
+        })
     }
 
     override fun finish() {

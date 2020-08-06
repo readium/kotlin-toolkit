@@ -39,7 +39,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import kotlin.coroutines.CoroutineContext
 
-
+@OptIn(FragmentNavigator::class)
 open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator, Navigator.VisualListener {
 
     /**
@@ -74,7 +74,6 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     override val currentLocator: LiveData<Locator?>
         get() = navigatorFragment.currentLocator
 
-    @OptIn(FragmentNavigator::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -89,7 +88,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
         val initialLocator = intent.getParcelableExtra("locator") as? Locator
 
-        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, initialLocator, this, baseUrl)
+        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, baseUrl = baseUrl, initialLocator = initialLocator, listener = this)
 
         setContentView(R.layout.activity_r2_epub)
 

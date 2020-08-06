@@ -30,12 +30,13 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.extensions.htmlId
 import org.readium.r2.shared.APPEARANCE_REF
+import org.readium.r2.shared.FragmentNavigator
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
 import java.io.IOException
 import java.io.InputStream
 
-
+@OptIn(FragmentNavigator::class)
 class R2EpubPageFragment : Fragment() {
 
     private val resourceUrl: String?
@@ -45,7 +46,7 @@ class R2EpubPageFragment : Fragment() {
         get() = requireArguments().getString("title")
 
     lateinit var webView: R2WebView
-    lateinit var listener: R2BasicWebView.Listener
+    internal lateinit var listener: R2BasicWebView.Listener
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

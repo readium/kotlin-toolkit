@@ -22,14 +22,11 @@ import android.widget.ImageButton
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
-import org.readium.r2.navigator.epub.EpubNavigatorFragment
-import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.publication.ReadingProgression
 
@@ -40,7 +37,7 @@ import org.readium.r2.shared.publication.ReadingProgression
 
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
-    lateinit var listener: Listener
+    internal lateinit var listener: Listener
     lateinit var navigator: Navigator
 
     var progression: Double = 0.0
@@ -288,7 +285,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-    interface Listener {
+    internal interface Listener {
         fun onPageLoaded() {}
         fun onScroll() {}
         fun onTap(point: PointF): Boolean = false
