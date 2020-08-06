@@ -62,9 +62,7 @@ dependencies {
         exclude group: 'org.parboiled'
     }
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'org.zeroturnaround:zt-zip:1.14'
     implementation 'joda-time:joda-time:2.10.5'
-    implementation 'nl.komponents.kovenant:kovenant:3.3.0'
     implementation 'com.github.barteksc:pdfium-android:1.7.1'
 
     final JACKSON_VERSION = '2.11.0'
