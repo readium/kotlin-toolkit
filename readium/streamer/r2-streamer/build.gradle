@@ -61,7 +61,6 @@ dependencies {
     implementation ('com.github.edrlab.nanohttpd:nanohttpd-nanolets:2.3.2') {
         exclude group: 'org.parboiled'
     }
-    implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'joda-time:joda-time:2.10.5'
     implementation 'com.github.barteksc:pdfium-android:1.7.1'
 
@@ -69,10 +68,6 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-annotations:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION"
-
-    // AM NOTE: needs to stay this version for now (June 24,2020)
-    //noinspection GradleDependency
-    implementation 'org.jsoup:jsoup:1.10.3'
 
     testImplementation 'junit:junit:4.13'
     testImplementation 'org.assertj:assertj-core:3.16.1'
