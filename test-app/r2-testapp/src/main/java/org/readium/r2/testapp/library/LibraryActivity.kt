@@ -39,8 +39,6 @@ import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.readium.r2.shared.Injectable
-import org.readium.r2.shared.extensions.destroyPublication
-import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.format.Format
@@ -54,12 +52,8 @@ import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.R2AboutActivity
-import org.readium.r2.testapp.audiobook.AudiobookActivity
-import org.readium.r2.testapp.comic.ComicActivity
-import org.readium.r2.testapp.comic.DiViNaActivity
 import org.readium.r2.testapp.db.*
 import org.readium.r2.testapp.drm.DRMLibraryService
-import org.readium.r2.testapp.epub.EpubActivity
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSListActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
@@ -444,7 +438,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                         return
                     }
 
-        streamer.open(libraryFile, askCredentials = false)
+        streamer.open(libraryFile, allowUserInteraction = false)
             .onSuccess {
                 addPublicationToDatabase(bddHref, extension, it).let {success ->
                     progress?.dismiss()
@@ -577,6 +571,8 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         FIXME: if the progress dialog were shown, the LCP popup window would not be accessible to the user.
         progress.show()
          */
+        progress.dismiss()
+
         launch {
             val booksDB = BooksDatabase(this@LibraryActivity)
             val book = books[position]
@@ -585,7 +581,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             val file =  remoteUrl // remote URL
                 ?: R2File(book.href, format = Format.of(fileExtension = book.ext.removePrefix("."))) // local file
 
-            streamer.open(file, askCredentials = true)
+            streamer.open(file, allowUserInteraction = true)
                 .onFailure {
                     Timber.d(it)
                     progress.dismiss()
