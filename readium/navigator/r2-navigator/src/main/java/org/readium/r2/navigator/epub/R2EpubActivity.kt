@@ -75,8 +75,6 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         get() = navigatorFragment.currentLocator
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         publication = intent.getPublication(this)
@@ -89,6 +87,8 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         val initialLocator = intent.getParcelableExtra("locator") as? Locator
 
         supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, baseUrl = baseUrl, initialLocator = initialLocator, listener = this)
+
+        super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_r2_epub)
 

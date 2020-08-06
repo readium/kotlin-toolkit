@@ -53,17 +53,6 @@ class ImageNavigatorFragment(
     var currentPagerPosition: Int = 0
     var resources: List<String> = emptyList()
 
-    private class R2CbzPageFragmentFactory(
-            private val publication: Publication
-    ) : FragmentFactory() {
-        override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-            return when (className) {
-                R2CbzPageFragment::class.java.name -> R2CbzPageFragment(publication)
-                else -> super.instantiate(classLoader, className)
-            }
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         currentActivity = requireActivity()
         val view = inflater.inflate(R.layout.activity_r2_viewpager, container, false)
@@ -74,16 +63,13 @@ class ImageNavigatorFragment(
 
         positions = runBlocking { publication.positions() }
 
-        val supportFragmentManager = currentActivity.supportFragmentManager
-        supportFragmentManager.fragmentFactory = R2CbzPageFragmentFactory(publication)
-
         resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
             override fun onPageSelected(position: Int) {
                 notifyCurrentLocation()
             }
         })
 
-        adapter = R2PagerAdapter(supportFragmentManager, publication.readingOrder, publication.metadata.title, Publication.TYPE.CBZ)
+        adapter = R2PagerAdapter(currentActivity.supportFragmentManager, publication.readingOrder, publication.metadata.title, Publication.TYPE.CBZ)
 
         resourcePager.adapter = adapter
 

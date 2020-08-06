@@ -100,9 +100,6 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     lateinit var adapter: R2PagerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_r2_viewpager)
-
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
@@ -115,6 +112,8 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         val initialLocator = intent.getParcelableExtra("locator") as? Locator
 
         supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, initialLocator = initialLocator, listener = this)
+
+        super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_r2_image)
 
