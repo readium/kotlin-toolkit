@@ -37,7 +37,7 @@ import org.readium.r2.shared.publication.ReadingProgression
 
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
-    internal lateinit var listener: Listener
+    lateinit var listener: Listener
     lateinit var navigator: Navigator
 
     var progression: Double = 0.0
@@ -75,7 +75,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {
-            // The whole supportActionBar piece of code should be done in the Fragment.
             listener.onScroll()
 
             if (scrollMode) {
@@ -100,7 +99,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     open fun scrollLeft(animated: Boolean = false) {
         uiScope.launch {
-            // The whole supportActionBar piece of code should be done in the Fragment.
             listener.onScroll()
 
             if (scrollMode) {
@@ -285,13 +283,15 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-    internal interface Listener {
-        fun onPageLoaded() {}
-        fun onScroll() {}
-        fun onTap(point: PointF): Boolean = false
+    interface Listener {
+        fun onPageLoaded()
+        fun onPageChanged(pageIndex: Int, totalPages: Int, url: String)
+        fun onPageEnded(end: Boolean)
+        fun onScroll()
+        fun onTap(point: PointF): Boolean
         fun onProgressionChanged(progression: Double)
-        fun onHighlightActivated(id: String) {}
-        fun onHighlightAnnotationMarkActivated(id: String) {}
+        fun onHighlightActivated(id: String)
+        fun onHighlightAnnotationMarkActivated(id: String)
         fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
         fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
     }

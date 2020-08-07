@@ -105,6 +105,7 @@ class R2EpubPageFragment : Fragment() {
                     in topDecile..bottomDecile -> {
                         if (!endReached) {
                             endReached = true
+                            webView.listener.onPageEnded(endReached)
                             when (scrollMode) {
                                 true -> {
                                 }
@@ -114,6 +115,7 @@ class R2EpubPageFragment : Fragment() {
                     else -> {
                         if (endReached) {
                             endReached = false
+                            webView.listener.onPageEnded(endReached)
                             when (scrollMode) {
                                 true -> {
                                 }

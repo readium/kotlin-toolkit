@@ -48,7 +48,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             if (mCurItem < numPages - 1) {
                 mCurItem++
                 url?.let {
-                    // listener.onPageChanged(mCurItem + 1, numPages, it)
+                     listener.onPageChanged(mCurItem + 1, numPages, it)
                 }
             }
         }
@@ -61,7 +61,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             if (mCurItem > 0) {
                 mCurItem--
                 url?.let {
-                    // listener.onPageChanged(mCurItem + 1, numPages, it)
+                     listener.onPageChanged(mCurItem + 1, numPages, it)
                 }
             }
         }
@@ -330,7 +330,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
         if (post) {
             url?.let {
-                // listener.onPageChanged(item + 1, numPages, it)
+                 listener.onPageChanged(item + 1, numPages, it)
             }
         }
 

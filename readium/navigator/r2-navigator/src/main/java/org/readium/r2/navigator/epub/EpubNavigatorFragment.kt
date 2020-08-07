@@ -21,10 +21,10 @@ import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.*
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.positions
@@ -60,6 +60,8 @@ class EpubNavigatorFragment(
     private lateinit var currentActivity: FragmentActivity
 
     protected var navigatorDelegate: NavigatorDelegate? = null
+
+    private val r2Activity: R2EpubActivity? get() = activity as? R2EpubActivity
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         currentActivity = requireActivity()
@@ -268,11 +270,49 @@ class EpubNavigatorFragment(
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return go(link.toLocator(), animated, completion)
+    }
+
+    // R2BasicWebView.Listener
+
+    override fun onPageLoaded() {
+        r2Activity?.onPageLoaded()
+    }
+
+    override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
+        r2Activity?.onPageChanged(pageIndex = pageIndex, totalPages = totalPages, url = url)
+    }
+
+    override fun onPageEnded(end: Boolean) {
+        r2Activity?.onPageEnded(end)
+    }
+
+    override fun onScroll() {
+        val activity = r2Activity ?: return
+        if (activity.supportActionBar?.isShowing == true && activity.allowToggleActionBar) {
+            resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                or View.SYSTEM_UI_FLAG_IMMERSIVE)
+        }
+    }
+
+    override fun onTap(point: PointF): Boolean {
+        return (this.listener as Navigator.VisualListener).onTap(point)
     }
 
     override fun onProgressionChanged(progression: Double) {
         notifyCurrentLocation()
+    }
+
+    override fun onHighlightActivated(id: String) {
+        r2Activity?.highlightActivated(id)
+    }
+
+    override fun onHighlightAnnotationMarkActivated(id: String) {
+        r2Activity?.highlightAnnotationMarkActivated(id)
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
@@ -328,11 +368,6 @@ class EpubNavigatorFragment(
 
     private val currentFragment: R2EpubPageFragment? get() =
         r2PagerAdapter.mFragments.get(r2PagerAdapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
-
-    override fun onTap(point: PointF): Boolean {
-        (this.listener as Navigator.VisualListener).onTap(point)
-        return super.onTap(point)
-    }
 
     override val readingProgression: ReadingProgression
         get() = publication.contentLayout.readingProgression
