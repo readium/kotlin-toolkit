@@ -10,24 +10,22 @@
 package org.readium.r2.navigator
 
 import android.content.Context
+import android.graphics.PointF
 import android.os.Build
 import android.text.Html
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.View
 import android.webkit.WebView
 import android.widget.ImageButton
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
-import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.publication.ReadingProgression
 
@@ -38,13 +36,15 @@ import org.readium.r2.shared.publication.ReadingProgression
 
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
-    lateinit var activity: AppCompatActivity
-    lateinit var listener: IR2Activity
+    lateinit var listener: Listener
     lateinit var navigator: Navigator
 
     var progression: Double = 0.0
     var overrideUrlLoading = true
     var resourceUrl: String? = null
+
+    var scrollMode: Boolean = false
+      private set
 
     var callback: OnOverScrolledCallback? = null
 
@@ -69,36 +69,24 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         super.onOverScrolled(scrollX, scrollY, clampedX, clampedY)
     }
 
-
     @android.webkit.JavascriptInterface
     open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {
-            activity.supportActionBar?.let {
-                if (it.isShowing && listener.allowToggleActionBar) {
-                    listener.resourcePager?.systemUiVisibility = (
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                            or View.SYSTEM_UI_FLAG_IMMERSIVE
-                        )
-                }
-            }
-            val scrollMode = listener.preferences.getBoolean(SCROLL_REF, false)
+            listener.onScroll()
+
             if (scrollMode) {
-                if (listener.publication.contentLayout.readingProgression == ReadingProgression.RTL) {
+                if (listener.readingProgression == ReadingProgression.RTL) {
                     this@R2BasicWebView.evaluateJavascript("scrollRightRTL();") { result ->
                         if (result.contains("edge")) {
-                            navigator.goBackward(animated = animated)
+                            listener.goBackward(animated = animated)
                         }
                     }
                 } else {
-                    navigator.goForward(animated = animated)
+                    listener.goForward(animated = animated)
                 }
             } else {
                 if (!this@R2BasicWebView.canScrollHorizontally(1)) {
-                    navigator.goForward(animated = animated)
+                    listener.goForward(animated = animated)
                 }
                 this@R2BasicWebView.evaluateJavascript("scrollRight();", null)
             }
@@ -108,33 +96,21 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     open fun scrollLeft(animated: Boolean = false) {
         uiScope.launch {
-            activity.supportActionBar?.let {
-                if (it.isShowing && listener.allowToggleActionBar) {
-                    listener.resourcePager?.systemUiVisibility = (
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                            or View.SYSTEM_UI_FLAG_IMMERSIVE
-                        )
-                }
-            }
-            val scrollMode = listener.preferences.getBoolean(SCROLL_REF, false)
+            listener.onScroll()
+
             if (scrollMode) {
-                if (listener.publication.contentLayout.readingProgression == ReadingProgression.RTL) {
+                if (listener.readingProgression == ReadingProgression.RTL) {
                     this@R2BasicWebView.evaluateJavascript("scrollLeftRTL();") { result ->
                         if (result.contains("edge")) {
-                            navigator.goForward(animated = animated)
+                            listener.goForward(animated = animated)
                         }
                     }
                 } else {
-                    navigator.goBackward(animated = animated)
+                    listener.goBackward(animated = animated)
                 }
             } else {
-                // fix this for when vertical scrolling is enabled
                 if (!this@R2BasicWebView.canScrollHorizontally(-1)) {
-                    navigator.goBackward(animated = animated)
+                    listener.goBackward(animated = animated)
                 }
                 this@R2BasicWebView.evaluateJavascript("scrollLeft();", null)
             }
@@ -144,12 +120,12 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun progressionDidChange(positionString: String) {
         progression = positionString.toDouble()
-        listener.progressionDidChange(progression)
+        listener.onProgressionChanged(progression)
     }
 
     @android.webkit.JavascriptInterface
     fun centerTapped() {
-        listener.toggleActionBar()
+        listener.onTap(PointF((this@R2BasicWebView.width / 2).toFloat(), (this@R2BasicWebView.height / 2).toFloat()))
     }
 
     @android.webkit.JavascriptInterface
@@ -168,7 +144,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                     val safe = Jsoup.clean(aside, Whitelist.relaxed())
 
                     // Initialize a new instance of LayoutInflater service
-                    val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                    val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
                     // Inflate the custom layout/view
                     val customView = inflater.inflate(R.layout.popup_footnote, null)
@@ -216,14 +192,14 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun highlightActivated(id: String) {
         uiScope.launch {
-            listener.highlightActivated(id)
+            listener.onHighlightActivated(id)
         }
     }
 
     @android.webkit.JavascriptInterface
     fun highlightAnnotationMarkActivated(id: String) {
         uiScope.launch {
-            listener.highlightAnnotationMarkActivated(id)
+            listener.onHighlightAnnotationMarkActivated(id)
         }
     }
 
@@ -239,11 +215,12 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${listener.publication.contentLayout.readingProgression.value}\");", null)
+        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${listener.readingProgression.value}\");", null)
     }
 
     fun setScrollMode(scrollMode: Boolean) {
         this.evaluateJavascript("setScrollMode($scrollMode)", null)
+        this.scrollMode = scrollMode
     }
 
     fun setProperty(key: String, value: String) {
@@ -303,4 +280,17 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
+    interface Listener {
+        val readingProgression: ReadingProgression
+        fun onPageLoaded()
+        fun onPageChanged(pageIndex: Int, totalPages: Int, url: String)
+        fun onPageEnded(end: Boolean)
+        fun onScroll()
+        fun onTap(point: PointF): Boolean
+        fun onProgressionChanged(progression: Double)
+        fun onHighlightActivated(id: String)
+        fun onHighlightAnnotationMarkActivated(id: String)
+        fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+        fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    }
 }

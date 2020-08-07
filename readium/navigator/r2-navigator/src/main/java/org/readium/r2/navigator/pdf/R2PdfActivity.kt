@@ -26,11 +26,10 @@ class R2PdfActivity : AppCompatActivity() {
 
     @OptIn(FragmentNavigator::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
         publication = intent.getPublication(this)
-
         supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication)
+
+        super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_r2_pdf)
     }

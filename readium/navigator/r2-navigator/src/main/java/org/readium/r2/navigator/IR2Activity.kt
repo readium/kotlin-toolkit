@@ -60,15 +60,15 @@ interface Navigator {
     fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
     fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
 
-    @Deprecated("Use [currentLocator] instead", ReplaceWith("currentLocator.value"))
-    val currentLocation: Locator? get() = currentLocator.value
-
     interface Listener {
     }
 
-    interface VisualListener : Listener {
-        fun onTap(point: PointF): Boolean = false
-    }
+
+    @Deprecated("Use [currentLocator] instead", ReplaceWith("currentLocator.value"))
+    val currentLocation: Locator? get() = currentLocator.value
+    @Deprecated("Use [VisualNavigator.Listener] instead", ReplaceWith("VisualNavigator.Listener"))
+    interface VisualListener : VisualNavigator.Listener
+
 }
 
 interface NavigatorDelegate {
@@ -80,8 +80,9 @@ interface NavigatorDelegate {
 interface VisualNavigator : Navigator {
     val readingProgression: ReadingProgression
 
-    fun goLeft(animated: Boolean, completion: () -> Unit): Boolean
-    fun goRight(animated: Boolean, completion: () -> Unit): Boolean
+    interface Listener : Navigator.Listener {
+        fun onTap(point: PointF): Boolean = false
+    }
 }
 
 

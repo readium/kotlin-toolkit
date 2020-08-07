@@ -47,7 +47,9 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         uiScope.launch {
             if (mCurItem < numPages - 1) {
                 mCurItem++
-                url?.let { listener.onPageChanged(mCurItem + 1, numPages, it) }
+                url?.let {
+                     listener.onPageChanged(mCurItem + 1, numPages, it)
+                }
             }
         }
     }
@@ -58,7 +60,9 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         uiScope.launch {
             if (mCurItem > 0) {
                 mCurItem--
-                url?.let { listener.onPageChanged(mCurItem + 1, numPages, it) }
+                url?.let {
+                     listener.onPageChanged(mCurItem + 1, numPages, it)
+                }
             }
         }
     }
@@ -115,6 +119,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     private var mIsBeingDragged: Boolean = false
     private var mGutterSize: Int = 30
     private var mTouchSlop: Int = 0
+
     /**
      * Position of the last motion event.
      */
@@ -122,6 +127,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     private var mLastMotionY: Float = 0.toFloat()
     private var mInitialMotionX: Float = 0.toFloat()
     private var mInitialMotionY: Float = 0.toFloat()
+
     /**
      * Sentinel value for no current active pointer.
      * Used by [.mActivePointerId].
@@ -323,7 +329,9 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         }
 
         if (post) {
-            url?.let { listener.onPageChanged(item + 1, numPages, it) }
+            url?.let {
+                 listener.onPageChanged(item + 1, numPages, it)
+            }
         }
 
 

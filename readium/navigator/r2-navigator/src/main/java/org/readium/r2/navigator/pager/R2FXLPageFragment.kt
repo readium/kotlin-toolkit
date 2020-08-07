@@ -10,6 +10,7 @@
 package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
+import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,27 +18,28 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
-import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
+import org.readium.r2.shared.FragmentNavigator
 
 
+@OptIn(FragmentNavigator::class)
 class R2FXLPageFragment : Fragment() {
 
     private val firstResourceUrl: String?
-        get() = arguments!!.getString("firstUrl")
+        get() = requireArguments().getString("firstUrl")
 
     private val secondResourceUrl: String?
-        get() = arguments!!.getString("secondUrl")
+        get() = requireArguments().getString("secondUrl")
 
     private val bookTitle: String?
-        get() = arguments!!.getString("title")
+        get() = requireArguments().getString("title")
 
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -49,20 +51,19 @@ class R2FXLPageFragment : Fragment() {
 
             val r2FXLLayout = view.findViewById<View>(R.id.r2FXLLayout) as R2FXLLayout
             r2FXLLayout.isAllowParentInterceptOnScaled = true
-            r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
-
-            r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
-                override fun onTap(view: R2FXLLayout, info: R2FXLLayout.TapInfo): Boolean {
-                    (activity as IR2Activity).toggleActionBar()
-                    return true
-                }
-            })
 
             val left = view.findViewById<View>(R.id.firstWebView) as R2BasicWebView
             val right = view.findViewById<View>(R.id.secondWebView) as R2BasicWebView
 
             setupWebView(left, firstResourceUrl)
             setupWebView(right, secondResourceUrl)
+
+            r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
+            r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
+                override fun onTap(view: R2FXLLayout, info: R2FXLLayout.TapInfo): Boolean {
+                    return left.listener.onTap(PointF(info.x, info.y))
+                }
+            })
 
             return view
         }?:run {
@@ -71,18 +72,17 @@ class R2FXLPageFragment : Fragment() {
 
             val r2FXLLayout = view.findViewById<View>(R.id.r2FXLLayout) as R2FXLLayout
             r2FXLLayout.isAllowParentInterceptOnScaled = true
-            r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
-
-            r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
-                override fun onTap(view: R2FXLLayout, info: R2FXLLayout.TapInfo): Boolean {
-                    (activity as IR2Activity).toggleActionBar()
-                    return true
-                }
-            })
 
             val webview = view.findViewById<View>(R.id.webViewSingle) as R2BasicWebView
 
             setupWebView(webview, firstResourceUrl)
+
+            r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
+            r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
+                override fun onTap(view: R2FXLLayout, info: R2FXLLayout.TapInfo): Boolean {
+                    return webview.listener.onTap(PointF(info.x, info.y))
+                }
+            })
 
             return view
         }
@@ -90,9 +90,10 @@ class R2FXLPageFragment : Fragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView(webView: R2BasicWebView, resourceUrl: String?) {
-        webView.activity = activity as AppCompatActivity
-        webView.listener = activity as IR2Activity
-        webView.navigator = activity as Navigator
+        val navigatorFragment = parentFragmentManager.findFragmentByTag(getString(R.string.epub_navigator_tag)) as EpubNavigatorFragment
+
+        webView.navigator = navigatorFragment
+        webView.listener = navigatorFragment
 
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false

@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.extensions.urlToHref
 import org.readium.r2.shared.FragmentNavigator
@@ -167,7 +168,7 @@ class PdfNavigatorFragment(
 
     private fun onTap(e: MotionEvent?): Boolean {
         e ?: return false
-        val listener = (listener as? Navigator.VisualListener) ?: return false
+        val listener = (listener as? VisualNavigator.Listener) ?: return false
         return listener.onTap(PointF(e.x, e.y))
     }
 
