@@ -16,7 +16,6 @@ import android.text.Html
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.View
 import android.webkit.WebView
 import android.widget.ImageButton
 import android.widget.ListPopupWindow
@@ -51,8 +50,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     private val uiScope = CoroutineScope(Dispatchers.Main)
 
-    private var readingProgression: ReadingProgression = ReadingProgression.LTR
-
     init {
         setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
     }
@@ -78,7 +75,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             listener.onScroll()
 
             if (scrollMode) {
-                if (readingProgression == ReadingProgression.RTL) {
+                if (listener.readingProgression == ReadingProgression.RTL) {
                     this@R2BasicWebView.evaluateJavascript("scrollRightRTL();") { result ->
                         if (result.contains("edge")) {
                             listener.goBackward(animated = animated)
@@ -102,7 +99,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             listener.onScroll()
 
             if (scrollMode) {
-                if (readingProgression == ReadingProgression.RTL) {
+                if (listener.readingProgression == ReadingProgression.RTL) {
                     this@R2BasicWebView.evaluateJavascript("scrollLeftRTL();") { result ->
                         if (result.contains("edge")) {
                             listener.goForward(animated = animated)
@@ -218,7 +215,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${readingProgression.value}\");", null)
+        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${listener.readingProgression.value}\");", null)
     }
 
     fun setScrollMode(scrollMode: Boolean) {
@@ -284,6 +281,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     interface Listener {
+        val readingProgression: ReadingProgression
         fun onPageLoaded()
         fun onPageChanged(pageIndex: Int, totalPages: Int, url: String)
         fun onPageEnded(end: Boolean)
