@@ -23,10 +23,13 @@ import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
+import org.readium.r2.shared.FragmentNavigator
 
 
+@OptIn(FragmentNavigator::class)
 class R2FXLPageFragment : Fragment() {
 
     private val firstResourceUrl: String?
@@ -58,8 +61,7 @@ class R2FXLPageFragment : Fragment() {
             r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
             r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
                 override fun onTap(view: R2FXLLayout, info: R2FXLLayout.TapInfo): Boolean {
-                    left.listener.onTap(PointF(info.x, info.y))
-                    return true
+                    return left.listener.onTap(PointF(info.x, info.y))
                 }
             })
 
@@ -78,8 +80,7 @@ class R2FXLPageFragment : Fragment() {
             r2FXLLayout.addOnDoubleTapListener(R2FXLOnDoubleTapListener(true))
             r2FXLLayout.addOnTapListener(object : R2FXLLayout.OnTapListener {
                 override fun onTap(view: R2FXLLayout, info: R2FXLLayout.TapInfo): Boolean {
-                    webview.listener.onTap(PointF(info.x, info.y))
-                    return true
+                    return webview.listener.onTap(PointF(info.x, info.y))
                 }
             })
 
@@ -89,10 +90,10 @@ class R2FXLPageFragment : Fragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView(webView: R2BasicWebView, resourceUrl: String?) {
-        val navigatorFragment = parentFragmentManager.findFragmentByTag(getString(R.string.epub_navigator_tag))
+        val navigatorFragment = parentFragmentManager.findFragmentByTag(getString(R.string.epub_navigator_tag)) as EpubNavigatorFragment
 
-        webView.navigator = navigatorFragment as Navigator
-        webView.listener = navigatorFragment as R2BasicWebView.Listener
+        webView.navigator = navigatorFragment
+        webView.listener = navigatorFragment
 
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false

@@ -40,7 +40,7 @@ import org.readium.r2.shared.publication.ReadingProgression
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(FragmentNavigator::class)
-open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator, Navigator.VisualListener {
+open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator, VisualNavigator.Listener {
 
     /**
      * Context of this scope.
@@ -60,16 +60,18 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
     protected var navigatorDelegate: NavigatorDelegate? = null
 
-    private val r2PagerAdapter: R2PagerAdapter
-        get() = resourcePager.adapter as R2PagerAdapter
+    val adapter: R2PagerAdapter get() =
+        resourcePager.adapter as R2PagerAdapter
 
     private val currentFragment: R2EpubPageFragment? get() =
-        r2PagerAdapter.mFragments.get(r2PagerAdapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
+        adapter.mFragments.get(adapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
 
     private val navigatorFragment: EpubNavigatorFragment get() =
         supportFragmentManager.findFragmentById(R.id.epub_navigator) as EpubNavigatorFragment
 
-    private val positions: List<Locator> get() = navigatorFragment.positions
+    // For backward compatibility, we expose these properties only through the `R2EpubActivity`.
+    val positions: List<Locator> get() = navigatorFragment.positions
+    val currentPagerPosition: Int get() = navigatorFragment.currentPagerPosition
 
     override val currentLocator: LiveData<Locator?>
         get() = navigatorFragment.currentLocator
@@ -138,14 +140,6 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
     override val readingProgression: ReadingProgression
         get() = navigatorFragment.readingProgression
-
-    override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
-        return navigatorFragment.goLeft(animated, completion)
-    }
-
-    override fun goRight(animated: Boolean, completion: () -> Unit): Boolean {
-        return navigatorFragment.goRight(animated, completion)
-    }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         navigatorFragment.go(locator, animated, completion)

@@ -1,3 +1,9 @@
+/*
+ * Copyright 2020 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.navigator.epub
 
 import android.content.Context
@@ -37,16 +43,10 @@ class EpubNavigatorFragment(
     private val baseUrl: String,
     private val initialLocator: Locator? = null,
     internal val listener: Navigator.Listener? = null
-): Fragment(), CoroutineScope, VisualNavigator, R2BasicWebView.Listener {
-
-    /**
-     * Context of this scope.
-     */
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main
+): Fragment(), CoroutineScope by MainScope(), VisualNavigator, R2BasicWebView.Listener {
 
 
-    lateinit var positions: List<Locator>
+    internal lateinit var positions: List<Locator>
     lateinit var resourcePager: R2ViewPager
 
     private lateinit var resourcesSingle: ArrayList<Pair<Int, String>>
@@ -55,11 +55,11 @@ class EpubNavigatorFragment(
     internal lateinit var preferences: SharedPreferences
     internal lateinit var publicationIdentifier: String
 
-    var currentPagerPosition: Int = 0
-    lateinit var adapter: R2PagerAdapter
+    internal var currentPagerPosition: Int = 0
+    internal lateinit var adapter: R2PagerAdapter
     private lateinit var currentActivity: FragmentActivity
 
-    protected var navigatorDelegate: NavigatorDelegate? = null
+    internal var navigatorDelegate: NavigatorDelegate? = null
 
     private val r2Activity: R2EpubActivity? get() = activity as? R2EpubActivity
 
@@ -300,7 +300,7 @@ class EpubNavigatorFragment(
     }
 
     override fun onTap(point: PointF): Boolean {
-        return (this.listener as Navigator.VisualListener).onTap(point)
+        return (this.listener as VisualNavigator.Listener).onTap(point)
     }
 
     override fun onProgressionChanged(progression: Double) {
@@ -371,14 +371,6 @@ class EpubNavigatorFragment(
 
     override val readingProgression: ReadingProgression
         get() = publication.contentLayout.readingProgression
-
-    override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun goRight(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
-    }
 
     override val currentLocator: LiveData<Locator?> get() = _currentLocator
     private val _currentLocator = MutableLiveData<Locator?>(null)

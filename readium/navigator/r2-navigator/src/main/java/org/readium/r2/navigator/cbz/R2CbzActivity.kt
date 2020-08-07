@@ -40,7 +40,7 @@ import org.readium.r2.shared.publication.services.positions
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(FragmentNavigator::class)
-open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator, Navigator.VisualListener {
+open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator, VisualNavigator.Listener {
 
     private val navigatorFragment: ImageNavigatorFragment
         get() = supportFragmentManager.findFragmentById(R.id.image_navigator) as ImageNavigatorFragment
@@ -48,7 +48,8 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
     protected var navigatorDelegate: NavigatorDelegate? = null
 
-    private val positions: List<Locator> get() = navigatorFragment.positions
+    protected val positions: List<Locator> get() = navigatorFragment.positions
+    val currentPagerPosition: Int get() = navigatorFragment.currentPagerPosition
 
     override val currentLocator: LiveData<Locator?>
         get() = navigatorFragment.currentLocator
@@ -72,14 +73,6 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     override val readingProgression: ReadingProgression
         get() = navigatorFragment.readingProgression
 
-
-    override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
-        return navigatorFragment.goLeft(animated, completion)
-    }
-
-    override fun goRight(animated: Boolean, completion: () -> Unit): Boolean {
-        return navigatorFragment.goRight(animated, completion)
-    }
 
     /**
      * Context of this scope.

@@ -1,3 +1,9 @@
+/*
+ * Copyright 2020 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.navigator.cbz
 
 import android.content.Context
@@ -8,50 +14,40 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
-import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.shared.FragmentNavigator
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positions
-import kotlin.coroutines.CoroutineContext
 
+@FragmentNavigator
 class ImageNavigatorFragment(
-        internal val publication: Publication,
-        private val initialLocator: Locator? = null,
-        internal val listener: Navigator.Listener? = null
-) : Fragment(), CoroutineScope, VisualNavigator {
+    internal val publication: Publication,
+    private val initialLocator: Locator? = null,
+    internal val listener: Navigator.Listener? = null
+) : Fragment(), CoroutineScope by MainScope(), VisualNavigator {
 
-    /**
-     * Context of this scope.
-     */
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main
-
-    lateinit var positions: List<Locator>
-    lateinit var resourcePager: R2ViewPager
+    internal lateinit var positions: List<Locator>
+    internal lateinit var resourcePager: R2ViewPager
 
     internal lateinit var preferences: SharedPreferences
 
-    lateinit var adapter: R2PagerAdapter
+    internal lateinit var adapter: R2PagerAdapter
     private lateinit var currentActivity: FragmentActivity
 
     override val currentLocator: LiveData<Locator?> get() = _currentLocator
     private val _currentLocator = MutableLiveData<Locator?>(null)
 
-    var currentPagerPosition: Int = 0
-    var resources: List<String> = emptyList()
+    internal var currentPagerPosition: Int = 0
+    internal var resources: List<String> = emptyList()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         currentActivity = requireActivity()
@@ -101,31 +97,11 @@ class ImageNavigatorFragment(
     }
 
     fun nextResource(v: View?) {
-        launch {
-            if (requireActivity().layoutDirectionIsRTL()) {
-                // The view has RTL layout
-                resourcePager.currentItem = resourcePager.currentItem - 1
-            } else {
-                // The view has LTR layout
-                resourcePager.currentItem = resourcePager.currentItem + 1
-            }
-
-            notifyCurrentLocation()
-        }
+        goForward()
     }
 
     fun previousResource(v: View?) {
-        launch {
-            if (requireActivity().layoutDirectionIsRTL()) {
-                // The view has RTL layout
-                resourcePager.currentItem = resourcePager.currentItem + 1
-            } else {
-                // The view has LTR layout
-                resourcePager.currentItem = resourcePager.currentItem - 1
-            }
-
-            notifyCurrentLocation()
-        }
+        goBackward()
     }
 
     private fun notifyCurrentLocation() {
@@ -133,20 +109,11 @@ class ImageNavigatorFragment(
         if (locator == currentLocator.value) {
             return
         }
-
         _currentLocator.postValue(locator)
     }
 
     override val readingProgression: ReadingProgression
-        get() = TODO("Not yet implemented")
-
-    override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun goRight(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
-    }
+        get() = publication.contentLayout.readingProgression
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
@@ -158,16 +125,35 @@ class ImageNavigatorFragment(
         return true
     }
 
-    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean =
+        go(link.toLocator(), animated, completion)
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
+        val current = resourcePager.currentItem
+        if (requireActivity().layoutDirectionIsRTL()) {
+            // The view has RTL layout
+            resourcePager.currentItem = current - 1
+        } else {
+            // The view has LTR layout
+            resourcePager.currentItem = current + 1
+        }
+
+        notifyCurrentLocation()
+        return current != resourcePager.currentItem
     }
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("Not yet implemented")
+        val current = resourcePager.currentItem
+        if (requireActivity().layoutDirectionIsRTL()) {
+            // The view has RTL layout
+            resourcePager.currentItem = current + 1
+        } else {
+            // The view has LTR layout
+            resourcePager.currentItem = current - 1
+        }
+
+        notifyCurrentLocation()
+        return current != resourcePager.currentItem
     }
 
 }

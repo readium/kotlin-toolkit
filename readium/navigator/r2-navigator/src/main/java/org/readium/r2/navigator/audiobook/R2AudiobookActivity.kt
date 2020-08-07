@@ -97,14 +97,6 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     override val readingProgression: ReadingProgression
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
-    override fun goLeft(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun goRight(animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     /**
      * Context of this scope.
      */
