@@ -51,9 +51,16 @@ internal fun InputStream.read(limit: Long): ByteArray {
     return buffer.toByteArray()
 }
 
+
+// WARNING: this requires a stream not used yet
 internal suspend fun InputStream.readRange(range: LongRange): ByteArray {
     @Suppress("NAME_SHADOWING")
-    val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+    val range = range
+        .coerceFirstNonNegative()
+        .requireLengthFitInt()
+
+    if (range.isEmpty())
+        return ByteArray(0)
 
     return withContext(Dispatchers.IO) {
         val skipped = skip(range.first)

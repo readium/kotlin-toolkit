@@ -93,6 +93,7 @@ class ResourceInputStream(
         try {
             val bytesToRead = len.coerceAtMost(available())
             val bytes = runBlocking { resource.read(position until (position + bytesToRead)).getOrThrow() }
+            check(bytes.size <= bytesToRead)
             bytes.copyInto(
                 destination = b,
                 destinationOffset = off,

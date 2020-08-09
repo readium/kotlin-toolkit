@@ -9,12 +9,8 @@
 
 package org.readium.r2.shared.extensions
 
-internal fun LongRange.coerceToPositiveIncreasing() =
-    if (first >= last)
-        0L until 0L
-    else
-        LongRange(first.coerceAtLeast(0), last.coerceAtLeast(0))
+fun LongRange.coerceFirstNonNegative() = LongRange(first.coerceAtLeast(0), last)
 
-internal fun LongRange.coerceLastAtMost(max: Long) = LongRange(first, last.coerceAtMost(max))
+fun LongRange.coerceIn(range: LongRange) = LongRange(first.coerceAtLeast(range.first), last.coerceAtMost(range.last))
 
-internal fun LongRange.requireLengthFitInt() = this.apply { require(last - first + 1 <= Int.MAX_VALUE) }
+fun LongRange.requireLengthFitInt() = this.apply { require(last - first + 1 <= Int.MAX_VALUE) }

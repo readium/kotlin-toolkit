@@ -10,7 +10,7 @@
 package org.readium.r2.shared.fetcher
 
 import org.json.JSONObject
-import org.readium.r2.shared.extensions.coerceToPositiveIncreasing
+import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
@@ -219,11 +219,13 @@ class CachingResource(protected val resource: Resource) : Resource {
         if (range == null)
             return _bytes
 
-        @Suppress("NAME_SHADOWING")
-        val range = range
-            .coerceToPositiveIncreasing()
-            .requireLengthFitInt()
-        return _bytes.map { it.sliceArray(range.map(Long::toInt)) }
+        return _bytes.map {
+            @Suppress("NAME_SHADOWING")
+            val range = range
+                .coerceIn(0L.. it.size)
+                .requireLengthFitInt()
+
+            it.sliceArray(range.map(Long::toInt)) }
     }
 
     override suspend fun close() = resource.close()
@@ -244,16 +246,18 @@ abstract class TransformingResource(resource: Resource) : ProxyResource(resource
     private suspend fun bytes(): ResourceTry<ByteArray> =
         transform(resource.read())
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
-        if (range == null)
-            return bytes()
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+        bytes().map {
+            if (range == null)
+                return bytes()
 
-        @Suppress("NAME_SHADOWING")
-        val range = range
-            .coerceToPositiveIncreasing()
-            .requireLengthFitInt()
-        return bytes().map { it.sliceArray(range.map(Long::toInt)) }
-    }
+            @Suppress("NAME_SHADOWING")
+            val range = range
+                .coerceIn(0L until it.size)
+                .requireLengthFitInt()
+
+            it.sliceArray(range.map(Long::toInt))
+        }
 
     override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
 }

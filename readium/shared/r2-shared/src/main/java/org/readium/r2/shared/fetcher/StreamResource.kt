@@ -9,13 +9,8 @@
 
 package org.readium.r2.shared.fetcher
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.coerceToPositiveIncreasing
-import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.readRange
-import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.Try
 import timber.log.Timber
 import java.io.InputStream
