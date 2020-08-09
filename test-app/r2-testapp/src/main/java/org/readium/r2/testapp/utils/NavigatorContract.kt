@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.extensions.putPublication
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.File
 import org.readium.r2.testapp.audiobook.AudiobookActivity
@@ -24,15 +25,23 @@ import org.readium.r2.testapp.comic.ComicActivity
 import org.readium.r2.testapp.comic.DiViNaActivity
 import org.readium.r2.testapp.epub.EpubActivity
 
-class NavigatorContract : ActivityResultContract<NavigatorContract.PublicationData, NavigatorContract.PublicationData>() {
+class NavigatorContract : ActivityResultContract<NavigatorContract.Input, NavigatorContract.Output>() {
 
-    data class PublicationData(
+    data class Input(
+        val file: File,
+        val publication: Publication,
+        val bookId: Long?,
+        val initialLocator: Locator? = null,
+        val deleteOnResult: Boolean = false
+    )
+
+    data class Output(
         val file: File,
         val publication: Publication,
         val deleteOnResult: Boolean
     )
 
-    override fun createIntent(context: Context, input: PublicationData): Intent {
+    override fun createIntent(context: Context, input: Input): Intent {
         val intent = Intent(context, when (input.publication.type) {
             Publication.TYPE.AUDIO -> AudiobookActivity::class.java
             Publication.TYPE.CBZ -> ComicActivity::class.java
@@ -42,13 +51,17 @@ class NavigatorContract : ActivityResultContract<NavigatorContract.PublicationDa
 
         return intent.apply {
             putPublication(input.publication)
+            putExtra("bookId", input.bookId)
             putExtra("publicationPath", input.file.path)
             putExtra("publicationFileName", input.file.name)
             putExtra("deleteOnResult", input.deleteOnResult)
+            if (input.initialLocator != null) {
+                putExtra("locator", input.initialLocator)
+            }
         }
     }
 
-    override fun parseResult(resultCode: Int, intent: Intent?): PublicationData? {
+    override fun parseResult(resultCode: Int, intent: Intent?): Output? {
         if (intent == null)
             return null
 
@@ -57,7 +70,7 @@ class NavigatorContract : ActivityResultContract<NavigatorContract.PublicationDa
 
         intent.destroyPublication(null)
 
-        return PublicationData(
+        return Output(
             file = File(path),
             publication = intent.getPublication(null),
             deleteOnResult = intent.getBooleanExtra("deleteOnResult", false)

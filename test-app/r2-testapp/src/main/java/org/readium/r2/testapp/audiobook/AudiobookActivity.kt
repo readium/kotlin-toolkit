@@ -5,11 +5,11 @@ import android.app.ProgressDialog
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
 import kotlinx.android.synthetic.main.activity_audiobook.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.anko.indeterminateProgressDialog
 import org.jetbrains.anko.toast
@@ -18,6 +18,7 @@ import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.audiobook.R2AudiobookActivity
 import org.readium.r2.shared.extensions.putPublicationFrom
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Bookmark
 import org.readium.r2.testapp.db.BookmarksDatabase
@@ -55,21 +56,19 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
 
         progressDialog = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_audiobook))
 
-        Handler().postDelayed({
-            //Setting cover
-            launch {
-                if (intent.hasExtra("cover")) {
-                    val byteArray = intent.getByteArrayExtra("cover")
-                    byteArray?.let {
-                        val bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-                        findViewById<ImageView>(R.id.imageView).setImageBitmap(bmp)
-                    }
+        //Setting cover
+        launch {
+            delay(100)
+            if (intent.hasExtra("cover")) {
+                val byteArray = intent.getByteArrayExtra("cover")
+                byteArray?.let {
+                    val bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                    findViewById<ImageView>(R.id.imageView).setImageBitmap(bmp)
                 }
-                menuDrm?.isVisible = intent.getBooleanExtra("drm", false)
             }
-            mediaPlayer?.progress = progressDialog
-
-        }, 100)
+            menuDrm?.isVisible = publication.isProtected
+        }
+        mediaPlayer?.progress = progressDialog
 
 
         // Loads the last read location
