@@ -45,6 +45,8 @@ import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
+import org.readium.r2.shared.publication.services.isRestricted
+import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.File as R2File
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
@@ -387,7 +389,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             if (sourceFile.format() != Format.LCP_LICENSE)
                 sourceFile
             else {
-                fulfill(sourceFile.file.readBytes()).fold(
+                fulfill(sourceFile.file.readBytes(), allowUserInteraction = false)?.fold(
                     {
                         val format = Format.of(fileExtension = File(it.suggestedFilename).extension)
                         R2File(it.localURL, format = format)
@@ -400,7 +402,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                         return
                     }
                 )
-            }
+            } ?: return
 
         val fileName = UUID.randomUUID().toString()
         val libraryFile = R2File(
@@ -547,7 +549,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         }
     }
 
-    private suspend fun confirmAddDuplicateBook(book: Book) = suspendCoroutine<Boolean> { cont ->
+    private suspend fun confirmAddDuplicateBook(book: Book): Boolean = suspendCoroutine { cont ->
         alert(Appcompat, "Publication already exists") {
             positiveButton("Add anyway") {
                 it.dismiss()
@@ -585,11 +587,19 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                     progress.dismiss()
                     catalogView.longSnackbar("unable to open publication") }
                 .onSuccess {
-                    prepareToServe(it, file)
-                    progress.dismiss()
-                    navigatorLauncher.launch(
-                        NavigatorContract.PublicationData(file, it, deleteOnResult = remoteUrl != null )
-                    )
+                    if (it.isRestricted) {
+                        progress.dismiss()
+                        if (it.protectionError != null) {
+                            Timber.d(it.protectionError)
+                            catalogView.longSnackbar("unable to unlock publication")
+                        }
+                    } else {
+                        prepareToServe(it, file)
+                        progress.dismiss()
+                        navigatorLauncher.launch(
+                            NavigatorContract.PublicationData(file, it, deleteOnResult = remoteUrl != null)
+                        )
+                    }
                 }
         }
     }
