@@ -15,13 +15,10 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.persistence.Database
 import org.readium.r2.lcp.service.*
-import org.readium.r2.shared.drm.DRMLicense
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.Try
 import java.io.Serializable
 import java.net.URL
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * Service used to fulfill and access protected publications.
@@ -30,39 +27,56 @@ import kotlin.coroutines.suspendCoroutine
  * passphrase is found in the local database. This can be the desired behavior when trying to
  * import a license in the background, without prompting the user for its passphrase.
  */
-interface LCPService {
+interface LcpService {
+
+    companion object {
+
+        /**
+         * LCP service factory.
+         */
+        fun create(context: Context): LcpService {
+            val db = Database(context)
+            val network = NetworkService()
+            val device = DeviceService(repository = db.licenses, network = network, context = context)
+            val crl = CRLService(network = network, context = context)
+            val passphrases = PassphrasesService(repository = db.transactions)
+            return LicensesService(licenses = db.licenses, crl = crl, device = device, network = network, passphrases = passphrases, context = context)
+        }
+
+    }
 
     /**
      *  Imports a protected publication from a standalone LCPL file.
      */
-    fun importPublication(lcpl: ByteArray, authentication: LCPAuthenticating?, completion: (LCPImportedPublication?, LCPError?) -> Unit)
-
+    suspend fun importPublication(lcpl: ByteArray, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any? = null): Try<ImportedPublication, LcpException>?
 
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
      * its content.
      */
-    fun retrieveLicense(publication: String, authentication: LCPAuthenticating?, completion: (LCPLicense?, LCPError?) -> Unit)
+    suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any? = null): Try<LcpLicense, LcpException>?
+
+    /**
+     * Informations about a downloaded publication.
+     *
+     * @param localURL Path to the downloaded publication. You must move this file to the user
+     *        library's folder.
+     * @param suggestedFilename Filename that should be used for the publication when importing it in
+     *        the user library.
+     */
+    data class ImportedPublication(
+        val localURL: String,
+        val suggestedFilename: String
+    )
 }
 
-/**
- * Informations about a downloaded publication.
- *
- * @param localURL Path to the downloaded publication. You must move this file to the user
- *        library's folder.
- * @param suggestedFilename Filename that should be used for the publication when importing it in
- *        the user library.
- */
-data class LCPImportedPublication(
-    val localURL: String,
-    val suggestedFilename: String
-)
+typealias URLPresenter = (URL, dismissed: () -> Unit) -> Unit
 
 
 /**
  * Opened license, used to decipher a protected publication and manage its license.
  */
-interface LCPLicense : DRMLicense, Serializable {
+interface LcpLicense : Serializable {
 
     val license: LicenseDocument
     val status: StatusDocument?
@@ -92,6 +106,10 @@ interface LCPLicense : DRMLicense, Serializable {
      */
     fun print(pagesCount: Int): Boolean
 
+    val canCopy: Boolean
+
+    fun copy(text: String): String?
+
     /**
      * Can the user renew the loaned publication?
      */
@@ -110,7 +128,7 @@ interface LCPLicense : DRMLicense, Serializable {
      *        is responsible for presenting the URL (for example with SFSafariViewController) and
      *        then calling the `dismissed` callback once the website is closed by the user.
      */
-    fun renewLoan(end: DateTime?, present: URLPresenter, completion: (LCPError?) -> Unit)
+    suspend fun renewLoan(end: DateTime?, present: URLPresenter): Try<Unit, LcpException>
 
     /**
      * Can the user return the loaned publication?
@@ -120,17 +138,8 @@ interface LCPLicense : DRMLicense, Serializable {
     /**
      * Returns the publication to its provider.
      */
-    fun returnPublication(completion: (LCPError?) -> Unit)
+    suspend fun returnPublication(): Try<Unit, LcpException>
+
+    suspend fun decrypt(data: ByteArray): Try<ByteArray, LcpException>
 }
 
-/**
- * LCP service factory.
- */
-fun R2MakeLCPService(context: Context): LCPService {
-    val db = Database(context)
-    val network = NetworkService()
-    val device = DeviceService(repository = db.licenses, network = network, context = context)
-    val crl = CRLService(network = network, context = context)
-    val passphrases = PassphrasesService(repository = db.transactions)
-    return LicensesService(licenses = db.licenses, crl = crl, device = device, network = network, passphrases = passphrases, context = context)
-}

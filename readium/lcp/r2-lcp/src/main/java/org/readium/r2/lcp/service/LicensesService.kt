@@ -11,8 +11,11 @@ package org.readium.r2.lcp.service
 
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.License
@@ -21,7 +24,11 @@ import org.readium.r2.lcp.license.container.BytesLicenseContainer
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.shared.util.File
+import org.readium.r2.shared.util.Try
 import timber.log.Timber
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 internal class LicensesService(
@@ -31,34 +38,47 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context
-) : LCPService, CoroutineScope by MainScope() {
+) : LcpService, LCPService, CoroutineScope by MainScope() {
+
+    override suspend fun importPublication(lcpl: ByteArray, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?): Try<LcpService.ImportedPublication, LcpException>? =
+        try {
+            val container = BytesLicenseContainer(lcpl)
+            retrieveLicense(container, authentication, allowUserInteraction, sender)
+                ?.fetchPublication(context)
+                ?.let { Try.success(it) }
+        } catch (e:Exception) {
+           Try.failure(LcpException.wrap(e))
+        }
 
     override fun importPublication(lcpl: ByteArray, authentication: LCPAuthenticating?, completion: (LCPImportedPublication?, LCPError?) -> Unit) {
-        val container = BytesLicenseContainer(lcpl)
-        try {
-            retrieveLicense(container, authentication) { license ->
-                if (license != null) {
-                    launch {
-                        try {
-                            completion(license.fetchPublication(context), null)
-                        } catch (e: Exception) {
-                            completion(null, LCPError.wrap(e))
-                        }
-                    }
-                } else {
-                    completion(null, null)
-                }
-            }
-        } catch (e:Exception) {
-            completion(null, LCPError.wrap(e))
+        launch {
+            importPublication(lcpl, authentication.toLcpAuthenticating(), authentication != null, null)
+                ?.onSuccess { completion(it.toLCPImportedPublication(), null) }
+                ?.onFailure { completion(null, it.toLCPError()) }
+                ?: run { completion(null, null) }
         }
     }
 
+    override suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?): Try<LcpLicense, LcpException>? =
+        try {
+            val container = createLicenseContainer(file.path)
+            // WARNING: Using the Default dispatcher in the state machine code is critical. If we were using the Main Dispatcher,
+            // calling runBlocking in LicenseValidation.handle would block the main thread and cause a severe issue
+            // with LcpAuthenticating.retrievePassphrase. Specifically, the interaction of runBlocking and suspendCoroutine
+            // blocks the current thread before the passphrase popup has been showed until some button not yet showed is clicked.
+            val license = withContext(Dispatchers.Default) { retrieveLicense(container, authentication, allowUserInteraction, sender) }
+            Timber.d("license retrieved ${license?.license}")
+
+            license?.let { Try.success(it) }
+        } catch (e: Exception) {
+            Try.failure(LcpException.wrap(e))
+        }
+
     override fun retrieveLicense(publication: String, authentication: LCPAuthenticating?, completion: (LCPLicense?, LCPError?) -> Unit) {
         try {
-            val container = createLicenseContainer(publication)
-            retrieveLicense(container, authentication) { license ->
-                if (DEBUG) Timber.d("license retrieved ${license?.license}")
+            val container = runBlocking { createLicenseContainer(publication) }
+            retrieveLicense(container, authentication.toLcpAuthenticating(), authentication != null, null) { license ->
+                Timber.d("license retrieved ${license?.license}")
                 completion(license, null)
             }
         } catch (e:Exception) {
@@ -66,13 +86,21 @@ internal class LicensesService(
         }
     }
 
-    private fun retrieveLicense(container: LicenseContainer, authentication: LCPAuthenticating?, completion: (License?) -> Unit) {
+    private suspend fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?): License? =
+        suspendCoroutine { cont ->
+            retrieveLicense(container, authentication, allowUserInteraction, sender) { license ->
+                cont.resume(license)
+            }
+        }
+
+    private fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?, completion: (License?) -> Unit) {
 
         var initialData = container.read()
         if (DEBUG) Timber.d("license ${LicenseDocument(data = initialData).json}")
 
         val validation = LicenseValidation(authentication = authentication, crl = this.crl,
-                device = this.device, network = this.network, passphrases = this.passphrases, context = this.context) { licenseDocument ->
+                device = this.device, network = this.network, passphrases = this.passphrases, context = this.context,
+                allowUserInteraction = allowUserInteraction, sender = sender) { licenseDocument ->
             try {
                 this.licenses.addLicense(licenseDocument)
             } catch (error: Error) {

@@ -11,7 +11,7 @@ package org.readium.r2.lcp.license.model
 
 import org.joda.time.DateTime
 import org.json.JSONObject
-import org.readium.r2.lcp.ParsingError
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.license.model.components.Links
 import org.readium.r2.lcp.license.model.components.lcp.Encryption
@@ -22,7 +22,7 @@ import org.readium.r2.lcp.service.URLParameters
 import java.net.URL
 import java.nio.charset.Charset
 
-data class LicenseDocument(val data: ByteArray) {
+class LicenseDocument(val data: ByteArray) {
     val provider: String
     val id: String
     val issued: DateTime
@@ -50,19 +50,19 @@ data class LicenseDocument(val data: ByteArray) {
         try {
             json = JSONObject(data.toString(Charset.defaultCharset()))
         } catch (e: Exception) {
-            throw ParsingError.malformedJSON
+            throw LcpException.Parsing.MalformedJSON
         }
-        provider = if (json.has("provider")) json.getString("provider") else throw ParsingError.licenseDocument
-        id = if (json.has("id")) json.getString("id") else throw ParsingError.licenseDocument
-        issued = if (json.has("issued")) DateTime(json.getString("issued")) else throw ParsingError.licenseDocument
-        encryption = if (json.has("encryption")) Encryption(json.getJSONObject("encryption")) else throw ParsingError.licenseDocument
-        signature = if (json.has("signature")) Signature(json.getJSONObject("signature")) else throw ParsingError.licenseDocument
-        links = if (json.has("links")) Links(json.getJSONArray("links")) else throw ParsingError.licenseDocument
+        provider = if (json.has("provider")) json.getString("provider") else throw LcpException.Parsing.LicenseDocument
+        id = if (json.has("id")) json.getString("id") else throw LcpException.Parsing.LicenseDocument
+        issued = if (json.has("issued")) DateTime(json.getString("issued")) else throw LcpException.Parsing.LicenseDocument
+        encryption = if (json.has("encryption")) Encryption(json.getJSONObject("encryption")) else throw LcpException.Parsing.LicenseDocument
+        signature = if (json.has("signature")) Signature(json.getJSONObject("signature")) else throw LcpException.Parsing.LicenseDocument
+        links = if (json.has("links")) Links(json.getJSONArray("links")) else throw LcpException.Parsing.LicenseDocument
         updated = if (json.has("updated")) DateTime(json.getString("updated")) else issued
         user = if (json.has("user")) User(json.getJSONObject("user")) else User(JSONObject())
         rights = if (json.has("rights")) Rights(json.getJSONObject("rights")) else Rights(JSONObject())
         if (link(Rel.hint) == null || link(Rel.publication) == null) {
-            throw ParsingError.licenseDocument
+            throw LcpException.Parsing.LicenseDocument
         }
     }
 
@@ -73,7 +73,7 @@ data class LicenseDocument(val data: ByteArray) {
             links[rel.rawValue]
 
     fun url(rel: Rel, parameters:  URLParameters = emptyMap()): URL {
-        return link(rel)?.url(parameters) ?: throw ParsingError.url(rel = rel.rawValue)
+        return link(rel)?.url(parameters) ?: throw LcpException.Parsing.Url(rel = rel.rawValue)
     }
 
     val description: String

@@ -11,7 +11,7 @@ package org.readium.r2.lcp.license.model
 
 import org.joda.time.DateTime
 import org.json.JSONObject
-import org.readium.r2.lcp.ParsingError
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.license.model.components.Links
 import org.readium.r2.lcp.license.model.components.lsd.Event
@@ -20,8 +20,7 @@ import org.readium.r2.lcp.service.URLParameters
 import java.net.URL
 import java.nio.charset.Charset
 
-data class StatusDocument(val data: ByteArray) {
-
+class StatusDocument(val data: ByteArray) {
     val id: String
     val status: Status
     val message: String
@@ -62,20 +61,20 @@ data class StatusDocument(val data: ByteArray) {
         try {
             json = JSONObject(data.toString(Charset.defaultCharset()))
         } catch (e: Exception) {
-            throw ParsingError.malformedJSON
+            throw LcpException.Parsing.MalformedJSON
         }
 
-        id = if (json.has("id")) json.getString("id") else throw ParsingError.statusDocument
-        status = if (json.has("status")) Status(json.getString("status"))!! else throw ParsingError.statusDocument
-        message = if (json.has("message")) json.getString("message") else throw ParsingError.statusDocument
+        id = if (json.has("id")) json.getString("id") else throw LcpException.Parsing.StatusDocument
+        status = if (json.has("status")) Status(json.getString("status"))!! else throw LcpException.Parsing.StatusDocument
+        message = if (json.has("message")) json.getString("message") else throw LcpException.Parsing.StatusDocument
 
         val updated = if (json.has("updated")) json.getJSONObject("updated") else JSONObject()
 
-        licenseUpdated = if (updated.has("license")) DateTime(updated.getString("license")) else throw ParsingError.statusDocument
-        statusUpdated = if (updated.has("status")) DateTime(updated.getString("status")) else throw ParsingError.statusDocument
+        licenseUpdated = if (updated.has("license")) DateTime(updated.getString("license")) else throw LcpException.Parsing.StatusDocument
+        statusUpdated = if (updated.has("status")) DateTime(updated.getString("status")) else throw LcpException.Parsing.StatusDocument
 
 
-        links = if (json.has("links")) Links(json.getJSONArray("links")) else throw ParsingError.statusDocument
+        links = if (json.has("links")) Links(json.getJSONArray("links")) else throw LcpException.Parsing.StatusDocument
 
         potentialRights = if (json.has("potential_rights")) PotentialRights(json.getJSONObject("potential_rights")) else null
 
@@ -95,7 +94,7 @@ data class StatusDocument(val data: ByteArray) {
             links[rel.rawValue]
 
     fun url(rel: Rel, parameters:  URLParameters = emptyMap()): URL {
-        return link(rel)?.url(parameters) ?: throw ParsingError.url(rel = rel.rawValue)
+        return link(rel)?.url(parameters) ?: throw LcpException.Parsing.Url(rel = rel.rawValue)
     }
 
     fun events(type: Event.EventType): List<Event> =

@@ -67,6 +67,9 @@ sealed class LCPError : Exception() {
 
         fun wrap(optionalError: Exception?): LCPError {
             val error = optionalError ?: return unknown(null)
+            if (error is LcpException) {
+                return error.toLCPError()
+            }
             if (error is LCPError) {
                 return error
             }

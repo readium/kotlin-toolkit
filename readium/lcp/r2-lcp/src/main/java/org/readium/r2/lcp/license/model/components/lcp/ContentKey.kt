@@ -10,14 +10,14 @@
 package org.readium.r2.lcp.license.model.components.lcp
 
 import org.json.JSONObject
-import org.readium.r2.lcp.ParsingError
+import org.readium.r2.lcp.LcpException
 
 data class ContentKey(val json: JSONObject) {
     val algorithm: String
     val encryptedValue: String
 
     init {
-        algorithm = if (json.has("algorithm")) json.getString("algorithm") else throw ParsingError.encryption
-        encryptedValue = if (json.has("encrypted_value")) json.getString("encrypted_value") else throw ParsingError.encryption
+        algorithm = if (json.has("algorithm")) json.getString("algorithm") else throw LcpException.Parsing.Encryption
+        encryptedValue = if (json.has("encrypted_value")) json.getString("encrypted_value") else throw LcpException.Parsing.Encryption
     }
 }

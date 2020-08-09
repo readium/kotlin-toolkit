@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LCPError
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.sniffFormat
 import timber.log.Timber
@@ -35,7 +36,7 @@ internal class NetworkService {
         }
     }
 
-    fun fetch(url: String, method: Method = Method.GET, parameters: URLParameters = emptyMap(), completion: (status: Int, data: ByteArray?) -> Unit) = runBlocking {
+    suspend fun fetch(url: String, method: Method = Method.GET, parameters: URLParameters = emptyMap()): Pair<Int, ByteArray?> =
         try {
             @Suppress("NAME_SHADOWING")
             val url = URL(Uri.parse(url).buildUpon().appendQueryParameters(parameters).build().toString())
@@ -45,15 +46,19 @@ internal class NetworkService {
                 connection.requestMethod = method.rawValue
                 val status = connection.responseCode
                 if (status != HttpURLConnection.HTTP_OK) {
-                    completion(status, null)
+                    Pair(status, null)
                 } else {
-                    completion(status, connection.inputStream.readBytes())
+                    Pair(status, connection.inputStream.readBytes())
                 }
             }
         } catch (e: Exception) {
             Timber.e(e)
-            completion(HttpURLConnection.HTTP_INTERNAL_ERROR, null)
+            Pair(HttpURLConnection.HTTP_INTERNAL_ERROR, null)
         }
+
+    fun fetch(url: String, method: Method = Method.GET, parameters: URLParameters = emptyMap(), completion: (status: Int, data: ByteArray?) -> Unit) = runBlocking {
+        val (status, data) = fetch(url, method, parameters)
+        completion(status, data)
     }
 
     private fun Uri.Builder.appendQueryParameters(parameters: URLParameters): Uri.Builder =
@@ -69,7 +74,7 @@ internal class NetworkService {
         try {
             val connection = url.openConnection() as HttpURLConnection
             if (connection.responseCode != HttpURLConnection.HTTP_OK) {
-                throw LCPError.network(Exception("Download failed with status ${connection.responseCode}"))
+                throw LcpException.Network(Exception("Download failed with status ${connection.responseCode}"))
             }
 
             BufferedInputStream(connection.inputStream).use { input ->
@@ -86,7 +91,7 @@ internal class NetworkService {
 
         } catch (e: Exception) {
             Timber.e(e)
-            throw LCPError.network(e)
+            throw LcpException.Network(e)
         }
     }
 

@@ -17,6 +17,7 @@ import org.joda.time.DateTime
 import org.joda.time.Days
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LCPError
+import org.readium.r2.lcp.LcpException
 import timber.log.Timber
 import java.util.*
 
@@ -61,7 +62,7 @@ internal class CRLService(val network: NetworkService, val context: Context) {
 
             if (DEBUG) Timber.d("Status $status")
             if (status != 200) {
-                throw LCPError.crlFetching
+                throw LcpException.CrlFetching
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 completion("-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(data)}-----END X509 CRL-----")

@@ -12,7 +12,7 @@ package org.readium.r2.lcp.license.model.components
 
 import org.json.JSONArray
 import org.json.JSONObject
-import org.readium.r2.lcp.ParsingError
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.service.URLParameters
 import java.net.URL
 
@@ -28,7 +28,7 @@ data class Link(val json: JSONObject) {
 
     init {
 
-        href = if (json.has("href")) json.getString("href") else throw ParsingError.link
+        href = if (json.has("href")) json.getString("href") else throw LcpException.Parsing.Link
 
         if (json.has("rel")) {
             val rel = json["rel"]
@@ -42,7 +42,7 @@ data class Link(val json: JSONObject) {
         }
 
         if (rel.isEmpty()) {
-            throw ParsingError.link
+            throw LcpException.Parsing.Link
         }
 
         title = if (json.has("title")) json.getString("title") else null
