@@ -24,7 +24,7 @@ import org.readium.r2.lcp.license.container.BytesLicenseContainer
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.shared.util.File
+import java.io.File
 import org.readium.r2.shared.util.Try
 import timber.log.Timber
 import kotlin.coroutines.resume
@@ -40,7 +40,7 @@ internal class LicensesService(
     private val context: Context
 ) : LcpService, LCPService, CoroutineScope by MainScope() {
 
-    override suspend fun importPublication(lcpl: ByteArray, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?): Try<LcpService.ImportedPublication, LcpException>? =
+    override suspend fun importPublication(lcpl: ByteArray, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): Try<LcpService.ImportedPublication, LcpException>? =
         try {
             val container = BytesLicenseContainer(lcpl)
             retrieveLicense(container, authentication, allowUserInteraction, sender)
@@ -59,7 +59,7 @@ internal class LicensesService(
         }
     }
 
-    override suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?): Try<LcpLicense, LcpException>? =
+    override suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): Try<LcpLicense, LcpException>? =
         try {
             val container = createLicenseContainer(file.path)
             // WARNING: Using the Default dispatcher in the state machine code is critical. If we were using the Main Dispatcher,
@@ -86,14 +86,14 @@ internal class LicensesService(
         }
     }
 
-    private suspend fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?): License? =
+    private suspend fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): License? =
         suspendCoroutine { cont ->
             retrieveLicense(container, authentication, allowUserInteraction, sender) { license ->
                 cont.resume(license)
             }
         }
 
-    private fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?, completion: (License?) -> Unit) {
+    private fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?, completion: (License?) -> Unit) {
 
         var initialData = container.read()
         if (DEBUG) Timber.d("license ${LicenseDocument(data = initialData).json}")

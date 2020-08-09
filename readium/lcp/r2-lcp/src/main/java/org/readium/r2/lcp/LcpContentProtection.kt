@@ -42,7 +42,7 @@ class LcpContentProtection(
             return null
 
         val license = lcpService
-            .retrieveLicense(file,  lcpAuthenticating, allowUserInteraction, sender)
+            .retrieveLicense(file.file,  lcpAuthenticating, allowUserInteraction, sender)
     
         val error = when {
             license == null -> null

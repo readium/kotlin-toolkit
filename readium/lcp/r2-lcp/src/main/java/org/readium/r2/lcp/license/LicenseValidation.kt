@@ -82,7 +82,7 @@ internal sealed class Event {
 }
 
 internal class LicenseValidation(
-    var authentication: LcpAuthenticating,
+    var authentication: LcpAuthenticating?,
     val allowUserInteraction: Boolean,
     val sender: Any?,
     val crl: CRLService,

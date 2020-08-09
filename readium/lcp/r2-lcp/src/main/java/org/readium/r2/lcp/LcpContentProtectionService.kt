@@ -13,7 +13,7 @@ import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
 
-internal class LcpContentProtectionService(license: LcpLicense?, override val error: Exception?) : ContentProtectionService {
+class LcpContentProtectionService(val license: LcpLicense?, override val error: Exception?) : ContentProtectionService {
 
     override val isRestricted: Boolean = license == null
 

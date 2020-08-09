@@ -16,7 +16,7 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 
 internal class PassphrasesService(private val repository: PassphrasesRepository) {
 
-    suspend fun request(license: LicenseDocument, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?): String? {
+    suspend fun request(license: LicenseDocument, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): String? {
         val candidates = this@PassphrasesService.possiblePassphrasesFromRepository(license)
         val passphrase = try {
             Lcp().findOneValidPassphrase(license.json.toString(), candidates.toTypedArray())
@@ -25,7 +25,8 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         }
         return when {
             passphrase != null -> passphrase
-            else -> this@PassphrasesService.authenticate(license, LcpAuthenticating.AuthenticationReason.PassphraseNotFound, authentication, allowUserInteraction, sender)
+            authentication != null -> this@PassphrasesService.authenticate(license, LcpAuthenticating.AuthenticationReason.PassphraseNotFound, authentication, allowUserInteraction, sender)
+            else -> null
         }
     }
 

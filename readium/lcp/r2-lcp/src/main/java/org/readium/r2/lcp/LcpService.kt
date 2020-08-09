@@ -15,8 +15,8 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.persistence.Database
 import org.readium.r2.lcp.service.*
-import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.Try
+import java.io.File
 import java.io.Serializable
 import java.net.URL
 
@@ -48,13 +48,13 @@ interface LcpService {
     /**
      *  Imports a protected publication from a standalone LCPL file.
      */
-    suspend fun importPublication(lcpl: ByteArray, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any? = null): Try<ImportedPublication, LcpException>?
+    suspend fun importPublication(lcpl: ByteArray, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any? = null): Try<ImportedPublication, LcpException>?
 
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
      * its content.
      */
-    suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any? = null): Try<LcpLicense, LcpException>?
+    suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any? = null): Try<LcpLicense, LcpException>?
 
     /**
      * Informations about a downloaded publication.
