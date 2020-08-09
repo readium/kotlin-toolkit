@@ -32,6 +32,8 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 internal class License(
     private var documents: ValidatedDocuments,
@@ -135,24 +137,31 @@ internal class License(
     override val maxRenewDate: DateTime?
         get() = status?.potentialRights?.end
 
-    override suspend fun renewLoan(end: DateTime?, present: URLPresenter): Try<Unit, LcpException> =
+    override suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException> =
         try {
-            _renewLoan(end, present)
+            _renewLoan(end, urlPresenter)
             Try.success(Unit)
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
         }
 
-    override fun renewLoan(end: DateTime?, present: URLPresenter, completion: (LCPError?) -> Unit) = runBlocking {
-        try {
-            _renewLoan(end, present)
+    override fun renewLoan(end: DateTime?, present: URLPresenter, completion: (LCPError?) -> Unit) {
+
+        suspend fun presentUrl(url: URL): Unit = suspendCoroutine { cont ->
+            present(url) {
+                cont.resume(Unit)
+            }
+        }
+
+        return try {
+            runBlocking { _renewLoan(end, ::presentUrl) }
             completion(null)
         } catch (e: Exception) {
             completion(LCPError.wrap(e))
         }
     }
 
-    private suspend fun _renewLoan(end: DateTime?, present: URLPresenter) {
+    private suspend fun _renewLoan(end: DateTime?,  urlPresenter: suspend (URL) -> Unit) {
 
         suspend fun callPUT(url: URL, parameters: URLParameters): ByteArray {
             val (status, data) = this.network.fetch(url.toString(), NetworkService.Method.PUT, parameters)
@@ -165,20 +174,18 @@ internal class License(
         }
 
         // TODO needs to be tested
-        fun callHTML(url: URL, parameters: URLParameters, callback: (ByteArray) -> Unit) {
+        suspend fun callHTML(url: URL, parameters: URLParameters): ByteArray {
             val statusURL = try {
                 this.license.url(LicenseDocument.Rel.status)
             } catch (e: Throwable) {
                 null
             } ?: throw LcpException.LicenseInteractionNotAvailable
-            present(url) {
-                this.network.fetch(statusURL.toString(), parameters = parameters) { status, data ->
-                    if (status != HttpURLConnection.HTTP_OK) {
-                        throw LcpException.Network(null)
-                    }
-                    callback(data!!)
-                }
-            }
+            urlPresenter(url)
+            val (status, data) = this.network.fetch(statusURL.toString(), parameters = parameters)
+            return if (status != HttpURLConnection.HTTP_OK)
+                throw LcpException.Network(null)
+            else
+                data!!
         }
 
         val parameters = this.device.asQueryParameters.toMutableMap()
@@ -191,13 +198,12 @@ internal class License(
         if (status == null || link == null || url == null) {
             throw LcpException.LicenseInteractionNotAvailable
         }
-        if (link.type == "text/html") {
-            callHTML(url, parameters) {
-                validateStatusDocument(it)
-            }
+        val data = if (link.type == "text/html") {
+            callHTML(url, parameters)
         } else {
-            validateStatusDocument(callPUT(url, parameters))
+            callPUT(url, parameters)
         }
+        validateStatusDocument(data)
     }
 
     override val canReturnPublication: Boolean

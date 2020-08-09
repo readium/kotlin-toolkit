@@ -59,6 +59,9 @@ data class LCPImportedPublication(
 )
 
 
+typealias URLPresenter = (URL, dismissed: () -> Unit) -> Unit
+
+
 /**
  * Opened license, used to decipher a protected publication and manage its license.
  */

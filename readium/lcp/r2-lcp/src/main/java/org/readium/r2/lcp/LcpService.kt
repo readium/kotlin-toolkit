@@ -70,9 +70,6 @@ interface LcpService {
     )
 }
 
-typealias URLPresenter = (URL, dismissed: () -> Unit) -> Unit
-
-
 /**
  * Opened license, used to decipher a protected publication and manage its license.
  */
@@ -124,11 +121,9 @@ interface LcpLicense : Serializable {
     /**
      * Renews the loan up to a certain date (if possible).
      *
-     * @param present: Used when the renew requires to present an HTML page to the user. The caller
-     *        is responsible for presenting the URL (for example with SFSafariViewController) and
-     *        then calling the `dismissed` callback once the website is closed by the user.
+     * @param urlPresenter: Used when the renew requires to present an HTML page to the user.
      */
-    suspend fun renewLoan(end: DateTime?, present: URLPresenter): Try<Unit, LcpException>
+    suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException>
 
     /**
      * Can the user return the loaned publication?
