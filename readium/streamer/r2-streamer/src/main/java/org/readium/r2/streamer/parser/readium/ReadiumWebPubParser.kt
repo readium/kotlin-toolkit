@@ -42,7 +42,6 @@ class ReadiumWebPubParser(private val openPdf: OpenPdfDocument? = null) : Public
     override suspend fun parse(
         file: File,
         fetcher: Fetcher,
-        fallbackTitle: String,
         warnings: WarningLogger?
     ): Publication.Builder? {
 
@@ -108,7 +107,7 @@ class ReadiumWebPubParser(private val openPdf: OpenPdfDocument? = null) : Public
         }
 
         val builder = try {
-            parse(file, baseFetcher, fallbackTitle)
+            parse(file, baseFetcher)
         } catch (e: Exception) {
             return@runBlocking null
         } ?: return@runBlocking null

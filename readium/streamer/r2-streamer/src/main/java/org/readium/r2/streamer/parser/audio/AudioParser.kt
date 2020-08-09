@@ -24,6 +24,7 @@ import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
+import org.readium.r2.streamer.extensions.toTitle
 import java.lang.Exception
 
 /**
@@ -34,12 +35,7 @@ import java.lang.Exception
  */
 class AudioParser :  PublicationParser {
 
-    override suspend fun parse(
-        file: File,
-        fetcher: Fetcher,
-        fallbackTitle: String,
-        warnings: WarningLogger?
-    ): Publication.Builder? {
+    override suspend fun parse(file: File, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? {
 
         if (!accepts(file, fetcher))
             return null
@@ -53,7 +49,7 @@ class AudioParser :  PublicationParser {
             throw Exception("No audio file found in the publication.")
 
         val title = fetcher.guessTitle()
-            ?: fallbackTitle
+            ?: file.toTitle()
 
         val manifest = Manifest(
             metadata = Metadata(

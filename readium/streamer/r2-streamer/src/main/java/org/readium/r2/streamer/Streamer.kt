@@ -95,7 +95,6 @@ class Streamer constructor(
      */
     suspend fun open(
         file: File,
-        fallbackTitle: String = file.name,
         allowUserInteraction: Boolean,
         credentials: String? = null,
         sender: Any? = null,
@@ -141,7 +140,6 @@ class Streamer constructor(
                     it.parse(
                         file,
                         fetcher,
-                        fallbackTitle,
                         warnings
                     )
                 } catch (e: Exception) {

@@ -24,6 +24,7 @@ import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
+import org.readium.r2.streamer.extensions.toTitle
 import java.lang.Exception
 
 /**
@@ -36,7 +37,6 @@ class ImageParser : PublicationParser {
     override suspend fun parse(
         file: File,
         fetcher: Fetcher,
-        fallbackTitle: String,
         warnings: WarningLogger?
     ): Publication.Builder? {
 
@@ -52,7 +52,7 @@ class ImageParser : PublicationParser {
             throw Exception("No bitmap found in the publication.")
 
         val title = fetcher.guessTitle()
-            ?: fallbackTitle
+            ?: file.toTitle()
 
         // First valid resource is the cover.
         readingOrder[0] = readingOrder[0].copy(rels = setOf("cover"))

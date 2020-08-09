@@ -55,7 +55,12 @@ class CBZParser : PublicationParser {
         val fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
             ?: throw ContainerError.missingFile(fileAtPath)
 
-        val publication = imageParser.parse(file, fetcher, fallbackTitle)
+        val publication = imageParser.parse(file, fetcher)
+            ?.apply {
+                val title = LocalizedString(fallbackTitle)
+                val metadata =  manifest.metadata.copy(localizedTitle = title)
+                manifest = manifest.copy(metadata = metadata)
+            }
             ?.build()
             ?.apply { type = Publication.TYPE.CBZ }
             ?: return null

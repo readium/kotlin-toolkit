@@ -31,6 +31,7 @@ import org.readium.r2.streamer.extensions.readAsXmlOrNull
 import org.readium.r2.streamer.fetcher.LcpDecryptor
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.PublicationParser
+import org.readium.r2.streamer.extensions.toTitle
 
 object EPUBConstant {
 
@@ -82,14 +83,12 @@ object EPUBConstant {
 /**
  * Parses a Publication from an EPUB publication.
  */
-class EpubParser :  PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+class EpubParser : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 
-    override suspend fun parse(
-        file: File,
-        fetcher: Fetcher,
-        fallbackTitle: String,
-        warnings: WarningLogger?
-    ): Publication.Builder? {
+    override suspend fun parse(file: File, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
+        _parse(file, fetcher, file.toTitle())
+
+    suspend fun _parse(file: File, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
 
         if (file.format() != Format.EPUB)
             return null
@@ -138,7 +137,7 @@ class EpubParser :  PublicationParser, org.readium.r2.streamer.parser.Publicatio
         }
 
         val builder = try {
-            parse(file, fetcher, fallbackTitle)
+            _parse(file, fetcher, fallbackTitle)
         } catch (e: Exception) {
             return@runBlocking null
         } ?: return@runBlocking null

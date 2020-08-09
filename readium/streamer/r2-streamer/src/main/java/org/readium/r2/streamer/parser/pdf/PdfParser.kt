@@ -26,6 +26,7 @@ import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.PublicationParser
+import org.readium.r2.streamer.extensions.toTitle
 import java.lang.Exception
 
 /**
@@ -37,13 +38,10 @@ class PdfParser(
     private val openPdf: OpenPdfDocument = { PdfDocument.open(it, context.applicationContext) }
 ) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 
-    override suspend fun parse(
-        file: File,
-        fetcher: Fetcher,
-        fallbackTitle: String,
-        warnings: WarningLogger?
-    ): Publication.Builder? {
+    override suspend fun parse(file: File, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
+        _parse(file, fetcher, file.toTitle())
 
+    suspend fun _parse(file: File, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
         if (file.format() != Format.PDF)
             return null
 
@@ -77,7 +75,7 @@ class PdfParser(
         val file = File(fileAtPath)
         val baseFetcher = FileFetcher(href = "/${file.name}", file = file.file)
         val builder = try {
-            parse(file, baseFetcher, fallbackTitle)
+            _parse(file, baseFetcher, fallbackTitle)
         } catch (e: Exception) {
             return@runBlocking null
         } ?: return@runBlocking null
