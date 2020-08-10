@@ -46,7 +46,7 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
                         null
                     } else {
                         Link(
-                            href = File(href, it.path.removePrefix(file.canonicalPath)).canonicalPath,
+                            href = File(href, it.canonicalPath.removePrefix(file.canonicalPath)).canonicalPath,
                             type = Format.of(fileExtension = it.extension)?.mediaType.toString()
                         )
                     }
