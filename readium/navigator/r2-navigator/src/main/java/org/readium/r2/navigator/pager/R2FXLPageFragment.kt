@@ -20,7 +20,6 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
-import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
@@ -37,10 +36,6 @@ class R2FXLPageFragment : Fragment() {
 
     private val secondResourceUrl: String?
         get() = requireArguments().getString("secondUrl")
-
-    private val bookTitle: String?
-        get() = requireArguments().getString("title")
-
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -140,17 +135,14 @@ class R2FXLPageFragment : Fragment() {
 
     companion object {
 
-        fun newInstance(title: String, url: String, url2: String? = null): R2FXLPageFragment {
+        fun newInstance(url: String, url2: String? = null): R2FXLPageFragment =
+            R2FXLPageFragment().apply {
+                arguments = Bundle().apply {
+                    putString("firstUrl", url)
+                    putString("secondUrl", url2)
+                }
+            }
 
-            val args = Bundle()
-            args.putString("firstUrl", url)
-            args.putString("secondUrl", url2)
-            args.putString("title", title)
-
-            val fragment = R2FXLPageFragment()
-            fragment.arguments = args
-            return fragment
-        }
     }
 
 }
