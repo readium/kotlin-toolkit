@@ -125,7 +125,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     @android.webkit.JavascriptInterface
     fun centerTapped() {
-        listener.onTap(PointF((this@R2BasicWebView.width / 2).toFloat(), (this@R2BasicWebView.height / 2).toFloat()))
+        uiScope.launch {
+            listener.onTap(PointF((this@R2BasicWebView.width / 2).toFloat(), (this@R2BasicWebView.height / 2).toFloat()))
+        }
     }
 
     @android.webkit.JavascriptInterface
