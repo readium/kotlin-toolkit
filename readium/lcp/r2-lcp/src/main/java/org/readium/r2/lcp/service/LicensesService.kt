@@ -10,12 +10,7 @@
 package org.readium.r2.lcp.service
 
 import android.content.Context
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.License
@@ -87,9 +82,11 @@ internal class LicensesService(
     }
 
     private suspend fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): License? =
-        suspendCoroutine { cont ->
+        suspendCancellableCoroutine { cont ->
             retrieveLicense(container, authentication, allowUserInteraction, sender) { license ->
-                cont.resume(license)
+                if (cont.isActive) {
+                    cont.resume(license)
+                }
             }
         }
 

@@ -1,5 +1,6 @@
 package org.readium.r2.lcp
 
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -32,9 +33,11 @@ internal fun LCPAuthenticating?.toLcpAuthenticating(): LcpAuthenticating {
                 reason: LcpAuthenticating.AuthenticationReason,
                 allowUserInteraction: Boolean,
                 sender: Any?
-            ): String? = suspendCoroutine { cont ->
+            ): String? = suspendCancellableCoroutine { cont ->
                 this@toLcpAuthenticating.requestPassphrase(license.toLCPAuthenticatedLicense(), reason.toLCPAuthenticationReason()) {
-                    cont.resume(it)
+                    if (cont.isActive) {
+                        cont.resume(it)
+                    }
                 }
             }
         }
