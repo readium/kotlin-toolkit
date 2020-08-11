@@ -53,8 +53,8 @@ class R2MediaPlayer(private var items: List<Link>, private var callback: MediaPl
     override fun onPrepared(mp: MediaPlayer?) {
         toggleProgress(false)
         this.start()
-        callback.onPrepared()
         isPrepared = true
+        callback.onPrepared()
     }
 
     fun startPlayer() {
