@@ -98,15 +98,20 @@ abstract class AbstractServer(private var port: Int, private val context: Contex
             catch (e: Exception) { baseUrl.path }
 
         if (containsMediaOverlay) {
-            addRoute(basePath + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)
+            setRoute(basePath + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)
         }
-        addRoute(basePath + JSON_MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
-        addRoute(basePath + MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
-        addRoute(basePath + MANIFEST_ITEM_HANDLE, PublicationResourceHandler::class.java, fetcher)
-        addRoute(ASSETS_HANDLE, AssetHandler::class.java, assets)
-        addRoute(JS_HANDLE, ResourceHandler::class.java, resources)
-        addRoute(CSS_HANDLE, ResourceHandler::class.java, resources)
-        addRoute(FONT_HANDLE, FileHandler::class.java, fonts)
+        setRoute(basePath + JSON_MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
+        setRoute(basePath + MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
+        setRoute(basePath + MANIFEST_ITEM_HANDLE, PublicationResourceHandler::class.java, fetcher)
+        setRoute(ASSETS_HANDLE, AssetHandler::class.java, assets)
+        setRoute(JS_HANDLE, ResourceHandler::class.java, resources)
+        setRoute(CSS_HANDLE, ResourceHandler::class.java, resources)
+        setRoute(FONT_HANDLE, FileHandler::class.java, fonts)
+    }
+
+    private fun setRoute(url: String, handler: Class<*>, vararg initParameter: Any) {
+        try { removeRoute(url) } catch (e: Exception) {}
+        addRoute(url, handler, *initParameter)
     }
 
     // FIXME: To review once the media-overlays will be supported in the Publication model

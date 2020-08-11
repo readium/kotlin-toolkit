@@ -65,8 +65,17 @@ internal class PublicationFactory(
 
         // Compute toc and otherCollections
         val toc = navigationData["toc"].orEmpty()
-        val subcollections =
-            navigationData.minus("toc").mapValues { listOf(PublicationCollection(links = it.value)) }
+        val subcollections = navigationData
+            .minus("toc")
+            .mapKeys {
+                when (it.key) {
+                    // RWPM uses camel case for the roles
+                    // https://github.com/readium/webpub-manifest/issues/53
+                    "page-list" -> "pageList"
+                    else -> it.key
+                }
+            }
+            .mapValues { listOf(PublicationCollection(links = it.value)) }
 
         // Build Publication object
         return Manifest(
