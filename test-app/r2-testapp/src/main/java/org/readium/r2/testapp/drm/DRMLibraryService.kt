@@ -10,7 +10,6 @@
 
 package org.readium.r2.testapp.drm
 
-import org.readium.r2.lcp.LCPAuthenticatedLicense
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.util.Try
 
