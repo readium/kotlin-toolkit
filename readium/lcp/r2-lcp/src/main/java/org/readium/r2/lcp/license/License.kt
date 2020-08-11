@@ -22,6 +22,7 @@ import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.URLParameters
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.format.Format
 import timber.log.Timber
 import java.io.File
@@ -119,31 +120,41 @@ internal class License(
 
     override fun renewLoan(end: DateTime?, present: URLPresenter, completion: (LCPError?) -> Unit) {
 
-        fun callPUT(url: URL, parameters: URLParameters, callback: (ByteArray) -> Unit) {
+        fun callPUT(url: URL, parameters: URLParameters, callback: (Result<ByteArray>) -> Unit) {
             this.network.fetch(url.toString(), NetworkService.Method.PUT, parameters) { status, data ->
                 when (status) {
-                    200 -> callback(data!!)
-                    400 -> throw RenewError.renewFailed
-                    403 -> throw RenewError.invalidRenewalPeriod(maxRenewDate = this.maxRenewDate)
-                    else -> throw RenewError.unexpectedServerError
+                    200 -> callback(Result.success(data!!))
+                    400 -> callback(Result.failure(RenewError.renewFailed))
+                    403 -> callback(Result.failure(RenewError.invalidRenewalPeriod(maxRenewDate = this.maxRenewDate)))
+                    else -> callback(Result.failure(RenewError.unexpectedServerError))
                 }
             }
         }
 
         // TODO needs to be tested
-        fun callHTML(url: URL, parameters: URLParameters, callback: (ByteArray) -> Unit) {
-            val statusURL = try {
-                this.license.url(LicenseDocument.Rel.status)
-            } catch (e: Throwable) {
-                null
-            } ?: throw LCPError.licenseInteractionNotAvailable
+        fun callHTML(url: URL, parameters: URLParameters, callback: (Result<ByteArray>) -> Unit) {
+            val statusURL = tryOrNull { this.license.url(LicenseDocument.Rel.status) }
+            if (statusURL == null) {
+                callback(Result.failure(LCPError.licenseInteractionNotAvailable))
+                return
+            }
+
             present(url) {
                 this.network.fetch(statusURL.toString(), parameters = parameters) { status, data ->
                     if (status != 200) {
-                        throw LCPError.network(null)
+                        callback(Result.failure(LCPError.network(null)))
+                    } else {
+                        callback(Result.success(data!!))
                     }
-                    callback(data!!)
                 }
+            }
+        }
+
+        fun validateResponse(result: Result<ByteArray>) {
+            try {
+                validateStatusDocument(result.getOrThrow(), completion)
+            } catch (e: Exception) {
+                completion(LCPError.wrap(e))
             }
         }
 
@@ -157,20 +168,12 @@ internal class License(
         if (status == null || link == null || url == null) {
             throw LCPError.licenseInteractionNotAvailable
         }
-        try {
-            if (link.type == "text/html") {
-                callHTML(url, parameters) {
-                    validateStatusDocument(it)
-                }
-            } else {
-                callPUT(url, parameters) {
-                    validateStatusDocument(it)
-                }
-            }
-        } catch (e: LCPError) {
-            completion(LCPError.wrap(e))
+
+        if (link.type == "text/html") {
+            callHTML(url, parameters, ::validateResponse)
+        } else {
+            callPUT(url, parameters, ::validateResponse)
         }
-        completion(null)
     }
 
     override val canReturnPublication: Boolean
@@ -178,25 +181,24 @@ internal class License(
 
     override fun returnPublication(completion: (LCPError?) -> Unit) {
         val status = this.documents.status
-        val url = try {
-            status?.url(StatusDocument.Rel.`return`, device.asQueryParameters)
-        } catch (e: Throwable) {
-            null
-        }
+        val url = tryOrNull { status?.url(StatusDocument.Rel.`return`, device.asQueryParameters) }
         if (status == null || url == null) {
             completion(LCPError.licenseInteractionNotAvailable)
             return
         }
+
         network.fetch(url.toString(), method = NetworkService.Method.PUT) { statusCode, data ->
-            when (statusCode) {
-                200 -> validateStatusDocument(data!!)
-                400 -> throw ReturnError.returnFailed
-                403 -> throw ReturnError.alreadyReturnedOrExpired
-                else -> throw ReturnError.unexpectedServerError
+            try {
+                when (statusCode) {
+                    200 -> validateStatusDocument(data!!, completion)
+                    400 -> throw ReturnError.returnFailed
+                    403 -> throw ReturnError.alreadyReturnedOrExpired
+                    else -> throw ReturnError.unexpectedServerError
+                }
+            } catch (e: Exception) {
+                completion(LCPError.wrap(e))
             }
-            completion(null)
         }
-        completion(null)
     }
 
     init {
@@ -240,8 +242,8 @@ internal class License(
         )
     }
 
-    private fun validateStatusDocument(data: ByteArray): Unit =
-            validation.validate(LicenseValidation.Document.status(data)) { validatedDocuments: ValidatedDocuments?, error: Exception? -> }
+    private fun validateStatusDocument(data: ByteArray, completion: (LCPError?) -> Unit): Unit =
+        validation.validate(LicenseValidation.Document.status(data)) { _, error -> completion(error?.let { LCPError.wrap(it) }) }
 
 }
 
