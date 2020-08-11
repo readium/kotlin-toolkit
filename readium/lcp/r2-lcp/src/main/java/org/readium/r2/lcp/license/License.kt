@@ -19,6 +19,7 @@ import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
+import org.readium.r2.lcp.public.*
 import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService

@@ -19,6 +19,7 @@ import org.readium.r2.lcp.license.container.BytesLicenseContainer
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.lcp.public.*
 import org.readium.r2.shared.format.Format
 import java.io.File
 import org.readium.r2.shared.util.Try

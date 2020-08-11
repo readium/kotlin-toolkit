@@ -16,8 +16,8 @@ import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.joda.time.Days
 import org.readium.r2.lcp.BuildConfig.DEBUG
-import org.readium.r2.lcp.LCPError
 import org.readium.r2.lcp.LcpException
+import org.readium.r2.lcp.public.*
 import timber.log.Timber
 import java.util.*
 

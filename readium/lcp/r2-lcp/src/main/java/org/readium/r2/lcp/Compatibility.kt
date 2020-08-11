@@ -1,8 +1,8 @@
 package org.readium.r2.lcp
 
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.readium.r2.lcp.public.*
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 
 internal fun LCPAuthenticating?.toLcpAuthenticating(): LcpAuthenticating {

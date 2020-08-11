@@ -7,10 +7,11 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.lcp
+package org.readium.r2.lcp.public
 
 import android.content.Context
 import org.joda.time.DateTime
+import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.persistence.Database
@@ -129,7 +130,7 @@ interface LCPLicense : DRMLicense, Serializable {
 /**
  * LCP service factory.
  */
-fun R2MakeLCPService(context: Context): LCPService {
+fun R2MakeLCPService(context: Context): LcpService {
     val db = Database(context)
     val network = NetworkService()
     val device = DeviceService(repository = db.licenses, network = network, context = context)

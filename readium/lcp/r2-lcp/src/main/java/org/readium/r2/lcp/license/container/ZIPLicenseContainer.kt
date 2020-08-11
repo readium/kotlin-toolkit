@@ -9,8 +9,6 @@
 
 package org.readium.r2.lcp.license.container
 
-import org.readium.r2.lcp.ContainerError
-import org.readium.r2.lcp.LCPError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.zeroturnaround.zip.ZipUtil
