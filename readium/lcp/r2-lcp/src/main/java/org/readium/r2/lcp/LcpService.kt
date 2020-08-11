@@ -48,7 +48,7 @@ interface LcpService {
     /**
      *  Imports a protected publication from a standalone LCPL file.
      */
-    suspend fun importPublication(lcpl: ByteArray, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any? = null): Try<ImportedPublication, LcpException>?
+    suspend fun importPublication(lcpl: ByteArray): Try<ImportedPublication, LcpException>
 
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher

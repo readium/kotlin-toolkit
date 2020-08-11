@@ -13,7 +13,6 @@ import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.readium.r2.lcp.LCPError
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.sniffFormat

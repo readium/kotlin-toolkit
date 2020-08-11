@@ -10,7 +10,6 @@
 
 package org.readium.r2.lcp.license
 
-import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -18,20 +17,16 @@ import org.joda.time.DateTime
 import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
-import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.URLParameters
-import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.util.Try
 import timber.log.Timber
-import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -252,40 +247,6 @@ internal class License(
                 this.documents = documents
             }
         }
-    }
-
-    internal suspend fun fetchPublication(context: Context): LcpService.ImportedPublication {
-        val license = this.documents.license
-        val link = license.link(LicenseDocument.Rel.publication)
-        val url = link?.url
-            ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
-
-        val properties =  Properties()
-        withContext(Dispatchers.IO) {
-            context.assets.open("configs/config.properties").let { properties.load(it) }
-        }
-        val useExternalFileDir = properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
-
-        val rootDir: String =  if (useExternalFileDir) {
-            context.getExternalFilesDir(null)?.path + "/"
-        } else {
-            context.filesDir.path + "/"
-        }
-
-        val fileName = UUID.randomUUID().toString()
-        val destination = File(rootDir, fileName)
-        if (DEBUG) Timber.i("LCP destination $destination")
-
-        val format = network.download(url, destination) ?: Format.of(mediaType = link.type) ?: Format.EPUB
-
-        // Saves the License Document into the downloaded publication
-        val container = createLicenseContainer(destination.path, format)
-        container.write(license)
-
-        return LcpService.ImportedPublication(
-            localURL = destination.path,
-            suggestedFilename = "${license.id}.${format.fileExtension}"
-        )
     }
 
     private fun validateStatusDocument(data: ByteArray): Unit =
