@@ -39,6 +39,7 @@ import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.readium.r2.shared.Injectable
+import org.readium.r2.shared.extensions.extension
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.format.Format
@@ -407,7 +408,8 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 return
             }
 
-        val fileName = UUID.randomUUID().toString()
+        val format = publicationFile.format()
+        val fileName = "${UUID.randomUUID()}.${format?.fileExtension}"
         val libraryFile = R2File(
             R2DIRECTORY + fileName,
             format = publicationFile.format(),
@@ -503,7 +505,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
 
     private suspend fun URL.copyToTempFile(): R2File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
-        val file = File(R2DIRECTORY + filename)
+        val file = File("$R2DIRECTORY$filename.$extension")
         download(file.path).let {
             if (it)
                 R2File(file.path, sourceUrl = this.toString())
@@ -515,7 +517,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
     private suspend fun Uri.copyToTempFile(): R2File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
         val format = Format.ofUri(this, contentResolver)
-        val file = R2File(R2DIRECTORY + filename, format = format)
+        val file = R2File("$R2DIRECTORY$filename.${format?.fileExtension}", format = format)
         ContentResolverUtil.getContentInputStream(this@LibraryActivity, this, file.path)
         return file
     }
