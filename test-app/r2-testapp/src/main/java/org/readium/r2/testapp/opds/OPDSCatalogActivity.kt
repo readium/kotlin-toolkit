@@ -239,7 +239,7 @@ class OPDSCatalogActivity : AppCompatActivity(), CoroutineScope {
         val inflater = this.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val layout = inflater.inflate(R.layout.filter_row, null) as LinearLayout
         layout.text.text = link!!.title
-        layout.count.text = link.properties.numberOfItems.toString()
+        layout.count.text = link.properties.numberOfItems?.toString()
         layout.setOnClickListener {
             val model = OPDSModel(link.title!!, link.href.toString(), opdsModel?.type!!)
             facetPopup?.dismiss()
