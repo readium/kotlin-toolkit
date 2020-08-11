@@ -80,6 +80,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         publication = intent.getPublication(this)
+        publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publicationIdentifier = publication.metadata.identifier!!
 
