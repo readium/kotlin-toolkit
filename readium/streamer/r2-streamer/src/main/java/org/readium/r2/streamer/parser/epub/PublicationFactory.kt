@@ -10,9 +10,12 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.normalize
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationCollection
+import org.readium.r2.shared.publication.encryption.Encryption
 
 /**
  * Creates a [Publication] model from an EPUB package's document.
@@ -65,8 +68,17 @@ internal class PublicationFactory(
 
         // Compute toc and otherCollections
         val toc = navigationData["toc"].orEmpty()
-        val otherCollections =
-            navigationData.minus("toc").map { PublicationCollection(links = it.value, role = it.key) }
+        val otherCollections = navigationData
+            .minus("toc")
+            .mapKeys {
+                when (it.key) {
+                    // RWPM uses camel case for the roles
+                    // https://github.com/readium/webpub-manifest/issues/53
+                    "page-list" -> "pageList"
+                    else -> it.key
+                }
+            }
+            .map { PublicationCollection(links = it.value, role = it.key) }
 
         // Build Publication object
         return Publication(

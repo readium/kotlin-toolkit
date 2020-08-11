@@ -4,12 +4,9 @@ All notable changes to this project will be documented in this file.
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-[unreleased]: https://github.com/readium/r2-streamer-kotlin/compare/master...HEAD
-[1.2.0]: https://github.com/readium/r2-streamer-kotlin/compare/1.1.5...1.2.0
-
 ## [Unreleased]
 
-## [1.2.0]
+## [2.0.0-alpha.1]
 
 ### Added
 
@@ -40,3 +37,7 @@ server.loadCustomResource(assets.open("scripts/highlight.js"), "highlight.js", I
 * [`Server` was broken](https://github.com/readium/r2-testapp-kotlin/pull/306) when provided with publication filenames containing invalid characters.
 * [EPUB publishers' default styles are not overriden by Readium CSS anymore](https://github.com/readium/r2-navigator-kotlin/issues/132).
 * The `AndroidManifest.xml` is not forcing anymore `allowBackup` and `supportsRtl`, to let reading apps manage these features themselves (contributed by [@twaddington](https://github.com/readium/r2-streamer-kotlin/pull/93)).
+
+
+[unreleased]: https://github.com/readium/r2-streamer-kotlin/compare/master...HEAD
+[2.0.0-alpha.1]: https://github.com/readium/r2-streamer-kotlin/compare/1.1.5...2.0.0-alpha.1
