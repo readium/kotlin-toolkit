@@ -27,14 +27,15 @@ import kotlinx.android.synthetic.main.item_recycle_outline.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.extensions.getPublication
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.landmarks
 import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.*
 import org.readium.r2.testapp.epub.Position
-import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 
@@ -485,19 +486,14 @@ class R2OutlineActivity : AppCompatActivity() {
             if(title.isNullOrEmpty()){
                 title = "*Title Missing*"
             }
-            val formattedProgression = "${((bookmark.location.progression!! * 100).roundToInt())}% through resource"
-            val formattedDate = DateTime(bookmark.creationDate).toString(DateTimeFormat.shortDateTime())
-
             viewHolder.bookmarkChapter!!.text = title
-            if (bookmark.location.progression!! > 1) {
 
-                viewHolder.bookmarkProgression!!.text   = String.format("%d:%d",
-                        TimeUnit.MILLISECONDS.toMinutes(bookmark.location.progression!!.toLong()),
-                        TimeUnit.MILLISECONDS.toSeconds(bookmark.location.progression!!.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(bookmark.location.progression!!.toLong())))
-
-            } else {
+            bookmark.location.progression?.let { progression ->
+                val formattedProgression = "${(progression * 100).roundToInt()}% through resource"
                 viewHolder.bookmarkProgression!!.text = formattedProgression
             }
+
+            val formattedDate = DateTime(bookmark.creationDate).toString(DateTimeFormat.shortDateTime())
             viewHolder.bookmarkTimestamp!!.text = formattedDate
 
             viewHolder.bookmarkOverflow?.setOnClickListener {

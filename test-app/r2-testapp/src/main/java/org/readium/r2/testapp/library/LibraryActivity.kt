@@ -336,64 +336,57 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
         progress.show()
 
         val publication = parseData.publication ?: return
+        val selfLink = publication.linkWithRel("self")
 
-        if (publication.type == Publication.TYPE.EPUB) {
+        val downloadUrl = getDownloadURL(publication)
 
-            val downloadUrl = getDownloadURL(publication)
+        when {
+            downloadUrl != null -> {
+                opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
-            opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
+                    val publicationIdentifier = publication.metadata.identifier!!
+                    val author = publication.metadata.authorName
+                    task {
+                        getBitmapFromURL(publication.images.first().href)
+                    }.then {
+                        val bitmap = it
+                        val stream = ByteArrayOutputStream()
+                        bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
 
-                val publicationIdentifier = publication.metadata.identifier!!
-                val author = publication.metadata.authorName
-                task {
-                    getBitmapFromURL(publication.images.first().href)
-                }.then {
-                    val bitmap = it
-                    val stream = ByteArrayOutputStream()
-                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                        val book = Book(title = publication.metadata.title, author = author, href = pair.first, identifier = publicationIdentifier, cover = stream.toByteArray(), ext = Publication.EXTENSION.EPUB.value, progression = "{}")
 
-                    val book = Book(title = publication.metadata.title, author = author, href = pair.first, identifier = publicationIdentifier, cover = stream.toByteArray(), ext = Publication.EXTENSION.EPUB.value, progression = "{}")
+                        launch {
+                            progress.dismiss()
+                            database.books.insert(book, false)?.let { id ->
+                                book.id = id
+                                books.add(0, book)
+                                booksAdapter.notifyDataSetChanged()
+                                catalogView.longSnackbar("publication added to your library")
+                                //prepareSyntheticPageList(publication, book)
+                            } ?: run {
 
-                    launch {
-                        progress.dismiss()
-                        database.books.insert(book, false)?.let { id ->
-                            book.id = id
-                            books.add(0, book)
-                            booksAdapter.notifyDataSetChanged()
-                            catalogView.longSnackbar("publication added to your library")
-                            //prepareSyntheticPageList(publication, book)
-                        } ?: run {
+                                showDuplicateBookAlert(book, publication, false)
 
-                            showDuplicateBookAlert(book, publication, false)
-
+                            }
+                        }
+                    }.fail {
+                        launch {
+                            progress.dismiss()
+                            catalogView.snackbar("$it")
                         }
                     }
-                }.fail {
-                    launch {
-                        progress.dismiss()
-                        catalogView.snackbar("$it")
-                    }
-                }
-            }
-        } else if (publication.type == Publication.TYPE.WEBPUB || publication.type == Publication.TYPE.AUDIO) {
-
-            val self = publication.linkWithRel("self")
-
-            when (publication.type) {
-                Publication.TYPE.WEBPUB -> {
-                    progress.dismiss()
-                    prepareWebPublication(self?.href!!, webPub = null, add = true)
-                }
-                Publication.TYPE.AUDIO -> {
-                    progress.dismiss()
-                    prepareWebPublication(self?.href!!, webPub = null, add = true)
-                }
-                else -> {
-                    progress.dismiss()
-                    catalogView.snackbar("Invalid publication")
                 }
             }
 
+            selfLink != null && publication.type in setOf(Publication.TYPE.WEBPUB, Publication.TYPE.AUDIO, Publication.TYPE.DiViNa) -> {
+                progress.dismiss()
+                prepareWebPublication(selfLink.href, webPub = null, add = true)
+            }
+
+            else -> {
+                progress.dismiss()
+                catalogView.snackbar("Invalid publication")
+            }
         }
     }
 
@@ -873,10 +866,10 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
     protected fun prepareAndStartActivity(pub: PubBox?, book: Book, file: File, publicationPath: String, publication: Publication, coverByteArray: ByteArray? = null) {
         prepareToServe(pub, book.fileName!!, file.absolutePath, add = false, lcp = false)
-        startActivity(publicationPath, book, publication, coverByteArray)
+        startActivity(publicationPath, book, publication, coverByteArray, drm = pub?.container?.drm != null)
     }
 
-    private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null) {
+    private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null, drm: Boolean = false) {
         val intent = Intent(this, when (publication.type) {
             Publication.TYPE.AUDIO -> AudiobookActivity::class.java
             Publication.TYPE.CBZ -> ComicActivity::class.java
@@ -890,6 +883,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             putExtra("publicationFileName", book.fileName)
             putExtra("bookId", book.id)
             putExtra("cover", coverByteArray)
+            putExtra("drm", drm)
         }
 
         startActivity(intent)

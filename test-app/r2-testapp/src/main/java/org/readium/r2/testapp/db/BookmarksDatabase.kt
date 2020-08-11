@@ -34,6 +34,18 @@ class Bookmark(
     var id: Long? = null
 ) {
 
+    constructor(bookID: Long, publicationID: String, resourceIndex: Long, locator: Locator):
+        this(
+            bookID = bookID,
+            publicationID = publicationID,
+            resourceIndex = resourceIndex,
+            resourceHref = locator.href,
+            resourceType = locator.type,
+            resourceTitle = locator.title ?: "",
+            location = locator.locations,
+            locatorText = locator.text
+        )
+
     val locator get() = Locator(
         href = resourceHref,
         type = resourceType,

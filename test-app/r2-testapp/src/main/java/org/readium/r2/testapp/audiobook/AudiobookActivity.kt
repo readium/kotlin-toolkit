@@ -9,7 +9,6 @@ import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
-import kotlinx.android.synthetic.main.activity_audiobook.*
 import kotlinx.coroutines.launch
 import org.jetbrains.anko.indeterminateProgressDialog
 import org.jetbrains.anko.toast
@@ -111,24 +110,10 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
                 return true
             }
             R.id.bookmark -> {
-                val resourceIndex = currentResource.toLong()
+                val locator = currentLocator.value ?:
+                     return true
 
-                val resource = publication.readingOrder[currentResource]
-                val resourceHref = resource.href
-                val resourceType = resource.type ?: ""
-                val resourceTitle = resource.title ?: ""
-
-                val bookmark = Bookmark(
-                        bookId,
-                        publicationIdentifier,
-                        resourceIndex,
-                        resourceHref,
-                        resourceType,
-                        resourceTitle,
-                        Locator.Locations(progression = seekBar!!.progress.toDouble()),
-                        Locator.Text()
-                )
-
+                val bookmark = Bookmark(bookId, publicationIdentifier, resourceIndex = currentResource.toLong(), locator = locator)
                 bookmarksDB.bookmarks.insert(bookmark)?.let {
                     launch {
                         toast("Bookmark added")
