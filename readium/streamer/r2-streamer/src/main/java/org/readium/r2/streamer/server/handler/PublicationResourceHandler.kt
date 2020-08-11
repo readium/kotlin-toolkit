@@ -112,7 +112,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             } else {
                 createResponse(Status.PARTIAL_CONTENT, mimeType, ResourceInputStream(resource, startFrom..endAt))
                     .apply {
-                        addHeader("Content-Range", "bytes 0-0/$dataLength")
+                        addHeader("Content-Range", "bytes $startFrom-$endAt/$dataLength")
                         addHeader("ETag", etag)
                     }
             }
