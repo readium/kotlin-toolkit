@@ -23,5 +23,5 @@ data class DRMFulfilledPublication(
 interface DRMLibraryService {
     val brand: DRM.Brand
     fun canFulfill(file: String) : Boolean
-    suspend fun fulfill(byteArray: ByteArray, allowUserInteraction: Boolean): Try<DRMFulfilledPublication, Exception>?
+    suspend fun fulfill(byteArray: ByteArray): Try<DRMFulfilledPublication, Exception>
 }

@@ -54,9 +54,8 @@ class CatalogActivity : LibraryActivity(), LcpAuthenticating {
     override fun canFulfill(file: String): Boolean =
             file.fileExtension().toLowerCase(Locale.ROOT) == "lcpl"
 
-    override suspend fun fulfill(byteArray: ByteArray, allowUserInteraction: Boolean): Try<DRMFulfilledPublication, LcpException>? =
-        lcpService.importPublication(byteArray, this, allowUserInteraction = allowUserInteraction)
-            ?.map { DRMFulfilledPublication(it.localURL, it.suggestedFilename) }
+    override suspend fun fulfill(byteArray: ByteArray): Try<DRMFulfilledPublication, LcpException> =
+        lcpService.importPublication(byteArray).map { DRMFulfilledPublication(it.localURL, it.suggestedFilename) }
 
     override suspend fun retrievePassphrase(license: LcpAuthenticating.AuthenticatedLicense, reason: LcpAuthenticating.AuthenticationReason, allowUserInteraction: Boolean, sender: Any?): String? =
         if (allowUserInteraction)

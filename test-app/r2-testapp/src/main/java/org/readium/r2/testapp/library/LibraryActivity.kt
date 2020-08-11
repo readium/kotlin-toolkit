@@ -389,7 +389,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             if (sourceFile.format() != Format.LCP_LICENSE)
                 sourceFile
             else {
-                fulfill(sourceFile.file.readBytes(), allowUserInteraction = false)?.fold(
+                fulfill(sourceFile.file.readBytes()).fold(
                     {
                         val format = Format.of(fileExtension = File(it.suggestedFilename).extension)
                         R2File(it.localURL, format = format)
@@ -402,7 +402,10 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                         return
                     }
                 )
-            } ?: return
+            } ?: run {
+                progress?.dismiss()
+                return
+            }
 
         val fileName = UUID.randomUUID().toString()
         val libraryFile = R2File(
