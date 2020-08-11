@@ -4,12 +4,9 @@ All notable changes to this project will be documented in this file.
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-[unreleased]: https://github.com/readium/r2-shared-kotlin/compare/master...HEAD
-[1.2.0]: https://github.com/readium/r2-shared-kotlin/compare/1.1.6...1.2.0
-
 ## [Unreleased]
 
-## [1.2.0]
+## [2.0.0-alpha.1]
 
 ### Added
 
@@ -42,3 +39,7 @@ All notable changes to this project will be documented in this file.
 * [The local HTTP server was broken](https://github.com/readium/r2-testapp-kotlin/pull/306) when provided with publication filenames containing invalid characters.
 * XML namespace prefixes are now properly supported when an author chooses unusual ones (contributed by [@qnga](https://github.com/readium/r2-shared-kotlin/pull/85)).
 * The `AndroidManifest.xml` is not forcing anymore `allowBackup` and `supportsRtl`, to let reading apps manage these features themselves (contributed by [@twaddington](https://github.com/readium/r2-shared-kotlin/pull/93)).
+
+
+[unreleased]: https://github.com/readium/r2-shared-kotlin/compare/master...HEAD
+[2.0.0-alpha.1]: https://github.com/readium/r2-shared-kotlin/compare/1.1.6...2.0.0-alpha.1

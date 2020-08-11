@@ -11,8 +11,10 @@ package org.readium.r2.shared.publication
 
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.instanceOf
+import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.StringResource
@@ -44,6 +46,17 @@ class PublicationTest {
         ),
         servicesBuilder = servicesBuilder
     )
+
+    @Test fun `get the type computed from the manifest content`() {
+        val fixtures = Fixtures("format")
+        fun parseAt(path: String): Publication =
+            Publication(manifest = Manifest.fromJSON(JSONObject(fixtures.fileAt(path).readText()))!!)
+
+        assertEquals(Publication.TYPE.AUDIO, parseAt("audiobook.json").type)
+        assertEquals(Publication.TYPE.DiViNa, parseAt("divina.json").type)
+        assertEquals(Publication.TYPE.WEBPUB, parseAt("webpub.json").type)
+        assertEquals(Publication.TYPE.WEBPUB, parseAt("opds2-publication.json").type)
+    }
 
     @Test fun `get the default empty {positions}`() {
         assertEquals(emptyList<Locator>(), runBlocking { createPublication().positions() })

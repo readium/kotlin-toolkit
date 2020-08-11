@@ -86,7 +86,11 @@ class Publication(
     val subcollections: Map<String, List<PublicationCollection>> get() = _manifest.subcollections
 
     // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
-    var type: Publication.TYPE = Publication.TYPE.EPUB
+    var type: TYPE = when {
+        metadata.type == "http://schema.org/Audiobook" || readingOrder.allAreAudio -> TYPE.AUDIO
+        readingOrder.allAreBitmap -> TYPE.DiViNa
+        else -> TYPE.WEBPUB
+    }
 
     @Deprecated("Version is not available any more.", level = DeprecationLevel.ERROR)
     var version: Double = 0.0

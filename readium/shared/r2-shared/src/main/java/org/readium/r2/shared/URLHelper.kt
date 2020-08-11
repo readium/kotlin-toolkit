@@ -39,14 +39,19 @@ fun normalize(base: String, href: String?): String {
         val addSlash = absoluteUri.scheme == null && !absoluteString.startsWith("/")
         (if (addSlash) "/" else "") + absoluteString
     } catch (e: IllegalArgumentException){ // one of the URIs is ill-formed
-        val hrefUri = Uri.parse(href) // Android Uri is more forgiving
-        // Let's try to return something
-        if (hrefUri.isAbsolute) {
+        try {
+            val hrefUri = Uri.parse(href) // Android Uri is more forgiving
+            // Let's try to return something
+            if (hrefUri.isAbsolute) {
+                href
+            } else if (base.startsWith("/")) {
+                base + href
+            } else {
+                "/$base$href"
+            }
+        } catch (e: Exception) {
             href
-        } else if (base.startsWith("/")) {
-            base + href
-        } else
-            "/" + base + href
+        }
     }
     return URLDecoder.decode(resolved, "UTF-8")
 }

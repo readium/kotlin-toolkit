@@ -224,41 +224,41 @@ fun List<Link>.filterByMediaTypes(mediaTypes: List<MediaType>): List<Link> = fil
 /**
  * Returns whether all the resources in the collection are bitmaps.
  */
-val List<Link>.allAreBitmap: Boolean get() = all {
+val List<Link>.allAreBitmap: Boolean get() = isNotEmpty() && all {
     it.mediaType?.isBitmap ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are audio clips.
  */
-val List<Link>.allAreAudio: Boolean get() = all {
+val List<Link>.allAreAudio: Boolean get() = isNotEmpty() && all {
     it.mediaType?.isAudio ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are video clips.
  */
-val List<Link>.allAreVideo: Boolean get() = all {
+val List<Link>.allAreVideo: Boolean get() = isNotEmpty() && all {
     it.mediaType?.isVideo ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are HTML documents.
  */
-val List<Link>.allAreHtml: Boolean get() = all {
+val List<Link>.allAreHtml: Boolean get() = isNotEmpty() && all {
     it.mediaType?.isHtml ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are matching the given media type.
  */
-fun List<Link>.allMatchMediaType(mediaType: MediaType): Boolean = all {
+fun List<Link>.allMatchMediaType(mediaType: MediaType): Boolean = isNotEmpty() && all {
     mediaType.matches(it.mediaType)
 }
 
 /**
  * Returns whether all the resources in the collection are matching any of the given media types.
  */
-fun List<Link>.allMatchMediaTypes(mediaTypes: List<MediaType>): Boolean = all {
+fun List<Link>.allMatchMediaTypes(mediaTypes: List<MediaType>): Boolean = isNotEmpty() && all {
     mediaTypes.any { mediaType -> mediaType.matches(it.mediaType) }
 }
