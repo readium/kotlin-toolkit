@@ -12,6 +12,8 @@ package org.readium.r2.shared.fetcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
+import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.extensions.readRange
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
@@ -75,7 +77,7 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
         openedResources.clear()
     }
 
-    private class FileResource(val link: Link, private val file: File) : StreamResource() {
+    private class FileResource(val link: Link, private val file: File) : Resource {
 
         private val randomAccessFile: ResourceTry<RandomAccessFile> by lazy {
             try {
@@ -91,21 +93,6 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
 
         override suspend fun link(): Link = link
 
-        override fun stream(): ResourceTry<InputStream> =
-            randomAccessFile.map{
-                Channels.newInputStream(it.channel).buffered()
-            }
-
-        override val metadataLength: Long? =
-            try {
-                if (file.isFile)
-                    file.length()
-                else
-                    null
-            } catch (e: Exception) {
-                null
-            }
-
         override suspend fun close() = withContext<Unit>(Dispatchers.IO) {
             randomAccessFile.onSuccess {
                 try {
@@ -115,5 +102,34 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
                 }
             }
         }
+
+        override suspend fun read(range: LongRange?): ResourceTry<ByteArray>  =
+            stream().mapCatching {
+                if (range == null)
+                    it.readFully()
+                else
+                    it.readRange(range)
+            }
+        // The stream must not be closed here because it would close the underlying FileChannel too.
+        // close is responsible for that.
+
+        override suspend fun length(): ResourceTry<Long> =
+            metadataLength?.let { Try.success(it) }
+                ?: read().map { it.size.toLong() }
+
+        fun stream(): ResourceTry<InputStream> =
+            randomAccessFile.map{
+                Channels.newInputStream(it.channel).buffered()
+            }
+
+        val metadataLength: Long? =
+            try {
+                if (file.isFile)
+                    file.length()
+                else
+                    null
+            } catch (e: Exception) {
+                null
+            }
     }
 }
