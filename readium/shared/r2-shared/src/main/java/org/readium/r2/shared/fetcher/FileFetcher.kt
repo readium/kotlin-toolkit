@@ -59,6 +59,8 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
     override fun get(link: Link): Resource {
         val linkHref = link.href.addPrefix("/")
         for ((itemHref, itemFile) in paths) {
+            @Suppress("NAME_SHADOWING")
+            val itemHref = itemHref.addPrefix("/")
             if (linkHref.startsWith(itemHref)) {
                 val resourceFile = File(itemFile, linkHref.removePrefix(itemHref))
                 // Make sure that the requested resource is [path] or one of its descendant.
@@ -103,7 +105,7 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
             }
         }
 
-        override suspend fun read(range: LongRange?): ResourceTry<ByteArray>  =
+        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             stream().mapCatching {
                 if (range == null)
                     it.readFully()
@@ -119,6 +121,7 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
 
         fun stream(): ResourceTry<InputStream> =
             randomAccessFile.map{
+                it.channel.position(0)
                 Channels.newInputStream(it.channel).buffered()
             }
 

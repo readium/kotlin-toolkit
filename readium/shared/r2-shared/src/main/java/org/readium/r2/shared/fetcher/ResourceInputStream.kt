@@ -29,7 +29,7 @@ class ResourceInputStream(
         val resourceLength = try {
             runBlocking { resource.length().getOrThrow() }
         } catch (e: Exception) {
-            throw IOException("Can't get resource length")
+            throw IOException("Can't get resource length", e)
         }
 
         if (range == null)

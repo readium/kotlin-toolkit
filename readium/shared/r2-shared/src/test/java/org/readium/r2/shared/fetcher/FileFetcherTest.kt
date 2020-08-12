@@ -92,6 +92,14 @@ class FileFetcherTest {
         assertEquals("tex", result?.toString(StandardCharsets.UTF_8))
     }
 
+    @Test
+    fun `Reading two ranges with the same resource work well`() {
+        val resource = fetcher.get(Link(href = "/file_href"))
+        val result1 = resource.readBlocking(0..1L).getOrNull()
+        assertEquals("te", result1?.toString(StandardCharsets.UTF_8))
+        val result2 = resource.readBlocking(1..3L).getOrNull()
+        assertEquals("ext", result2?.toString(StandardCharsets.UTF_8))
+    }
 
     @Test
     fun `Out of range indexes are clamped to the available length`() {
