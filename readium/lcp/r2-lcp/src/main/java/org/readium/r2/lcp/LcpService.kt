@@ -46,6 +46,11 @@ interface LcpService {
     }
 
     /**
+     * Returns if the publication is protected by Lcp.
+     */
+    suspend fun isLcpProtected(file: File): Boolean
+
+    /**
      *  Imports a protected publication from a standalone LCPL file.
      */
     suspend fun importPublication(lcpl: ByteArray): Try<ImportedPublication, LcpException>

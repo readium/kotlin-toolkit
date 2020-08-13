@@ -20,6 +20,7 @@ import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.public.*
+import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.format.Format
 import java.io.File
 import org.readium.r2.shared.util.Try
@@ -37,6 +38,12 @@ internal class LicensesService(
     private val passphrases: PassphrasesService,
     private val context: Context
 ) : LcpService, LCPService, CoroutineScope by MainScope() {
+
+    override suspend fun isLcpProtected(file: File): Boolean =
+        tryOr(false) {
+            createLicenseContainer(file.path)
+            true
+        }
 
     override suspend fun importPublication(lcpl: ByteArray): Try<LcpService.ImportedPublication, LcpException> =
         try {
