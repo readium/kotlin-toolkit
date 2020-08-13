@@ -29,7 +29,7 @@ class ResourceInputStream(
         val resourceLength = try {
             runBlocking { resource.length().getOrThrow() }
         } catch (e: Exception) {
-            throw IOException("Can't get resource length")
+            throw IOException("Can't get resource length", e)
         }
 
         if (range == null)
@@ -93,6 +93,7 @@ class ResourceInputStream(
         try {
             val bytesToRead = len.coerceAtMost(available())
             val bytes = runBlocking { resource.read(position until (position + bytesToRead)).getOrThrow() }
+            check(bytes.size <= bytesToRead)
             bytes.copyInto(
                 destination = b,
                 destinationOffset = off,

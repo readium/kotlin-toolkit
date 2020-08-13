@@ -46,14 +46,21 @@ internal fun InputStream.copyTo(out: OutputStream, limit: Long, bufferSize: Int 
  * **Note**: It is the caller's responsibility to close this stream.
  */
 internal fun InputStream.read(limit: Long): ByteArray {
-    val buffer = ByteArrayOutputStream(maxOf(DEFAULT_BUFFER_SIZE, this.available(), limit.toInt()))
+    val buffer = ByteArrayOutputStream(maxOf(DEFAULT_BUFFER_SIZE, limit.toInt()))
     copyTo(buffer, limit)
     return buffer.toByteArray()
 }
 
+
+// WARNING: this requires a stream not used yet
 internal suspend fun InputStream.readRange(range: LongRange): ByteArray {
     @Suppress("NAME_SHADOWING")
-    val range = range.coerceToPositiveIncreasing().apply { requireLengthFitInt() }
+    val range = range
+        .coerceFirstNonNegative()
+        .requireLengthFitInt()
+
+    if (range.isEmpty())
+        return ByteArray(0)
 
     return withContext(Dispatchers.IO) {
         val skipped = skip(range.first)
