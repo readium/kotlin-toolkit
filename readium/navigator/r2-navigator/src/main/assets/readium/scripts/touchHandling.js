@@ -23,8 +23,9 @@ var handleClick = function(event) {
 
 // When a touch is detected records its starting coordinates and if it's a singleTouchGesture.
 var handleTouchStart = function(event) {
-    if (event.target.nodeName.toUpperCase() === 'A') {
-        console.log("Touched a link.");
+    var node = event.target.nodeName.toUpperCase()
+    if (node === 'A' || node === 'VIDEO') {
+        console.log("Touched a link or video.");
         // singleTouchGesture = false;
         return;
     }

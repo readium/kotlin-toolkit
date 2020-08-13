@@ -4,9 +4,6 @@ All notable changes to this project will be documented in this file.
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-[unreleased]: https://github.com/readium/r2-navigator-kotlin/compare/master...HEAD
-[1.2.0]: https://github.com/readium/r2-navigator-kotlin/compare/1.1.6...1.2.0
-
 ## [Unreleased]
 
 ### Added
@@ -17,7 +14,8 @@ All notable changes to this project will be documented in this file.
   * At the moment, highlights and TTS are not yet supported in the new EPUB navigator `Fragment`.
   * [This is now the recommended way to integrate Readium](https://github.com/readium/r2-navigator-kotlin/issues/115) in your applications.
 
-## [1.2.0]
+
+## [2.0.0-alpha.1]
 
 ### Added
 
@@ -43,3 +41,7 @@ All notable changes to this project will be documented in this file.
 * [Crash when opening a publication with a space in its filename](https://github.com/readium/r2-navigator-kotlin/pull/136).
 * [Jumping to an EPUB location from the search](https://github.com/readium/r2-navigator-kotlin/pull/111).
 * The `AndroidManifest.xml` is not forcing anymore `allowBackup` and `supportsRtl`, to let reading apps manage these features themselves (contributed by [@twaddington](https://github.com/readium/r2-navigator-kotlin/pull/118)).
+
+
+[unreleased]: https://github.com/readium/r2-navigator-kotlin/compare/master...HEAD
+[2.0.0-alpha.1]: https://github.com/readium/r2-navigator-kotlin/compare/1.1.6...2.0.0-alpha.1

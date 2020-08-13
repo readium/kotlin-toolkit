@@ -46,7 +46,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 title = resource.title,
                 locations = Locator.Locations(
                     fragments = listOf(
-                        "t=${mediaPlayer?.currentPosition?.toInt() ?: 0}"
+                        "t=${TimeUnit.MILLISECONDS.toSeconds(mediaPlayer?.currentPosition?.toLong() ?: 0)}"
                     ),
                     progression = progression
                 )
@@ -62,11 +62,18 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
-            ?: return false
+        val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href) ?: return false
 
+        val mediaPlayer = mediaPlayer ?: run {
+            pendingLocator = locator
+            return false
+        }
+
+        pendingLocator = null
         currentResource = resourceIndex
-        mediaPlayer?.goTo(currentResource)
+        mediaPlayer.goTo(currentResource)
+        seek(locator.locations)
+
         return true
     }
 
@@ -119,6 +126,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     private val backwardTime = 10000
 
     var mediaPlayer: R2MediaPlayer? = null
+    private var pendingLocator: Locator? = null
 
     protected var navigatorDelegate: NavigatorDelegate? = null
 
@@ -144,13 +152,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
             val readingOrderOverHttp = publication.readingOrder.map { it.withLocalUrl(publicationFileName, port) }
             mediaPlayer = R2MediaPlayer(readingOrderOverHttp, this)
 
-            mediaPlayer?.goTo(currentResource)
-
-            currentLocator.value?.locations?.progression?.let { progression ->
-                mediaPlayer?.seekTo(progression)
-                seekLocation = currentLocator.value?.locations
-                isSeekNeeded = true
-            }
+            go(pendingLocator ?: publication.readingOrder.first().toLocator())
 
             seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 /**
@@ -284,27 +286,38 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         notifyCurrentLocation()
     }
 
-    private var seekLocation: Locator.Locations? = null
-    private var isSeekNeeded = false
+    private fun seek(locations: Locator.Locations) {
+        if (mediaPlayer?.isPrepared == false) {
+            pendingSeekLocation = locations
+            return
+        }
+
+        pendingSeekLocation = null
+
+        val time = locations.fragments.firstOrNull()?.let {
+            var time = it
+            if (time.startsWith("#t=") || time.startsWith("t=")) {
+                time = time.substring(time.indexOf('=') + 1)
+            }
+            time
+        }
+        time?.let {
+            mediaPlayer?.seekTo(TimeUnit.SECONDS.toMillis(it.toLong()).toInt())
+        } ?: run {
+            val progression = locations.progression
+            val duration = mediaPlayer?.duration
+            if (progression != null && duration != null) {
+                mediaPlayer?.seekTo(progression * duration)
+            }
+        }
+    }
+
+    private var pendingSeekLocation: Locator.Locations? = null
     var isSeekTracking = false
+
     private fun seekIfNeeded() {
-        if (isSeekNeeded) {
-            val time = seekLocation?.fragments?.firstOrNull()?.let {
-                var time = it
-                if (time.startsWith("#t=") || time.startsWith("t=")) {
-                    time = time.substring(time.indexOf('=') + 1)
-                }
-                time
-            }
-            time?.let {
-                mediaPlayer?.seekTo(TimeUnit.SECONDS.toMillis(it.toLong()).toInt())
-            } ?: run {
-                seekLocation?.progression?.let { progression ->
-                    mediaPlayer?.seekTo(progression)
-                }
-            }
-            seekLocation = null
-            isSeekNeeded = false
+        pendingSeekLocation?.let { locations ->
+            seek(locations)
         }
     }
 
@@ -397,10 +410,8 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                         }
                         index++
                     }
-                    seekLocation = locator.locations
+                    pendingSeekLocation = locator.locations
                 }
-
-                isSeekNeeded = true
 
                 mediaPlayer?.goTo(currentResource)
 
