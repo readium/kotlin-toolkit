@@ -15,7 +15,6 @@ import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
-import org.readium.r2.lcp.license.container.BytesLicenseContainer
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
@@ -37,7 +36,7 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context
-) : LcpService, LCPService, CoroutineScope by MainScope() {
+) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean =
         tryOr(false) {
@@ -50,30 +49,9 @@ internal class LicensesService(
             val licenseDocument = LicenseDocument(lcpl)
             if (DEBUG) Timber.d("license ${licenseDocument.json}")
             fetchPublication(licenseDocument, context).let { Try.success(it) }
-        } catch (e:Exception) {
+        } catch (e: Exception) {
            Try.failure(LcpException.wrap(e))
         }
-
-    override fun importPublication(lcpl: ByteArray, authentication: LCPAuthenticating?, completion: (LCPImportedPublication?, LCPError?) -> Unit) {
-        val container = BytesLicenseContainer(lcpl)
-        try {
-            retrieveLicense(container, authentication.toLcpAuthenticating(), allowUserInteraction = true, sender = null) { license ->
-                if (license != null) {
-                    launch {
-                        try {
-                            completion(fetchPublication(license.license, context).toLCPImportedPublication(), null)
-                        } catch (e: Exception) {
-                            completion(null, LCPError.wrap(e))
-                        }
-                    }
-                } else {
-                    completion(null, null)
-                }
-            }
-        } catch (e:Exception) {
-            completion(null, LCPError.wrap(e))
-        }
-    }
 
     override suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): Try<LcpLicense, LcpException>? =
         try {
@@ -89,18 +67,6 @@ internal class LicensesService(
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
         }
-
-    override fun retrieveLicense(publication: String, authentication: LCPAuthenticating?, completion: (LCPLicense?, LCPError?) -> Unit) {
-        try {
-            val container = runBlocking { createLicenseContainer(publication) }
-            retrieveLicense(container, authentication.toLcpAuthenticating(), true, null) { license ->
-                Timber.d("license retrieved ${license?.license}")
-                completion(license, null)
-            }
-        } catch (e:Exception) {
-            completion(null, LCPError.wrap(e))
-        }
-    }
 
     private suspend fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): License? =
         suspendCancellableCoroutine { cont ->
@@ -157,7 +123,7 @@ internal class LicensesService(
         }
     }
 
-    internal suspend fun fetchPublication(license: LicenseDocument, context: Context): LcpService.ImportedPublication {
+    private suspend fun fetchPublication(license: LicenseDocument, context: Context): LcpService.ImportedPublication {
         val link = license.link(LicenseDocument.Rel.publication)
         val url = link?.url
             ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)

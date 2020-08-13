@@ -17,13 +17,12 @@ import org.joda.time.DateTime
 import org.joda.time.Days
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpException
-import org.readium.r2.lcp.public.*
 import timber.log.Timber
 import java.util.*
 
 internal class CRLService(val network: NetworkService, val context: Context) {
 
-    val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
+    private val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
     companion object {
         const val expiration = 7
@@ -47,7 +46,7 @@ internal class CRLService(val network: NetworkService, val context: Context) {
                     completion(received)
                 }
             }
-        } catch (error: LCPError) {
+        } catch (error: Exception) {
             if (DEBUG) Timber.e(error)
             val (received, _) = localCRL ?: throw error
             completion(received)

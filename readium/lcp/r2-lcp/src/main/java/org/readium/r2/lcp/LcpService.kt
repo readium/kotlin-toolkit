@@ -10,15 +10,13 @@
 package org.readium.r2.lcp
 
 import android.content.Context
-import org.joda.time.DateTime
-import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.lcp.license.model.StatusDocument
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.readium.r2.lcp.persistence.Database
 import org.readium.r2.lcp.service.*
 import org.readium.r2.shared.util.Try
 import java.io.File
-import java.io.Serializable
-import java.net.URL
 
 /**
  * Service used to fulfill and access protected publications.
@@ -46,7 +44,7 @@ interface LcpService {
     }
 
     /**
-     * Returns if the publication is protected by Lcp.
+     * Returns if the publication is protected by LCP.
      */
     suspend fun isLcpProtected(file: File): Boolean
 
@@ -58,6 +56,10 @@ interface LcpService {
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
      * its content.
+     *
+     * @param allowUserInteraction Indicates whether the user can be prompted for their passphrase.
+     * @param sender Free object that can be used by reading apps to give some UX context when
+     *        presenting dialogs.
      */
     suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any? = null): Try<LcpLicense, LcpException>?
 
@@ -73,73 +75,38 @@ interface LcpService {
         val localURL: String,
         val suggestedFilename: String
     )
+
+
+    @Deprecated("Use `importPublication()` with coroutines instead", ReplaceWith("importPublication(lcpl)"))
+    fun importPublication(lcpl: ByteArray, authentication: LcpAuthenticating?, completion: (ImportedPublication?, LcpException?) -> Unit) {
+        GlobalScope.launch(Dispatchers.Main) {
+            importPublication(lcpl)
+                .onSuccess { completion(it, null) }
+                .onFailure { completion(null, it) }
+        }
+    }
+
+    @Deprecated("Use `retrieveLicense()` with coroutines instead", ReplaceWith("retrieveLicense(File(publication), authentication, allowUserInteraction = true)"))
+    fun retrieveLicense(publication: String, authentication: LcpAuthenticating?, completion: (LcpLicense?, LcpException?) -> Unit) {
+        GlobalScope.launch(Dispatchers.Main) {
+            val result = retrieveLicense(File(publication), authentication, allowUserInteraction = true)
+            if (result == null) {
+                completion(null, null)
+            } else {
+                result
+                    .onSuccess { completion(it, null) }
+                    .onFailure { completion(null, it) }
+            }
+        }
+
+    }
+
 }
 
-/**
- * Opened license, used to decipher a protected publication and manage its license.
- */
-interface LcpLicense : Serializable {
 
-    val license: LicenseDocument
-    val status: StatusDocument?
+@Deprecated("Renamed to `LcpService.create()`", replaceWith = ReplaceWith("LcpService.create"))
+fun R2MakeLCPService(context: Context): LcpService =
+    LcpService.create(context)
 
-    /**
-     * Number of remaining characters allowed to be copied by the user. If [null], there's no limit.
-     */
-    val charactersToCopyLeft: Int?
-
-    /**
-     * Number of pages allowed to be printed by the user. If [null], there's no limit.
-     */
-    val pagesToPrintLeft: Int?
-
-    /**
-     * Returns whether the user is allowed to print pages of the publication.
-     */
-    val canPrint: Boolean
-
-    /**
-     * Requests to print the given number of pages.
-     *
-     * The caller is responsible to perform the actual print. This method is only used to know if
-     * the action is allowed.
-     *
-     * @return Whether the user is allowed to print that many pages.
-     */
-    fun print(pagesCount: Int): Boolean
-
-    val canCopy: Boolean
-
-    fun copy(text: String): String?
-
-    /**
-     * Can the user renew the loaned publication?
-     */
-    val canRenewLoan: Boolean
-
-    /**
-     * The maximum potential date to renew to.
-     * If [null], then the renew date might not be customizable.
-     */
-    val maxRenewDate: DateTime?
-
-    /**
-     * Renews the loan up to a certain date (if possible).
-     *
-     * @param urlPresenter: Used when the renew requires to present an HTML page to the user.
-     */
-    suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException>
-
-    /**
-     * Can the user return the loaned publication?
-     */
-    val canReturnPublication: Boolean
-
-    /**
-     * Returns the publication to its provider.
-     */
-    suspend fun returnPublication(): Try<Unit, LcpException>
-
-    suspend fun decrypt(data: ByteArray): Try<ByteArray, LcpException>
-}
-
+@Deprecated("Renamed to `LcpService.ImportedPublication`", replaceWith = ReplaceWith("LcpService.ImportedPublication"))
+typealias LCPImportedPublication = LcpService.ImportedPublication

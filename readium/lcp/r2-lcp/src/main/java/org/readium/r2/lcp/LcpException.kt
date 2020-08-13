@@ -30,8 +30,8 @@ sealed class LcpException(message: String? = null, cause: Throwable? = null) : E
     class Network(override val cause: Exception?) : LcpException("Network error.")
 
     /**
-     * An unexpected LCP exception occurred. Please post an issue on r2-lcp-kotlin with the error message
-     * and how to reproduce it.
+     * An unexpected LCP exception occurred. Please post an issue on r2-lcp-kotlin with the error
+     * message and how to reproduce it.
      */
     class Runtime(override val message: String) : LcpException()
 
@@ -41,15 +41,14 @@ sealed class LcpException(message: String? = null, cause: Throwable? = null) : E
 
     /**
      * Exceptions while checking the status of the License, using the Status Document.
+     *
+     * The app should notify the user and stop there. The message to the user must be clear about
+     * the status of the license: don't display "expired" if the status is "revoked". The date and
+     * time corresponding to the new status should be displayed (e.g. "The license expired on 01
+     * January 2018").
      */
     sealed class LicenseStatus(message: String) : LcpException(message) {
 
-        /**
-         * For the case (revoked, returned, cancelled, expired), app should notify the user and stop
-         * there. The message to the user must be clear about the status of the license: don't display
-         * "expired" if the status is "revoked". The date and time corresponding to the new status
-         * should be displayed (e.g. "The license expired on 01 January 2018").
-         */
         class Cancelled(val date: DateTime) : LicenseStatus("This license was cancelled on ${date.toLocalDate()}.")
 
         class Returned(val date: DateTime) : LicenseStatus("This license has been returned on ${date.toLocalDate()}.")
@@ -177,7 +176,7 @@ sealed class LcpException(message: String? = null, cause: Throwable? = null) : E
 
     companion object {
 
-        fun wrap(e: Exception?): LcpException = when (e) {
+        internal fun wrap(e: Exception?): LcpException = when (e) {
             is LcpException -> e
             is SocketTimeoutException -> Network(e)
             is DRMException -> when(e.drmError.code) {
@@ -198,3 +197,10 @@ sealed class LcpException(message: String? = null, cause: Throwable? = null) : E
         }
     }
 }
+
+
+@Deprecated("Renamed to `LcpException`", replaceWith = ReplaceWith("LcpException"))
+typealias LCPError = LcpException
+
+@Deprecated("Use `message` instead", replaceWith = ReplaceWith("message"))
+val LcpException.errorDescription: String? get() = message

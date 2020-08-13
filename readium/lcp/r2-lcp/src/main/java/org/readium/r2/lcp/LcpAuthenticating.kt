@@ -22,6 +22,11 @@ interface LcpAuthenticating {
      *
      * @param license Information to show to the user about the license being opened.
      * @param reason Reason why the passphrase is requested. It should be used to prompt the user.
+     * @param allowUserInteraction Indicates whether the user can be prompted for their passphrase.
+     *        When false, don't show any dialog to the user. Instead, use a background retrieval
+     *        method or return null.
+     * @param sender Free object that can be used by reading apps to give some UX context when
+     *        presenting dialogs.
      * @return The retrieved passphrase or null if the user cancelled. The passphrase may be already hashed.
      */
     suspend fun retrievePassphrase(license: AuthenticatedLicense, reason: AuthenticationReason, allowUserInteraction: Boolean, sender: Any? = null): String?
@@ -33,7 +38,9 @@ interface LcpAuthenticating {
         PassphraseNotFound,
 
         /** The provided passphrase was invalid. */
-        InvalidPassphrase
+        InvalidPassphrase;
+
+        companion object
     }
 
     /**
@@ -75,3 +82,23 @@ interface LcpAuthenticating {
 
 }
 
+
+@Deprecated("Renamed to `LcpAuthenticating.AuthenticationReason`", replaceWith = ReplaceWith("LcpAuthenticating.AuthenticationReason"))
+typealias LCPAuthenticating = LcpAuthenticating
+
+@Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
+interface LCPAuthenticationDelegate
+
+@Deprecated("Renamed to `LcpAuthenticating.AuthenticationReason`", replaceWith = ReplaceWith("LcpAuthenticating.AuthenticationReason"))
+typealias LCPAuthenticationReason = LcpAuthenticating.AuthenticationReason
+
+@Deprecated("Renamed to `LcpAuthenticating.AuthenticatedLicense`", replaceWith = ReplaceWith("LcpAuthenticating.AuthenticatedLicense"))
+typealias LCPAuthenticatedLicense = LcpAuthenticating.AuthenticatedLicense
+
+@Deprecated("Renamed to `PassphraseNotFound`", replaceWith = ReplaceWith("PassphraseNotFound"))
+val LcpAuthenticating.AuthenticationReason.Companion.passphraseNotFound get() =
+    LcpAuthenticating.AuthenticationReason.PassphraseNotFound
+
+@Deprecated("Renamed to `InvalidPassphrase`", replaceWith = ReplaceWith("InvalidPassphrase"))
+val LcpAuthenticating.AuthenticationReason.Companion.invalidPassphrase get() =
+    LcpAuthenticating.AuthenticationReason.InvalidPassphrase
