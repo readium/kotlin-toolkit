@@ -17,7 +17,7 @@ All migration steps necessary in reading apps to upgrade to major versions of th
 - [x] Table of contents
 - [x] OPDS 1.x and 2.0 support
 - [x] FXL support
-- [] RTL support
+- [ ] RTL support
 
 
 ## Dependencies
