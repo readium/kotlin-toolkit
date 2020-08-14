@@ -33,6 +33,7 @@ import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.drm.DRMFulfilledPublication
 import org.readium.r2.testapp.library.LibraryActivity
+import java.io.File
 import java.net.URL
 import java.util.Locale
 import kotlin.coroutines.resume
@@ -54,8 +55,8 @@ class CatalogActivity : LibraryActivity(), LcpAuthenticating {
     override fun canFulfill(file: String): Boolean =
             file.fileExtension().toLowerCase(Locale.ROOT) == "lcpl"
 
-    override suspend fun fulfill(byteArray: ByteArray): Try<DRMFulfilledPublication, LcpException> =
-        lcpService.importPublication(byteArray).map { DRMFulfilledPublication(it.localURL, it.suggestedFilename) }
+    override suspend fun fulfill(file: File): Try<DRMFulfilledPublication, Exception> =
+        lcpService.acquirePublication(file).map { DRMFulfilledPublication(it.localFile, it.suggestedFilename) }
 
     override suspend fun retrievePassphrase(license: LcpAuthenticating.AuthenticatedLicense, reason: LcpAuthenticating.AuthenticationReason, allowUserInteraction: Boolean, sender: Any?): String? =
         if (allowUserInteraction)
@@ -100,16 +101,15 @@ class CatalogActivity : LibraryActivity(), LcpAuthenticating {
             helpButton.visibility = View.VISIBLE
         }
 
-        when (reason.name) {
-            "passphraseNotFound" -> title.text = "Passphrase Required"
-            "invalidPassphrase" -> {
+        when (reason) {
+            LcpAuthenticating.AuthenticationReason.PassphraseNotFound -> title.text = "Passphrase Required"
+            LcpAuthenticating.AuthenticationReason.InvalidPassphrase -> {
                 title.text = "Incorrect Passphrase"
                 passwordLayout.error = "Incorrect Passphrase"
             }
         }
 
         val provider = try {
-            val test = URL(license.provider)
             URL(license.provider).host
         } catch (e: Exception) {
             license.provider

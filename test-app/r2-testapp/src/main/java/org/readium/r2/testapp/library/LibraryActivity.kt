@@ -390,10 +390,10 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             if (sourceFile.format() != Format.LCP_LICENSE)
                 sourceFile
             else {
-                fulfill(sourceFile.file.readBytes()).fold(
+                fulfill(sourceFile.file).fold(
                     {
                         val format = Format.of(fileExtension = File(it.suggestedFilename).extension)
-                        R2File(it.localURL, format = format)
+                        R2File(it.localFile.path, format = format)
                     },
                     {
                         tryOrNull { sourceFile.file.delete() }

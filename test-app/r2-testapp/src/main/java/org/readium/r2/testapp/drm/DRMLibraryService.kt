@@ -12,15 +12,16 @@ package org.readium.r2.testapp.drm
 
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.util.Try
+import java.io.File
 
 
 data class DRMFulfilledPublication(
-    val localURL: String,
+    val localFile: File,
     val suggestedFilename: String
 )
 
 interface DRMLibraryService {
     val brand: DRM.Brand
     fun canFulfill(file: String) : Boolean
-    suspend fun fulfill(byteArray: ByteArray): Try<DRMFulfilledPublication, Exception>
+    suspend fun fulfill(file: File): Try<DRMFulfilledPublication, Exception>
 }
