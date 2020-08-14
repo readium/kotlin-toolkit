@@ -10,7 +10,6 @@
 package org.readium.r2.lcp.service
 
 import com.mcxiaoke.koi.HASH
-import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.license.model.LicenseDocument
 
@@ -19,7 +18,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
     suspend fun request(license: LicenseDocument, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): String? {
         val candidates = this@PassphrasesService.possiblePassphrasesFromRepository(license)
         val passphrase = try {
-            Lcp().findOneValidPassphrase(license.json.toString(), candidates.toTypedArray())
+            LcpClient.findOneValidPassphrase(license.json.toString(), candidates)
         } catch (e: Exception) {
             null
         }
@@ -43,7 +42,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         }
 
         return try {
-            val passphrase = Lcp().findOneValidPassphrase(license.json.toString(), passphrases.toTypedArray())
+            val passphrase = LcpClient.findOneValidPassphrase(license.json.toString(), passphrases)
             this.repository.addPassphrase(passphrase, license.id, license.provider, license.user.id)
             passphrase
         } catch (e: Exception) {

@@ -13,12 +13,12 @@ package org.readium.r2.lcp.license
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
-import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.service.DeviceService
+import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.URLParameters
@@ -48,7 +48,7 @@ internal class License(
                 Try.success(ByteArray(0))
             } else {
                 val context = documents.getContext()
-                val decryptedData = Lcp().decrypt(context, data)
+                val decryptedData = LcpClient.decrypt(context, data)
                 Try.success(decryptedData)
             }
 

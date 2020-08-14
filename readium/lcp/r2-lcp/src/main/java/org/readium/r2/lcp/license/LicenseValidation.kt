@@ -11,8 +11,6 @@ package org.readium.r2.lcp.license
 
 import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
-import org.readium.lcp.sdk.DRMContext
-import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpException
@@ -21,6 +19,7 @@ import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.service.CRLService
 import org.readium.r2.lcp.service.DeviceService
+import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesService
 import timber.log.Timber
@@ -32,7 +31,7 @@ internal sealed class Either<A, B> {
 
 private val supportedProfiles = listOf("http://readium.org/lcp/basic-profile", "http://readium.org/lcp/profile-1.0")
 
-internal typealias Context = Either<DRMContext, LcpException.LicenseStatus>
+internal typealias Context = Either<LcpClient.Context, LcpException.LicenseStatus>
 
 internal typealias Observer = (ValidatedDocuments?, Exception?) -> Unit
 
@@ -44,7 +43,7 @@ internal enum class ObserverPolicy {
 }
 
 internal data class ValidatedDocuments constructor(val license: LicenseDocument, private val context: Context, val status: StatusDocument? = null) {
-    fun getContext(): DRMContext {
+    fun getContext(): LcpClient.Context {
         when (context) {
             is Either.Left -> return context.left
             is Either.Right -> throw context.right
@@ -75,7 +74,7 @@ internal sealed class Event {
     data class validatedStatus(val status: StatusDocument) : Event()
     data class checkedLicenseStatus(val error: LcpException.LicenseStatus?) : Event()
     data class retrievedPassphrase(val passphrase: String) : Event()
-    data class validatedIntegrity(val context: DRMContext) : Event()
+    data class validatedIntegrity(val context: LcpClient.Context) : Event()
     data class registeredDevice(val statusData: ByteArray?) : Event()
     data class failed(val error: Exception) : Event()
     object cancelled : Event()
@@ -118,7 +117,7 @@ internal class LicenseValidation(
         val prodLicense = LicenseDocument(data = prodLicenseInput.readBytes())
         val passphrase = "7B7602FEF5DEDA10F768818FFACBC60B173DB223B7E66D8B2221EBE2C635EFAD"
         try {
-            Lcp().findOneValidPassphrase(prodLicense.json.toString(), listOf(passphrase).toTypedArray()) == passphrase
+            LcpClient.findOneValidPassphrase(prodLicense.json.toString(), listOf(passphrase)) == passphrase
         } catch (e: Exception) {
             false
         }
@@ -374,7 +373,7 @@ internal class LicenseValidation(
         if (!supportedProfiles.contains(profile)) {
             throw LcpException.LicenseProfileNotSupported
         }
-        val context = Lcp().createContext(license.json.toString(), passphrase, crl.retrieve())
+        val context = LcpClient.createContext(license.json.toString(), passphrase, crl.retrieve())
         raise(Event.validatedIntegrity(context))
     }
 

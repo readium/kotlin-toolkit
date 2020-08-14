@@ -44,9 +44,6 @@ dependencies {
         implementation "com.github.readium:r2-shared-kotlin:2.0.0-alpha.1"
     }
 
-    //noinspection GradleDependency
-    implementation "readium:liblcp:1.0.0@aar"
-
     implementation('com.mcxiaoke.koi:core:0.5.5') {
         exclude module: 'support-v4'
     }

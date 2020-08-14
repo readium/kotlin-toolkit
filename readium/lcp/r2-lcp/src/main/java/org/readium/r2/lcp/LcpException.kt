@@ -10,7 +10,6 @@
 package org.readium.r2.lcp
 
 import org.joda.time.DateTime
-import org.readium.lcp.sdk.DRMException
 import java.net.SocketTimeoutException
 
 sealed class LcpException(message: String? = null, cause: Throwable? = null) : Exception(message, cause) {
@@ -36,7 +35,7 @@ sealed class LcpException(message: String? = null, cause: Throwable? = null) : E
     class Runtime(override val message: String) : LcpException()
 
     /** An unknown low-level exception was reported. */
-    class Unknown(override val cause: Exception?) : LcpException()
+    class Unknown(override val cause: Throwable?) : LcpException()
 
 
     /**
@@ -179,20 +178,6 @@ sealed class LcpException(message: String? = null, cause: Throwable? = null) : E
         internal fun wrap(e: Exception?): LcpException = when (e) {
             is LcpException -> e
             is SocketTimeoutException -> Network(e)
-            is DRMException -> when(e.drmError.code) {
-                // Error code 11 should never occur since we check the start/end date before calling createContext
-                11 -> Runtime("License is out of date (check start and end date).")
-                101 -> LicenseIntegrity.CertificateRevoked
-                102 -> LicenseIntegrity.CertificateSignatureInvalid
-                111 -> LicenseIntegrity.LicenseSignatureDateInvalid
-                112 -> LicenseIntegrity.LicenseSignatureInvalid
-                // Error code 121 seems to be unused in the C++ lib.
-                121 -> Runtime("The drm context is invalid.")
-                131 -> Decryption.ContentKeyDecryptError
-                141 -> LicenseIntegrity.UserKeyCheckInvalid
-                151 -> Decryption.ContentDecryptError
-                else -> Unknown(e)
-            }
             else -> Unknown(e)
         }
     }
