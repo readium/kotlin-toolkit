@@ -55,11 +55,6 @@ internal class NetworkService {
             Pair(HttpURLConnection.HTTP_INTERNAL_ERROR, null)
         }
 
-    fun fetch(url: String, method: Method = Method.GET, parameters: URLParameters = emptyMap(), completion: (status: Int, data: ByteArray?) -> Unit) = runBlocking {
-        val (status, data) = fetch(url, method, parameters)
-        completion(status, data)
-    }
-
     private fun Uri.Builder.appendQueryParameters(parameters: URLParameters): Uri.Builder =
         apply {
             for ((key, value) in parameters) {

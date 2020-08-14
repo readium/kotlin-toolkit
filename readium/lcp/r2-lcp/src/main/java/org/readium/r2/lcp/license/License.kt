@@ -22,6 +22,7 @@ import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.URLParameters
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.util.Try
 import timber.log.Timber
 import java.net.HttpURLConnection
@@ -160,7 +161,7 @@ internal class License(
             if (status == null || link == null || url == null) {
                 throw LcpException.LicenseInteractionNotAvailable
             }
-            val data = if (link.type == "text/html") {
+            val data = if (link.mediaType?.isHtml == true) {
                 callHTML(url, parameters)
             } else {
                 callPUT(url, parameters)

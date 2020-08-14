@@ -44,25 +44,19 @@ internal class DeviceService(private val repository: DeviceRepository, private v
         get() = mapOf("id" to id, "name" to name)
 
 
-    fun registerLicense(license: LicenseDocument, link: Link, completion: (ByteArray?) -> Unit) {
-        runBlocking {
-            val registered = repository.isDeviceRegistered(license)
-            if (registered) {
-                completion(null)
-            } else {
-                // TODO templated url
-                val url = link.url(asQueryParameters).toString()
-
-                network.fetch(url, NetworkService.Method.POST, asQueryParameters) { status, data ->
-                    if (status != 200) {
-                        completion(null)
-                    }
-
-                    repository.registerDevice(license)
-                    completion(data)
-                }
-            }
+    suspend fun registerLicense(license: LicenseDocument, link: Link): ByteArray? {
+        if (repository.isDeviceRegistered(license)) {
+            return null
         }
+
+        val url = link.url(asQueryParameters).toString()
+        val (status, data) = network.fetch(url, NetworkService.Method.POST, asQueryParameters)
+        if (status != 200 || data == null) {
+            return null
+        }
+
+        repository.registerDevice(license)
+        return data
     }
 
 }

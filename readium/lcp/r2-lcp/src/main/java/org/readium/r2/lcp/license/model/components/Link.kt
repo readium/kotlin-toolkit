@@ -14,6 +14,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.service.URLParameters
+import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.util.URITemplate
 import java.net.URL
 
@@ -66,5 +67,8 @@ data class Link(val json: JSONObject) {
 
     val url: URL?
         get() = url(parameters = emptyMap())
+
+    val mediaType: MediaType?
+        get() = type?.let { MediaType.parse(it) }
 
 }

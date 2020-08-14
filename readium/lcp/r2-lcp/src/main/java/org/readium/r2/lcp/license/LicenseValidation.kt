@@ -267,18 +267,20 @@ internal class LicenseValidation(
 
     private fun handle(state: State) {
         try {
-            when (state) {
-                is State.start -> notifyObservers(documents = null, error = null)
-                is State.validateLicense -> validateLicense(state.data)
-                is State.fetchStatus -> fetchStatus(state.license)
-                is State.validateStatus -> validateStatus(state.data)
-                is State.fetchLicense -> fetchLicense(state.status)
-                is State.checkLicenseStatus -> checkLicenseStatus(state.license, state.status)
-                is State.retrievePassphrase -> runBlocking { requestPassphrase(state.license) }
-                is State.validateIntegrity -> validateIntegrity(state.license, state.passphrase)
-                is State.registerDevice -> registerDevice(state.documents.license, state.link)
-                is State.valid -> notifyObservers(state.documents, null)
-                is State.failure -> notifyObservers(null, state.error)
+            runBlocking {
+                when (state) {
+                    is State.start -> notifyObservers(documents = null, error = null)
+                    is State.validateLicense -> validateLicense(state.data)
+                    is State.fetchStatus -> fetchStatus(state.license)
+                    is State.validateStatus -> validateStatus(state.data)
+                    is State.fetchLicense -> fetchLicense(state.status)
+                    is State.checkLicenseStatus -> checkLicenseStatus(state.license, state.status)
+                    is State.retrievePassphrase -> requestPassphrase(state.license)
+                    is State.validateIntegrity -> validateIntegrity(state.license, state.passphrase)
+                    is State.registerDevice -> registerDevice(state.documents.license, state.link)
+                    is State.valid -> notifyObservers(state.documents, null)
+                    is State.failure -> notifyObservers(null, state.error)
+                }
             }
         } catch (error: Exception) {
             if (DEBUG) Timber.tag("LicenseValidation").e(error)
@@ -310,14 +312,13 @@ internal class LicenseValidation(
         raise(Event.validatedLicense(license))
     }
 
-    private fun fetchStatus(license: LicenseDocument) {
+    private suspend fun fetchStatus(license: LicenseDocument) {
         val url = license.url(LicenseDocument.Rel.status).toString()
-        network.fetch(url) { status, data ->
-            if (status != 200) {
-                throw LcpException.Network(null)
-            }
-            raise(Event.retrievedStatusData(data!!))
+        val (status, data) = network.fetch(url)
+        if (status != 200 || data == null) {
+            throw LcpException.Network(null)
         }
+        raise(Event.retrievedStatusData(data))
     }
 
     private fun validateStatus(data: ByteArray) {
@@ -325,14 +326,13 @@ internal class LicenseValidation(
         raise(Event.validatedStatus(status))
     }
 
-    private fun fetchLicense(status: StatusDocument) {
+    private suspend fun fetchLicense(status: StatusDocument) {
         val url = status.url(StatusDocument.Rel.license).toString()
-        network.fetch(url) { statusCode, data ->
-            if (statusCode != 200) {
-                throw LcpException.Network(null)
-            }
-            raise(Event.retrievedLicenseData(data!!))
+        val (statusCode, data) = network.fetch(url)
+        if (statusCode != 200 || data == null) {
+            throw LcpException.Network(null)
         }
+        raise(Event.retrievedLicenseData(data))
     }
 
     private fun checkLicenseStatus(license: LicenseDocument, status: StatusDocument?) {
@@ -368,23 +368,20 @@ internal class LicenseValidation(
             raise(Event.retrievedPassphrase(passphrase))
     }
 
-    private fun validateIntegrity(license: LicenseDocument, passphrase: String) {
+    private suspend fun validateIntegrity(license: LicenseDocument, passphrase: String) {
         if (DEBUG) Timber.tag("LicenseValidation").d("validateIntegrity")
         val profile = license.encryption.profile
         if (!supportedProfiles.contains(profile)) {
             throw LcpException.LicenseProfileNotSupported
         }
-        crl.retrieve { crl ->
-            val context = Lcp().createContext(license.json.toString(), passphrase, crl)
-            raise(Event.validatedIntegrity(context))
-        }
+        val context = Lcp().createContext(license.json.toString(), passphrase, crl.retrieve())
+        raise(Event.validatedIntegrity(context))
     }
 
-    private fun registerDevice(license: LicenseDocument, link: Link) {
+    private suspend fun registerDevice(license: LicenseDocument, link: Link) {
         if (DEBUG) Timber.tag("LicenseValidation").d("registerDevice")
-        device.registerLicense(license, link) { data ->
-            raise(Event.registeredDevice(data))
-        }
+        val data = device.registerLicense(license, link)
+        raise(Event.registeredDevice(data))
     }
 
     companion object {
