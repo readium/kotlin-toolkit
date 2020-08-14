@@ -45,7 +45,7 @@ class CatalogActivity : LibraryActivity(), LcpAuthenticating {
 
     override fun onCreate(savedInstanceState: Bundle?) {
             lcpService = LcpService.create(this)
-        contentProtections = listOf(LcpContentProtection(lcpService, this))
+        contentProtections = listOf(lcpService.contentProtection(this))
         super.onCreate(savedInstanceState)
     }
 
