@@ -79,7 +79,7 @@ internal class NetworkService {
             BufferedInputStream(connection.inputStream).use { input ->
                 FileOutputStream(destination).use { output ->
                     val buf = ByteArray(2048)
-                    var n = 0
+                    var n: Int
                     while (-1 != input.read(buf).also { n = it }) {
                         output.write(buf, 0, n)
                     }

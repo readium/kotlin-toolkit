@@ -24,16 +24,25 @@ import kotlin.coroutines.resume
  */
 interface LcpLicense : Serializable {
 
+    /**
+     * License Document information.
+     * https://readium.org/lcp-specs/releases/lcp/latest.html
+     */
     val license: LicenseDocument
+
+    /**
+     * License Status Document information.
+     * https://readium.org/lcp-specs/releases/lsd/latest.html
+     */
     val status: StatusDocument?
 
     /**
-     * Number of remaining characters allowed to be copied by the user. If [null], there's no limit.
+     * Number of remaining characters allowed to be copied by the user. If null, there's no limit.
      */
     val charactersToCopyLeft: Int?
 
     /**
-     * Number of pages allowed to be printed by the user. If [null], there's no limit.
+     * Number of pages allowed to be printed by the user. If null, there's no limit.
      */
     val pagesToPrintLeft: Int?
 
@@ -112,7 +121,7 @@ interface LcpLicense : Serializable {
 
     @Deprecated("Use `renewLoan()` with coroutines instead", ReplaceWith("renewLoan)"))
     fun renewLoan(end: DateTime?, present: (URL, dismissed: () -> Unit) -> Unit, completion: (LcpException?) -> Unit) {
-        GlobalScope.launch(Dispatchers.Main) {
+        GlobalScope.launch {
             suspend fun presentUrl(url: URL) {
                 suspendCancellableCoroutine<Unit> { cont ->
                     present(url) {
@@ -130,7 +139,7 @@ interface LcpLicense : Serializable {
 
     @Deprecated("Use `returnPublication()` with coroutines instead", ReplaceWith("returnPublication"))
     fun returnPublication(completion: (LcpException?) -> Unit) {
-        GlobalScope.launch(Dispatchers.Main) {
+        GlobalScope.launch {
             completion(returnPublication().exceptionOrNull())
         }
     }

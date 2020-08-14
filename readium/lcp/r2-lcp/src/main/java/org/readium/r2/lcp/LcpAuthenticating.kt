@@ -16,18 +16,33 @@ import org.readium.r2.lcp.license.model.components.lcp.User
 interface LcpAuthenticating {
 
     /**
-     * Requests a passphrase to decrypt the given license.
-     * The client app can prompt the user to enter the passphrase, or retrieve it by any other means
-     * (eg. web service).
+     * Requests the passphrase used to decrypt the given license.
+     *
+     * If [allowUserInteraction] is true, the reading app can prompt the user to enter the
+     * passphrase. Otherwise, use a background retrieval method (e.g. web service) or return null.
+     *
+     * The returned passphrase can be clear or already hashed.
+     *
+     * You can implement an asynchronous pop-up with callbacks using `suspendCoroutine`:
+     * ```
+     * suspendCoroutine<String?> { cont ->
+     *     cancelButton.setOnClickListener {
+     *         cont.resume(null)
+     *     }
+     *
+     *     okButton.setOnClickListener {
+     *         cont.resume(passwordEditText.text.toString())
+     *     }
+     *
+     *     // show pop-up...
+     * }
+     * ```
      *
      * @param license Information to show to the user about the license being opened.
      * @param reason Reason why the passphrase is requested. It should be used to prompt the user.
      * @param allowUserInteraction Indicates whether the user can be prompted for their passphrase.
-     *        When false, don't show any dialog to the user. Instead, use a background retrieval
-     *        method or return null.
      * @param sender Free object that can be used by reading apps to give some UX context when
      *        presenting dialogs.
-     * @return The retrieved passphrase or null if the user cancelled. The passphrase may be already hashed.
      */
     suspend fun retrievePassphrase(license: AuthenticatedLicense, reason: AuthenticationReason, allowUserInteraction: Boolean, sender: Any? = null): String?
 
@@ -49,14 +64,14 @@ interface LcpAuthenticating {
     data class AuthenticatedLicense(val document: LicenseDocument) {
 
         /**
-         *  A hint to be displayed to the User to help them remember the User Passphrase.
+         * A hint to be displayed to the User to help them remember the User Passphrase.
          */
         val hint: String
             get() = document.encryption.userKey.textHint
 
         /**
-         * Location where a Reading System can redirect a User looking for additional information about
-         * the User Passphrase.
+         * Location where a Reading System can redirect a User looking for additional information
+         * about the User Passphrase.
          */
         val hintLink: Link?
             get() = document.link(LicenseDocument.Rel.hint)

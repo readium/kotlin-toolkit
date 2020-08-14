@@ -204,7 +204,7 @@ internal class License(
     }
 
     init {
-        LicenseValidation.observe(validation) { documents, error ->
+        LicenseValidation.observe(validation) { documents, _ ->
             documents?.let {
                 this.documents = documents
             }
@@ -212,7 +212,7 @@ internal class License(
     }
 
     private fun validateStatusDocument(data: ByteArray): Unit =
-            validation.validate(LicenseValidation.Document.status(data)) { validatedDocuments: ValidatedDocuments?, error: Exception? -> }
+        validation.validate(LicenseValidation.Document.status(data)) { _, _ -> }
 
 }
 

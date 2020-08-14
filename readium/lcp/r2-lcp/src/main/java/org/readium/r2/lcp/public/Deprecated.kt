@@ -17,8 +17,8 @@ import org.readium.r2.lcp.LcpService
 
 @Deprecated("Renamed to `LcpService`", ReplaceWith("org.readium.r2.lcp.LcpService"), level = DeprecationLevel.ERROR)
 typealias LCPService = LcpService
-@Deprecated("Renamed to `LcpService.ImportedPublication`", ReplaceWith("org.readium.r2.lcp.LcpService.ImportedPublication"), level = DeprecationLevel.ERROR)
-typealias LCPImportedPublication = LcpService.ImportedPublication
+@Deprecated("Renamed to `LcpService.AcquiredPublication`", ReplaceWith("org.readium.r2.lcp.LcpService.AcquiredPublication"), level = DeprecationLevel.ERROR)
+typealias LCPImportedPublication = LcpService.AcquiredPublication
 @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
 typealias URLPresenter = () -> Unit
 @Deprecated("Renamed to `LcpLicense`", ReplaceWith("org.readium.r2.lcp.LcpLicense"), level = DeprecationLevel.ERROR)

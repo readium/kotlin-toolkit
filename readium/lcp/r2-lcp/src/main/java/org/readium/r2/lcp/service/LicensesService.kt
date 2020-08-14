@@ -44,7 +44,7 @@ internal class LicensesService(
             true
         }
 
-    override suspend fun importPublication(lcpl: ByteArray): Try<LcpService.ImportedPublication, LcpException> =
+    override suspend fun acquirePublication(lcpl: ByteArray): Try<LcpService.AcquiredPublication, LcpException> =
         try {
             val licenseDocument = LicenseDocument(lcpl)
             if (DEBUG) Timber.d("license ${licenseDocument.json}")
@@ -123,7 +123,7 @@ internal class LicensesService(
         }
     }
 
-    private suspend fun fetchPublication(license: LicenseDocument, context: Context): LcpService.ImportedPublication {
+    private suspend fun fetchPublication(license: LicenseDocument, context: Context): LcpService.AcquiredPublication {
         val link = license.link(LicenseDocument.Rel.publication)
         val url = link?.url
             ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
@@ -150,8 +150,8 @@ internal class LicensesService(
         val container = createLicenseContainer(destination.path, format)
         container.write(license)
 
-        return LcpService.ImportedPublication(
-            localURL = destination.path,
+        return LcpService.AcquiredPublication(
+            localFile = destination,
             suggestedFilename = "${license.id}.${format.fileExtension}"
         )
     }
