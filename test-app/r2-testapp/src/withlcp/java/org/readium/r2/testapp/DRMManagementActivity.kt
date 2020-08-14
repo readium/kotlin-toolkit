@@ -14,7 +14,6 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -35,15 +34,8 @@ import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.longSnackbar
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import org.readium.r2.lcp.license.model.StatusDocument
-import org.readium.r2.lcp.LCPError
-import org.readium.r2.lcp.LCPLicense
-import org.readium.r2.lcp.LCPService
-import org.readium.r2.lcp.R2MakeLCPService
-import org.readium.r2.shared.drm.DRM
-import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.utils.extensions.color
-import timber.log.Timber
+import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 
@@ -55,31 +47,16 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    private lateinit var lcpService: LCPService
     private lateinit var drmModel: DRMViewModel
     private lateinit var endTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        lcpService = R2MakeLCPService(this)
+        val pubPath = intent.getStringExtra("publication")
+            ?: throw Exception("publication required")
 
-        val drm = DRM(DRM.Brand.lcp)
-
-        lcpService.retrieveLicense(intent.getStringExtra("publication")
-                ?: throw Exception("publication required"), null) { license, error ->
-            license?.let {
-                drm.license = license
-                drmModel = DRMViewModel.make(drm, this)
-                if (DEBUG) Timber.e(error)
-                if (DEBUG) Timber.d(license.toString())
-            } ?: run {
-                error?.let {
-                    if (DEBUG) Timber.e(error)
-                }
-            }
-        }
-
+        drmModel = LCPViewModel(File(pubPath), this)
 
         val daysArray = arrayOf(1, 3, 7, 15)
 
@@ -299,42 +276,31 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                             button {
                                 text = context.getString(R.string.drm_label_renew)
                                 onClick {
+                                    renewDialog.apply {
+                                        setCancelable(false)
+                                        setCanceledOnTouchOutside(false)
+                                        setOnShowListener {
+                                            val renewButton = getButton(AlertDialog.BUTTON_POSITIVE)
+                                            renewButton.setOnClickListener {
 
-                                    // if a renew URL is set in the server configuration, open the web browser
-                                    if ((drm.license as LCPLicense).status?.link(StatusDocument.Rel.renew)?.type == "text/html") {
-                                        val intent = Intent(Intent.ACTION_VIEW)
-                                        intent.data = Uri.parse((drm.license as LCPLicense).status?.link(StatusDocument.Rel.renew)?.href.toString())
-                                        startActivity(intent)
-                                    } else {
+                                                val addDays = daysInput.selectedItem.toString().toInt()
+                                                val newEndDate = DateTime(drmModel.end).plusDays(addDays)
 
-                                        renewDialog.apply {
-                                            setCancelable(false)
-                                            setCanceledOnTouchOutside(false)
-                                            setOnShowListener {
-                                                val renewButton = getButton(AlertDialog.BUTTON_POSITIVE)
-                                                renewButton.setOnClickListener {
-
-                                                    val addDays = daysInput.selectedItem.toString().toInt()
-                                                    val newEndDate = DateTime(drmModel.end).plusDays(addDays)
-
-                                                    drmModel.renewLoan(newEndDate) { error ->
-                                                        error?.let {
+                                                launch {
+                                                    drmModel.renewLoan(newEndDate)
+                                                        .onSuccess {
                                                             dismiss()
-                                                            (error as LCPError).errorDescription?.let { errorDescription ->
-                                                                longSnackbar(errorDescription)
-                                                            }
-                                                        } ?: run {
+                                                            endTextView.text =
+                                                                newEndDate?.toString(DateTimeFormat.shortDateTime())
+                                                        }.onFailure { exception ->
                                                             dismiss()
-                                                            launch {
-                                                                endTextView.text = newEndDate?.toString(DateTimeFormat.shortDateTime())
-                                                            }
+                                                            exception.localizedMessage?.let { longSnackbar(it) }
                                                         }
-                                                    }
                                                 }
                                             }
                                         }
-                                        renewDialog.show()
                                     }
+                                    renewDialog.show()
                                 }
                             }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                         }
@@ -353,18 +319,17 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                                         setOnShowListener {
                                             val button = getButton(AlertDialog.BUTTON_POSITIVE)
                                             button.setOnClickListener {
-                                                drmModel.returnPublication { error ->
-                                                    error?.let {
-                                                        (error as LCPError).errorDescription?.let { errorDescription ->
-                                                            longSnackbar(errorDescription)
+                                                launch {
+                                                    drmModel.returnPublication()
+                                                        .onSuccess {
+                                                            val intent = Intent()
+                                                            intent.putExtra("returned", true)
+                                                            setResult(Activity.RESULT_OK, intent)
+                                                            dismiss()
+                                                            finish()
+                                                        }.onFailure { exception ->
+                                                            exception.localizedMessage?.let { longSnackbar(it) }
                                                         }
-                                                    } ?: run {
-                                                        val intent = Intent()
-                                                        intent.putExtra("returned", true)
-                                                        setResult(Activity.RESULT_OK, intent)
-                                                        dismiss()
-                                                        finish()
-                                                    }
                                                 }
                                             }
                                         }

@@ -39,13 +39,15 @@ import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.readium.r2.shared.Injectable
+import org.readium.r2.shared.extensions.extension
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
-import org.readium.r2.shared.publication.services.isProtected
+import org.readium.r2.shared.publication.services.isRestricted
+import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.File as R2File
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
@@ -388,10 +390,10 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             if (sourceFile.format() != Format.LCP_LICENSE)
                 sourceFile
             else {
-                fulfill(sourceFile.file.readBytes()).fold(
+                fulfill(sourceFile.file).fold(
                     {
                         val format = Format.of(fileExtension = File(it.suggestedFilename).extension)
-                        R2File(it.localURL, format = format)
+                        R2File(it.localFile.path, format = format)
                     },
                     {
                         tryOrNull { sourceFile.file.delete() }
@@ -401,9 +403,13 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                         return
                     }
                 )
+            } ?: run {
+                progress?.dismiss()
+                return
             }
 
-        val fileName = UUID.randomUUID().toString()
+        val format = publicationFile.format()
+        val fileName = "${UUID.randomUUID()}.${format?.fileExtension}"
         val libraryFile = R2File(
             R2DIRECTORY + fileName,
             format = publicationFile.format(),
@@ -499,7 +505,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
 
     private suspend fun URL.copyToTempFile(): R2File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
-        val file = File(R2DIRECTORY + filename)
+        val file = File("$R2DIRECTORY$filename.$extension")
         download(file.path).let {
             if (it)
                 R2File(file.path, sourceUrl = this.toString())
@@ -511,7 +517,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
     private suspend fun Uri.copyToTempFile(): R2File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
         val format = Format.ofUri(this, contentResolver)
-        val file = R2File(R2DIRECTORY + filename, format = format)
+        val file = R2File("$R2DIRECTORY$filename.${format?.fileExtension}", format = format)
         ContentResolverUtil.getContentInputStream(this@LibraryActivity, this, file.path)
         return file
     }
@@ -548,7 +554,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         }
     }
 
-    private suspend fun confirmAddDuplicateBook(book: Book) = suspendCoroutine<Boolean> { cont ->
+    private suspend fun confirmAddDuplicateBook(book: Book): Boolean = suspendCoroutine { cont ->
         alert(Appcompat, "Publication already exists") {
             positiveButton("Add anyway") {
                 it.dismiss()
@@ -587,17 +593,25 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                     progress.dismiss()
                     catalogView.longSnackbar("unable to open publication") }
                 .onSuccess {
-                    prepareToServe(it, file)
-                    progress.dismiss()
-                    navigatorLauncher.launch(
-                        NavigatorContract.Input(
-                            file = file,
-                            publication = it,
-                            bookId = book.id,
-                            initialLocator = book.id?.let { id -> booksDB.books.currentLocator(id) },
-                            deleteOnResult = remoteUrl != null
-                        )
-                    )
+                    if (it.isRestricted) {
+                        progress.dismiss()
+                        if (it.protectionError != null) {
+                            Timber.d(it.protectionError)
+                            catalogView.longSnackbar("unable to unlock publication")
+                        }
+                    } else {
+                        prepareToServe(it, file)
+                        progress.dismiss()
+                        navigatorLauncher.launch(
+                           NavigatorContract.Input(
+                              file = file,
+                              publication = it,
+                              bookId = book.id,
+                              initialLocator = book.id?.let { id -> booksDB.books.currentLocator(id) },
+                              deleteOnResult = remoteUrl != null
+                           )
+                    	)
+                    }
                 }
         }
     }

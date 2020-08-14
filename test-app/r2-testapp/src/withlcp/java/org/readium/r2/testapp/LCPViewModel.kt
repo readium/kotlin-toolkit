@@ -11,78 +11,77 @@
 
 package org.readium.r2.testapp
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.content.ContextCompat
+import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
-import org.readium.r2.lcp.LCPLicense
-import org.readium.r2.shared.drm.DRM
+import org.readium.r2.lcp.LcpLicense
+import org.readium.r2.lcp.LcpService
+import org.readium.r2.shared.util.Try
+import java.io.File
 import java.io.Serializable
 import java.net.URL
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-class LCPViewModel(drm: DRM, context: Context) : DRMViewModel(drm, context), Serializable {
+class LCPViewModel(val file: File, val activity: ComponentActivity) : DRMViewModel(activity), Serializable {
 
-    private val lcpLicense: LCPLicense?
-        get() {
-            val license = license ?: return null
-            return license as? LCPLicense
-        }
-    override val type: String
-        get() = "LCP"
-    override val state: String?
-        get() = lcpLicense?.status?.status?.rawValue
-    override val provider: String?
-        get() = lcpLicense?.license?.provider
-    override val issued: DateTime?
-        get() = lcpLicense?.license?.issued
-    override val updated: DateTime?
-        get() = lcpLicense?.license?.updated
-    override val start: DateTime?
-        get() = lcpLicense?.license?.rights?.start
-    override val end: DateTime?
-        get() = lcpLicense?.license?.rights?.end
-    override val copiesLeft: String
-        get() {
-            lcpLicense?.charactersToCopyLeft?.let {
-                return "$it characters"
+    private val lcpLicense: LcpLicense? = runBlocking {
+        LcpService.create(activity)
+            .retrieveLicense(file, null, allowUserInteraction = false)
+            ?.getOrNull()
+    }
+
+    override val type: String = "LCP"
+
+    override val state: String? = lcpLicense?.status?.status?.rawValue
+
+    override val provider: String? = lcpLicense?.license?.provider
+
+    override val issued: DateTime? = lcpLicense?.license?.issued
+
+    override val updated: DateTime? = lcpLicense?.license?.updated
+
+    override val start: DateTime? = lcpLicense?.license?.rights?.start
+
+    override val end: DateTime? = lcpLicense?.license?.rights?.end
+
+    override val copiesLeft: String =
+        lcpLicense?.charactersToCopyLeft
+            ?.let { "$it characters" }
+            ?: super.copiesLeft
+
+    override val printsLeft: String =
+        lcpLicense?.pagesToPrintLeft
+            ?.let { "$it pages" }
+            ?: super.printsLeft
+
+    override val canRenewLoan: Boolean = lcpLicense?.canRenewLoan ?: false
+
+    override suspend fun renewLoan(end: DateTime?): Try<Unit, Exception> {
+        val lcpLicense = lcpLicense ?: return super.renewLoan(end)
+
+        suspend fun urlPresenter(url: URL): Unit = suspendCoroutine { cont ->
+            val intent = CustomTabsIntent.Builder().build().intent.apply {
+                data = Uri.parse(url.toString())
             }
-            return super.copiesLeft
-        }
-    override val printsLeft: String
-        get() {
-            lcpLicense?.pagesToPrintLeft?.let {
-                return "$it pages"
+
+            val launcher = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                cont.resume(Unit)
             }
-            return super.printsLeft
+            launcher.launch(intent)
         }
-    override val canRenewLoan: Boolean
-        get() = lcpLicense?.canRenewLoan ?: false
 
-    // TODO do i need this?
-//    private var renewCallbacks: Map<Int, () -> Unit> = mapOf()
-
-    override fun renewLoan(end: DateTime?, completion: (Exception?) -> Unit) {
-        val lcpLicense = lcpLicense
-        if (lcpLicense == null) {
-            completion(null)
-            return
-        }
-        lcpLicense.renewLoan(end, { url: URL, dismissed: () -> Unit ->
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse(url.toString())
-            context.startActivity(intent)
-        }, completion)
+        return lcpLicense.renewLoan(end, ::urlPresenter)
     }
 
     override val canReturnPublication: Boolean
         get() = lcpLicense?.canReturnPublication ?: false
 
-    override fun returnPublication(completion: (Exception?) -> Unit) {
-        val lcpLicense = lcpLicense
-        if (lcpLicense == null) {
-            completion(null)
-            return
-        }
-        lcpLicense.returnPublication(completion = completion)
-    }
+    override suspend fun returnPublication(): Try<Unit, Exception> =
+        lcpLicense?.returnPublication() ?: super.returnPublication()
 }

@@ -12,54 +12,39 @@ package org.readium.r2.testapp
 
 import android.content.Context
 import org.joda.time.DateTime
-import org.readium.r2.shared.drm.DRM
-import org.readium.r2.shared.drm.DRMLicense
+import org.readium.r2.shared.util.Try
 import java.io.Serializable
 
 
-open class DRMViewModel(val drm: DRM, val context: Context) : Serializable {
+abstract class DRMViewModel(val context: Context) : Serializable {
 
+    abstract val type: String
 
-    companion object {
-        fun make(drm: DRM, context: Context): DRMViewModel {
-            if (DRM.Brand.lcp == drm.brand) {
-                return LCPViewModel(drm = drm, context = context)
-            }
-            return DRMViewModel(drm = drm, context = context)
-        }
-    }
+    open val state: String? = null
 
-    val license: DRMLicense?
-        get() = drm.license
-    open val type: String
-        get() = drm.brand.rawValue
-    open val state: String?
-        get() = null
-    open val provider: String?
-        get() = null
-    open val issued: DateTime?
-        get() = null
-    open val updated: DateTime?
-        get() = null
-    open val start: DateTime?
-        get() = null
-    open val end: DateTime?
-        get() = null
-    open val copiesLeft: String
-        get() = "unlimited"
-    open val printsLeft: String
-        get() = "unlimited"
+    open val provider: String? = null
+
+    open val issued: DateTime? = null
+
+    open val updated: DateTime? = null
+
+    open val start: DateTime? = null
+
+    open val end: DateTime? = null
+
+    open val copiesLeft: String = "unlimited"
+
+    open val printsLeft: String = "unlimited"
+
     open val canRenewLoan: Boolean
         get() = false
 
-    open fun renewLoan(end: DateTime?, completion: (Exception?) -> Unit) {
-        completion(null)
-    }
+    open suspend fun renewLoan(end: DateTime?): Try<Unit, Exception> =
+        Try.failure(Exception("Renewing a loan is not supported"))
 
     open val canReturnPublication: Boolean
         get() = false
 
-    open fun returnPublication(completion: (Exception?) -> Unit) {
-        completion(null)
-    }
+    open suspend fun returnPublication(): Try<Unit, Exception> =
+        Try.failure(Exception("Returning a publication is not supported"))
 }
