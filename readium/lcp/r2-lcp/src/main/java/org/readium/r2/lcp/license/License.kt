@@ -10,24 +10,23 @@
 
 package org.readium.r2.lcp.license
 
-import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
-import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.URLParameters
-import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.format.Format
+import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.Try
 import timber.log.Timber
-import java.io.File
+import java.net.HttpURLConnection
 import java.net.URL
-import java.util.*
 
 internal class License(
     private var documents: ValidatedDocuments,
@@ -35,18 +34,27 @@ internal class License(
     private val licenses: LicensesRepository,
     private val device: DeviceService,
     private val network: NetworkService
-) : LCPLicense {
+) : LcpLicense {
 
     override val license: LicenseDocument
         get() = documents.license
     override val status: StatusDocument?
         get() = documents.status
-    override val encryptionProfile: String?
-        get() = license.encryption.profile
 
-    override fun decipher(data: ByteArray): ByteArray? {
-        val context = documents.getContext()
-        return Lcp().decrypt(context, data)
+    override suspend fun decrypt(data: ByteArray): Try<ByteArray, LcpException> = withContext(Dispatchers.Default) {
+        try {
+            // LCP lib crashes if we call decrypt on an empty ByteArray
+            if (data.isEmpty()) {
+                Try.success(ByteArray(0))
+            } else {
+                val context = documents.getContext()
+                val decryptedData = Lcp().decrypt(context, data)
+                Try.success(decryptedData)
+            }
+
+        } catch (e: Exception) {
+            Try.failure(LcpException.wrap(e))
+        }
     }
 
     override val charactersToCopyLeft: Int?
@@ -65,22 +73,19 @@ internal class License(
     override val canCopy: Boolean
         get() = (charactersToCopyLeft ?: 1) > 0
 
-    override fun copy(text: String): String? {
-        var charactersLeft = charactersToCopyLeft ?: return text
-        if (charactersLeft <= 0) {
-            return null
+    override fun copy(text: String): Boolean {
+        var charactersLeft = charactersToCopyLeft ?: return true
+        if (text.length > charactersLeft) {
+            return false
         }
-        var result = text
-        if (result.length > charactersLeft) {
-            result = result.substring(0, charactersLeft)
-        }
+
         try {
-            charactersLeft = maxOf(0, charactersLeft - result.length)
+            charactersLeft = maxOf(0, charactersLeft - text.length)
             licenses.setCopiesLeft(charactersLeft, license.id)
         } catch (error: Error) {
             if (DEBUG) Timber.e(error)
         }
-        return result
+        return true
     }
 
     override val pagesToPrintLeft: Int?
@@ -118,132 +123,97 @@ internal class License(
     override val maxRenewDate: DateTime?
         get() = status?.potentialRights?.end
 
-    override fun renewLoan(end: DateTime?, present: URLPresenter, completion: (LCPError?) -> Unit) {
+    override suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException> {
 
-        fun callPUT(url: URL, parameters: URLParameters, callback: (Result<ByteArray>) -> Unit) {
-            this.network.fetch(url.toString(), NetworkService.Method.PUT, parameters) { status, data ->
-                when (status) {
-                    200 -> callback(Result.success(data!!))
-                    400 -> callback(Result.failure(RenewError.renewFailed))
-                    403 -> callback(Result.failure(RenewError.invalidRenewalPeriod(maxRenewDate = this.maxRenewDate)))
-                    else -> callback(Result.failure(RenewError.unexpectedServerError))
-                }
+        suspend fun callPUT(url: URL, parameters: URLParameters): ByteArray {
+            val (status, data) = this.network.fetch(url.toString(), NetworkService.Method.PUT, parameters)
+            when (status) {
+                HttpURLConnection.HTTP_OK -> return data!!
+                HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException.Renew.RenewFailed
+                HttpURLConnection.HTTP_FORBIDDEN -> throw LcpException.Renew.InvalidRenewalPeriod(maxRenewDate = this.maxRenewDate)
+                else -> throw LcpException.Renew.UnexpectedServerError
             }
         }
 
         // TODO needs to be tested
-        fun callHTML(url: URL, parameters: URLParameters, callback: (Result<ByteArray>) -> Unit) {
-            val statusURL = tryOrNull { this.license.url(LicenseDocument.Rel.status) }
-            if (statusURL == null) {
-                callback(Result.failure(LCPError.licenseInteractionNotAvailable))
-                return
+        suspend fun callHTML(url: URL, parameters: URLParameters): ByteArray {
+            val statusURL = try {
+                this.license.url(LicenseDocument.Rel.status)
+            } catch (e: Throwable) {
+                null
+            } ?: throw LcpException.LicenseInteractionNotAvailable
+            urlPresenter(url)
+            val (status, data) = this.network.fetch(statusURL.toString(), parameters = parameters)
+            return if (status != HttpURLConnection.HTTP_OK)
+                throw LcpException.Network(null)
+            else
+                data!!
+        }
+
+        try {
+            val parameters = this.device.asQueryParameters.toMutableMap()
+            end?.let {
+                parameters["end"] = end.toString()
             }
-
-            present(url) {
-                this.network.fetch(statusURL.toString(), parameters = parameters) { status, data ->
-                    if (status != 200) {
-                        callback(Result.failure(LCPError.network(null)))
-                    } else {
-                        callback(Result.success(data!!))
-                    }
-                }
+            val status = this.documents.status
+            val link = status?.link(StatusDocument.Rel.renew)
+            val url = link?.url(parameters)
+            if (status == null || link == null || url == null) {
+                throw LcpException.LicenseInteractionNotAvailable
             }
-        }
-
-        fun validateResponse(result: Result<ByteArray>) {
-            try {
-                validateStatusDocument(result.getOrThrow(), completion)
-            } catch (e: Exception) {
-                completion(LCPError.wrap(e))
+            val data = if (link.mediaType?.isHtml == true) {
+                callHTML(url, parameters)
+            } else {
+                callPUT(url, parameters)
             }
-        }
+            validateStatusDocument(data)
 
-        val parameters = this.device.asQueryParameters.toMutableMap()
-        end?.let {
-            parameters["end"] = end.toString()
-        }
-        val status = this.documents.status
-        val link = status?.link(StatusDocument.Rel.renew)
-        val url = link?.url(parameters)
-        if (status == null || link == null || url == null) {
-            throw LCPError.licenseInteractionNotAvailable
-        }
+            return Try.success(Unit)
 
-        if (link.type == "text/html") {
-            callHTML(url, parameters, ::validateResponse)
-        } else {
-            callPUT(url, parameters, ::validateResponse)
+        } catch (e: Exception) {
+            return Try.failure(LcpException.wrap(e))
         }
     }
 
     override val canReturnPublication: Boolean
         get() = status?.link(StatusDocument.Rel.`return`) != null
 
-    override fun returnPublication(completion: (LCPError?) -> Unit) {
-        val status = this.documents.status
-        val url = tryOrNull { status?.url(StatusDocument.Rel.`return`, device.asQueryParameters) }
-        if (status == null || url == null) {
-            completion(LCPError.licenseInteractionNotAvailable)
-            return
-        }
-
-        network.fetch(url.toString(), method = NetworkService.Method.PUT) { statusCode, data ->
-            try {
-                when (statusCode) {
-                    200 -> validateStatusDocument(data!!, completion)
-                    400 -> throw ReturnError.returnFailed
-                    403 -> throw ReturnError.alreadyReturnedOrExpired
-                    else -> throw ReturnError.unexpectedServerError
-                }
-            } catch (e: Exception) {
-                completion(LCPError.wrap(e))
+    override suspend fun returnPublication(): Try<Unit, LcpException> {
+        try {
+            val status = this.documents.status
+            val url = try {
+                status?.url(StatusDocument.Rel.`return`, device.asQueryParameters)
+            } catch (e: Throwable) {
+                null
             }
+            if (status == null || url == null) {
+                throw LcpException.LicenseInteractionNotAvailable
+            }
+
+            val (statusCode, data) = network.fetch(url.toString(), method = NetworkService.Method.PUT)
+            when (statusCode) {
+                HttpURLConnection.HTTP_OK -> validateStatusDocument(data!!)
+                HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException.Return.ReturnFailed
+                HttpURLConnection.HTTP_FORBIDDEN -> throw LcpException.Return.AlreadyReturnedOrExpired
+                else -> throw LcpException.Return.UnexpectedServerError
+            }
+            return Try.success(Unit)
+
+        } catch (e: Exception) {
+            return Try.failure(LcpException.wrap(e))
         }
     }
 
     init {
-        LicenseValidation.observe(validation) { documents, error ->
+        LicenseValidation.observe(validation) { documents, _ ->
             documents?.let {
                 this.documents = documents
             }
         }
     }
 
-    internal suspend fun fetchPublication(context: Context): LCPImportedPublication {
-        val license = this.documents.license
-        val link = license.link(LicenseDocument.Rel.publication)
-        val url = link?.url
-            ?: throw ParsingError.url(rel = LicenseDocument.Rel.publication.rawValue)
-
-        val properties =  Properties()
-        val inputStream = context.assets.open("configs/config.properties")
-        properties.load(inputStream)
-        val useExternalFileDir = properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
-
-        val rootDir: String =  if (useExternalFileDir) {
-            context.getExternalFilesDir(null)?.path + "/"
-        } else {
-            context.filesDir.path + "/"
-        }
-
-        val fileName = UUID.randomUUID().toString()
-        val destination = File(rootDir, fileName)
-        if (DEBUG) Timber.i("LCP destination $destination")
-
-        val format = network.download(url, destination) ?: Format.of(mediaType = link.type) ?: Format.EPUB
-
-        // Saves the License Document into the downloaded publication
-        val container = createLicenseContainer(destination.path, format)
-        container.write(license)
-
-        return LCPImportedPublication(
-            localURL = destination.path,
-            suggestedFilename = "${license.id}.${format.fileExtension}"
-        )
-    }
-
-    private fun validateStatusDocument(data: ByteArray, completion: (LCPError?) -> Unit): Unit =
-        validation.validate(LicenseValidation.Document.status(data)) { _, error -> completion(error?.let { LCPError.wrap(it) }) }
+    private fun validateStatusDocument(data: ByteArray): Unit =
+        validation.validate(LicenseValidation.Document.status(data)) { _, _ -> }
 
 }
 

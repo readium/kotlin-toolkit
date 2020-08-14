@@ -9,8 +9,7 @@
 
 package org.readium.r2.lcp.license.container
 
-import org.readium.r2.lcp.ContainerError
-import org.readium.r2.lcp.LCPError
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.zeroturnaround.zip.ZipUtil
 import java.io.File
@@ -27,18 +26,18 @@ internal open class ZIPLicenseContainer(private val zip: String, private val pat
         val archive = try {
             ZipFile(zip)
         } catch (e: Exception) {
-            throw LCPError.licenseContainer(ContainerError.openFailed)
+            throw LcpException.Container.OpenFailed
         }
         val entry = try {
             archive.getEntry(pathInZIP)
         } catch (e: Exception) {
-            throw LCPError.licenseContainer(ContainerError.fileNotFound(pathInZIP))
+            throw LcpException.Container.FileNotFound(pathInZIP)
         }
 
         return try {
             archive.getInputStream(entry).readBytes()
         } catch (e: Exception) {
-            throw LCPError.licenseContainer(ContainerError.readFailed(pathInZIP))
+            throw LcpException.Container.ReadFailed(pathInZIP)
         }
 
     }
@@ -56,7 +55,7 @@ internal open class ZIPLicenseContainer(private val zip: String, private val pat
             ZipUtil.addEntry(tmpZip, pathInZIP, license.data, source)
             tmpZip.delete()
         } catch (e: Exception) {
-            throw LCPError.licenseContainer(ContainerError.writeFailed(pathInZIP))
+            throw LcpException.Container.WriteFailed(pathInZIP)
         }
     }
 }

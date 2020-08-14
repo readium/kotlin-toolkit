@@ -8,15 +8,9 @@
  */
 package org.readium.r2.lcp.license.container
 
-import android.net.Uri
-import org.readium.r2.lcp.BuildConfig.DEBUG
-import org.readium.r2.lcp.ContainerError
-import org.readium.r2.lcp.LCPError
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.zeroturnaround.zip.ZipUtil
-import timber.log.Timber
 import java.io.File
-import java.net.URL
 
 /**
  * Access a License Document stored in an LCP License Document file (LCPL).
@@ -27,14 +21,14 @@ internal class LCPLLicenseContainer(private val lcpl: String) : LicenseContainer
         try {
             File(lcpl).readBytes()
         } catch (e: Exception) {
-            throw LCPError.licenseContainer(ContainerError.openFailed)
+            throw LcpException.Container.OpenFailed
         }
 
     override fun write(license: LicenseDocument) {
         try {
             File(lcpl).writeBytes(license.data)
         } catch (e: Exception) {
-            throw LCPError.licenseContainer(ContainerError.writeFailed(lcpl))
+            throw LcpException.Container.WriteFailed(lcpl)
         }
     }
 

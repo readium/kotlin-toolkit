@@ -16,13 +16,14 @@ import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.joda.time.Days
 import org.readium.r2.lcp.BuildConfig.DEBUG
-import org.readium.r2.lcp.LCPError
+import org.readium.r2.lcp.LcpException
+import org.readium.r2.shared.util.Try
 import timber.log.Timber
 import java.util.*
 
 internal class CRLService(val network: NetworkService, val context: Context) {
 
-    val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
+    private val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
 
     companion object {
         const val expiration = 7
@@ -30,56 +31,45 @@ internal class CRLService(val network: NetworkService, val context: Context) {
         const val dateKey = "org.readium.r2-lcp-swift.CRLDate"
     }
 
-    fun retrieve(completion: (String) -> Unit) {
-        val localCRL = readLocal()
-        localCRL?.let {
-            if (daysSince(localCRL.second) < expiration) {
-                completion(localCRL.first)
-                return
-            }
+    suspend fun retrieve(): String {
+        val (localCRL, isExpired) = readLocal()
+        if (localCRL != null && !isExpired) {
+            return localCRL
         }
 
-        try {
-            fetch { received ->
-                received?.let {
-                    saveLocal(received)
-                    completion(received)
-                }
-            }
-        } catch (error: LCPError) {
-            if (DEBUG) Timber.e(error)
-            val (received, _) = localCRL ?: throw error
-            completion(received)
-        }
+        return try {
+            fetch()
+                .also { saveLocal(it) }
 
+        } catch (e: Exception) {
+            if (DEBUG) Timber.e(e)
+            localCRL ?: throw e
+        }
     }
 
-    private fun fetch(completion: (String?) -> Unit) = runBlocking {
-
+    private suspend fun fetch(): String {
         val url = "http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl"
-        network.fetch(url, NetworkService.Method.GET) { status, data ->
-
-            if (DEBUG) Timber.d("Status $status")
-            if (status != 200) {
-                throw LCPError.crlFetching
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                completion("-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(data)}-----END X509 CRL-----")
-            } else {
-                completion("-----BEGIN X509 CRL-----${android.util.Base64.encodeToString(data, android.util.Base64.DEFAULT)}-----END X509 CRL-----")
-            }
+        val (status, data) = network.fetch(url, NetworkService.Method.GET)
+        if (DEBUG) Timber.d("Status $status")
+        if (status != 200 || data == null) {
+            throw LcpException.CrlFetching
         }
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(data)}-----END X509 CRL-----"
+            } else {
+                "-----BEGIN X509 CRL-----${android.util.Base64.encodeToString(data, android.util.Base64.DEFAULT)}-----END X509 CRL-----"
+            }
     }
 
-    private fun readLocal(): Pair<String, DateTime>? {
+    // Returns (CRL, expired)
+    private fun readLocal(): Pair<String?, Boolean> {
         val crl = preferences.getString(crlKey, null)
         val date = preferences.getString(dateKey, null)?.let {
             DateTime(preferences.getString(dateKey, null))
         }
-        if (crl == null || date == null) {
-            return null
-        }
-        return Pair(crl, date)
+        val expired = date?.let { daysSince(date) >= expiration } ?: true
+        return Pair(crl, expired)
     }
 
     private fun saveLocal(crl: String): String {

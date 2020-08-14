@@ -9,13 +9,13 @@
 
 package org.readium.r2.lcp.license
 
+import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.readium.lcp.sdk.DRMContext
 import org.readium.lcp.sdk.Lcp
 import org.readium.r2.lcp.BuildConfig.DEBUG
-import org.readium.r2.lcp.LCPAuthenticating
-import org.readium.r2.lcp.LCPError
-import org.readium.r2.lcp.StatusError
+import org.readium.r2.lcp.LcpAuthenticating
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.license.model.components.Link
@@ -32,7 +32,7 @@ internal sealed class Either<A, B> {
 
 private val supportedProfiles = listOf("http://readium.org/lcp/basic-profile", "http://readium.org/lcp/profile-1.0")
 
-internal typealias Context = Either<DRMContext, StatusError>
+internal typealias Context = Either<DRMContext, LcpException.LicenseStatus>
 
 internal typealias Observer = (ValidatedDocuments?, Exception?) -> Unit
 
@@ -59,7 +59,7 @@ internal sealed class State {
     data class validateStatus(val license: LicenseDocument, val data: ByteArray) : State()
     data class fetchLicense(val license: LicenseDocument, val status: StatusDocument) : State()
     data class checkLicenseStatus(val license: LicenseDocument, val status: StatusDocument?) : State()
-    data class requestPassphrase(val license: LicenseDocument, val status: StatusDocument?) : State()
+    data class retrievePassphrase(val license: LicenseDocument, val status: StatusDocument?) : State()
     data class validateIntegrity(val license: LicenseDocument, val status: StatusDocument?, val passphrase: String) : State()
     data class registerDevice(val documents: ValidatedDocuments, val link: Link) : State()
     data class valid(val documents: ValidatedDocuments) : State()
@@ -73,7 +73,7 @@ internal sealed class Event {
     data class validatedLicense(val license: LicenseDocument) : Event()
     data class retrievedStatusData(val data: ByteArray) : Event()
     data class validatedStatus(val status: StatusDocument) : Event()
-    data class checkedLicenseStatus(val error: StatusError?) : Event()
+    data class checkedLicenseStatus(val error: LcpException.LicenseStatus?) : Event()
     data class retrievedPassphrase(val passphrase: String) : Event()
     data class validatedIntegrity(val context: DRMContext) : Event()
     data class registeredDevice(val statusData: ByteArray?) : Event()
@@ -82,7 +82,9 @@ internal sealed class Event {
 }
 
 internal class LicenseValidation(
-    var authentication: LCPAuthenticating?,
+    var authentication: LcpAuthenticating?,
+    val allowUserInteraction: Boolean,
+    val sender: Any?,
     val crl: CRLService,
     val device: DeviceService,
     val network: NetworkService,
@@ -187,11 +189,11 @@ internal class LicenseValidation(
                     transitionTo(State.valid(ValidatedDocuments(license, Either.Right(error), status)))
                 }?: run  {
                     if (DEBUG) Timber.tag("LicenseValidation").d("State.requestPassphrase(license, status)")
-                    transitionTo(State.requestPassphrase(license, status))
+                    transitionTo(State.retrievePassphrase(license, status))
                 }
             }
         }
-        state<State.requestPassphrase> {
+        state<State.retrievePassphrase> {
             on<Event.retrievedPassphrase> {
                 if (DEBUG) Timber.tag("LicenseValidation").d("State.validateIntegrity(license, status, it.passphrase)")
                 transitionTo(State.validateIntegrity(license, status, it.passphrase))
@@ -265,18 +267,20 @@ internal class LicenseValidation(
 
     private fun handle(state: State) {
         try {
-            when (state) {
-                is State.start -> notifyObservers(documents = null, error = null)
-                is State.validateLicense -> validateLicense(state.data)
-                is State.fetchStatus -> fetchStatus(state.license)
-                is State.validateStatus -> validateStatus(state.data)
-                is State.fetchLicense -> fetchLicense(state.status)
-                is State.checkLicenseStatus -> checkLicenseStatus(state.license, state.status)
-                is State.requestPassphrase -> requestPassphrase(state.license)
-                is State.validateIntegrity -> validateIntegrity(state.license, state.passphrase)
-                is State.registerDevice -> registerDevice(state.documents.license, state.link)
-                is State.valid -> notifyObservers(state.documents, null)
-                is State.failure -> notifyObservers(null, state.error)
+            runBlocking {
+                when (state) {
+                    is State.start -> notifyObservers(documents = null, error = null)
+                    is State.validateLicense -> validateLicense(state.data)
+                    is State.fetchStatus -> fetchStatus(state.license)
+                    is State.validateStatus -> validateStatus(state.data)
+                    is State.fetchLicense -> fetchLicense(state.status)
+                    is State.checkLicenseStatus -> checkLicenseStatus(state.license, state.status)
+                    is State.retrievePassphrase -> requestPassphrase(state.license)
+                    is State.validateIntegrity -> validateIntegrity(state.license, state.passphrase)
+                    is State.registerDevice -> registerDevice(state.documents.license, state.link)
+                    is State.valid -> notifyObservers(state.documents, null)
+                    is State.failure -> notifyObservers(null, state.error)
+                }
             }
         } catch (error: Exception) {
             if (DEBUG) Timber.tag("LicenseValidation").e(error)
@@ -302,20 +306,19 @@ internal class LicenseValidation(
     private fun validateLicense(data: ByteArray) {
         val license = LicenseDocument(data = data)
         if (!isProduction && license.encryption.profile != "http://readium.org/lcp/basic-profile") {
-            throw LCPError.licenseProfileNotSupported
+            throw LcpException.LicenseProfileNotSupported
         }
         onLicenseValidated(license)
         raise(Event.validatedLicense(license))
     }
 
-    private fun fetchStatus(license: LicenseDocument) {
+    private suspend fun fetchStatus(license: LicenseDocument) {
         val url = license.url(LicenseDocument.Rel.status).toString()
-        network.fetch(url) { status, data ->
-            if (status != 200) {
-                throw LCPError.network(null)
-            }
-            raise(Event.retrievedStatusData(data!!))
+        val (status, data) = network.fetch(url)
+        if (status != 200 || data == null) {
+            throw LcpException.Network(null)
         }
+        raise(Event.retrievedStatusData(data))
     }
 
     private fun validateStatus(data: ByteArray) {
@@ -323,18 +326,17 @@ internal class LicenseValidation(
         raise(Event.validatedStatus(status))
     }
 
-    private fun fetchLicense(status: StatusDocument) {
+    private suspend fun fetchLicense(status: StatusDocument) {
         val url = status.url(StatusDocument.Rel.license).toString()
-        network.fetch(url) { statusCode, data ->
-            if (statusCode != 200) {
-                throw LCPError.network(null)
-            }
-            raise(Event.retrievedLicenseData(data!!))
+        val (statusCode, data) = network.fetch(url)
+        if (statusCode != 200 || data == null) {
+            throw LcpException.Network(null)
         }
+        raise(Event.retrievedLicenseData(data))
     }
 
     private fun checkLicenseStatus(license: LicenseDocument, status: StatusDocument?) {
-        var error: StatusError? = null
+        var error: LcpException.LicenseStatus? = null
         val now = DateTime()
         val start = license.rights.start ?: now
         val end = license.rights.end ?: now
@@ -342,49 +344,44 @@ internal class LicenseValidation(
             error = if (status != null) {
                 val date = status.statusUpdated
                 when (status.status) {
-                    StatusDocument.Status.ready, StatusDocument.Status.active, StatusDocument.Status.expired -> StatusError.expired(start = start, end = end)
-                    StatusDocument.Status.returned -> StatusError.returned(date)
+                    StatusDocument.Status.ready, StatusDocument.Status.active, StatusDocument.Status.expired -> LcpException.LicenseStatus.Expired(start = start, end = end)
+                    StatusDocument.Status.returned -> LcpException.LicenseStatus.Returned(date)
                     StatusDocument.Status.revoked -> {
                         val devicesCount = status.events(org.readium.r2.lcp.license.model.components.lsd.Event.EventType.register).size
-                        StatusError.revoked(date, devicesCount = devicesCount)
+                        LcpException.LicenseStatus.Revoked(date, devicesCount = devicesCount)
                     }
-                    StatusDocument.Status.cancelled -> StatusError.cancelled(date)
+                    StatusDocument.Status.cancelled -> LcpException.LicenseStatus.Cancelled(date)
                 }
             } else {
-                StatusError.expired(start = start, end = end)
+                LcpException.LicenseStatus.Expired(start = start, end = end)
             }
         }
         raise(Event.checkedLicenseStatus(error))
     }
 
-    private fun requestPassphrase(license: LicenseDocument) {
+    private suspend fun requestPassphrase(license: LicenseDocument) {
         if (DEBUG) Timber.tag("LicenseValidation").d("requestPassphrase")
-        passphrases.request(license, authentication) { passphrase ->
-            passphrase?.let {
-                raise(Event.retrievedPassphrase(passphrase))
-            } ?: run {
-                raise(Event.cancelled)
-            }
-        }
+        val passphrase = passphrases.request(license, authentication, allowUserInteraction, sender)
+        if (passphrase == null)
+            raise(Event.cancelled)
+        else
+            raise(Event.retrievedPassphrase(passphrase))
     }
 
-    private fun validateIntegrity(license: LicenseDocument, passphrase: String) {
+    private suspend fun validateIntegrity(license: LicenseDocument, passphrase: String) {
         if (DEBUG) Timber.tag("LicenseValidation").d("validateIntegrity")
         val profile = license.encryption.profile
         if (!supportedProfiles.contains(profile)) {
-            throw LCPError.licenseProfileNotSupported
+            throw LcpException.LicenseProfileNotSupported
         }
-        crl.retrieve { crl ->
-            val context = Lcp().createContext(license.json.toString(), passphrase, crl)
-            raise(Event.validatedIntegrity(context))
-        }
+        val context = Lcp().createContext(license.json.toString(), passphrase, crl.retrieve())
+        raise(Event.validatedIntegrity(context))
     }
 
-    private fun registerDevice(license: LicenseDocument, link: Link) {
+    private suspend fun registerDevice(license: LicenseDocument, link: Link) {
         if (DEBUG) Timber.tag("LicenseValidation").d("registerDevice")
-        device.registerLicense(license, link) { data ->
-            raise(Event.registeredDevice(data))
-        }
+        val data = device.registerLicense(license, link)
+        raise(Event.registeredDevice(data))
     }
 
     companion object {

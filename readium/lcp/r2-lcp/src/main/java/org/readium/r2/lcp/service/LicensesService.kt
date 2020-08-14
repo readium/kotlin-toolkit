@@ -10,18 +10,23 @@
 package org.readium.r2.lcp.service
 
 import android.content.Context
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.readium.r2.lcp.*
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
-import org.readium.r2.lcp.license.container.BytesLicenseContainer
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.lcp.public.*
+import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.format.Format
+import java.io.File
+import org.readium.r2.shared.util.Try
 import timber.log.Timber
+import java.util.Properties
+import java.util.UUID
+import kotlin.coroutines.resume
 
 
 internal class LicensesService(
@@ -31,48 +36,55 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context
-) : LCPService, CoroutineScope by MainScope() {
+) : LcpService, CoroutineScope by MainScope() {
 
-    override fun importPublication(lcpl: ByteArray, authentication: LCPAuthenticating?, completion: (LCPImportedPublication?, LCPError?) -> Unit) {
-        val container = BytesLicenseContainer(lcpl)
+    override suspend fun isLcpProtected(file: File): Boolean =
+        tryOr(false) {
+            createLicenseContainer(file.path)
+            true
+        }
+
+    override suspend fun acquirePublication(lcpl: ByteArray): Try<LcpService.AcquiredPublication, LcpException> =
         try {
-            retrieveLicense(container, authentication) { license ->
-                if (license != null) {
-                    launch {
-                        try {
-                            completion(license.fetchPublication(context), null)
-                        } catch (e: Exception) {
-                            completion(null, LCPError.wrap(e))
-                        }
-                    }
-                } else {
-                    completion(null, null)
+            val licenseDocument = LicenseDocument(lcpl)
+            if (DEBUG) Timber.d("license ${licenseDocument.json}")
+            fetchPublication(licenseDocument, context).let { Try.success(it) }
+        } catch (e: Exception) {
+           Try.failure(LcpException.wrap(e))
+        }
+
+    override suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): Try<LcpLicense, LcpException>? =
+        try {
+            val container = createLicenseContainer(file.path)
+            // WARNING: Using the Default dispatcher in the state machine code is critical. If we were using the Main Dispatcher,
+            // calling runBlocking in LicenseValidation.handle would block the main thread and cause a severe issue
+            // with LcpAuthenticating.retrievePassphrase. Specifically, the interaction of runBlocking and suspendCoroutine
+            // blocks the current thread before the passphrase popup has been showed until some button not yet showed is clicked.
+            val license = withContext(Dispatchers.Default) { retrieveLicense(container, authentication, allowUserInteraction, sender) }
+            Timber.d("license retrieved ${license?.license}")
+
+            license?.let { Try.success(it) }
+        } catch (e: Exception) {
+            Try.failure(LcpException.wrap(e))
+        }
+
+    private suspend fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): License? =
+        suspendCancellableCoroutine { cont ->
+            retrieveLicense(container, authentication, allowUserInteraction, sender) { license ->
+                if (cont.isActive) {
+                    cont.resume(license)
                 }
             }
-        } catch (e:Exception) {
-            completion(null, LCPError.wrap(e))
         }
-    }
 
-    override fun retrieveLicense(publication: String, authentication: LCPAuthenticating?, completion: (LCPLicense?, LCPError?) -> Unit) {
-        try {
-            val container = createLicenseContainer(publication)
-            retrieveLicense(container, authentication) { license ->
-                if (DEBUG) Timber.d("license retrieved ${license?.license}")
-                completion(license, null)
-            }
-        } catch (e:Exception) {
-            completion(null, LCPError.wrap(e))
-        }
-    }
-
-    private fun retrieveLicense(container: LicenseContainer, authentication: LCPAuthenticating?, completion: (License?) -> Unit) {
+    private fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?, completion: (License?) -> Unit) {
 
         var initialData = container.read()
         if (DEBUG) Timber.d("license ${LicenseDocument(data = initialData).json}")
 
         val validation = LicenseValidation(authentication = authentication, crl = this.crl,
-                device = this.device, network = this.network, passphrases = this.passphrases, context = this.context) { licenseDocument ->
+                device = this.device, network = this.network, passphrases = this.passphrases, context = this.context,
+                allowUserInteraction = allowUserInteraction, sender = sender) { licenseDocument ->
             try {
                 this.licenses.addLicense(licenseDocument)
             } catch (error: Error) {
@@ -109,6 +121,39 @@ internal class LicensesService(
                 completion(null)
             }
         }
+    }
+
+    private suspend fun fetchPublication(license: LicenseDocument, context: Context): LcpService.AcquiredPublication {
+        val link = license.link(LicenseDocument.Rel.publication)
+        val url = link?.url
+            ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
+
+        val properties =  Properties()
+        withContext(Dispatchers.IO) {
+            context.assets.open("configs/config.properties").let { properties.load(it) }
+        }
+        val useExternalFileDir = properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
+
+        val rootDir: String =  if (useExternalFileDir) {
+            context.getExternalFilesDir(null)?.path + "/"
+        } else {
+            context.filesDir.path + "/"
+        }
+
+        val fileName = UUID.randomUUID().toString()
+        val destination = File(rootDir, fileName)
+        if (DEBUG) Timber.i("LCP destination $destination")
+
+        val format = network.download(url, destination) ?: Format.of(mediaType = link.type) ?: Format.EPUB
+
+        // Saves the License Document into the downloaded publication
+        val container = createLicenseContainer(destination.path, format)
+        container.write(license)
+
+        return LcpService.AcquiredPublication(
+            localFile = destination,
+            suggestedFilename = "${license.id}.${format.fileExtension}"
+        )
     }
 
 }
