@@ -15,6 +15,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpLicense
@@ -64,8 +66,10 @@ class LCPViewModel(val file: File, val activity: ComponentActivity) : DRMViewMod
         val lcpLicense = lcpLicense ?: return super.renewLoan(end)
 
         suspend fun urlPresenter(url: URL): Unit = suspendCoroutine { cont ->
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse(url.toString())
+            val intent = CustomTabsIntent.Builder().build().intent.apply {
+                data = Uri.parse(url.toString())
+            }
+
             val launcher = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 cont.resume(Unit)
             }
