@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.persistence.Database
 import org.readium.r2.lcp.service.*
+import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.util.Try
 import java.io.File
 import java.lang.Exception
@@ -58,6 +59,13 @@ interface LcpService {
      *        presenting dialogs with [LcpAuthenticating].
      */
     suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any? = null): Try<LcpLicense, LcpException>?
+
+    /**
+     * Creates a [ContentProtection] instance which can be used with a Streamer to unlock
+     * LCP protected publications.
+     */
+    fun contentProtection(authentication: LcpAuthenticating): ContentProtection =
+        LcpContentProtection(this, authentication)
 
     /**
      * Information about an acquired publication protected with LCP.

@@ -19,9 +19,9 @@ import org.readium.r2.shared.publication.services.contentProtectionServiceFactor
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.Try
 
-class LcpContentProtection(
+internal class LcpContentProtection(
     private val lcpService: LcpService,
-    private val lcpAuthenticating: LcpAuthenticating
+    private val authentication: LcpAuthenticating
 ) : ContentProtection {
 
     override suspend fun open(
@@ -42,7 +42,7 @@ class LcpContentProtection(
             return null
 
         val license = lcpService
-            .retrieveLicense(file.file,  lcpAuthenticating, allowUserInteraction, sender)
+            .retrieveLicense(file.file,  authentication, allowUserInteraction, sender)
     
         val error = when {
             license == null -> null
@@ -63,4 +63,5 @@ class LcpContentProtection(
 
         return Try.success(protectedFile)
     }
+
 }
