@@ -11,7 +11,6 @@ package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Base64
@@ -23,13 +22,13 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
-import org.readium.r2.navigator.*
+import org.readium.r2.navigator.R
+import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.R2WebView
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.extensions.htmlId
-import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.FragmentNavigator
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
@@ -42,9 +41,6 @@ class R2EpubPageFragment : Fragment() {
     private val resourceUrl: String?
         get() = requireArguments().getString("url")
 
-    private val bookTitle: String?
-        get() = requireArguments().getString("title")
-
     lateinit var webView: R2WebView
     internal lateinit var listener: R2BasicWebView.Listener
 
@@ -55,11 +51,6 @@ class R2EpubPageFragment : Fragment() {
         val v = inflater.inflate(R.layout.viewpager_fragment_epub, container, false)
         val preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
 
-        // Set text color depending of appearance preference
-        (v.findViewById(R.id.book_title) as TextView).setTextColor(Color.parseColor(
-                if (preferences.getInt(APPEARANCE_REF, 0) > 1) "#ffffff" else "#000000"
-        ))
-
         val scrollMode = preferences.getBoolean(SCROLL_REF, false)
         when (scrollMode) {
             true -> {
@@ -69,8 +60,6 @@ class R2EpubPageFragment : Fragment() {
                 v.setPadding(0, 60, 0, 40)
             }
         }
-
-        (v.findViewById(R.id.book_title) as TextView).text = null
 
         webView = v!!.findViewById(R.id.webView) as R2WebView
 
@@ -237,14 +226,14 @@ class R2EpubPageFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(url: String, title: String): R2EpubPageFragment {
-            val args = Bundle()
-            args.putString("url", url)
-            args.putString("title", title)
-            val fragment = R2EpubPageFragment()
-            fragment.arguments = args
-            return fragment
-        }
+
+        fun newInstance(url: String): R2EpubPageFragment =
+            R2EpubPageFragment().apply {
+                arguments = Bundle().apply {
+                    putString("url", url)
+                }
+            }
+
     }
 }
 

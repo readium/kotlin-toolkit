@@ -48,15 +48,15 @@ class R2PagerAdapter(val fm: FragmentManager, private val resources: List<Any>, 
             when (type) {
                 Publication.TYPE.EPUB, Publication.TYPE.WEBPUB, Publication.TYPE.AUDIO -> {
                     val single = resources[position] as Pair<Int, String>
-                    R2EpubPageFragment.newInstance(single.second, title)
+                    R2EpubPageFragment.newInstance(single.second)
                 }
                 Publication.TYPE.FXL -> {
                     if (resources[position] is Triple<*, *, *>) {
                         val double = resources[position] as Triple<Int, String, String>
-                        R2FXLPageFragment.newInstance(title, double.second, double.third)
+                        R2FXLPageFragment.newInstance(double.second, double.third)
                     } else {
                         val single = resources[position] as Pair<Int, String>
-                        R2FXLPageFragment.newInstance(title, single.second)
+                        R2FXLPageFragment.newInstance(single.second)
                     }
                 }
                 Publication.TYPE.CBZ ->

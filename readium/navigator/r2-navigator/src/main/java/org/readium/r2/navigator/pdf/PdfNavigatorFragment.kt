@@ -30,16 +30,19 @@ import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.extensions.urlToHref
 import org.readium.r2.shared.FragmentNavigator
 import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import timber.log.Timber
+import java.net.URL
 
 @PdfSupport @FragmentNavigator
 class PdfNavigatorFragment(
     private val publication: Publication,
+    private val baseUrl: String,
     private val initialLocator: Locator? = null,
     private val listener: Navigator.Listener? = null
 ) : Fragment(), Navigator {
@@ -83,7 +86,7 @@ class PdfNavigatorFragment(
     }
 
     private fun goToHref(href: String, page: Int, animated: Boolean = false, completion: () -> Unit = {}): Boolean {
-        val url = publication.urlToHref(href) ?: return false
+        val url = urlFromHref(href) ?: return false
 
         if (currentHref == href) {
             pdfView.jumpTo(page, animated)
@@ -125,6 +128,17 @@ class PdfNavigatorFragment(
         }
 
         return true
+    }
+
+    private fun urlFromHref(href: String): URL? {
+        @Suppress("NAME_SHADOWING")
+        val baseUrl = baseUrl.removeSuffix("/")
+        val urlString = if (href.startsWith("/")) {
+            baseUrl + href
+        } else {
+            href
+        }
+        return tryOrNull { URL(urlString) }
     }
 
     // Navigator

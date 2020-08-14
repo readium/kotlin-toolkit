@@ -41,8 +41,10 @@ class NavigatorFragmentFactory(
     @OptIn(PdfSupport::class)
     override fun instantiate(classLoader: ClassLoader, className: String): Fragment =
         when (className) {
-            PdfNavigatorFragment::class.java.name ->
-                PdfNavigatorFragment(publication, initialLocator, listener)
+            PdfNavigatorFragment::class.java.name -> {
+                val baseUrl = baseUrl ?: throw IllegalArgumentException("[baseUrl] is required for the [PdfNavigatorFragment]")
+                PdfNavigatorFragment(publication, baseUrl, initialLocator, listener)
+            }
 
             EpubNavigatorFragment::class.java.name -> {
                 val baseUrl = baseUrl ?: throw IllegalArgumentException("[baseUrl] is required for the [EpubNavigatorFragment]")
