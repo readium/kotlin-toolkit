@@ -44,7 +44,7 @@ class CatalogActivity : LibraryActivity(), LcpAuthenticating {
     private lateinit var lcpService: LcpService
 
     override fun onCreate(savedInstanceState: Bundle?) {
-            lcpService = LcpService.create(this)
+            lcpService = LcpService.create(this) ?: throw Exception("liblcp is missing on the classpath")
         contentProtections = listOf(lcpService.contentProtection(this))
         super.onCreate(savedInstanceState)
     }
