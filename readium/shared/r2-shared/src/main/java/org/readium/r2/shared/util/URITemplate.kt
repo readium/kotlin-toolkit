@@ -9,6 +9,9 @@
 
 package org.readium.r2.shared.util
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 /**
  * A lightweight implementation of URI Template (RFC 6570).
  *
@@ -21,7 +24,9 @@ data class URITemplate(val uri: String) {
      * List of URI template parameter keys, if the [Link] is templated.
      */
     val parameters: List<String> by lazy {
-        "\\{\\??([^}]+)}".toRegex()
+        // Escaping the last } is somehow required, otherwise the regex can't be parsed on a Pixel
+        // 3a. However, without it works with the unit tests.
+        "\\{\\??([^}]+)\\}".toRegex()
             .findAll(uri).toList()
             .flatMap { it.groupValues[1].split(",") }
             .distinct()
@@ -31,13 +36,20 @@ data class URITemplate(val uri: String) {
      * Expands the HREF by replacing URI template variables by the given parameters.
      */
     fun expand(parameters: Map<String, String>): String {
+        @Suppress("NAME_SHADOWING")
+        val parameters = parameters.mapValues {
+            URLEncoder.encode(it.value, StandardCharsets.UTF_8.toString())
+        }
+
         fun expandSimpleString(string: String, parameters: Map<String, String>): String =
             string.split(",").joinToString(",") { parameters[it] ?: "" }
 
         fun expandFormStyle(string: String, parameters: Map<String, String>): String =
             "?" + string.split(",").joinToString("&") { "${it}=${parameters[it].orEmpty()}" }
 
-        return "\\{(\\??)([^}]+)}".toRegex().replace(uri) {
+        // Escaping the last } is somehow required, otherwise the regex can't be parsed on a Pixel
+        // 3a. However, without it works with the unit tests.
+        return "\\{(\\??)([^}]+)\\}".toRegex().replace(uri) {
             if (it.groupValues[1].isEmpty())
                 expandSimpleString(it.groupValues[2], parameters)
             else

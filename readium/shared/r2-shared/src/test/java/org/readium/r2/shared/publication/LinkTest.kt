@@ -35,7 +35,7 @@ class LinkTest {
             "y" to "b"
         )
         assertEquals(
-            Link(href = "/url?x=aaa&hello=Hello, world&y=bname", templated = false),
+            Link(href = "/url?x=aaa&hello=Hello%2C+world&y=bname", templated = false),
             Link(href = href, templated = true).expandTemplate(parameters)
         )
     }
