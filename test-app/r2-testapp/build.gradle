@@ -16,9 +16,9 @@ group = 'com.github.readium'
 
 
 int major = 2
-int minor = 1
+int minor = 2
 int patch = 0
-int build = 23
+int build = 24
 String type = ""
 
 def version = "$major.$minor.$patch"
