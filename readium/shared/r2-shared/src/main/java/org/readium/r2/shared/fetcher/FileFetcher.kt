@@ -11,17 +11,14 @@ package org.readium.r2.shared.fetcher
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.addPrefix
-import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.extensions.readRange
-import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.isLazyInitialized
 import timber.log.Timber
 import java.io.File
 import java.io.FileNotFoundException
-import java.io.InputStream
 import java.io.RandomAccessFile
 import java.lang.ref.WeakReference
 import java.nio.channels.Channels
@@ -79,53 +76,66 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
         openedResources.clear()
     }
 
-    private class FileResource(val link: Link, private val file: File) : Resource {
+    class FileResource(val link: Link, private val file: File) : Resource {
 
-        private val randomAccessFile: ResourceTry<RandomAccessFile> by lazy {
-            try {
-                Try.success(RandomAccessFile(file, "r"))
-            } catch (e: FileNotFoundException) {
-                Try.failure(Resource.Error.NotFound)
-            } catch (e: SecurityException) {
-                Try.failure(Resource.Error.Forbidden)
-            } catch (e: Exception) {
-                Try.failure(Resource.Error.Other(e))
+        private val randomAccessFile by lazy {
+            ResourceTry.catching {
+                RandomAccessFile(file, "r")
             }
         }
 
         override suspend fun link(): Link = link
 
         override suspend fun close() = withContext<Unit>(Dispatchers.IO) {
-            randomAccessFile.onSuccess {
-                try {
-                    it.close()
-                } catch (e: java.lang.Exception) {
-                    Timber.e(e)
+            if (::randomAccessFile.isLazyInitialized) {
+                randomAccessFile.onSuccess {
+                    try {
+                        it.close()
+                    } catch (e: java.lang.Exception) {
+                        Timber.e(e)
+                    }
                 }
             }
         }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
-            stream().mapCatching {
-                if (range == null)
-                    it.readFully()
-                else
-                    it.readRange(range)
+            withContext(Dispatchers.IO) {
+                ResourceTry.catching {
+                    readSync(range)
+                }
             }
-        // The stream must not be closed here because it would close the underlying FileChannel too.
-        // close is responsible for that.
+
+        private fun readSync(range: LongRange?): ByteArray {
+            if (range == null) {
+                return file.readBytes()
+            }
+
+            @Suppress("NAME_SHADOWING")
+            val range = range
+                .coerceFirstNonNegative()
+                .requireLengthFitInt()
+
+            if (range.isEmpty()) {
+                return ByteArray(0)
+            }
+
+            return randomAccessFile.getOrThrow().run {
+                channel.position(range.first)
+
+                // The stream must not be closed here because it would close the underlying
+                // [FileChannel] too. Instead, [close] is responsible for that.
+                Channels.newInputStream(channel).run {
+                    val length = range.last - range.first + 1
+                    read(length)
+                }
+            }
+        }
 
         override suspend fun length(): ResourceTry<Long> =
             metadataLength?.let { Try.success(it) }
                 ?: read().map { it.size.toLong() }
 
-        fun stream(): ResourceTry<InputStream> =
-            randomAccessFile.map{
-                it.channel.position(0)
-                Channels.newInputStream(it.channel).buffered()
-            }
-
-        val metadataLength: Long? =
+        private val metadataLength: Long? =
             try {
                 if (file.isFile)
                     file.length()
@@ -134,5 +144,19 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
             } catch (e: Exception) {
                 null
             }
+
+        private inline fun <T> Try.Companion.catching(closure: () -> T): ResourceTry<T> =
+            try {
+                success(closure())
+            } catch (e: Resource.Error) {
+                failure(e)
+            } catch (e: FileNotFoundException) {
+                failure(Resource.Error.NotFound)
+            } catch (e: SecurityException) {
+                failure(Resource.Error.Forbidden)
+            } catch (e: Exception) {
+                failure(Resource.Error.Other(e))
+            }
+
     }
 }
