@@ -165,6 +165,10 @@ class FailureResource(private val link: Link, private val error: Resource.Error)
     override suspend fun length():  ResourceTry<Long> = Try.failure(error)
 
     override suspend fun close() {}
+
+    override fun toString(): String =
+        "${javaClass.simpleName}(${error})"
+            
 }
 
 /**
@@ -181,6 +185,10 @@ abstract class ProxyResource(protected val resource: Resource) : Resource {
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = resource.read(range)
 
     override suspend fun close() = resource.close()
+
+    override fun toString(): String =
+        "${javaClass.simpleName}($resource)"
+
 }
 
 /**
@@ -229,6 +237,9 @@ class CachingResource(protected val resource: Resource) : Resource {
     }
 
     override suspend fun close() = resource.close()
+
+    override fun toString(): String =
+        "${javaClass.simpleName}($resource)"
 }
 
 /**
@@ -260,6 +271,7 @@ abstract class TransformingResource(resource: Resource) : ProxyResource(resource
         }
 
     override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
+
 }
 
 /**
@@ -286,6 +298,14 @@ class LazyResource(private val factory: suspend () -> Resource) : Resource {
         if (::_resource.isInitialized)
             _resource.close()
     }
+
+    override fun toString(): String =
+        if (::_resource.isInitialized) {
+            "${javaClass.simpleName}($_resource)"
+        } else {
+            "${javaClass.simpleName}(...)"
+        }
+    
 }
 
 /**

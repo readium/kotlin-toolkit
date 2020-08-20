@@ -158,5 +158,8 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
                 failure(Resource.Error.Other(e))
             }
 
+        override fun toString(): String =
+            "${javaClass.simpleName}(${file.path})"
+
     }
 }
