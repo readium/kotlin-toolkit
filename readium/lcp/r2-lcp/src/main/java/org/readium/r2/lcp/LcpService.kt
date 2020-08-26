@@ -64,7 +64,7 @@ interface LcpService {
      * Creates a [ContentProtection] instance which can be used with a Streamer to unlock
      * LCP protected publications.
      */
-    fun contentProtection(authentication: LcpAuthenticating): ContentProtection =
+    fun contentProtection(authentication: LcpAuthenticating? = null): ContentProtection =
         LcpContentProtection(this, authentication)
 
     /**
