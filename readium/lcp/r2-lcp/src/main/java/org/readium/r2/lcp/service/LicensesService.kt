@@ -44,6 +44,9 @@ internal class LicensesService(
             true
         }
 
+    override suspend fun addPassphrase(license: LicenseDocument, passphrase: String) =
+        passphrases.addPassphrase(license, passphrase)
+
     override suspend fun acquirePublication(lcpl: ByteArray): Try<LcpService.AcquiredPublication, LcpException> =
         try {
             val licenseDocument = LicenseDocument(lcpl)

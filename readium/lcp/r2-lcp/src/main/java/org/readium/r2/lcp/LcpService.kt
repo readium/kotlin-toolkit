@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.persistence.Database
 import org.readium.r2.lcp.service.*
 import org.readium.r2.shared.publication.ContentProtection
@@ -46,6 +47,8 @@ interface LcpService {
             Try.failure(LcpException.wrap(e))
         }
     }
+
+    suspend fun addPassphrase(license: LicenseDocument, passphrase: String)
 
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
