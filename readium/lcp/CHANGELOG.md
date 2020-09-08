@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
   * All asynchronous APIs are now suspending to take advantage of Kotlin's coroutines.
   * Follow the deprecation warnings to upgrade to the new names.
 * `LcpAuthenticating` is now provided with more information and you will need to update your implementation.
+* Publications are now downloaded to a temporary location, to make sure disk storage can be recovered automatically by the system. After acquiring the publication, you need to move the downloaded file to another permanent location.
 
 ### Fixed
 
