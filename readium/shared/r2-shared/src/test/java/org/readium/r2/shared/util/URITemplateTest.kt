@@ -33,7 +33,7 @@ class URITemplateTest {
             "w" to "w"
         )
         assertEquals(
-            "/urlaaa,Hello, world,bname45,b,w",
+            "/urlaaa,Hello%2C+world,bname45,b,w",
             template.expand(parameters)
         )
     }
@@ -47,7 +47,7 @@ class URITemplateTest {
             "y" to "b"
         )
         assertEquals(
-            "/url?x=aaa&hello=Hello, world&y=bname",
+            "/url?x=aaa&hello=Hello%2C+world&y=bname",
             template.expand(parameters)
         )
     }
