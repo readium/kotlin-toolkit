@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.fetcher
 
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.Link
@@ -46,10 +47,17 @@ class BytesResource(link: Link, bytes: suspend () -> ByteArray) : BaseBytesResou
 
     constructor(link: Link, bytes: ByteArray) : this(link, { bytes })
 
+    override fun toString(): String =
+        "${javaClass.simpleName}(${runBlocking { bytes().size }} bytes)"
+
 }
 
 /** Creates a Resource serving a [String]. */
 class StringResource(link: Link, string: suspend () -> String) : BaseBytesResource(link, { string().toByteArray() }) {
 
     constructor(link: Link, string: String) : this(link, { string })
+
+    override fun toString(): String =
+        "${javaClass.simpleName}(${runBlocking { bytes().toString() }})"
+
 }

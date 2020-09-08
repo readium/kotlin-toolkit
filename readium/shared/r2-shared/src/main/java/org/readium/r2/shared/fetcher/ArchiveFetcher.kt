@@ -85,6 +85,9 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
         private suspend fun metadataLength(): Long? =
             entry().getOrNull()?.length
 
+        override fun toString(): String =
+            "${javaClass.simpleName}(${archive::class.java.simpleName}, ${originalLink.href})"
+
     }
 }
 
