@@ -1,5 +1,5 @@
 /*
- * Module: r2-shared-kotlin
+ * Module: r2-streamer-kotlin
  * Developers: Mickaël Menu
  *
  * Copyright (c) 2020. Readium Foundation. All rights reserved.
@@ -35,12 +35,12 @@ internal class PdfPositionsService(
         // FIXME: Use the [tableOfContents] to generate the titles
         if (pageCount <= 0) {
             Timber.e("Invalid page count for a PDF document: $pageCount")
-            return@lazy emptyList<List<Locator>>()
+            return@lazy listOf(emptyList<Locator>())
         }
 
-        return@lazy (1..pageCount).map { position ->
+        return@lazy listOf((1..pageCount).map { position ->
             val progression = (position - 1) / pageCount.toDouble()
-            listOf(Locator(
+            Locator(
                 href = link.href,
                 type = link.type ?: MediaType.PDF.toString(),
                 locations = Locator.Locations(
@@ -49,8 +49,8 @@ internal class PdfPositionsService(
                     totalProgression = progression,
                     position = position
                 )
-            ))
-        }
+            )
+        })
     }
 
     companion object {
