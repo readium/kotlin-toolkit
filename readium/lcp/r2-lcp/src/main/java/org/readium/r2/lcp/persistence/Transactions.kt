@@ -55,7 +55,7 @@ internal class Transactions(var database: LcpDatabaseOpenHelper) : PassphrasesRe
         }
     }
 
-    override fun addPassphrase(passphraseHash: String, licenseId: String, provider: String, userId: String?) {
+    override fun addPassphrase(passphraseHash: String, licenseId: String?, provider: String?, userId: String?) {
         database.use {
             insert(TransactionsTable.NAME,
                     TransactionsTable.ID to licenseId,

@@ -44,8 +44,8 @@ internal class LicensesService(
             true
         }
 
-    override suspend fun addPassphrase(license: LicenseDocument, passphrase: String) =
-        passphrases.addPassphrase(license, passphrase)
+    override suspend fun addPassphrase(passphrase: String, hashed: Boolean, licenseId: String?, provider: String?, userId: String?)  =
+        passphrases.addPassphrase(passphrase, hashed, licenseId, provider, userId)
 
     override suspend fun acquirePublication(lcpl: ByteArray): Try<LcpService.AcquiredPublication, LcpException> =
         try {
