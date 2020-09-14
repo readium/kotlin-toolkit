@@ -67,6 +67,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
             val userPassphrases = repository.passphrases(userId)
             passphrases.addAll(userPassphrases)
         }
+        passphrases.addAll(repository.allPassphrases())
         return passphrases
     }
 

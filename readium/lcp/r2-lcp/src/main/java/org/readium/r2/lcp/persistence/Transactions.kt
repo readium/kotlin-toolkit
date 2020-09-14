@@ -55,6 +55,17 @@ internal class Transactions(var database: LcpDatabaseOpenHelper) : PassphrasesRe
         }
     }
 
+    override fun allPassphrases(): List<String> =
+        database.use {
+            select(TransactionsTable.NAME, TransactionsTable.PASSPHRASE)
+                .exec {
+                    val parser = rowParser { result: String ->
+                        return@rowParser result
+                    }
+                    parseList(parser)
+                }
+        }
+
     override fun addPassphrase(passphraseHash: String, licenseId: String?, provider: String?, userId: String?) {
         database.use {
             insert(TransactionsTable.NAME,
