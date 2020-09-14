@@ -21,7 +21,7 @@ import org.readium.r2.shared.util.Try
 
 internal class LcpContentProtection(
     private val lcpService: LcpService,
-    private val authentication: LcpAuthenticating?
+    private val authentication: LcpAuthenticating
 ) : ContentProtection {
 
     override suspend fun open(
