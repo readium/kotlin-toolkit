@@ -3,8 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <fragment
-        android:id="@+id/pdf_navigator"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/r2_pdf_navigator"
         android:name="org.readium.r2.navigator.pdf.PdfNavigatorFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
