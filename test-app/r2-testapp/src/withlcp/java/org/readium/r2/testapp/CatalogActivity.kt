@@ -292,7 +292,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                                 if (DEBUG) Timber.d(publication.suggestedFilename)
                                 val file = File(publication.localURL)
                                 launch {
-                                    val pub = Publication.parse(publication.localURL, fileExtension = File(publication.suggestedFilename).extension)
+                                    val pub = Publication.parse(this@CatalogActivity, publication.localURL, fileExtension = File(publication.suggestedFilename).extension)
                                     if (pub != null) {
                                         prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
                                         progress.dismiss()
@@ -347,7 +347,7 @@ class CatalogActivity : LibraryActivity(), LCPLibraryActivityService, CoroutineS
                         if (DEBUG) Timber.d(result.suggestedFilename)
                         val file = File(result.localURL)
                         launch {
-                            val pub = Publication.parse(result.localURL, fileExtension = File(result.suggestedFilename).extension)
+                            val pub = Publication.parse(this@CatalogActivity, result.localURL, fileExtension = File(result.suggestedFilename).extension)
                             if (pub != null) {
                                 prepareToServe(pub, file.name, file.absolutePath, add = true, lcp = true)
                                 progress.dismiss()
