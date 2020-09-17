@@ -98,7 +98,7 @@ interface LcpAuthenticating {
 }
 
 
-@Deprecated("Renamed to `LcpAuthenticating.AuthenticationReason`", replaceWith = ReplaceWith("LcpAuthenticating.AuthenticationReason"))
+@Deprecated("Renamed to `LcpAuthenticating`", replaceWith = ReplaceWith("LcpAuthenticating"))
 typealias LCPAuthenticating = LcpAuthenticating
 
 @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)

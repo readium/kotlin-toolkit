@@ -22,7 +22,6 @@ import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.URLParameters
-import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.util.Try
 import timber.log.Timber
 import java.net.HttpURLConnection
