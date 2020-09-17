@@ -57,7 +57,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
     }
 
     private fun possiblePassphrasesFromRepository(license: LicenseDocument): List<String> {
-        val passphrases: MutableList<String> = mutableListOf()
+        val passphrases: MutableSet<String> = linkedSetOf()
         val licensePassphrase = repository.passphrase(license.id)
         if (licensePassphrase != null) {
             passphrases.add(licensePassphrase)
@@ -68,7 +68,7 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
             passphrases.addAll(userPassphrases)
         }
         passphrases.addAll(repository.allPassphrases())
-        return passphrases
+        return passphrases.toList()
     }
 
     companion object {
