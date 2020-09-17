@@ -44,15 +44,20 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
 
         return try {
             val passphrase = Lcp().findOneValidPassphrase(license.json.toString(), passphrases.toTypedArray())
-            this.repository.addPassphrase(passphrase, license.id, license.provider, license.user.id)
+            addPassphrase(passphrase, true, license.id, license.provider, license.user.id)
             passphrase
         } catch (e: Exception) {
             authenticate(license, LcpAuthenticating.AuthenticationReason.InvalidPassphrase, authentication, allowUserInteraction, sender)
         }
     }
 
+    fun addPassphrase(passphrase: String, hashed:Boolean, licenseId: String?, provider: String?, userId: String?) {
+        val hashedPassphrase = if (hashed) passphrase else HASH.sha256(passphrase)
+        this.repository.addPassphrase(hashedPassphrase, licenseId, provider, userId)
+    }
+
     private fun possiblePassphrasesFromRepository(license: LicenseDocument): List<String> {
-        val passphrases: MutableList<String> = mutableListOf()
+        val passphrases: MutableSet<String> = linkedSetOf()
         val licensePassphrase = repository.passphrase(license.id)
         if (licensePassphrase != null) {
             passphrases.add(licensePassphrase)
@@ -62,7 +67,8 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
             val userPassphrases = repository.passphrases(userId)
             passphrases.addAll(userPassphrases)
         }
-        return passphrases
+        passphrases.addAll(repository.allPassphrases())
+        return passphrases.toList()
     }
 
     companion object {
