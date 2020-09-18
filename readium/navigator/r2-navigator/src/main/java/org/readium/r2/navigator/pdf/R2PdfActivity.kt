@@ -14,6 +14,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.NavigatorFragmentFactory
 import org.readium.r2.navigator.R
 import org.readium.r2.shared.FragmentNavigator
@@ -23,20 +24,29 @@ import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.publication.Publication
 
 @PdfSupport
-class R2PdfActivity : AppCompatActivity() {
+open class R2PdfActivity : AppCompatActivity() {
 
-    private lateinit var publication: Publication
+    protected lateinit var publication: Publication
+
+    protected val navigator: Navigator get() =
+        supportFragmentManager.findFragmentById(R.id.r2_pdf_navigator) as Navigator
 
     @OptIn(FragmentNavigator::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val baseUrl = intent.getStringExtra(EXTRA_BASE_URL)
             ?: throw IllegalArgumentException("baseUrl is required")
+
         publication = intent.getPublication(this)
-        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, baseUrl = baseUrl)
+
+        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(
+            publication = publication,
+            baseUrl = baseUrl,
+            initialLocator = intent.getParcelableExtra("locator")
+        )
 
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_r2_pdf)
+        setContentView(R.layout.r2_pdf_activity)
     }
 
     override fun finish() {
