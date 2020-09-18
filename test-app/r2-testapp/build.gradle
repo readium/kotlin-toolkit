@@ -104,6 +104,9 @@ dependencies {
     }
     if (findProject(':r2-lcp')) {
         implementation project(':r2-lcp')
+
+        //noinspection GradleDependency
+        implementation "readium:liblcp:1.0.0@aar"
     }
 
 

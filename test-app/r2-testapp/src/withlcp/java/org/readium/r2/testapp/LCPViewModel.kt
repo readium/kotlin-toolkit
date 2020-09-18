@@ -11,12 +11,10 @@
 
 package org.readium.r2.testapp
 
-import android.content.Intent
 import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.browser.customtabs.CustomTabsIntent
-import androidx.core.content.ContextCompat
 import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpLicense
@@ -31,7 +29,7 @@ import kotlin.coroutines.suspendCoroutine
 class LCPViewModel(val file: File, val activity: ComponentActivity) : DRMViewModel(activity), Serializable {
 
     private val lcpLicense: LcpLicense? = runBlocking {
-        LcpService.create(activity)
+        LcpService.create(activity)!!
             .retrieveLicense(file, null, allowUserInteraction = false)
             ?.getOrNull()
     }

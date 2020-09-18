@@ -44,16 +44,10 @@ class CatalogActivity : LibraryActivity(), LcpAuthenticating {
     private lateinit var lcpService: LcpService
 
     override fun onCreate(savedInstanceState: Bundle?) {
-            lcpService = LcpService.create(this)
+            lcpService = LcpService.create(this) ?: throw Exception("liblcp is missing on the classpath")
         contentProtections = listOf(lcpService.contentProtection(this))
         super.onCreate(savedInstanceState)
     }
-
-    override val brand: DRM.Brand
-        get() = DRM.Brand.lcp
-
-    override fun canFulfill(file: String): Boolean =
-            file.fileExtension().toLowerCase(Locale.ROOT) == "lcpl"
 
     override suspend fun fulfill(file: File): Try<DRMFulfilledPublication, Exception> =
         lcpService.acquirePublication(file).map { DRMFulfilledPublication(it.localFile, it.suggestedFilename) }
