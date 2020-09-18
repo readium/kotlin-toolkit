@@ -21,7 +21,5 @@ data class DRMFulfilledPublication(
 )
 
 interface DRMLibraryService {
-    val brand: DRM.Brand
-    fun canFulfill(file: String) : Boolean
     suspend fun fulfill(file: File): Try<DRMFulfilledPublication, Exception>
 }

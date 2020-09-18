@@ -48,6 +48,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.File as R2File
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
@@ -55,6 +56,7 @@ import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.R2AboutActivity
 import org.readium.r2.testapp.db.*
+import org.readium.r2.testapp.drm.DRMFulfilledPublication
 import org.readium.r2.testapp.drm.DRMLibraryService
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSListActivity
@@ -630,6 +632,9 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             outRect.bottom = verticalSpaceHeight
         }
     }
+
+    override suspend fun fulfill(file: File): Try<DRMFulfilledPublication, Exception> =
+        Try.failure(Exception("DRM not supported"))
 
     companion object {
 
