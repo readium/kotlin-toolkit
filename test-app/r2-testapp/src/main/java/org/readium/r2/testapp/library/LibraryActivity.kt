@@ -34,6 +34,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.github.kittinunf.fuel.Fuel
 import com.mcxiaoke.koi.ext.close
+import com.mcxiaoke.koi.ext.longToast
 import com.mcxiaoke.koi.ext.onClick
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -76,6 +77,7 @@ import org.readium.r2.testapp.epub.R2SyntheticPageList
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSDownloader
 import org.readium.r2.testapp.opds.OPDSListActivity
+import org.readium.r2.testapp.pdf.PdfActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
 import org.readium.r2.testapp.utils.ContentResolverUtil
@@ -575,7 +577,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
         try {
             launch {
-                val pub = Publication.parse(publicationPath)
+                val pub = Publication.parse(this@LibraryActivity, publicationPath)
                 if (pub != null) {
                     prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.let { true }
                             ?: false)
@@ -694,7 +696,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
 
                 val file = File(publicationPath)
 
-                val pub = Publication.parse(publicationPath)
+                val pub = Publication.parse(this, publicationPath)
                 if (pub != null) {
                     prepareToServe(pub, fileName, file.absolutePath, add = true, lcp = pub.container.drm?.brand == DRM.Brand.lcp)
                 }
@@ -788,7 +790,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
                 prepareWebPublication(book.href, book, add = false)
 
             } else {
-                val pub = Publication.parse(book.href, fileExtension = book.ext.removePrefix("."))
+                val pub = Publication.parse(this, book.href, fileExtension = book.ext.removePrefix("."))
                 if (pub != null) {
                     if (pub.container.drm?.brand == DRM.Brand.lcp) {
                         prepareAndStartActivityWithLCP(pub.container.drm!!, pub, book, file, publicationPath, pub.publication, isNetworkAvailable)
@@ -870,20 +872,30 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
     }
 
     private fun startActivity(publicationPath: String, book: Book, publication: Publication, coverByteArray: ByteArray? = null, drm: Boolean = false) {
-        val intent = Intent(this, when (publication.type) {
-            Publication.TYPE.AUDIO -> AudiobookActivity::class.java
-            Publication.TYPE.CBZ -> ComicActivity::class.java
-            Publication.TYPE.DiViNa -> DiViNaActivity::class.java
-            else -> EpubActivity::class.java
-        })
+        val format = runBlocking { Format.ofFile(publicationPath, fileExtension = book.ext) }
 
-        intent.apply {
+        val activity = when (format) {
+            Format.READIUM_AUDIOBOOK, Format.READIUM_AUDIOBOOK_MANIFEST, Format.LCP_PROTECTED_AUDIOBOOK -> AudiobookActivity::class.java
+            Format.EPUB -> EpubActivity::class.java
+            Format.PDF, Format.LCP_PROTECTED_PDF -> PdfActivity::class.java
+            Format.CBZ -> ComicActivity::class.java
+            Format.DIVINA, Format.DIVINA_MANIFEST -> DiViNaActivity::class.java
+            else -> {
+                longToast("Unsupported format")
+                return
+            }
+        }
+
+        val intent = Intent(this, activity).apply {
             putPublication(publication)
             putExtra("publicationPath", publicationPath)
             putExtra("publicationFileName", book.fileName)
             putExtra("bookId", book.id)
             putExtra("cover", coverByteArray)
             putExtra("drm", drm)
+            putExtra("locator", book.id?.let {
+                id -> BooksDatabase(this@LibraryActivity).books.currentLocator(id)
+            })
         }
 
         startActivity(intent)
@@ -959,7 +971,7 @@ open class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClick
             val file = File(publicationPath)
 
             try {
-                val publication = Publication.parse(publicationPath, format)
+                val publication = Publication.parse(this@LibraryActivity, publicationPath, format)
                 if (publication != null) {
                     prepareToServe(publication, fileName, file.absolutePath, add = true, lcp = publication.container.drm?.brand == DRM.Brand.lcp)
                     progress.dismiss()

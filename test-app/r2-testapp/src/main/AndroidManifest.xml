@@ -193,6 +193,7 @@
         <activity
             android:name=".epub.EpubActivity"
             android:label="@string/title_activity_epub" />
+        <activity android:name=".pdf.PdfActivity" />
         <activity
             android:name=".comic.DiViNaActivity"
             android:label="@string/title_activity_epub" />

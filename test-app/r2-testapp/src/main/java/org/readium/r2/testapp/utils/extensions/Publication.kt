@@ -9,7 +9,9 @@
 
 package org.readium.r2.testapp.utils.extensions
 
+import android.content.Context
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.parser.PubBox
@@ -17,15 +19,20 @@ import org.readium.r2.streamer.parser.audio.AudioBookParser
 import org.readium.r2.streamer.parser.cbz.CBZParser
 import org.readium.r2.streamer.parser.divina.DiViNaParser
 import org.readium.r2.streamer.parser.epub.EpubParser
+import org.readium.r2.streamer.parser.pdf.PdfParser
+import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 import timber.log.Timber
 
-fun Publication.Companion.parse(path: String, format: Format): PubBox? =
+@OptIn(PdfSupport::class)
+fun Publication.Companion.parse(context: Context, path: String, format: Format): PubBox? =
     try {
         when (format) {
             Format.EPUB -> EpubParser()
             Format.CBZ -> CBZParser()
             Format.DIVINA -> DiViNaParser()
+            Format.PDF -> PdfParser(context)
             Format.READIUM_AUDIOBOOK -> AudioBookParser()
+            Format.LCP_PROTECTED_PDF -> ReadiumWebPubParser(context)
             else -> null
 
         }?.parse(path)
@@ -35,9 +42,9 @@ fun Publication.Companion.parse(path: String, format: Format): PubBox? =
         null
     }
 
-fun Publication.Companion.parse(path: String, mediaType: String? = null, fileExtension: String? = null): PubBox? =
+fun Publication.Companion.parse(context: Context, path: String, mediaType: String? = null, fileExtension: String? = null): PubBox? =
     runBlocking { Format.ofFile(path, mediaType = mediaType, fileExtension = fileExtension) }
-        ?.let { parse(path, it) }
+        ?.let { parse(context, path, it) }
 
 val Publication.TYPE.format: Format? get() = when (this) {
     Publication.TYPE.EPUB -> Format.EPUB
