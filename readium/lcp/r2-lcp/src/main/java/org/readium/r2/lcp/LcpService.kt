@@ -95,7 +95,10 @@ interface LcpService {
         /**
          * LCP service factory.
          */
-        fun create(context: Context): LcpService {
+        fun create(context: Context): LcpService? {
+            if (!LcpClient.isAvailable())
+                return null
+
             val db = Database(context)
             val network = NetworkService()
             val device = DeviceService(repository = db.licenses, network = network, context = context)
@@ -135,7 +138,7 @@ interface LcpService {
 
 @Deprecated("Renamed to `LcpService.create()`", replaceWith = ReplaceWith("LcpService.create"))
 fun R2MakeLCPService(context: Context): LcpService =
-    LcpService.create(context)
+    LcpService.create(context) ?: throw Exception("liblcp is missing on the classpath")
 
 @Deprecated("Renamed to `LcpService.AcquiredPublication`", replaceWith = ReplaceWith("LcpService.AcquiredPublication"))
 typealias LCPImportedPublication = LcpService.AcquiredPublication

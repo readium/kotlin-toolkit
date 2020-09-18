@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 * LCP implementation of the [Content Protection API](https://github.com/readium/architecture/blob/master/proposals/006-content-protection.md) to work with the new [Streamer API](https://github.com/readium/architecture/blob/master/proposals/005-streamer-api.md) (contributed by [@qnga](https://github.com/readium/r2-lcp-kotlin/pull/79)).
   * It is highly recommended that you upgrade to the new `Streamer` API to open publications, which will simplify DRM unlocking.
 * `LcpService::isLcpProtected()` provides a way to check if a file is protected with LCP.
+* `LcpService::addPassphrase()` can be used to preload LCP passphrases, for example when using [LCP Automatic Key Retrieval](https://readium.org/lcp-specs/notes/lcp-key-retrieval.html).
 
 ### Changed
 
@@ -19,6 +20,9 @@ All notable changes to this project will be documented in this file.
   * Follow the deprecation warnings to upgrade to the new names.
 * `LcpAuthenticating` is now provided with more information and you will need to update your implementation.
 * Publications are now downloaded to a temporary location, to make sure disk storage can be recovered automatically by the system. After acquiring the publication, you need to move the downloaded file to another permanent location.
+* The private `liblcp` dependency is now accessed through reflection, to allow switching LCP dynamically (contributed by [@qnga](https://github.com/readium/r2-lcp-kotlin/pull/87)).
+  * You need to add `implementation "readium:liblcp:1.0.0@aar"` to your `build.gradle`.
+  * `LcpService::create()` returns `null` if `lcplib` is not found.
 
 ### Fixed
 
