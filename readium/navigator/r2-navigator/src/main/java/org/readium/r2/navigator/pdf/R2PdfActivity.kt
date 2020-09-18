@@ -11,6 +11,7 @@ package org.readium.r2.navigator.pdf
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.NavigatorFragmentFactory
 import org.readium.r2.navigator.R
 import org.readium.r2.shared.FragmentNavigator
@@ -19,19 +20,25 @@ import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Publication
 
 @PdfSupport
-class R2PdfActivity : AppCompatActivity() {
+open class R2PdfActivity : AppCompatActivity() {
 
-    private lateinit var publication: Publication
+    protected lateinit var publication: Publication
+
+    protected val navigator: Navigator get() =
+        supportFragmentManager.findFragmentById(R.id.r2_pdf_navigator) as Navigator
 
     @OptIn(FragmentNavigator::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
         publication = intent.getPublication(this)
 
-        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication)
+        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(
+            publication = publication,
+            initialLocator = intent.getParcelableExtra("locator")
+        )
 
-        setContentView(R.layout.activity_r2_pdf)
+        super.onCreate(savedInstanceState)
+
+        setContentView(R.layout.r2_pdf_activity)
     }
 
 }
