@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.extensions.putPublication
+import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.File
@@ -24,15 +25,18 @@ import org.readium.r2.testapp.audiobook.AudiobookActivity
 import org.readium.r2.testapp.comic.ComicActivity
 import org.readium.r2.testapp.comic.DiViNaActivity
 import org.readium.r2.testapp.epub.EpubActivity
+import org.readium.r2.testapp.pdf.PdfActivity
 
 class NavigatorContract : ActivityResultContract<NavigatorContract.Input, NavigatorContract.Output>() {
 
     data class Input(
         val file: File,
+        val format: Format?,
         val publication: Publication,
         val bookId: Long?,
         val initialLocator: Locator? = null,
-        val deleteOnResult: Boolean = false
+        val deleteOnResult: Boolean = false,
+        val baseUrl: String? = null
     )
 
     data class Output(
@@ -42,11 +46,13 @@ class NavigatorContract : ActivityResultContract<NavigatorContract.Input, Naviga
     )
 
     override fun createIntent(context: Context, input: Input): Intent {
-        val intent = Intent(context, when (input.publication.type) {
-            Publication.TYPE.AUDIO -> AudiobookActivity::class.java
-            Publication.TYPE.CBZ -> ComicActivity::class.java
-            Publication.TYPE.DiViNa -> DiViNaActivity::class.java
-            else -> EpubActivity::class.java
+        val intent = Intent(context, when (input.format) {
+            Format.EPUB -> EpubActivity::class.java
+            Format.PDF -> PdfActivity::class.java
+            Format.READIUM_AUDIOBOOK, Format.READIUM_AUDIOBOOK_MANIFEST, Format.LCP_PROTECTED_AUDIOBOOK -> AudiobookActivity::class.java
+            Format.CBZ -> ComicActivity::class.java
+            Format.PDF -> DiViNaActivity::class.java
+            else -> throw IllegalArgumentException("Unknown [format]")
         })
 
         return intent.apply {
@@ -55,9 +61,8 @@ class NavigatorContract : ActivityResultContract<NavigatorContract.Input, Naviga
             putExtra("publicationPath", input.file.path)
             putExtra("publicationFileName", input.file.name)
             putExtra("deleteOnResult", input.deleteOnResult)
-            if (input.initialLocator != null) {
-                putExtra("locator", input.initialLocator)
-            }
+            putExtra("baseUrl", input.baseUrl)
+            putExtra("locator", input.initialLocator)
         }
     }
 
