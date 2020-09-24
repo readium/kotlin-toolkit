@@ -50,7 +50,7 @@ internal class PdfiumDocument private constructor(
 
         internal suspend  fun open(resource: Resource, context: Context) =
             resource.use { res ->
-                res.read().getOrNull()?.let { fromBytes(it, context) }
+                fromBytes(res.read().getOrThrow(), context)
             }
 
         /**
@@ -103,5 +103,5 @@ private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
 
 /** Pdfium is the default implementation. */
 @PdfSupport
-suspend fun PdfDocument.Companion.open(resource: Resource, context: Context): PdfDocument? =
+suspend fun PdfDocument.Companion.open(resource: Resource, context: Context): PdfDocument =
     PdfiumDocument.open(resource, context)

@@ -48,7 +48,6 @@ class PdfParser(
         val fileHref = fetcher.links().firstOrNull { it.mediaType == MediaType.PDF }?.href
             ?: throw Exception("Unable to find PDF file.")
         val document = openPdf(fetcher.get(fileHref))
-            ?: throw Exception("Unable to open PDF file.")
         val tableOfContents = document.outline.toLinks(fileHref)
 
         val manifest = Manifest(
