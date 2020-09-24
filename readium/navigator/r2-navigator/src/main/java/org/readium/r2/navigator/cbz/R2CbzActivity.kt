@@ -16,31 +16,19 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.*
-import org.readium.r2.navigator.epub.EpubNavigatorFragment
-import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
-import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.FragmentNavigator
-import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.services.positions
 import kotlin.coroutines.CoroutineContext
 
-@OptIn(FragmentNavigator::class)
-open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator, VisualNavigator.Listener {
+open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator, ImageNavigatorFragment.Listener {
 
     private val navigatorFragment: ImageNavigatorFragment
         get() = supportFragmentManager.findFragmentById(R.id.image_navigator) as ImageNavigatorFragment
@@ -104,7 +92,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
         val initialLocator = intent.getParcelableExtra("locator") as? Locator
 
-        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, initialLocator = initialLocator, listener = this)
+        supportFragmentManager.fragmentFactory = ImageNavigatorFragment.Factory(publication, initialLocator = initialLocator, listener = this)
 
         super.onCreate(savedInstanceState)
 

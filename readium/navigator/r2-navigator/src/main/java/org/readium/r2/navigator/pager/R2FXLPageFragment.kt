@@ -25,10 +25,7 @@ import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
-import org.readium.r2.shared.FragmentNavigator
 
-
-@OptIn(FragmentNavigator::class)
 class R2FXLPageFragment : Fragment() {
 
     private val firstResourceUrl: String?
