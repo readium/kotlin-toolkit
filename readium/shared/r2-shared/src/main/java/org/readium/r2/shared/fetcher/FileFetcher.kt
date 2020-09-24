@@ -76,7 +76,7 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
         openedResources.clear()
     }
 
-    class FileResource(val link: Link, private val file: File) : Resource {
+    class FileResource(val link: Link, override val file: File) : Resource {
 
         private val randomAccessFile by lazy {
             ResourceTry.catching {
