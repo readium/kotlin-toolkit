@@ -113,9 +113,14 @@ class PdfNavigatorFragment internal constructor(
         } else {
             lifecycleScope.launch {
                 try {
-                    val bytes = publication.get(link).read().getOrThrow()
-
-                    pdfView.fromBytes(bytes)
+                    pdfView
+                        .run {
+                            publication.get(link).use { resource ->
+                                val file = resource.file
+                                if (file != null) fromFile(file)
+                                else fromBytes(resource.read().getOrThrow())
+                            }
+                        }
                         .spacing(10)
                         // Customization of [PDFView] is done before setting the listeners,
                         // to avoid overriding them in reading apps, which would break the
