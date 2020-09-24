@@ -20,36 +20,53 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
-import org.readium.r2.navigator.extensions.urlToHref
+import org.readium.r2.navigator.util.SingleFragmentFactory
 import org.readium.r2.shared.FragmentNavigator
 import org.readium.r2.shared.PdfSupport
-import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import timber.log.Timber
-import java.net.URL
 
 @PdfSupport @FragmentNavigator
-class PdfNavigatorFragment(
+class PdfNavigatorFragment internal constructor(
     private val publication: Publication,
-    private val baseUrl: String,
     private val initialLocator: Locator? = null,
-    private val listener: Navigator.Listener? = null
-) : Fragment(), Navigator {
+    private val listener: Listener? = null
+) : Fragment(), VisualNavigator {
 
-    interface Listener: Navigator.Listener {
+    interface Listener: VisualNavigator.Listener {
+
         /** Called when configuring [PDFView]. */
         fun onConfigurePdfView(configurator: PDFView.Configurator) {}
+
+        /**
+         * Called when a PDF resource failed to be loaded, for example because of an [OutOfMemoryError].
+         */
+        fun onResourceLoadFailed(link: Link, error: Resource.Error) {}
+
+    }
+
+    /**
+     * Factory for a [PdfNavigatorFragment].
+     *
+     * @param publication PDF publication to render in the navigator.
+     * @param initialLocator The first location which should be visible when rendering the PDF.
+     *        Can be used to restore the last reading location.
+     * @param listener Optional listener to implement to observe events, such as user taps.
+     */
+    class Factory(
+        private val publication: Publication,
+        private val initialLocator: Locator? = null,
+        private val listener: Listener? = null
+    ) : SingleFragmentFactory<PdfNavigatorFragment>() {
+
+        override fun instantiate(): PdfNavigatorFragment = PdfNavigatorFragment(publication, initialLocator, listener)
+
     }
 
     lateinit var pdfView: PDFView
@@ -86,7 +103,7 @@ class PdfNavigatorFragment(
     }
 
     private fun goToHref(href: String, page: Int, animated: Boolean = false, completion: () -> Unit = {}): Boolean {
-        val url = urlFromHref(href) ?: return false
+        val link = publication.linkWithHref(href) ?: return false
 
         if (currentHref == href) {
             pdfView.jumpTo(page, animated)
@@ -95,32 +112,35 @@ class PdfNavigatorFragment(
         } else {
             lifecycleScope.launch {
                 try {
-                    // Android forbids network requests on the main thread by default, so we have to
-                    // do that in the IO dispatcher.
-                    withContext(Dispatchers.IO) {
-                        pdfView.fromStream(url.openStream())
-                            .spacing(10)
-                            // Customization of [PDFView] is done before setting the listeners,
-                            // to avoid overriding them in reading apps, which would break the
-                            // navigator.
-                            .also { (listener as? Listener)?.onConfigurePdfView(it) }
-                            .defaultPage(page)
-                            .onRender { _, _, _ ->
-                                pdfView.fitToWidth()
-                                // Using `fitToWidth` often breaks the use of `defaultPage`, so we
-                                // need to jump manually to the target page.
-                                pdfView.jumpTo(page, false)
+                    val bytes = publication.get(link).read().getOrThrow()
 
-                                completion()
-                            }
-                            .onPageChange { page, _ -> onPageChanged(page) }
-                            .onTap { event -> onTap(event) }
-                            .load()
-                    }
+                    pdfView.fromBytes(bytes)
+                        .spacing(10)
+                        // Customization of [PDFView] is done before setting the listeners,
+                        // to avoid overriding them in reading apps, which would break the
+                        // navigator.
+                        .also { (listener as? Listener)?.onConfigurePdfView(it) }
+                        .defaultPage(page)
+                        .onRender { _, _, _ ->
+                            pdfView.fitToWidth()
+                            // Using `fitToWidth` often breaks the use of `defaultPage`, so we
+                            // need to jump manually to the target page.
+                            pdfView.jumpTo(page, false)
+
+                            completion()
+                        }
+                        .onPageChange { page, _ -> onPageChanged(page) }
+                        .onTap { event -> onTap(event) }
+                        .load()
 
                     currentHref = href
 
                 } catch (e: Exception) {
+                    val error = Resource.Error.wrap(e)
+                    if (error != Resource.Error.Cancelled) {
+                        listener?.onResourceLoadFailed(link, error)
+                    }
+
                     Timber.e(e)
                     completion()
                 }
@@ -128,17 +148,6 @@ class PdfNavigatorFragment(
         }
 
         return true
-    }
-
-    private fun urlFromHref(href: String): URL? {
-        @Suppress("NAME_SHADOWING")
-        val baseUrl = baseUrl.removeSuffix("/")
-        val urlString = if (href.startsWith("/")) {
-            baseUrl + href
-        } else {
-            href
-        }
-        return tryOrNull { URL(urlString) }
     }
 
     // Navigator
@@ -173,6 +182,12 @@ class PdfNavigatorFragment(
         completion()
         return true
     }
+
+    // VisualNavigator
+
+    override val readingProgression: ReadingProgression
+        get() = ReadingProgression.TTB  // Only TTB is supported at the moment.
+
 
     // [PDFView] Listeners
 
