@@ -148,14 +148,14 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
         private inline fun <T> Try.Companion.catching(closure: () -> T): ResourceTry<T> =
             try {
                 success(closure())
-            } catch (e: Resource.Error) {
-                failure(e)
             } catch (e: FileNotFoundException) {
                 failure(Resource.Error.NotFound)
             } catch (e: SecurityException) {
                 failure(Resource.Error.Forbidden)
             } catch (e: Exception) {
-                failure(Resource.Error.Other(e))
+                failure(Resource.Error.wrap(e))
+            } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
+                failure(Resource.Error.wrap(e))
             }
 
         override fun toString(): String =
