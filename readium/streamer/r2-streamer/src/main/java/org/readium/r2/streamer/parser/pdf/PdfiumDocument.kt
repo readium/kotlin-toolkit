@@ -11,12 +11,14 @@ package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.ParcelFileDescriptor
 import com.shockwave.pdfium.PdfiumCore
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.util.pdf.PdfDocument
 import timber.log.Timber
+import java.io.File
 import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 
 @OptIn(PdfSupport::class)
@@ -48,27 +50,40 @@ internal class PdfiumDocument private constructor(
 
     companion object {
 
-        internal suspend  fun open(resource: Resource, context: Context) =
-            resource.use { res ->
-                fromBytes(res.read().getOrThrow(), context)
+        internal suspend  fun open(resource: Resource, context: Context): PdfiumDocument {
+            val core = PdfiumCore(context.applicationContext)
+            return resource.use { res ->
+                val file = resource.file
+                if (file != null) core.fromFile(file)
+                else core.fromBytes(resource.read().getOrThrow())
             }
+        }
+
+        /**
+         * Creates a [PdfiumDocument] from a [File].
+         */
+        private fun PdfiumCore.fromFile(file: File): PdfiumDocument =
+            fromDocument(
+                newDocument(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)),
+                identifier = file.md5()
+            )
 
         /**
          * Creates a [PdfiumDocument] from raw bytes.
-         *
-         * @param href HREF of the PDF document in the [Publication], used to generate the table of
-         *        contents.
          */
-        private fun fromBytes(bytes: ByteArray, context: Context): PdfiumDocument {
-            val core = PdfiumCore(context.applicationContext)
-            val document = core.newDocument(bytes)
+        private fun PdfiumCore.fromBytes(bytes: ByteArray): PdfiumDocument =
+            fromDocument(
+                newDocument(bytes),
+                identifier = bytes.md5()
+            )
 
+        private fun PdfiumCore.fromDocument(document: _PdfiumDocument, identifier: String?): PdfiumDocument {
             // FIXME: Extract the identifier from the file, it's not exposed by PdfiumCore
             return PdfiumDocument(
-                core = core,
+                core = this,
                 document = document,
-                identifier = bytes.md5(),
-                pageCount = core.getPageCount(document)
+                identifier = identifier,
+                pageCount = getPageCount(document)
             )
         }
 
