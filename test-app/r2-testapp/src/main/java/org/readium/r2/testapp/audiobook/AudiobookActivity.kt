@@ -1,65 +1,85 @@
 package org.readium.r2.testapp.audiobook
 
 
+import android.app.ProgressDialog
+import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.result.ActivityResultLauncher
-import androidx.lifecycle.Observer
+import android.widget.ImageView
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.jetbrains.anko.indeterminateProgressDialog
 import org.jetbrains.anko.toast
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.NavigatorDelegate
-import org.readium.r2.navigator.audio.AudioActivity
-import org.readium.r2.shared.AudioSupport
+import org.readium.r2.navigator.audiobook.R2AudiobookActivity
+import org.readium.r2.shared.extensions.putPublicationFrom
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Bookmark
 import org.readium.r2.testapp.db.BookmarksDatabase
 import org.readium.r2.testapp.db.BooksDatabase
+import org.readium.r2.testapp.library.LibraryActivity
+import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity
 import timber.log.Timber
 
 
-@OptIn(AudioSupport::class)
-class AudiobookActivity : AudioActivity(), NavigatorDelegate {
+class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
 
-    private var bookId: Long = -1
+    override fun locationDidChange(navigator: Navigator?, locator: Locator) {
+        Timber.d("locationDidChange $locator")
+        booksDB.books.saveProgression(locator, bookId)
+    }
+
     private lateinit var booksDB: BooksDatabase
-    private lateinit var bookmarksDB: BookmarksDatabase
 
-    private lateinit var outlineLauncher: ActivityResultLauncher<R2OutlineActivity.Contract.Input>
+    private lateinit var bookmarksDB: BookmarksDatabase
+    private lateinit var progressDialog: ProgressDialog
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        if (activitiesLaunched.incrementAndGet() > 1 || !LibraryActivity.isServerStarted) {
+            finish()
+        }
+        super.onCreate(savedInstanceState)
+
+        booksDB = BooksDatabase(this)
+        bookmarksDB = BookmarksDatabase(this)
+
+        navigatorDelegate = this
+
+        bookId = intent.getLongExtra("bookId", -1)
+
+        progressDialog = indeterminateProgressDialog(getString(R.string.progress_wait_while_preparing_audiobook))
+
+        //Setting cover
+        launch {
+            delay(100)
+            if (intent.hasExtra("cover")) {
+                val byteArray = intent.getByteArrayExtra("cover")
+                byteArray?.let {
+                    val bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                    findViewById<ImageView>(R.id.imageView).setImageBitmap(bmp)
+                }
+            }
+            menuDrm?.isVisible = publication.isProtected
+        }
+        mediaPlayer?.progress = progressDialog
+
+
+        // Loads the last read location
+        booksDB.books.currentLocator(bookId)?.let {
+            go(it, false, {})
+        }
+    }
 
     private var menuDrm: MenuItem? = null
     private var menuToc: MenuItem? = null
     private var menuBmk: MenuItem? = null
     private var menuSettings: MenuItem? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        booksDB = BooksDatabase(this)
-        bookmarksDB = BookmarksDatabase(this)
-        bookId = intent.getLongExtra("bookId", -1)
-
-        menuDrm?.isVisible = navigator.publication.isProtected
-
-        navigator.currentLocator.observe(this, Observer { locator ->
-            locator ?: return@Observer
-            Timber.d("currentLocator $locator")
-            booksDB.books.saveProgression(locator, bookId)
-        })
-
-        outlineLauncher = registerForActivityResult(R2OutlineActivity.Contract()) { locator: Locator? ->
-            if (locator != null) {
-                navigator.go(locator)
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        navigator.stop()
-    }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_audio, menu)
@@ -67,6 +87,7 @@ class AudiobookActivity : AudioActivity(), NavigatorDelegate {
         menuToc = menu?.findItem(R.id.toc)
         menuBmk = menu?.findItem(R.id.bookmark)
         menuSettings = menu?.findItem(R.id.settings)
+
         menuSettings?.isVisible = false
         menuDrm?.isVisible = false
         return true
@@ -76,21 +97,30 @@ class AudiobookActivity : AudioActivity(), NavigatorDelegate {
         when (item.itemId) {
 
             R.id.toc -> {
-                outlineLauncher.launch(R2OutlineActivity.Contract.Input(
-                    publication = navigator.publication,
-                    bookId = bookId
-                ))
+                val intent = Intent(this, R2OutlineActivity::class.java).apply {
+                    putPublicationFrom(this@AudiobookActivity)
+                    putExtra("bookId", bookId)
+                }
+                startActivityForResult(intent, 2)
+                return true
+            }
+            R.id.settings -> {
+                // TODO do we need any settings ?
                 return true
             }
             R.id.bookmark -> {
-                val locator = navigator.currentLocator.value ?:
+                val locator = currentLocator.value ?:
                      return true
 
-                val bookmark = Bookmark(bookId, navigator.publication.metadata.identifier ?: bookId.toString(), resourceIndex = 0, locator = locator)
-                if (bookmarksDB.bookmarks.insert(bookmark) != null) {
-                    toast("Bookmark added")
-                } else {
-                    toast("Bookmark already exists")
+                val bookmark = Bookmark(bookId, publicationIdentifier, resourceIndex = currentResource.toLong(), locator = locator)
+                bookmarksDB.bookmarks.insert(bookmark)?.let {
+                    launch {
+                        toast("Bookmark added")
+                    }
+                } ?: run {
+                    launch {
+                        toast("Bookmark already exists")
+                    }
                 }
 
                 return true
@@ -101,4 +131,18 @@ class AudiobookActivity : AudioActivity(), NavigatorDelegate {
 
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        activitiesLaunched.getAndDecrement()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        progressDialog.dismiss()
+    }
+
 }
+
+
+
+

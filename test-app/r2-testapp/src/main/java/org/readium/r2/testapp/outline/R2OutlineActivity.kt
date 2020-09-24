@@ -19,7 +19,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_outline.*
 import kotlinx.android.synthetic.main.item_recycle_bookmark.view.*
@@ -28,8 +27,6 @@ import kotlinx.android.synthetic.main.item_recycle_outline.view.*
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.extensions.getPublication
-import org.readium.r2.shared.extensions.putPublication
-import org.readium.r2.shared.extensions.putPublicationFrom
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -43,24 +40,6 @@ import kotlin.math.roundToInt
 
 
 class R2OutlineActivity : AppCompatActivity() {
-
-    class Contract : ActivityResultContract<Contract.Input, Locator?>() {
-
-        data class Input(val publication: Publication, val bookId: Long)
-
-        override fun createIntent(context: Context, input: Input?): Intent {
-            input ?: throw IllegalArgumentException("No input provided.")
-
-            return Intent(context, R2OutlineActivity::class.java).apply {
-                putPublication(input.publication)
-                putExtra("bookId", input.bookId)
-            }
-        }
-
-        override fun parseResult(resultCode: Int, intent: Intent?): Locator? =
-            intent?.getParcelableExtra("locator")
-
-    }
 
     private lateinit var preferences:SharedPreferences
     private lateinit var bookmarkDB: BookmarksDatabase
