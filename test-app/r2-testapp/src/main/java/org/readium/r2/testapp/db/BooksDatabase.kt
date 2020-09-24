@@ -14,15 +14,22 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
+import android.util.Size
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.json.JSONObject
+import org.readium.r2.shared.extensions.toPng
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import java.net.URI
 import java.nio.file.Paths
+import kotlin.math.min
 
 /**
  * Global Parameters
@@ -208,13 +215,22 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
     fun insert(book: Book, allowDuplicates: Boolean): Long? {
         val exists = has(book)
         if (exists.isEmpty() || allowDuplicates) {
+            // Makes sure the cover is not too large, to prevent SQLiteBlobTooBigException.
+            val cover = book.cover
+                ?.let {
+                    tryOrNull {
+                        BitmapFactory.decodeByteArray(it, 0, it.size)
+                            ?.scaleToFit(Size(400, 400))
+                    }
+                }
+
             return database.use {
                 return@use insert(BOOKSTable.NAME,
                         BOOKSTable.TITLE to book.title,
                         BOOKSTable.AUTHOR to book.author,
                         BOOKSTable.HREF to book.href,
                         BOOKSTable.IDENTIFIER to book.identifier,
-                        BOOKSTable.COVER to book.cover,
+                        BOOKSTable.COVER to runBlocking { cover?.toPng() },
                         BOOKSTable.EXTENSION to book.ext,
                         BOOKSTable.CREATION to book.creation)
             }
@@ -337,4 +353,19 @@ class BOOKS(private var database: BooksDatabaseOpenHelper) {
             return Book(id, creation as Long, href, title, author, identifier, cover, progression, ext)
         }
     }
+}
+
+private fun Bitmap.scaleToFit(maxSize: Size): Bitmap {
+    if (width <= maxSize.width && height <= maxSize.height)
+        return this
+
+    val ratio = min(
+        maxSize.width / width.toFloat(),
+        maxSize.height / height.toFloat()
+    )
+
+    val newWidth = (ratio * width).toInt()
+    val newHeight = (ratio * height).toInt()
+
+    return Bitmap.createScaledBitmap(this, newWidth, newHeight, true)
 }
