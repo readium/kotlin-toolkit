@@ -72,7 +72,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
 
     private fun getContentWidth(): Int {
-        return this.computeHorizontalScrollRange()//working after load of page
+        return this.computeHorizontalScrollExtent() * numPages
     }
 
     override fun getContentHeight(): Int {
@@ -277,7 +277,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
      * misaligned.
      */
     private fun getClientWidth(): Int {
-        return this.computeHorizontalScrollRange() / numPages
+        return this.computeHorizontalScrollExtent()
     }
 
     /**
@@ -997,7 +997,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         get() {
             var numPages = 0
             try {
-                numPages = this.computeHorizontalScrollRange() / this.computeHorizontalScrollExtent()
+                numPages = ceil((this.computeHorizontalScrollRange() / this.computeHorizontalScrollExtent()).toDouble()).roundToInt()
             } catch (e: Exception) {
             } finally {
                 if (numPages == 0) {
