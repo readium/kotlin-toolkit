@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.cbz
+package org.readium.r2.navigator.image
 
 import android.content.Context
 import android.content.SharedPreferences
