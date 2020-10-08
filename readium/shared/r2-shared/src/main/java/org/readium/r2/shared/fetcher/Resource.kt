@@ -18,6 +18,7 @@ import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.nio.charset.Charset
 
 typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Error>
@@ -35,6 +36,16 @@ typealias ResourceTransformer = (Resource) -> Resource
  * Acts as a proxy to an actual resource by handling read access.
  */
 interface Resource {
+
+    /**
+     * Direct file to this resource, when available.
+     *
+     * This is meant to be used as an optimization for consumers which can't work efficiently
+     * with streams. However, [file] is not guaranteed to be set, for example if the resource
+     * underwent transformations or is being read from an archive. Therefore, consumers should
+     * always fallback on regular stream reading, using [read] or [ResourceInputStream].
+     */
+    val file: File? get() = null
 
     /**
      * Returns the link from which the resource was retrieved.

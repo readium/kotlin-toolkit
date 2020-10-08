@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* `OutOfMemoryError` occuring while opening large publications are now caught to prevent crashes. They are reported as `Resource.Exception.OutOfMemory`.
+* Readium can now open PDF documents of any size without crashing. However, LCP protected PDFs are still limited by the available memory.
+
 ## [2.0.0-alpha.1]
 
 ### Added
