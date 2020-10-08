@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* Prevent switching to the next resource by mistake when scrolling through an EPUB resource in scroll mode.
+
 ## [2.0.0-alpha.1]
 
 ### Added

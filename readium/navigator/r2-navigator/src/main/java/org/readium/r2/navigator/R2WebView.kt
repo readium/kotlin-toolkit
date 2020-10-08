@@ -698,7 +698,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 val x = ev.getX(activePointerIndex)
                 val y = ev.getY(activePointerIndex)
                 val totalDelta = (x - mInitialMotionX).toInt()
-                val totalDeltaY = (x - mInitialMotionY).toInt()
+                val totalDeltaY = (y - mInitialMotionY).toInt()
                 val nextPage = determineTargetPage(currentPage, 0f, initialVelocity, totalDelta)
                 
                 val scrollMode = listener.preferences.getBoolean(SCROLL_REF, false)
