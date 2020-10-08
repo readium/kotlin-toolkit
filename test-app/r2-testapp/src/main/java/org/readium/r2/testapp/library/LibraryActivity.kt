@@ -31,7 +31,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.mcxiaoke.koi.ext.onClick
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.*
@@ -42,6 +41,7 @@ import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.extensions.extension
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
@@ -465,7 +465,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 tryOrNull { libraryFile.file.delete() }
                 Timber.d(it)
                 progress?.dismiss()
-                if (foreground) catalogView.longSnackbar("failed to open publication")
+                if (foreground) presentOpeningError(it)
             }
     }
 
@@ -592,7 +592,8 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 .onFailure {
                     Timber.d(it)
                     progress.dismiss()
-                    catalogView.longSnackbar("unable to open publication") }
+                    presentOpeningError(it)
+                }
                 .onSuccess {
                     if (it.isRestricted) {
                         progress.dismiss()
@@ -624,6 +625,22 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         preferences.edit().putString("$key-publicationPort", localPort.toString()).apply()
         val userProperties = applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
         server.addEpub(publication, null, "/${file.name}", userProperties)
+    }
+
+    private fun presentOpeningError(error: Publication.OpeningError) {
+        val message = when (error) {
+            Publication.OpeningError.UnsupportedFormat -> "Publication format not supported"
+            Publication.OpeningError.NotFound -> "Publication file not found"
+            is Publication.OpeningError.ParsingFailed -> when (error.cause) {
+                is Resource.Error.OutOfMemory -> "This publication is too large to be opened on this device"
+                else -> "Publication corrupted: ${error.message}"
+            }
+            is Publication.OpeningError.Forbidden -> error.cause?.message ?: "You are not allowed to open this publication"
+            is Publication.OpeningError.Unavailable -> "This publication is not available right now. Please try again later"
+            Publication.OpeningError.IncorrectCredentials -> "Incorrect credentials"
+        }
+
+        catalogView.longSnackbar(message)
     }
 
     class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {

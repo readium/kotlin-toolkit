@@ -48,7 +48,7 @@ class NavigatorContract : ActivityResultContract<NavigatorContract.Input, Naviga
     override fun createIntent(context: Context, input: Input): Intent {
         val intent = Intent(context, when (input.format) {
             Format.EPUB -> EpubActivity::class.java
-            Format.PDF -> PdfActivity::class.java
+            Format.PDF, Format.LCP_PROTECTED_PDF -> PdfActivity::class.java
             Format.READIUM_AUDIOBOOK, Format.READIUM_AUDIOBOOK_MANIFEST, Format.LCP_PROTECTED_AUDIOBOOK -> AudiobookActivity::class.java
             Format.CBZ -> ComicActivity::class.java
             Format.PDF -> DiViNaActivity::class.java
