@@ -10,23 +10,17 @@
 package org.readium.r2.navigator.pdf
 
 import android.app.Activity
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.NavigatorFragmentFactory
 import org.readium.r2.navigator.R
-import org.readium.r2.shared.FragmentNavigator
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.getPublication
-import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 
 @PdfSupport
-@OptIn(FragmentNavigator::class)
 abstract class R2PdfActivity : AppCompatActivity(), PdfNavigatorFragment.Listener {
 
     protected lateinit var publication: Publication

@@ -9,14 +9,7 @@
 
 package org.readium.r2.navigator
 
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
-import org.readium.r2.navigator.cbz.ImageNavigatorFragment
-import org.readium.r2.navigator.epub.EpubNavigatorFragment
-import org.readium.r2.navigator.pager.R2CbzPageFragment
-import org.readium.r2.navigator.pdf.PdfNavigatorFragment
-import org.readium.r2.shared.FragmentNavigator
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 
@@ -30,33 +23,10 @@ import org.readium.r2.shared.publication.Publication
  *        Can be used to restore the last reading location.
  * @param listener Optional listener to implement to observe events, such as user taps.
  */
-@FragmentNavigator
+@Deprecated("Each [Fragment] has now its own factory, such as [EpubNavigatorFragment.Factory]. To use a single [Activity] with several navigator fragments, you can compose the factories with [CompositeFragmentFactory].", level = DeprecationLevel.ERROR)
 class NavigatorFragmentFactory(
     private val publication: Publication,
     private val baseUrl: String? = null,
     private val initialLocator: Locator? = null,
     private val listener: Navigator.Listener? = null
-) : FragmentFactory() {
-
-    @OptIn(PdfSupport::class)
-    override fun instantiate(classLoader: ClassLoader, className: String): Fragment =
-        when (className) {
-            PdfNavigatorFragment::class.java.name -> {
-                throw IllegalArgumentException("Use [PdfNavigatorFragment.Factory] to create a [PdfNavigatorFragment]")
-            }
-
-            EpubNavigatorFragment::class.java.name -> {
-                val baseUrl = baseUrl ?: throw IllegalArgumentException("[baseUrl] is required for the [EpubNavigatorFragment]")
-                EpubNavigatorFragment(publication, baseUrl, initialLocator, listener)
-            }
-
-            ImageNavigatorFragment::class.java.name ->
-                ImageNavigatorFragment(publication, initialLocator, listener)
-
-            R2CbzPageFragment::class.java.name ->
-                R2CbzPageFragment(publication)
-
-            else -> super.instantiate(classLoader, className)
-        }
-
-}
+) : FragmentFactory()

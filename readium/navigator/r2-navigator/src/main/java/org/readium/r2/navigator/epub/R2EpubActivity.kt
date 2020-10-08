@@ -31,7 +31,6 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.FragmentNavigator
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -39,8 +38,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import kotlin.coroutines.CoroutineContext
 
-@OptIn(FragmentNavigator::class)
-open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator, VisualNavigator.Listener {
+open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator, EpubNavigatorFragment.Listener {
 
     /**
      * Context of this scope.
@@ -89,7 +87,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
         val initialLocator = intent.getParcelableExtra("locator") as? Locator
 
-        supportFragmentManager.fragmentFactory = NavigatorFragmentFactory(publication, baseUrl = baseUrl, initialLocator = initialLocator, listener = this)
+        supportFragmentManager.fragmentFactory = EpubNavigatorFragment.Factory(publication, baseUrl = baseUrl, initialLocator = initialLocator, listener = this)
 
         super.onCreate(savedInstanceState)
 

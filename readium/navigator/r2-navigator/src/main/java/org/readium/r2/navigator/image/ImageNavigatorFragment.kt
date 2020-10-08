@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.cbz
+package org.readium.r2.navigator.image
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -14,26 +14,58 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
-import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
+import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.FragmentNavigator
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positions
 
-@FragmentNavigator
-class ImageNavigatorFragment(
+/**
+ * Navigator for bitmap-based publications, such as CBZ.
+ */
+class ImageNavigatorFragment private constructor(
     internal val publication: Publication,
     private val initialLocator: Locator? = null,
-    internal val listener: Navigator.Listener? = null
+    internal val listener: Listener? = null
 ) : Fragment(), CoroutineScope by MainScope(), VisualNavigator {
+
+    interface Listener : VisualNavigator.Listener
+
+    /**
+     * Factory for [ImageNavigatorFragment].
+     *
+     * @param publication Bitmap-based publication to render in the navigator.
+     * @param initialLocator The first location which should be visible when rendering the
+     *        publication. Can be used to restore the last reading location.
+     * @param listener Optional listener to implement to observe events, such as user taps.
+     */
+    class Factory(
+        private val publication: Publication,
+        private val initialLocator: Locator? = null,
+        private val listener: Listener? = null
+    ) : FragmentFactory() {
+
+        override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
+            return when (className) {
+                ImageNavigatorFragment::class.java.name ->
+                    ImageNavigatorFragment(publication, initialLocator, listener)
+
+                R2CbzPageFragment::class.java.name ->
+                    R2CbzPageFragment(publication)
+
+                else -> super.instantiate(classLoader, className)
+            }
+        }
+
+    }
 
     internal lateinit var positions: List<Locator>
     internal lateinit var resourcePager: R2ViewPager

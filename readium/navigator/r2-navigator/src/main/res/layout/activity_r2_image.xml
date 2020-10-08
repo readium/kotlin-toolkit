@@ -6,7 +6,7 @@
     <fragment
         android:id="@+id/image_navigator"
         android:tag="@string/image_navigator_tag"
-        android:name="org.readium.r2.navigator.cbz.ImageNavigatorFragment"
+        android:name="org.readium.r2.navigator.image.ImageNavigatorFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />

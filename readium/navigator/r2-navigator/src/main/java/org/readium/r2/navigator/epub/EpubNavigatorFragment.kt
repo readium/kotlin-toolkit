@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
@@ -26,6 +27,8 @@ import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.navigator.pdf.PdfNavigatorFragment
+import org.readium.r2.navigator.util.SingleFragmentFactory
 import org.readium.r2.shared.*
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Link
@@ -37,14 +40,38 @@ import org.readium.r2.shared.publication.services.positions
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
 
-@FragmentNavigator
-class EpubNavigatorFragment(
+/**
+ * Navigator for EPUB publications.
+ */
+class EpubNavigatorFragment private constructor(
     internal val publication: Publication,
     private val baseUrl: String,
     private val initialLocator: Locator? = null,
-    internal val listener: Navigator.Listener? = null
+    internal val listener: Listener? = null
 ): Fragment(), CoroutineScope by MainScope(), VisualNavigator, R2BasicWebView.Listener {
 
+    interface Listener: VisualNavigator.Listener
+
+    /**
+     * Factory for [EpubNavigatorFragment].
+     *
+     * @param publication EPUB publication to render in the navigator.
+     * @param baseUrl A base URL where this publication is served from.
+     * @param initialLocator The first location which should be visible when rendering the
+     *        publication. Can be used to restore the last reading location.
+     * @param listener Optional listener to implement to observe events, such as user taps.
+     */
+    class Factory(
+        private val publication: Publication,
+        private val baseUrl: String,
+        private val initialLocator: Locator? = null,
+        private val listener: Listener? = null
+    ) : SingleFragmentFactory<EpubNavigatorFragment>() {
+
+        override fun instantiate(): EpubNavigatorFragment =
+            EpubNavigatorFragment(publication, baseUrl, initialLocator, listener)
+
+    }
 
     internal lateinit var positions: List<Locator>
     lateinit var resourcePager: R2ViewPager

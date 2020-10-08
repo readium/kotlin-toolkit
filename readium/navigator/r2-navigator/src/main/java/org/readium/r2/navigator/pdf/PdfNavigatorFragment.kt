@@ -25,14 +25,15 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.util.SingleFragmentFactory
-import org.readium.r2.shared.FragmentNavigator
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import timber.log.Timber
 
-@PdfSupport @FragmentNavigator
+/**
+ * Navigator for PDF publications.
+ */
 class PdfNavigatorFragment internal constructor(
     private val publication: Publication,
     private val initialLocator: Locator? = null,
