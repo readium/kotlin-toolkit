@@ -160,8 +160,8 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             is Resource.Error.NotFound -> Status.NOT_FOUND
             is Resource.Error.Forbidden -> Status.FORBIDDEN
             is Resource.Error.Unavailable -> Status.SERVICE_UNAVAILABLE
-            is Resource.Error.Other -> Status.INTERNAL_ERROR
             is Resource.Error.BadRequest -> Status.BAD_REQUEST
+            is Resource.Error.Cancelled, is Resource.Error.OutOfMemory, is Resource.Error.Other -> Status.INTERNAL_ERROR
         }
         return newFixedLengthResponse(status, mimeType, ResponseStatus.FAILURE_RESPONSE)
     }
