@@ -33,7 +33,7 @@ interface LcpService {
     suspend fun isLcpProtected(file: File): Boolean
 
     /**
-     *  Acquires a protected publication from a standalone LCPL's bytes.
+     * Acquires a protected publication from a standalone LCPL's bytes.
      */
     suspend fun acquirePublication(lcpl: ByteArray): Try<AcquiredPublication, LcpException>
 
@@ -49,7 +49,7 @@ interface LcpService {
     }
 
     suspend fun addPassphrase(passphrase: String, hashed: Boolean, license: LicenseDocument) =
-        addPassphrase(passphrase, hashed, provider = license.provider, userId = license.user.id)
+        addPassphrase(passphrase, hashed, licenseId = license.id, provider = license.provider, userId = license.user.id)
 
     suspend fun addPassphrase(passphrase: String, hashed: Boolean, licenseId: String? = null, provider: String? = null, userId: String? = null)
 

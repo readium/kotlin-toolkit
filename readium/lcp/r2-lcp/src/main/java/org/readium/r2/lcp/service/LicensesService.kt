@@ -40,7 +40,7 @@ internal class LicensesService(
 
     override suspend fun isLcpProtected(file: File): Boolean =
         tryOr(false) {
-            createLicenseContainer(file.path)
+            createLicenseContainer(file.path).read()
             true
         }
 
