@@ -23,8 +23,19 @@ open class UserException(
 
     /**
      * Gets the localized user-facing message for this exception.
+     *
+     * @param includesCauses Includes nested [UserException] causes in the user message when true.
      */
-    fun getUserMessage(context: Context): String =
-        context.getString(userMessageId, *args)
+    open fun getUserMessage(context: Context, includesCauses: Boolean = true): String {
+        var message = context.getString(userMessageId, *args)
+
+        // Includes nested causes if they are also [UserException].
+        val cause = cause
+        if (cause is UserException && includesCauses) {
+            message += ": ${cause.getUserMessage(context)}"
+        }
+
+        return message
+    }
 
 }

@@ -9,12 +9,16 @@
 
 package org.readium.r2.shared.publication
 
+import android.content.Context
 import android.net.Uri
+import androidx.annotation.StringRes
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.readium.r2.shared.BuildConfig.DEBUG
+import org.readium.r2.shared.R
 import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.HashAlgorithm
 import org.readium.r2.shared.extensions.hash
 import org.readium.r2.shared.extensions.removeLastComponent
@@ -373,39 +377,39 @@ class Publication(
     /**
      * Errors occurring while opening a Publication.
      */
-    sealed class OpeningException(cause: Throwable? = null) : Exception(cause) {
+    sealed class OpeningException(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
 
         /**
          * The file format could not be recognized by any parser.
          */
-        object UnsupportedFormat : OpeningException()
+        object UnsupportedFormat : OpeningException(R.string.r2_shared_publication_opening_exception_unsupported_format)
 
         /**
          * The publication file was not found on the file system.
          */
-        object NotFound : OpeningException()
+        object NotFound : OpeningException(R.string.r2_shared_publication_opening_exception_not_found)
 
         /**
          * The publication parser failed with the given underlying exception.
          */
-        class ParsingFailed(cause: Throwable) : OpeningException(cause)
+        class ParsingFailed(cause: Throwable) : OpeningException(R.string.r2_shared_publication_opening_exception_parsing_failed, cause)
 
         /**
          * We're not allowed to open the publication at all, for example because it expired.
          */
-        class Forbidden(cause: Throwable?) : OpeningException(cause)
+        class Forbidden(cause: Throwable?) : OpeningException(R.string.r2_shared_publication_opening_exception_forbidden, cause)
 
         /**
          * The publication can't be opened at the moment, for example because of a networking error.
          * This error is generally temporary, so the operation may be retried or postponed.
          */
-        class Unavailable(cause: Throwable?) : OpeningException(cause)
+        class Unavailable(cause: Throwable?) : OpeningException(R.string.r2_shared_publication_opening_exception_unavailable, cause)
 
         /**
          * The provided credentials are incorrect and we can't open the publication in a
          * `restricted` state (e.g. for a password-protected ZIP).
          */
-        object IncorrectCredentials: OpeningException()
+        object IncorrectCredentials: OpeningException(R.string.r2_shared_publication_opening_exception_incorrect_credentials)
 
     }
 
