@@ -627,17 +627,17 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         server.addEpub(publication, null, "/${file.name}", userProperties)
     }
 
-    private fun presentOpeningError(error: Publication.OpeningError) {
+    private fun presentOpeningError(error: Publication.OpeningException) {
         val message = when (error) {
-            Publication.OpeningError.UnsupportedFormat -> "Publication format not supported"
-            Publication.OpeningError.NotFound -> "Publication file not found"
-            is Publication.OpeningError.ParsingFailed -> when (error.cause) {
+            Publication.OpeningException.UnsupportedFormat -> "Publication format not supported"
+            Publication.OpeningException.NotFound -> "Publication file not found"
+            is Publication.OpeningException.ParsingFailed -> when (error.cause) {
                 is Resource.Error.OutOfMemory -> "This publication is too large to be opened on this device"
                 else -> "Publication corrupted: ${error.message}"
             }
-            is Publication.OpeningError.Forbidden -> error.cause?.message ?: "You are not allowed to open this publication"
-            is Publication.OpeningError.Unavailable -> "This publication is not available right now. Please try again later"
-            Publication.OpeningError.IncorrectCredentials -> "Incorrect credentials"
+            is Publication.OpeningException.Forbidden -> error.cause?.message ?: "You are not allowed to open this publication"
+            is Publication.OpeningException.Unavailable -> "This publication is not available right now. Please try again later"
+            Publication.OpeningException.IncorrectCredentials -> "Incorrect credentials"
         }
 
         catalogView.longSnackbar(message)
