@@ -29,7 +29,6 @@ import org.readium.r2.shared.publication.services.CoverService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import timber.log.Timber
-import java.lang.Exception
 import java.net.URL
 import java.net.URLEncoder
 import kotlin.reflect.KClass
@@ -374,39 +373,39 @@ class Publication(
     /**
      * Errors occurring while opening a Publication.
      */
-    sealed class OpeningError(cause: Throwable? = null) : Throwable(cause) {
+    sealed class OpeningException(cause: Throwable? = null) : Exception(cause) {
 
         /**
          * The file format could not be recognized by any parser.
          */
-        object UnsupportedFormat : OpeningError()
+        object UnsupportedFormat : OpeningException()
 
         /**
          * The publication file was not found on the file system.
          */
-        object NotFound : OpeningError()
+        object NotFound : OpeningException()
 
         /**
          * The publication parser failed with the given underlying exception.
          */
-        class ParsingFailed(cause: Throwable) : OpeningError(cause)
+        class ParsingFailed(cause: Throwable) : OpeningException(cause)
 
         /**
          * We're not allowed to open the publication at all, for example because it expired.
          */
-        class Forbidden(cause: Throwable?) : OpeningError(cause)
+        class Forbidden(cause: Throwable?) : OpeningException(cause)
 
         /**
          * The publication can't be opened at the moment, for example because of a networking error.
          * This error is generally temporary, so the operation may be retried or postponed.
          */
-        class Unavailable(cause: Throwable?) : OpeningError(cause)
+        class Unavailable(cause: Throwable?) : OpeningException(cause)
 
         /**
          * The provided credentials are incorrect and we can't open the publication in a
          * `restricted` state (e.g. for a password-protected ZIP).
          */
-        object IncorrectCredentials: OpeningError()
+        object IncorrectCredentials: OpeningException()
 
     }
 
