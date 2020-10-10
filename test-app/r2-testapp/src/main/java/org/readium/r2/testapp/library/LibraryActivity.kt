@@ -632,7 +632,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             Publication.OpeningException.UnsupportedFormat -> "Publication format not supported"
             Publication.OpeningException.NotFound -> "Publication file not found"
             is Publication.OpeningException.ParsingFailed -> when (error.cause) {
-                is Resource.Error.OutOfMemory -> "This publication is too large to be opened on this device"
+                is Resource.Exception.OutOfMemory -> "This publication is too large to be opened on this device"
                 else -> "Publication corrupted: ${error.message}"
             }
             is Publication.OpeningException.Forbidden -> error.cause?.message ?: "You are not allowed to open this publication"

@@ -30,9 +30,9 @@ class PdfActivity : R2PdfActivity() {
         bookId = intent.getLongExtra("bookId", -1)
     }
 
-    override fun onResourceLoadFailed(link: Link, error: Resource.Error) {
+    override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
         val message = when (error) {
-            is Resource.Error.OutOfMemory -> "The PDF is too large to be rendered on this device"
+            is Resource.Exception.OutOfMemory -> "The PDF is too large to be rendered on this device"
             else -> "Failed to render this PDF"
         }
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
