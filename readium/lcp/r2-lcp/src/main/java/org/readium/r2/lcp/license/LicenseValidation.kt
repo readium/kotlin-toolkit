@@ -343,7 +343,12 @@ internal class LicenseValidation(
             error = if (status != null) {
                 val date = status.statusUpdated
                 when (status.status) {
-                    StatusDocument.Status.ready, StatusDocument.Status.active, StatusDocument.Status.expired -> LcpException.LicenseStatus.Expired(start = start, end = end)
+                    StatusDocument.Status.ready, StatusDocument.Status.active, StatusDocument.Status.expired ->
+                        if (start > DateTime()) {
+                            LcpException.LicenseStatus.NotStarted(start)
+                        } else {
+                            LcpException.LicenseStatus.Expired(end)
+                        }
                     StatusDocument.Status.returned -> LcpException.LicenseStatus.Returned(date)
                     StatusDocument.Status.revoked -> {
                         val devicesCount = status.events(org.readium.r2.lcp.license.model.components.lsd.Event.EventType.register).size
@@ -352,7 +357,11 @@ internal class LicenseValidation(
                     StatusDocument.Status.cancelled -> LcpException.LicenseStatus.Cancelled(date)
                 }
             } else {
-                LcpException.LicenseStatus.Expired(start = start, end = end)
+                if (start > DateTime()) {
+                    LcpException.LicenseStatus.NotStarted(start)
+                } else {
+                    LcpException.LicenseStatus.Expired(end)
+                }
             }
         }
         raise(Event.checkedLicenseStatus(error))
