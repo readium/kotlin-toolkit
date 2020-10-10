@@ -9,8 +9,11 @@
 
 package org.readium.r2.shared.fetcher
 
+import androidx.annotation.StringRes
 import kotlinx.coroutines.CancellationException
 import org.json.JSONObject
+import org.readium.r2.shared.R
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.parser.xml.ElementNode
@@ -136,20 +139,22 @@ interface Resource {
     /**
      * Errors occurring while accessing a resource.
      */
-    sealed class Exception(cause: Throwable? = null) : kotlin.Exception(cause) {
+    sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
 
         /** Equivalent to a 400 HTTP error. */
-        class BadRequest(cause: Throwable? = null) : Exception(cause)
+        class BadRequest(val parameters: Map<String, String>, cause: Throwable? = null)
+            : Exception(R.string.r2_shared_resource_exception_bad_request, cause)
 
         /** Equivalent to a 404 HTTP error. */
-        object NotFound : Exception()
+        object NotFound : Exception(R.string.r2_shared_resource_exception_not_found)
 
         /**
          * Equivalent to a 403 HTTP error.
          *
-         * This can be returned when trying to read a resource protected with a DRM that is not unlocked.
+         * This can be returned when trying to read a resource protected with a DRM that is not
+         * unlocked.
          */
-        object Forbidden : Exception()
+        object Forbidden : Exception(R.string.r2_shared_resource_exception_forbidden)
 
         /**
          * Equivalent to a 503 HTTP error.
@@ -157,24 +162,25 @@ interface Resource {
          * Used when the source can't be reached, e.g. no Internet connection, or an issue with the
          * file system. Usually this is a temporary error.
          */
-        object Unavailable : Exception()
+        object Unavailable : Exception(R.string.r2_shared_resource_exception_unavailable)
 
         /**
          * Equivalent to a 507 HTTP error.
          *
          * Used when the requested range is too large to be read in memory.
          */
-        class OutOfMemory(cause: OutOfMemoryError) : Exception(cause)
+        class OutOfMemory(cause: OutOfMemoryError)
+            : Exception(R.string.r2_shared_resource_exception_out_of_memory, cause)
 
         /**
          * The request was cancelled by the caller.
          *
          * For example, when a coroutine is cancelled.
          */
-        object Cancelled : Exception()
+        object Cancelled : Exception(R.string.r2_shared_resource_exception_cancelled)
 
         /** For any other error, such as HTTP 500. */
-        class Other(cause: Throwable) : Exception(cause)
+        class Other(cause: Throwable) : Exception(R.string.r2_shared_resource_exception_other, cause)
 
         companion object {
 

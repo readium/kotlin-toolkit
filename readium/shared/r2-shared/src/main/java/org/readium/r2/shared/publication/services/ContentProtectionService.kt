@@ -273,10 +273,12 @@ private sealed class RouteHandler {
             val parameters = link.href.queryParameters()
             val text = parameters["text"]
                 ?: return FailureResource(link, Resource.Exception.BadRequest(
+                    parameters,
                     IllegalArgumentException("'text' parameter is required")
                 ))
             val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
                 ?: return FailureResource(link, Resource.Exception.BadRequest(
+                    parameters,
                     IllegalArgumentException("if present, 'peek' must be true or false")
                 ))
 
@@ -303,15 +305,18 @@ private sealed class RouteHandler {
             val parameters = link.href.queryParameters()
             val pageCountString = parameters["pageCount"]
                 ?: return FailureResource(link, Resource.Exception.BadRequest(
+                    parameters,
                     IllegalArgumentException("'pageCount' parameter is required")
                 ))
 
             val pageCount = pageCountString.toIntOrNull()?.takeIf { it >= 0 }
                 ?: return FailureResource(link, Resource.Exception.BadRequest(
+                    parameters,
                     IllegalArgumentException("'pageCount' must be a positive integer")
                 ))
             val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
                 ?: return FailureResource(link, Resource.Exception.BadRequest(
+                    parameters,
                     IllegalArgumentException("if present, 'peek' must be true or false")
                 ))
 
