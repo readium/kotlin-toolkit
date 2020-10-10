@@ -48,7 +48,7 @@ class PdfNavigatorFragment internal constructor(
         /**
          * Called when a PDF resource failed to be loaded, for example because of an [OutOfMemoryError].
          */
-        fun onResourceLoadFailed(link: Link, error: Resource.Error) {}
+        fun onResourceLoadFailed(link: Link, error: Resource.Exception) {}
 
     }
 
@@ -142,8 +142,8 @@ class PdfNavigatorFragment internal constructor(
                     currentHref = href
 
                 } catch (e: Exception) {
-                    val error = Resource.Error.wrap(e)
-                    if (error != Resource.Error.Cancelled) {
+                    val error = Resource.Exception.wrap(e)
+                    if (error != Resource.Exception.Cancelled) {
                         listener?.onResourceLoadFailed(link, error)
                     }
 
