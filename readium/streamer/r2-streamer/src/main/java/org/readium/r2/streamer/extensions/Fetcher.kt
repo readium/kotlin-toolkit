@@ -21,13 +21,13 @@ import org.readium.r2.shared.util.archive.Archive
 import java.io.File
 import java.io.FileNotFoundException
 
-/** Returns the resource data at the given [Link]'s HREF, or throws a [Resource.Error] */
-@Throws(Resource.Error::class)
+/** Returns the resource data at the given [Link]'s HREF, or throws a [Resource.Exception] */
+@Throws(Resource.Exception::class)
 internal suspend fun Fetcher.readBytes(link: Link): ByteArray =
     get(link).use { it.read().getOrThrow() }
 
-/** Returns the resource data at the given [href], or throws a [Resource.Error] */
-@Throws(Resource.Error::class)
+/** Returns the resource data at the given [href], or throws a [Resource.Exception] */
+@Throws(Resource.Exception::class)
 internal suspend fun Fetcher.readBytes(href: String): ByteArray =
     get(href).use { it.read().getOrThrow() }
 
