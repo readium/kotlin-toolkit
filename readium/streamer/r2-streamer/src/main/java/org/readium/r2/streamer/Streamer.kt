@@ -33,7 +33,7 @@ import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 import java.io.FileNotFoundException
 import java.lang.Exception
 
-internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningError>
+internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningException>
 
 /**
  * Opens a Publication using a list of parsers.
@@ -90,7 +90,7 @@ class Streamer constructor(
      * @param sender Free object that can be used by reading apps to give some UX context when
      *   presenting dialogs.
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
-     * @return Null if the file was not recognized by any parser, or a [Publication.OpeningError]
+     * @return Null if the file was not recognized by any parser, or a [Publication.OpeningException]
      *   in case of failure.
      */
     suspend fun open(
@@ -107,9 +107,9 @@ class Streamer constructor(
         var fetcher = try {
             Fetcher.fromFile(file.file, openArchive)
         } catch (e: SecurityException) {
-            throw Publication.OpeningError.Forbidden(e)
+            throw Publication.OpeningException.Forbidden(e)
         } catch (e: FileNotFoundException) {
-            throw Publication.OpeningError.NotFound
+            throw Publication.OpeningException.NotFound
         }
 
         val protectedFile = contentProtections
@@ -143,9 +143,9 @@ class Streamer constructor(
                         warnings
                     )
                 } catch (e: Exception) {
-                    throw Publication.OpeningError.ParsingFailed(e)
+                    throw Publication.OpeningException.ParsingFailed(e)
                 }
-            } ?: throw Publication.OpeningError.UnsupportedFormat
+            } ?: throw Publication.OpeningException.UnsupportedFormat
 
         val publication = builder
             .apply(onCreatePublication)
@@ -154,7 +154,7 @@ class Streamer constructor(
 
         Try.success(publication)
 
-    } catch (e: Publication.OpeningError) {
+    } catch (e: Publication.OpeningException) {
         Try.failure(e)
     }
 
