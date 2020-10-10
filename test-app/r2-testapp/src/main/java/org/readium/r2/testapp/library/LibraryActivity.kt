@@ -465,7 +465,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 tryOrNull { libraryFile.file.delete() }
                 Timber.d(it)
                 progress?.dismiss()
-                if (foreground) presentOpeningError(it)
+                if (foreground) presentOpeningException(it)
             }
     }
 
@@ -592,7 +592,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 .onFailure {
                     Timber.d(it)
                     progress.dismiss()
-                    presentOpeningError(it)
+                    presentOpeningException(it)
                 }
                 .onSuccess {
                     if (it.isRestricted) {
@@ -627,20 +627,8 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         server.addEpub(publication, null, "/${file.name}", userProperties)
     }
 
-    private fun presentOpeningError(error: Publication.OpeningException) {
-        val message = when (error) {
-            Publication.OpeningException.UnsupportedFormat -> "Publication format not supported"
-            Publication.OpeningException.NotFound -> "Publication file not found"
-            is Publication.OpeningException.ParsingFailed -> when (error.cause) {
-                is Resource.Exception.OutOfMemory -> "This publication is too large to be opened on this device"
-                else -> "Publication corrupted: ${error.message}"
-            }
-            is Publication.OpeningException.Forbidden -> error.cause?.message ?: "You are not allowed to open this publication"
-            is Publication.OpeningException.Unavailable -> "This publication is not available right now. Please try again later"
-            Publication.OpeningException.IncorrectCredentials -> "Incorrect credentials"
-        }
-
-        catalogView.longSnackbar(message)
+    private fun presentOpeningException(error: Publication.OpeningException) {
+        catalogView.longSnackbar(error.getUserMessage(this))
     }
 
     class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
