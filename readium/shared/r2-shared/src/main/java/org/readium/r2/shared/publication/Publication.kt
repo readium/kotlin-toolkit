@@ -41,7 +41,7 @@ internal typealias ServiceFactory = (Publication.Service.Context) -> Publication
  *
  * @param manifest The manifest holding the publication metadata extracted from the publication file.
  * @param fetcher The underlying fetcher used to read publication resources.
- * The default implementation returns Resource.Error.NotFound for all HREFs.
+ * The default implementation returns Resource.Exception.NotFound for all HREFs.
  * @param servicesBuilder Holds the list of service factories used to create the instances of
  * Publication.Service attached to this Publication.
  * @param type The kind of publication it is ( EPUB, CBZ, ... )

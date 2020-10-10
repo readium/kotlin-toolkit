@@ -272,18 +272,18 @@ private sealed class RouteHandler {
         override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
             val parameters = link.href.queryParameters()
             val text = parameters["text"]
-                ?: return FailureResource(link, Resource.Error.BadRequest(
+                ?: return FailureResource(link, Resource.Exception.BadRequest(
                     IllegalArgumentException("'text' parameter is required")
                 ))
             val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
-                ?: return FailureResource(link, Resource.Error.BadRequest(
+                ?: return FailureResource(link, Resource.Exception.BadRequest(
                     IllegalArgumentException("if present, 'peek' must be true or false")
                 ))
 
             val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
 
             return if (copyAllowed)
-                FailureResource(link, Resource.Error.Forbidden)
+                FailureResource(link, Resource.Exception.Forbidden)
             else
                 StringResource(link, "true")
         }
@@ -302,23 +302,23 @@ private sealed class RouteHandler {
         override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
             val parameters = link.href.queryParameters()
             val pageCountString = parameters["pageCount"]
-                ?: return FailureResource(link, Resource.Error.BadRequest(
+                ?: return FailureResource(link, Resource.Exception.BadRequest(
                     IllegalArgumentException("'pageCount' parameter is required")
                 ))
 
             val pageCount = pageCountString.toIntOrNull()?.takeIf { it >= 0 }
-                ?: return FailureResource(link, Resource.Error.BadRequest(
+                ?: return FailureResource(link, Resource.Exception.BadRequest(
                     IllegalArgumentException("'pageCount' must be a positive integer")
                 ))
             val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
-                ?: return FailureResource(link, Resource.Error.BadRequest(
+                ?: return FailureResource(link, Resource.Exception.BadRequest(
                     IllegalArgumentException("if present, 'peek' must be true or false")
                 ))
 
             val printAllowed = with(service.rights) { if (peek) canPrint(pageCount) else print(pageCount) }
 
             return if (printAllowed)
-                FailureResource(link, Resource.Error.Forbidden)
+                FailureResource(link, Resource.Exception.Forbidden)
             else
                 StringResource(link, "true")
         }

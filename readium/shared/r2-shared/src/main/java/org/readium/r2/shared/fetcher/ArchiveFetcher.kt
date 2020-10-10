@@ -57,7 +57,7 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
                     val entry = archive.entry(originalLink.href.removePrefix("/"))
                     Try.success(entry)
                 } catch (e: Exception) {
-                    Try.failure(Resource.Error.NotFound)
+                    Try.failure(Resource.Exception.NotFound)
                 }
             }
 

@@ -68,7 +68,7 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
                 }
             }
         }
-        return FailureResource(link, Resource.Error.NotFound)
+        return FailureResource(link, Resource.Exception.NotFound)
     }
 
     override suspend fun close() {
@@ -149,13 +149,13 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
             try {
                 success(closure())
             } catch (e: FileNotFoundException) {
-                failure(Resource.Error.NotFound)
+                failure(Resource.Exception.NotFound)
             } catch (e: SecurityException) {
-                failure(Resource.Error.Forbidden)
+                failure(Resource.Exception.Forbidden)
             } catch (e: Exception) {
-                failure(Resource.Error.wrap(e))
+                failure(Resource.Exception.wrap(e))
             } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-                failure(Resource.Error.wrap(e))
+                failure(Resource.Exception.wrap(e))
             }
 
         override fun toString(): String =
