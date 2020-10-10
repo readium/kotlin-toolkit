@@ -594,12 +594,12 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                     progress.dismiss()
                     presentOpeningException(it)
                 }
-                .onSuccess {
+                .onSuccess { it ->
                     if (it.isRestricted) {
                         progress.dismiss()
-                        if (it.protectionError != null) {
-                            Timber.d(it.protectionError)
-                            catalogView.longSnackbar("unable to unlock publication")
+                        it.protectionError?.let { error ->
+                            Timber.d(error)
+                            catalogView.longSnackbar(error.getUserMessage(this@LibraryActivity))
                         }
                     } else {
                         prepareToServe(it, file)
