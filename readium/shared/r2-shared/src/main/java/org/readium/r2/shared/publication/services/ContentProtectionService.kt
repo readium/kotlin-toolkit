@@ -10,6 +10,7 @@
 package org.readium.r2.shared.publication.services
 
 import org.json.JSONObject
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.queryParameters
 import org.readium.r2.shared.fetcher.FailureResource
@@ -36,7 +37,7 @@ interface ContentProtectionService: Publication.Service {
     /**
      * The error raised when trying to unlock the [Publication], if any.
      */
-    val error: Exception?
+    val error: UserException?
 
     /**
      * Credentials used to unlock this [Publication].
@@ -188,7 +189,7 @@ val Publication.isRestricted: Boolean
 /**
  * The error raised when trying to unlock the [Publication], if any.
  */
-val Publication.protectionError: Exception?
+val Publication.protectionError: UserException?
     get() = protectionService?.error
 
 /**
