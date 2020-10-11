@@ -22,6 +22,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.Subject
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.util.Href
 import java.net.URL
 
 @Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.Locator"))
@@ -99,9 +100,13 @@ fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link =
         if (feedUrl == null) {
             it
         } else {
-            getAbsolute(it, feedUrl.toString())
+            Href(it, baseHref = feedUrl.toString()).string
         }
     }) ?: Link(href = "#")
 
 @Deprecated("Moved to another package", ReplaceWith("removeLastComponent()", "org.readium.r2.shared.extensions.removeLastComponent"))
 fun URL.removeLastComponent(): URL = removeLastComponent()
+
+@Deprecated("Use `Href().string` instead", replaceWith = ReplaceWith("Href(href, base).string"))
+fun normalize(base: String, href: String?): String =
+    Href(href ?: "", baseHref = base).string

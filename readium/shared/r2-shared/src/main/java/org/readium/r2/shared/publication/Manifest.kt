@@ -20,6 +20,7 @@ import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.extensions.toUrlOrNull
 import org.readium.r2.shared.normalize
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
@@ -100,7 +101,7 @@ data class Manifest(
                         ?.toString()
                         ?: "/"
 
-            val normalizeHref = { href: String -> normalize(baseUrl, href) }
+            val normalizeHref = { href: String -> Href(href, baseUrl).string }
 
             val context = json.optStringsFromArrayOrSingle("@context", remove = true)
 
