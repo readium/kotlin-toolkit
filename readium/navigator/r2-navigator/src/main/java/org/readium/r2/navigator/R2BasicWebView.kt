@@ -26,8 +26,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
-import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.util.Href
 
 
 /**
@@ -138,7 +138,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             val href = noteref.attr("href")
             if (href.indexOf("#") > 0) {
                 val id = href.substring(href.indexOf('#') + 1)
-                var absolute = getAbsolute(href, resourceUrl!!)
+                var absolute = Href(href, baseHref = resourceUrl!!).percentEncodedString
                 absolute = absolute.substring(0, absolute.indexOf("#"))
                 val document = Jsoup.connect(absolute).get()
                 val aside = document.select("aside#$id").first()?.html()
