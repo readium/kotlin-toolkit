@@ -12,6 +12,7 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.normalize
+import org.readium.r2.shared.util.Href
 
 internal object NavigationDocumentParser {
 
@@ -49,7 +50,7 @@ internal object NavigationDocumentParser {
         val first = element.getAll().firstOrNull() ?: return null // should be <a>,  <span>, or <ol>
         val title = if (first.name == "ol") "" else first.collectText().replace("\\s+".toRegex(), " ").trim()
         val rawHref = first.getAttr("href")
-        val href = if (first.name == "a" && !rawHref.isNullOrBlank()) normalize(filePath, rawHref) else "#"
+        val href = if (first.name == "a" && !rawHref.isNullOrBlank()) Href(rawHref, baseHref = filePath).string else "#"
         val children = element.getFirst("ol", Namespaces.XHTML)?.let { parseOlElement(it, filePath) }.orEmpty()
 
         return if (children.isEmpty() && (href == "#" || title == "")) {

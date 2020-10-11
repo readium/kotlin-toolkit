@@ -22,6 +22,7 @@ import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
@@ -179,13 +180,13 @@ class EpubParser : PublicationParser, org.readium.r2.streamer.parser.Publication
         if (packageDocument.epubVersion < 3.0) {
             val ncxItem = packageDocument.manifest.firstOrNull { MediaType.NCX.contains(it.mediaType) }
             ncxItem?.let {
-                val ncxPath = normalize(packageDocument.path, ncxItem.href)
+                val ncxPath = Href(ncxItem.href, baseHref = packageDocument.path).string
                 fetcher.readAsXmlOrNull(ncxPath)?.let { NcxParser.parse(it, ncxPath) }
             }
         } else {
             val navItem = packageDocument.manifest.firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
             navItem?.let {
-                val navPath = normalize(packageDocument.path, navItem.href)
+                val navPath = Href(navItem.href, baseHref = packageDocument.path).string
                 fetcher.readAsXmlOrNull(navPath)?.let { NavigationDocumentParser.parse(it, navPath) }
             }
         }.orEmpty()

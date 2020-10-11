@@ -17,6 +17,7 @@ import org.readium.r2.shared.normalize
 import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.util.Href
 
 internal data class Title(
     val value: LocalizedString,
@@ -76,7 +77,7 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
         val properties = parseProperties(propAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
         val mediaType = element.getAttr("media-type")
         val refines = element.getAttr("refines")?.removePrefix("#")
-        return EpubLink(normalize(filePath, href), rel.toSet(), mediaType, refines, properties)
+        return EpubLink(Href(href, baseHref = filePath).string, rel.toSet(), mediaType, refines, properties)
     }
 
     private fun parseMetaElement(element: ElementNode): MetadataItem? {

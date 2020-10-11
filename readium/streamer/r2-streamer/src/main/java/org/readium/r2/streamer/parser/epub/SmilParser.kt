@@ -14,6 +14,7 @@ import org.readium.r2.shared.MediaOverlayNode
 import org.readium.r2.shared.MediaOverlays
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.normalize
+import org.readium.r2.shared.util.Href
 
 internal object SmilParser {
     /* According to https://www.w3.org/publishing/epub3/epub-mediaoverlays.html#sec-overlays-content-conf
@@ -44,7 +45,7 @@ internal object SmilParser {
         val textref = node.getAttrNs("textref", Namespaces.OPS)
         val audioFiles = children.mapNotNull(MediaOverlayNode::audioFile)
         return if (textref != null && audioFiles.distinct().size == 1) { // hierarchy
-            val normalizedTextref = normalize(filePath, textref)
+            val normalizedTextref = Href(textref, baseHref = filePath).string
             listOf(mediaOverlayFromChildren(normalizedTextref, children))
         } else children
     }
@@ -57,7 +58,7 @@ internal object SmilParser {
             val end = audioNode.getAttr("clipEnd")?.let { ClockValueParser.parse(it) } ?: ""
             "$src#t=$begin,$end"
         }
-        return MediaOverlayNode(normalize(filePath, text), normalize(filePath, audio))
+        return MediaOverlayNode(Href(text, baseHref = filePath).string, Href(audio ?: "", baseHref = filePath).string)
     }
 
     private fun mediaOverlayFromChildren(text: String, children: List<MediaOverlayNode>): MediaOverlayNode {
