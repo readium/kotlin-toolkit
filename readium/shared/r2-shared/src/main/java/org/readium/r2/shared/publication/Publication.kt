@@ -367,7 +367,7 @@ class Publication(
          * Replaces the service factory associated with the given service type with the result of
          * [transform].
          */
-        fun <T : Service> wrap(serviceType: KClass<T>, transform: ((ServiceFactory)?) -> ServiceFactory) {
+        fun <T : Service> decorate(serviceType: KClass<T>, transform: ((ServiceFactory)?) -> ServiceFactory) {
             val key = requireNotNull(serviceType.simpleName)
             serviceFactories[key] = transform(serviceFactories[key])
         }

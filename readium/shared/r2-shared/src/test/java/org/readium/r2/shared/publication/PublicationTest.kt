@@ -435,12 +435,12 @@ class ServicesBuilderTest {
     }
 
     @Test
-    fun testWrap() {
+    fun testDecorate() {
         val services = Publication.ServicesBuilder(cover = null)
             .apply {
                 set(FooService::class) { FooServiceB() }
                 set(BarService::class) { BarServiceA() }
-                wrap(FooService::class) { oldFactory ->
+                decorate(FooService::class) { oldFactory ->
                     { context ->
                         FooServiceC(oldFactory?.let { it(context) as? FooService })
                     }
