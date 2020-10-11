@@ -61,7 +61,7 @@ data class Link(val json: JSONObject) {
             return URL(href)
         }
 
-        val expandedHref = URITemplate(href).expand(parameters.mapValues { it.value ?: "" })
+        val expandedHref = URITemplate(href).expand(parameters.mapValues { it.value ?: "" }, percentEncoded = true)
         return URL(expandedHref)
     }
 
