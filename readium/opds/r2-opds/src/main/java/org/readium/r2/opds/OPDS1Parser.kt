@@ -15,13 +15,13 @@ import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.readium.r2.shared.extensions.toList
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.getAbsolute
 import org.readium.r2.shared.opds.*
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.promise
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Href
 import java.net.URL
 
 enum class OPDSParserError {
@@ -98,7 +98,7 @@ class OPDS1Parser {
                         }
                         if (href != null && (rel == "collection" || rel == "http://opds-spec.org/group")) {
                             collectionLink = Link(
-                                href = getAbsolute(href, feed.href.toString()),
+                                href = Href(href, baseHref = feed.href.toString()).percentEncodedString,
                                 title = link.getAttr("title"),
                                 rels = setOf("collection")
                             )
@@ -125,7 +125,7 @@ class OPDS1Parser {
                         }
 
                         val newLink = Link(
-                            href = getAbsolute(href, feed.href.toString()),
+                            href = Href(href, baseHref = feed.href.toString()).percentEncodedString,
                             type = link.getAttr("type"),
                             title = entry.getFirst("title", Namespaces.Atom)?.text,
                             rels = listOfNotNull(link.getAttr("rel")).toSet(),
@@ -144,7 +144,7 @@ class OPDS1Parser {
             // Parse links
             for (link in root.get("link", Namespaces.Atom)) {
                 val hrefAttr = link.getAttr("href") ?: continue
-                val href = getAbsolute(hrefAttr, feed.href.toString())
+                val href = Href(hrefAttr, baseHref = feed.href.toString()).percentEncodedString
                 val title = link.getAttr("title")
                 val type = link.getAttr("type")
                 val rels = listOfNotNull(link.getAttr("rel")).toSet()
@@ -266,7 +266,7 @@ class OPDS1Parser {
                     }
 
                     Link(
-                        href = getAbsolute(href, baseUrl.toString()),
+                        href = Href(href, baseHref = baseUrl.toString()).percentEncodedString,
                         type = element.getAttr("type"),
                         title = element.getAttr("title"),
                         rels = listOfNotNull(rel).toSet(),
