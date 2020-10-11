@@ -175,7 +175,13 @@ class Publication(
      * Returns the first publication service that is an instance of [klass].
      */
     fun <T: Service> findService(serviceType: KClass<T>): T? =
-        _services.filterIsInstance(serviceType.java).firstOrNull()
+        findServices(serviceType).firstOrNull()
+
+    /**
+     * Returns all the publication services that are instances of [klass].
+     */
+    fun <T: Service> findServices(serviceType: KClass<T>): List<T> =
+        _services.filterIsInstance(serviceType.java)
 
     enum class TYPE {
         EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
