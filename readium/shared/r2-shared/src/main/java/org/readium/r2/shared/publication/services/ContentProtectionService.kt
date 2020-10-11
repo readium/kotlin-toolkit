@@ -253,8 +253,9 @@ private sealed class RouteHandler {
         override fun handleRequest(link: Link, service: ContentProtectionService): Resource =
             StringResource(link) {
                 JSONObject().apply {
-                    put("isLocked", service.isRestricted)
-                    service.name?.let { putIfNotEmpty("name", it) }
+                    put("isRestricted", service.isRestricted)
+                    putOpt("error", service.error?.localizedMessage)
+                    putIfNotEmpty("name", service.name)
                     put("rights", service.rights.toJSON())
                 }.toString()
             }
