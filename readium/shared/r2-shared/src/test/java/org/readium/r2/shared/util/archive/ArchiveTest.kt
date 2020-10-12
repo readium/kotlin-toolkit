@@ -14,6 +14,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import java.io.File
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
@@ -31,12 +32,12 @@ class ArchiveTest(val archive: Archive) {
         fun archives(): List<Archive> {
             val epubZip = ArchiveTest::class.java.getResource("epub.epub")
             assertNotNull(epubZip)
-            val zipArchive = runBlocking { Archive.open(epubZip.path) }
+            val zipArchive = runBlocking { DefaultArchiveFactory().open(File(epubZip.path), password = null) }
             assertNotNull(zipArchive)
 
             val epubExploded = ArchiveTest::class.java.getResource("epub")
             assertNotNull(epubExploded)
-            val explodedArchive = runBlocking { Archive.open(epubExploded.path) }
+            val explodedArchive = runBlocking { DefaultArchiveFactory().open(File(epubExploded.path), password = null) }
             assertNotNull(explodedArchive)
 
             return listOf(zipArchive, explodedArchive)

@@ -9,6 +9,35 @@
 
 package org.readium.r2.shared.util.archive
 
+import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.readium.r2.shared.extensions.tryOr
+import java.io.File
+
+interface ArchiveFactory {
+
+    /** Opens an archive from a local [file]. */
+    suspend fun open(file: File, password: String?): Archive
+
+}
+
+class DefaultArchiveFactory : ArchiveFactory {
+
+    private val javaZipFactory by lazy { JavaZipArchiveFactory() }
+    private val explodedArchiveFactory by lazy { ExplodedArchiveFactory() }
+
+    /** Opens a ZIP or exploded archive. */
+    override suspend fun open(file: File, password: String?): Archive = withContext(Dispatchers.IO) {
+        if (tryOr(false) { file.isDirectory }) {
+            explodedArchiveFactory.open(file, password)
+        } else {
+            javaZipFactory.open(file, password)
+        }
+    }
+
+}
+
 /**
  * Represents an immutable archive.
  */
@@ -49,15 +78,5 @@ interface Archive {
 
     /** Closes the archive. */
     suspend fun close()
-
-    companion object {
-
-        /**
-         * Opens a ZIP or exploded archive.
-         */
-        suspend fun open(path: String): Archive? =
-            JavaZip.open(path) ?: ExplodedArchive.open(path)
-
-    }
 
 }
