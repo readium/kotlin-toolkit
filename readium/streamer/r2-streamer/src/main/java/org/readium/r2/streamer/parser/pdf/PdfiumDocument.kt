@@ -17,12 +17,13 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.util.pdf.PdfDocument
+import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import timber.log.Timber
 import java.io.File
 import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 
 @OptIn(PdfSupport::class)
-internal class PdfiumDocument private constructor(
+internal class PdfiumDocument(
     val core: PdfiumCore,
     val document: _PdfiumDocument,
     override val identifier: String?,
@@ -49,43 +50,6 @@ internal class PdfiumDocument private constructor(
     }
 
     companion object {
-
-        internal suspend  fun open(resource: Resource, context: Context): PdfiumDocument {
-            val core = PdfiumCore(context.applicationContext)
-            return resource.use { res ->
-                val file = resource.file
-                if (file != null) core.fromFile(file)
-                else core.fromBytes(resource.read().getOrThrow())
-            }
-        }
-
-        /**
-         * Creates a [PdfiumDocument] from a [File].
-         */
-        private fun PdfiumCore.fromFile(file: File): PdfiumDocument =
-            fromDocument(
-                newDocument(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)),
-                identifier = file.md5()
-            )
-
-        /**
-         * Creates a [PdfiumDocument] from raw bytes.
-         */
-        private fun PdfiumCore.fromBytes(bytes: ByteArray): PdfiumDocument =
-            fromDocument(
-                newDocument(bytes),
-                identifier = bytes.md5()
-            )
-
-        private fun PdfiumCore.fromDocument(document: _PdfiumDocument, identifier: String?): PdfiumDocument {
-            // FIXME: Extract the identifier from the file, it's not exposed by PdfiumCore
-            return PdfiumDocument(
-                core = this,
-                document = document,
-                identifier = identifier,
-                pageCount = getPageCount(document)
-            )
-        }
 
     }
 
@@ -116,7 +80,44 @@ private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
         children = children.map { it.toOutlineNode() }
     )
 
-/** Pdfium is the default implementation. */
-@PdfSupport
-suspend fun PdfDocument.Companion.open(resource: Resource, context: Context): PdfDocument =
-    PdfiumDocument.open(resource, context)
+@OptIn(PdfSupport::class)
+internal class PdfiumPdfDocumentFactory(private val context: Context) : PdfDocumentFactory {
+
+    private val core by lazy { PdfiumCore(context.applicationContext ) }
+
+    override suspend fun open(file: File, password: String?): PdfDocument =
+        core.fromFile(file, password)
+
+    override suspend fun open(resource: Resource, password: String?): PdfDocument =
+        resource.use { res ->
+            val file = res.file
+            if (file != null) core.fromFile(file, password)
+            else core.fromBytes(res.read().getOrThrow(), password)
+        }
+
+    private fun PdfiumCore.fromFile(file: File, password: String?): PdfiumDocument =
+        fromDocument(
+            newDocument(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY), password),
+            identifier = file.md5()
+        )
+
+    /**
+     * Creates a [PdfiumDocument] from raw bytes.
+     */
+    private fun PdfiumCore.fromBytes(bytes: ByteArray, password: String?): PdfiumDocument =
+        fromDocument(
+            newDocument(bytes, password),
+            identifier = bytes.md5()
+        )
+
+    private fun PdfiumCore.fromDocument(document: _PdfiumDocument, identifier: String?): PdfiumDocument {
+        // FIXME: Extract the identifier from the file, it's not exposed by PdfiumCore
+        return PdfiumDocument(
+            core = this,
+            document = document,
+            identifier = identifier,
+            pageCount = getPageCount(document)
+        )
+    }
+
+}

@@ -23,7 +23,7 @@ import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.File
 
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.pdf.OpenPdfDocument
+import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
@@ -37,7 +37,7 @@ import java.io.FileNotFoundException
  * Parses any Readium Web Publication package or manifest, e.g. WebPub, Audiobook, DiViNa, LCPDF...
  */
 @OptIn(PdfSupport::class)
-class ReadiumWebPubParser(private val openPdf: OpenPdfDocument? = null) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+class ReadiumWebPubParser(private val pdfFactory: PdfDocumentFactory? = null) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 
     override suspend fun parse(
         file: File,
@@ -77,7 +77,7 @@ class ReadiumWebPubParser(private val openPdf: OpenPdfDocument? = null) : Public
 
         val positionsService = when(file.format()) {
             Format.LCP_PROTECTED_PDF ->
-                openPdf?.let { LcpdfPositionsService.create(it) }
+                pdfFactory?.let { LcpdfPositionsService.create(it) }
             Format.READIUM_AUDIOBOOK_MANIFEST, Format.READIUM_AUDIOBOOK, Format.LCP_PROTECTED_AUDIOBOOK ->
                 PerResourcePositionsService.createFactory(fallbackMediaType = "audio/*")
             Format.DIVINA_MANIFEST, Format.DIVINA ->
