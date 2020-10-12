@@ -12,11 +12,7 @@ package org.readium.r2.shared.publication
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.publication.services.ContentProtectionService
-import org.readium.r2.shared.util.Dialog
 import org.readium.r2.shared.util.Try
-
-/** Called when a content protection wants to prompt the user for its credentials. */
-typealias OnAskCredentials = (dialog: Dialog, sender: Any?, callback: (String?) -> Unit) -> Unit
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
@@ -47,8 +43,7 @@ interface ContentProtection {
         fetcher: Fetcher,
         allowUserInteraction: Boolean,
         credentials: String?,
-        sender: Any?,
-        onAskCredentials: OnAskCredentials?
+        sender: Any?
     ): Try<ProtectedFile, Publication.OpeningException>?
 
     /**
