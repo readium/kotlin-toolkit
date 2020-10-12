@@ -19,6 +19,8 @@ import org.readium.r2.shared.publication.OnAskCredentials
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.extensions.fromFile
@@ -45,7 +47,7 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * @param context Application context.
  * @param parsers Parsers used to open a publication, in addition to the default parsers.
  * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
- * @param openArchive Opens an archive (e.g. ZIP, RAR), optionally protected by credentials.
+ * @param archiveFactory Opens an archive (e.g. ZIP, RAR), optionally protected by credentials.
  * @param pdfFactory Parses a PDF document, optionally protected by password.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the [Manifest], the root [Fetcher] or the list of service factories of a [Publication].
@@ -58,7 +60,7 @@ class Streamer constructor(
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
     private val contentProtections: List<ContentProtection> = emptyList(),
-    private val openArchive: suspend (String) -> Archive? = (Archive)::open,
+    private val archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
     private val pdfFactory: PdfDocumentFactory = DefaultPdfDocumentFactory(context),
     private val onCreatePublication: Publication.Builder.() -> Unit = {},
     private val onAskCredentials: OnAskCredentials = { _, _, _ -> Unit }
@@ -104,7 +106,7 @@ class Streamer constructor(
         var file = file
         var onCreatePublication = onCreatePublication
         var fetcher = try {
-            Fetcher.fromFile(file.file, openArchive)
+            Fetcher.fromFile(file.file, archiveFactory)
         } catch (e: SecurityException) {
             throw Publication.OpeningException.Forbidden(e)
         } catch (e: FileNotFoundException) {
