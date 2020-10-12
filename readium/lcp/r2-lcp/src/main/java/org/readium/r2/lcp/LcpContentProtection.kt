@@ -13,7 +13,6 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
-import org.readium.r2.shared.publication.OnAskCredentials
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.File
@@ -29,8 +28,7 @@ internal class LcpContentProtection(
         fetcher: Fetcher,
         allowUserInteraction: Boolean,
         credentials: String?,
-        sender: Any?,
-        onAskCredentials: OnAskCredentials?
+        sender: Any?
     ): Try<ContentProtection.ProtectedFile, Publication.OpeningException>? {
 
         val isProtectedWithLcp = when (file.format()) {
