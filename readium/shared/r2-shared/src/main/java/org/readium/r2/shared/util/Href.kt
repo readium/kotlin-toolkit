@@ -52,7 +52,10 @@ class Href(
                         else -> "/$baseHref$href"
                     }
                 } catch (e: Exception) {
-                    href
+                    if (href.startsWith("http://") || href.startsWith("https://"))
+                        href
+                    else
+                        baseHref.removeSuffix("/") + href.addPrefix("/")
                 }
             }
 
