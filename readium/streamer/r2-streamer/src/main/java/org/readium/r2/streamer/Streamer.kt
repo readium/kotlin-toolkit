@@ -15,10 +15,8 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
-import org.readium.r2.shared.publication.OnAskCredentials
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -51,8 +49,6 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * @param pdfFactory Parses a PDF document, optionally protected by password.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the [Manifest], the root [Fetcher] or the list of service factories of a [Publication].
- * @param onAskCredentials Called when a content protection wants to prompt the user for its
- *   credentials.
  */
 @OptIn(PdfSupport::class)
 class Streamer constructor(
@@ -62,8 +58,7 @@ class Streamer constructor(
     private val contentProtections: List<ContentProtection> = emptyList(),
     private val archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
     private val pdfFactory: PdfDocumentFactory = DefaultPdfDocumentFactory(context),
-    private val onCreatePublication: Publication.Builder.() -> Unit = {},
-    private val onAskCredentials: OnAskCredentials = { _, _, _ -> Unit }
+    private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
 
     /**
@@ -120,8 +115,7 @@ class Streamer constructor(
                     fetcher,
                     allowUserInteraction,
                     credentials,
-                    sender,
-                    onAskCredentials
+                    sender
                 )
             }
             ?.getOrThrow()
