@@ -78,11 +78,10 @@ class Streamer constructor(
      * issues.
      *
      * @param file Path to the publication file..
-     * @param fallbackTitle The Publication's title is mandatory, but some formats might not have a
-     *   way of declaring a title (e.g. CBZ). In which case, [fallbackTitle] will be used.
-     * @param allowUserInteraction Indicates whether the user can be prompted, for example for its credentials.
      * @param credentials Credentials that Content Protections can use to attempt to unlock a
      *   publication, for example a password.
+     * @param allowUserInteraction Indicates whether the user can be prompted, for example for its
+     *   credentials.
      * @param sender Free object that can be used by reading apps to give some UX context when
      *   presenting dialogs.
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
@@ -91,8 +90,8 @@ class Streamer constructor(
      */
     suspend fun open(
         file: File,
-        allowUserInteraction: Boolean,
         credentials: String? = null,
+        allowUserInteraction: Boolean,
         sender: Any? = null,
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> = try {
@@ -110,13 +109,7 @@ class Streamer constructor(
 
         val protectedFile = contentProtections
             .lazyMapFirstNotNullOrNull {
-                it.open(
-                    file,
-                    fetcher,
-                    allowUserInteraction,
-                    credentials,
-                    sender
-                )
+                it.open(file, fetcher, credentials, allowUserInteraction, sender)
             }
             ?.getOrThrow()
 
