@@ -428,7 +428,7 @@ class Publication(
     class Builder(
         var manifest: Manifest,
         var fetcher: Fetcher,
-        var servicesBuilder: ServicesBuilder
+        var servicesBuilder: ServicesBuilder = ServicesBuilder()
     ) {
 
         fun build(): Publication = Publication(
