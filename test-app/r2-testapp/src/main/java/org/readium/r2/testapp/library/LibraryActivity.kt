@@ -362,7 +362,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                                     .apply { show() }
 
                             val downloadedFile = url.copyToTempFile() ?: return@launch
-                            importPublication(downloadedFile, progress)
+                            importPublication(downloadedFile, sourceUrl = url.toString(), progress = progress)
                         }
                     }
                 }
@@ -378,12 +378,12 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 .apply { show() }
 
             uri.copyToTempFile()
-                ?.let { importPublication(it, progress) }
+                ?.let { importPublication(it, sourceUrl = uri.toString(), progress = progress) }
                 ?: progress.dismiss()
         }
     }
 
-    private suspend fun importPublication(sourceFile: R2File, progress: ProgressDialog? = null) {
+    private suspend fun importPublication(sourceFile: R2File, sourceUrl: String? = null, progress: ProgressDialog? = null) {
         val foreground = progress != null
 
         val publicationFile =
@@ -403,17 +403,13 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                         return
                     }
                 )
-            } ?: run {
-                progress?.dismiss()
-                return
             }
 
         val format = publicationFile.format()
         val fileName = "${UUID.randomUUID()}.${format?.fileExtension}"
         val libraryFile = R2File(
             R2DIRECTORY + fileName,
-            format = publicationFile.format(),
-            sourceUrl = publicationFile.sourceUrl
+            format = publicationFile.format()
         )
 
         try {
@@ -437,12 +433,11 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             if (!isRwpm)
                 libraryFile.path
             else
-                libraryFile.sourceUrl
-                    ?: run {
-                        Timber.e("Trying to add a RWPM to the database from a file without sourceUrl.")
-                        progress?.dismiss()
-                        return
-                    }
+                sourceUrl ?: run {
+                    Timber.e("Trying to add a RWPM to the database from a file without sourceUrl.")
+                    progress?.dismiss()
+                    return
+                }
 
         streamer.open(libraryFile, allowUserInteraction = false)
             .onSuccess {
@@ -506,12 +501,9 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
     private suspend fun URL.copyToTempFile(): R2File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
         val file = File("$R2DIRECTORY$filename.$extension")
-        download(file.path).let {
-            if (it)
-                R2File(file.path, sourceUrl = this.toString())
-            else
-                null
-        }
+
+        if (download(file.path)) R2File(file.path)
+        else null
     }
 
     private suspend fun Uri.copyToTempFile(): R2File? = tryOrNull {
