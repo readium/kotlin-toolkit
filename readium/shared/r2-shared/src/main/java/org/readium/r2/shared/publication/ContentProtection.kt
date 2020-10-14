@@ -41,8 +41,8 @@ interface ContentProtection {
     suspend fun open(
         file: File,
         fetcher: Fetcher,
-        allowUserInteraction: Boolean,
         credentials: String?,
+        allowUserInteraction: Boolean,
         sender: Any?
     ): Try<ProtectedFile, Publication.OpeningException>?
 
