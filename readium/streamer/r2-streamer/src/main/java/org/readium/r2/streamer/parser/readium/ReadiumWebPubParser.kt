@@ -78,8 +78,6 @@ class ReadiumWebPubParser(private val pdfFactory: PdfDocumentFactory? = null) : 
         val positionsService = when(file.format()) {
             Format.LCP_PROTECTED_PDF ->
                 pdfFactory?.let { LcpdfPositionsService.create(it) }
-            Format.READIUM_AUDIOBOOK_MANIFEST, Format.READIUM_AUDIOBOOK, Format.LCP_PROTECTED_AUDIOBOOK ->
-                PerResourcePositionsService.createFactory(fallbackMediaType = "audio/*")
             Format.DIVINA_MANIFEST, Format.DIVINA ->
                 PerResourcePositionsService.createFactory("image/*")
             else -> null

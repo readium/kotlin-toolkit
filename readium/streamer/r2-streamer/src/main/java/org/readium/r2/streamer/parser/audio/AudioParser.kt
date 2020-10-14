@@ -61,10 +61,7 @@ class AudioParser :  PublicationParser {
 
         return Publication.Builder(
             manifest = manifest,
-            fetcher = fetcher,
-            servicesBuilder = Publication.ServicesBuilder(
-                positions = PerResourcePositionsService.createFactory(fallbackMediaType = "audio/*")
-            )
+            fetcher = fetcher
         )
     }
 
