@@ -26,8 +26,8 @@ internal class LcpContentProtection(
     override suspend fun open(
         file: File,
         fetcher: Fetcher,
-        allowUserInteraction: Boolean,
         credentials: String?,
+        allowUserInteraction: Boolean,
         sender: Any?
     ): Try<ContentProtection.ProtectedFile, Publication.OpeningException>? {
 
