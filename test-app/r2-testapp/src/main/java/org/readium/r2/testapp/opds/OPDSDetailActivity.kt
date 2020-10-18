@@ -102,7 +102,7 @@ class OPDSDetailActivity : AppCompatActivity(), CoroutineScope {
 
                             opdsDownloader.publicationUrl(downloadUrl.toString()).successUi { pair ->
 
-                                val publicationIdentifier = publication.metadata.identifier!!
+                                val publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
                                 val author = publication.metadata.authorName
                                 Thread {
                                     val stream = ByteArrayOutputStream()
