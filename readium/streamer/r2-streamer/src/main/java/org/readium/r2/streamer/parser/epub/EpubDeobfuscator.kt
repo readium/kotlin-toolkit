@@ -51,7 +51,11 @@ internal class EpubDeobfuscator(private val pubId: String) {
     private fun deobfuscate(bytes: ByteArray, range: LongRange?, obfuscationKey: ByteArray, obfuscationLength: Int) {
         @Suppress("NAME_SHADOWING")
         val range = range ?: (0L until bytes.size)
-        val toDeobfuscate = Math.max(range.start, 0L) .. Math.min(range.last, obfuscationLength - 1L)
+        if (range.first >= obfuscationLength) {
+            return
+        }
+
+        val toDeobfuscate = Math.max(range.first, 0L)..Math.min(range.last, obfuscationLength - 1L)
         for (i in toDeobfuscate.map { it.toInt() })
             bytes[i] = bytes[i].xor(obfuscationKey[i % obfuscationKey.size])
     }
