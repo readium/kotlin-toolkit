@@ -15,11 +15,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentFactory
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
@@ -27,7 +26,6 @@ import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.navigator.util.SingleFragmentFactory
 import org.readium.r2.shared.*
 import org.readium.r2.shared.publication.*
@@ -38,12 +36,12 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positions
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
 
 /**
  * Navigator for EPUB publications.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class EpubNavigatorFragment private constructor(
     internal val publication: Publication,
     private val baseUrl: String,
@@ -404,8 +402,8 @@ class EpubNavigatorFragment private constructor(
     override val readingProgression: ReadingProgression
         get() = publication.contentLayout.readingProgression
 
-    override val currentLocator: LiveData<Locator?> get() = _currentLocator
-    private val _currentLocator = MutableLiveData<Locator?>(null)
+    override val currentLocator: StateFlow<Locator> get() = _currentLocator
+    private val _currentLocator = MutableStateFlow(initialLocator ?: publication.readingOrder.first().toLocator())
 
     /**
      * While scrolling we receive a lot of new current locations, so we use a coroutine job to
@@ -427,11 +425,11 @@ class EpubNavigatorFragment private constructor(
             val locator = positions[positionIndex]
                     .copyWithLocations(progression = progression)
 
-            if (locator == currentLocator.value) {
+            if (locator == _currentLocator.value) {
                 return@launch
             }
 
-            _currentLocator.postValue(locator)
+            _currentLocator.value = locator
             navigatorDelegate?.locationDidChange(navigator = navigator, locator = locator)
         }
     }

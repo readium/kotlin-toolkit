@@ -16,16 +16,16 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.util.SingleFragmentFactory
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.isRestricted
@@ -35,6 +35,7 @@ import timber.log.Timber
 /**
  * Navigator for PDF publications.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class PdfNavigatorFragment internal constructor(
     private val publication: Publication,
     private val initialLocator: Locator? = null,
@@ -105,7 +106,7 @@ class PdfNavigatorFragment internal constructor(
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putParcelable(KEY_LOCATOR, currentLocator.value)
+        outState.putParcelable(KEY_LOCATOR, _currentLocator.value)
     }
 
     private fun goToHref(href: String, page: Int, animated: Boolean = false, completion: () -> Unit = {}): Boolean {
@@ -163,8 +164,8 @@ class PdfNavigatorFragment internal constructor(
 
     // Navigator
 
-    override val currentLocator: LiveData<Locator?> get() = _currentLocator
-    private val _currentLocator = MutableLiveData<Locator?>(null)
+    override val currentLocator: StateFlow<Locator> get() = _currentLocator
+    private val _currentLocator = MutableStateFlow(initialLocator ?: publication.readingOrder.first().toLocator())
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         val page = ((locator.locations.page ?: 1) - 1).coerceAtLeast(0)
@@ -203,7 +204,9 @@ class PdfNavigatorFragment internal constructor(
     // [PDFView] Listeners
 
     private fun onPageChanged(page: Int) {
-        _currentLocator.value = currentResourcePositions.getOrNull(page)
+        currentResourcePositions.getOrNull(page)?.let {
+            _currentLocator.value = it
+        }
     }
 
     private fun onTap(e: MotionEvent?): Boolean {

@@ -15,10 +15,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
@@ -32,6 +32,7 @@ import org.readium.r2.shared.publication.services.positions
 /**
  * Navigator for bitmap-based publications, such as CBZ.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class ImageNavigatorFragment private constructor(
     internal val publication: Publication,
     private val initialLocator: Locator? = null,
@@ -80,8 +81,8 @@ class ImageNavigatorFragment private constructor(
     internal lateinit var adapter: R2PagerAdapter
     private lateinit var currentActivity: FragmentActivity
 
-    override val currentLocator: LiveData<Locator?> get() = _currentLocator
-    private val _currentLocator = MutableLiveData<Locator?>(null)
+    override val currentLocator: StateFlow<Locator> get() = _currentLocator
+    private val _currentLocator = MutableStateFlow(initialLocator ?: publication.readingOrder.first().toLocator())
 
     internal var currentPagerPosition: Int = 0
     internal var resources: List<String> = emptyList()
@@ -143,10 +144,10 @@ class ImageNavigatorFragment private constructor(
 
     private fun notifyCurrentLocation() {
         val locator = positions[resourcePager.currentItem]
-        if (locator == currentLocator.value) {
+        if (locator == _currentLocator.value) {
             return
         }
-        _currentLocator.postValue(locator)
+        _currentLocator.value = locator
     }
 
     override val readingProgression: ReadingProgression

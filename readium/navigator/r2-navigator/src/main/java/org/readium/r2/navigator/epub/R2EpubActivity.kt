@@ -21,9 +21,9 @@ import android.util.DisplayMetrics
 import android.view.ActionMode
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.LiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
@@ -71,7 +71,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     val positions: List<Locator> get() = navigatorFragment.positions
     val currentPagerPosition: Int get() = navigatorFragment.currentPagerPosition
 
-    override val currentLocator: LiveData<Locator?>
+    override val currentLocator: StateFlow<Locator>
         get() = navigatorFragment.currentLocator
 
     override fun onCreate(savedInstanceState: Bundle?) {

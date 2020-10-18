@@ -10,18 +10,18 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import kotlinx.android.synthetic.main.activity_r2_audiobook.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.BuildConfig.DEBUG
 import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.withLocalUrl
-import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.isRestricted
@@ -29,10 +29,11 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
+@OptIn(ExperimentalCoroutinesApi::class)
 open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activity, MediaPlayerCallback, VisualNavigator {
 
-    override val currentLocator: LiveData<Locator?> get() = _currentLocator
-    private val _currentLocator = MutableLiveData<Locator?>(null)
+    override val currentLocator: StateFlow<Locator> get() = _currentLocator
+    private val _currentLocator = MutableStateFlow(Locator(href = "#", type = ""))
 
     private fun notifyCurrentLocation() {
         val locator = publication.readingOrder[currentResource].let { resource ->
@@ -54,11 +55,11 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
             )
         }
 
-        if (locator == currentLocator.value) {
+        if (locator == _currentLocator.value) {
             return
         }
 
-        _currentLocator.postValue(locator)
+        _currentLocator.value = locator
         navigatorDelegate?.locationDidChange(navigator = this, locator = locator)
     }
 

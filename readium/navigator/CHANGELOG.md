@@ -16,7 +16,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-* Improvements in the PDF navigator:
+* `currentLocator` is now a `StateFlow` instead of `LiveData`, to better support chromeless navigators such as an audiobook navigator.
+  * If you were observing `currentLocator` in a UI context, you can continue to do so with `currentLocator.asLiveData()`.
+* Improvements to the PDF navigator:
   * The navigator doesn't require PDF publications to be served from an HTTP server anymore. A side effect is that the navigator is now able to open larger PDF files.
   * `PdfNavigatorFragment.Listener::onResourceLoadFailed()` can be used to report fatal errors to the user, such as when trying to open a PDF document that is too large for the available memory.
   * A dedicated `PdfNavigatorFragment.Factory` was added, which deprecates the use of `NavigatorFragmentFactory`.
