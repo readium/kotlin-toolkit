@@ -29,6 +29,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.Observer
+import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_epub.*
@@ -140,7 +141,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         launch {
             val positionCount = publication.positions().size
 
-            currentLocator.observe(this@EpubActivity, Observer { locator ->
+            currentLocator.asLiveData().observe(this@EpubActivity, Observer { locator ->
                 locator ?: return@Observer
 
                 Timber.d("locationDidChange position ${locator.locations.position ?: 0}/${positionCount} $locator")
