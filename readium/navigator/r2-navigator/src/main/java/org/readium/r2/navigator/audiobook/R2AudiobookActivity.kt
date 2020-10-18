@@ -24,6 +24,7 @@ import org.readium.r2.navigator.extensions.withLocalUrl
 import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.services.isRestricted
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
@@ -141,6 +142,8 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
         publication = intent.getPublication(this)
         publicationIdentifier = publication.metadata.identifier!!
+
+        require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
 
         title = null
 

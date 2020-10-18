@@ -26,6 +26,7 @@ import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positions
 
 /**
@@ -65,6 +66,10 @@ class ImageNavigatorFragment private constructor(
             }
         }
 
+    }
+
+    init {
+        require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
     }
 
     internal lateinit var positions: List<Locator>

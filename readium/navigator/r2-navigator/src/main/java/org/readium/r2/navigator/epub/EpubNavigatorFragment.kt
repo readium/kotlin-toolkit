@@ -36,6 +36,7 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positions
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
@@ -71,6 +72,10 @@ class EpubNavigatorFragment private constructor(
         override fun instantiate(): EpubNavigatorFragment =
             EpubNavigatorFragment(publication, baseUrl, initialLocator, listener)
 
+    }
+
+    init {
+        require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection."}
     }
 
     internal lateinit var positions: List<Locator>

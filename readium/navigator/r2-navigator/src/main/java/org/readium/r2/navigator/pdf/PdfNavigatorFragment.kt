@@ -28,6 +28,7 @@ import org.readium.r2.navigator.util.SingleFragmentFactory
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import timber.log.Timber
 
@@ -68,6 +69,10 @@ class PdfNavigatorFragment internal constructor(
 
         override fun instantiate(): PdfNavigatorFragment = PdfNavigatorFragment(publication, initialLocator, listener)
 
+    }
+
+    init {
+        require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
     }
 
     lateinit var pdfView: PDFView
