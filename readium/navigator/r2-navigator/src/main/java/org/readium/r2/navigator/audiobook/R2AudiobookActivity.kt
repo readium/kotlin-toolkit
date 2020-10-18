@@ -141,7 +141,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
 
         publication = intent.getPublication(this)
-        publicationIdentifier = publication.metadata.identifier!!
+        publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
 
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
 

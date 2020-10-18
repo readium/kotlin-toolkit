@@ -88,7 +88,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publication = intent.getPublication(this)
 
-        publicationIdentifier = publication.metadata.identifier!!
+        publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
         title = publication.metadata.title
 
         val initialLocator = intent.getParcelableExtra("locator") as? Locator

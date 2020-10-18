@@ -80,7 +80,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         publication = intent.getPublication(this)
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
-        publicationIdentifier = publication.metadata.identifier!!
+        publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
 
         val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())!!.toInt()
         val baseUrl = Publication.localBaseUrlOf(publicationFileName, port)

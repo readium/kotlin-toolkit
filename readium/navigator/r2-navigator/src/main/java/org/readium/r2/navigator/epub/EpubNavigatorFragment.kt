@@ -108,7 +108,7 @@ class EpubNavigatorFragment private constructor(
         resourcesDouble = ArrayList()
 
         positions = runBlocking { publication.positions() }
-        publicationIdentifier = publication.metadata.identifier!!
+        publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
 
         val supportFragmentManager = currentActivity.supportFragmentManager
 
