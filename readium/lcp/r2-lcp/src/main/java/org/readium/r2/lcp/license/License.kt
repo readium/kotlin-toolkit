@@ -72,6 +72,10 @@ internal class License(
     override val canCopy: Boolean
         get() = (charactersToCopyLeft ?: 1) > 0
 
+    override fun canCopy(text: String): Boolean =
+        charactersToCopyLeft?.let { it <= text.length }
+            ?: true
+
     override fun copy(text: String): Boolean {
         var charactersLeft = charactersToCopyLeft ?: return true
         if (text.length > charactersLeft) {
@@ -99,8 +103,13 @@ internal class License(
             }
             return null
         }
+
     override val canPrint: Boolean
         get() = (pagesToPrintLeft ?: 1) > 0
+
+    override fun canPrint(pageCount: Int): Boolean =
+        pagesToPrintLeft?.let { it <= pageCount }
+            ?: true
 
     override fun print(pagesCount: Int): Boolean {
         var pagesLeft = pagesToPrintLeft ?: return true
