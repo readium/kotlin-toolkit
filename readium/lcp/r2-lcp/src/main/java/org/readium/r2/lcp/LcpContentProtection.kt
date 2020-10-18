@@ -30,26 +30,15 @@ internal class LcpContentProtection(
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<ContentProtection.ProtectedFile, Publication.OpeningException>? {
-
-        val isProtectedWithLcp = when (file.format()) {
-            Format.EPUB -> fetcher.get("/META-INF/license.lcpl").use { it.length().isSuccess }
-            else -> fetcher.get("/license.lcpl").use { it.length().isSuccess }
-        }
-
-        if (!isProtectedWithLcp)
+        if (!lcpService.isLcpProtected(file.file)) {
             return null
+        }
 
         val license = lcpService
             .retrieveLicense(file.file,  authentication, allowUserInteraction, sender)
-    
-        val error = when {
-            license == null -> null
-            license.isFailure -> license.exceptionOrNull()!!
-            else -> null
-        }
 
         val serviceFactory = LcpContentProtectionService
-            .createFactory(license?.getOrNull(), error)
+            .createFactory(license?.getOrNull(), license?.exceptionOrNull())
 
         val protectedFile = ContentProtection.ProtectedFile(
             file = file,
