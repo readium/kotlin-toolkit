@@ -84,6 +84,9 @@ class Streamer constructor(
      *   credentials.
      * @param sender Free object that can be used by reading apps to give some UX context when
      *   presenting dialogs.
+     * @param onCreatePublication Transformation which will be applied on the Publication Builder.
+     *   It can be used to modify the [Manifest], the root [Fetcher] or the list of service
+     *   factories of the [Publication].
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
      * @return Null if the file was not recognized by any parser, or a [Publication.OpeningException]
      *   in case of failure.
@@ -93,12 +96,12 @@ class Streamer constructor(
         credentials: String? = null,
         allowUserInteraction: Boolean,
         sender: Any? = null,
+        onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> = try {
 
         @Suppress("NAME_SHADOWING")
         var file = file
-        var onCreatePublication = onCreatePublication
         var fetcher = try {
             Fetcher.fromFile(file.file, archiveFactory)
         } catch (e: SecurityException) {
@@ -116,10 +119,6 @@ class Streamer constructor(
         if (protectedFile != null) {
             file = protectedFile.file
             fetcher = protectedFile.fetcher
-            onCreatePublication = {
-                apply(protectedFile.onCreatePublication)
-                apply(this@Streamer.onCreatePublication)
-            }
         }
 
         val builder = parsers
@@ -134,6 +133,13 @@ class Streamer constructor(
                     throw Publication.OpeningException.ParsingFailed(e)
                 }
             } ?: throw Publication.OpeningException.UnsupportedFormat
+
+        // Transform from the Content Protection.
+        protectedFile?.let { builder.apply(it.onCreatePublication) }
+        // Transform provided by the reading app during the construction of the Streamer.
+        builder.apply(this.onCreatePublication)
+        // Transform provided by the reading app in `Streamer.open()`.
+        builder.apply(onCreatePublication)
 
         val publication = builder
             .apply(onCreatePublication)
