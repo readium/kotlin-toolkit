@@ -439,7 +439,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                     return
                 }
 
-        streamer.open(libraryFile, allowUserInteraction = false)
+        streamer.open(libraryFile, allowUserInteraction = false, sender = this@LibraryActivity)
             .onSuccess {
                 addPublicationToDatabase(bddHref, extension, it).let {success ->
                     progress?.dismiss()
@@ -580,7 +580,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             val file = remoteUrl // remote file
                 ?: R2File(book.href, format = format) // local file
 
-            streamer.open(file, allowUserInteraction = true)
+            streamer.open(file, allowUserInteraction = true, sender = this@LibraryActivity)
                 .onFailure {
                     Timber.d(it)
                     progress.dismiss()
