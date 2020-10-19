@@ -1,17 +1,14 @@
 /*
- * Module: r2-lcp-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2020 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.lcp
 
+import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
-import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
@@ -33,6 +30,9 @@ internal class LcpContentProtection(
         if (!lcpService.isLcpProtected(file.file)) {
             return null
         }
+
+        val authentication = credentials?.let { LcpPassphraseAuthentication(it, fallback = this.authentication) }
+            ?: this.authentication
 
         val license = lcpService
             .retrieveLicense(file.file,  authentication, allowUserInteraction, sender)

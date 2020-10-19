@@ -6,23 +6,7 @@
 
 package org.readium.r2.lcp.auth
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.Button
-import android.widget.ListPopupWindow
-import android.widget.PopupWindow
-import android.widget.TextView
-import org.jetbrains.anko.alert
-import org.jetbrains.anko.contentView
 import org.readium.r2.lcp.LcpAuthenticating
-import java.net.URL
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * An [LcpAuthenticating] implementation which can directly use a provided clear or hashed
