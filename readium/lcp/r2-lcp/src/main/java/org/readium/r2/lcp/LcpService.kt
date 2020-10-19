@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.persistence.Database
 import org.readium.r2.lcp.service.*
@@ -70,8 +71,12 @@ interface LcpService {
     /**
      * Creates a [ContentProtection] instance which can be used with a Streamer to unlock
      * LCP protected publications.
+     *
+     * The provided [authentication] will be used to retrieve the user passphrase when opening an
+     * LCP license. The default implementation [LcpDialogAuthentication] presents a dialog to the
+     * user to enter their passphrase.
      */
-    fun contentProtection(authentication: LcpAuthenticating): ContentProtection =
+    fun contentProtection(authentication: LcpAuthenticating = LcpDialogAuthentication()): ContentProtection =
         LcpContentProtection(this, authentication)
 
     /**

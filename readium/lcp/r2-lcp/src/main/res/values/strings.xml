@@ -6,6 +6,23 @@
 -->
 
 <resources>
+
+    <!-- LCP Authentication Dialog -->
+
+    <string name="r2_lcp_dialog_continue">Continue</string>
+    <string name="r2_lcp_dialog_cancel">Cancel</string>
+    <string name="r2_lcp_dialog_reason_passphraseNotFound">Passphrase Required</string>
+    <string name="r2_lcp_dialog_reason_invalidPassphrase">Incorrect Passphrase</string>
+    <string name="r2_lcp_dialog_prompt">This publication is protected by Readium LCP.\n\nIn order to open it, we need to know the passphrase required by: \n\n%1$s.\n\nTo help you remember it, the following hint is available:</string>
+    <string name="r2_lcp_dialog_forgotPassphrase">Forgot your passphrase?</string>
+    <string name="r2_lcp_dialog_help">Need more help?</string>
+    <string name="r2_lcp_dialog_support">Support</string>
+    <string name="r2_lcp_dialog_support_web">Website</string>
+    <string name="r2_lcp_dialog_support_phone">Phone</string>
+    <string name="r2_lcp_dialog_support_mail">Mail</string>
+
+    <!-- LCP Exceptions User Messages -->
+
     <string name="r2.lcp.exception.license_interaction_not_available">This interaction is not available</string>
     <string name="r2.lcp.exception.license_profile_not_supported">This License has a profile identifier that this app cannot handle, the publication cannot be processed</string>
     <string name="r2.lcp.exception.crl_fetching">Can\'t retrieve the Certificate Revocation List</string>
@@ -48,4 +65,5 @@
 
     <string name="r2.lcp.exception.decryption.content_key_decrypt_error">Unable to decrypt encrypted content key from user key</string>
     <string name="r2.lcp.exception.decryption.content_decrypt_error">Unable to decrypt encrypted content from content key</string>
+
 </resources>

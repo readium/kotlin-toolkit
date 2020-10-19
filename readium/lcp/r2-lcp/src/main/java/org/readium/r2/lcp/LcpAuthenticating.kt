@@ -16,7 +16,7 @@ import org.readium.r2.lcp.license.model.components.lcp.User
 interface LcpAuthenticating {
 
     /**
-     * Requests the passphrase used to decrypt the given license.
+     * Retrieves the passphrase used to decrypt the given license.
      *
      * If [allowUserInteraction] is true, the reading app can prompt the user to enter the
      * passphrase. Otherwise, use a background retrieval method (e.g. web service) or return null.

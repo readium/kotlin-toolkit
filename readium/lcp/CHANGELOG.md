@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 
 * LCP implementation of the [Content Protection API](https://github.com/readium/architecture/blob/master/proposals/006-content-protection.md) to work with the new [Streamer API](https://github.com/readium/architecture/blob/master/proposals/005-streamer-api.md) (contributed by [@qnga](https://github.com/readium/r2-lcp-kotlin/pull/79)).
   * It is highly recommended that you upgrade to the new `Streamer` API to open publications, which will simplify DRM unlocking.
+* Two default implementations of `LcpAuthenticating`:
+  * `LcpDialogAuthentication` to prompt the user for its passphrase with the official LCP dialog.
+  * `LcpPassphraseAuthentication` to provide directly a passphrase, pulled for example from a database or a web service.
 * `LcpService::isLcpProtected()` provides a way to check if a file is protected with LCP.
 * `LcpService::addPassphrase()` can be used to preload LCP passphrases, for example when using [LCP Automatic Key Retrieval](https://readium.org/lcp-specs/notes/lcp-key-retrieval.html).
 * All the `LcpException` errors are now implementing `UserException` and are suitable for user display. Use `getUserMessage()` to get the localized message.
