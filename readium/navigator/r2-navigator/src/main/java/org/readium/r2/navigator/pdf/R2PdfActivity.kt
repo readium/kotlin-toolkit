@@ -37,7 +37,7 @@ abstract class R2PdfActivity : AppCompatActivity(), PdfNavigatorFragment.Listene
     override fun onCreate(savedInstanceState: Bundle?) {
         publication = intent.getPublication(this)
 
-        supportFragmentManager.fragmentFactory = PdfNavigatorFragment.Factory(
+        supportFragmentManager.fragmentFactory = PdfNavigatorFragment.createFactory(
             publication = publication,
             initialLocator = intent.getParcelableExtra("locator"),
             listener = this

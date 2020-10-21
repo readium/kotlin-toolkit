@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 * (*Experimental*) New `Fragment` implementations as an alternative to the legacy `Activity` ones (contributed by [@johanpoirier](https://github.com/readium/r2-navigator-kotlin/pull/148)).
   * The fragments are chromeless, to let you customize the reading UX.
-  * To create the fragments use the matching factory such as `EpubNavigatorFragment.Factory`, as showcased in `R2EpubActivity`.
+  * To create the fragments use the matching factory such as `EpubNavigatorFragment.createFactory()`, as showcased in `R2EpubActivity`.
   * At the moment, highlights and TTS are not yet supported in the new EPUB navigator `Fragment`.
   * [This is now the recommended way to integrate Readium](https://github.com/readium/r2-navigator-kotlin/issues/115) in your applications.
 

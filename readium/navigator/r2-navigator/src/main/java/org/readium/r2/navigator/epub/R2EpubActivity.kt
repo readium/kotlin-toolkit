@@ -87,7 +87,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
         val initialLocator = intent.getParcelableExtra("locator") as? Locator
 
-        supportFragmentManager.fragmentFactory = EpubNavigatorFragment.Factory(publication, baseUrl = baseUrl, initialLocator = initialLocator, listener = this)
+        supportFragmentManager.fragmentFactory = EpubNavigatorFragment.createFactory(publication, baseUrl = baseUrl, initialLocator = initialLocator, listener = this)
 
         super.onCreate(savedInstanceState)
 
