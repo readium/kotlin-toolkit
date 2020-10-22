@@ -6,9 +6,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* [Streamer API](https://readium.org/architecture/proposals/005-streamer-api) offers a simple interface to parse a publication and replace standalone parsers.
+* A generic `ImageParser` for bitmap-based archives (CBZ or exploded directories) and single image files.
+* A generic `AudioParser` for audio-based archives (Zipped Audio Book or exploded directories) and single audio files.
+
+### Changed
+
+* `Container` and `ContentFilters` were replaced by a shared implementation of a [`Fetcher`](https://readium.org/architecture/proposals/002-composite-fetcher-api).
+
 ## Fixed
 
 * Readium can now open PDF documents of any size without crashing. However, LCP protected PDFs are still limited by the available memory.
+* Various HTTP server fixes and optimizations.
 
 ## [2.0.0-alpha.1]
 
