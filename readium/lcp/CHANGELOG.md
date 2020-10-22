@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-* LCP implementation of the [Content Protection API](https://github.com/readium/architecture/blob/master/proposals/006-content-protection.md) to work with the new [Streamer API](https://github.com/readium/architecture/blob/master/proposals/005-streamer-api.md) (contributed by [@qnga](https://github.com/readium/r2-lcp-kotlin/pull/79)).
+* LCP implementation of the [Content Protection API](https://readium.org/architecture/proposals/006-content-protection) to work with the new [Streamer API](https://readium.org/architecture/proposals/005-streamer-api) (contributed by [@qnga](https://github.com/readium/r2-lcp-kotlin/pull/79)).
   * It is highly recommended that you upgrade to the new `Streamer` API to open publications, which will simplify DRM unlocking.
 * Two default implementations of `LcpAuthenticating`:
   * `LcpDialogAuthentication` to prompt the user for its passphrase with the official LCP dialog.
@@ -20,8 +20,8 @@ All notable changes to this project will be documented in this file.
 
 * The public API got modernized to be more Kotlin idiomatic (contributed by [@qnga](https://github.com/readium/r2-lcp-kotlin/pull/84)).
   * All asynchronous APIs are now suspending to take advantage of Kotlin's coroutines.
-  * Follow the deprecation warnings to upgrade to the new names.
-* `LcpAuthenticating` is now provided with more information and you will need to update your implementation.
+* `LcpAuthenticating` is now provided with more information and you will need to update any implementation you may have.
+  * If you copied the default authentication dialog, it's recommended to use `LcpDialogAuthentication` instead.
 * Publications are now downloaded to a temporary location, to make sure disk storage can be recovered automatically by the system. After acquiring the publication, you need to move the downloaded file to another permanent location.
 * The private `liblcp` dependency is now accessed through reflection, to allow switching LCP dynamically (contributed by [@qnga](https://github.com/readium/r2-lcp-kotlin/pull/87)).
   * You need to add `implementation "readium:liblcp:1.0.0@aar"` to your `build.gradle`.
@@ -29,9 +29,12 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* Decrypting resources in some edge cases (contributed by [@qnga](https://github.com/readium/r2-lcp-kotlin/pull/84))
 * Issues with LSD interactions:
   * Exceptions handling with `renew` and `return` interactions.
   * Presentation of the `renew` interaction through an HTML page.
+* The timeout of fetching the License Status Document is reduced to 5 seconds, to avoid blocking a publication opening in low Internet conditions.
+
 
 ## [2.0.0-alpha.1]
 
