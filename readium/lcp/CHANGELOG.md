@@ -14,7 +14,6 @@ All notable changes to this project will be documented in this file.
   * `LcpDialogAuthentication` to prompt the user for its passphrase with the official LCP dialog.
   * `LcpPassphraseAuthentication` to provide directly a passphrase, pulled for example from a database or a web service.
 * `LcpService::isLcpProtected()` provides a way to check if a file is protected with LCP.
-* `LcpService::addPassphrase()` can be used to preload LCP passphrases, for example when using [LCP Automatic Key Retrieval](https://readium.org/lcp-specs/notes/lcp-key-retrieval.html).
 * All the `LcpException` errors are now implementing `UserException` and are suitable for user display. Use `getUserMessage()` to get the localized message.
 
 ### Changed

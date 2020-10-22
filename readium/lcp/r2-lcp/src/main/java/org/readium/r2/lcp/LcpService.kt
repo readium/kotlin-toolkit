@@ -49,12 +49,6 @@ interface LcpService {
         }
     }
 
-    suspend fun addPassphrase(passphrase: String, hashed: Boolean, license: LicenseDocument) =
-        addPassphrase(passphrase, hashed, licenseId = license.id, provider = license.provider, userId = license.user.id)
-
-    suspend fun addPassphrase(passphrase: String, hashed: Boolean, licenseId: String? = null, provider: String? = null, userId: String? = null)
-
-
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
      * its content.
