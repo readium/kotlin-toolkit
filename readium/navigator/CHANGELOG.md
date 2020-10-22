@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* Support for the new `Publication` model using the [Content Protection](https://readium.org/architecture/proposals/006-content-protection) for DRM rights and the [Fetcher](https://readium.org/architecture/proposals/002-composite-fetcher-api) for resource access.
 * (*Experimental*) New `Fragment` implementations as an alternative to the legacy `Activity` ones (contributed by [@johanpoirier](https://github.com/readium/r2-navigator-kotlin/pull/148)).
   * The fragments are chromeless, to let you customize the reading UX.
   * To create the fragments use the matching factory such as `EpubNavigatorFragment.createFactory()`, as showcased in `R2EpubActivity`.
@@ -21,7 +22,7 @@ All notable changes to this project will be documented in this file.
 * Improvements to the PDF navigator:
   * The navigator doesn't require PDF publications to be served from an HTTP server anymore. A side effect is that the navigator is now able to open larger PDF files.
   * `PdfNavigatorFragment.Listener::onResourceLoadFailed()` can be used to report fatal errors to the user, such as when trying to open a PDF document that is too large for the available memory.
-  * A dedicated `PdfNavigatorFragment.Factory` was added, which deprecates the use of `NavigatorFragmentFactory`.
+  * A dedicated `PdfNavigatorFragment.createFactory()` was added, which deprecates the use of `NavigatorFragmentFactory`.
 
 ### Fixed
 
