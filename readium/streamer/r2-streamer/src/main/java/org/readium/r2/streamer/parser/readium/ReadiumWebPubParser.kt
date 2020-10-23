@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.readium
 
+import android.content.Context
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.shared.PdfSupport
@@ -24,6 +25,7 @@ import org.readium.r2.shared.util.File
 
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.streamer.DefaultPdfDocumentFactory
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
@@ -38,6 +40,8 @@ import java.io.FileNotFoundException
  */
 @OptIn(PdfSupport::class)
 class ReadiumWebPubParser(private val pdfFactory: PdfDocumentFactory? = null) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+
+    constructor(context: Context) : this(pdfFactory = DefaultPdfDocumentFactory(context))
 
     override suspend fun parse(
         file: File,
