@@ -32,7 +32,7 @@ abstract class R2PdfActivity : AppCompatActivity(), PdfNavigatorFragment.Listene
     /**
      * Override this event handler to save the current location in the publication in a database.
      */
-    abstract fun onCurrentLocatorChanged(locator: Locator)
+    open fun onCurrentLocatorChanged(locator: Locator) {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         publication = intent.getPublication(this)
