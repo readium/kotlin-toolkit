@@ -183,5 +183,5 @@ sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? =
 @Deprecated("Renamed to `LcpException`", replaceWith = ReplaceWith("LcpException"))
 typealias LCPError = LcpException
 
-@Deprecated("Use `message` instead", replaceWith = ReplaceWith("message"))
+@Deprecated("Use `getUserMessage()` instead", replaceWith = ReplaceWith("getUserMessage(context)"))
 val LcpException.errorDescription: String? get() = message

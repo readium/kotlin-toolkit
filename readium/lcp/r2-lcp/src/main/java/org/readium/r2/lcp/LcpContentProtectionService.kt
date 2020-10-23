@@ -32,3 +32,9 @@ class LcpContentProtectionService(val license: LcpLicense?, override val error: 
     }
 
 }
+
+/**
+ * Returns the [LcpLicense] if the [Publication] is protected by LCP and the license is opened.
+ */
+val Publication.lcpLicense: LcpLicense?
+    get() = findService(LcpContentProtectionService::class)?.license

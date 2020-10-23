@@ -135,7 +135,7 @@ interface LcpService {
 }
 
 
-@Deprecated("Renamed to `LcpService.create()`", replaceWith = ReplaceWith("LcpService.create"))
+@Deprecated("Renamed to `LcpService.create()`", replaceWith = ReplaceWith("LcpService.create(context)"))
 fun R2MakeLCPService(context: Context): LcpService =
     LcpService.create(context) ?: throw Exception("liblcp is missing on the classpath")
 
