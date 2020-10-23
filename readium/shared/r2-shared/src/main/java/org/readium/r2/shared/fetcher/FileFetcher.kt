@@ -39,18 +39,18 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
 
     override suspend fun links(): List<Link> =
         paths.toSortedMap().flatMap { (href, file) ->
-            file.walk().mapNotNull {
+            file.walk().toList().mapNotNull {
                 tryOrNull {
                     if (it.isDirectory) {
                         null
                     } else {
                         Link(
                             href = File(href, it.canonicalPath.removePrefix(file.canonicalPath)).canonicalPath,
-                            type = Format.of(fileExtension = it.extension)?.mediaType.toString()
+                            type = Format.ofFile(file, fileExtension = it.extension)?.mediaType.toString()
                         )
                     }
                 }
-            }.toList()
+            }
         }
 
     override fun get(link: Link): Resource {

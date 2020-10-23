@@ -267,7 +267,7 @@ class Publication(
             localBaseUrlOf(filename, port) + href
 
         @Deprecated("Parse a RWPM with [Manifest::fromJSON] and then instantiate a Publication",
-            ReplaceWith("Manifest.fromJSON(manifestDict)?.let { Publication(it, fetcher = aFetcher) }",
+            ReplaceWith("Manifest.fromJSON(json)",
                 "org.readium.r2.shared.publication.Publication", "org.readium.r2.shared.publication.Manifest"),
             level = DeprecationLevel.ERROR)
         fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Publication? {
