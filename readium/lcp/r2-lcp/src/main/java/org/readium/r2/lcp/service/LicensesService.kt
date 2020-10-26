@@ -53,7 +53,7 @@ internal class LicensesService(
             Try.failure(LcpException.wrap(e))
         }
 
-    override suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): Try<LcpLicense, LcpException>? =
+    override suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?): Try<LcpLicense, LcpException>? =
         try {
             val container = createLicenseContainer(file.path)
             // WARNING: Using the Default dispatcher in the state machine code is critical. If we were using the Main Dispatcher,

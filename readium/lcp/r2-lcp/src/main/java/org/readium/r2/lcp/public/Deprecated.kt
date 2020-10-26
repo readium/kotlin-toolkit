@@ -36,6 +36,6 @@ typealias LCPAuthenticatedLicense = LcpAuthenticating.AuthenticatedLicense
 @Deprecated("Renamed to `LcpException", ReplaceWith("org.readium.r2.lcp.LcpException"), level = DeprecationLevel.ERROR)
 typealias LCPError = LcpException
 
-@Deprecated("Renamed to `LcpService.create()`", ReplaceWith("LcpService.create"), level = DeprecationLevel.ERROR)
+@Deprecated("Renamed to `LcpService()`", ReplaceWith("LcpService()"), level = DeprecationLevel.ERROR)
 fun R2MakeLCPService(context: Context) =
-    LcpService.create(context)
+    LcpService(context)
