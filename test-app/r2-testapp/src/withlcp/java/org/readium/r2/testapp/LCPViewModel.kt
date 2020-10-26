@@ -29,8 +29,8 @@ import kotlin.coroutines.suspendCoroutine
 class LCPViewModel(val file: File, val activity: ComponentActivity) : DRMViewModel(activity), Serializable {
 
     private val lcpLicense: LcpLicense? = runBlocking {
-        LcpService.create(activity)!!
-            .retrieveLicense(file, null, allowUserInteraction = false)
+        LcpService(activity)!!
+            .retrieveLicense(file, allowUserInteraction = false)
             ?.getOrNull()
     }
 

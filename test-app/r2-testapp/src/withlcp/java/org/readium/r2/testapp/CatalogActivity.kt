@@ -22,7 +22,7 @@ class CatalogActivity : LibraryActivity() {
     private lateinit var lcpService: LcpService
 
     override fun onCreate(savedInstanceState: Bundle?) {
-            lcpService = LcpService.create(this) ?: throw Exception("liblcp is missing on the classpath")
+        lcpService = LcpService(this) ?: throw Exception("liblcp is missing on the classpath")
         contentProtections = listOf(lcpService.contentProtection())
         super.onCreate(savedInstanceState)
     }
