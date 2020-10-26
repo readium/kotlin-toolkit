@@ -88,7 +88,7 @@ typealias RenditionOrientation = Presentation.Orientation
 @Deprecated("Refactored into [Presentation.Spread]", ReplaceWith("org.readium.r2.shared.publication.presentation.Presentation.Spread"))
 typealias RenditionSpread = Presentation.Spread
 
-@Deprecated("Use [Publication::fromJSON] instead", ReplaceWith("Publication.fromJSON(pubDict)", "org.readium.r2.shared.publication.Publication"))
+@Deprecated("Use [Manifest::fromJSON] instead", ReplaceWith("Manifest.fromJSON(pubDict)", "org.readium.r2.shared.publication.Manifest"))
 fun parsePublication(pubDict: JSONObject): org.readium.r2.shared.publication.Publication {
     return org.readium.r2.shared.publication.Manifest.fromJSON(pubDict)?.let { Publication(it) }
         ?: throw Exception("Invalid publication")
