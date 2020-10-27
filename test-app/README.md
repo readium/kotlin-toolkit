@@ -4,7 +4,7 @@ A test app for the Kotlin implementation of Readium-2. Stable builds are [availa
 
 [![BSD-3](https://img.shields.io/badge/License-BSD--3-brightgreen.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-All migration steps necessary in reading apps to upgrade to major versions of the Readium toolkit will be documented in the [Migration Guide](MIGRATION-GUIDE.md).
+All migration steps necessary in reading apps to upgrade to major versions of the Readium toolkit will be documented in the [Migration Guide](https://readium.org/mobile/kotlin/migration-guide).
 
 ## Features
 
