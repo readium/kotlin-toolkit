@@ -133,8 +133,8 @@ internal class License(
 
     override suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException> {
 
-        suspend fun callPUT(url: URL, parameters: URLParameters): ByteArray {
-            val (status, data) = this.network.fetch(url.toString(), NetworkService.Method.PUT, parameters)
+        suspend fun callPUT(url: URL): ByteArray {
+            val (status, data) = this.network.fetch(url.toString(), NetworkService.Method.PUT)
             when (status) {
                 HttpURLConnection.HTTP_OK -> return data!!
                 HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException.Renew.RenewFailed
@@ -144,14 +144,14 @@ internal class License(
         }
 
         // TODO needs to be tested
-        suspend fun callHTML(url: URL, parameters: URLParameters): ByteArray {
+        suspend fun callHTML(url: URL): ByteArray {
             val statusURL = try {
                 this.license.url(LicenseDocument.Rel.status)
             } catch (e: Throwable) {
                 null
             } ?: throw LcpException.LicenseInteractionNotAvailable
             urlPresenter(url)
-            val (status, data) = this.network.fetch(statusURL.toString(), parameters = parameters)
+            val (status, data) = this.network.fetch(statusURL.toString())
             return if (status != HttpURLConnection.HTTP_OK)
                 throw LcpException.Network(null)
             else
@@ -170,9 +170,9 @@ internal class License(
                 throw LcpException.LicenseInteractionNotAvailable
             }
             val data = if (link.mediaType?.isHtml == true) {
-                callHTML(url, parameters)
+                callHTML(url)
             } else {
-                callPUT(url, parameters)
+                callPUT(url)
             }
             validateStatusDocument(data)
 
