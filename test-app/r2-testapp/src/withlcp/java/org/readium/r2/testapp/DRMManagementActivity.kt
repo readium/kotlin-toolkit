@@ -34,6 +34,7 @@ import org.jetbrains.anko.design.coordinatorLayout
 import org.jetbrains.anko.design.longSnackbar
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
+import org.readium.r2.shared.UserException
 import org.readium.r2.testapp.utils.extensions.color
 import java.io.File
 import kotlin.coroutines.CoroutineContext
@@ -294,7 +295,8 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                                                                 newEndDate?.toString(DateTimeFormat.shortDateTime())
                                                         }.onFailure { exception ->
                                                             dismiss()
-                                                            exception.localizedMessage?.let { longSnackbar(it) }
+                                                            (exception as? UserException)?.getUserMessage(this@DRMManagementActivity)
+                                                                ?.let { longSnackbar(it) }
                                                         }
                                                 }
                                             }
@@ -328,7 +330,8 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                                                             dismiss()
                                                             finish()
                                                         }.onFailure { exception ->
-                                                            exception.localizedMessage?.let { longSnackbar(it) }
+                                                            (exception as? UserException)?.getUserMessage(this@DRMManagementActivity)
+                                                                ?.let { longSnackbar(it) }
                                                         }
                                                 }
                                             }
