@@ -23,7 +23,7 @@ import org.readium.r2.shared.publication.Publication
  *        Can be used to restore the last reading location.
  * @param listener Optional listener to implement to observe events, such as user taps.
  */
-@Deprecated("Each [Fragment] has now its own factory, such as [EpubNavigatorFragment.Factory]. To use a single [Activity] with several navigator fragments, you can compose the factories with [CompositeFragmentFactory].", level = DeprecationLevel.ERROR)
+@Deprecated("Each [Fragment] has now its own factory, such as `EpubNavigatorFragment.createFactory()`. To use a single [Activity] with several navigator fragments, you can compose the factories with [CompositeFragmentFactory].", level = DeprecationLevel.ERROR)
 class NavigatorFragmentFactory(
     private val publication: Publication,
     private val baseUrl: String? = null,

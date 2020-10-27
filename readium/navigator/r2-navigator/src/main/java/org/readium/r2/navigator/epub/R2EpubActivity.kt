@@ -21,9 +21,9 @@ import android.util.DisplayMetrics
 import android.view.ActionMode
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.LiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
@@ -71,7 +71,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     val positions: List<Locator> get() = navigatorFragment.positions
     val currentPagerPosition: Int get() = navigatorFragment.currentPagerPosition
 
-    override val currentLocator: LiveData<Locator?>
+    override val currentLocator: StateFlow<Locator>
         get() = navigatorFragment.currentLocator
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,14 +80,14 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         publication = intent.getPublication(this)
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
-        publicationIdentifier = publication.metadata.identifier!!
+        publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
 
         val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())!!.toInt()
         val baseUrl = Publication.localBaseUrlOf(publicationFileName, port)
 
         val initialLocator = intent.getParcelableExtra("locator") as? Locator
 
-        supportFragmentManager.fragmentFactory = EpubNavigatorFragment.Factory(publication, baseUrl = baseUrl, initialLocator = initialLocator, listener = this)
+        supportFragmentManager.fragmentFactory = EpubNavigatorFragment.createFactory(publication, baseUrl = baseUrl, initialLocator = initialLocator, listener = this)
 
         super.onCreate(savedInstanceState)
 

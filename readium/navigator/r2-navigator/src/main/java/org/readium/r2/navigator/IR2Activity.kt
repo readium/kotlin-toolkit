@@ -12,7 +12,8 @@ package org.readium.r2.navigator
 import android.content.SharedPreferences
 import android.graphics.PointF
 import android.view.View
-import androidx.lifecycle.LiveData
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -51,9 +52,10 @@ interface IR2TTS {
 }
 
 
+@OptIn(ExperimentalCoroutinesApi::class)
 interface Navigator {
 
-    val currentLocator: LiveData<Locator?>
+    val currentLocator: StateFlow<Locator>
 
     fun go(locator: Locator, animated: Boolean = false, completion: () -> Unit = {}): Boolean
     fun go(link: Link, animated: Boolean = false, completion: () -> Unit = {}): Boolean
@@ -64,7 +66,7 @@ interface Navigator {
     }
 
 
-    @Deprecated("Use [currentLocator] instead", ReplaceWith("currentLocator.value"))
+    @Deprecated("Use [currentLocator.value] instead", ReplaceWith("currentLocator.value"))
     val currentLocation: Locator? get() = currentLocator.value
     @Deprecated("Use [VisualNavigator.Listener] instead", ReplaceWith("VisualNavigator.Listener"))
     interface VisualListener : VisualNavigator.Listener

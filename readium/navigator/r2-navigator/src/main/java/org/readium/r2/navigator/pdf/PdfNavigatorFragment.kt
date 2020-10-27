@@ -16,31 +16,36 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
-import org.readium.r2.navigator.util.SingleFragmentFactory
-import org.readium.r2.shared.PdfSupport
+import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import timber.log.Timber
 
 /**
  * Navigator for PDF publications.
+ *
+ * To use this [Fragment], create a factory with `PdfNavigatorFragment.createFactory()`.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class PdfNavigatorFragment internal constructor(
     private val publication: Publication,
     private val initialLocator: Locator? = null,
     private val listener: Listener? = null
 ) : Fragment(), VisualNavigator {
 
-    interface Listener: VisualNavigator.Listener {
+    interface Listener : VisualNavigator.Listener {
 
         /** Called when configuring [PDFView]. */
         fun onConfigurePdfView(configurator: PDFView.Configurator) {}
@@ -48,26 +53,12 @@ class PdfNavigatorFragment internal constructor(
         /**
          * Called when a PDF resource failed to be loaded, for example because of an [OutOfMemoryError].
          */
-        fun onResourceLoadFailed(link: Link, error: Resource.Error) {}
+        fun onResourceLoadFailed(link: Link, error: Resource.Exception) {}
 
     }
 
-    /**
-     * Factory for a [PdfNavigatorFragment].
-     *
-     * @param publication PDF publication to render in the navigator.
-     * @param initialLocator The first location which should be visible when rendering the PDF.
-     *        Can be used to restore the last reading location.
-     * @param listener Optional listener to implement to observe events, such as user taps.
-     */
-    class Factory(
-        private val publication: Publication,
-        private val initialLocator: Locator? = null,
-        private val listener: Listener? = null
-    ) : SingleFragmentFactory<PdfNavigatorFragment>() {
-
-        override fun instantiate(): PdfNavigatorFragment = PdfNavigatorFragment(publication, initialLocator, listener)
-
+    init {
+        require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
     }
 
     lateinit var pdfView: PDFView
@@ -100,7 +91,7 @@ class PdfNavigatorFragment internal constructor(
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putParcelable(KEY_LOCATOR, currentLocator.value)
+        outState.putParcelable(KEY_LOCATOR, _currentLocator.value)
     }
 
     private fun goToHref(href: String, page: Int, animated: Boolean = false, completion: () -> Unit = {}): Boolean {
@@ -142,8 +133,8 @@ class PdfNavigatorFragment internal constructor(
                     currentHref = href
 
                 } catch (e: Exception) {
-                    val error = Resource.Error.wrap(e)
-                    if (error != Resource.Error.Cancelled) {
+                    val error = Resource.Exception.wrap(e)
+                    if (error != Resource.Exception.Cancelled) {
                         listener?.onResourceLoadFailed(link, error)
                     }
 
@@ -158,12 +149,12 @@ class PdfNavigatorFragment internal constructor(
 
     // Navigator
 
-    override val currentLocator: LiveData<Locator?> get() = _currentLocator
-    private val _currentLocator = MutableLiveData<Locator?>(null)
+    override val currentLocator: StateFlow<Locator> get() = _currentLocator
+    private val _currentLocator = MutableStateFlow(initialLocator ?: publication.readingOrder.first().toLocator())
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         val page = ((locator.locations.page ?: 1) - 1).coerceAtLeast(0)
-        return goToHref (locator.href, page, animated, completion)
+        return goToHref(locator.href, page, animated, completion)
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean =
@@ -198,7 +189,9 @@ class PdfNavigatorFragment internal constructor(
     // [PDFView] Listeners
 
     private fun onPageChanged(page: Int) {
-        _currentLocator.value = currentResourcePositions.getOrNull(page)
+        currentResourcePositions.getOrNull(page)?.let {
+            _currentLocator.value = it
+        }
     }
 
     private fun onTap(e: MotionEvent?): Boolean {
@@ -209,6 +202,18 @@ class PdfNavigatorFragment internal constructor(
 
     companion object {
         private const val KEY_LOCATOR = "locator"
+
+        /**
+         * Creates a factory for a [PdfNavigatorFragment].
+         *
+         * @param publication PDF publication to render in the navigator.
+         * @param initialLocator The first location which should be visible when rendering the PDF.
+         *        Can be used to restore the last reading location.
+         * @param listener Optional listener to implement to observe events, such as user taps.
+         */
+        fun createFactory(publication: Publication, initialLocator: Locator? = null, listener: Listener? = null): FragmentFactory =
+            createFragmentFactory { PdfNavigatorFragment(publication, initialLocator, listener) }
+
     }
 
 }

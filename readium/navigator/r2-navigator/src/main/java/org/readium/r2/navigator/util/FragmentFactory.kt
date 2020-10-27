@@ -11,13 +11,28 @@ import androidx.fragment.app.FragmentFactory
 import org.readium.r2.shared.extensions.tryOrNull
 
 /**
+ * Creates a [FragmentFactory] for a single type of [Fragment] using the result of the given
+ * [factory] closure.
+ */
+internal inline fun <reified T : Fragment> createFragmentFactory(crossinline factory: () -> T): FragmentFactory = object : FragmentFactory() {
+
+    override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
+        return when (className) {
+            T::class.java.name -> factory()
+            else -> super.instantiate(classLoader, className)
+        }
+    }
+
+}
+
+/**
  * A [FragmentFactory] which will iterate over a provided list of [factories] until finding one
  * instantiating successfully the requested [Fragment].
  *
  * ```
  * supportFragmentManager.fragmentFactory = CompositeFragmentFactory(
- *     EpubNavigatorFragment.Factory(publication, baseUrl, initialLocator, this),
- *     PdfNavigatorFragment.Factory(publication, initialLocator, this)
+ *     EpubNavigatorFragment.createFactory(publication, baseUrl, initialLocator, this),
+ *     PdfNavigatorFragment.createFactory(publication, initialLocator, this)
  * )
  * ```
  */
