@@ -63,6 +63,7 @@ class R2EpubPageFragment : Fragment() {
 
         webView.navigator = navigatorFragment
         webView.listener = navigatorFragment
+        webView.preferences = preferences
 
         webView.setScrollMode(scrollMode)
         webView.settings.javaScriptEnabled = true

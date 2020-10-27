@@ -10,6 +10,7 @@
 package org.readium.r2.navigator
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.PointF
 import android.os.Build
 import android.text.Html
@@ -38,6 +39,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     lateinit var listener: Listener
     lateinit var navigator: Navigator
+    internal var preferences: SharedPreferences? = null
 
     var progression: Double = 0.0
     var overrideUrlLoading = true
