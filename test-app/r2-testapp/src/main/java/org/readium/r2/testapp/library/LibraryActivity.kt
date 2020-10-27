@@ -362,7 +362,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                                     .apply { show() }
 
                             val downloadedFile = url.copyToTempFile() ?: return@launch
-                            importPublication(downloadedFile, progress)
+                            importPublication(downloadedFile, sourceUrl = url.toString(), progress = progress)
                         }
                     }
                 }
@@ -378,12 +378,12 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 .apply { show() }
 
             uri.copyToTempFile()
-                ?.let { importPublication(it, progress) }
+                ?.let { importPublication(it, sourceUrl = uri.toString(), progress = progress) }
                 ?: progress.dismiss()
         }
     }
 
-    private suspend fun importPublication(sourceFile: R2File, progress: ProgressDialog? = null) {
+    private suspend fun importPublication(sourceFile: R2File, sourceUrl: String? = null, progress: ProgressDialog? = null) {
         val foreground = progress != null
 
         val publicationFile =
@@ -403,17 +403,13 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                         return
                     }
                 )
-            } ?: run {
-                progress?.dismiss()
-                return
             }
 
         val format = publicationFile.format()
         val fileName = "${UUID.randomUUID()}.${format?.fileExtension}"
         val libraryFile = R2File(
             R2DIRECTORY + fileName,
-            format = publicationFile.format(),
-            sourceUrl = publicationFile.sourceUrl
+            format = publicationFile.format()
         )
 
         try {
@@ -437,14 +433,13 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             if (!isRwpm)
                 libraryFile.path
             else
-                libraryFile.sourceUrl
-                    ?: run {
-                        Timber.e("Trying to add a RWPM to the database from a file without sourceUrl.")
-                        progress?.dismiss()
-                        return
-                    }
+                sourceUrl ?: run {
+                    Timber.e("Trying to add a RWPM to the database from a file without sourceUrl.")
+                    progress?.dismiss()
+                    return
+                }
 
-        streamer.open(libraryFile, allowUserInteraction = false)
+        streamer.open(libraryFile, allowUserInteraction = false, sender = this@LibraryActivity)
             .onSuccess {
                 addPublicationToDatabase(bddHref, extension, it).let {success ->
                     progress?.dismiss()
@@ -465,7 +460,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 tryOrNull { libraryFile.file.delete() }
                 Timber.d(it)
                 progress?.dismiss()
-                if (foreground) presentOpeningError(it)
+                if (foreground) presentOpeningException(it)
             }
     }
 
@@ -506,12 +501,9 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
     private suspend fun URL.copyToTempFile(): R2File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
         val file = File("$R2DIRECTORY$filename.$extension")
-        download(file.path).let {
-            if (it)
-                R2File(file.path, sourceUrl = this.toString())
-            else
-                null
-        }
+
+        if (download(file.path)) R2File(file.path)
+        else null
     }
 
     private suspend fun Uri.copyToTempFile(): R2File? = tryOrNull {
@@ -588,18 +580,18 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             val file = remoteUrl // remote file
                 ?: R2File(book.href, format = format) // local file
 
-            streamer.open(file, allowUserInteraction = true)
+            streamer.open(file, allowUserInteraction = true, sender = this@LibraryActivity)
                 .onFailure {
                     Timber.d(it)
                     progress.dismiss()
-                    presentOpeningError(it)
+                    presentOpeningException(it)
                 }
-                .onSuccess {
+                .onSuccess { it ->
                     if (it.isRestricted) {
                         progress.dismiss()
-                        if (it.protectionError != null) {
-                            Timber.d(it.protectionError)
-                            catalogView.longSnackbar("unable to unlock publication")
+                        it.protectionError?.let { error ->
+                            Timber.d(error)
+                            catalogView.longSnackbar(error.getUserMessage(this@LibraryActivity))
                         }
                     } else {
                         prepareToServe(it, file)
@@ -627,20 +619,8 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         server.addEpub(publication, null, "/${file.name}", userProperties)
     }
 
-    private fun presentOpeningError(error: Publication.OpeningError) {
-        val message = when (error) {
-            Publication.OpeningError.UnsupportedFormat -> "Publication format not supported"
-            Publication.OpeningError.NotFound -> "Publication file not found"
-            is Publication.OpeningError.ParsingFailed -> when (error.cause) {
-                is Resource.Error.OutOfMemory -> "This publication is too large to be opened on this device"
-                else -> "Publication corrupted: ${error.message}"
-            }
-            is Publication.OpeningError.Forbidden -> error.cause?.message ?: "You are not allowed to open this publication"
-            is Publication.OpeningError.Unavailable -> "This publication is not available right now. Please try again later"
-            Publication.OpeningError.IncorrectCredentials -> "Incorrect credentials"
-        }
-
-        catalogView.longSnackbar(message)
+    private fun presentOpeningException(error: Publication.OpeningException) {
+        catalogView.longSnackbar(error.getUserMessage(this))
     }
 
     class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {

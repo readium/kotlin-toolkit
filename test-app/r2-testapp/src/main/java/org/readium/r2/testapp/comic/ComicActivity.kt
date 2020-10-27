@@ -15,6 +15,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.lifecycle.Observer
+import androidx.lifecycle.asLiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -64,7 +65,7 @@ class ComicActivity : R2CbzActivity(), CoroutineScope, NavigatorDelegate {
         launch {
             val positionCount = publication.positions().size
 
-            currentLocator.observe(this@ComicActivity, Observer { locator ->
+            currentLocator.asLiveData().observe(this@ComicActivity, Observer { locator ->
                 locator ?: return@Observer
                 Timber.d("locationDidChange position ${locator.locations.position ?: 0}/${positionCount} $locator")
                 booksDB.books.saveProgression(locator, bookId)
