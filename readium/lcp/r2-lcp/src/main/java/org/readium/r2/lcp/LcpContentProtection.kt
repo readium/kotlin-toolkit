@@ -1,19 +1,15 @@
 /*
- * Module: r2-lcp-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2020 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.lcp
 
+import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
-import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
-import org.readium.r2.shared.publication.OnAskCredentials
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.File
@@ -27,31 +23,22 @@ internal class LcpContentProtection(
     override suspend fun open(
         file: File,
         fetcher: Fetcher,
-        allowUserInteraction: Boolean,
         credentials: String?,
-        sender: Any?,
-        onAskCredentials: OnAskCredentials?
-    ): Try<ContentProtection.ProtectedFile, Publication.OpeningError>? {
-
-        val isProtectedWithLcp = when (file.format()) {
-            Format.EPUB -> fetcher.get("/META-INF/license.lcpl").use { it.length().isSuccess }
-            else -> fetcher.get("/license.lcpl").use { it.length().isSuccess }
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): Try<ContentProtection.ProtectedFile, Publication.OpeningException>? {
+        if (!lcpService.isLcpProtected(file.file)) {
+            return null
         }
 
-        if (!isProtectedWithLcp)
-            return null
+        val authentication = credentials?.let { LcpPassphraseAuthentication(it, fallback = this.authentication) }
+            ?: this.authentication
 
         val license = lcpService
             .retrieveLicense(file.file,  authentication, allowUserInteraction, sender)
-    
-        val error = when {
-            license == null -> null
-            license.isFailure -> license.exceptionOrNull()!!
-            else -> null
-        }
 
         val serviceFactory = LcpContentProtectionService
-            .createFactory(license?.getOrNull(), error)
+            .createFactory(license?.getOrNull(), license?.exceptionOrNull())
 
         val protectedFile = ContentProtection.ProtectedFile(
             file = file,

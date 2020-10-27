@@ -20,34 +20,9 @@ class LcpContentProtectionService(val license: LcpLicense?, override val error: 
     override val credentials: String? = null
 
     override val rights: ContentProtectionService.UserRights = license
-        ?.let { LcpUserRights(it) }
         ?: ContentProtectionService.UserRights.AllRestricted
 
     override val name: LocalizedString = LocalizedString("Readium LCP")
-
-    private class LcpUserRights(val license: LcpLicense) : ContentProtectionService.UserRights {
-
-        override val canCopy: Boolean
-            get() = license.canCopy
-
-        override fun canCopy(text: String): Boolean =
-            license.charactersToCopyLeft?.let { it <= text.length }
-                ?: true
-
-        override fun copy(text: String): Boolean =
-            canCopy(text).also { if (it) license.copy(text) }
-
-        override val canPrint: Boolean
-            get() = license.canPrint
-
-        override fun canPrint(pageCount: Int): Boolean =
-            license.pagesToPrintLeft?.let { it <= pageCount }
-                ?: true
-
-        override fun print(pageCount: Int): Boolean =
-            canPrint(pageCount).also { if (it) license.print(pageCount) }
-
-    }
 
     companion object {
 
@@ -55,4 +30,11 @@ class LcpContentProtectionService(val license: LcpLicense?, override val error: 
             { LcpContentProtectionService(license, error) }
 
     }
+
 }
+
+/**
+ * Returns the [LcpLicense] if the [Publication] is protected by LCP and the license is opened.
+ */
+val Publication.lcpLicense: LcpLicense?
+    get() = findService(LcpContentProtectionService::class)?.license

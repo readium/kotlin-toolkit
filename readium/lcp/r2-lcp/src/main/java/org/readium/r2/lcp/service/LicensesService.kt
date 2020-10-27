@@ -40,12 +40,9 @@ internal class LicensesService(
 
     override suspend fun isLcpProtected(file: File): Boolean =
         tryOr(false) {
-            createLicenseContainer(file.path)
+            createLicenseContainer(file.path).read()
             true
         }
-
-    override suspend fun addPassphrase(passphrase: String, hashed: Boolean, licenseId: String?, provider: String?, userId: String?)  =
-        passphrases.addPassphrase(passphrase, hashed, licenseId, provider, userId)
 
     override suspend fun acquirePublication(lcpl: ByteArray): Try<LcpService.AcquiredPublication, LcpException> =
         try {
@@ -56,7 +53,7 @@ internal class LicensesService(
             Try.failure(LcpException.wrap(e))
         }
 
-    override suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): Try<LcpLicense, LcpException>? =
+    override suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?): Try<LcpLicense, LcpException>? =
         try {
             val container = createLicenseContainer(file.path)
             // WARNING: Using the Default dispatcher in the state machine code is critical. If we were using the Main Dispatcher,

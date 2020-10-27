@@ -93,13 +93,13 @@ internal object LcpClient {
             // Error code 11 should never occur since we check the start/end date before calling createContext
             11 -> LcpException.Runtime("License is out of date (check start and end date).")
             101 -> LcpException.LicenseIntegrity.CertificateRevoked
-            102 -> LcpException.LicenseIntegrity.CertificateSignatureInvalid
-            111 -> LcpException.LicenseIntegrity.LicenseSignatureDateInvalid
-            112 -> LcpException.LicenseIntegrity.LicenseSignatureInvalid
+            102 -> LcpException.LicenseIntegrity.InvalidCertificateSignature
+            111 -> LcpException.LicenseIntegrity.InvalidLicenseSignatureDate
+            112 -> LcpException.LicenseIntegrity.InvalidLicenseSignature
             // Error code 121 seems to be unused in the C++ lib.
             121 -> LcpException.Runtime("The drm context is invalid.")
             131 -> LcpException.Decryption.ContentKeyDecryptError
-            141 -> LcpException.LicenseIntegrity.UserKeyCheckInvalid
+            141 -> LcpException.LicenseIntegrity.InvalidUserKeyCheck
             151 -> LcpException.Decryption.ContentDecryptError
             else -> LcpException.Unknown(e)
         }

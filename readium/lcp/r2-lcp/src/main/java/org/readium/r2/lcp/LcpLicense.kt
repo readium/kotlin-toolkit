@@ -1,10 +1,7 @@
 /*
- * Module: r2-lcp-kotlin
- * Developers: Aferdita Muriqi, Mickaël Menu
- *
- * Copyright (c) 2019. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2020 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.lcp
@@ -13,16 +10,16 @@ import kotlinx.coroutines.*
 import org.joda.time.DateTime
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
+import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Try
 import timber.log.Timber
-import java.io.Serializable
 import java.net.URL
 import kotlin.coroutines.resume
 
 /**
  * Opened license, used to decipher a protected publication and manage its license.
  */
-interface LcpLicense : Serializable {
+interface LcpLicense : ContentProtectionService.UserRights {
 
     /**
      * License Document information.
@@ -45,33 +42,6 @@ interface LcpLicense : Serializable {
      * Number of pages allowed to be printed by the user. If null, there's no limit.
      */
     val pagesToPrintLeft: Int?
-
-    /**
-     * Returns whether the user is allowed to print pages of the publication.
-     */
-    val canPrint: Boolean
-
-    /**
-     * Requests to print the given number of pages.
-     *
-     * The caller is responsible to perform the actual print. This method is only used to know if
-     * the action is allowed.
-     *
-     * @return Whether the user is allowed to print that many pages.
-     */
-    fun print(pagesCount: Int): Boolean
-
-    /**
-     * Returns whether the user can copy extracts from the publication.
-     */
-    val canCopy: Boolean
-
-    /**
-     * Consumes the given text with the copy right.
-     *
-     * @return Whether the user is allowed to copy the given text.
-     */
-    fun copy(text: String): Boolean
 
     /**
      * Can the user renew the loaned publication?

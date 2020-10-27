@@ -23,6 +23,8 @@ import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesService
 import timber.log.Timber
+import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 
 internal sealed class Either<A, B> {
     class Left<A, B>(val left: A) : Either<A, B>()
@@ -80,6 +82,7 @@ internal sealed class Event {
     object cancelled : Event()
 }
 
+@OptIn(ExperimentalTime::class)
 internal class LicenseValidation(
     var authentication: LcpAuthenticating?,
     val allowUserInteraction: Boolean,
@@ -313,7 +316,8 @@ internal class LicenseValidation(
 
     private suspend fun fetchStatus(license: LicenseDocument) {
         val url = license.url(LicenseDocument.Rel.status).toString()
-        val (status, data) = network.fetch(url)
+        // Short timeout to avoid blocking the License, since the LSD is optional.
+        val (status, data) = network.fetch(url, timeout = 5.seconds)
         if (status != 200 || data == null) {
             throw LcpException.Network(null)
         }
@@ -327,7 +331,8 @@ internal class LicenseValidation(
 
     private suspend fun fetchLicense(status: StatusDocument) {
         val url = status.url(StatusDocument.Rel.license).toString()
-        val (statusCode, data) = network.fetch(url)
+        // Short timeout to avoid blocking the License, since it can be updated next time.
+        val (statusCode, data) = network.fetch(url, timeout = 5.seconds)
         if (statusCode != 200 || data == null) {
             throw LcpException.Network(null)
         }
@@ -343,7 +348,12 @@ internal class LicenseValidation(
             error = if (status != null) {
                 val date = status.statusUpdated
                 when (status.status) {
-                    StatusDocument.Status.ready, StatusDocument.Status.active, StatusDocument.Status.expired -> LcpException.LicenseStatus.Expired(start = start, end = end)
+                    StatusDocument.Status.ready, StatusDocument.Status.active, StatusDocument.Status.expired ->
+                        if (start > DateTime()) {
+                            LcpException.LicenseStatus.NotStarted(start)
+                        } else {
+                            LcpException.LicenseStatus.Expired(end)
+                        }
                     StatusDocument.Status.returned -> LcpException.LicenseStatus.Returned(date)
                     StatusDocument.Status.revoked -> {
                         val devicesCount = status.events(org.readium.r2.lcp.license.model.components.lsd.Event.EventType.register).size
@@ -352,7 +362,11 @@ internal class LicenseValidation(
                     StatusDocument.Status.cancelled -> LcpException.LicenseStatus.Cancelled(date)
                 }
             } else {
-                LcpException.LicenseStatus.Expired(start = start, end = end)
+                if (start > DateTime()) {
+                    LcpException.LicenseStatus.NotStarted(start)
+                } else {
+                    LcpException.LicenseStatus.Expired(end)
+                }
             }
         }
         raise(Event.checkedLicenseStatus(error))

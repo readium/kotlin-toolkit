@@ -22,6 +22,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 
 internal typealias URLParameters = Map<String, String?>
@@ -35,24 +37,29 @@ internal class NetworkService {
         }
     }
 
-    suspend fun fetch(url: String, method: Method = Method.GET, parameters: URLParameters = emptyMap()): Pair<Int, ByteArray?> =
-        try {
-            @Suppress("NAME_SHADOWING")
-            val url = URL(Uri.parse(url).buildUpon().appendQueryParameters(parameters).build().toString())
+    @OptIn(ExperimentalTime::class)
+    suspend fun fetch(url: String, method: Method = Method.GET, parameters: URLParameters = emptyMap(), timeout: Duration? = null): Pair<Int, ByteArray?> =
+        withContext(Dispatchers.IO) {
+            try {
+                @Suppress("NAME_SHADOWING")
+                val url = URL(Uri.parse(url).buildUpon().appendQueryParameters(parameters).build().toString())
 
-            withContext(Dispatchers.IO) {
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = method.rawValue
+                if (timeout != null) {
+                    connection.connectTimeout = timeout.toLongMilliseconds().toInt()
+                }
+
                 val status = connection.responseCode
                 if (status != HttpURLConnection.HTTP_OK) {
                     Pair(status, null)
                 } else {
                     Pair(status, connection.inputStream.readBytes())
                 }
+            } catch (e: Exception) {
+                Timber.e(e)
+                Pair(HttpURLConnection.HTTP_INTERNAL_ERROR, null)
             }
-        } catch (e: Exception) {
-            Timber.e(e)
-            Pair(HttpURLConnection.HTTP_INTERNAL_ERROR, null)
         }
 
     private fun Uri.Builder.appendQueryParameters(parameters: URLParameters): Uri.Builder =
