@@ -84,8 +84,14 @@ class HrefTest {
 
     @Test
     fun `get percent-encoded string`() {
-        assertEquals(Href("http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500", "/").percentEncodedString, "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500")
-        assertEquals(Href("http://absolute.com/foo bar.txt?query=param#Hello world £500", "/").percentEncodedString, "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500")
+        assertEquals(
+            "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
+            Href("http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500", "/").percentEncodedString
+        )
+        assertEquals(
+            "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
+            Href("http://absolute.com/foo bar.txt?query=param#Hello world £500", "/").percentEncodedString
+        )
     }
 
     // Needs to be run as an instrumented test

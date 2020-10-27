@@ -31,11 +31,17 @@ data class URITemplate(val uri: String) {
 
     /**
      * Expands the HREF by replacing URI template variables by the given parameters.
-     *
-     * @param percentEncoded When true, encodes the URI to be used through HTTP.
      */
-    fun expand(parameters: Map<String, String>, percentEncoded: Boolean): String {
+    fun expand(parameters: Map<String, String>): String {
         @Suppress("NAME_SHADOWING")
+        // `+` is considered like an encoded space, and will not be properly encoded in parameters.
+        // This is an issue for ISO 8601 date for example.
+        // As a workaround, we encode manually this character. We don't do it in the full URI,
+        // because it could contain some legitimate +-as-space characters.
+        val parameters = parameters.mapValues {
+            it.value.replace("+", "~~+~~")
+        }
+
         fun expandSimpleString(string: String, parameters: Map<String, String>): String =
             string.split(",").joinToString(",") { parameters[it] ?: "" }
 
@@ -51,9 +57,8 @@ data class URITemplate(val uri: String) {
                 expandFormStyle(it.groupValues[2], parameters)
         }
 
-        return Href(expanded).run {
-            if (percentEncoded) percentEncodedString
-            else string
-        }
+        return Href(expanded).percentEncodedString
+            .replace("~~%20~~", "%2B")
     }
+
 }

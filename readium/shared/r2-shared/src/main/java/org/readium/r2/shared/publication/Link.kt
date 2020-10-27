@@ -90,8 +90,8 @@ data class Link(
      *
      * See RFC 6570 on URI template.
      */
-    fun expandTemplate(parameters: Map<String, String>, percentEncoded: Boolean): Link =
-        copy(href = URITemplate(href).expand(parameters, percentEncoded = percentEncoded), templated = false)
+    fun expandTemplate(parameters: Map<String, String>): Link =
+        copy(href = URITemplate(href).expand(parameters), templated = false)
 
     /**
      * Computes an absolute URL to the link, relative to the given [baseUrl].
