@@ -16,9 +16,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PositionsService
-import org.readium.r2.shared.util.pdf.OpenPdfDocument
+import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.PdfDocument
-import org.readium.r2.streamer.extensions.readBytes
 import timber.log.Timber
 
 /**
@@ -27,7 +26,7 @@ import timber.log.Timber
  */
 @OptIn(PdfSupport::class)
 internal class LcpdfPositionsService(
-    private val openPdf: OpenPdfDocument,
+    private val pdfFactory: PdfDocumentFactory,
     private val readingOrder: List<Link>,
     private val fetcher: Fetcher
 ) : PositionsService {
@@ -85,7 +84,7 @@ internal class LcpdfPositionsService(
 
     private suspend fun openPdfAt(link: Link): PdfDocument? =
         try {
-            openPdf(fetcher.get(link))
+            pdfFactory.open(fetcher.get(link), password = null)
         } catch (e: Exception) {
             Timber.e(e)
             null
@@ -93,9 +92,9 @@ internal class LcpdfPositionsService(
 
     companion object {
 
-        fun create(openPdf: OpenPdfDocument): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
+        fun create(pdfFactory: PdfDocumentFactory): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
             LcpdfPositionsService(
-                openPdf = openPdf,
+                pdfFactory = pdfFactory,
                 readingOrder = serviceContext.manifest.readingOrder,
                 fetcher = serviceContext.fetcher
             )

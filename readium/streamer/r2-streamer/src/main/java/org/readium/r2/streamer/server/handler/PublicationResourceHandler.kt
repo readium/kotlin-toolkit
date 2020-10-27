@@ -53,7 +53,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
         try {
             serveResponse(session, resource)
-        } catch(e: Resource.Error) {
+        } catch(e: Resource.Exception) {
             Timber.e(e)
             responseFromFailure(e)
                 .also { resource.close() }
@@ -158,13 +158,13 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
             "${filePath}?${session.queryParameterString}"
     }
 
-    private fun responseFromFailure(error: Resource.Error): Response {
+    private fun responseFromFailure(error: Resource.Exception): Response {
         val status = when(error) {
-            is Resource.Error.NotFound -> Status.NOT_FOUND
-            is Resource.Error.Forbidden -> Status.FORBIDDEN
-            is Resource.Error.Unavailable -> Status.SERVICE_UNAVAILABLE
-            is Resource.Error.BadRequest -> Status.BAD_REQUEST
-            is Resource.Error.Cancelled, is Resource.Error.OutOfMemory, is Resource.Error.Other -> Status.INTERNAL_ERROR
+            is Resource.Exception.NotFound -> Status.NOT_FOUND
+            is Resource.Exception.Forbidden -> Status.FORBIDDEN
+            is Resource.Exception.Unavailable -> Status.SERVICE_UNAVAILABLE
+            is Resource.Exception.BadRequest -> Status.BAD_REQUEST
+            is Resource.Exception.Cancelled, is Resource.Exception.OutOfMemory, is Resource.Exception.Other -> Status.INTERNAL_ERROR
         }
         return newFixedLengthResponse(status, mimeType, ResponseStatus.FAILURE_RESPONSE)
     }

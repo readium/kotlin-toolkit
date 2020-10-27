@@ -15,25 +15,24 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
-import org.readium.r2.shared.publication.OnAskCredentials
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.Archive
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.pdf.OpenPdfDocument
-import org.readium.r2.shared.util.pdf.PdfDocument
+import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.extensions.fromFile
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.epub.setLayoutStyle
 import org.readium.r2.streamer.parser.image.ImageParser
 import org.readium.r2.streamer.parser.pdf.PdfParser
-import org.readium.r2.streamer.parser.pdf.open
+import org.readium.r2.streamer.parser.pdf.PdfiumPdfDocumentFactory
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 import java.io.FileNotFoundException
 import java.lang.Exception
 
-internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningError>
+internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningException>
 
 /**
  * Opens a Publication using a list of parsers.
@@ -46,12 +45,10 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * @param context Application context.
  * @param parsers Parsers used to open a publication, in addition to the default parsers.
  * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
- * @param openArchive Opens an archive (e.g. ZIP, RAR), optionally protected by credentials.
- * @param openPdf Parses a PDF document, optionally protected by password.
+ * @param archiveFactory Opens an archive (e.g. ZIP, RAR), optionally protected by credentials.
+ * @param pdfFactory Parses a PDF document, optionally protected by password.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the [Manifest], the root [Fetcher] or the list of service factories of a [Publication].
- * @param onAskCredentials Called when a content protection wants to prompt the user for its
- *   credentials.
  */
 @OptIn(PdfSupport::class)
 class Streamer constructor(
@@ -59,10 +56,9 @@ class Streamer constructor(
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
     private val contentProtections: List<ContentProtection> = emptyList(),
-    private val openArchive: suspend (String) -> Archive? = (Archive)::open,
-    private val openPdf: OpenPdfDocument = { PdfDocument.open(it, context) },
-    private val onCreatePublication: Publication.Builder.() -> Unit = {},
-    private val onAskCredentials: OnAskCredentials = { _, _, _ -> Unit }
+    private val archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
+    private val pdfFactory: PdfDocumentFactory = DefaultPdfDocumentFactory(context),
+    private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
 
     /**
@@ -82,56 +78,47 @@ class Streamer constructor(
      * issues.
      *
      * @param file Path to the publication file..
-     * @param fallbackTitle The Publication's title is mandatory, but some formats might not have a
-     *   way of declaring a title (e.g. CBZ). In which case, [fallbackTitle] will be used.
-     * @param allowUserInteraction Indicates whether the user can be prompted, for example for its credentials.
      * @param credentials Credentials that Content Protections can use to attempt to unlock a
      *   publication, for example a password.
+     * @param allowUserInteraction Indicates whether the user can be prompted, for example for its
+     *   credentials.
      * @param sender Free object that can be used by reading apps to give some UX context when
      *   presenting dialogs.
+     * @param onCreatePublication Transformation which will be applied on the Publication Builder.
+     *   It can be used to modify the [Manifest], the root [Fetcher] or the list of service
+     *   factories of the [Publication].
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
-     * @return Null if the file was not recognized by any parser, or a [Publication.OpeningError]
+     * @return Null if the file was not recognized by any parser, or a [Publication.OpeningException]
      *   in case of failure.
      */
     suspend fun open(
         file: File,
-        allowUserInteraction: Boolean,
         credentials: String? = null,
+        allowUserInteraction: Boolean,
         sender: Any? = null,
+        onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> = try {
 
         @Suppress("NAME_SHADOWING")
         var file = file
-        var onCreatePublication = onCreatePublication
         var fetcher = try {
-            Fetcher.fromFile(file.file, openArchive)
+            Fetcher.fromFile(file.file, archiveFactory)
         } catch (e: SecurityException) {
-            throw Publication.OpeningError.Forbidden(e)
+            throw Publication.OpeningException.Forbidden(e)
         } catch (e: FileNotFoundException) {
-            throw Publication.OpeningError.NotFound
+            throw Publication.OpeningException.NotFound
         }
 
         val protectedFile = contentProtections
             .lazyMapFirstNotNullOrNull {
-                it.open(
-                    file,
-                    fetcher,
-                    allowUserInteraction,
-                    credentials,
-                    sender,
-                    onAskCredentials
-                )
+                it.open(file, fetcher, credentials, allowUserInteraction, sender)
             }
             ?.getOrThrow()
 
         if (protectedFile != null) {
             file = protectedFile.file
             fetcher = protectedFile.fetcher
-            onCreatePublication = {
-                apply(protectedFile.onCreatePublication)
-                apply(this@Streamer.onCreatePublication)
-            }
         }
 
         val builder = parsers
@@ -143,9 +130,16 @@ class Streamer constructor(
                         warnings
                     )
                 } catch (e: Exception) {
-                    throw Publication.OpeningError.ParsingFailed(e)
+                    throw Publication.OpeningException.ParsingFailed(e)
                 }
-            } ?: throw Publication.OpeningError.UnsupportedFormat
+            } ?: throw Publication.OpeningException.UnsupportedFormat
+
+        // Transform from the Content Protection.
+        protectedFile?.let { builder.apply(it.onCreatePublication) }
+        // Transform provided by the reading app during the construction of the Streamer.
+        builder.apply(this.onCreatePublication)
+        // Transform provided by the reading app in `Streamer.open()`.
+        builder.apply(onCreatePublication)
 
         val publication = builder
             .apply(onCreatePublication)
@@ -154,15 +148,15 @@ class Streamer constructor(
 
         Try.success(publication)
 
-    } catch (e: Publication.OpeningError) {
+    } catch (e: Publication.OpeningException) {
         Try.failure(e)
     }
 
     private val defaultParsers: List<PublicationParser> by lazy {
         listOf(
             EpubParser(),
-            PdfParser(context, openPdf),
-            ReadiumWebPubParser(openPdf),
+            PdfParser(context, pdfFactory),
+            ReadiumWebPubParser(pdfFactory),
             ImageParser(),
             AudioParser()
         )
@@ -195,3 +189,14 @@ internal fun Format?.toPublicationType(): Publication.TYPE =
         Format.EPUB -> Publication.TYPE.EPUB
         else -> Publication.TYPE.WEBPUB
     }
+
+@PdfSupport
+class DefaultPdfDocumentFactory private constructor (
+    private val factory: PdfDocumentFactory
+) : PdfDocumentFactory by factory {
+
+    /** Pdfium is the default implementation. */
+    constructor(context: Context)
+        : this(PdfiumPdfDocumentFactory(context.applicationContext))
+
+}

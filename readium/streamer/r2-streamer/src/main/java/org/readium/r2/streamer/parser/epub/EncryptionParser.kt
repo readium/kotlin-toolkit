@@ -13,6 +13,7 @@ import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.normalize
 import org.readium.r2.shared.parser.xml.ElementNode
+import org.readium.r2.shared.util.Href
 
 internal object EncryptionParser {
     fun parse(document: ElementNode): Map<String, Encryption> =
@@ -43,7 +44,7 @@ internal object EncryptionParser {
             compression = compressionMethod,
             originalLength = originalLength
         )
-        return Pair(normalize("/", resourceURI), enc)
+        return Pair(Href(resourceURI).string, enc)
     }
 
     private fun parseEncryptionProperties(encryptionProperties: ElementNode): Pair<Long, String>? {

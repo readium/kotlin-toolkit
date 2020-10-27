@@ -12,6 +12,7 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.normalize
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.util.Href
 
 internal data class PackageDocument(
     val path: String,
@@ -57,7 +58,7 @@ internal data class Item(
 ) {
     companion object {
         fun parse(element: ElementNode, filePath: String, prefixMap: Map<String, String>): Item? {
-            val href = element.getAttr("href")?.let { normalize(filePath, it) }
+            val href = element.getAttr("href")?.let { Href(it, baseHref = filePath).string }
                 ?: return null
             val propAttr = element.getAttr("properties").orEmpty()
             val properties = parseProperties(propAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEM) }

@@ -81,6 +81,10 @@ abstract class AbstractServer(private var port: Int, private val context: Contex
         }
     }
 
+    fun addEpub(publication: Publication, fileName: String, userPropertiesPath: String?) {
+        addEpub(publication, null, fileName = fileName, userPropertiesPath = userPropertiesPath)
+    }
+
     fun addEpub(publication: Publication, container: Container?, fileName: String, userPropertiesPath: String?) {
         if (container?.rootFile?.rootFilePath?.isEmpty() == true) {
             return

@@ -13,6 +13,7 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.normalize
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.Href
 
 /**
  * Creates a [Publication] model from an EPUB package's document.
@@ -127,7 +128,7 @@ internal class PublicationFactory(
         val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
 
         return Link(
-            href = normalize(packageDocument.path, item.href),
+            href = Href(item.href, baseHref = packageDocument.path).string,
             type = item.mediaType,
             duration = itemMetadata[item.id]?.duration,
             rels = rels,

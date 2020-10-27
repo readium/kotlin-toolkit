@@ -18,16 +18,18 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.archive.Archive
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import java.io.File
 import java.io.FileNotFoundException
 
-/** Returns the resource data at the given [Link]'s HREF, or throws a [Resource.Error] */
-@Throws(Resource.Error::class)
+/** Returns the resource data at the given [Link]'s HREF, or throws a [Resource.Exception] */
+@Throws(Resource.Exception::class)
 internal suspend fun Fetcher.readBytes(link: Link): ByteArray =
     get(link).use { it.read().getOrThrow() }
 
-/** Returns the resource data at the given [href], or throws a [Resource.Error] */
-@Throws(Resource.Error::class)
+/** Returns the resource data at the given [href], or throws a [Resource.Exception] */
+@Throws(Resource.Exception::class)
 internal suspend fun Fetcher.readBytes(href: String): ByteArray =
     get(href).use { it.read().getOrThrow() }
 
@@ -42,7 +44,7 @@ internal suspend fun Fetcher.readAsJsonOrNull(href: String): JSONObject? =
 /** Creates a [Fetcher] from either an archive file, or an exploded directory. **/
 internal suspend fun Fetcher.Companion.fromArchiveOrDirectory(
     path: String,
-    openArchive: suspend (String) -> Archive? = { Archive.open(it) }
+    archiveFactory: ArchiveFactory = DefaultArchiveFactory()
 ): Fetcher? {
     val file = File(path)
     val isDirectory = tryOrNull { file.isDirectory } ?: return null
@@ -50,7 +52,7 @@ internal suspend fun Fetcher.Companion.fromArchiveOrDirectory(
     return if (isDirectory) {
         FileFetcher(href = "/", file = file)
     } else {
-        ArchiveFetcher.fromPath(path, openArchive)
+        ArchiveFetcher.fromPath(path, archiveFactory)
     }
 }
 
@@ -60,13 +62,13 @@ internal suspend fun Fetcher.Companion.fromArchiveOrDirectory(
  */
 internal suspend fun Fetcher.Companion.fromFile(
     file: File,
-    openArchive: suspend (String) -> Archive? = { Archive.open(it) }
+    archiveFactory: ArchiveFactory = DefaultArchiveFactory()
 ): Fetcher =
     when {
         file.isDirectory ->
             FileFetcher(href = "/", file = file)
         file.exists() ->
-            ArchiveFetcher.fromPath(file.path, openArchive)
+            ArchiveFetcher.fromPath(file.path, archiveFactory)
                 ?: FileFetcher(href = "/${file.name}", file = file)
         else ->
             throw FileNotFoundException(file.path)
