@@ -38,6 +38,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     private fun notifyCurrentLocation() {
         val locator = publication.readingOrder[currentResource].let { resource ->
             val progression = mediaPlayer
+                ?.takeIf { it.duration > 0 }
                 ?.let { it.currentPosition / it.duration }
                 ?: 0.0
 
@@ -148,13 +149,13 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
         title = null
 
+        val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())!!.toInt()
+        val readingOrderOverHttp = publication.readingOrder.map { it.withLocalUrl(publicationFileName, port) }
+        mediaPlayer = R2MediaPlayer(readingOrderOverHttp, this)
+
         Handler().postDelayed({
             
         if (this.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-
-            val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())!!.toInt()
-            val readingOrderOverHttp = publication.readingOrder.map { it.withLocalUrl(publicationFileName, port) }
-            mediaPlayer = R2MediaPlayer(readingOrderOverHttp, this)
 
             go(pendingLocator ?: publication.readingOrder.first().toLocator())
 
