@@ -21,6 +21,11 @@ All notable changes to this project will be documented in this file.
   * `PdfNavigatorFragment.Listener::onResourceLoadFailed()` can be used to report fatal errors to the user, such as when trying to open a PDF document that is too large for the available memory.
   * A dedicated `PdfNavigatorFragment.Factory` was added, which deprecates the use of `NavigatorFragmentFactory`.
 
+### Fixed
+
+* Prevent switching to the next resource by mistake when scrolling through an EPUB resource in scroll mode.
+
+
 ## [2.0.0-alpha.1]
 
 ### Added
