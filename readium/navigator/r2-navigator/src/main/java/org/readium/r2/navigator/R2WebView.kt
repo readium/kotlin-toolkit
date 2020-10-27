@@ -997,7 +997,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         get() {
             var numPages = 0
             try {
-                numPages = ceil((this.computeHorizontalScrollRange() / this.computeHorizontalScrollExtent()).toDouble()).roundToInt()
+                numPages = this.computeHorizontalScrollRange() / this.computeHorizontalScrollExtent()
             } catch (e: Exception) {
             } finally {
                 if (numPages == 0) {
