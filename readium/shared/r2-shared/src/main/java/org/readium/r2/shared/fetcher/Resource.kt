@@ -9,8 +9,11 @@
 
 package org.readium.r2.shared.fetcher
 
+import androidx.annotation.StringRes
 import kotlinx.coroutines.CancellationException
 import org.json.JSONObject
+import org.readium.r2.shared.R
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.parser.xml.ElementNode
@@ -21,7 +24,7 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.charset.Charset
 
-typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Error>
+typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
 
 /**
  * Implements the transformation of a Resource. It can be used, for example, to decrypt,
@@ -136,20 +139,22 @@ interface Resource {
     /**
      * Errors occurring while accessing a resource.
      */
-    sealed class Error(cause: Throwable? = null) : Exception(cause) {
+    sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
 
         /** Equivalent to a 400 HTTP error. */
-        class BadRequest(cause: Throwable? = null) : Error(cause)
+        class BadRequest(val parameters: Map<String, String>, cause: Throwable? = null)
+            : Exception(R.string.r2_shared_resource_exception_bad_request, cause)
 
         /** Equivalent to a 404 HTTP error. */
-        object NotFound : Error()
+        object NotFound : Exception(R.string.r2_shared_resource_exception_not_found)
 
         /**
          * Equivalent to a 403 HTTP error.
          *
-         * This can be returned when trying to read a resource protected with a DRM that is not unlocked.
+         * This can be returned when trying to read a resource protected with a DRM that is not
+         * unlocked.
          */
-        object Forbidden : Error()
+        object Forbidden : Exception(R.string.r2_shared_resource_exception_forbidden)
 
         /**
          * Equivalent to a 503 HTTP error.
@@ -157,30 +162,31 @@ interface Resource {
          * Used when the source can't be reached, e.g. no Internet connection, or an issue with the
          * file system. Usually this is a temporary error.
          */
-        object Unavailable : Error()
+        object Unavailable : Exception(R.string.r2_shared_resource_exception_unavailable)
 
         /**
          * Equivalent to a 507 HTTP error.
          *
          * Used when the requested range is too large to be read in memory.
          */
-        class OutOfMemory(cause: OutOfMemoryError) : Error(cause)
+        class OutOfMemory(cause: OutOfMemoryError)
+            : Exception(R.string.r2_shared_resource_exception_out_of_memory, cause)
 
         /**
          * The request was cancelled by the caller.
          *
          * For example, when a coroutine is cancelled.
          */
-        object Cancelled : Error()
+        object Cancelled : Exception(R.string.r2_shared_resource_exception_cancelled)
 
         /** For any other error, such as HTTP 500. */
-        class Other(cause: Throwable) : Error(cause)
+        class Other(cause: Throwable) : Exception(R.string.r2_shared_resource_exception_other, cause)
 
         companion object {
 
-            fun wrap(e: Throwable): Error =
+            fun wrap(e: Throwable): Exception =
                 when (e) {
-                    is Error -> e
+                    is Resource.Exception -> e
                     is CancellationException -> Cancelled
                     is OutOfMemoryError -> OutOfMemory(e)
                     else -> Other(e)
@@ -192,9 +198,9 @@ interface Resource {
 }
 
 /** Creates a Resource that will always return the given [error]. */
-class FailureResource(private val link: Link, private val error: Resource.Error) : Resource {
+class FailureResource(private val link: Link, private val error: Resource.Exception) : Resource {
 
-    internal constructor(link: Link, cause: Throwable) : this(link, Resource.Error.Other(cause))
+    internal constructor(link: Link, cause: Throwable) : this(link, Resource.Exception.Other(cause))
 
     override suspend fun link(): Link = link
 
@@ -349,15 +355,15 @@ class LazyResource(private val factory: suspend () -> Resource) : Resource {
 /**
  * Maps the result with the given [transform]
  *
- * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Error.Other.
+ * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Exception.Other.
  */
 inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
     try {
         Try.success((transform(getOrThrow())))
     } catch (e: Exception) {
-        Try.failure(Resource.Error.wrap(e))
+        Try.failure(Resource.Exception.wrap(e))
     } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-        Try.failure(Resource.Error.wrap(e))
+        Try.failure(Resource.Exception.wrap(e))
     }
 
 inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =

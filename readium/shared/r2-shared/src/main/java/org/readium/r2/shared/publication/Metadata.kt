@@ -77,11 +77,35 @@ data class Metadata(
     val sortAs: String? get() = localizedSortAs?.string
 
     /**
-     * Computes a [ReadingProgression] when the value of [Metadata.readingProgression] is set to
+     * Computes a [ReadingProgression] when the value of [readingProgression] is set to
      * auto, using the publication language.
+     *
+     * See this issue for more details: https://github.com/readium/architecture/issues/113
      */
     @IgnoredOnParcel
-    val effectiveReadingProgression: ReadingProgression get() = contentLayout.readingProgression
+    val effectiveReadingProgression: ReadingProgression get() {
+        if (readingProgression != ReadingProgression.AUTO) {
+            return readingProgression
+        }
+
+        // https://github.com/readium/readium-css/blob/develop/docs/CSS16-internationalization.md#missing-page-progression-direction
+        if (languages.size != 1) {
+            return ReadingProgression.LTR
+        }
+
+        var language = languages.first().toLowerCase(Locale.ROOT)
+
+        if (language == "zh-hant" || language == "zh-tw") {
+            return ReadingProgression.RTL
+        }
+
+        // The region is ignored for ar, fa and he.
+        language = language.split("-", limit = 2).first()
+        return when (language) {
+            "ar", "fa", "he" -> ReadingProgression.RTL
+            else -> ReadingProgression.LTR
+        }
+    }
 
     /**
      * Returns the [ContentLayout] for the default language.

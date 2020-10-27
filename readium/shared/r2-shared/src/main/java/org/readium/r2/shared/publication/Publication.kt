@@ -9,12 +9,16 @@
 
 package org.readium.r2.shared.publication
 
+import android.content.Context
 import android.net.Uri
+import androidx.annotation.StringRes
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.readium.r2.shared.BuildConfig.DEBUG
+import org.readium.r2.shared.R
 import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.HashAlgorithm
 import org.readium.r2.shared.extensions.hash
 import org.readium.r2.shared.extensions.removeLastComponent
@@ -29,7 +33,6 @@ import org.readium.r2.shared.publication.services.CoverService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import timber.log.Timber
-import java.lang.Exception
 import java.net.URL
 import java.net.URLEncoder
 import kotlin.reflect.KClass
@@ -42,7 +45,7 @@ internal typealias ServiceFactory = (Publication.Service.Context) -> Publication
  *
  * @param manifest The manifest holding the publication metadata extracted from the publication file.
  * @param fetcher The underlying fetcher used to read publication resources.
- * The default implementation returns Resource.Error.NotFound for all HREFs.
+ * The default implementation returns Resource.Exception.NotFound for all HREFs.
  * @param servicesBuilder Holds the list of service factories used to create the instances of
  * Publication.Service attached to this Publication.
  * @param type The kind of publication it is ( EPUB, CBZ, ... )
@@ -172,7 +175,13 @@ class Publication(
      * Returns the first publication service that is an instance of [klass].
      */
     fun <T: Service> findService(serviceType: KClass<T>): T? =
-        _services.filterIsInstance(serviceType.java).firstOrNull()
+        findServices(serviceType).firstOrNull()
+
+    /**
+     * Returns all the publication services that are instances of [klass].
+     */
+    fun <T: Service> findServices(serviceType: KClass<T>): List<T> =
+        _services.filterIsInstance(serviceType.java)
 
     enum class TYPE {
         EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
@@ -258,7 +267,7 @@ class Publication(
             localBaseUrlOf(filename, port) + href
 
         @Deprecated("Parse a RWPM with [Manifest::fromJSON] and then instantiate a Publication",
-            ReplaceWith("Manifest.fromJSON(manifestDict)?.let { Publication(it, fetcher = aFetcher) }",
+            ReplaceWith("Manifest.fromJSON(json)",
                 "org.readium.r2.shared.publication.Publication", "org.readium.r2.shared.publication.Manifest"),
             level = DeprecationLevel.ERROR)
         fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Publication? {
@@ -364,7 +373,7 @@ class Publication(
          * Replaces the service factory associated with the given service type with the result of
          * [transform].
          */
-        fun <T : Service> wrap(serviceType: KClass<T>, transform: ((ServiceFactory)?) -> ServiceFactory) {
+        fun <T : Service> decorate(serviceType: KClass<T>, transform: ((ServiceFactory)?) -> ServiceFactory) {
             val key = requireNotNull(serviceType.simpleName)
             serviceFactories[key] = transform(serviceFactories[key])
         }
@@ -374,39 +383,39 @@ class Publication(
     /**
      * Errors occurring while opening a Publication.
      */
-    sealed class OpeningError(cause: Throwable? = null) : Throwable(cause) {
+    sealed class OpeningException(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
 
         /**
          * The file format could not be recognized by any parser.
          */
-        object UnsupportedFormat : OpeningError()
+        object UnsupportedFormat : OpeningException(R.string.r2_shared_publication_opening_exception_unsupported_format)
 
         /**
          * The publication file was not found on the file system.
          */
-        object NotFound : OpeningError()
+        object NotFound : OpeningException(R.string.r2_shared_publication_opening_exception_not_found)
 
         /**
          * The publication parser failed with the given underlying exception.
          */
-        class ParsingFailed(cause: Throwable) : OpeningError(cause)
+        class ParsingFailed(cause: Throwable) : OpeningException(R.string.r2_shared_publication_opening_exception_parsing_failed, cause)
 
         /**
          * We're not allowed to open the publication at all, for example because it expired.
          */
-        class Forbidden(cause: Throwable?) : OpeningError(cause)
+        class Forbidden(cause: Throwable?) : OpeningException(R.string.r2_shared_publication_opening_exception_forbidden, cause)
 
         /**
          * The publication can't be opened at the moment, for example because of a networking error.
          * This error is generally temporary, so the operation may be retried or postponed.
          */
-        class Unavailable(cause: Throwable?) : OpeningError(cause)
+        class Unavailable(cause: Throwable?) : OpeningException(R.string.r2_shared_publication_opening_exception_unavailable, cause)
 
         /**
          * The provided credentials are incorrect and we can't open the publication in a
          * `restricted` state (e.g. for a password-protected ZIP).
          */
-        object IncorrectCredentials: OpeningError()
+        object IncorrectCredentials: OpeningException(R.string.r2_shared_publication_opening_exception_incorrect_credentials)
 
     }
 
@@ -419,7 +428,7 @@ class Publication(
     class Builder(
         var manifest: Manifest,
         var fetcher: Fetcher,
-        var servicesBuilder: ServicesBuilder
+        var servicesBuilder: ServicesBuilder = ServicesBuilder()
     ) {
 
         fun build(): Publication = Publication(

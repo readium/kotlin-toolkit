@@ -9,9 +9,6 @@
 
 package org.readium.r2.shared.util
 
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-
 /**
  * A lightweight implementation of URI Template (RFC 6570).
  *
@@ -34,13 +31,11 @@ data class URITemplate(val uri: String) {
 
     /**
      * Expands the HREF by replacing URI template variables by the given parameters.
+     *
+     * @param percentEncoded When true, encodes the URI to be used through HTTP.
      */
-    fun expand(parameters: Map<String, String>): String {
+    fun expand(parameters: Map<String, String>, percentEncoded: Boolean): String {
         @Suppress("NAME_SHADOWING")
-        val parameters = parameters.mapValues {
-            URLEncoder.encode(it.value, StandardCharsets.UTF_8.toString())
-        }
-
         fun expandSimpleString(string: String, parameters: Map<String, String>): String =
             string.split(",").joinToString(",") { parameters[it] ?: "" }
 
@@ -49,11 +44,16 @@ data class URITemplate(val uri: String) {
 
         // Escaping the last } is somehow required, otherwise the regex can't be parsed on a Pixel
         // 3a. However, without it works with the unit tests.
-        return "\\{(\\??)([^}]+)\\}".toRegex().replace(uri) {
+        val expanded = "\\{(\\??)([^}]+)\\}".toRegex().replace(uri) {
             if (it.groupValues[1].isEmpty())
                 expandSimpleString(it.groupValues[2], parameters)
             else
                 expandFormStyle(it.groupValues[2], parameters)
+        }
+
+        return Href(expanded).run {
+            if (percentEncoded) percentEncodedString
+            else string
         }
     }
 }

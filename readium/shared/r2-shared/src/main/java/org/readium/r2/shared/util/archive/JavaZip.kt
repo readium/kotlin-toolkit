@@ -13,23 +13,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.readRange
+import java.io.File
 import java.lang.Exception
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
 internal class JavaZip(private val archive: ZipFile) : Archive {
-
-    companion object {
-
-        suspend fun open(path: String): Archive? =
-            try {
-                withContext(Dispatchers.IO) {
-                    ZipFile(path)
-                }
-            } catch (e: Exception) {
-                null
-            }?.let { JavaZip(it) }
-        }
 
     private inner class Entry(private val entry: ZipEntry) : Archive.Entry {
         override val path: String get() = entry.name
@@ -72,3 +61,10 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
 
 }
 
+internal class JavaZipArchiveFactory : ArchiveFactory {
+
+    override suspend fun open(file: File, password: String?): Archive = withContext(Dispatchers.IO) {
+        JavaZip(ZipFile(file))
+    }
+
+}

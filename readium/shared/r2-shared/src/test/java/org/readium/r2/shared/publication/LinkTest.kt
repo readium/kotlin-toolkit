@@ -16,6 +16,7 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.toJSON
+import java.net.URL
 
 class LinkTest {
 
@@ -35,8 +36,12 @@ class LinkTest {
             "y" to "b"
         )
         assertEquals(
-            Link(href = "/url?x=aaa&hello=Hello%2C+world&y=bname", templated = false),
-            Link(href = href, templated = true).expandTemplate(parameters)
+            Link(href = "/url?x=aaa&hello=Hello,%20world&y=bname", templated = false),
+            Link(href = href, templated = true).expandTemplate(parameters, percentEncoded = true)
+        )
+        assertEquals(
+            Link(href = "/url?x=aaa&hello=Hello, world&y=bname", templated = false),
+            Link(href = href, templated = true).expandTemplate(parameters, percentEncoded = false)
         )
     }
 
@@ -243,6 +248,51 @@ class LinkTest {
                 Link(href = "http://child1"),
                 Link(href = "http://child2")
             ).toJSON()
+        )
+    }
+
+    @Test
+    fun `to URL relative to base URL`() {
+        assertEquals(
+            "http://host/folder/file.html",
+            Link("folder/file.html").toUrl("http://host/")
+        )
+    }
+
+    @Test
+    fun `to URL relative to base URL with root prefix`() {
+        assertEquals(
+            "http://host/folder/file.html",
+            Link("/file.html").toUrl("http://host/folder/")
+        )
+    }
+
+    @Test
+    fun `to URL relative to null`() {
+        assertEquals(
+            "/folder/file.html",
+            Link("folder/file.html").toUrl(null)
+        )
+    }
+
+    @Test
+    fun `to URL with invalid HREF`() {
+        assertNull(Link("").toUrl("http://test.com"))
+    }
+
+    @Test
+    fun `to URL with absolute HREF`() {
+        assertEquals(
+            "http://test.com/folder/file.html",
+            Link("http://test.com/folder/file.html").toUrl("http://host/")
+        )
+    }
+
+    @Test
+    fun `to URL with HREF containing invalid characters`() {
+        assertEquals(
+            "http://host/folder/Cory%20Doctorow's/a-fc.jpg",
+            Link("/Cory Doctorow's/a-fc.jpg").toUrl("http://host/folder/")
         )
     }
 

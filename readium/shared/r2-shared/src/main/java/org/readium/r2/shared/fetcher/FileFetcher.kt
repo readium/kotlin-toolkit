@@ -39,18 +39,18 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
 
     override suspend fun links(): List<Link> =
         paths.toSortedMap().flatMap { (href, file) ->
-            file.walk().mapNotNull {
+            file.walk().toList().mapNotNull {
                 tryOrNull {
                     if (it.isDirectory) {
                         null
                     } else {
                         Link(
                             href = File(href, it.canonicalPath.removePrefix(file.canonicalPath)).canonicalPath,
-                            type = Format.of(fileExtension = it.extension)?.mediaType.toString()
+                            type = Format.ofFile(file, fileExtension = it.extension)?.mediaType.toString()
                         )
                     }
                 }
-            }.toList()
+            }
         }
 
     override fun get(link: Link): Resource {
@@ -68,7 +68,7 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
                 }
             }
         }
-        return FailureResource(link, Resource.Error.NotFound)
+        return FailureResource(link, Resource.Exception.NotFound)
     }
 
     override suspend fun close() {
@@ -149,13 +149,13 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
             try {
                 success(closure())
             } catch (e: FileNotFoundException) {
-                failure(Resource.Error.NotFound)
+                failure(Resource.Exception.NotFound)
             } catch (e: SecurityException) {
-                failure(Resource.Error.Forbidden)
+                failure(Resource.Exception.Forbidden)
             } catch (e: Exception) {
-                failure(Resource.Error.wrap(e))
+                failure(Resource.Exception.wrap(e))
             } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-                failure(Resource.Error.wrap(e))
+                failure(Resource.Exception.wrap(e))
             }
 
         override fun toString(): String =

@@ -17,9 +17,11 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import java.net.URL
 
 /**
  * Function used to recursively transform the href of a [Link] when parsing its JSON
@@ -88,8 +90,22 @@ data class Link(
      *
      * See RFC 6570 on URI template.
      */
-    fun expandTemplate(parameters: Map<String, String>): Link =
-        copy(href = URITemplate(href).expand(parameters), templated = false)
+    fun expandTemplate(parameters: Map<String, String>, percentEncoded: Boolean): Link =
+        copy(href = URITemplate(href).expand(parameters, percentEncoded = percentEncoded), templated = false)
+
+    /**
+     * Computes an absolute URL to the link, relative to the given [baseUrl].
+     *
+     * If the link's [href] is already absolute, the [baseUrl] is ignored.
+     */
+    fun toUrl(baseUrl: String?): String? {
+        val href = href.removePrefix("/")
+        if (href.isBlank()) {
+            return null
+        }
+
+        return Href(href, baseHref = baseUrl ?: "/").percentEncodedString
+    }
 
     /**
      * Serializes a [Link] to its RWPM JSON representation.

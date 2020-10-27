@@ -14,9 +14,18 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Link
+import java.io.File
 
 @PdfSupport
-typealias OpenPdfDocument = suspend (Resource) -> PdfDocument
+interface PdfDocumentFactory {
+
+    /** Opens a PDF from a [file]. */
+    suspend fun open(file: File, password: String?): PdfDocument
+
+    /** Opens a PDF from a [Fetcher]'s resource. */
+    suspend fun open(resource: Resource, password: String?): PdfDocument
+
+}
 
 /**
  * Represents a PDF document.

@@ -6,6 +6,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* The [Publication Services API](https://readium.org/architecture/proposals/004-publication-helpers-services) allows to extend a `Publication` with custom implementations of known services. This version ships with a few predefined services:
+  * `PositionsService` provides a list of discrete locations in the publication, no matter what the original format is.
+  * `CoverService` provides an easy access to a bitmap version of the publication cover.
+* The [Composite Fetcher API](https://readium.org/architecture/proposals/002-composite-fetcher-api) can be used to extend the way publication resources are accessed.
+* Support for exploded directories for any archive-based publication format.
+* [Content Protection](https://readium.org/architecture/proposals/006-content-protection) handles DRM and other format-specific protections in a more systematic way.
+  * LCP now ships an `LcpContentProtection` implementation to be plugged into the `Streamer`.
+  * You can add custom `ContentProtection` implementations to support other DRMs by providing an instance to the `Streamer`.
+
+### Changed
+
+* [The `Publication` and `Container` types were merged together](https://readium.org/architecture/proposals/003-publication-encapsulation) to offer a single interface to a publication's resources.
+  * Use `publication.get()` to read the content of a resource, such as the cover. It will automatically be decrypted if a `ContentProtection` was attached to the `Publication`.
+
 ### Fixed
 
 * `OutOfMemoryError` occuring while opening large publications are now caught to prevent crashes. They are reported as `Resource.Exception.OutOfMemory`.

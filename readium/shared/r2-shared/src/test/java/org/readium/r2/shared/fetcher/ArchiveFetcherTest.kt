@@ -79,13 +79,13 @@ class ArchiveFetcherTest {
     @Test
     fun `Computing length for a missing entry returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
-        assertFailsWith<Resource.Error.NotFound> { resource.lengthBlocking().getOrThrow() }
+        assertFailsWith<Resource.Exception.NotFound> { resource.lengthBlocking().getOrThrow() }
     }
 
     @Test
     fun `Reading a missing entry returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
-        assertFailsWith<Resource.Error.NotFound> { resource.lengthBlocking().getOrThrow() }
+        assertFailsWith<Resource.Exception.NotFound> { resource.lengthBlocking().getOrThrow() }
     }
 
     @Test
@@ -129,13 +129,13 @@ class ArchiveFetcherTest {
     @Test
     fun `Computing a directory length returns NotFound`() {
         val resource = fetcher.get(Link(href = "/EPUB"))
-        assertFailsWith<Resource.Error.NotFound> { resource.lengthBlocking().getOrThrow() }
+        assertFailsWith<Resource.Exception.NotFound> { resource.lengthBlocking().getOrThrow() }
     }
 
     @Test
     fun `Computing the length of a missing file returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
-        assertFailsWith<Resource.Error.NotFound> { resource.lengthBlocking().getOrThrow() }
+        assertFailsWith<Resource.Exception.NotFound> { resource.lengthBlocking().getOrThrow() }
     }
 
 

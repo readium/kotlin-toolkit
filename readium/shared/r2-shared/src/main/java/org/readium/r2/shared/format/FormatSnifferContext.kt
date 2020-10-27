@@ -19,6 +19,7 @@ import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.archive.Archive
+import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.util.*
@@ -127,7 +128,7 @@ class FormatSnifferContext internal constructor(
             loadedContentAsArchive = true
             _contentAsArchive = withContext(Dispatchers.IO) {
                 (content as? FormatSnifferFileContent)?.let {
-                    Archive.open(it.file.path)
+                    DefaultArchiveFactory().open(it.file, password = null)
                 }
             }
         }

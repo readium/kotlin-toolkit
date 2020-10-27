@@ -33,8 +33,12 @@ class URITemplateTest {
             "w" to "w"
         )
         assertEquals(
-            "/urlaaa,Hello%2C+world,bname45,b,w",
-            template.expand(parameters)
+            "/urlaaa,Hello,%20world,bname45,b,w",
+            template.expand(parameters, percentEncoded = true)
+        )
+        assertEquals(
+            "/urlaaa,Hello, world,bname45,b,w",
+            template.expand(parameters, percentEncoded = false)
         )
     }
 
@@ -47,8 +51,12 @@ class URITemplateTest {
             "y" to "b"
         )
         assertEquals(
-            "/url?x=aaa&hello=Hello%2C+world&y=bname",
-            template.expand(parameters)
+            "/url?x=aaa&hello=Hello,%20world&y=bname",
+            template.expand(parameters, percentEncoded = true)
+        )
+        assertEquals(
+            "/url?x=aaa&hello=Hello, world&y=bname",
+            template.expand(parameters, percentEncoded = false)
         )
     }
 }

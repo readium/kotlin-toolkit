@@ -43,13 +43,13 @@ class FileFetcherTest {
     @Test
     fun `Computing length for a missing file returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
-        assertFailsWith<Resource.Error.NotFound> { resource.lengthBlocking().getOrThrow() }
+        assertFailsWith<Resource.Exception.NotFound> { resource.lengthBlocking().getOrThrow() }
     }
 
     @Test
     fun `Reading a missing file returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
-        assertFailsWith<Resource.Error.NotFound> { resource.readBlocking().getOrThrow() }
+        assertFailsWith<Resource.Exception.NotFound> { resource.readBlocking().getOrThrow() }
     }
 
     @Test
@@ -76,13 +76,13 @@ class FileFetcherTest {
     @Test
     fun `Reading a directory returns NotFound`() {
         val resource = fetcher.get(Link(href = "/dir_href/subdirectory"))
-        assertFailsWith<Resource.Error.NotFound> { resource.readBlocking().getOrThrow() }
+        assertFailsWith<Resource.Exception.NotFound> { resource.readBlocking().getOrThrow() }
     }
     
     @Test
     fun `Reading a file outside the allowed directory returns NotFound`() {
         val resource = fetcher.get(Link(href = "/dir_href/../text.txt"))
-        assertFailsWith<Resource.Error.NotFound> { resource.readBlocking().getOrThrow() }
+        assertFailsWith<Resource.Exception.NotFound> { resource.readBlocking().getOrThrow() }
     }
 
     @Test
@@ -128,13 +128,13 @@ class FileFetcherTest {
     @Test
     fun `Computing a directory length returns NotFound`() {
         val resource = fetcher.get(Link(href = "/dir_href/subdirectory"))
-        assertFailsWith<Resource.Error.NotFound> { resource.lengthBlocking().getOrThrow() }
+        assertFailsWith<Resource.Exception.NotFound> { resource.lengthBlocking().getOrThrow() }
     }
 
     @Test
     fun `Computing the length of a missing file returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
-        assertFailsWith<Resource.Error.NotFound> { resource.lengthBlocking().getOrThrow() }
+        assertFailsWith<Resource.Exception.NotFound> { resource.lengthBlocking().getOrThrow() }
     }
 
     @Test

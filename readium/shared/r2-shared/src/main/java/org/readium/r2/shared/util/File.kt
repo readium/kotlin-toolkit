@@ -1,10 +1,7 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2020 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.shared.util
@@ -17,14 +14,12 @@ import java.lang.Exception
  *
  * Used to cache the Format to avoid computing it at different locations.
  */
-open class File private constructor(val file: java.io.File, val sourceUrl: String? = null) {
+open class File private constructor(val file: java.io.File) {
 
     private var mediaTypeHint: String? = null
     private var knownFormat: Format? = null
 
-    private constructor(file: java.io.File, mediaType: String? = null, format: Format? = null, sourceUrl: String? = null) :
-            this(file, sourceUrl) {
-
+    private constructor(file: java.io.File, mediaType: String? = null, format: Format? = null) : this(file) {
         mediaTypeHint = mediaType
         knownFormat = format
     }
@@ -35,14 +30,14 @@ open class File private constructor(val file: java.io.File, val sourceUrl: Strin
      * @param path Absolute path to the file or directory.
      * @param mediaType If the file's media type is already known, providing it will improve performances.
      */
-    constructor(path: String, mediaType: String? = null, sourceUrl: String? = null) :
-            this(java.io.File(path), mediaType = mediaType, sourceUrl = sourceUrl)
+    constructor(path: String, mediaType: String? = null) :
+            this(java.io.File(path), mediaType = mediaType)
 
     /**
      *  Creates a File from a path and an already resolved format.
      */
-    constructor(path: String, format: Format?, sourceUrl: String? = null) :
-            this(java.io.File(path), sourceUrl = sourceUrl, format = format)
+    constructor(path: String, format: Format?) :
+            this(java.io.File(path), format = format)
 
     /**
      * Absolute path on the file system.

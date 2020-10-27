@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2020 Readium Foundation. All rights reserved.
+  Use of this source code is governed by the BSD-style license
+  available in the top-level LICENSE file of the project.
+-->
+
+<resources>
+    <string name="r2.shared.publication.opening_exception.unsupported_format">Format not supported</string>
+    <string name="r2.shared.publication.opening_exception.not_found">File not found</string>
+    <string name="r2.shared.publication.opening_exception.parsing_failed">The file is corrupted and can\'t be opened</string>
+    <string name="r2.shared.publication.opening_exception.forbidden">You are not allowed to open this publication</string>
+    <string name="r2.shared.publication.opening_exception.unavailable">Not available, please try again later</string>
+    <string name="r2.shared.publication.opening_exception.incorrect_credentials">Provided credentials were incorrect</string>
+
+    <string name="r2.shared.resource.exception.bad_request">Invalid request which can\'t be processed</string>
+    <string name="r2.shared.resource.exception.not_found">Resource not found</string>
+    <string name="r2.shared.resource.exception.forbidden">You are not allowed to access the resource</string>
+    <string name="r2.shared.resource.exception.unavailable">The resource is currently unavailable, please try again later</string>
+    <string name="r2.shared.resource.exception.out_of_memory">The resource is too large to be read on this device</string>
+    <string name="r2.shared.resource.exception.cancelled">The request was cancelled</string>
+    <string name="r2.shared.resource.exception.other">A service error occurred</string>
+</resources>

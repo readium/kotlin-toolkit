@@ -16,23 +16,12 @@ import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.readRange
 import org.readium.r2.shared.extensions.tryOr
 import java.io.File
+import java.lang.IllegalArgumentException
 
 /**
  * An archive exploded on the file system as a directory.
  */
 internal class ExplodedArchive(private val directory: File)  : Archive {
-
-    companion object {
-
-        suspend fun open(path: String): Archive? =
-            File(path)
-                .takeIf {
-                    withContext(Dispatchers.IO) {
-                        tryOr(false) { it.isDirectory }
-                    }
-                }
-                ?.let { ExplodedArchive(it) }
-    }
 
     private inner class Entry(private val file: File) : Archive.Entry {
 
@@ -72,4 +61,14 @@ internal class ExplodedArchive(private val directory: File)  : Archive {
     }
 
     override suspend fun close() {}
+}
+
+internal class ExplodedArchiveFactory : ArchiveFactory {
+
+    override suspend fun open(file: File, password: String?): Archive = withContext(Dispatchers.IO) {
+        file.takeIf { tryOr(false) { it.isDirectory } }
+            ?.let { ExplodedArchive(it) }
+            ?: throw IllegalArgumentException("[path] must be a directory to be opened as an exploded archive")
+    }
+
 }

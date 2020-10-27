@@ -53,7 +53,7 @@ class EmptyFetcher : Fetcher {
 
     override suspend fun links(): List<Link> = emptyList()
 
-    override fun get(link: Link): Resource = FailureResource(link, Resource.Error.NotFound)
+    override fun get(link: Link): Resource = FailureResource(link, Resource.Exception.NotFound)
 
     override suspend fun close() {}
 

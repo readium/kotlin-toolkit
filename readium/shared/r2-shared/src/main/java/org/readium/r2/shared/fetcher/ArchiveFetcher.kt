@@ -13,10 +13,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.archive.JavaZip
 import timber.log.Timber
 import java.io.File
@@ -41,10 +44,10 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
 
     companion object {
 
-        suspend fun fromPath(path: String, open: suspend (String) -> Archive? = { JavaZip.open(it) }): ArchiveFetcher? =
+        suspend fun fromPath(path: String, archiveFactory: ArchiveFactory = DefaultArchiveFactory()): ArchiveFetcher? =
             withContext(Dispatchers.IO) {
-                open(path)
-            }?.let { ArchiveFetcher(it) }
+                tryOrNull { ArchiveFetcher(archiveFactory.open(File(path), password = null)) }
+            }
     }
 
     private class EntryResource(val originalLink: Link, val archive: Archive) : Resource {
@@ -57,7 +60,7 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
                     val entry = archive.entry(originalLink.href.removePrefix("/"))
                     Try.success(entry)
                 } catch (e: Exception) {
-                    Try.failure(Resource.Error.NotFound)
+                    Try.failure(Resource.Exception.NotFound)
                 }
             }
 

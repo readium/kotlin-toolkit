@@ -12,11 +12,7 @@ package org.readium.r2.shared.publication
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.publication.services.ContentProtectionService
-import org.readium.r2.shared.util.Dialog
 import org.readium.r2.shared.util.Try
-
-/** Called when a content protection wants to prompt the user for its credentials. */
-typealias OnAskCredentials = (dialog: Dialog, sender: Any?, callback: (String?) -> Unit) -> Unit
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
@@ -39,17 +35,16 @@ interface ContentProtection {
      * [Fetcher].
      *
      * @return A [ProtectedFile] in case of success, null if the file is not protected by this
-     * technology or a [Publication.OpeningError] if the file can't be successfully opened,
+     * technology or a [Publication.OpeningException] if the file can't be successfully opened,
      * even in restricted mode.
      */
     suspend fun open(
         file: File,
         fetcher: Fetcher,
-        allowUserInteraction: Boolean,
         credentials: String?,
-        sender: Any?,
-        onAskCredentials: OnAskCredentials?
-    ): Try<ProtectedFile, Publication.OpeningError>?
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): Try<ProtectedFile, Publication.OpeningException>?
 
     /**
      * Holds the result of opening a [File] with a [ContentProtection].
