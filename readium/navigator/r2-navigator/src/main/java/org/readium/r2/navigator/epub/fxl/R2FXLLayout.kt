@@ -446,10 +446,10 @@ class R2FXLLayout : FrameLayout {
             tdx = NumberUtils.clamp(bounds.left, dx, bounds.right)
             tdy = NumberUtils.clamp(bounds.top, dy, bounds.bottom)
         }
-        val posX = tdx + posX
-        val posY = tdy + posY
-        if (!NumberUtils.isEqual(posX, posX) || !NumberUtils.isEqual(posY, posY)) {
-            translateMatrix.setTranslate(-posX, -posY)
+        val destPosX = tdx + posX
+        val destPosY = tdy + posY
+        if (!NumberUtils.isEqual(destPosX, posX) || !NumberUtils.isEqual(destPosY, posY)) {
+            translateMatrix.setTranslate(-destPosX, -destPosY)
             matrixUpdated()
             invalidate()
             return true
@@ -457,8 +457,8 @@ class R2FXLLayout : FrameLayout {
         return false
     }
 
-    private fun internalMove(posX: Float, posY: Float, clamp: Boolean): Boolean {
-        return internalMoveBy(posX - posX, posY - posY, clamp)
+    private fun internalMove(destPosX: Float, destPosY: Float, clamp: Boolean): Boolean {
+        return internalMoveBy(destPosX - posX, destPosY - posY, clamp)
     }
 
     private fun internalScale(scale: Float, focusX: Float, focusY: Float) {
