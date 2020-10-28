@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+
+## [2.0.0-alpha.2]
+
 ### Added
 
 * Support for the new `Publication` model using the [Content Protection](https://readium.org/architecture/proposals/006-content-protection) for DRM rights and the [Fetcher](https://readium.org/architecture/proposals/002-composite-fetcher-api) for resource access.
@@ -59,3 +62,5 @@ All notable changes to this project will be documented in this file.
 
 [unreleased]: https://github.com/readium/r2-navigator-kotlin/compare/master...HEAD
 [2.0.0-alpha.1]: https://github.com/readium/r2-navigator-kotlin/compare/1.1.6...2.0.0-alpha.1
+[2.0.0-alpha.2]: https://github.com/readium/r2-navigator-kotlin/compare/2.0.0-alpha.1...2.0.0-alpha.2
+
