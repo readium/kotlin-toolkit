@@ -65,6 +65,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        loadedInitialLocator = true
         val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href) ?: return false
 
         val mediaPlayer = mediaPlayer ?: run {
@@ -130,6 +131,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
     var mediaPlayer: R2MediaPlayer? = null
     private var pendingLocator: Locator? = null
+    private var loadedInitialLocator = false
 
     protected var navigatorDelegate: NavigatorDelegate? = null
 
@@ -157,7 +159,9 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
             
         if (this.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
 
-            go(pendingLocator ?: publication.readingOrder.first().toLocator())
+            if (!loadedInitialLocator) {
+                go(publication.readingOrder.first().toLocator())
+            }
 
             seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 /**
