@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+
+## [2.0.0-alpha.2]
+
 ### Added
 
 * LCP implementation of the [Content Protection API](https://readium.org/architecture/proposals/006-content-protection) to work with the new [Streamer API](https://readium.org/architecture/proposals/005-streamer-api) (contributed by [@qnga](https://github.com/readium/r2-lcp-kotlin/pull/79)).
@@ -54,3 +57,5 @@ All notable changes to this project will be documented in this file.
 
 [unreleased]: https://github.com/readium/r2-lcp-kotlin/compare/master...HEAD
 [2.0.0-alpha.1]: https://github.com/readium/r2-lcp-kotlin/compare/1.1.3...2.0.0-alpha.1
+[2.0.0-alpha.2]: https://github.com/readium/r2-lcp-kotlin/compare/2.0.0-alpha.1...2.0.0-alpha.2
+
