@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+
+## [2.0.0-alpha.2]
+
 ### Added
 
 * [Streamer API](https://readium.org/architecture/proposals/005-streamer-api) offers a simple interface to parse a publication and replace standalone parsers.
@@ -20,6 +23,7 @@ All notable changes to this project will be documented in this file.
 
 * Readium can now open PDF documents of any size without crashing. However, LCP protected PDFs are still limited by the available memory.
 * Various HTTP server fixes and optimizations.
+
 
 ## [2.0.0-alpha.1]
 
@@ -56,3 +60,5 @@ server.loadCustomResource(assets.open("scripts/highlight.js"), "highlight.js", I
 
 [unreleased]: https://github.com/readium/r2-streamer-kotlin/compare/master...HEAD
 [2.0.0-alpha.1]: https://github.com/readium/r2-streamer-kotlin/compare/1.1.5...2.0.0-alpha.1
+[2.0.0-alpha.2]: https://github.com/readium/r2-streamer-kotlin/compare/2.0.0-alpha.1...2.0.0-alpha.2
+
