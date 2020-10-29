@@ -23,7 +23,7 @@ suspend fun Response.sniffFormat(mediaTypes: List<String> = emptyList(), fileExt
     val allFileExtensions = fileExtensions.toMutableList()
 
     // The value of the `Content-Type` HTTP header.
-    (headers["Content-Type"] ?: headers["content-type"])?.let {
+    (headers["Content-Type"] ?: headers["content-type"]).let {
         allMediaTypes.addAll(0, it)
     }
 

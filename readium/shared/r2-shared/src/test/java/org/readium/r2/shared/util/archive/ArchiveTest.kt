@@ -68,34 +68,34 @@ class ArchiveTest(val archive: Archive) {
 
     @Test
     fun `Fully reading an entry works well`() {
-        val bytes = runBlocking { archive.entry("mimetype")?.read() }
-        assertEquals("application/epub+zip", bytes?.toString(StandardCharsets.UTF_8))
+        val bytes = runBlocking { archive.entry("mimetype").read() }
+        assertEquals("application/epub+zip", bytes.toString(StandardCharsets.UTF_8))
     }
 
     @Test
     fun `Reading a range of an entry works well`() {
-        val bytes = runBlocking { archive.entry("mimetype")?.read(0..10L) }
-        assertEquals("application", bytes?.toString(StandardCharsets.UTF_8))
-        assertEquals(11, bytes?.size)
+        val bytes = runBlocking { archive.entry("mimetype").read(0..10L) }
+        assertEquals("application", bytes.toString(StandardCharsets.UTF_8))
+        assertEquals(11, bytes.size)
     }
 
     @Test
     fun `Out of range indexes are clamped to the available length`() {
-        val bytes = runBlocking { archive.entry("mimetype")?.read(-5..60L) }
-        assertEquals("application/epub+zip", bytes?.toString(StandardCharsets.UTF_8))
-        assertEquals(20, bytes?.size)
+        val bytes = runBlocking { archive.entry("mimetype").read(-5..60L) }
+        assertEquals("application/epub+zip", bytes.toString(StandardCharsets.UTF_8))
+        assertEquals(20, bytes.size)
     }
 
     @Test
     fun `Decreasing ranges are understood as empty ones`() {
-        val bytes = runBlocking { archive.entry("mimetype")?.read(60..20L) }
-        assertEquals("", bytes?.toString(StandardCharsets.UTF_8))
-        assertEquals(0, bytes?.size)
+        val bytes = runBlocking { archive.entry("mimetype").read(60..20L) }
+        assertEquals("", bytes.toString(StandardCharsets.UTF_8))
+        assertEquals(0, bytes.size)
     }
 
     @Test
     fun `Computing size works well`() {
-        val size = runBlocking { archive.entry("mimetype")?.length }
+        val size = runBlocking { archive.entry("mimetype").length }
         assertEquals(20L, size)
     }
 }

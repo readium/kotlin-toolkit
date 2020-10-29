@@ -18,7 +18,6 @@ import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.extensions.toUrlOrNull
-import org.readium.r2.shared.normalize
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
