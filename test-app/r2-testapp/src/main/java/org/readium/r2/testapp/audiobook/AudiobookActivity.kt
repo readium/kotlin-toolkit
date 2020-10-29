@@ -109,8 +109,7 @@ class AudiobookActivity : R2AudiobookActivity(), NavigatorDelegate {
                 return true
             }
             R.id.bookmark -> {
-                val locator = currentLocator.value ?:
-                     return true
+                val locator = currentLocator.value
 
                 val bookmark = Bookmark(bookId, publicationIdentifier, resourceIndex = currentResource.toLong(), locator = locator)
                 bookmarksDB.bookmarks.insert(bookmark)?.let {

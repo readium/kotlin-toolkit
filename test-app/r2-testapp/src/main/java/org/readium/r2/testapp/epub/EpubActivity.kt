@@ -500,7 +500,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 val resourceHref = resource.href
                 val resourceType = resource.type ?: ""
                 val resourceTitle = resource.title ?: ""
-                val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocator.value?.locations?.progression!!)?.let {
+                val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocator.value.locations.progression!!)?.let {
                     it
                 }
 
@@ -511,7 +511,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                         resourceHref,
                         resourceType,
                         resourceTitle,
-                        Locator.Locations(progression = currentLocator.value?.locations?.progression, position = currentPage?.toInt()),
+                        Locator.Locations(progression = currentLocator.value.locations.progression, position = currentPage?.toInt()),
                         Locator.Text()
                 )
 
@@ -826,12 +826,12 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
         val resourceHref = resource.href
         val resourceType = resource.type ?: ""
         val resourceTitle = resource.title ?: ""
-        val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocator.value?.locations?.progression!!)?.let {
+        val currentPage = positionsDB.positions.getCurrentPage(bookId, resourceHref, currentLocator.value.locations.progression!!)?.let {
             it
         }
 
         val highlightLocations = highlight.locator.locations.copy(
-            progression = currentLocator.value?.locations?.progression,
+            progression = currentLocator.value.locations.progression,
             position = currentPage?.toInt()
         )
         val locationText = highlight.locator.text
