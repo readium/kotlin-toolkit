@@ -38,7 +38,6 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.shopgun.android:utils:1.0.9'
 
     if (findProject(':r2-shared')) {
