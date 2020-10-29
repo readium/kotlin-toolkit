@@ -13,7 +13,6 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.MediaOverlayNode
 import org.readium.r2.shared.MediaOverlays
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.shared.normalize
 import org.readium.r2.shared.util.Href
 
 internal object SmilParser {

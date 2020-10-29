@@ -10,7 +10,6 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.normalize
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Href

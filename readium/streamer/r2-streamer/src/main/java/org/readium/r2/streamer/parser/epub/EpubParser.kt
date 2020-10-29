@@ -17,7 +17,6 @@ import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.normalize
 import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
