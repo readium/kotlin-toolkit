@@ -52,7 +52,6 @@ import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.putPublicationFrom
-import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
@@ -890,7 +889,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 userSettings.updateViewCSS(SCROLL_REF)
             }, 500)
         } else {
-            if (publication.cssStyle != ContentLayout.CJK_VERTICAL.cssId) {
+            if (publication.cssStyle != "cjk-vertical") {
                 publication.userSettingsUIPreset.remove(ReadiumCSSName.ref(SCROLL_REF))
             }
 
