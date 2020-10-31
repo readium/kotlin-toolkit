@@ -18,11 +18,11 @@ import org.readium.r2.shared.fetcher.LazyResource
 import org.readium.r2.shared.fetcher.ResourceTry
 import org.readium.r2.shared.fetcher.TransformingResource
 import org.readium.r2.shared.fetcher.mapCatching
-import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layoutOf
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.streamer.parser.epub.ReadiumCssLayout
 import org.readium.r2.streamer.server.Resources
 import java.io.File
 
@@ -63,14 +63,14 @@ internal class HtmlInjector(
         if (endHeadIndex == -1)
             return content
 
-        val contentLayout = publication.contentLayout
+        val layout = ReadiumCssLayout(publication.metadata)
 
         val endIncludes = mutableListOf<String>()
         val beginIncludes = mutableListOf<String>()
         beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\" />")
 
-        beginIncludes.add(getHtmlLink("/assets/readium-css/${contentLayout.readiumCSSPath}ReadiumCSS-before.css"))
-        endIncludes.add(getHtmlLink("/assets/readium-css/${contentLayout.readiumCSSPath}ReadiumCSS-after.css"))
+        beginIncludes.add(getHtmlLink("/assets/readium-css/${layout.readiumCSSPath}ReadiumCSS-before.css"))
+        endIncludes.add(getHtmlLink("/assets/readium-css/${layout.readiumCSSPath}ReadiumCSS-after.css"))
         endIncludes.add(getHtmlScript("/assets/scripts/touchHandling.js"))
         endIncludes.add(getHtmlScript("/assets/scripts/utils.js"))
         endIncludes.add(getHtmlScript("/assets/scripts/crypto-sha256.js"))
@@ -294,13 +294,6 @@ internal class HtmlInjector(
             string = string + " " + property.key + ": " + property.value + ";"
         }
         return string
-    }
-
-    private val ContentLayout.readiumCSSPath: String get() = when(this)  {
-        ContentLayout.LTR -> ""
-        ContentLayout.RTL -> "rtl/"
-        ContentLayout.CJK_VERTICAL -> "cjk-vertical/"
-        ContentLayout.CJK_HORIZONTAL -> "cjk-horizontal/"
     }
 
 }
