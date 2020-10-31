@@ -18,7 +18,6 @@ import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
-import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import java.util.*
@@ -27,9 +26,8 @@ import java.util.*
  * https://readium.org/webpub-manifest/schema/metadata.schema.json
  *
  * @param readingProgression WARNING: This contains the reading progression as declared in the
- *     publication, so it might be [AUTO]. To lay out the content, use
- *     [publication.contentLayout.readingProgression] to get the calculated reading progression from
- *     the declared direction and the language.
+ *     publication, so it might be [AUTO]. To lay out the content, use [effectiveReadingProgression]
+ *     to get the calculated reading progression from the declared direction and the language.
  * @param otherMetadata Additional metadata for extensions, as a JSON dictionary.
  */
 @Parcelize
@@ -105,24 +103,6 @@ data class Metadata(
             "ar", "fa", "he" -> ReadingProgression.RTL
             else -> ReadingProgression.LTR
         }
-    }
-
-    /**
-     * Returns the [ContentLayout] for the default language.
-     */
-    internal val contentLayout: ContentLayout get() = contentLayoutForLanguage(null)
-
-    /**
-     * Returns the [ContentLayout] for the given [language].
-     */
-    internal fun contentLayoutForLanguage(language: String?): ContentLayout {
-        @Suppress("NAME_SHADOWING")
-        val language = language?.ifEmpty { null }
-
-        return ContentLayout.from(
-            language = language ?: languages.firstOrNull() ?: "",
-            readingProgression = readingProgression
-        )
     }
 
     /**

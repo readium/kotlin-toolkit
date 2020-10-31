@@ -213,16 +213,6 @@ class Publication(
     }
 
     /**
-     * Returns the [ContentLayout] for the default language.
-     */
-    val contentLayout: ContentLayout get() = metadata.contentLayout
-
-    /**
-     * Returns the [ContentLayout] for the given [language].
-     */
-    fun contentLayoutForLanguage(language: String?) = metadata.contentLayoutForLanguage(language)
-
-    /**
      * Returns the [links] of the first child [PublicationCollection] with the given role, or an
      * empty list.
      */
@@ -514,5 +504,11 @@ class Publication(
 
     @Deprecated("Use [jsonManifest] instead", ReplaceWith("jsonManifest"))
     fun toJSON() = JSONObject(jsonManifest)
+
+    @Deprecated("Use `metadata.effectiveReadingProgression` instead", ReplaceWith("metadata.effectiveReadingProgression"), level = DeprecationLevel.ERROR)
+    val contentLayout: ReadingProgression get() = metadata.effectiveReadingProgression
+
+    @Deprecated("Use `metadata.effectiveReadingProgression` instead", ReplaceWith("metadata.effectiveReadingProgression"), level = DeprecationLevel.ERROR)
+    fun contentLayoutForLanguage(language: String?) = metadata.effectiveReadingProgression
 
 }

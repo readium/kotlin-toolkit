@@ -6,9 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## Changed
+### Changed
 
 * Upgraded to Kotlin 1.4.10.
+* `ContentLayout` is deprecated, use `publication.metadata.effectiveReadingProgression` to determine the reading
+progression of a publication instead.
 
 
 ## [2.0.0-alpha.2]
