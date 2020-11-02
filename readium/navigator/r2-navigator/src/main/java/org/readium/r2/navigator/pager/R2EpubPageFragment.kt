@@ -135,9 +135,10 @@ class R2EpubPageFragment : Fragment() {
                 super.onPageFinished(view, url)
 
                 val epubNavigator = (webView.navigator as? EpubNavigatorFragment)
-                val currentFragment: R2EpubPageFragment = (epubNavigator?.resourcePager?.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
+                val currentFragment: R2EpubPageFragment? =
+                    (epubNavigator?.resourcePager?.adapter as? R2PagerAdapter)?.getCurrentFragment() as? R2EpubPageFragment
 
-                if (this@R2EpubPageFragment.tag == currentFragment.tag) {
+                if (currentFragment != null && this@R2EpubPageFragment.tag == currentFragment.tag) {
                     var locations = epubNavigator.pendingLocator?.locations
                     epubNavigator.pendingLocator = null
 
