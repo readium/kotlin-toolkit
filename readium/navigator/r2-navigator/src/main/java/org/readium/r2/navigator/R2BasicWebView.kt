@@ -71,6 +71,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         super.onOverScrolled(scrollX, scrollY, clampedX, clampedY)
     }
 
+    override fun onSizeChanged(w: Int, h: Int, ow: Int, oh: Int) {
+        super.onSizeChanged(w, h, ow, oh)
+        onViewportWidthChanged()
+    }
+
     @android.webkit.JavascriptInterface
     open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {
@@ -191,6 +196,13 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 }
             }
         }
+    }
+
+    @android.webkit.JavascriptInterface
+    fun getViewportWidth(): Int = width
+
+    private fun onViewportWidthChanged() {
+        this.evaluateJavascript("onViewportWidthChanged();", null)
     }
 
     @android.webkit.JavascriptInterface

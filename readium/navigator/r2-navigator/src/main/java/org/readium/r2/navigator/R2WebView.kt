@@ -320,7 +320,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
     private fun scrollToItem(item: Int, smoothScroll: Boolean, velocity: Int, post: Boolean) {
 
-        val width = this.computeHorizontalScrollRange() / numPages
+        val width = this.computeHorizontalScrollExtent()
         val destX = (width * item)
         if (smoothScroll) {
             smoothScrollTo(destX, 0, velocity)

@@ -85,8 +85,9 @@ class R2EpubPageFragment : Fragment() {
         var endReached = false
         webView.setOnOverScrolledCallback(object : R2BasicWebView.OnOverScrolledCallback {
             override fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean) {
+                val activity = activity ?: return
                 val metrics = DisplayMetrics()
-                requireActivity().windowManager.defaultDisplay.getMetrics(metrics)
+                activity.windowManager.defaultDisplay.getMetrics(metrics)
 
 
                 val topDecile = webView.contentHeight - 1.15 * metrics.heightPixels
