@@ -95,7 +95,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 if (!this@R2BasicWebView.canScrollHorizontally(1)) {
                     listener.goForward(animated = animated)
                 }
-                this@R2BasicWebView.evaluateJavascript("scrollRight();", null)
+                this@R2BasicWebView.evaluateJavascript("readium.scrollRight(\"${listener.readingProgression.value}\");", null)
             }
         }
     }
@@ -119,7 +119,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 if (!this@R2BasicWebView.canScrollHorizontally(-1)) {
                     listener.goBackward(animated = animated)
                 }
-                this@R2BasicWebView.evaluateJavascript("scrollLeft();", null)
+                this@R2BasicWebView.evaluateJavascript("readium.scrollLeft(\"${listener.readingProgression.value}\");", null)
             }
         }
     }
@@ -206,6 +206,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @android.webkit.JavascriptInterface
+    fun logError(message: String, filename: String, line: Int) {
+        Timber.e("JavaScript error: $filename:$line $message")
+    }
+    @android.webkit.JavascriptInterface
     fun highlightActivated(id: String) {
         uiScope.launch {
             listener.onHighlightActivated(id)
@@ -223,15 +227,15 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     fun Boolean.toInt() = if (this) 1 else 0
 
     fun scrollToStart() {
-        this.evaluateJavascript("scrollToStart();", null)
+        this.evaluateJavascript("readium.scrollToStart();", null)
     }
 
     fun scrollToEnd() {
-        this.evaluateJavascript("scrollToEnd();", null)
+        this.evaluateJavascript("readium.scrollToEnd();", null)
     }
 
     fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("scrollToPosition(\"$progression\", \"${listener.readingProgression.value}\");", null)
+        this.evaluateJavascript("readium.scrollToPosition(\"$progression\", \"${listener.readingProgression.value}\");", null)
     }
 
     fun setScrollMode(scrollMode: Boolean) {
@@ -240,7 +244,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     fun setProperty(key: String, value: String) {
-        this.evaluateJavascript("setProperty(\"$key\", \"$value\");") {
+        this.evaluateJavascript("readium.setProperty(\"$key\", \"$value\");") {
             // Used to redraw highlights when user settings changed.
             listener.onPageLoaded()
         }
