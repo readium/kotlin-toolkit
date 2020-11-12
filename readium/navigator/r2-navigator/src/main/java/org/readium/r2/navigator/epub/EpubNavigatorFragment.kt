@@ -188,11 +188,19 @@ class EpubNavigatorFragment private constructor(
 
         })
 
-        if (initialLocator != null) {
-            go(initialLocator)
+        // Restore the last locator before a configuration change (e.g. screen rotation), or the
+        // initial locator when given.
+        val locator = savedInstanceState?.getParcelable("locator") ?: initialLocator
+        if (locator != null) {
+            go(locator)
         }
 
         return view
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putParcelable("locator", currentLocator.value)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onResume() {
