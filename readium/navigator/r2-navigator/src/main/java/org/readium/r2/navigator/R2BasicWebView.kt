@@ -29,6 +29,7 @@ import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Href
+import timber.log.Timber
 
 
 /**
