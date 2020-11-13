@@ -82,21 +82,22 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         uiScope.launch {
             listener.onScroll()
 
-            if (scrollMode) {
+            fun goRight() {
                 if (listener.readingProgression == ReadingProgression.RTL) {
-                    this@R2BasicWebView.evaluateJavascript("scrollRightRTL();") { result ->
-                        if (result.contains("edge")) {
-                            listener.goBackward(animated = animated)
-                        }
-                    }
+                    listener.goBackward(animated = animated)
                 } else {
                     listener.goForward(animated = animated)
                 }
+            }
+
+            if (scrollMode || !this@R2BasicWebView.canScrollHorizontally(1)) {
+                goRight()
             } else {
-                if (!this@R2BasicWebView.canScrollHorizontally(1)) {
-                    listener.goForward(animated = animated)
+                this@R2BasicWebView.evaluateJavascript("readium.scrollRight();") { success ->
+                    if (success?.toBoolean() == false) {
+                        goRight()
+                    }
                 }
-                this@R2BasicWebView.evaluateJavascript("readium.scrollRight(\"${listener.readingProgression.value}\");", null)
             }
         }
     }
@@ -106,21 +107,22 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         uiScope.launch {
             listener.onScroll()
 
-            if (scrollMode) {
+            fun goLeft() {
                 if (listener.readingProgression == ReadingProgression.RTL) {
-                    this@R2BasicWebView.evaluateJavascript("scrollLeftRTL();") { result ->
-                        if (result.contains("edge")) {
-                            listener.goForward(animated = animated)
-                        }
-                    }
+                    listener.goForward(animated = animated)
                 } else {
                     listener.goBackward(animated = animated)
                 }
+            }
+
+            if (scrollMode || !this@R2BasicWebView.canScrollHorizontally(-1)) {
+                goLeft()
             } else {
-                if (!this@R2BasicWebView.canScrollHorizontally(-1)) {
-                    listener.goBackward(animated = animated)
+                this@R2BasicWebView.evaluateJavascript("readium.scrollLeft();") { success ->
+                    if (success?.toBoolean() == false) {
+                        goLeft()
+                    }
                 }
-                this@R2BasicWebView.evaluateJavascript("readium.scrollLeft(\"${listener.readingProgression.value}\");", null)
             }
         }
     }
@@ -210,6 +212,12 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     fun logError(message: String, filename: String, line: Int) {
         Timber.e("JavaScript error: $filename:$line $message")
     }
+
+    @android.webkit.JavascriptInterface
+    fun log(message: String) {
+        Timber.d("JavaScript: $message")
+    }
+
     @android.webkit.JavascriptInterface
     fun highlightActivated(id: String) {
         uiScope.launch {
@@ -236,7 +244,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("readium.scrollToPosition(\"$progression\", \"${listener.readingProgression.value}\");", null)
+        this.evaluateJavascript("readium.scrollToPosition(\"$progression\");", null)
     }
 
     fun setScrollMode(scrollMode: Boolean) {

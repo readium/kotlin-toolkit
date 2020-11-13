@@ -67,6 +67,10 @@ var readium = (function() {
         return document.documentElement.style.getPropertyValue("--USER__scroll").toString().trim() == 'readium-scroll-on';
     }
 
+    function isRTL() {
+        return document.body.dir.toLowerCase() == 'rtl';
+    }
+
     // Scroll to the given TagId in document and snap.
     function scrollToId(id) {
         var element = document.getElementById(id);
@@ -79,8 +83,8 @@ var readium = (function() {
     }
 
     // Position must be in the range [0 - 1], 0-100%.
-    function scrollToPosition(position, dir) {
-//        console.log("scrollToPosition " + position);
+    function scrollToPosition(position) {
+//        Android.log("scrollToPosition " + position);
         if ((position < 0) || (position > 1)) {
             throw "scrollToPosition() must be given a position from 0.0 to  1.0";
         }
@@ -91,14 +95,14 @@ var readium = (function() {
             // window.scrollTo(0, offset);
         } else {
             var documentWidth = document.scrollingElement.scrollWidth;
-            var factor = (dir == 'rtl') ? -1 : 1;
+            var factor = isRTL() ? -1 : 1;
             var offset = documentWidth * position * factor;
             document.scrollingElement.scrollLeft = snapOffset(offset);
         }
     }
 
     function scrollToStart() {
-//        console.log("scrollToStart");
+//        Android.log("scrollToStart");
         if (!isScrollModeEnabled()) {
             document.scrollingElement.scrollLeft = 0;
         } else {
@@ -108,9 +112,10 @@ var readium = (function() {
     }
 
     function scrollToEnd() {
-//        console.log("scrollToEnd");
+//        Android.log("scrollToEnd");
         if (!isScrollModeEnabled()) {
-            document.scrollingElement.scrollLeft = document.scrollingElement.scrollWidth;
+            var factor = isRTL() ? -1 : 1;
+            document.scrollingElement.scrollLeft = snapOffset(document.scrollingElement.scrollWidth * factor);
         } else {
             document.scrollingElement.scrollTop = document.body.scrollHeight;
             window.scrollTo(0, document.body.scrollHeight);
@@ -118,26 +123,25 @@ var readium = (function() {
     }
 
     // Returns false if the page is already at the left-most scroll offset.
-    function scrollLeft(dir) {
-        var isRTL = (dir == "rtl");
+    function scrollLeft() {
         var documentWidth = document.scrollingElement.scrollWidth;
         var offset = window.scrollX - pageWidth;
-        var minOffset = isRTL ? -(documentWidth - pageWidth) : 0;
+        var minOffset = isRTL() ? -(documentWidth - pageWidth) : 0;
         return scrollToOffset(Math.max(offset, minOffset));
     }
 
     // Returns false if the page is already at the right-most scroll offset.
-    function scrollRight(dir) {
-        var isRTL = (dir == "rtl");
+    function scrollRight() {
         var documentWidth = document.scrollingElement.scrollWidth;
         var offset = window.scrollX + pageWidth;
-        var maxOffset = isRTL ? 0 : (documentWidth - pageWidth);
+        var maxOffset = isRTL() ? 0 : (documentWidth - pageWidth);
         return scrollToOffset(Math.min(offset, maxOffset));
     }
 
     // Scrolls to the given left offset.
     // Returns false if the page scroll position is already close enough to the given offset.
     function scrollToOffset(offset) {
+//        Android.log("scrollToOffset " + offset);
         if (isScrollModeEnabled()) {
             throw "Called scrollToOffset() with scroll mode enabled. This can only be used in paginated mode.";
         }
@@ -151,18 +155,21 @@ var readium = (function() {
 
     // Snap the offset to the screen width (page width).
     function snapOffset(offset) {
-        var value = offset + 1;
+        var value = offset + (isRTL() ? -1 : 1);
         return value - (value % pageWidth);
     }
 
     // Snaps the current offset to the page width.
     function snapCurrentOffset() {
+//        Android.log("snapCurrentOffset");
         if (isScrollModeEnabled()) {
             return;
         }
         var currentOffset = window.scrollX;
         // Adds half a page to make sure we don't snap to the previous page.
-        document.scrollingElement.scrollLeft = snapOffset(currentOffset + (pageWidth / 2));
+        var factor = isRTL() ? -1 : 1;
+        var delta = factor * (pageWidth / 2);
+        document.scrollingElement.scrollLeft = snapOffset(currentOffset + delta);
     }
 
     /// User Settings.
