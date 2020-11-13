@@ -25,7 +25,6 @@ import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.htmlId
-import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -331,7 +330,7 @@ class EpubNavigatorFragment private constructor(
 
                 resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
 
-                if (currentFragment?.activity?.layoutDirectionIsRTL() ?: publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+                if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
                     currentFragment?.webView?.apply {
                         progression = 1.0
@@ -355,7 +354,7 @@ class EpubNavigatorFragment private constructor(
 
                 resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
 
-                if (currentFragment?.activity?.layoutDirectionIsRTL() ?: publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+                if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
                     currentFragment?.webView?.apply {
                         progression = 0.0
