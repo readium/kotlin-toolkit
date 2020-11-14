@@ -41,15 +41,13 @@ import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.extensions.extension
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.File as R2File
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
@@ -64,16 +62,11 @@ import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
 import org.readium.r2.testapp.utils.ContentResolverUtil
 import org.readium.r2.testapp.utils.NavigatorContract
-import org.readium.r2.testapp.utils.extensions.authorName
-import org.readium.r2.testapp.utils.extensions.blockingProgressDialog
-import org.readium.r2.testapp.utils.extensions.download
-import org.readium.r2.testapp.utils.extensions.moveTo
-import org.readium.r2.testapp.utils.extensions.toFile
+import org.readium.r2.testapp.utils.extensions.*
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.lang.Exception
 import java.net.ServerSocket
 import java.net.URL
 import java.util.*
@@ -81,6 +74,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import org.readium.r2.shared.util.File as R2File
 
 var activitiesLaunched: AtomicInteger = AtomicInteger(0)
 
@@ -387,13 +381,13 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         val foreground = progress != null
 
         val publicationFile =
-            if (sourceFile.format() != Format.LCP_LICENSE)
+            if (sourceFile.mediaType() != MediaType.LCP_LICENSE_DOCUMENT)
                 sourceFile
             else {
                 fulfill(sourceFile.file).fold(
                     {
-                        val format = Format.of(fileExtension = File(it.suggestedFilename).extension)
-                        R2File(it.localFile.path, format = format)
+                        val mediaType = MediaType.of(fileExtension = File(it.suggestedFilename).extension)
+                        R2File(it.localFile.path, mediaType = mediaType)
                     },
                     {
                         tryOrNull { sourceFile.file.delete() }
@@ -405,11 +399,11 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 )
             }
 
-        val format = publicationFile.format()
-        val fileName = "${UUID.randomUUID()}.${format?.fileExtension}"
+        val mediaType = publicationFile.mediaType()
+        val fileName = "${UUID.randomUUID()}.${mediaType.fileExtension}"
         val libraryFile = R2File(
             R2DIRECTORY + fileName,
-            format = publicationFile.format()
+            mediaType = publicationFile.mediaType()
         )
 
         try {
@@ -423,11 +417,10 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         }
 
         val extension = libraryFile.let {
-            it.format()?.fileExtension
-                ?: it.file.extension
+            it.mediaType().fileExtension ?: it.file.extension
         }
 
-        val isRwpm = libraryFile.format()?.mediaType?.isRwpm ?: false
+        val isRwpm = libraryFile.mediaType().isRwpm
 
         val bddHref =
             if (!isRwpm)
@@ -508,8 +501,8 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
 
     private suspend fun Uri.copyToTempFile(): R2File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
-        val format = Format.ofUri(this, contentResolver)
-        val file = R2File("$R2DIRECTORY$filename.${format?.fileExtension}", format = format)
+        val mediaType = MediaType.ofUri(this, contentResolver)
+        val file = R2File("$R2DIRECTORY$filename.${mediaType?.fileExtension ?: "tmp"}", mediaType = mediaType)
         ContentResolverUtil.getContentInputStream(this@LibraryActivity, this, file.path)
         return file
     }
@@ -576,9 +569,9 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             val book = books[position]
 
             val remoteUrl = tryOrNull { URL(book.href).copyToTempFile() }
-            val format = Format.of(fileExtension = book.ext.removePrefix("."))
+            val mediaType = MediaType.of(fileExtension = book.ext.removePrefix("."))
             val file = remoteUrl // remote file
-                ?: R2File(book.href, format = format) // local file
+                ?: R2File(book.href, mediaType = mediaType) // local file
 
             streamer.open(file, allowUserInteraction = true, sender = this@LibraryActivity)
                 .onFailure {
@@ -599,7 +592,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                         navigatorLauncher.launch(
                             NavigatorContract.Input(
                                 file = file,
-                                format = format,
+                                mediaType = mediaType,
                                 publication = it,
                                 bookId = book.id,
                                 initialLocator = book.id?.let { id -> booksDB.books.currentLocator(id) },

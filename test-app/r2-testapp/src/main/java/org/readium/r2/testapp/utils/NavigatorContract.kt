@@ -17,10 +17,10 @@ import androidx.activity.result.contract.ActivityResultContract
 import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.extensions.putPublication
-import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.File
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.audiobook.AudiobookActivity
 import org.readium.r2.testapp.comic.ComicActivity
 import org.readium.r2.testapp.comic.DiViNaActivity
@@ -31,7 +31,7 @@ class NavigatorContract : ActivityResultContract<NavigatorContract.Input, Naviga
 
     data class Input(
         val file: File,
-        val format: Format?,
+        val mediaType: MediaType?,
         val publication: Publication,
         val bookId: Long?,
         val initialLocator: Locator? = null,
@@ -46,13 +46,13 @@ class NavigatorContract : ActivityResultContract<NavigatorContract.Input, Naviga
     )
 
     override fun createIntent(context: Context, input: Input): Intent {
-        val intent = Intent(context, when (input.format) {
-            Format.EPUB -> EpubActivity::class.java
-            Format.PDF, Format.LCP_PROTECTED_PDF -> PdfActivity::class.java
-            Format.READIUM_AUDIOBOOK, Format.READIUM_AUDIOBOOK_MANIFEST, Format.LCP_PROTECTED_AUDIOBOOK -> AudiobookActivity::class.java
-            Format.CBZ -> ComicActivity::class.java
-            Format.PDF -> DiViNaActivity::class.java
-            else -> throw IllegalArgumentException("Unknown [format]")
+        val intent = Intent(context, when (input.mediaType) {
+            MediaType.EPUB -> EpubActivity::class.java
+            MediaType.PDF, MediaType.LCP_PROTECTED_PDF -> PdfActivity::class.java
+            MediaType.READIUM_AUDIOBOOK, MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK -> AudiobookActivity::class.java
+            MediaType.CBZ -> ComicActivity::class.java
+            MediaType.PDF -> DiViNaActivity::class.java
+            else -> throw IllegalArgumentException("Unknown [mediaType]")
         })
 
         return intent.apply {
