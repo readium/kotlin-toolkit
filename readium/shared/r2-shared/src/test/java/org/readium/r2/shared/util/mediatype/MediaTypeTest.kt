@@ -116,6 +116,13 @@ class MediaTypeTest {
     }
 
     @Test
+    fun `canonicalize media type`() {
+        assertEquals(MediaType.parse("text/html", fileExtension = "html")!!, MediaType.parse("text/html;charset=utf-8")!!.canonicalMediaType)
+        assertEquals(MediaType.parse("application/atom+xml;profile=opds-catalog")!!, MediaType.parse("application/atom+xml;profile=opds-catalog;charset=utf-8")!!.canonicalMediaType)
+        assertEquals(MediaType.parse("application/unknown;charset=utf-8")!!, MediaType.parse("application/unknown;charset=utf-8")!!.canonicalMediaType)
+    }
+
+    @Test
     fun equality() {
         assertEquals(MediaType.parse("application/atom+xml")!!, MediaType.parse("application/atom+xml")!!)
         assertEquals(MediaType.parse("application/atom+xml;profile=opds-catalog")!!, MediaType.parse("application/atom+xml;profile=opds-catalog")!!)

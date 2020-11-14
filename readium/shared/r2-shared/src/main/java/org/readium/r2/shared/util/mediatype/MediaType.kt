@@ -114,6 +114,18 @@ class MediaType private constructor(
     val charset: Charset? get() =
         parameters["charset"]?.let { Charset.forName(it) }
 
+    /**
+     * Returns the canonical version of this media type, if it is known.
+     *
+     * This is useful to find the name and file extension of a known media type, or to get the
+     * canonical media type from an alias. For example, `application/x-cbz` is an alias of the
+     * canonical `application/vnd.comicbook+zip`.
+     *
+     * Non-significant parameters are also discarded.
+     */
+    val canonicalMediaType: MediaType get() =
+        of(mediaType = toString()) ?: this
+
     /** The string representation of this media type. */
     override fun toString(): String {
         var params = parameters.map { "${it.key}=${it.value}" }
