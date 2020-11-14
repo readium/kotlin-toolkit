@@ -29,11 +29,3 @@ fun Request.promise(): Promise<Triple<Request, Response, ByteArray>, Exception> 
     }
     return deferred.promise
 }
-
-val Response.contentTypeEncoding: String
-    get() = contentTypeEncoding()
-
-fun Response.contentTypeEncoding(default: String = "utf-8"): String {
-    val contentType: String = headers["Content-Type"].first()
-    return contentType.substringAfterLast("charset=", default).substringAfter(' ', default)
-}

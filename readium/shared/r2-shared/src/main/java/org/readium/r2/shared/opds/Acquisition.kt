@@ -18,9 +18,7 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.parseObjects
 import org.readium.r2.shared.extensions.putIfNotEmpty
-import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.util.logging.JsonWarning
-import org.readium.r2.shared.util.logging.Warning
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.logging.log
 
 /**
@@ -35,8 +33,8 @@ data class Acquisition(
 ) : JSONable, Parcelable {
 
     /** Media type of the resource to acquire. */
-    val mediaType: MediaType? get() =
-        MediaType.parse(type)
+    val mediaType: MediaType get() =
+        MediaType.parse(type) ?: MediaType.BINARY
 
     /**
      * Serializes an [Acquisition] to its JSON representation.
