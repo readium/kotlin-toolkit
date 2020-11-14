@@ -12,14 +12,13 @@ package org.readium.r2.streamer.parser.audio
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.File
-import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
@@ -66,7 +65,7 @@ class AudioParser :  PublicationParser {
     }
 
     private suspend fun accepts(file: File, fetcher: Fetcher): Boolean {
-        if (file.format() == Format.ZAB)
+        if (file.mediaType() == MediaType.ZAB)
             return true
 
         val allowedExtensions = audioExtensions +

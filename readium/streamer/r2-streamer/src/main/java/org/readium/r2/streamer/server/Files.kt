@@ -12,8 +12,7 @@ package org.readium.r2.streamer.server
 import android.net.Uri
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.extensions.isParentOf
-import org.readium.r2.shared.format.Format
-import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.mediatype.MediaType
 import java.io.File
 
 /**
@@ -55,7 +54,7 @@ internal class Files(
         val file: File,
         private val fallbackMediaType: MediaType
     ) {
-        val mediaType: MediaType get() = runBlocking { Format.ofFile(file)?.mediaType ?: fallbackMediaType }
+        val mediaType: MediaType get() = runBlocking { MediaType.ofFile(file) ?: fallbackMediaType }
     }
 
 }

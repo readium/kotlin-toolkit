@@ -11,24 +11,20 @@ package org.readium.r2.streamer.parser.image
 
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.util.File
-import org.readium.r2.shared.format.Format
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.LocalizedString
-import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Metadata
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
+import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
 import org.readium.r2.streamer.extensions.toTitle
-import java.lang.Exception
 
 /**
- * Parses an image–based Publication from an unstructured archive format containing bitmap files, such as CBZ or a simple ZIP.
+ * Parses an image–based Publication from an unstructured archive format containing bitmap files,
+ * such as CBZ or a simple ZIP.
  *
  * It can also work for a standalone bitmap file.
  */
@@ -44,7 +40,7 @@ class ImageParser : PublicationParser {
             return null
 
         val readingOrder = fetcher.links()
-            .filter { !File(it.href).isHiddenOrThumbs && it.mediaType?.isBitmap == true }
+            .filter { !File(it.href).isHiddenOrThumbs && it.mediaType.isBitmap }
             .sortedBy(Link::href)
             .toMutableList()
 
@@ -75,14 +71,14 @@ class ImageParser : PublicationParser {
     }
 
     private suspend fun accepts(file: File, fetcher: Fetcher): Boolean {
-        if (file.format() == Format.CBZ)
+        if (file.mediaType() == MediaType.CBZ)
             return true
 
         val allowedExtensions = listOf("acbf", "txt", "xml")
 
         if (fetcher.links()
                 .filterNot { File(it.href).isHiddenOrThumbs }
-                .all { it.mediaType?.isBitmap == true || File(it.href).lowercasedExtension in allowedExtensions })
+                .all { it.mediaType.isBitmap || File(it.href).lowercasedExtension in allowedExtensions })
             return true
 
         return false

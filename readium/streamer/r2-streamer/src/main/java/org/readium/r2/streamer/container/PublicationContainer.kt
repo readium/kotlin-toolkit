@@ -13,11 +13,9 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceInputStream
-import org.readium.r2.shared.fetcher.ResourceTry
-import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import java.io.InputStream

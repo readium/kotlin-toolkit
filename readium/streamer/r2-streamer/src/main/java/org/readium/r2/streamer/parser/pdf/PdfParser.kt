@@ -11,23 +11,21 @@ package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.FileFetcher
-import org.readium.r2.shared.util.File
-import org.readium.r2.shared.format.Format
-import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCoverService
+import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.streamer.DefaultPdfDocumentFactory
-import org.readium.r2.streamer.container.PublicationContainer
-import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.PublicationParser
+import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.extensions.toTitle
-import java.lang.Exception
+import org.readium.r2.streamer.parser.PubBox
 
 /**
  * Parses a PDF file into a Readium [Publication].
@@ -42,7 +40,7 @@ class PdfParser(
         _parse(file, fetcher, file.toTitle())
 
     suspend fun _parse(file: File, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
-        if (file.format() != Format.PDF)
+        if (file.mediaType() != MediaType.PDF)
             return null
 
         val fileHref = fetcher.links().firstOrNull { it.mediaType == MediaType.PDF }?.href

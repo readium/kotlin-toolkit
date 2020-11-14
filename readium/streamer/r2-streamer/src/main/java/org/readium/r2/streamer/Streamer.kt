@@ -13,13 +13,13 @@ import android.content.Context
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.File
-import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.extensions.fromFile
 import org.readium.r2.streamer.parser.audio.AudioParser
@@ -144,7 +144,7 @@ class Streamer constructor(
         val publication = builder
             .apply(onCreatePublication)
             .build()
-            .apply { addLegacyProperties(file.format()) }
+            .apply { addLegacyProperties(file.mediaType()) }
 
         Try.success(publication)
 
@@ -173,20 +173,20 @@ class Streamer constructor(
         return null
     }
 
-    private fun Publication.addLegacyProperties(format: Format?) {
-        type = format.toPublicationType()
+    private fun Publication.addLegacyProperties(mediaType: MediaType?) {
+        type = mediaType.toPublicationType()
 
-        if (format == Format.EPUB)
+        if (mediaType == MediaType.EPUB)
             setLayoutStyle()
     }
 }
 
-internal fun Format?.toPublicationType(): Publication.TYPE =
+internal fun MediaType?.toPublicationType(): Publication.TYPE =
     when (this) {
-        Format.READIUM_AUDIOBOOK, Format.READIUM_AUDIOBOOK_MANIFEST, Format.LCP_PROTECTED_AUDIOBOOK -> Publication.TYPE.AUDIO
-        Format.DIVINA, Format.DIVINA_MANIFEST -> Publication.TYPE.DiViNa
-        Format.CBZ -> Publication.TYPE.CBZ
-        Format.EPUB -> Publication.TYPE.EPUB
+        MediaType.READIUM_AUDIOBOOK, MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK -> Publication.TYPE.AUDIO
+        MediaType.DIVINA, MediaType.DIVINA_MANIFEST -> Publication.TYPE.DiViNa
+        MediaType.CBZ -> Publication.TYPE.CBZ
+        MediaType.EPUB -> Publication.TYPE.EPUB
         else -> Publication.TYPE.WEBPUB
     }
 

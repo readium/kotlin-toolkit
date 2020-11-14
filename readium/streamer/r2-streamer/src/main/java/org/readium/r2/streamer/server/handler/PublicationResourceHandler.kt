@@ -20,11 +20,10 @@ import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceInputStream
-import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.server.ServingFetcher
 import timber.log.Timber
-import java.io.IOException
 import java.io.InputStream
 
 
@@ -70,7 +69,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         // In the latter case, NanoHTTPd will close it at the end of the transmission.
 
         var rangeRequest: String? = session.headers["range"]
-        val mimeType = (resource.link().mediaType ?: MediaType.BINARY).toString()
+        val mimeType = resource.link().mediaType.toString()
 
         // Calculate etag
         val etag = Integer.toHexString(resource.hashCode()) //FIXME: Is this working?
