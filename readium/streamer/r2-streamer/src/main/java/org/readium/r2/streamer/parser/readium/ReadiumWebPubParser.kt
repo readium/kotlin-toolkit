@@ -16,15 +16,14 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.publication.services.locatorServiceFactory
 import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.shared.util.File
-
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.DefaultPdfDocumentFactory
 import org.readium.r2.streamer.PublicationParser
@@ -79,12 +78,6 @@ class ReadiumWebPubParser(private val pdfFactory: PdfDocumentFactory? = null) : 
         val readingOrder = manifest.readingOrder
         if (file.mediaType() == MediaType.LCP_PROTECTED_PDF && (readingOrder.isEmpty() || !readingOrder.all { it.mediaType.matches(MediaType.PDF) })) {
             throw Exception("Invalid LCP Protected PDF.")
-        }
-
-        val locatorService = when (file.mediaType()) {
-            MediaType.READIUM_AUDIOBOOK, MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK ->
-                AudioLocatorService.createFactory()
-            else -> null
         }
 
         val servicesBuilder = Publication.ServicesBuilder().apply {
