@@ -11,9 +11,11 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.asset.FileAsset
+import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
-import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.Try
+import timber.log.Timber
 
 internal class LcpContentProtection(
     private val lcpService: LcpService,
@@ -21,13 +23,18 @@ internal class LcpContentProtection(
 ) : ContentProtection {
 
     override suspend fun open(
-        file: File,
+        asset: PublicationAsset,
         fetcher: Fetcher,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.ProtectedFile, Publication.OpeningException>? {
-        if (!lcpService.isLcpProtected(file.file)) {
+    ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? {
+        if (asset !is FileAsset) {
+            Timber.e("Only `FileAsset` is supported with the `LcpContentProtection`. Make sure you are trying to open a package from the file system.")
+            return Try.failure(Publication.OpeningException.UnsupportedFormat)
+        }
+
+        if (!lcpService.isLcpProtected(asset.file)) {
             return null
         }
 
@@ -35,13 +42,13 @@ internal class LcpContentProtection(
             ?: this.authentication
 
         val license = lcpService
-            .retrieveLicense(file.file,  authentication, allowUserInteraction, sender)
+            .retrieveLicense(asset.file,  authentication, allowUserInteraction, sender)
 
         val serviceFactory = LcpContentProtectionService
             .createFactory(license?.getOrNull(), license?.exceptionOrNull())
 
-        val protectedFile = ContentProtection.ProtectedFile(
-            file = file,
+        val protectedFile = ContentProtection.ProtectedAsset(
+            asset = asset,
             fetcher = TransformingFetcher(fetcher, LcpDecryptor(license?.getOrNull())::transform),
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory = serviceFactory
