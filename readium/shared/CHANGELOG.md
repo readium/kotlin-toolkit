@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `PublicationAsset` is a new interface which can be used to open a publication from various medium, such as a file, a remote URL or a custom source.
+  * `File` was replaced by `FileAsset`, which implements `PublicationAsset`.
+
 ### Changed
 
 * Upgraded to Kotlin 1.4.10.
