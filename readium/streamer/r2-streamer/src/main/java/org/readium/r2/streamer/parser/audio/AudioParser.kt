@@ -9,21 +9,16 @@
 
 package org.readium.r2.streamer.parser.audio
 
-import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.LocalizedString
-import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Metadata
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.File
+import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
-import org.readium.r2.streamer.extensions.toTitle
+import java.io.File
 
 /**
  * Parses an audiobook Publication from an unstructured archive format containing audio files,
@@ -33,9 +28,9 @@ import org.readium.r2.streamer.extensions.toTitle
  */
 class AudioParser :  PublicationParser {
 
-    override suspend fun parse(file: File, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? {
+    override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? {
 
-        if (!accepts(file, fetcher))
+        if (!accepts(asset, fetcher))
             return null
 
         val readingOrder = fetcher.links()
@@ -46,14 +41,10 @@ class AudioParser :  PublicationParser {
         if (readingOrder.isEmpty())
             throw Exception("No audio file found in the publication.")
 
-        val title = fetcher.guessTitle()
-            ?: file.toTitle()
+        val title = fetcher.guessTitle() ?: asset.name
 
         val manifest = Manifest(
-            metadata = Metadata(
-                identifier = file.file.md5(),
-                localizedTitle = LocalizedString(title)
-            ),
+            metadata = Metadata(localizedTitle = LocalizedString(title)),
             readingOrder = readingOrder
         )
 
@@ -66,8 +57,8 @@ class AudioParser :  PublicationParser {
         )
     }
 
-    private suspend fun accepts(file: File, fetcher: Fetcher): Boolean {
-        if (file.mediaType() == MediaType.ZAB)
+    private suspend fun accepts(asset: PublicationAsset, fetcher: Fetcher): Boolean {
+        if (asset.mediaType() == MediaType.ZAB)
             return true
 
         val allowedExtensions = audioExtensions +

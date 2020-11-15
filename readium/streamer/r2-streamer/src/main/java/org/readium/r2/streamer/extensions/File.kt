@@ -9,14 +9,11 @@
 
 package org.readium.r2.streamer.extensions
 
-import org.readium.r2.shared.util.File
+import java.io.File
 import java.util.Locale
 
-internal fun File.toTitle(): String =
-    file.nameWithoutExtension.replace("_", " ")
-
 internal val File.lowercasedExtension: String
-    get() = file.extension.toLowerCase(Locale.getDefault())
+    get() = extension.toLowerCase(Locale.getDefault())
 
 internal val File.isHiddenOrThumbs: Boolean
     get() = name.let { it.startsWith(".") || it == "Thumbs.db" }
@@ -26,6 +23,6 @@ internal val File.isHiddenOrThumbs: Boolean
  * regardless of whether it is a directory or a file.
  */
 internal val File.firstComponent: File
-    get() = file.parent.takeUnless { it == "/" }
+    get() = parent.takeUnless { it == "/" }
         ?.let { File(it).firstComponent }
         ?: this

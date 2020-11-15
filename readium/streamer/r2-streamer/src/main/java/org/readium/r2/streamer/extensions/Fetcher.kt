@@ -56,24 +56,6 @@ internal suspend fun Fetcher.Companion.fromArchiveOrDirectory(
     }
 }
 
-/** Creates a [Fetcher] from either a file or an exploded directory.
- *
- * Can throw SecurityException or FileNotFoundException.
- */
-internal suspend fun Fetcher.Companion.fromFile(
-    file: File,
-    archiveFactory: ArchiveFactory = DefaultArchiveFactory()
-): Fetcher =
-    when {
-        file.isDirectory ->
-            FileFetcher(href = "/", file = file)
-        file.exists() ->
-            ArchiveFetcher.fromPath(file.path, archiveFactory)
-                ?: FileFetcher(href = "/${file.name}", file = file)
-        else ->
-            throw FileNotFoundException(file.path)
-    }
-
 internal suspend fun Fetcher.guessTitle(): String? {
     val firstLink = links().firstOrNull() ?: return null
     val commonFirstComponent = links().hrefCommonFirstComponent() ?: return null
@@ -81,5 +63,5 @@ internal suspend fun Fetcher.guessTitle(): String? {
     if (commonFirstComponent.name == firstLink.href.removePrefix("/"))
        return null
 
-    return commonFirstComponent.toTitle()
+    return commonFirstComponent.name
 }

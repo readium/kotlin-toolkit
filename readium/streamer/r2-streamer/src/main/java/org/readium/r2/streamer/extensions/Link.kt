@@ -9,8 +9,8 @@
 
 package org.readium.r2.streamer.extensions
 
-import org.readium.r2.shared.util.File
 import org.readium.r2.shared.publication.Link
+import java.io.File
 
 
 /** Returns a [File] to the directory containing all links, if there is such a directory. */

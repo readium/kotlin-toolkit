@@ -10,7 +10,7 @@
 package org.readium.r2.streamer.extensions
 
 import org.junit.Test
-import org.readium.r2.shared.util.File
+import java.io.File
 import kotlin.test.assertEquals
 
 class FileTest {

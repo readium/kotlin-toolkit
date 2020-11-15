@@ -9,18 +9,17 @@
 
 package org.readium.r2.streamer.parser.image
 
-import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
-import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
-import org.readium.r2.streamer.extensions.toTitle
+import java.io.File
 
 /**
  * Parses an image–based Publication from an unstructured archive format containing bitmap files,
@@ -31,12 +30,12 @@ import org.readium.r2.streamer.extensions.toTitle
 class ImageParser : PublicationParser {
 
     override suspend fun parse(
-        file: File,
+        asset: PublicationAsset,
         fetcher: Fetcher,
         warnings: WarningLogger?
     ): Publication.Builder? {
 
-        if (!accepts(file, fetcher))
+        if (!accepts(asset, fetcher))
             return null
 
         val readingOrder = fetcher.links()
@@ -47,17 +46,13 @@ class ImageParser : PublicationParser {
         if (readingOrder.isEmpty())
             throw Exception("No bitmap found in the publication.")
 
-        val title = fetcher.guessTitle()
-            ?: file.toTitle()
+        val title = fetcher.guessTitle() ?: asset.name
 
         // First valid resource is the cover.
         readingOrder[0] = readingOrder[0].copy(rels = setOf("cover"))
 
         val manifest = Manifest(
-            metadata = Metadata(
-                identifier = file.file.md5(),
-                localizedTitle = LocalizedString(title)
-            ),
+            metadata = Metadata(localizedTitle = LocalizedString(title)),
             readingOrder = readingOrder
         )
 
@@ -70,8 +65,8 @@ class ImageParser : PublicationParser {
         )
     }
 
-    private suspend fun accepts(file: File, fetcher: Fetcher): Boolean {
-        if (file.mediaType() == MediaType.CBZ)
+    private suspend fun accepts(asset: PublicationAsset, fetcher: Fetcher): Boolean {
+        if (asset.mediaType() == MediaType.CBZ)
             return true
 
         val allowedExtensions = listOf("acbf", "txt", "xml")
