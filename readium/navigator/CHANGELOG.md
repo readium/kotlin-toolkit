@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## Changed
+
+* Upgraded to Kotlin 1.4.10.
+
 
 ## [2.0.0-alpha.2]
 
