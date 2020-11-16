@@ -151,7 +151,7 @@ class ImageNavigatorFragment private constructor(
     }
 
     override val readingProgression: ReadingProgression
-        get() = publication.contentLayout.readingProgression
+        get() = publication.metadata.effectiveReadingProgression
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)

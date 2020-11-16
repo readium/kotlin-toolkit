@@ -149,7 +149,7 @@ class EpubNavigatorFragment private constructor(
         }
         resourcePager.adapter = adapter
 
-        resourcePager.direction = publication.contentLayout.readingProgression
+        resourcePager.direction = publication.metadata.effectiveReadingProgression
 
         if (publication.cssStyle == ReadingProgression.RTL.value) {
             resourcePager.direction = ReadingProgression.RTL
@@ -333,7 +333,7 @@ class EpubNavigatorFragment private constructor(
 
                 resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
 
-                if (currentFragment?.activity?.layoutDirectionIsRTL() ?: publication.contentLayout.readingProgression == ReadingProgression.RTL) {
+                if (currentFragment?.activity?.layoutDirectionIsRTL() ?: publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
                     currentFragment?.webView?.apply {
                         progression = 1.0
@@ -357,7 +357,7 @@ class EpubNavigatorFragment private constructor(
 
                 resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
 
-                if (currentFragment?.activity?.layoutDirectionIsRTL() ?: publication.contentLayout.readingProgression == ReadingProgression.RTL) {
+                if (currentFragment?.activity?.layoutDirectionIsRTL() ?: publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
                     currentFragment?.webView?.apply {
                         progression = 0.0
@@ -382,7 +382,7 @@ class EpubNavigatorFragment private constructor(
         r2PagerAdapter.mFragments.get(r2PagerAdapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
 
     override val readingProgression: ReadingProgression
-        get() = publication.contentLayout.readingProgression
+        get() = publication.metadata.effectiveReadingProgression
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(initialLocator ?: publication.readingOrder.first().toLocator())
