@@ -12,17 +12,18 @@ package org.readium.r2.testapp.utils.extensions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.util.File
+import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
 
-suspend fun URL.download(path: String): Boolean = tryOr(false) {
+suspend fun URL.download(path: String): File? = tryOr(null) {
+    val file = File(path)
     withContext(Dispatchers.IO) {
         openStream().use { input ->
-            FileOutputStream(File(path).file).use { output ->
+            FileOutputStream(file).use { output ->
                 input.copyTo(output)
             }
         }
     }
-    true
+    file
 }

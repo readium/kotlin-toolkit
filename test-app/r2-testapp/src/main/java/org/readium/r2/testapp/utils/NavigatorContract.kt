@@ -19,13 +19,13 @@ import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.audiobook.AudiobookActivity
 import org.readium.r2.testapp.comic.ComicActivity
 import org.readium.r2.testapp.comic.DiViNaActivity
 import org.readium.r2.testapp.epub.EpubActivity
 import org.readium.r2.testapp.pdf.PdfActivity
+import java.io.File
 
 class NavigatorContract : ActivityResultContract<NavigatorContract.Input, NavigatorContract.Output>() {
 

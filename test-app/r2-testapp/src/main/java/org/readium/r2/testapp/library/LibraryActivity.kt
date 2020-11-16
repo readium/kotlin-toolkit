@@ -39,10 +39,13 @@ import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.extensions.extension
+import org.readium.r2.shared.extensions.mediaType
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.asset.FileAsset
+import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
@@ -74,7 +77,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import org.readium.r2.shared.util.File as R2File
 
 var activitiesLaunched: AtomicInteger = AtomicInteger(0)
 
@@ -151,7 +153,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             tryOrNull { pubData.publication.close() }
             Timber.d("Publication closed")
             if (pubData.deleteOnResult)
-                tryOrNull { pubData.file.file.delete() }
+                tryOrNull { pubData.file.delete() }
         }
 
         intent.data?.let { importPublicationFromUri(it) }
@@ -377,20 +379,21 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         }
     }
 
-    private suspend fun importPublication(sourceFile: R2File, sourceUrl: String? = null, progress: ProgressDialog? = null) {
+    private suspend fun importPublication(sourceFile: File, sourceUrl: String? = null, progress: ProgressDialog? = null) {
         val foreground = progress != null
+        val sourceMediaType = sourceFile.mediaType()
 
-        val publicationFile =
-            if (sourceFile.mediaType() != MediaType.LCP_LICENSE_DOCUMENT)
-                sourceFile
+        val publicationAsset: FileAsset =
+            if (sourceMediaType != MediaType.LCP_LICENSE_DOCUMENT)
+                FileAsset(sourceFile, sourceMediaType)
             else {
-                fulfill(sourceFile.file).fold(
+                fulfill(sourceFile).fold(
                     {
                         val mediaType = MediaType.of(fileExtension = File(it.suggestedFilename).extension)
-                        R2File(it.localFile.path, mediaType = mediaType)
+                        FileAsset(it.localFile, mediaType)
                     },
                     {
-                        tryOrNull { sourceFile.file.delete() }
+                        tryOrNull { sourceFile.delete() }
                         Timber.d(it)
                         progress?.dismiss()
                         if (foreground) catalogView.longSnackbar("fulfillment error: ${it.message}")
@@ -399,32 +402,29 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                 )
             }
 
-        val mediaType = publicationFile.mediaType()
+        val mediaType = publicationAsset.mediaType()
         val fileName = "${UUID.randomUUID()}.${mediaType.fileExtension}"
-        val libraryFile = R2File(
-            R2DIRECTORY + fileName,
-            mediaType = publicationFile.mediaType()
-        )
+        val libraryAsset = FileAsset(File(R2DIRECTORY + fileName), mediaType)
 
         try {
-            publicationFile.file.moveTo(libraryFile.file)
+            publicationAsset.file.moveTo(libraryAsset.file)
         } catch (e: Exception) {
             Timber.d(e)
-            tryOrNull { publicationFile.file.delete() }
+            tryOrNull { publicationAsset.file.delete() }
             progress?.dismiss()
             if (foreground) catalogView.longSnackbar("unable to move publication into the library")
             return
         }
 
-        val extension = libraryFile.let {
+        val extension = libraryAsset.let {
             it.mediaType().fileExtension ?: it.file.extension
         }
 
-        val isRwpm = libraryFile.mediaType().isRwpm
+        val isRwpm = libraryAsset.mediaType().isRwpm
 
         val bddHref =
             if (!isRwpm)
-                libraryFile.path
+                libraryAsset.file.path
             else
                 sourceUrl ?: run {
                     Timber.e("Trying to add a RWPM to the database from a file without sourceUrl.")
@@ -432,7 +432,7 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                     return
                 }
 
-        streamer.open(libraryFile, allowUserInteraction = false, sender = this@LibraryActivity)
+        streamer.open(libraryAsset, allowUserInteraction = false, sender = this@LibraryActivity)
             .onSuccess {
                 addPublicationToDatabase(bddHref, extension, it).let {success ->
                     progress?.dismiss()
@@ -446,11 +446,11 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                     else
                         Timber.d(msg)
                     if (success && isRwpm)
-                        tryOrNull { libraryFile.file.delete() }
+                        tryOrNull { libraryAsset.file.delete() }
                 }
             }
             .onFailure {
-                tryOrNull { libraryFile.file.delete() }
+                tryOrNull { libraryAsset.file.delete() }
                 Timber.d(it)
                 progress?.dismiss()
                 if (foreground) presentOpeningException(it)
@@ -491,25 +491,23 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             false
     }
 
-    private suspend fun URL.copyToTempFile(): R2File? = tryOrNull {
+    private suspend fun URL.copyToTempFile(): File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
-        val file = File("$R2DIRECTORY$filename.$extension")
-
-        if (download(file.path)) R2File(file.path)
-        else null
+        val path = "$R2DIRECTORY$filename.$extension"
+        download(path)
     }
 
-    private suspend fun Uri.copyToTempFile(): R2File? = tryOrNull {
+    private suspend fun Uri.copyToTempFile(): File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
         val mediaType = MediaType.ofUri(this, contentResolver)
-        val file = R2File("$R2DIRECTORY$filename.${mediaType?.fileExtension ?: "tmp"}", mediaType = mediaType)
-        ContentResolverUtil.getContentInputStream(this@LibraryActivity, this, file.path)
-        return file
+        val path = "$R2DIRECTORY$filename.${mediaType?.fileExtension ?: "tmp"}"
+        ContentResolverUtil.getContentInputStream(this@LibraryActivity, this, path)
+        return File(path)
     }
 
-    private suspend fun InputStream.copyToTempFile(): R2File? = tryOrNull {
+    private suspend fun InputStream.copyToTempFile(): File? = tryOrNull {
         val filename = UUID.randomUUID().toString()
-        R2File(R2DIRECTORY + filename)
+        File(R2DIRECTORY + filename)
             .also { toFile(it.path) }
     }
 
@@ -568,12 +566,12 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             val booksDB = BooksDatabase(this@LibraryActivity)
             val book = books[position]
 
-            val remoteUrl = tryOrNull { URL(book.href).copyToTempFile() }
+            val remoteAsset: FileAsset? = tryOrNull { URL(book.href).copyToTempFile()?.let { FileAsset(it) } }
             val mediaType = MediaType.of(fileExtension = book.ext.removePrefix("."))
-            val file = remoteUrl // remote file
-                ?: R2File(book.href, mediaType = mediaType) // local file
+            val asset = remoteAsset // remote file
+                ?: FileAsset(File(book.href), mediaType = mediaType) // local file
 
-            streamer.open(file, allowUserInteraction = true, sender = this@LibraryActivity)
+            streamer.open(asset, allowUserInteraction = true, sender = this@LibraryActivity)
                 .onFailure {
                     Timber.d(it)
                     progress.dismiss()
@@ -587,17 +585,17 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
                             catalogView.longSnackbar(error.getUserMessage(this@LibraryActivity))
                         }
                     } else {
-                        prepareToServe(it, file)
+                        prepareToServe(it, asset)
                         progress.dismiss()
                         navigatorLauncher.launch(
                             NavigatorContract.Input(
-                                file = file,
+                                file = asset.file,
                                 mediaType = mediaType,
                                 publication = it,
                                 bookId = book.id,
                                 initialLocator = book.id?.let { id -> booksDB.books.currentLocator(id) },
-                                deleteOnResult = remoteUrl != null,
-                                baseUrl = Publication.localBaseUrlOf(file.name, localPort)
+                                deleteOnResult = remoteAsset != null,
+                                baseUrl = Publication.localBaseUrlOf(asset.name, localPort)
                             )
                     	)
                     }
@@ -605,11 +603,11 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         }
     }
 
-    private fun prepareToServe(publication: Publication, file: R2File) {
+    private fun prepareToServe(publication: Publication, asset: PublicationAsset) {
         val key = publication.metadata.identifier ?: publication.metadata.title
         preferences.edit().putString("$key-publicationPort", localPort.toString()).apply()
         val userProperties = applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
-        server.addEpub(publication, null, "/${file.name}", userProperties)
+        server.addEpub(publication, null, "/${asset.name}", userProperties)
     }
 
     private fun presentOpeningException(error: Publication.OpeningException) {
