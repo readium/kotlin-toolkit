@@ -43,7 +43,17 @@ class R2ViewPager : R2RTLViewPager {
                 }
             }
         }
-        return super.onTouchEvent(ev)
+
+        return try {
+            // The super implementation sometimes triggers:
+            // java.lang.IllegalArgumentException: pointerIndex out of range
+            // i.e. https://stackoverflow.com/q/48496257/1474476
+            return super.onTouchEvent(ev)
+
+        } catch (ex: IllegalArgumentException) {
+            Timber.e(ex)
+            false
+        }
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
@@ -61,7 +71,7 @@ class R2ViewPager : R2RTLViewPager {
         return try {
             // The super implementation sometimes triggers:
             // java.lang.IllegalArgumentException: pointerIndex out of range
-            // i.e. https://stackoverflow.com/questions/16459196/java-lang-illegalargumentexception-pointerindex-out-of-range-exception-dispat
+            // i.e. https://stackoverflow.com/q/48496257/1474476
             super.onInterceptTouchEvent(ev)
         } catch (ex: IllegalArgumentException) {
             Timber.e(ex)

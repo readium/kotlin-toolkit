@@ -39,7 +39,9 @@ class R2EpubPageFragment : Fragment() {
     private val resourceUrl: String?
         get() = requireArguments().getString("url")
 
-    lateinit var webView: R2WebView
+    var webView: R2WebView? = null
+        private set
+
     internal lateinit var listener: R2BasicWebView.Listener
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -59,7 +61,8 @@ class R2EpubPageFragment : Fragment() {
             }
         }
 
-        webView = v!!.findViewById(R.id.webView) as R2WebView
+        val webView = v!!.findViewById(R.id.webView) as R2WebView
+        this.webView = webView
 
         webView.navigator = navigatorFragment
         webView.listener = navigatorFragment
@@ -135,9 +138,10 @@ class R2EpubPageFragment : Fragment() {
                 super.onPageFinished(view, url)
 
                 val epubNavigator = (webView.navigator as? EpubNavigatorFragment)
-                val currentFragment: R2EpubPageFragment = (epubNavigator?.resourcePager?.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
+                val currentFragment: R2EpubPageFragment? =
+                    (epubNavigator?.resourcePager?.adapter as? R2PagerAdapter)?.getCurrentFragment() as? R2EpubPageFragment
 
-                if (this@R2EpubPageFragment.tag == currentFragment.tag) {
+                if (currentFragment != null && this@R2EpubPageFragment.tag == currentFragment.tag) {
                     var locations = epubNavigator.pendingLocator?.locations
                     epubNavigator.pendingLocator = null
 
@@ -148,19 +152,20 @@ class R2EpubPageFragment : Fragment() {
                         locations = Locator.Locations(fragments = listOf(id))
                     }
 
-                    if (locations != null && locations.fragments.isEmpty()) {
+                    val currentWebView = currentFragment.webView
+                    if (currentWebView != null && locations != null && locations.fragments.isEmpty()) {
                         locations.progression?.let { progression ->
-                            currentFragment.webView.progression = progression
+                            currentWebView.progression = progression
 
                             if (webView.scrollMode) {
-                                currentFragment.webView.scrollToPosition(progression)
+                                currentWebView.scrollToPosition(progression)
                             } else {
                                 // FIXME: We need a better way to wait, because if the value is too low it fails
                                 (object : CountDownTimer(200, 1) {
                                     override fun onTick(millisUntilFinished: Long) {}
                                     override fun onFinish() {
-                                        currentFragment.webView.calculateCurrentItem()
-                                        currentFragment.webView.setCurrentItem(currentFragment.webView.mCurItem, false)
+                                        currentWebView.calculateCurrentItem()
+                                        currentWebView.setCurrentItem(currentWebView.mCurItem, false)
                                     }
                                 }).start()
                             }

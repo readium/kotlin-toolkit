@@ -20,19 +20,20 @@ import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.readium.r2.navigator.*
+import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
+import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.extensions.htmlId
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.util.createFragmentFactory
-import org.readium.r2.shared.*
+import org.readium.r2.shared.COLUMN_COUNT_REF
+import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
@@ -221,25 +222,14 @@ class EpubNavigatorFragment private constructor(
                     if (resource.second.endsWith(href)) {
                         if (resourcePager.currentItem == resource.first) {
                             // reload webview if it has an anchor
-                            locator.locations.fragments.firstOrNull()?.let { fragment ->
-
-                                val fragments = fragment.split(",").associate {
-                                    val (left, right) = it.split("=")
-                                    left to right.toInt()
+                            var anchor = locator.locations.htmlId
+                            if (anchor != null) {
+                                if (!anchor.startsWith("#")) {
+                                    anchor = "#$anchor"
                                 }
-                                //            val id = fragments.getValue("id")
-                                if (fragments.isEmpty()) {
-                                    var anchor = fragment
-                                    if (!anchor.startsWith("#")) {
-                                        anchor = "#$anchor"
-                                    }
-                                    val goto = resource.second + anchor
-                                    currentFragment?.webView?.loadUrl(goto)
-                                } else {
-                                    currentFragment?.webView?.loadUrl(resource.second)
-                                }
-
-                            } ?: run {
+                                val goto = resource.second + anchor
+                                currentFragment?.webView?.loadUrl(goto)
+                            } else {
                                 currentFragment?.webView?.loadUrl(resource.second)
                             }
                         } else {
