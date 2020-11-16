@@ -43,9 +43,6 @@ typealias Range = org.readium.r2.shared.publication.html.DomRange.Point
 @Deprecated("Refactored into [LocalizedString]", ReplaceWith("org.readium.r2.shared.publication.LocalizedString"))
 typealias MultilanguageString = org.readium.r2.shared.publication.LocalizedString
 
-@Deprecated("Renamed into [ContentLayout]", ReplaceWith("org.readium.r2.shared.publication.ContentLayout"))
-typealias ContentLayoutStyle = org.readium.r2.shared.publication.ContentLayout
-
 @Deprecated("Renamed into [ReadingProgression]", ReplaceWith("org.readium.r2.shared.publication.ReadingProgression"))
 typealias PageProgressionDirection = org.readium.r2.shared.publication.ReadingProgression
 

@@ -106,30 +106,6 @@ class PublicationTest {
         )
     }
 
-    @Test fun `get {contentLayout} for the default language`() {
-        assertEquals(
-            ContentLayout.RTL,
-            createPublication(language = "AR").contentLayout
-        )
-    }
-
-    @Test fun `get {contentLayout} for the given language`() {
-        val publication = createPublication()
-
-        assertEquals(ContentLayout.RTL, publication.contentLayoutForLanguage("AR"))
-        assertEquals(ContentLayout.LTR, publication.contentLayoutForLanguage("EN"))
-    }
-
-    @Test fun `get {contentLayout} fallbacks on the {readingProgression}`() {
-        assertEquals(
-            ContentLayout.RTL,
-            createPublication(
-                language = "en",
-                readingProgression = ReadingProgression.RTL
-            ).contentLayoutForLanguage("EN")
-        )
-    }
-
     @Test fun `set {self} link`() {
         val publication = createPublication()
         publication.setSelfLink("http://manifest.json")
