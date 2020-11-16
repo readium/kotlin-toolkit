@@ -368,12 +368,14 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
                 val previousFragment = (resourcePager.adapter as R2PagerAdapter).getPreviousFragment()
                 val nextFragment = (resourcePager.adapter as R2PagerAdapter).getNextFragment()
                 if (currentFragment is R2EpubPageFragment) {
-                    currentFragment.webView.scrollToPosition(currentFragment.webView.progression)
-                    (previousFragment as? R2EpubPageFragment)?.webView?.scrollToEnd()
-                    (nextFragment as? R2EpubPageFragment)?.webView?.scrollToStart()
-                    currentFragment.webView.setScrollMode(b)
-                    (previousFragment as? R2EpubPageFragment)?.webView?.setScrollMode(b)
-                    (nextFragment as? R2EpubPageFragment)?.webView?.setScrollMode(b)
+                    currentFragment.webView?.let { webView ->
+                        webView.scrollToPosition(webView.progression)
+                        (previousFragment as? R2EpubPageFragment)?.webView?.scrollToEnd()
+                        (nextFragment as? R2EpubPageFragment)?.webView?.scrollToStart()
+                        webView.setScrollMode(b)
+                        (previousFragment as? R2EpubPageFragment)?.webView?.setScrollMode(b)
+                        (nextFragment as? R2EpubPageFragment)?.webView?.setScrollMode(b)
+                    }
                     when (b) {
                         true -> {
                             currentFragment.view?.setPadding(0, 0, 0, 0)

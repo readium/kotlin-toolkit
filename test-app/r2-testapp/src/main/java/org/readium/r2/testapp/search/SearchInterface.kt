@@ -33,7 +33,7 @@ class MarkJSSearchEngine(private var listener: IR2Activity) : SearchInterface {
             val resourceType = resource.type ?: ""
             val resourceTitle = resource.title ?: ""
             Handler().postDelayed({
-                fragment.webView.runJavaScript("markSearch('${keyword}', null, '$resourceHref', '$resourceType', '$resourceTitle')") { result ->
+                fragment.webView?.runJavaScript("markSearch('${keyword}', null, '$resourceHref', '$resourceType', '$resourceTitle')") { result ->
                     if (DEBUG) Timber.tag("SEARCH").d("result $result")
 
                     if (result != "null") {

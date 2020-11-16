@@ -581,7 +581,7 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                                     val resourceType = resource.type ?: ""
                                     val resourceTitle = resource.title ?: ""
 
-                                    currentFragment.webView.runJavaScript("markSearch('${searchStorage.getString("term", null)}', null, '$resourceHref', '$resourceType', '$resourceTitle', '$index')") { result ->
+                                    currentFragment.webView?.runJavaScript("markSearch('${searchStorage.getString("term", null)}', null, '$resourceHref', '$resourceType', '$resourceTitle', '$index')") { result ->
 
                                         if (DEBUG) Timber.d("###### $result")
 
