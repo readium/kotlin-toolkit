@@ -14,43 +14,42 @@ import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
-import org.readium.r2.shared.util.File
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.MediaType
-import org.readium.r2.shared.publication.ContentLayout
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
+import org.readium.r2.streamer.extensions.toTitle
 import org.readium.r2.streamer.fetcher.LcpDecryptor
 import org.readium.r2.streamer.parser.PubBox
-import org.readium.r2.streamer.PublicationParser
-import org.readium.r2.streamer.extensions.toTitle
 
 object EPUBConstant {
 
     @Deprecated("Use [MediaType.EPUB.toString()] instead", replaceWith = ReplaceWith("MediaType.EPUB.toString()"))
     val mimetype: String get() = MediaType.EPUB.toString()
 
-    private val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+    internal val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
         ReadiumCSSName.ref("hyphens") to false,
         ReadiumCSSName.ref("ligatures") to false
     )
 
-    private val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+    internal val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
         ReadiumCSSName.ref("hyphens") to false,
         ReadiumCSSName.ref("wordSpacing") to false,
         ReadiumCSSName.ref("letterSpacing") to false,
         ReadiumCSSName.ref("ligatures") to true
     )
 
-    private val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+    internal val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
         ReadiumCSSName.ref("textAlignment") to false,
         ReadiumCSSName.ref("hyphens") to false,
         ReadiumCSSName.ref("paraIndent") to false,
@@ -58,7 +57,7 @@ object EPUBConstant {
         ReadiumCSSName.ref("letterSpacing") to false
     )
 
-    private val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
+    internal val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
         ReadiumCSSName.ref("scroll") to true,
         ReadiumCSSName.ref("columnCount") to false,
         ReadiumCSSName.ref("textAlignment") to false,
@@ -70,13 +69,6 @@ object EPUBConstant {
 
     val forceScrollPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
         ReadiumCSSName.ref("scroll") to true
-    )
-
-    val userSettingsUIPreset: MutableMap<ContentLayout, MutableMap<ReadiumCSSName, Boolean>> = mutableMapOf(
-        ContentLayout.LTR to ltrPreset,
-        ContentLayout.RTL to rtlPreset,
-        ContentLayout.CJK_VERTICAL to cjkVerticalPreset,
-        ContentLayout.CJK_HORIZONTAL to cjkHorizontalPreset
     )
 }
 
@@ -214,13 +206,15 @@ class EpubParser : PublicationParser, org.readium.r2.streamer.parser.Publication
 }
 
 internal fun Publication.setLayoutStyle() {
-    cssStyle = contentLayout.cssId
-    EPUBConstant.userSettingsUIPreset[contentLayout]?.let {
-        userSettingsUIPreset =
-            if (type == Publication.TYPE.WEBPUB) //FIXME : this is never true
-             EPUBConstant.forceScrollPreset
-            else
-                it
+    val layout = ReadiumCssLayout(metadata)
+
+    cssStyle = layout.cssId
+
+    userSettingsUIPreset = when (layout) {
+        ReadiumCssLayout.RTL -> EPUBConstant.rtlPreset
+        ReadiumCssLayout.LTR -> EPUBConstant.ltrPreset
+        ReadiumCssLayout.CJK_VERTICAL -> EPUBConstant.cjkVerticalPreset
+        ReadiumCssLayout.CJK_HORIZONTAL -> EPUBConstant.cjkHorizontalPreset
     }
 }
 
