@@ -38,9 +38,9 @@ import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.support.v4.nestedScrollView
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
-import org.readium.r2.shared.Link
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.shared.opds.ParseData
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.opds.numberOfItems
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
