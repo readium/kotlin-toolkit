@@ -308,11 +308,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         setCurrentItemInternal(item, smoothScroll, false)
     }
 
-    fun calculateCurrentItem() {
-        val currentPage = numPages * progression
-        mCurItem = currentPage.roundToInt()
-    }
-
     private fun setCurrentItemInternal(item: Int, smoothScroll: Boolean, always: Boolean) {
         setCurrentItemInternal(item, smoothScroll, 0)
     }

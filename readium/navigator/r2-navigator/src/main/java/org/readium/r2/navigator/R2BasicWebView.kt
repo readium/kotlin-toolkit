@@ -42,7 +42,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     lateinit var navigator: Navigator
     internal var preferences: SharedPreferences? = null
 
-    var progression: Double = 0.0
     var overrideUrlLoading = true
     var resourceUrl: String? = null
 
@@ -55,6 +54,29 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     init {
         setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+    }
+
+    /** Computes the current progression in the resource. */
+    val progression: Double get() {
+        val pageWidth = computeHorizontalScrollExtent()
+        val contentWidth = computeHorizontalScrollRange()
+
+        val isRtl = (listener.readingProgression == ReadingProgression.RTL)
+
+        var x = scrollX.toDouble()
+        // For RTL, we need to add the equivalent of one page to the x position, otherwise the
+        // progression will be one page off.
+        if (isRtl) { x += pageWidth }
+
+        var progression = 0.0
+        if (contentWidth > 0) {
+            progression = (x / contentWidth).coerceIn(0.0, 1.0)
+        }
+        // For RTL, we need to reverse the progression because the web view is always scrolling
+        // from left to right, no matter the reading direction.
+        if (isRtl) { progression = 1 - progression }
+
+        return progression
     }
 
     interface OnOverScrolledCallback {
@@ -72,9 +94,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         super.onOverScrolled(scrollX, scrollY, clampedX, clampedY)
     }
 
-    override fun onSizeChanged(w: Int, h: Int, ow: Int, oh: Int) {
-        super.onSizeChanged(w, h, ow, oh)
-        onViewportWidthChanged()
+    override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int) {
+        super.onScrollChanged(l, t, oldl, oldt)
+        listener.onProgressionChanged()
     }
 
     @android.webkit.JavascriptInterface
@@ -93,8 +115,8 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             if (scrollMode || !this@R2BasicWebView.canScrollHorizontally(1)) {
                 goRight()
             } else {
-                this@R2BasicWebView.evaluateJavascript("readium.scrollRight();") { success ->
-                    if (success?.toBoolean() == false) {
+                runJavaScript("readium.scrollRight();") { success ->
+                    if (!success.toBoolean()) {
                         goRight()
                     }
                 }
@@ -118,19 +140,13 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             if (scrollMode || !this@R2BasicWebView.canScrollHorizontally(-1)) {
                 goLeft()
             } else {
-                this@R2BasicWebView.evaluateJavascript("readium.scrollLeft();") { success ->
-                    if (success?.toBoolean() == false) {
+                runJavaScript("readium.scrollLeft();") { success ->
+                    if (!success.toBoolean()) {
                         goLeft()
                     }
                 }
             }
         }
-    }
-
-    @android.webkit.JavascriptInterface
-    fun progressionDidChange(positionString: String) {
-        progression = positionString.toDouble()
-        listener.onProgressionChanged(progression)
     }
 
     @android.webkit.JavascriptInterface
@@ -204,10 +220,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun getViewportWidth(): Int = width
 
-    private fun onViewportWidthChanged() {
-        this.evaluateJavascript("onViewportWidthChanged();", null)
-    }
-
     @android.webkit.JavascriptInterface
     fun logError(message: String, filename: String, line: Int) {
         Timber.e("JavaScript error: $filename:$line $message")
@@ -236,76 +248,70 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     fun Boolean.toInt() = if (this) 1 else 0
 
     fun scrollToStart() {
-        this.evaluateJavascript("readium.scrollToStart();", null)
+        runJavaScript("readium.scrollToStart();")
     }
 
     fun scrollToEnd() {
-        this.evaluateJavascript("readium.scrollToEnd();", null)
+        runJavaScript("readium.scrollToEnd();")
     }
 
     fun scrollToPosition(progression: Double) {
-        this.evaluateJavascript("readium.scrollToPosition(\"$progression\");", null)
+        runJavaScript("readium.scrollToPosition(\"$progression\");")
     }
 
     fun setScrollMode(scrollMode: Boolean) {
-        this.evaluateJavascript("setScrollMode($scrollMode)", null)
+        runJavaScript("setScrollMode($scrollMode)")
         this.scrollMode = scrollMode
     }
 
     fun setProperty(key: String, value: String) {
-        this.evaluateJavascript("readium.setProperty(\"$key\", \"$value\");") {
+        runJavaScript("readium.setProperty(\"$key\", \"$value\");") {
             // Used to redraw highlights when user settings changed.
             listener.onPageLoaded()
         }
     }
 
     fun removeProperty(key: String) {
-        this.evaluateJavascript("removeProperty(\"$key\");", null)
+        runJavaScript("removeProperty(\"$key\");")
     }
 
     fun getCurrentSelectionInfo(callback: (String) -> Unit) {
-        this.evaluateJavascript("getCurrentSelectionInfo();") {
-            callback(it)
-        }
+        runJavaScript("getCurrentSelectionInfo();", callback)
     }
 
     fun getCurrentSelectionRect(callback: (String) -> Unit) {
-        this.evaluateJavascript("getSelectionRect();") {
-            callback(it)
-        }
+        runJavaScript("getSelectionRect();", callback)
     }
 
     fun createHighlight(locator: String?, color: String?, callback: (String) -> Unit) {
         uiScope.launch {
-            this@R2BasicWebView.evaluateJavascript("createHighlight($locator, $color, true);") {
-                callback(it)
-            }
+            runJavaScript("createHighlight($locator, $color, true);", callback)
         }
     }
 
     fun destroyHighlight(id: String) {
         uiScope.launch {
-            this@R2BasicWebView.evaluateJavascript("destroyHighlight(\"$id\");", null)
+            runJavaScript("destroyHighlight(\"$id\");")
         }
     }
 
     fun createAnnotation(id: String) {
         uiScope.launch {
-            this@R2BasicWebView.evaluateJavascript("createAnnotation(\"$id\");", null)
+            runJavaScript("createAnnotation(\"$id\");")
         }
     }
 
     fun rectangleForHighlightWithID(id: String, callback: (String) -> Unit) {
         uiScope.launch {
-            this@R2BasicWebView.evaluateJavascript("rectangleForHighlightWithID(\"$id\");") {
-                callback(it)
-            }
+            runJavaScript("rectangleForHighlightWithID(\"$id\");", callback)
         }
     }
 
-    fun runJavaScript(javascript: String, callback: (String) -> Unit) {
+    fun runJavaScript(javascript: String, callback: ((String) -> Unit)? = null) {
+        if (BuildConfig.DEBUG) Timber.d("runJavaScript: $javascript")
+
         this.evaluateJavascript(javascript) { result ->
-            callback(result)
+            if (callback != null) callback(result)
         }
     }
 
@@ -316,7 +322,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun onPageEnded(end: Boolean)
         fun onScroll()
         fun onTap(point: PointF): Boolean
-        fun onProgressionChanged(progression: Double)
+        fun onProgressionChanged()
         fun onHighlightActivated(id: String)
         fun onHighlightAnnotationMarkActivated(id: String)
         fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean

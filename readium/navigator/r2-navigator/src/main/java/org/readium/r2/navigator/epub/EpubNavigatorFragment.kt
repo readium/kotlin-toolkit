@@ -312,7 +312,7 @@ class EpubNavigatorFragment private constructor(
         return (this.listener as VisualNavigator.Listener).onTap(point)
     }
 
-    override fun onProgressionChanged(progression: Double) {
+    override fun onProgressionChanged() {
         notifyCurrentLocation()
     }
 
@@ -333,13 +333,11 @@ class EpubNavigatorFragment private constructor(
                 if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
                     currentFragment?.webView?.apply {
-                        progression = 1.0
                         setCurrentItem(numPages - 1, false)
                     }
                 } else {
                     // The view has LTR layout
                     currentFragment?.webView?.apply {
-                        progression = 0.0
                         setCurrentItem(0, false)
                     }
                 }
@@ -357,13 +355,11 @@ class EpubNavigatorFragment private constructor(
                 if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
                     currentFragment?.webView?.apply {
-                        progression = 0.0
                         setCurrentItem(0, false)
                     }
                 } else {
                     // The view has LTR layout
                     currentFragment?.webView?.apply {
-                        progression = 1.0
                         setCurrentItem(numPages - 1, false)
                     }
                 }
@@ -397,7 +393,7 @@ class EpubNavigatorFragment private constructor(
             delay(100L)
 
             val resource = publication.readingOrder[resourcePager.currentItem]
-            val progression = currentFragment?.webView?.progression ?: 0.0
+            val progression = currentFragment?.webView?.progression?.coerceIn(0.0, 1.0) ?: 0.0
             val positions = publication.positionsByResource[resource.href]?.takeIf { it.isNotEmpty() }
                     ?: return@launch
             val positionIndex = ceil(progression * (positions.size - 1)).toInt()
