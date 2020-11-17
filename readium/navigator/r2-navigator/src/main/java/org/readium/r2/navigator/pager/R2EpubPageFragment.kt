@@ -148,36 +148,42 @@ class R2EpubPageFragment : Fragment() {
                     epubNavigator.pendingLocator = null
 
                     // TODO this seems to be needed, will need to test more
-                    if (url!!.indexOf("#") > 0) {
-                        val id = url.substring(url.indexOf('#'))
-                        webView.loadUrl("javascript:scrollAnchor($id);")
+                    if (url != null && url.indexOf("#") > 0) {
+                        val id = url.substringAfterLast("#")
                         locations = Locator.Locations(fragments = listOf(id))
                     }
 
                     val currentWebView = currentFragment.webView
-                    if (currentWebView != null && locations != null && locations.fragments.isEmpty()) {
-                        locations.progression?.let { p ->
-                            // We need to reverse the progression with RTL because the Web View
-                            // always scrolls from left to right, no matter the reading direction.
-                            val progression =
-                                if (scrollMode || navigatorFragment.readingProgression == ReadingProgression.LTR) p
-                                else 1 - p
+                    if (currentWebView != null && locations != null) {
+                        val htmlId = locations.htmlId
+                        var progression = locations.progression
 
-                            if (webView.scrollMode) {
-                                currentWebView.scrollToPosition(progression)
+                        when {
+                            htmlId != null -> currentWebView.scrollToId(htmlId)
 
-                            } else {
-                                lifecycleScope.launchWhenStarted {
-                                    // FIXME: We need a better way to wait, because if the value is too low it fails
-                                    delay(200)
+                            progression != null -> {
+                                // We need to reverse the progression with RTL because the Web View
+                                // always scrolls from left to right, no matter the reading direction.
+                                progression =
+                                    if (scrollMode || navigatorFragment.readingProgression == ReadingProgression.LTR) progression
+                                    else 1 - progression
 
-                                    // Figure out the target web view "page" from the requested
-                                    // progression.
-                                    var item = (progression * currentWebView.numPages).roundToInt()
-                                    if (navigatorFragment.readingProgression == ReadingProgression.RTL && item > 0) {
-                                        item -= 1
+                                if (webView.scrollMode) {
+                                    currentWebView.scrollToPosition(progression)
+
+                                } else {
+                                    lifecycleScope.launchWhenStarted {
+                                        // FIXME: We need a better way to wait, because if the value is too low it fails
+                                        delay(200)
+
+                                        // Figure out the target web view "page" from the requested
+                                        // progression.
+                                        var item = (progression * currentWebView.numPages).roundToInt()
+                                        if (navigatorFragment.readingProgression == ReadingProgression.RTL && item > 0) {
+                                            item -= 1
+                                        }
+                                        currentWebView.setCurrentItem(item, false)
                                     }
-                                    currentWebView.setCurrentItem(item, false)
                                 }
                             }
                         }
@@ -230,12 +236,7 @@ class R2EpubPageFragment : Fragment() {
             false
         }
 
-        val id = (webView.navigator as? EpubNavigatorFragment)?.pendingLocator?.locations?.htmlId
-        if (id != null) {
-            webView.loadUrl("$resourceUrl#$id")
-        } else {
-            resourceUrl?.let { webView.loadUrl(it) }
-        }
+        resourceUrl?.let { webView.loadUrl(it) }
 
         return v
     }

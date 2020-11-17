@@ -271,6 +271,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         runJavaScript("readium.scrollToEnd();")
     }
 
+    fun scrollToId(htmlId: String) {
+        runJavaScript("readium.scrollToId(\"$htmlId\");")
+    }
+
     fun scrollToPosition(progression: Double) {
         runJavaScript("readium.scrollToPosition(\"$progression\");")
     }

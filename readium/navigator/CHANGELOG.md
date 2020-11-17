@@ -10,6 +10,7 @@ caution.
 ### Changed
 
 * Upgraded to Kotlin 1.4.10.
+* All `utils.js` functions were moved under a `readium.` namespace. You will need to update your code if you were calling them manually.
 
 ### Fixed
 

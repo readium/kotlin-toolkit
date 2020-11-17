@@ -165,25 +165,7 @@ var readium = (function() {
         root.style.removeProperty(key);
     }
 
-    /// Toolkit
-
-    function debounce(delay, func) {
-        var timeout;
-        return function() {
-            var self = this;
-            var args = arguments;
-            function callback() {
-                func.apply(self, args);
-                timeout = null;
-            }
-            clearTimeout(timeout);
-            timeout = setTimeout(callback, delay);
-        };
-    }
-
-
     // Public API used by the navigator.
-
     return {
         'scrollToId': scrollToId,
         'scrollToPosition': scrollToPosition,
@@ -192,8 +174,7 @@ var readium = (function() {
         'scrollToStart': scrollToStart,
         'scrollToEnd': scrollToEnd,
         'setProperty': setProperty,
-        'removeProperty': removeProperty,
-        'onViewportWidthChanged': onViewportWidthChanged
+        'removeProperty': removeProperty
     };
 
 })();
