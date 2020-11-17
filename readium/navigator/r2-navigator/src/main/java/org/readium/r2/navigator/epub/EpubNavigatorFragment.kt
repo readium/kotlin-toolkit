@@ -396,7 +396,12 @@ class EpubNavigatorFragment private constructor(
             val progression = currentFragment?.webView?.progression?.coerceIn(0.0, 1.0) ?: 0.0
             val positions = publication.positionsByResource[resource.href]?.takeIf { it.isNotEmpty() }
                     ?: return@launch
+
             val positionIndex = ceil(progression * (positions.size - 1)).toInt()
+            if (!positions.indices.contains(positionIndex)) {
+                return@launch
+            }
+
             val locator = positions[positionIndex]
                     .copyWithLocations(progression = progression)
 

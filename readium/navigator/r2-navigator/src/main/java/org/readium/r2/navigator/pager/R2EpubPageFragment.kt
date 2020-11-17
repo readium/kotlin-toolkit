@@ -12,7 +12,6 @@ package org.readium.r2.navigator.pager
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.util.Base64
 import android.util.DisplayMetrics
 import android.view.KeyEvent
@@ -161,11 +160,12 @@ class R2EpubPageFragment : Fragment() {
                             // We need to reverse the progression with RTL because the Web View
                             // always scrolls from left to right, no matter the reading direction.
                             val progression =
-                                if (navigatorFragment.readingProgression == ReadingProgression.LTR) p
+                                if (scrollMode || navigatorFragment.readingProgression == ReadingProgression.LTR) p
                                 else 1 - p
 
                             if (webView.scrollMode) {
                                 currentWebView.scrollToPosition(progression)
+
                             } else {
                                 lifecycleScope.launchWhenStarted {
                                     // FIXME: We need a better way to wait, because if the value is too low it fails

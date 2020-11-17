@@ -57,27 +57,43 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     /** Computes the current progression in the resource. */
-    val progression: Double get() {
-        val pageWidth = computeHorizontalScrollExtent()
-        val contentWidth = computeHorizontalScrollRange()
+    val progression: Double get() =
+        if (scrollMode) {
+            val y = scrollY.toDouble()
+            val contentHeight = computeVerticalScrollRange()
 
-        val isRtl = (listener.readingProgression == ReadingProgression.RTL)
+            var progression = 0.0
+            if (contentHeight > 0) {
+                progression = (y / contentHeight).coerceIn(0.0, 1.0)
+            }
 
-        var x = scrollX.toDouble()
-        // For RTL, we need to add the equivalent of one page to the x position, otherwise the
-        // progression will be one page off.
-        if (isRtl) { x += pageWidth }
+            progression
 
-        var progression = 0.0
-        if (contentWidth > 0) {
-            progression = (x / contentWidth).coerceIn(0.0, 1.0)
+        } else {
+            var x = scrollX.toDouble()
+            val pageWidth = computeHorizontalScrollExtent()
+            val contentWidth = computeHorizontalScrollRange()
+
+            val isRtl = (listener.readingProgression == ReadingProgression.RTL)
+
+            // For RTL, we need to add the equivalent of one page to the x position, otherwise the
+            // progression will be one page off.
+            if (isRtl) {
+                x += pageWidth
+            }
+
+            var progression = 0.0
+            if (contentWidth > 0) {
+                progression = (x / contentWidth).coerceIn(0.0, 1.0)
+            }
+            // For RTL, we need to reverse the progression because the web view is always scrolling
+            // from left to right, no matter the reading direction.
+            if (isRtl) {
+                progression = 1 - progression
+            }
+
+            progression
         }
-        // For RTL, we need to reverse the progression because the web view is always scrolling
-        // from left to right, no matter the reading direction.
-        if (isRtl) { progression = 1 - progression }
-
-        return progression
-    }
 
     interface OnOverScrolledCallback {
         fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean)
