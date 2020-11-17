@@ -133,7 +133,7 @@ internal class LicensesService(
         }
         if (DEBUG) Timber.i("LCP destination $destination")
 
-        val format = network.download(url, destination) ?: Format.of(mediaType = link.type) ?: Format.EPUB
+        val format = network.download(url, destination, mediaType = link.type) ?: Format.of(mediaType = link.type) ?: Format.EPUB
 
         // Saves the License Document into the downloaded publication
         val container = createLicenseContainer(destination.path, format)
