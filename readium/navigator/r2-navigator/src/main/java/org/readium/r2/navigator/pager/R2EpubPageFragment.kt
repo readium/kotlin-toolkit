@@ -155,27 +155,28 @@ class R2EpubPageFragment : Fragment() {
 
                     val currentWebView = currentFragment.webView
                     if (currentWebView != null && locations != null) {
-                        val htmlId = locations.htmlId
-                        var progression = locations.progression
 
-                        when {
-                            htmlId != null -> currentWebView.scrollToId(htmlId)
+                        lifecycleScope.launchWhenStarted {
+                            // FIXME: We need a better way to wait, because if the value is too low it fails
+                            delay(200)
 
-                            progression != null -> {
-                                // We need to reverse the progression with RTL because the Web View
-                                // always scrolls from left to right, no matter the reading direction.
-                                progression =
-                                    if (scrollMode || navigatorFragment.readingProgression == ReadingProgression.LTR) progression
-                                    else 1 - progression
+                            val htmlId = locations.htmlId
+                            var progression = locations.progression
 
-                                if (webView.scrollMode) {
-                                    currentWebView.scrollToPosition(progression)
+                            when {
+                                htmlId != null -> currentWebView.scrollToId(htmlId)
 
-                                } else {
-                                    lifecycleScope.launchWhenStarted {
-                                        // FIXME: We need a better way to wait, because if the value is too low it fails
-                                        delay(200)
+                                progression != null -> {
+                                    // We need to reverse the progression with RTL because the Web View
+                                    // always scrolls from left to right, no matter the reading direction.
+                                    progression =
+                                        if (scrollMode || navigatorFragment.readingProgression == ReadingProgression.LTR) progression
+                                        else 1 - progression
 
+                                    if (webView.scrollMode) {
+                                        currentWebView.scrollToPosition(progression)
+
+                                    } else {
                                         // Figure out the target web view "page" from the requested
                                         // progression.
                                         var item = (progression * currentWebView.numPages).roundToInt()

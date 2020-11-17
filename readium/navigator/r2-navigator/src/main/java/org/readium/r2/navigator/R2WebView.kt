@@ -298,6 +298,12 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         return this.computeHorizontalScrollExtent()
     }
 
+    internal fun updateCurrentItem() {
+        if (!scrollMode && !mIsBeingDragged) {
+            mCurItem = scrollX / computeHorizontalScrollExtent()
+        }
+    }
+
     /**
      * Set the currently selected page.
      *
@@ -325,7 +331,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     }
 
     private fun scrollToItem(item: Int, smoothScroll: Boolean, velocity: Int, post: Boolean) {
-
         val width = this.computeHorizontalScrollExtent()
         val destX = (width * item)
         if (smoothScroll) {
@@ -757,6 +762,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
             }
 
             MotionEvent.ACTION_CANCEL -> if (mIsBeingDragged) {
+                mIsBeingDragged = false
                 scrollToItem(mCurItem, true, 0, false)
             }
             MotionEvent.ACTION_POINTER_DOWN -> {

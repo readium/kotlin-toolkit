@@ -392,6 +392,10 @@ class EpubNavigatorFragment private constructor(
         debounceLocationNotificationJob = launch {
             delay(100L)
 
+            // The transition has stabilized, so we can ask the web view to refresh its current
+            // item to reflect the current scroll position.
+            currentFragment?.webView?.updateCurrentItem()
+
             val resource = publication.readingOrder[resourcePager.currentItem]
             val progression = currentFragment?.webView?.progression?.coerceIn(0.0, 1.0) ?: 0.0
             val positions = publication.positionsByResource[resource.href]?.takeIf { it.isNotEmpty() }
