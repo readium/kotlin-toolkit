@@ -1,10 +1,6 @@
 var singleTouchGesture = false;
 var startX = 0;
 var startY = 0;
-var availWidth = window.screen.availWidth;
-var availHeight = window.screen.availHeight;
-
-
 
 window.addEventListener("load", function() { // on page load
     // Get screen X and Y sizes.
@@ -34,8 +30,8 @@ var handleTouchStart = function(event) {
 
     var touch = event.changedTouches[0];
 
-    startX = touch.screenX % availWidth;
-    startY = touch.screenY % availHeight;
+    startX = touch.clientX % document.documentElement.clientWidth;
+    startY = touch.clientY % document.documentElement.clientHeight;
 
 };
 
@@ -47,16 +43,14 @@ var handleTouchEnd = function(event) {
 
     var touch = event.changedTouches[0];
 
-    var relativeDistanceX = Math.abs(((touch.screenX % availWidth) - startX) / availWidth);
-    var relativeDistanceY = Math.abs(((touch.screenY % availHeight) - startY) / availHeight);
+    var clientWidth = document.documentElement.clientWidth;
+    var clientHeight = document.documentElement.clientHeight;
+    var relativeDistanceX = Math.abs(((touch.clientX % clientWidth) - startX) / clientWidth);
+    var relativeDistanceY = Math.abs(((touch.clientY % clientHeight) - startY) / clientHeight);
     var touchDistance = Math.max(relativeDistanceX, relativeDistanceY);
 
-    var scrollWidth = document.scrollWidth;
-    var screenWidth = availWidth;
-    var tapAreaWidth = availWidth * 0.2;
-
     if (touchDistance < 0.01) {
-        var position = (touch.screenX % availWidth) / availWidth;
+        var position = (touch.clientX % clientWidth) / clientWidth;
         if (position <= 0.2) {
             console.log("LeftTapped");
             Android.scrollLeft(false);
