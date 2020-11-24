@@ -7,6 +7,14 @@ caution.
 
 ## [Unreleased]
 
+### Added
+
+* Support for [display cutouts](https://developer.android.com/guide/topics/display-cutout) (screen notches).
+    * If you embed `EpubNavigatorFragment` yourself, you need to opt-in by [specifying the `layoutInDisplayCutoutMode`](https://developer.android.com/guide/topics/display-cutout#choose_how_your_app_handles_cutout_areas) of the host `Activity`.
+    * `R2EpubActivity` automatically applies `LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES` to its window's `layoutInDisplayCutoutMode`.
+* Customize EPUB vertical margins by overriding the `r2.navigator.epub.vertical_padding` dimension.
+    * Follow [Android's convention for alternative resources](https://developer.android.com/guide/topics/resources/providing-resources#AlternativeResources) to specify different paddings for landscape (`values-land`) or large screens.
+
 ### Changed
 
 * Upgraded to Kotlin 1.4.10.

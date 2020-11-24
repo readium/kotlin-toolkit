@@ -11,20 +11,23 @@ package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Base64
 import android.util.DisplayMetrics
-import android.view.KeyEvent
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.R2WebView
@@ -45,31 +48,25 @@ class R2EpubPageFragment : Fragment() {
     var webView: R2WebView? = null
         private set
 
+    private var windowInsets: WindowInsetsCompat = WindowInsetsCompat.CONSUMED
+    private lateinit var containerView: View
+    private lateinit var preferences: SharedPreferences
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val navigatorFragment = parentFragmentManager.findFragmentByTag(getString(R.string.epub_navigator_tag)) as EpubNavigatorFragment
 
-        val v = inflater.inflate(R.layout.viewpager_fragment_epub, container, false)
-        val preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
+        containerView = inflater.inflate(R.layout.viewpager_fragment_epub, container, false)
+        preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
 
-        val scrollMode = preferences.getBoolean(SCROLL_REF, false)
-        when (scrollMode) {
-            true -> {
-                v.setPadding(0, 0, 0, 0)
-            }
-            false -> {
-                v.setPadding(0, 60, 0, 40)
-            }
-        }
-
-        val webView = v!!.findViewById(R.id.webView) as R2WebView
+        val webView = containerView.findViewById(R.id.webView) as R2WebView
         this.webView = webView
 
         webView.navigator = navigatorFragment
         webView.listener = navigatorFragment
         webView.preferences = preferences
 
-        webView.setScrollMode(scrollMode)
+        webView.setScrollMode(preferences.getBoolean(SCROLL_REF, false))
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
         webView.isHorizontalScrollBarEnabled = false
@@ -99,20 +96,12 @@ class R2EpubPageFragment : Fragment() {
                         if (!endReached) {
                             endReached = true
                             webView.listener.onPageEnded(endReached)
-                            when (scrollMode) {
-                                true -> {
-                                }
-                            }
                         }
                     }
                     else -> {
                         if (endReached) {
                             endReached = false
                             webView.listener.onPageEnded(endReached)
-                            when (scrollMode) {
-                                true -> {
-                                }
-                            }
                         }
                     }
                 }
@@ -170,7 +159,7 @@ class R2EpubPageFragment : Fragment() {
                                     // We need to reverse the progression with RTL because the Web View
                                     // always scrolls from left to right, no matter the reading direction.
                                     progression =
-                                        if (scrollMode || navigatorFragment.readingProgression == ReadingProgression.LTR) progression
+                                        if (webView.scrollMode || navigatorFragment.readingProgression == ReadingProgression.LTR) progression
                                         else 1 - progression
 
                                     if (webView.scrollMode) {
@@ -239,7 +228,57 @@ class R2EpubPageFragment : Fragment() {
 
         resourceUrl?.let { webView.loadUrl(it) }
 
-        return v
+        setupPadding()
+
+        return containerView
+    }
+
+    private fun setupPadding() {
+        updatePadding()
+
+        // Update padding when the scroll mode changes
+        viewLifecycleOwner.lifecycleScope.launch {
+            webView?.scrollModeFlow?.collectLatest {
+                updatePadding()
+            }
+        }
+
+        // Update padding when the window insets change, for example when the navigation and status
+        // bars are toggled.
+        ViewCompat.setOnApplyWindowInsetsListener(containerView) { _, insets ->
+            windowInsets = insets
+            updatePadding()
+            insets
+        }
+    }
+
+    private fun updatePadding() {
+        val activity = activity ?: return
+        if (!viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+            return
+        }
+
+        val scrollMode = preferences.getBoolean(SCROLL_REF, false)
+        if (scrollMode) {
+            containerView.setPadding(0, 0, 0, 0)
+
+        } else {
+            val margin = resources.getDimension(R.dimen.r2_navigator_epub_vertical_padding).toInt()
+            var top = margin
+            var bottom = margin
+
+            // Add additional padding to take into account the display cutout, if needed.
+            if (
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
+                activity.window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+            ) {
+                val displayCutoutInsets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout())
+                top += displayCutoutInsets.top
+                bottom += displayCutoutInsets.bottom
+            }
+
+            containerView.setPadding(0, top, 0, bottom)
+        }
     }
 
     companion object {
