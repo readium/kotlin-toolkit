@@ -258,27 +258,27 @@ class R2EpubPageFragment : Fragment() {
             return
         }
 
-        val scrollMode = preferences.getBoolean(SCROLL_REF, false)
-        if (scrollMode) {
-            containerView.setPadding(0, 0, 0, 0)
+        var top = 0
+        var bottom = 0
 
-        } else {
-            val margin = resources.getDimension(R.dimen.r2_navigator_epub_vertical_padding).toInt()
-            var top = margin
-            var bottom = margin
-
-            // Add additional padding to take into account the display cutout, if needed.
-            if (
-                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
-                activity.window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
-            ) {
-                val displayCutoutInsets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout())
-                top += displayCutoutInsets.top
-                bottom += displayCutoutInsets.bottom
-            }
-
-            containerView.setPadding(0, top, 0, bottom)
+        // Add additional padding to take into account the display cutout, if needed.
+        if (
+            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
+            activity.window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+        ) {
+            val displayCutoutInsets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout())
+            top += displayCutoutInsets.top
+            bottom += displayCutoutInsets.bottom
         }
+
+        val scrollMode = preferences.getBoolean(SCROLL_REF, false)
+        if (!scrollMode) {
+            val margin = resources.getDimension(R.dimen.r2_navigator_epub_vertical_padding).toInt()
+            top += margin
+            bottom += margin
+        }
+
+        containerView.setPadding(0, top, 0, bottom)
     }
 
     companion object {
