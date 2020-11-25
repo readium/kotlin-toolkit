@@ -376,18 +376,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
                         (previousFragment as? R2EpubPageFragment)?.webView?.setScrollMode(b)
                         (nextFragment as? R2EpubPageFragment)?.webView?.setScrollMode(b)
                     }
-                    when (b) {
-                        true -> {
-                            currentFragment.view?.setPadding(0, 0, 0, 0)
-                            previousFragment?.view?.setPadding(0, 0, 0, 0)
-                            nextFragment?.view?.setPadding(0, 0, 0, 0)
-                        }
-                        false -> {
-                            currentFragment.view?.setPadding(0, 60, 0, 40)
-                            previousFragment?.view?.setPadding(0, 60, 0, 40)
-                            nextFragment?.view?.setPadding(0, 60, 0, 40)
-                        }
-                    }
                 }
             }
         }
