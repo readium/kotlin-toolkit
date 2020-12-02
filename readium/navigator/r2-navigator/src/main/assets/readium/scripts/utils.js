@@ -14,20 +14,13 @@ var readium = (function() {
     window.addEventListener("load", function(){ // on page load
         window.addEventListener("orientationchange", function() {
             onViewportWidthChanged();
-            orientationChanged();
             snapCurrentOffset();
         });
 
         onViewportWidthChanged();
-        orientationChanged();
     }, false);
 
-    var maxScreenX = 0;
     var pageWidth = 1;
-
-    function orientationChanged() {
-        maxScreenX = (window.orientation === 0 || window.orientation == 180) ? screen.width : screen.height;
-    }
 
     function onViewportWidthChanged() {
         // We can't rely on window.innerWidth for the pageWidth on Android, because if the
