@@ -25,7 +25,6 @@ import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.htmlId
-import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -188,11 +187,19 @@ class EpubNavigatorFragment private constructor(
 
         })
 
-        if (initialLocator != null) {
-            go(initialLocator)
+        // Restore the last locator before a configuration change (e.g. screen rotation), or the
+        // initial locator when given.
+        val locator = savedInstanceState?.getParcelable("locator") ?: initialLocator
+        if (locator != null) {
+            go(locator)
         }
 
         return view
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putParcelable("locator", currentLocator.value)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onResume() {
@@ -305,7 +312,7 @@ class EpubNavigatorFragment private constructor(
         return (this.listener as VisualNavigator.Listener).onTap(point)
     }
 
-    override fun onProgressionChanged(progression: Double) {
+    override fun onProgressionChanged() {
         notifyCurrentLocation()
     }
 
@@ -323,16 +330,14 @@ class EpubNavigatorFragment private constructor(
 
                 resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
 
-                if (currentFragment?.activity?.layoutDirectionIsRTL() ?: publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+                if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
                     currentFragment?.webView?.apply {
-                        progression = 1.0
                         setCurrentItem(numPages - 1, false)
                     }
                 } else {
                     // The view has LTR layout
                     currentFragment?.webView?.apply {
-                        progression = 0.0
                         setCurrentItem(0, false)
                     }
                 }
@@ -347,16 +352,14 @@ class EpubNavigatorFragment private constructor(
 
                 resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
 
-                if (currentFragment?.activity?.layoutDirectionIsRTL() ?: publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+                if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
                     // The view has RTL layout
                     currentFragment?.webView?.apply {
-                        progression = 0.0
                         setCurrentItem(0, false)
                     }
                 } else {
                     // The view has LTR layout
                     currentFragment?.webView?.apply {
-                        progression = 1.0
                         setCurrentItem(numPages - 1, false)
                     }
                 }
@@ -389,11 +392,20 @@ class EpubNavigatorFragment private constructor(
         debounceLocationNotificationJob = launch {
             delay(100L)
 
+            // The transition has stabilized, so we can ask the web view to refresh its current
+            // item to reflect the current scroll position.
+            currentFragment?.webView?.updateCurrentItem()
+
             val resource = publication.readingOrder[resourcePager.currentItem]
-            val progression = currentFragment?.webView?.progression ?: 0.0
-            val positions = publication.positionsByResource[resource.href]
+            val progression = currentFragment?.webView?.progression?.coerceIn(0.0, 1.0) ?: 0.0
+            val positions = publication.positionsByResource[resource.href]?.takeIf { it.isNotEmpty() }
                     ?: return@launch
+
             val positionIndex = ceil(progression * (positions.size - 1)).toInt()
+            if (!positions.indices.contains(positionIndex)) {
+                return@launch
+            }
+
             val locator = positions[positionIndex]
                     .copyWithLocations(progression = progression)
 

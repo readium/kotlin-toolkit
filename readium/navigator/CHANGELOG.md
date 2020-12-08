@@ -10,12 +10,15 @@ caution.
 ### Changed
 
 * Upgraded to Kotlin 1.4.10.
+* All `utils.js` functions were moved under a `readium.` namespace. You will need to update your code if you were calling them manually.
 
 ### Fixed
 
 * EPUBs declaring multiple languages were laid out from right to left if the first language had an RTL reading
 progression. Now if no reading progression is set, the `effectiveReadingProgression` will be LTR.
 * [#152](https://github.com/readium/r2-navigator-kotlin/issues/152) Panning through a zoomed-in fixed layout EPUB (contributed by [@johanpoirier](https://github.com/readium/r2-navigator-kotlin/pull/172)).
+* [#146](https://github.com/readium/r2-navigator-kotlin/issues/146) Various reflowable EPUB columns shift issues.
+* Restoring the last EPUB location after configuration changes (e.g. screen rotation).
 
 
 ## [2.0.0-alpha.2]
