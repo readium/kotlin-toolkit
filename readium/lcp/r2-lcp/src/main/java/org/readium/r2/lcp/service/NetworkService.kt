@@ -11,11 +11,10 @@ package org.readium.r2.lcp.service
 
 import android.net.Uri
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpException
-import org.readium.r2.shared.format.Format
-import org.readium.r2.shared.format.sniffFormat
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.sniffMediaType
 import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.File
@@ -71,7 +70,7 @@ internal class NetworkService {
             }
         }
 
-    suspend fun download(url: URL, destination: File, mediaType: String? = null): Format? = withContext(Dispatchers.IO) {
+    suspend fun download(url: URL, destination: File, mediaType: String? = null): MediaType? = withContext(Dispatchers.IO) {
         try {
             val connection = url.openConnection() as HttpURLConnection
             if (connection.responseCode != HttpURLConnection.HTTP_OK) {
@@ -88,7 +87,7 @@ internal class NetworkService {
                 }
             }
 
-            connection.sniffFormat(mediaTypes = listOfNotNull(mediaType))
+            connection.sniffMediaType(mediaTypes = listOfNotNull(mediaType))
 
         } catch (e: Exception) {
             Timber.e(e)

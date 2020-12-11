@@ -11,7 +11,6 @@ package org.readium.r2.lcp.service
 
 import android.content.Context
 import kotlinx.coroutines.*
-import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpLicense
@@ -22,12 +21,11 @@ import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 import java.io.File
 import kotlin.coroutines.resume
-
 
 internal class LicensesService(
     private val licenses: LicensesRepository,
@@ -47,7 +45,7 @@ internal class LicensesService(
     override suspend fun acquirePublication(lcpl: ByteArray): Try<LcpService.AcquiredPublication, LcpException> =
         try {
             val licenseDocument = LicenseDocument(lcpl)
-            if (DEBUG) Timber.d("license ${licenseDocument.json}")
+            Timber.d("license ${licenseDocument.json}")
             fetchPublication(licenseDocument).let { Try.success(it) }
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
@@ -80,7 +78,7 @@ internal class LicensesService(
     private fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?, completion: (License?) -> Unit) {
 
         var initialData = container.read()
-        if (DEBUG) Timber.d("license ${LicenseDocument(data = initialData).json}")
+        Timber.d("license ${LicenseDocument(data = initialData).json}")
 
         val validation = LicenseValidation(authentication = authentication, crl = this.crl,
                 device = this.device, network = this.network, passphrases = this.passphrases, context = this.context,
@@ -88,18 +86,18 @@ internal class LicensesService(
             try {
                 this.licenses.addLicense(licenseDocument)
             } catch (error: Error) {
-                if (DEBUG) Timber.d("Failed to add the LCP License to the local database: $error")
+                Timber.d("Failed to add the LCP License to the local database: $error")
             }
             if (!licenseDocument.data.contentEquals(initialData)) {
                 try {
                     container.write(licenseDocument)
-                    if (DEBUG) Timber.d("licenseDocument ${licenseDocument.json}")
+                    Timber.d("licenseDocument ${licenseDocument.json}")
 
                     initialData = container.read()
-                    if (DEBUG) Timber.d("license ${LicenseDocument(data = initialData).json}")
-                    if (DEBUG) Timber.d("Wrote updated License Document in container")
+                    Timber.d("license ${LicenseDocument(data = initialData).json}")
+                    Timber.d("Wrote updated License Document in container")
                 } catch (error: Error) {
-                    if (DEBUG) Timber.d("Failed to write updated License Document in container: $error")
+                    Timber.d("Failed to write updated License Document in container: $error")
                 }
             }
 
@@ -107,7 +105,7 @@ internal class LicensesService(
 
         validation.validate(LicenseValidation.Document.license(initialData)) { documents, error ->
             documents?.let {
-                if (DEBUG) Timber.d("validated documents $it")
+                Timber.d("validated documents $it")
                 try {
                     documents.getContext()
                     completion( License(documents = it, validation = validation, licenses = this.licenses, device = this.device, network = this.network) )
@@ -131,17 +129,17 @@ internal class LicensesService(
         val destination = withContext(Dispatchers.IO) {
             File.createTempFile("lcp-${System.currentTimeMillis()}", ".tmp")
         }
-        if (DEBUG) Timber.i("LCP destination $destination")
+        Timber.i("LCP destination $destination")
 
-        val format = network.download(url, destination, mediaType = link.type) ?: Format.of(mediaType = link.type) ?: Format.EPUB
+        val mediaType = network.download(url, destination, mediaType = link.type) ?: MediaType.of(mediaType = link.type) ?: MediaType.EPUB
 
         // Saves the License Document into the downloaded publication
-        val container = createLicenseContainer(destination.path, format)
+        val container = createLicenseContainer(destination.path, mediaType)
         container.write(license)
 
         return LcpService.AcquiredPublication(
             localFile = destination,
-            suggestedFilename = "${license.id}.${format.fileExtension}"
+            suggestedFilename = "${license.id}.${mediaType.fileExtension}"
         )
     }
 
