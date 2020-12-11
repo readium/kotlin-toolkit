@@ -71,7 +71,7 @@ internal class NetworkService {
             }
         }
 
-    suspend fun download(url: URL, destination: File): Format? = withContext(Dispatchers.IO) {
+    suspend fun download(url: URL, destination: File, mediaType: String? = null): Format? = withContext(Dispatchers.IO) {
         try {
             val connection = url.openConnection() as HttpURLConnection
             if (connection.responseCode != HttpURLConnection.HTTP_OK) {
@@ -88,7 +88,7 @@ internal class NetworkService {
                 }
             }
 
-            connection.sniffFormat()
+            connection.sniffFormat(mediaTypes = listOfNotNull(mediaType))
 
         } catch (e: Exception) {
             Timber.e(e)

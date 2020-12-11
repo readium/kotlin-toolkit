@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 
 * Upgraded to Kotlin 1.4.10.
 
+## Fixed
+
+* When acquiring a publication, falls back on the media type declared in the license link if the server returns an unknown media type.
+
 
 ## [2.0.0-alpha.2]
 
