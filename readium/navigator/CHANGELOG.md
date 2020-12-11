@@ -19,6 +19,7 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 * [#152](https://github.com/readium/r2-navigator-kotlin/issues/152) Panning through a zoomed-in fixed layout EPUB (contributed by [@johanpoirier](https://github.com/readium/r2-navigator-kotlin/pull/172)).
 * [#146](https://github.com/readium/r2-navigator-kotlin/issues/146) Various reflowable EPUB columns shift issues.
 * Restoring the last EPUB location after configuration changes (e.g. screen rotation).
+* Edge taps to turn pages when the app runs in a multi-windows environment.
 
 
 ## [2.0.0-alpha.2]
