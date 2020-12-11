@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.server.handler
 
 import android.net.Uri
+import kotlinx.coroutines.runBlocking
 import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -26,7 +27,7 @@ internal class ResourceHandler : BaseHandler() {
         val resources = resource.initParameter(Resources::class.java)
         val href = uri.path?.substringAfterLast("/") ?: return notFoundResponse
         val body = resources.get(href) ?: return notFoundResponse
-        val mediaType = MediaType.of(fileExtension = href.substringAfterLast(".", ""))
+        val mediaType = runBlocking { MediaType.of(fileExtension = href.substringAfterLast(".", "")) }
         return createResponse(mediaType = mediaType ?: MediaType.BINARY, body = body)
     }
 
