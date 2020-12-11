@@ -67,8 +67,8 @@ dependencies {
     implementation "com.jakewharton.timber:timber:4.7.1"
     implementation "com.shopgun.android:utils:1.0.9"
     implementation "joda-time:joda-time:2.10.5"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.0"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2"
     // AM NOTE: needs to stay this version for now (June 24,2020)
     //noinspection GradleDependency
     implementation "org.jsoup:jsoup:1.10.3"
