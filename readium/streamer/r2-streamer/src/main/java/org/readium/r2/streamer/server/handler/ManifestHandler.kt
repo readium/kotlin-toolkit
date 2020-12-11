@@ -12,7 +12,7 @@ package org.readium.r2.streamer.server.handler
 import android.net.Uri
 import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.router.RouterNanoHTTPD
-import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.server.ServingFetcher
 
 internal class ManifestHandler : BaseHandler() {

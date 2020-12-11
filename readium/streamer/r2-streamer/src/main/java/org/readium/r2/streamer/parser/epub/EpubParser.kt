@@ -14,14 +14,13 @@ import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
-import org.readium.r2.shared.format.Format
-import org.readium.r2.shared.format.MediaType
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
@@ -82,7 +81,7 @@ class EpubParser : PublicationParser, org.readium.r2.streamer.parser.Publication
 
     suspend fun _parse(file: File, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
 
-        if (file.format() != Format.EPUB)
+        if (file.mediaType() != MediaType.EPUB)
             return null
 
         val opfPath = getRootFilePath(fetcher)

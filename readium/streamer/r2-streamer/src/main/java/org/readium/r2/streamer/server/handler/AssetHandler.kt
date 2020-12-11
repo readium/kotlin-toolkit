@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.server.handler
 
 import android.net.Uri
+import kotlinx.coroutines.runBlocking
 import org.nanohttpd.protocols.http.response.Response
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.streamer.server.Assets
@@ -23,7 +24,7 @@ internal class AssetHandler : BaseHandler() {
 
     override fun handle(resource: RouterNanoHTTPD.UriResource, uri: Uri, parameters: Map<String, String>?): Response {
         val assets = resource.initParameter(Assets::class.java)
-        val asset = assets.find(uri) ?: return notFoundResponse
+        val asset = runBlocking { assets.find(uri) } ?: return notFoundResponse
         return createResponse(mediaType = asset.mediaType, body = asset.stream)
     }
 

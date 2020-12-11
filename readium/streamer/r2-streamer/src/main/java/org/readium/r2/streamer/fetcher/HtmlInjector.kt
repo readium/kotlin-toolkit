@@ -35,7 +35,7 @@ internal class HtmlInjector(
     fun transform(resource: Resource): Resource = LazyResource {
 
         val link = resource.link()
-        if (link.mediaType?.isHtml == true)
+        if (link.mediaType.isHtml)
             inject(resource)
         else
             resource
@@ -45,7 +45,7 @@ internal class HtmlInjector(
 
         override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
             resource.read().mapCatching {
-                val trimmedText = it.toString(link().mediaType?.charset ?: Charsets.UTF_8).trim()
+                val trimmedText = it.toString(link().mediaType.charset ?: Charsets.UTF_8).trim()
                 val res = if (publication.metadata.presentation.layoutOf(link()) == EpubLayout.REFLOWABLE)
                     injectReflowableHtml(trimmedText)
                 else

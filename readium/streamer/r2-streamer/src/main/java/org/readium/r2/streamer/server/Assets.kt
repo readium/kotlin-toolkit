@@ -11,12 +11,12 @@ package org.readium.r2.streamer.server
 
 import android.content.res.AssetManager
 import android.net.Uri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.isParentOf
-import org.readium.r2.shared.format.Format
-import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.mediatype.MediaType
 import java.io.File
 import java.io.InputStream
-
 
 /**
  * Files to be served from the application's assets.
@@ -37,7 +37,7 @@ internal class Assets(
         assets.add(0, Pair(href, File("/$path").canonicalFile))
     }
 
-    fun find(uri: Uri): ServedAsset? {
+    suspend fun find(uri: Uri): ServedAsset? {
         val path = uri.path?.removePrefix(basePath) ?: return null
 
         for ((href, file) in assets) {
@@ -45,8 +45,10 @@ internal class Assets(
                 val requestedFile = File(file, path.removePrefix(href)).canonicalFile
                 // Makes sure that the requested file is `file` or one of its descendant.
                 if (file == requestedFile || file.isParentOf(requestedFile)) {
-                    val mediaType = Format.of(fileExtension = requestedFile.extension)?.mediaType ?: fallbackMediaType
-                    return ServedAsset(assetManager.open(requestedFile.path.removePrefix("/")), mediaType)
+                    val mediaType = MediaType.of(fileExtension = requestedFile.extension) ?: fallbackMediaType
+                    return withContext(Dispatchers.IO) {
+                        ServedAsset(assetManager.open(requestedFile.path.removePrefix("/")), mediaType)
+                    }
                 }
             }
         }

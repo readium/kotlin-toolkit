@@ -18,7 +18,7 @@ import org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse
 import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.MediaOverlays
-import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.streamer.server.ServingFetcher
 
