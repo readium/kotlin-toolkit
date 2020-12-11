@@ -67,7 +67,7 @@ class PublicationTest {
             listOf(Locator(href = "locator", type = "")),
             createPublication(
                 servicesBuilder = Publication.ServicesBuilder(
-                    positions = { context ->
+                    positions = {
                         object: PositionsService {
                             override suspend fun positionsByReadingOrder(): List<List<Locator>> = listOf(listOf(Locator(href = "locator", type = "")))
                         }
@@ -90,7 +90,7 @@ class PublicationTest {
             ),
             createPublication(
                 servicesBuilder = Publication.ServicesBuilder(
-                    positions = { context ->
+                    positions = {
                         object: PositionsService {
                             override suspend fun positionsByReadingOrder(): List<List<Locator>> = listOf(
                                 listOf(

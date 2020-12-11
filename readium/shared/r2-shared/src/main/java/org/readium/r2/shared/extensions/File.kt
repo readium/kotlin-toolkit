@@ -26,7 +26,7 @@ fun File.md5(): String? =
         val bufferSize = 32000
         val buffer = ByteArray(bufferSize)
         FileInputStream(this).use {
-            var bytes = 0
+            var bytes: Int
             do {
                 bytes = it.read(buffer, 0, bufferSize)
                 if (bytes > 0) {

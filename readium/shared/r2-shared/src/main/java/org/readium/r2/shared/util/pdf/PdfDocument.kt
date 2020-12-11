@@ -12,7 +12,7 @@ package org.readium.r2.shared.util.pdf
 import android.graphics.Bitmap
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.Link
 import java.io.File
 

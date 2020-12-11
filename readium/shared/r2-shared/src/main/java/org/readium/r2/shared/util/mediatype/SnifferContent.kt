@@ -1,13 +1,10 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2020 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.format
+package org.readium.r2.shared.util.mediatype
 
 import android.content.ContentResolver
 import android.net.Uri
@@ -19,7 +16,7 @@ import java.io.File
 import java.io.InputStream
 
 /** Provides an access to a file's content to sniff its format. */
-internal interface FormatSnifferContent {
+internal interface SnifferContent {
 
     /** Reads the whole content as raw bytes. */
     suspend fun read(): ByteArray?
@@ -34,7 +31,7 @@ internal interface FormatSnifferContent {
 }
 
 /** Used to sniff a local file. */
-internal class FormatSnifferFileContent(val file: File) : FormatSnifferContent {
+internal class SnifferFileContent(val file: File) : SnifferContent {
 
     override suspend fun read(): ByteArray? = withContext(Dispatchers.IO) {
         try {
@@ -61,7 +58,7 @@ internal class FormatSnifferFileContent(val file: File) : FormatSnifferContent {
 }
 
 /** Used to sniff a bytes array. */
-internal class FormatSnifferBytesContent(val getBytes: () -> ByteArray) : FormatSnifferContent {
+internal class SnifferBytesContent(val getBytes: () -> ByteArray) : SnifferContent {
 
     private lateinit var _bytes: ByteArray
 
@@ -80,7 +77,7 @@ internal class FormatSnifferBytesContent(val getBytes: () -> ByteArray) : Format
 }
 
 /** Used to sniff a content URI. */
-internal class FormatSnifferUriContent(val uri: Uri, val contentResolver: ContentResolver) : FormatSnifferContent {
+internal class SnifferUriContent(val uri: Uri, val contentResolver: ContentResolver) : SnifferContent {
 
     override suspend fun read(): ByteArray? =
         stream()?.readBytes()

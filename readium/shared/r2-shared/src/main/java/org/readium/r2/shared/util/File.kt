@@ -6,8 +6,7 @@
 
 package org.readium.r2.shared.util
 
-import org.readium.r2.shared.format.Format
-import java.lang.Exception
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Represents a path on the file system.
@@ -16,28 +15,28 @@ import java.lang.Exception
  */
 open class File private constructor(val file: java.io.File) {
 
+    private var knownMediaType: MediaType? = null
     private var mediaTypeHint: String? = null
-    private var knownFormat: Format? = null
 
-    private constructor(file: java.io.File, mediaType: String? = null, format: Format? = null) : this(file) {
-        mediaTypeHint = mediaType
-        knownFormat = format
+    private constructor(file: java.io.File, mediaType: MediaType? = null, mediaTypeHint: String? = null) : this(file) {
+        this.knownMediaType = mediaType
+        this.mediaTypeHint = mediaTypeHint
     }
 
     /**
-     * Creates a File from a path and its known mediaType.
+     * Creates a File from a path and a media type hint..
      *
      * @param path Absolute path to the file or directory.
      * @param mediaType If the file's media type is already known, providing it will improve performances.
      */
     constructor(path: String, mediaType: String? = null) :
-            this(java.io.File(path), mediaType = mediaType)
+            this(java.io.File(path), mediaTypeHint = mediaType)
 
     /**
-     *  Creates a File from a path and an already resolved format.
+     *  Creates a File from a path and an already resolved media type.
      */
-    constructor(path: String, format: Format?) :
-            this(java.io.File(path), format = format)
+    constructor(path: String, mediaType: MediaType?) :
+            this(java.io.File(path), mediaType = mediaType)
 
     /**
      * Absolute path on the file system.
@@ -56,20 +55,24 @@ open class File private constructor(val file: java.io.File) {
      */
     val isDirectory: Boolean get() = file.isDirectory
 
-    private lateinit var _format: Try<Format, Exception>
+    private lateinit var _mediaType: Try<MediaType, Exception>
 
     /**
-     * Format, if the path points to a file.
+     * Media type, if the path points to a file.
      */
-    suspend fun format(): Format? {
-        if (!::_format.isInitialized) {
-            val format = knownFormat
-                ?: Format.ofFile(file, mediaTypeHint)
-            _format = format
+    suspend fun mediaType(): MediaType {
+        if (!::_mediaType.isInitialized) {
+            val mediaType = knownMediaType
+                ?: MediaType.ofFile(file, mediaTypeHint)
+            _mediaType = mediaType
                 ?.let { Try.success(it) }
-                ?: Try.failure(Exception("Unable to detect format."))
+                ?: Try.failure(Exception("Unable to detect media type."))
         }
 
-        return _format.getOrNull()
+        return _mediaType.getOrDefault(MediaType.BINARY)
     }
+
+    @Deprecated("Renamed mediaType()", replaceWith = ReplaceWith("mediaType()"), level = DeprecationLevel.ERROR)
+    suspend fun format(): MediaType? = mediaType()
+
 }

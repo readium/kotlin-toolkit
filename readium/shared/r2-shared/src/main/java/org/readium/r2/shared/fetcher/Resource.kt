@@ -82,7 +82,7 @@ interface Resource {
      */
     suspend fun readAsString(charset: Charset? = null): ResourceTry<String> =
         read().mapCatching {
-            String(it, charset = charset ?: link().mediaType?.charset ?: Charsets.UTF_8)
+            String(it, charset = charset ?: link().mediaType.charset ?: Charsets.UTF_8)
         }
 
     /**

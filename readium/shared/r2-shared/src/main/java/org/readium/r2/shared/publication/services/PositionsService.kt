@@ -55,7 +55,7 @@ interface PositionsService : Publication.Service {
 }
 
 private suspend fun Publication.positionsFromManifest(): List<Locator> =
-    links.firstWithMediaType(positionsLink.mediaType!!)
+    links.firstWithMediaType(positionsLink.mediaType)
         ?.let { get(it) }
         ?.readAsString()
         ?.getOrNull()

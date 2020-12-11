@@ -244,6 +244,6 @@ class ElementNodeTest {
         """
         )
         val navNode = ElementNode("nav", "")
-        assertEquals(List(3) { i -> navNode }, doc.collect("nav", ""))
+        assertEquals(List(3) { _ -> navNode }, doc.collect("nav", ""))
     }
 }

@@ -1,18 +1,16 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2020 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.format
+package org.readium.r2.shared.util.mediatype
 
 import android.webkit.MimeTypeMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.archive.Archive
 import java.io.File
@@ -20,146 +18,146 @@ import java.net.URLConnection
 import java.util.*
 
 /**
- * Determines if the provided content matches a known format.
+ * Determines if the provided content matches a known media type.
  *
  * @param context Holds the file metadata and cached content, which are shared among the sniffers.
  */
-typealias FormatSniffer = suspend (context: FormatSnifferContext) -> Format?
+typealias Sniffer = suspend (context: SnifferContext) -> MediaType?
 
 /**
- * Default format sniffers provided by Readium.
+ * Default media type sniffers provided by Readium.
  */
-object FormatSniffers {
+object Sniffers {
 
     /**
-     * The default sniffers provided by Readium 2 to resolve a [Format].
+     * The default sniffers provided by Readium 2 to resolve a [MediaType].
      * The sniffers order is important, because some formats are subsets of other formats.
      */
-    val all: List<FormatSniffer> = listOf(
+    val all: List<Sniffer> = listOf(
         ::html, ::opds, ::lcpLicense, ::bitmap,
         ::webpub, ::w3cWPUB, ::epub, ::lpf, ::archive, ::pdf
     )
 
     /** Sniffs an HTML document. */
-    suspend fun html(context: FormatSnifferContext): Format? {
+    suspend fun html(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("htm", "html", "xht", "xhtml") || context.hasMediaType("text/html", "application/xhtml+xml")) {
-            return Format.HTML
+            return MediaType.HTML
         }
         // [contentAsXml] will fail if the HTML is not a proper XML document, hence the doctype check.
         if (context.contentAsXml()?.name?.toLowerCase(Locale.ROOT) == "html" || context.contentAsString()?.trimStart()?.startsWith("<!DOCTYPE html>") == true) {
-            return Format.HTML
+            return MediaType.HTML
         }
         return null
     }
 
     /** Sniffs an OPDS document. */
-    suspend fun opds(context: FormatSnifferContext): Format? {
+    suspend fun opds(context: SnifferContext): MediaType? {
         // OPDS 1
         if (context.hasMediaType("application/atom+xml;type=entry;profile=opds-catalog")) {
-            return Format.OPDS1_ENTRY
+            return MediaType.OPDS1_ENTRY
         }
         if (context.hasMediaType("application/atom+xml;profile=opds-catalog")) {
-            return Format.OPDS1_FEED
+            return MediaType.OPDS1
         }
         context.contentAsXml()?.let { xml ->
             if (xml.namespace == "http://www.w3.org/2005/Atom") {
                 if (xml.name == "feed") {
-                    return Format.OPDS1_FEED
+                    return MediaType.OPDS1
                 } else if (xml.name == "entry") {
-                    return Format.OPDS1_ENTRY
+                    return MediaType.OPDS1_ENTRY
                 }
             }
         }
 
         // OPDS 2
         if (context.hasMediaType("application/opds+json")) {
-            return Format.OPDS2_FEED
+            return MediaType.OPDS2
         }
         if (context.hasMediaType("application/opds-publication+json")) {
-            return Format.OPDS2_PUBLICATION
+            return MediaType.OPDS2_PUBLICATION
         }
         context.contentAsRwpm()?.let { rwpm ->
             if (rwpm.linkWithRel("self")?.mediaType?.matches("application/opds+json") == true) {
-                return Format.OPDS2_FEED
+                return MediaType.OPDS2
             }
             if (rwpm.links.firstWithRelMatching { it.startsWith("http://opds-spec.org/acquisition") } != null) {
-                return Format.OPDS2_PUBLICATION
+                return MediaType.OPDS2_PUBLICATION
             }
         }
 
         // OPDS Authentication Document.
         if (context.hasMediaType("application/opds-authentication+json") || context.hasMediaType("application/vnd.opds.authentication.v1.0+json")) {
-            return Format.OPDS_AUTHENTICATION
+            return MediaType.OPDS_AUTHENTICATION
         }
         if (context.containsJsonKeys("id", "title", "authentication")) {
-            return Format.OPDS_AUTHENTICATION
+            return MediaType.OPDS_AUTHENTICATION
         }
 
         return null
     }
 
     /** Sniffs an LCP License Document. */
-    suspend fun lcpLicense(context: FormatSnifferContext): Format? {
+    suspend fun lcpLicense(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("lcpl") || context.hasMediaType("application/vnd.readium.lcp.license.v1.0+json")) {
-            return Format.LCP_LICENSE
+            return MediaType.LCP_LICENSE_DOCUMENT
         }
         if (context.containsJsonKeys("id", "issued", "provider", "encryption")) {
-            return Format.LCP_LICENSE
+            return MediaType.LCP_LICENSE_DOCUMENT
         }
         return null
     }
 
     /** Sniffs a bitmap image. */
-    suspend fun bitmap(context: FormatSnifferContext): Format? {
+    suspend fun bitmap(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("bmp", "dib") || context.hasMediaType("image/bmp", "image/x-bmp")) {
-            return Format.BMP
+            return MediaType.BMP
         }
         if (context.hasFileExtension("gif") || context.hasMediaType("image/gif")) {
-            return Format.GIF
+            return MediaType.GIF
         }
         if (context.hasFileExtension("jpg", "jpeg", "jpe", "jif", "jfif", "jfi") || context.hasMediaType("image/jpeg")) {
-            return Format.JPEG
+            return MediaType.JPEG
         }
         if (context.hasFileExtension("png") || context.hasMediaType("image/png")) {
-            return Format.PNG
+            return MediaType.PNG
         }
         if (context.hasFileExtension("tiff", "tif") || context.hasMediaType("image/tiff", "image/tiff-fx")) {
-            return Format.TIFF
+            return MediaType.TIFF
         }
         if (context.hasFileExtension("webp") || context.hasMediaType("image/webp")) {
-            return Format.WEBP
+            return MediaType.WEBP
         }
         return null
     }
 
     /** Sniffs a Readium Web Publication, protected or not by LCP. */
-    suspend fun webpub(context: FormatSnifferContext): Format? {
+    suspend fun webpub(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("audiobook") || context.hasMediaType("application/audiobook+zip")) {
-            return Format.READIUM_AUDIOBOOK
+            return MediaType.READIUM_AUDIOBOOK
         }
         if (context.hasMediaType("application/audiobook+json")) {
-            return Format.READIUM_AUDIOBOOK_MANIFEST
+            return MediaType.READIUM_AUDIOBOOK_MANIFEST
         }
 
         if (context.hasFileExtension("divina") || context.hasMediaType("application/divina+zip")) {
-            return Format.DIVINA
+            return MediaType.DIVINA
         }
         if (context.hasMediaType("application/divina+json")) {
-            return Format.DIVINA_MANIFEST
+            return MediaType.DIVINA_MANIFEST
         }
 
         if (context.hasFileExtension("webpub") || context.hasMediaType("application/webpub+zip")) {
-            return Format.READIUM_WEBPUB
+            return MediaType.READIUM_WEBPUB
         }
         if (context.hasMediaType("application/webpub+json")) {
-            return Format.READIUM_WEBPUB_MANIFEST
+            return MediaType.READIUM_WEBPUB_MANIFEST
         }
 
         if (context.hasFileExtension("lcpa") || context.hasMediaType("application/audiobook+lcp")) {
-            return Format.LCP_PROTECTED_AUDIOBOOK
+            return MediaType.LCP_PROTECTED_AUDIOBOOK
         }
         if (context.hasFileExtension("lcpdf") || context.hasMediaType("application/pdf+lcp")) {
-            return Format.LCP_PROTECTED_PDF
+            return MediaType.LCP_PROTECTED_PDF
         }
 
         // Reads a RWPM, either from a manifest.json file, or from a manifest.json archive entry, if
@@ -181,17 +179,17 @@ object FormatSniffers {
             val isLcpProtected = context.containsArchiveEntryAt("license.lcpl")
 
             if (manifest.metadata.type == "http://schema.org/Audiobook" || manifest.readingOrder.allAreAudio) {
-                return if (isManifest) Format.READIUM_AUDIOBOOK_MANIFEST
-                else (if (isLcpProtected) Format.LCP_PROTECTED_AUDIOBOOK else Format.READIUM_AUDIOBOOK)
+                return if (isManifest) MediaType.READIUM_AUDIOBOOK_MANIFEST
+                else (if (isLcpProtected) MediaType.LCP_PROTECTED_AUDIOBOOK else MediaType.READIUM_AUDIOBOOK)
             }
             if (manifest.readingOrder.allAreBitmap) {
-                return if (isManifest) Format.DIVINA_MANIFEST else Format.DIVINA
+                return if (isManifest) MediaType.DIVINA_MANIFEST else MediaType.DIVINA
             }
             if (isLcpProtected && manifest.readingOrder.allMatchMediaType(MediaType.PDF)) {
-                return Format.LCP_PROTECTED_PDF
+                return MediaType.LCP_PROTECTED_PDF
             }
             if (manifest.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
-                return if (isManifest) Format.READIUM_WEBPUB_MANIFEST else Format.READIUM_WEBPUB
+                return if (isManifest) MediaType.READIUM_WEBPUB_MANIFEST else MediaType.READIUM_WEBPUB
             }
         }
 
@@ -199,11 +197,11 @@ object FormatSniffers {
     }
 
     /** Sniffs a W3C Web Publication Manifest. */
-    suspend fun w3cWPUB(context: FormatSnifferContext): Format? {
+    suspend fun w3cWPUB(context: SnifferContext): MediaType? {
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@context`.
         val content = context.contentAsString() ?: ""
         if (content.contains("@context") && content.contains("https://www.w3.org/ns/wp-context")) {
-            return Format.W3C_WPUB_MANIFEST
+            return MediaType.W3C_WPUB_MANIFEST
         }
 
         return null
@@ -214,15 +212,15 @@ object FormatSniffers {
      *
      * Reference: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-mime
      */
-    suspend fun epub(context: FormatSnifferContext): Format? {
+    suspend fun epub(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("epub") || context.hasMediaType("application/epub+zip")) {
-            return Format.EPUB
+            return MediaType.EPUB
         }
 
         val mimetype = context.readArchiveEntryAt("mimetype")
             ?.let { String(it, charset = Charsets.US_ASCII).trim() }
         if (mimetype == "application/epub+zip") {
-            return Format.EPUB
+            return MediaType.EPUB
         }
 
         return null
@@ -235,12 +233,12 @@ object FormatSniffers {
      *  - https://www.w3.org/TR/lpf/
      *  - https://www.w3.org/TR/pub-manifest/
      */
-    suspend fun lpf(context: FormatSnifferContext): Format? {
+    suspend fun lpf(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("lpf") || context.hasMediaType("application/lpf+zip")) {
-            return Format.LPF
+            return MediaType.LPF
         }
         if (context.containsArchiveEntryAt("index.html")) {
-            return Format.LPF
+            return MediaType.LPF
         }
 
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@context`.
@@ -248,7 +246,7 @@ object FormatSniffers {
             ?.let { String(it) }
             ?.let { manifest ->
                 if (manifest.contains("@context") && manifest.contains("https://www.w3.org/ns/pub-context")) {
-                    return Format.LPF
+                    return MediaType.LPF
                 }
             }
 
@@ -281,12 +279,12 @@ object FormatSniffers {
      *
      * Reference: https://wiki.mobileread.com/wiki/CBR_and_CBZ
      */
-    suspend fun archive(context: FormatSnifferContext): Format? {
+    suspend fun archive(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("cbz") || context.hasMediaType("application/vnd.comicbook+zip", "application/x-cbz", "application/x-cbr")) {
-            return Format.CBZ
+            return MediaType.CBZ
         }
         if (context.hasFileExtension("zab")) {
-            return Format.ZAB
+            return MediaType.ZAB
         }
 
         if (context.contentAsArchive() != null) {
@@ -300,10 +298,10 @@ object FormatSniffers {
                 }
 
             if (archiveContainsOnlyExtensions(CBZ_EXTENSIONS)) {
-                return Format.CBZ
+                return MediaType.CBZ
             }
             if (archiveContainsOnlyExtensions(ZAB_EXTENSIONS)) {
-                return Format.ZAB
+                return MediaType.ZAB
             }
         }
 
@@ -315,12 +313,12 @@ object FormatSniffers {
      *
      * Reference: https://www.loc.gov/preservation/digital/formats/fdd/fdd000123.shtml
      */
-    suspend fun pdf(context: FormatSnifferContext): Format? {
+    suspend fun pdf(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("pdf") || context.hasMediaType("application/pdf")) {
-            return Format.PDF
+            return MediaType.PDF
         }
-        if (context.readFileSignature(length = 5) == "%PDF-") {
-            return Format.PDF
+        if (context.read(0L until 5L)?.toString(Charsets.UTF_8) == "%PDF-") {
+            return MediaType.PDF
         }
 
         return null
@@ -330,30 +328,28 @@ object FormatSniffers {
      * Sniffs the system-wide registered media types using [MimeTypeMap] and
      * [URLConnection.guessContentTypeFromStream].
      */
-    suspend fun system(context: FormatSnifferContext): Format? {
-        val mimetypes = MimeTypeMap.getSingleton()
+    suspend fun system(context: SnifferContext): MediaType? {
+        val mimetypes = tryOrNull { MimeTypeMap.getSingleton() }
+            ?: return null
 
-        fun createFormat(mediaType: MediaType, extension: String) =
-            Format(name = extension.toUpperCase(Locale.ROOT), mediaType = mediaType, fileExtension = extension)
-
-        fun sniffExtension(extension: String): Format? {
-            val mediaType = mimetypes.getMimeTypeFromExtension(extension)?.let { MediaType.parse(it) }
+        fun sniffExtension(extension: String): MediaType? {
+            val type = mimetypes.getMimeTypeFromExtension(extension)
                 ?: return null
-            val preferredExtension = mimetypes.getExtensionFromMimeType(mediaType.toString())
+            val preferredExtension = mimetypes.getExtensionFromMimeType(type)
                 ?: return null
-            return createFormat(mediaType, preferredExtension)
+            return MediaType.parse(type, fileExtension = preferredExtension)
         }
 
-        fun sniffMediaType(mediaType: MediaType): Format? {
-            val extension = mimetypes.getExtensionFromMimeType(mediaType.toString())
+        fun sniffType(type: String): MediaType? {
+            val extension = mimetypes.getExtensionFromMimeType(type)
                 ?: return null
-            val preferredMediaType = mimetypes.getMimeTypeFromExtension(extension)?.let { MediaType.parse(it) }
+            val preferredType = mimetypes.getMimeTypeFromExtension(extension)
                 ?: return null
-            return createFormat(preferredMediaType, extension)
+            return MediaType.parse(preferredType, fileExtension = extension)
         }
 
         for (mediaType in context.mediaTypes) {
-            return sniffMediaType(mediaType) ?: continue
+            return sniffType(mediaType.toString()) ?: continue
         }
 
         for (extension in context.fileExtensions) {
@@ -363,17 +359,14 @@ object FormatSniffers {
         return withContext(Dispatchers.IO) {
             context.stream()
                 ?.let { URLConnection.guessContentTypeFromStream(it) }
-                ?.let { MediaType.parse(it) }
-                ?.let {
-                    sniffMediaType(it)
-                }
+                ?.let { sniffType(it) }
         }
     }
 
 }
 
 /**
- * Finds the first [Link] having the given [rel] matching the given [predicate].
+ * Finds the first [Link] having a relation matching the given [predicate].
  */
 private fun List<Link>.firstWithRelMatching(predicate: (String) -> Boolean): Link? =
     firstOrNull { it.rels.any(predicate) }

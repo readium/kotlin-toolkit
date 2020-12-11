@@ -16,12 +16,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import java.net.URL
+import java.io.File
 
 /**
  * Function used to recursively transform the href of a [Link] when parsing its JSON
@@ -71,8 +71,8 @@ data class Link(
 ) : JSONable, Parcelable {
 
     /** Media type of the linked resource. */
-    val mediaType: MediaType? get() =
-        type?.let { MediaType.parse(it) }
+    val mediaType: MediaType get() =
+        type?.let { MediaType.parse(it) } ?: MediaType.BINARY
 
     /**
      * List of URI template parameter keys, if the [Link] is templated.
@@ -220,14 +220,14 @@ fun List<Link>.filterByRel(rel: String): List<Link> = filter { it.rels.contains(
  * Finds the first link matching the given media type.
  */
 fun List<Link>.firstWithMediaType(mediaType: MediaType): Link? = firstOrNull {
-    it.mediaType?.matches(mediaType) ?: false
+    it.mediaType.matches(mediaType)
 }
 
 /**
  * Finds all the links matching the given media type.
  */
 fun List<Link>.filterByMediaType(mediaType: MediaType): List<Link> = filter {
-    it.mediaType?.matches(mediaType) ?: false
+    it.mediaType.matches(mediaType)
 }
 
 /**
@@ -241,28 +241,28 @@ fun List<Link>.filterByMediaTypes(mediaTypes: List<MediaType>): List<Link> = fil
  * Returns whether all the resources in the collection are bitmaps.
  */
 val List<Link>.allAreBitmap: Boolean get() = isNotEmpty() && all {
-    it.mediaType?.isBitmap ?: false
+    it.mediaType.isBitmap
 }
 
 /**
  * Returns whether all the resources in the collection are audio clips.
  */
 val List<Link>.allAreAudio: Boolean get() = isNotEmpty() && all {
-    it.mediaType?.isAudio ?: false
+    it.mediaType.isAudio
 }
 
 /**
  * Returns whether all the resources in the collection are video clips.
  */
 val List<Link>.allAreVideo: Boolean get() = isNotEmpty() && all {
-    it.mediaType?.isVideo ?: false
+    it.mediaType.isVideo
 }
 
 /**
  * Returns whether all the resources in the collection are HTML documents.
  */
 val List<Link>.allAreHtml: Boolean get() = isNotEmpty() && all {
-    it.mediaType?.isHtml ?: false
+    it.mediaType.isHtml
 }
 
 /**

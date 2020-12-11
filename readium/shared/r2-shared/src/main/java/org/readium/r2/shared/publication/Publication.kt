@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.publication
 
-import android.content.Context
 import android.net.Uri
 import androidx.annotation.StringRes
 import kotlinx.coroutines.GlobalScope
@@ -26,7 +25,7 @@ import org.readium.r2.shared.extensions.toUrlOrNull
 import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.format.MediaType
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.CoverService
@@ -451,8 +450,8 @@ class Publication(
     @Deprecated("Renamed to [listOfVideoClips]", ReplaceWith("listOfVideoClips"))
     val listOfVideos: List<Link> = listOfVideoClips
 
-    @Deprecated("Renamed to [resourceWithHref]", ReplaceWith("resourceWithHref(href)"))
-    fun resource(href: String): Link? = resourceWithHref(href)
+    @Deprecated("Renamed to [linkWithHref]", ReplaceWith("linkWithHref(href)"))
+    fun resource(href: String): Link? = linkWithHref(href)
 
     @Deprecated("Refactored as a property", ReplaceWith("baseUrl"))
     fun baseUrl(): URL? = baseUrl

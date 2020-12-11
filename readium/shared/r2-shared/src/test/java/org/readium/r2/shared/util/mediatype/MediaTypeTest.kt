@@ -1,16 +1,8 @@
-/*
- * Module: r2-shared-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
- */
+package org.readium.r2.shared.util.mediatype
 
-package org.readium.r2.shared.format
-
-import org.junit.Assert.*
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import kotlin.test.*
 
 class MediaTypeTest {
 
@@ -122,6 +114,13 @@ class MediaTypeTest {
     fun `charset value is canonicalized`() {
         assertEquals("US-ASCII", MediaType.parse("text/html;charset=ascii")?.parameters?.get("charset"))
         assertEquals("UNKNOWN", MediaType.parse("text/html;charset=unknown")?.parameters?.get("charset"))
+    }
+
+    @Test
+    fun `canonicalize media type`() = runBlocking {
+        assertEquals(MediaType.parse("text/html", fileExtension = "html")!!, MediaType.parse("text/html;charset=utf-8")!!.canonicalMediaType())
+        assertEquals(MediaType.parse("application/atom+xml;profile=opds-catalog")!!, MediaType.parse("application/atom+xml;profile=opds-catalog;charset=utf-8")!!.canonicalMediaType())
+        assertEquals(MediaType.parse("application/unknown;charset=utf-8")!!, MediaType.parse("application/unknown;charset=utf-8")!!.canonicalMediaType())
     }
 
     @Test

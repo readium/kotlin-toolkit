@@ -1,40 +1,37 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2020 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.format
+package org.readium.r2.shared.util.mediatype
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.extensions.readRange
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.util.*
 
-
 /**
- * A companion type of [Format.Sniffer] holding the type hints (file extensions, media types) and
+ * A companion type of [Sniffer] holding the type hints (file extensions, media types) and
  * providing an access to the file content.
  *
  * @param content Underlying content holder.
  * @param mediaTypes Media type hints.
  * @param fileExtensions File extension hints.
  */
-class FormatSnifferContext internal constructor(
-    private val content: FormatSnifferContent? = null,
+class SnifferContext internal constructor(
+    private val content: SnifferContent? = null,
     mediaTypes: List<String>,
     fileExtensions: List<String>
 ) {
@@ -127,7 +124,7 @@ class FormatSnifferContext internal constructor(
         if (!loadedContentAsArchive) {
             loadedContentAsArchive = true
             _contentAsArchive = withContext(Dispatchers.IO) {
-                (content as? FormatSnifferFileContent)?.let {
+                (content as? SnifferFileContent)?.let {
                     DefaultArchiveFactory().open(it.file, password = null)
                 }
             }
@@ -151,7 +148,7 @@ class FormatSnifferContext internal constructor(
 
     /** Readium Web Publication Manifest parsed from the content. */
     suspend fun contentAsRwpm(): Manifest? =
-            Manifest.fromJSON(contentAsJson())
+        Manifest.fromJSON(contentAsJson())
 
     /**
      * Raw bytes stream of the content.
@@ -162,22 +159,16 @@ class FormatSnifferContext internal constructor(
     suspend fun stream(): InputStream? = content?.stream()
 
     /**
-     * Reads the file signature, aka magic number, at the beginning of the content, up to [length]
-     * bytes.
+     * Reads all the bytes or the given [range].
      *
-     * i.e. https://en.wikipedia.org/wiki/List_of_file_signatures
+     * It can be used to check a file signature, aka magic number.
+     * See https://en.wikipedia.org/wiki/List_of_file_signatures
      */
-    suspend fun readFileSignature(length: Int): String? = withContext(Dispatchers.IO) {
-            try {
-            stream()?.let {
-                val buffer = ByteArray(length)
-                it.read(buffer, 0, length)
-                String(buffer)
-            }
-        } catch (e: Exception) {
-            null
+    suspend fun read(range: LongRange? = null): ByteArray? =
+        tryOrNull {
+            if (range != null) stream()?.readRange(range)
+            else stream()?.readFully()
         }
-    }
 
     /**
      * Returns whether the content is a JSON object containing all of the given root keys.

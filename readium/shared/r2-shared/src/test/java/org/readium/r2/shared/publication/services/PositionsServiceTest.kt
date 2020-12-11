@@ -71,21 +71,20 @@ class PositionsServiceTest {
             override suspend fun positionsByReadingOrder(): List<List<Locator>> = positions
         }
 
+        val t = service.get(Link("/~readium/positions"))
+            ?.let { runBlocking { it.readAsString() } }
+
         val json = service.get(Link("/~readium/positions"))
             ?.let { runBlocking { it.readAsString() } }
             ?.getOrNull()
-            ?.let {
-                JSONObject(it)
-            }
+            ?.let { JSONObject(it) }
         val total = json
             ?.optNullableInt("total")
         val locators = json
             ?.optJSONArray("positions")
-            ?.mapNotNull { (it as? JSONObject)?.let {
-                Locator.fromJSON(
-                    it
-                )
-            } }
+            ?.mapNotNull { locator ->
+                (locator as? JSONObject)?.let { Locator.fromJSON(it) }
+            }
 
         assertEquals(positions.flatten().size, total)
         assertEquals(positions.flatten(), locators)
