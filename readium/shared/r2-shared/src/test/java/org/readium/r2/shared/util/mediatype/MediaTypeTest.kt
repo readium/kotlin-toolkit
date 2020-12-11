@@ -1,5 +1,6 @@
 package org.readium.r2.shared.util.mediatype
 
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import kotlin.test.*
 
@@ -116,10 +117,10 @@ class MediaTypeTest {
     }
 
     @Test
-    fun `canonicalize media type`() {
-        assertEquals(MediaType.parse("text/html", fileExtension = "html")!!, MediaType.parse("text/html;charset=utf-8")!!.canonicalMediaType)
-        assertEquals(MediaType.parse("application/atom+xml;profile=opds-catalog")!!, MediaType.parse("application/atom+xml;profile=opds-catalog;charset=utf-8")!!.canonicalMediaType)
-        assertEquals(MediaType.parse("application/unknown;charset=utf-8")!!, MediaType.parse("application/unknown;charset=utf-8")!!.canonicalMediaType)
+    fun `canonicalize media type`() = runBlocking {
+        assertEquals(MediaType.parse("text/html", fileExtension = "html")!!, MediaType.parse("text/html;charset=utf-8")!!.canonicalMediaType())
+        assertEquals(MediaType.parse("application/atom+xml;profile=opds-catalog")!!, MediaType.parse("application/atom+xml;profile=opds-catalog;charset=utf-8")!!.canonicalMediaType())
+        assertEquals(MediaType.parse("application/unknown;charset=utf-8")!!, MediaType.parse("application/unknown;charset=utf-8")!!.canonicalMediaType())
     }
 
     @Test

@@ -16,24 +16,24 @@ import kotlin.test.assertNull
 class SnifferTest {
 
     val fixtures = Fixtures("format")
-
+    
     @Test
-    fun `sniff ignores extension case`() {
+    fun `sniff ignores extension case`() = runBlocking {
         assertEquals(MediaType.EPUB, MediaType.of(fileExtension = "EPUB"))
     }
 
     @Test
-    fun `sniff ignores media type case`() {
+    fun `sniff ignores media type case`() = runBlocking {
         assertEquals(MediaType.EPUB, MediaType.of(mediaType = "APPLICATION/EPUB+ZIP"))
     }
 
     @Test
-    fun `sniff ignores media type extra parameters`() {
+    fun `sniff ignores media type extra parameters`() = runBlocking {
         assertEquals(MediaType.EPUB, MediaType.of(mediaType = "application/epub+zip;param=value"))
     }
 
     @Test
-    fun `sniff from metadata`() {
+    fun `sniff from metadata`() = runBlocking {
         assertNull(MediaType.of(fileExtension = null))
         assertEquals(MediaType.READIUM_AUDIOBOOK, MediaType.of(fileExtension = "audiobook"))
         assertNull(MediaType.of(mediaType = null))
@@ -83,7 +83,7 @@ class SnifferTest {
     }
 
     @Test
-    fun `sniff BMP`() {
+    fun `sniff BMP`() = runBlocking {
         assertEquals(MediaType.BMP, MediaType.of(fileExtension = "bmp"))
         assertEquals(MediaType.BMP, MediaType.of(fileExtension = "dib"))
         assertEquals(MediaType.BMP, MediaType.of(mediaType = "image/bmp"))
@@ -120,7 +120,7 @@ class SnifferTest {
     }
 
     @Test
-    fun `sniff GIF`() {
+    fun `sniff GIF`() = runBlocking {
         assertEquals(MediaType.GIF, MediaType.of(fileExtension = "gif"))
         assertEquals(MediaType.GIF, MediaType.of(mediaType = "image/gif"))
     }
@@ -138,7 +138,7 @@ class SnifferTest {
     }
 
     @Test
-    fun `sniff JPEG`() {
+    fun `sniff JPEG`() = runBlocking {
         assertEquals(MediaType.JPEG, MediaType.of(fileExtension = "jpg"))
         assertEquals(MediaType.JPEG, MediaType.of(fileExtension = "jpeg"))
         assertEquals(MediaType.JPEG, MediaType.of(fileExtension = "jpe"))
@@ -216,13 +216,13 @@ class SnifferTest {
     }
 
     @Test
-    fun `sniff PNG`() {
+    fun `sniff PNG`() = runBlocking {
         assertEquals(MediaType.PNG, MediaType.of(fileExtension = "png"))
         assertEquals(MediaType.PNG, MediaType.of(mediaType = "image/png"))
     }
 
     @Test
-    fun `sniff TIFF`() {
+    fun `sniff TIFF`() = runBlocking {
         assertEquals(MediaType.TIFF, MediaType.of(fileExtension = "tiff"))
         assertEquals(MediaType.TIFF, MediaType.of(fileExtension = "tif"))
         assertEquals(MediaType.TIFF, MediaType.of(mediaType = "image/tiff"))
@@ -230,7 +230,7 @@ class SnifferTest {
     }
 
     @Test
-    fun `sniff WebP`() {
+    fun `sniff WebP`() = runBlocking {
         assertEquals(MediaType.WEBP, MediaType.of(fileExtension = "webp"))
         assertEquals(MediaType.WEBP, MediaType.of(mediaType = "image/webp"))
     }
@@ -260,7 +260,7 @@ class SnifferTest {
     }
 
     @Test
-    fun `sniff system media types`() {
+    fun `sniff system media types`() = runBlocking {
         shadowOf(MimeTypeMap.getSingleton()).addExtensionMimeTypMapping("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         val xlsx = MediaType.parse(
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

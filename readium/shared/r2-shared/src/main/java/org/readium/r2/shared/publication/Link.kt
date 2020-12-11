@@ -72,8 +72,7 @@ data class Link(
 
     /** Media type of the linked resource. */
     val mediaType: MediaType get() =
-        type?.let { MediaType.of(mediaType = it, fileExtension = File(href).extension) }
-            ?: MediaType.BINARY
+        type?.let { MediaType.parse(it) } ?: MediaType.BINARY
 
     /**
      * List of URI template parameter keys, if the [Link] is templated.

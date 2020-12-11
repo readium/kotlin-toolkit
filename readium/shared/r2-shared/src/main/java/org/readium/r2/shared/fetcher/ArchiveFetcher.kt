@@ -93,7 +93,7 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
     }
 }
 
-private fun Archive.Entry.toLink(): Link {
+private suspend fun Archive.Entry.toLink(): Link {
     val link = Link(
         href = path.addPrefix("/"),
         type = MediaType.of(fileExtension = File(path).extension)?.toString()

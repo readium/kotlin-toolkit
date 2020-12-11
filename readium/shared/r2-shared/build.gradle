@@ -52,7 +52,7 @@ dependencies {
     implementation "nl.komponents.kovenant:kovenant-jvm:3.3.0"
     implementation "nl.komponents.kovenant:kovenant:3.3.0"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2"
 
     testImplementation "androidx.test.ext:junit-ktx:1.1.2"
     testImplementation "androidx.test:core-ktx:1.3.0"

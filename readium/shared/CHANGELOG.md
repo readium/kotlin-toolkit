@@ -11,8 +11,9 @@ All notable changes to this project will be documented in this file.
 * Upgraded to Kotlin 1.4.10.
 * `Format` got merged into `MediaType`, to simplify the media type APIs.
   * You can use `MediaType.of()` to sniff the type of a file or bytes.
+      * All the `MediaType.of()` functions are now suspending to prevent deadlocks with `runBlocking`.
   * `MediaType` has now optional `name` and `fileExtension` properties.
-  * Some publication formats can be represented by several media type aliases. Using `mediaType.canonicalized` will give you the canonical media type to use, for example when persisting the file type in a database. All Readium APIs are already returning canonical media types, so it only matters if you create a `MediaType` yourself from its string representation.
+  * Some publication formats can be represented by several media type aliases. Using `mediaType.canonicalMediaType()` will give you the canonical media type to use, for example when persisting the file type in a database. All Readium APIs are already returning canonical media types, so it only matters if you create a `MediaType` yourself from its string representation.
 * `ContentLayout` is deprecated, use `publication.metadata.effectiveReadingProgression` to determine the reading progression of a publication instead.
 
 
