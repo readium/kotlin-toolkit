@@ -20,9 +20,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
 import kotlinx.coroutines.delay
@@ -48,7 +46,6 @@ class R2EpubPageFragment : Fragment() {
     var webView: R2WebView? = null
         private set
 
-    private var windowInsets: WindowInsetsCompat = WindowInsetsCompat.CONSUMED
     private lateinit var containerView: View
     private lateinit var preferences: SharedPreferences
 
@@ -246,39 +243,39 @@ class R2EpubPageFragment : Fragment() {
         // Update padding when the window insets change, for example when the navigation and status
         // bars are toggled.
         ViewCompat.setOnApplyWindowInsetsListener(containerView) { _, insets ->
-            windowInsets = insets
             updatePadding()
             insets
         }
     }
 
     private fun updatePadding() {
-        val activity = activity ?: return
-        if (!viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-            return
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            val window = activity?.window ?: return@launchWhenResumed
+            var top = 0
+            var bottom = 0
+
+            // Add additional padding to take into account the display cutout, if needed.
+            if (
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
+                window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+            ) {
+                // Request the display cutout insets from the decor view because the ones given by
+                // setOnApplyWindowInsetsListener are not always correct for preloaded views.
+                window.decorView.rootWindowInsets?.displayCutout?.let { displayCutoutInsets ->
+                    top += displayCutoutInsets.safeInsetTop
+                    bottom += displayCutoutInsets.safeInsetBottom
+                }
+            }
+
+            val scrollMode = preferences.getBoolean(SCROLL_REF, false)
+            if (!scrollMode) {
+                val margin = resources.getDimension(R.dimen.r2_navigator_epub_vertical_padding).toInt()
+                top += margin
+                bottom += margin
+            }
+
+            containerView.setPadding(0, top, 0, bottom)
         }
-
-        var top = 0
-        var bottom = 0
-
-        // Add additional padding to take into account the display cutout, if needed.
-        if (
-            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
-            activity.window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
-        ) {
-            val displayCutoutInsets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout())
-            top += displayCutoutInsets.top
-            bottom += displayCutoutInsets.bottom
-        }
-
-        val scrollMode = preferences.getBoolean(SCROLL_REF, false)
-        if (!scrollMode) {
-            val margin = resources.getDimension(R.dimen.r2_navigator_epub_vertical_padding).toInt()
-            top += margin
-            bottom += margin
-        }
-
-        containerView.setPadding(0, top, 0, bottom)
     }
 
     companion object {

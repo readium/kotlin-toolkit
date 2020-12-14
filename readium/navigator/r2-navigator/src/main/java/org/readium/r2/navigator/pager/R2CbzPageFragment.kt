@@ -40,7 +40,6 @@ class R2CbzPageFragment(private val publication: Publication)
     private val link: Link
         get() = requireArguments().getParcelable("link")!!
 
-    private var windowInsets: WindowInsetsCompat = WindowInsetsCompat.CONSUMED
     private lateinit var containerView: View
     private lateinit var imageView: ImageView
 
@@ -68,32 +67,32 @@ class R2CbzPageFragment(private val publication: Publication)
         // Update padding when the window insets change, for example when the navigation and status
         // bars are toggled.
         ViewCompat.setOnApplyWindowInsetsListener(containerView) { _, insets ->
-            windowInsets = insets
             updatePadding()
             insets
         }
     }
 
     private fun updatePadding() {
-        val activity = activity ?: return
-        if (!viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-            return
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            val window = activity?.window ?: return@launchWhenResumed
+            var top = 0
+            var bottom = 0
+
+            // Add additional padding to take into account the display cutout, if needed.
+            if (
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
+                window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+            ) {
+                // Request the display cutout insets from the decor view because the ones given by
+                // setOnApplyWindowInsetsListener are not always correct for preloaded views.
+                window.decorView.rootWindowInsets?.displayCutout?.let { displayCutoutInsets ->
+                    top += displayCutoutInsets.safeInsetTop
+                    bottom += displayCutoutInsets.safeInsetBottom
+                }
+            }
+
+            imageView.setPadding(0, top, 0, bottom)
         }
-
-        var top = 0
-        var bottom = 0
-
-        // Add additional padding to take into account the display cutout, if needed.
-        if (
-            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
-            activity.window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
-        ) {
-            val displayCutoutInsets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout())
-            top += displayCutoutInsets.top
-            bottom += displayCutoutInsets.bottom
-        }
-
-        imageView.setPadding(0, top, 0, bottom)
     }
 
 }
