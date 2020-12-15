@@ -20,6 +20,8 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
+import org.readium.r2.shared.publication.services.locatorServiceFactory
+import org.readium.r2.shared.publication.services.positionsServiceFactory
 import org.readium.r2.shared.util.File
 
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -31,6 +33,7 @@ import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.extensions.fromFile
 import org.readium.r2.streamer.fetcher.LcpDecryptor
 import org.readium.r2.streamer.parser.PubBox
+import org.readium.r2.streamer.parser.audio.AudioLocatorService
 import org.readium.r2.streamer.toPublicationType
 import java.io.FileNotFoundException
 
@@ -78,14 +81,24 @@ class ReadiumWebPubParser(private val pdfFactory: PdfDocumentFactory? = null) : 
             throw Exception("Invalid LCP Protected PDF.")
         }
 
-        val positionsService = when(file.mediaType()) {
-            MediaType.LCP_PROTECTED_PDF ->
-                pdfFactory?.let { LcpdfPositionsService.create(it) }
-            MediaType.DIVINA_MANIFEST, MediaType.DIVINA ->
-                PerResourcePositionsService.createFactory("image/*")
+        val locatorService = when (file.mediaType()) {
+            MediaType.READIUM_AUDIOBOOK, MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK ->
+                AudioLocatorService.createFactory()
             else -> null
         }
-        val servicesBuilder = Publication.ServicesBuilder(positions = positionsService)
+
+        val servicesBuilder = Publication.ServicesBuilder().apply {
+            when (file.mediaType()) {
+                MediaType.LCP_PROTECTED_PDF ->
+                    positionsServiceFactory = pdfFactory?.let { LcpdfPositionsService.create(it) }
+
+                MediaType.DIVINA_MANIFEST, MediaType.DIVINA ->
+                    positionsServiceFactory = PerResourcePositionsService.createFactory("image/*")
+
+                MediaType.READIUM_AUDIOBOOK, MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK ->
+                    locatorServiceFactory = AudioLocatorService.createFactory()
+            }
+        }
 
         return Publication.Builder(manifest, fetcher, servicesBuilder)
     }
