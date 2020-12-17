@@ -22,6 +22,8 @@ import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 import java.net.HttpURLConnection
 import java.net.URL
@@ -132,29 +134,27 @@ internal class License(
 
     override suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException> {
 
-        suspend fun callPUT(url: URL): ByteArray {
-            val (status, data) = this.network.fetch(url.toString(), NetworkService.Method.PUT)
-            when (status) {
-                HttpURLConnection.HTTP_OK -> return data!!
-                HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException.Renew.RenewFailed
-                HttpURLConnection.HTTP_FORBIDDEN -> throw LcpException.Renew.InvalidRenewalPeriod(maxRenewDate = this.maxRenewDate)
-                else -> throw LcpException.Renew.UnexpectedServerError
-            }
-        }
+        suspend fun callPUT(url: URL): ByteArray =
+            network.fetch(url.toString(), NetworkService.Method.PUT)
+                .getOrElse { error ->
+                    when (error.status) {
+                        HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException.Renew.RenewFailed
+                        HttpURLConnection.HTTP_FORBIDDEN -> throw LcpException.Renew.InvalidRenewalPeriod(maxRenewDate = this.maxRenewDate)
+                        else -> throw LcpException.Renew.UnexpectedServerError
+                    }
+                }
 
         // TODO needs to be tested
         suspend fun callHTML(url: URL): ByteArray {
             val statusURL = try {
-                this.license.url(LicenseDocument.Rel.status)
+                this.license.url(LicenseDocument.Rel.status, preferredType = MediaType.LCP_LICENSE_DOCUMENT)
             } catch (e: Throwable) {
                 null
             } ?: throw LcpException.LicenseInteractionNotAvailable
             urlPresenter(url)
-            val (status, data) = this.network.fetch(statusURL.toString())
-            return if (status != HttpURLConnection.HTTP_OK)
-                throw LcpException.Network(null)
-            else
-                data!!
+
+            return network.fetch(statusURL.toString())
+                .getOrElse { throw LcpException.Network(it) }
         }
 
         try {
@@ -189,7 +189,7 @@ internal class License(
         try {
             val status = this.documents.status
             val url = try {
-                status?.url(StatusDocument.Rel.`return`, device.asQueryParameters)
+                status?.url(StatusDocument.Rel.`return`, preferredType = null, parameters = device.asQueryParameters)
             } catch (e: Throwable) {
                 null
             }
@@ -197,13 +197,16 @@ internal class License(
                 throw LcpException.LicenseInteractionNotAvailable
             }
 
-            val (statusCode, data) = network.fetch(url.toString(), method = NetworkService.Method.PUT)
-            when (statusCode) {
-                HttpURLConnection.HTTP_OK -> validateStatusDocument(data!!)
-                HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException.Return.ReturnFailed
-                HttpURLConnection.HTTP_FORBIDDEN -> throw LcpException.Return.AlreadyReturnedOrExpired
-                else -> throw LcpException.Return.UnexpectedServerError
-            }
+            network.fetch(url.toString(), method = NetworkService.Method.PUT)
+                .onSuccess { validateStatusDocument(it) }
+                .onFailure { error ->
+                    when (error.status) {
+                        HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException.Return.ReturnFailed
+                        HttpURLConnection.HTTP_FORBIDDEN -> throw LcpException.Return.AlreadyReturnedOrExpired
+                        else -> throw LcpException.Return.UnexpectedServerError
+                    }
+                }
+
             return Try.success(Unit)
 
         } catch (e: Exception) {

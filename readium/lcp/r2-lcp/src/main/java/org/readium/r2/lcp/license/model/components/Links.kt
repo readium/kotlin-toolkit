@@ -10,19 +10,32 @@
 package org.readium.r2.lcp.license.model.components
 
 import org.json.JSONArray
+import org.json.JSONObject
+import org.readium.r2.shared.extensions.mapNotNull
+import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.util.mediatype.MediaType
 
 data class Links(val json: JSONArray) {
 
-    var links:MutableList<Link> = mutableListOf()
-
-    init {
-        for (i in 0 until json.length()) {
-            links.add(Link(json.getJSONObject(i)))
+    val links: List<Link> = json
+        .mapNotNull { item ->
+            (item as? JSONObject)?.let { obj ->
+                tryOrNull { Link(obj) }
+            }
         }
-    }
 
-    operator fun get(rel: String): List<Link> {
-        return links.filter { it.rel.contains(rel) }
-    }
+    fun firstWithRel(rel: String, type: MediaType? = null): Link? =
+        links.firstOrNull { it.matches(rel, type) }
+
+    internal fun firstWithRelAndNoType(rel: String): Link? =
+        links.firstOrNull { it.rel.contains(rel) && it.type == null }
+
+    fun allWithRel(rel: String, type: MediaType? = null): List<Link> =
+        links.filter { it.matches(rel, type) }
+
+    private fun Link.matches(rel: String, type: MediaType?): Boolean =
+        this.rel.contains(rel) && (type?.matches(this.type) ?: true)
+
+    operator fun get(rel: String): List<Link> = allWithRel(rel)
 
 }

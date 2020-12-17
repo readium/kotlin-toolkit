@@ -18,6 +18,7 @@ import org.joda.time.Days
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 import java.util.*
 
@@ -49,11 +50,8 @@ internal class CRLService(val network: NetworkService, val context: Context) {
 
     private suspend fun fetch(): String {
         val url = "http://crl.edrlab.telesec.de/rl/EDRLab_CA.crl"
-        val (status, data) = network.fetch(url, NetworkService.Method.GET)
-        if (DEBUG) Timber.d("Status $status")
-        if (status != 200 || data == null) {
-            throw LcpException.CrlFetching
-        }
+        val data = network.fetch(url, NetworkService.Method.GET)
+            .getOrElse { throw LcpException.CrlFetching }
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 "-----BEGIN X509 CRL-----${Base64.getEncoder().encodeToString(data)}-----END X509 CRL-----"
