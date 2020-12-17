@@ -10,7 +10,6 @@
 
 package org.readium.r2.testapp.library
 
-import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.SharedPreferences
@@ -37,6 +36,7 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
+import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.extensions.extension
 import org.readium.r2.shared.extensions.mediaType
@@ -50,6 +50,7 @@ import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
@@ -57,8 +58,6 @@ import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.R2AboutActivity
 import org.readium.r2.testapp.db.*
-import org.readium.r2.testapp.drm.DRMFulfilledPublication
-import org.readium.r2.testapp.drm.DRMLibraryService
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.opds.OPDSListActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
@@ -80,8 +79,7 @@ import kotlin.coroutines.suspendCoroutine
 
 var activitiesLaunched: AtomicInteger = AtomicInteger(0)
 
-@SuppressLint("Registered")
-abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, DRMLibraryService, CoroutineScope {
+class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListener, CoroutineScope {
 
     /**
      * Context of this scope.
@@ -101,7 +99,8 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
     private lateinit var database: BooksDatabase
     private lateinit var positionsDB: PositionsDatabase
 
-    protected var contentProtections: List<ContentProtection> = emptyList()
+    private lateinit var lcpService: Try<LcpService, Exception>
+    private lateinit var contentProtections: List<ContentProtection>
     private lateinit var streamer: Streamer
 
     private lateinit var catalogView: androidx.recyclerview.widget.RecyclerView
@@ -113,6 +112,12 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
         super.onCreate(savedInstanceState)
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+
+        lcpService = LcpService(this)
+            ?.let { Try.success(it) }
+            ?: Try.failure(Exception("liblcp is missing on the classpath"))
+
+        contentProtections = listOfNotNull(lcpService.getOrNull()?.contentProtection())
 
         streamer = Streamer(this, contentProtections = contentProtections)
 
@@ -387,19 +392,21 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             if (sourceMediaType != MediaType.LCP_LICENSE_DOCUMENT)
                 FileAsset(sourceFile, sourceMediaType)
             else {
-                fulfill(sourceFile).fold(
-                    {
-                        val mediaType = MediaType.of(fileExtension = File(it.suggestedFilename).extension)
-                        FileAsset(it.localFile, mediaType)
-                    },
-                    {
-                        tryOrNull { sourceFile.delete() }
-                        Timber.d(it)
-                        progress?.dismiss()
-                        if (foreground) catalogView.longSnackbar("fulfillment error: ${it.message}")
-                        return
-                    }
-                )
+                lcpService
+                    .flatMap { it.acquirePublication(sourceFile) }
+                    .fold(
+                        {
+                            val mediaType = MediaType.of(fileExtension = File(it.suggestedFilename).extension)
+                            FileAsset(it.localFile, mediaType)
+                        },
+                        {
+                            tryOrNull { sourceFile.delete() }
+                            Timber.d(it)
+                            progress?.dismiss()
+                            if (foreground) catalogView.longSnackbar("fulfillment error: ${it.message}")
+                            return
+                        }
+                    )
             }
 
         val mediaType = publicationAsset.mediaType()
@@ -621,9 +628,6 @@ abstract class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewC
             outRect.bottom = verticalSpaceHeight
         }
     }
-
-    override suspend fun fulfill(file: File): Try<DRMFulfilledPublication, Exception> =
-        Try.failure(Exception("DRM not supported"))
 
     companion object {
 

@@ -14,7 +14,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import org.readium.r2.testapp.CatalogActivity
+import org.readium.r2.testapp.library.LibraryActivity
 import timber.log.Timber
 
 class R2DispatcherActivity : Activity() {
@@ -31,7 +31,7 @@ class R2DispatcherActivity : Activity() {
                 Timber.d("Got an empty intent.")
                 return
             }
-        val newIntent = Intent(this, CatalogActivity::class.java).apply {
+        val newIntent = Intent(this, LibraryActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             data = uri
         }
