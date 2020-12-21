@@ -27,6 +27,7 @@ import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.asset.PublicationAsset
 import java.net.URI
 import java.nio.file.Paths
 import kotlin.math.min
@@ -80,7 +81,6 @@ class Book(var id: Long? = null,
             }
             return url
         }
-
 
 }
 

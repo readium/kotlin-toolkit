@@ -25,20 +25,21 @@ import java.net.URL
 
 object ContentResolverUtil {
 
-    suspend fun getContentInputStream(context: Context, uri: Uri, publicationPath: String) = withContext(Dispatchers.IO) {
-        try {
-            val path = getRealPath(context, uri)
-            if (path != null) {
-                File(path).copyTo(File(publicationPath))
-            } else {
-
-                val input = URL(uri.toString()).openStream()
-                input.toFile(publicationPath)
-            }
-        } catch (e: Exception) {
-            val input = getInputStream(context, uri)
-            input?.let {
-                input.toFile(publicationPath)
+    suspend fun getContentInputStream(context: Context, uri: Uri, publicationPath: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val path = getRealPath(context, uri)
+                if (path != null) {
+                    File(path).copyTo(File(publicationPath))
+                } else {
+                    val input = URL(uri.toString()).openStream()
+                    input.toFile(publicationPath)
+                }
+            } catch (e: Exception) {
+                val input = getInputStream(context, uri)
+                input?.let {
+                    input.toFile(publicationPath)
+                }
             }
         }
     }

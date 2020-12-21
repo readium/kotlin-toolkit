@@ -16,8 +16,10 @@ import java.io.File
 import java.io.InputStream
 
 
-suspend fun InputStream.toFile(path: String) = withContext(Dispatchers.IO) {
-    use { input ->
-        File(path).outputStream().use { input.copyTo(it) }
+suspend fun InputStream.toFile(path: String) {
+    withContext(Dispatchers.IO) {
+        use { input ->
+            File(path).outputStream().use { input.copyTo(it) }
+        }
     }
 }
