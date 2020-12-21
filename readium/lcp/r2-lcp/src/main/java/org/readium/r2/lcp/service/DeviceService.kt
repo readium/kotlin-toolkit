@@ -12,7 +12,6 @@ package org.readium.r2.lcp.service
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.SharedPreferences
-import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
 import timber.log.Timber
@@ -50,10 +49,8 @@ internal class DeviceService(private val repository: DeviceRepository, private v
         }
 
         val url = link.url(asQueryParameters).toString()
-        val (status, data) = network.fetch(url, NetworkService.Method.POST, asQueryParameters)
-        if (status != 200 || data == null) {
-            return null
-        }
+        val data = network.fetch(url, NetworkService.Method.POST, asQueryParameters)
+            .getOrNull() ?: return null
 
         repository.registerDevice(license)
         return data

@@ -19,6 +19,7 @@ import org.readium.r2.lcp.license.model.components.lcp.Rights
 import org.readium.r2.lcp.license.model.components.lcp.Signature
 import org.readium.r2.lcp.license.model.components.lcp.User
 import org.readium.r2.lcp.service.URLParameters
+import org.readium.r2.shared.util.mediatype.MediaType
 import java.net.URL
 import java.nio.charset.Charset
 
@@ -66,14 +67,18 @@ class LicenseDocument(val data: ByteArray) {
         }
     }
 
-    fun link(rel: Rel): Link? =
-            links[rel.rawValue].firstOrNull()
+    fun link(rel: Rel, type: MediaType? = null): Link? =
+        links.firstWithRel(rel.rawValue, type)
 
-    fun links(rel: Rel): List<Link> =
-            links[rel.rawValue]
+    fun links(rel: Rel, type: MediaType? = null): List<Link> =
+        links.allWithRel(rel.rawValue, type)
 
-    fun url(rel: Rel, parameters:  URLParameters = emptyMap()): URL {
-        return link(rel)?.url(parameters) ?: throw LcpException.Parsing.Url(rel = rel.rawValue)
+    fun url(rel: Rel, preferredType: MediaType? = null, parameters:  URLParameters = emptyMap()): URL {
+        val link = link(rel, preferredType)
+            ?: links.firstWithRelAndNoType(rel.rawValue)
+            ?: throw LcpException.Parsing.Url(rel = rel.rawValue)
+
+        return link.url(parameters)
     }
 
     val description: String

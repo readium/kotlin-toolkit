@@ -56,7 +56,7 @@ data class Link(val json: JSONObject) {
 
     }
 
-    fun url(parameters:  URLParameters) : URL? {
+    fun url(parameters:  URLParameters) : URL {
         if (!templated) {
             return URL(href)
         }
@@ -65,7 +65,7 @@ data class Link(val json: JSONObject) {
         return URL(expandedHref)
     }
 
-    val url: URL?
+    val url: URL
         get() = url(parameters = emptyMap())
 
     val mediaType: MediaType
