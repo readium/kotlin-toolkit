@@ -67,11 +67,6 @@ android {
             java.srcDirs = ['src/main/java']
             res.srcDirs = ['src/main/res']
             assets.srcDirs = ['src/main/assets']
-            if (findProject(':r2-lcp')) {
-                java.srcDirs = ['src/main/java', 'src/withlcp/java']
-            } else {
-                java.srcDirs = ['src/main/java', 'src/nondrm/java']
-            }
         }
     }
 }
@@ -102,8 +97,8 @@ dependencies {
     }
     if (findProject(':r2-lcp')) {
         implementation project(':r2-lcp')
-        //noinspection GradleDependency
-        implementation "readium:liblcp:1.0.0@aar"
+    } else {
+        implementation "com.github.readium:r2-lcp-kotlin:$READIUM_VERSION"
     }
 
     implementation "androidx.activity:activity-ktx:1.2.0-beta01"

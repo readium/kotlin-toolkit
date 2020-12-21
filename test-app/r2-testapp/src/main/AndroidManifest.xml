@@ -28,7 +28,7 @@
         android:usesCleartextTraffic="true"
         tools:replace="android:allowBackup"
         tools:targetApi="m">
-        <activity android:name=".CatalogActivity"
+        <activity android:name=".library.LibraryActivity"
             android:clearTaskOnLaunch="true"
             android:configChanges="orientation|screenSize">
             <intent-filter>
