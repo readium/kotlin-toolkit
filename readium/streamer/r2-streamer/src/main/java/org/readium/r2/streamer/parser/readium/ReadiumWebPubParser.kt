@@ -14,27 +14,29 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.asset.FileAsset
+import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.publication.services.locatorServiceFactory
 import org.readium.r2.shared.publication.services.positionsServiceFactory
-import org.readium.r2.shared.util.File
-
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.DefaultPdfDocumentFactory
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
-import org.readium.r2.streamer.extensions.fromFile
 import org.readium.r2.streamer.fetcher.LcpDecryptor
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.audio.AudioLocatorService
 import org.readium.r2.streamer.toPublicationType
+import java.io.File
 import java.io.FileNotFoundException
 
 /**
@@ -46,16 +48,16 @@ class ReadiumWebPubParser(private val pdfFactory: PdfDocumentFactory? = null) : 
     constructor(context: Context) : this(pdfFactory = DefaultPdfDocumentFactory(context))
 
     override suspend fun parse(
-        file: File,
+        asset: PublicationAsset,
         fetcher: Fetcher,
         warnings: WarningLogger?
     ): Publication.Builder? {
 
-        if (!file.mediaType().isReadiumWebPubProfile)
+        if (!asset.mediaType().isReadiumWebPubProfile)
             return null
 
         val manifest =
-            if (file.mediaType().isRwpm) {
+            if (asset.mediaType().isRwpm) {
                 val manifestLink = fetcher.links().firstOrNull()
                     ?: error("Empty fetcher.")
                 val manifestJson = fetcher.get(manifestLink).use {
@@ -77,18 +79,12 @@ class ReadiumWebPubParser(private val pdfFactory: PdfDocumentFactory? = null) : 
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
         val readingOrder = manifest.readingOrder
-        if (file.mediaType() == MediaType.LCP_PROTECTED_PDF && (readingOrder.isEmpty() || !readingOrder.all { it.mediaType.matches(MediaType.PDF) })) {
+        if (asset.mediaType() == MediaType.LCP_PROTECTED_PDF && (readingOrder.isEmpty() || !readingOrder.all { it.mediaType.matches(MediaType.PDF) })) {
             throw Exception("Invalid LCP Protected PDF.")
         }
 
-        val locatorService = when (file.mediaType()) {
-            MediaType.READIUM_AUDIOBOOK, MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK ->
-                AudioLocatorService.createFactory()
-            else -> null
-        }
-
         val servicesBuilder = Publication.ServicesBuilder().apply {
-            when (file.mediaType()) {
+            when (asset.mediaType()) {
                 MediaType.LCP_PROTECTED_PDF ->
                     positionsServiceFactory = pdfFactory?.let { LcpdfPositionsService.create(it) }
 
@@ -106,9 +102,10 @@ class ReadiumWebPubParser(private val pdfFactory: PdfDocumentFactory? = null) : 
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
 
         val file = File(fileAtPath)
-        val mediaType = file.mediaType()
+        val asset = FileAsset(file)
+        val mediaType = asset.mediaType()
         var baseFetcher = try {
-            Fetcher.fromFile(file.file)
+            ArchiveFetcher.fromPath(file.path) ?: FileFetcher(href = "/${file.name}", file = file)
         } catch (e: SecurityException) {
             return@runBlocking null
         } catch (e: FileNotFoundException) {
@@ -121,7 +118,7 @@ class ReadiumWebPubParser(private val pdfFactory: PdfDocumentFactory? = null) : 
         }
 
         val builder = try {
-            parse(file, baseFetcher)
+            parse(asset, baseFetcher)
         } catch (e: Exception) {
             return@runBlocking null
         } ?: return@runBlocking null
@@ -131,7 +128,7 @@ class ReadiumWebPubParser(private val pdfFactory: PdfDocumentFactory? = null) : 
 
         val container = PublicationContainer(
             publication = publication,
-            path = file.file.canonicalPath,
+            path = file.canonicalPath,
             mediaType = mediaType,
             drm = drm
         ).apply {

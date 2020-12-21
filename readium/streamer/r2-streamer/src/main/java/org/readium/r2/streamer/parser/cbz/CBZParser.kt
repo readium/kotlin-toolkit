@@ -11,15 +11,16 @@ package org.readium.r2.streamer.parser.cbz
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.util.File
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.image.ImageParser
+import java.io.File
 
 @Deprecated("Use [MediaType] instead")
 class CBZConstant {
@@ -55,7 +56,7 @@ class CBZParser : PublicationParser {
         val fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
             ?: throw ContainerError.missingFile(fileAtPath)
 
-        val publication = imageParser.parse(file, fetcher)
+        val publication = imageParser.parse(FileAsset(file), fetcher)
             ?.apply {
                 val title = LocalizedString(fallbackTitle)
                 val metadata =  manifest.metadata.copy(localizedTitle = title)
@@ -67,7 +68,7 @@ class CBZParser : PublicationParser {
 
         val container = PublicationContainer(
             publication = publication,
-            path = file.file.canonicalPath,
+            path = file.canonicalPath,
             mediaType = MediaType.CBZ
         )
 
