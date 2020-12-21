@@ -97,11 +97,9 @@ class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     private lateinit var R2DIRECTORY: String
 
     private lateinit var database: BooksDatabase
-    private lateinit var positionsDB: PositionsDatabase
 
-    private lateinit var lcpService: Try<LcpService, Exception>
-    private lateinit var contentProtections: List<ContentProtection>
     private lateinit var streamer: Streamer
+    private lateinit var lcpService: Try<LcpService, Exception>
 
     private lateinit var catalogView: androidx.recyclerview.widget.RecyclerView
     private lateinit var alertDialog: AlertDialog
@@ -117,9 +115,11 @@ class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             ?.let { Try.success(it) }
             ?: Try.failure(Exception("liblcp is missing on the classpath"))
 
-        contentProtections = listOfNotNull(lcpService.getOrNull()?.contentProtection())
-
-        streamer = Streamer(this, contentProtections = contentProtections)
+        streamer = Streamer(this,
+            contentProtections = listOfNotNull(
+                lcpService.getOrNull()?.contentProtection()
+            )
+        )
 
         val s = ServerSocket(if (DEBUG) 8080 else 0)
         s.localPort
