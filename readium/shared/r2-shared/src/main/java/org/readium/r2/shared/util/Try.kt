@@ -75,12 +75,6 @@ class Try<out Success, out Failure: Throwable> private constructor(private val s
         return this
     }
 
-    inline fun <R, S, F: Throwable> Try<S, F>.flatMap(transform: (value: S) -> Try<R, F>): Try<R, F> =
-        if (isSuccess)
-            transform(getOrThrow())
-        else
-            Try.failure(exceptionOrNull()!!)
-
     /**
      * Returns the encapsulated result of the given transform function applied to the encapsulated |Throwable] exception
      * if this instance represents failure or the original encapsulated value if it is success.
@@ -110,3 +104,9 @@ inline fun <R, S : R, F : Throwable> Try<S, F>.getOrElse(onFailure: (exception: 
         getOrThrow()
     else
         onFailure(exceptionOrNull()!!)
+
+inline fun <R, S, F: Throwable> Try<S, F>.flatMap(transform: (value: S) -> Try<R, F>): Try<R, F> =
+    if (isSuccess)
+        transform(getOrThrow())
+    else
+        Try.failure(exceptionOrNull()!!)

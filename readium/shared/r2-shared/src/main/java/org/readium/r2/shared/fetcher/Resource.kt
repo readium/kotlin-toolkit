@@ -20,6 +20,7 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.flatMap
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.charset.Charset
