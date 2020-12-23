@@ -15,6 +15,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.asLiveData
@@ -107,6 +108,11 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
             @Suppress("DEPRECATION")
             navigatorDelegate?.locationDidChange(this, locator)
         })
+
+        // Add support for display cutout.
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
     }
 
     override fun finish() {

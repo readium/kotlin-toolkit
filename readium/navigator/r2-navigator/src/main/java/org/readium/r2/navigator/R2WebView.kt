@@ -722,7 +722,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     val x = ev.getX(activePointerIndex)
                     val y = ev.getY(activePointerIndex)
 
-                    val scrollMode = preferences?.getBoolean(SCROLL_REF, false) ?: false
                     if (scrollMode) {
                         val totalDelta = (y - mInitialMotionY).toInt()
                         if (abs(totalDelta) < 200) {

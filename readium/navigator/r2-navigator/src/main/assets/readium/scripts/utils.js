@@ -48,7 +48,7 @@ var readium = (function() {
             return;
         }
 
-        element.scrollIntoView();
+        element.scrollIntoView({inline: "center"});
         snapCurrentOffset()
     }
 

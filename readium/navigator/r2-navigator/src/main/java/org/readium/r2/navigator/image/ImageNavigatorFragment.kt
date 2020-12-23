@@ -16,9 +16,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
 import androidx.viewpager.widget.ViewPager
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL

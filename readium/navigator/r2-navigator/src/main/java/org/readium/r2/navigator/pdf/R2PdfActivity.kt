@@ -11,6 +11,7 @@ package org.readium.r2.navigator.pdf
 
 import android.app.Activity
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.asLiveData
@@ -52,6 +53,11 @@ abstract class R2PdfActivity : AppCompatActivity(), PdfNavigatorFragment.Listene
 
             onCurrentLocatorChanged(locator)
         })
+
+        // Display cutouts are not compatible with the underlying `PdfNavigatorFragment` yet.
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+        }
     }
 
     override fun finish() {
