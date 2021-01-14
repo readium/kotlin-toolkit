@@ -14,6 +14,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.service.URLParameters
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.URITemplate
 import java.net.URL
@@ -70,5 +71,15 @@ data class Link(val json: JSONObject) {
 
     val mediaType: MediaType
         get() = type?.let { MediaType.parse(it) } ?: MediaType.BINARY
+
+    /**
+     * List of URI template parameter keys, if the [Link] is templated.
+     */
+    internal val templateParameters: List<String> by lazy {
+        if (!templated)
+            emptyList()
+        else
+            URITemplate(href).parameters
+    }
 
 }
