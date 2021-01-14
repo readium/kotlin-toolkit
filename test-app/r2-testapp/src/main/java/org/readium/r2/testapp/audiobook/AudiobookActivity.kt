@@ -19,11 +19,11 @@ import org.readium.r2.navigator.audiobook.R2AudiobookActivity
 import org.readium.r2.shared.extensions.putPublicationFrom
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.isProtected
-import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.Bookmark
 import org.readium.r2.testapp.db.BookmarksDatabase
 import org.readium.r2.testapp.db.BooksDatabase
+import org.readium.r2.testapp.drm.DRMManagementActivity
 import org.readium.r2.testapp.library.LibraryActivity
 import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity

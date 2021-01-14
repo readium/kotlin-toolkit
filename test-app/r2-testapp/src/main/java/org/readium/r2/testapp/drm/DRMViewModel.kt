@@ -8,12 +8,12 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.drm
 
 import android.content.Context
-import org.joda.time.DateTime
 import org.readium.r2.shared.util.Try
 import java.io.Serializable
+import java.util.*
 
 
 abstract class DRMViewModel(val context: Context) : Serializable {
@@ -24,13 +24,13 @@ abstract class DRMViewModel(val context: Context) : Serializable {
 
     open val provider: String? = null
 
-    open val issued: DateTime? = null
+    open val issued: Date? = null
 
-    open val updated: DateTime? = null
+    open val updated: Date? = null
 
-    open val start: DateTime? = null
+    open val start: Date? = null
 
-    open val end: DateTime? = null
+    open val end: Date? = null
 
     open val copiesLeft: String = "unlimited"
 
@@ -39,7 +39,7 @@ abstract class DRMViewModel(val context: Context) : Serializable {
     open val canRenewLoan: Boolean
         get() = false
 
-    open suspend fun renewLoan(end: DateTime?): Try<Unit, Exception> =
+    open suspend fun renewLoan(): Try<Date?, Exception> =
         Try.failure(Exception("Renewing a loan is not supported"))
 
     open val canReturnPublication: Boolean

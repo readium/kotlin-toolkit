@@ -8,19 +8,14 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.drm
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.LinearLayout
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +23,7 @@ import com.mcxiaoke.koi.ext.onClick
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.anko.*
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.design.coordinatorLayout
@@ -35,7 +31,7 @@ import org.jetbrains.anko.design.longSnackbar
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.UserException
-import org.readium.r2.testapp.utils.extensions.color
+import org.readium.r2.testapp.R
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 
@@ -57,37 +53,11 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
         val pubPath = intent.getStringExtra("publication")
             ?: throw Exception("publication required")
 
-        drmModel = LCPViewModel(File(pubPath), this)
-
-        val daysArray = arrayOf(1, 3, 7, 15)
-
-        val daysInput = Spinner(this@DRMManagementActivity)
-        daysInput.dropDownWidth = wrapContent
-
-        val adapter = object : ArrayAdapter<Int>(this@DRMManagementActivity, R.layout.item_spinner_days, daysArray) {
-            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val v: View? = super.getDropDownView(position, null, parent)
-                // Makes the selected font appear in dark
-                // If this is the selected item position
-                if (position == daysInput.selectedItemPosition) {
-                    v!!.setBackgroundColor(context.color(R.color.colorPrimaryDark))
-                    v.findViewById<TextView>(R.id.days_spinner).setTextColor(Color.WHITE)
-                } else {
-                    // for other views
-                    v!!.setBackgroundColor(Color.WHITE)
-                    v.findViewById<TextView>(R.id.days_spinner).setTextColor(Color.BLACK)
-                }
-                return v
+        drmModel = runBlocking { LCPViewModel.from(File(pubPath), this@DRMManagementActivity) }
+            ?: run {
+                finish()
+                return
             }
-        }
-
-        daysInput.adapter = adapter
-        val renewDialog = alert(Appcompat, "How many days do you wish to extend your loan ?") {
-            this.customView = daysInput
-            daysInput.setSelection(2)
-            positiveButton("Renew") { }
-            negativeButton("Cancel") { }
-        }.build()
 
         coordinatorLayout {
             fitsSystemWindows = true
@@ -169,7 +139,7 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                         }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                         textView {
                             padding = dip(10)
-                            text = drmModel.issued?.toString(DateTimeFormat.shortDateTime())
+                            text = drmModel.issued?.let { DateTime(it) }?.toString(DateTimeFormat.shortDateTime())
                             textSize = 18f
                             gravity = Gravity.END
                         }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -185,7 +155,7 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                         }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                         textView {
                             padding = dip(10)
-                            text = drmModel.updated?.toString(DateTimeFormat.shortDateTime())
+                            text = drmModel.updated?.let { DateTime(it) }?.toString(DateTimeFormat.shortDateTime())
                             textSize = 18f
                             gravity = Gravity.END
                         }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -244,7 +214,7 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                             }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
                             textView {
                                 padding = dip(10)
-                                text = drmModel.start?.toString(DateTimeFormat.shortDateTime())
+                                text = drmModel.start?.let { DateTime(it) }?.toString(DateTimeFormat.shortDateTime())
                                 textSize = 18f
                                 gravity = Gravity.END
                             }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -261,7 +231,7 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
 
                             endTextView = textView {
                                 padding = dip(10)
-                                text = drmModel.end?.toString(DateTimeFormat.shortDateTime())
+                                text = drmModel.end?.let { DateTime(it) }?.toString(DateTimeFormat.shortDateTime())
                                 textSize = 18f
                                 gravity = Gravity.END
                             }.lparams(width = wrapContent, height = wrapContent, weight = 1f)
@@ -277,32 +247,16 @@ class DRMManagementActivity : AppCompatActivity(), CoroutineScope {
                             button {
                                 text = context.getString(R.string.drm_label_renew)
                                 onClick {
-                                    renewDialog.apply {
-                                        setCancelable(false)
-                                        setCanceledOnTouchOutside(false)
-                                        setOnShowListener {
-                                            val renewButton = getButton(AlertDialog.BUTTON_POSITIVE)
-                                            renewButton.setOnClickListener {
-
-                                                val addDays = daysInput.selectedItem.toString().toInt()
-                                                val newEndDate = DateTime(drmModel.end).plusDays(addDays)
-
-                                                launch {
-                                                    drmModel.renewLoan(newEndDate)
-                                                        .onSuccess {
-                                                            dismiss()
-                                                            endTextView.text =
-                                                                newEndDate?.toString(DateTimeFormat.shortDateTime())
-                                                        }.onFailure { exception ->
-                                                            dismiss()
-                                                            (exception as? UserException)?.getUserMessage(this@DRMManagementActivity)
-                                                                ?.let { longSnackbar(it) }
-                                                        }
-                                                }
+                                    launch {
+                                        drmModel.renewLoan()
+                                            .onSuccess { newDate ->
+                                                endTextView.text = newDate?.let { DateTime(it).toString(DateTimeFormat.shortDateTime()) }
+                                            }.onFailure { exception ->
+                                                (exception as? UserException)?.getUserMessage(this@DRMManagementActivity)
+                                                    ?.let { longSnackbar(it) }
                                             }
-                                        }
                                     }
-                                    renewDialog.show()
+
                                 }
                             }.lparams(width = matchParent, height = wrapContent, weight = 1f)
                         }

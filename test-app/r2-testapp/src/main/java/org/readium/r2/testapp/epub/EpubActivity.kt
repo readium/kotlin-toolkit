@@ -58,9 +58,9 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.testapp.BuildConfig.DEBUG
-import org.readium.r2.testapp.DRMManagementActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.*
+import org.readium.r2.testapp.drm.DRMManagementActivity
 import org.readium.r2.testapp.library.LibraryActivity
 import org.readium.r2.testapp.library.activitiesLaunched
 import org.readium.r2.testapp.outline.R2OutlineActivity

@@ -201,7 +201,7 @@
             android:name=".comic.ComicActivity"
             android:label="@string/title_activity_epub" />
         <activity
-            android:name=".DRMManagementActivity"
+            android:name=".drm.DRMManagementActivity"
             android:label="DRM Management"
             android:theme="@style/AppTheme" />
         <activity
