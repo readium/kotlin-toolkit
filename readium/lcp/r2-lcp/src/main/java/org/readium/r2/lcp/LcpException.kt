@@ -8,9 +8,9 @@ package org.readium.r2.lcp
 
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
-import org.joda.time.DateTime
 import org.readium.r2.shared.UserException
 import java.net.SocketTimeoutException
+import java.util.*
 
 sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? = null, cause: Throwable? = null) : UserException(userMessageId, args, quantity, cause) {
     constructor(@StringRes userMessageId: Int, vararg args: Any, cause: Throwable? = null) : this(userMessageId, *args, quantity = null, cause = cause)
@@ -49,13 +49,13 @@ sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? =
         constructor(@StringRes userMessageId: Int, vararg args: Any) : this(userMessageId, *args, quantity = null)
         constructor(@PluralsRes userMessageId: Int, quantity: Int, vararg args: Any) : this(userMessageId, *args, quantity = quantity)
 
-        class Cancelled(val date: DateTime) : LicenseStatus(R.string.r2_lcp_exception_license_status_cancelled, date)
+        class Cancelled(val date: Date) : LicenseStatus(R.string.r2_lcp_exception_license_status_cancelled, date)
 
-        class Returned(val date: DateTime) : LicenseStatus(R.string.r2_lcp_exception_license_status_returned, date)
+        class Returned(val date: Date) : LicenseStatus(R.string.r2_lcp_exception_license_status_returned, date)
 
-        class NotStarted(val start: DateTime) : LicenseStatus(R.string.r2_lcp_exception_license_status_not_started, start)
+        class NotStarted(val start: Date) : LicenseStatus(R.string.r2_lcp_exception_license_status_not_started, start)
 
-        class Expired(val end: DateTime) : LicenseStatus(R.string.r2_lcp_exception_license_status_expired, end)
+        class Expired(val end: Date) : LicenseStatus(R.string.r2_lcp_exception_license_status_expired, end)
 
         /**
          * If the license has been revoked, the user message should display the number of devices which
@@ -63,7 +63,7 @@ sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? =
          * in the status document. If no event is logged in the status document, no such message should
          * appear (certainly not "The license was registered by 0 devices").
          */
-        class Revoked(val date: DateTime, val devicesCount: Int)
+        class Revoked(val date: Date, val devicesCount: Int)
             : LicenseStatus(R.plurals.r2_lcp_exception_license_status_revoked, devicesCount, date, devicesCount)
     }
 
@@ -76,7 +76,7 @@ sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? =
         object RenewFailed : Renew(R.string.r2_lcp_exception_renew_renew_failed)
 
         /** Incorrect renewal period, your publication could not be renewed. */
-        class InvalidRenewalPeriod(val maxRenewDate: DateTime?) : Renew(R.string.r2_lcp_exception_renew_invalid_renewal_period)
+        class InvalidRenewalPeriod(val maxRenewDate: Date?) : Renew(R.string.r2_lcp_exception_renew_invalid_renewal_period)
 
         /** An unexpected error has occurred on the licensing server. */
         object UnexpectedServerError : Renew(R.string.r2_lcp_exception_renew_unexpected_server_error)

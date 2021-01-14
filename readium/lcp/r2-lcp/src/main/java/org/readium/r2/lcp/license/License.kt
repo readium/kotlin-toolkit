@@ -12,7 +12,6 @@ package org.readium.r2.lcp.license
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.joda.time.DateTime
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpLicense
@@ -23,13 +22,13 @@ import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
+import org.readium.r2.shared.extensions.toIso8601String
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 import java.net.HttpURLConnection
-import java.net.URL
 import java.util.*
 
 internal class License(
@@ -133,7 +132,7 @@ internal class License(
     override val canRenewLoan: Boolean
         get() = status?.link(StatusDocument.Rel.renew) != null
 
-    override val maxRenewDate: DateTime?
+    override val maxRenewDate: Date?
         get() = status?.potentialRights?.end
 
     override suspend fun renewLoan(listener: LcpLicense.RenewListener, prefersWebPage: Boolean): Try<Date?, LcpException> {
@@ -162,12 +161,12 @@ internal class License(
         suspend fun renewProgrammatically(link: Link): ByteArray {
             val endDate =
                 if (link.templateParameters.contains("end"))
-                    listener.preferredEndDate(maxRenewDate?.toDate())
+                    listener.preferredEndDate(maxRenewDate)
                 else null
 
             val parameters = this.device.asQueryParameters.toMutableMap()
             if (endDate != null) {
-                parameters["end"] = DateTime(endDate).toString()
+                parameters["end"] = endDate.toIso8601String()
             }
 
             val url = link.url(parameters)
@@ -207,7 +206,7 @@ internal class License(
 
             validateStatusDocument(data)
 
-            return Try.success(documents.license.rights.end?.toDate())
+            return Try.success(documents.license.rights.end)
 
         } catch (e: CancellationException) {
             // Passthrough for cancelled coroutines

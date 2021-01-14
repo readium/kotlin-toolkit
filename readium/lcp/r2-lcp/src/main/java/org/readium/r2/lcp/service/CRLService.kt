@@ -12,12 +12,10 @@ package org.readium.r2.lcp.service
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
-import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.joda.time.Days
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpException
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 import java.util.*
@@ -63,9 +61,7 @@ internal class CRLService(val network: NetworkService, val context: Context) {
     // Returns (CRL, expired)
     private fun readLocal(): Pair<String?, Boolean> {
         val crl = preferences.getString(crlKey, null)
-        val date = preferences.getString(dateKey, null)?.let {
-            DateTime(preferences.getString(dateKey, null))
-        }
+        val date = preferences.getString(dateKey, null)?.let { DateTime(it) }
         val expired = date?.let { daysSince(date) >= expiration } ?: true
         return Pair(crl, expired)
     }

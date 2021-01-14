@@ -9,7 +9,7 @@
 
 package org.readium.r2.lcp.license.model
 
-import org.joda.time.DateTime
+import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
@@ -17,19 +17,23 @@ import org.readium.r2.lcp.license.model.components.Links
 import org.readium.r2.lcp.license.model.components.lsd.Event
 import org.readium.r2.lcp.license.model.components.lsd.PotentialRights
 import org.readium.r2.lcp.service.URLParameters
+import org.readium.r2.shared.extensions.iso8601ToDate
+import org.readium.r2.shared.extensions.mapNotNull
+import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.mediatype.MediaType
 import java.net.URL
 import java.nio.charset.Charset
+import java.util.*
 
 class StatusDocument(val data: ByteArray) {
     val id: String
     val status: Status
     val message: String
-    val licenseUpdated: DateTime
-    val statusUpdated: DateTime
+    val licenseUpdated: Date
+    val statusUpdated: Date
     val links: Links
     val potentialRights: PotentialRights?
-    var events: MutableList<Event> = mutableListOf()
+    val events: List<Event>
 
     val json: JSONObject
 
@@ -58,34 +62,29 @@ class StatusDocument(val data: ByteArray) {
     }
 
     init {
-
         try {
             json = JSONObject(data.toString(Charset.defaultCharset()))
         } catch (e: Exception) {
             throw LcpException.Parsing.MalformedJSON
         }
 
-        id = if (json.has("id")) json.getString("id") else throw LcpException.Parsing.StatusDocument
-        status = if (json.has("status")) Status(json.getString("status"))!! else throw LcpException.Parsing.StatusDocument
-        message = if (json.has("message")) json.getString("message") else throw LcpException.Parsing.StatusDocument
+        id = json.optNullableString("id") ?: throw LcpException.Parsing.StatusDocument
+        status = json.optNullableString("status")?.let { Status(it) } ?: throw LcpException.Parsing.StatusDocument
+        message = json.optNullableString("message") ?: throw LcpException.Parsing.StatusDocument
 
-        val updated = if (json.has("updated")) json.getJSONObject("updated") else JSONObject()
+        val updated = json.optJSONObject("updated") ?: JSONObject()
+        licenseUpdated = updated.optNullableString("license")?.iso8601ToDate() ?: throw LcpException.Parsing.StatusDocument
+        statusUpdated = updated.optNullableString("status")?.iso8601ToDate() ?: throw LcpException.Parsing.StatusDocument
 
-        licenseUpdated = if (updated.has("license")) DateTime(updated.getString("license")) else throw LcpException.Parsing.StatusDocument
-        statusUpdated = if (updated.has("status")) DateTime(updated.getString("status")) else throw LcpException.Parsing.StatusDocument
+        links = json.optJSONArray("links")?.let { Links(it) } ?: throw LcpException.Parsing.StatusDocument
 
+        potentialRights = json.optJSONObject("potential_rights")?.let { PotentialRights(it) }
 
-        links = if (json.has("links")) Links(json.getJSONArray("links")) else throw LcpException.Parsing.StatusDocument
-
-        potentialRights = if (json.has("potential_rights")) PotentialRights(json.getJSONObject("potential_rights")) else null
-
-        if (json.has("events")) {
-            val ev = json.getJSONArray("events")
-            for (i in 0 until ev.length()) {
-                events.add(Event(ev.getJSONObject(i)))
+        events = json.optJSONArray("events")
+            ?.mapNotNull { ev ->
+                (ev as? JSONObject)?.let { Event(it) }
             }
-        }
-
+            ?: emptyList()
     }
 
     fun link(rel: Rel, type: MediaType? = null): Link? =

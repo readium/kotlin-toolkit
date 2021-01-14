@@ -38,7 +38,7 @@ class MaterialRenewListener(
 ) : LcpLicense.RenewListener {
 
     override suspend fun preferredEndDate(maximumDate: Date?): Date? = suspendCancellableCoroutine { cont ->
-        val start = license.license.rights.end?.millis ?: Date().time
+        val start = (license.license.rights.end ?: Date()).time
         val end = maximumDate?.time
 
         MaterialDatePicker.Builder.datePicker()

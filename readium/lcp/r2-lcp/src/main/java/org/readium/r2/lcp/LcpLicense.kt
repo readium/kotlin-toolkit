@@ -54,7 +54,7 @@ interface LcpLicense : ContentProtectionService.UserRights {
      * The maximum potential date to renew to.
      * If null, then the renew date might not be customizable.
      */
-    val maxRenewDate: DateTime?
+    val maxRenewDate: Date?
 
     /**
      * Renews the loan by starting a renew LSD interaction.
