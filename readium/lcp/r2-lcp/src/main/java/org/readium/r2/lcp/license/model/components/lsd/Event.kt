@@ -9,14 +9,16 @@
 
 package org.readium.r2.lcp.license.model.components.lsd
 
-import org.joda.time.DateTime
 import org.json.JSONObject
+import org.readium.r2.shared.extensions.iso8601ToDate
+import org.readium.r2.shared.extensions.optNullableString
+import java.util.*
 
 data class Event(val json: JSONObject) {
-    val type: String
-    val name: String
-    val id: String
-    val date: DateTime
+    val type: String = json.optNullableString("type") ?: ""
+    val name: String = json.optNullableString("name") ?: ""
+    val id: String = json.optNullableString("id") ?: ""
+    val date: Date? = json.optNullableString("timestamp")?.iso8601ToDate()
 
     enum class EventType(val rawValue: String) {
         register("register"),
@@ -30,11 +32,4 @@ data class Event(val json: JSONObject) {
         }
     }
 
-    init {
-        type = try {json.getString("type")}finally { }
-        name = try {json.getString("name")}finally { }
-        id = try {json.getString("id") }finally { }
-        date = try {DateTime(json.getString("timestamp")) }finally { }
-
-    }
 }

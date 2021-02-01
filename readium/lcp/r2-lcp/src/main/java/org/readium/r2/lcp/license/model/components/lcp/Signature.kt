@@ -11,15 +11,10 @@ package org.readium.r2.lcp.license.model.components.lcp
 
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
+import org.readium.r2.shared.extensions.optNullableString
 
 data class Signature(val json: JSONObject) {
-    val algorithm: String
-    val certificate: String
-    val value: String
-
-    init {
-        algorithm = if (json.has("algorithm")) json.getString("algorithm") else throw LcpException.Parsing.Signature
-        certificate = if (json.has("certificate")) json.getString("certificate") else throw LcpException.Parsing.Signature
-        value = if (json.has("value")) json.getString("value") else throw LcpException.Parsing.Signature
-    }
+    val algorithm: String = json.optNullableString("algorithm") ?: throw LcpException.Parsing.Signature
+    val certificate: String = json.optNullableString("certificate") ?: throw LcpException.Parsing.Signature
+    val value: String = json.optNullableString("value") ?: throw LcpException.Parsing.Signature
 }

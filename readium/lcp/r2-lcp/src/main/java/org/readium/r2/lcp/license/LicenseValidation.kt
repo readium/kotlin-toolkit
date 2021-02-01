@@ -10,21 +10,17 @@
 package org.readium.r2.lcp.license
 
 import kotlinx.coroutines.runBlocking
-import org.joda.time.DateTime
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.license.model.components.Link
-import org.readium.r2.lcp.service.CRLService
-import org.readium.r2.lcp.service.DeviceService
-import org.readium.r2.lcp.service.LcpClient
-import org.readium.r2.lcp.service.NetworkService
-import org.readium.r2.lcp.service.PassphrasesService
+import org.readium.r2.lcp.service.*
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
+import java.util.*
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
@@ -341,7 +337,7 @@ internal class LicenseValidation(
 
     private fun checkLicenseStatus(license: LicenseDocument, status: StatusDocument?) {
         var error: LcpException.LicenseStatus? = null
-        val now = DateTime()
+        val now = Date()
         val start = license.rights.start ?: now
         val end = license.rights.end ?: now
         if (start > now || now > end) {
@@ -349,7 +345,7 @@ internal class LicenseValidation(
                 val date = status.statusUpdated
                 when (status.status) {
                     StatusDocument.Status.ready, StatusDocument.Status.active, StatusDocument.Status.expired ->
-                        if (start > DateTime()) {
+                        if (start > now) {
                             LcpException.LicenseStatus.NotStarted(start)
                         } else {
                             LcpException.LicenseStatus.Expired(end)
@@ -362,7 +358,7 @@ internal class LicenseValidation(
                     StatusDocument.Status.cancelled -> LcpException.LicenseStatus.Cancelled(date)
                 }
             } else {
-                if (start > DateTime()) {
+                if (start > now) {
                     LcpException.LicenseStatus.NotStarted(start)
                 } else {
                     LcpException.LicenseStatus.Expired(end)

@@ -1,4 +1,3 @@
-// TODO: extensions
 /*
  * Module: r2-lcp-kotlin
  * Developers: Aferdita Muriqi
@@ -10,27 +9,27 @@
 
 package org.readium.r2.lcp.license.model.components.lcp
 
-import org.joda.time.DateTime
 import org.json.JSONObject
+import org.readium.r2.shared.extensions.iso8601ToDate
+import org.readium.r2.shared.extensions.optNullableInt
+import org.readium.r2.shared.extensions.optNullableString
+import java.util.*
 
 data class Rights(val json: JSONObject) {
     val print: Int?
     val copy: Int?
-    val start: DateTime?
-    val end: DateTime?
+    val start: Date?
+    val end: Date?
     val extensions: JSONObject
 
     init {
-        print = if (json.has("print")) json.getInt("print") else null
-        copy = if (json.has("copy")) json.getInt("copy") else null
-        start = if (json.has("start")) DateTime(json.getString("start")) else null
-        end = if (json.has("end")) DateTime(json.getString("end")) else null
+        val clone = JSONObject(json.toString())
 
-//        json.remove("print")
-//        json.remove("copy")
-//        json.remove("start")
-//        json.remove("end")
+        print = clone.optNullableInt("print", remove = true)
+        copy = clone.optNullableInt("copy", remove = true)
+        start = clone.optNullableString("start", remove = true)?.iso8601ToDate()
+        end = clone.optNullableString("end", remove = true)?.iso8601ToDate()
 
-        extensions = json
+        extensions = clone
     }
 }

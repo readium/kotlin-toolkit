@@ -9,7 +9,6 @@
 
 package org.readium.r2.lcp.license.model
 
-import org.joda.time.DateTime
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
@@ -19,15 +18,18 @@ import org.readium.r2.lcp.license.model.components.lcp.Rights
 import org.readium.r2.lcp.license.model.components.lcp.Signature
 import org.readium.r2.lcp.license.model.components.lcp.User
 import org.readium.r2.lcp.service.URLParameters
+import org.readium.r2.shared.extensions.iso8601ToDate
+import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.mediatype.MediaType
 import java.net.URL
 import java.nio.charset.Charset
+import java.util.*
 
 class LicenseDocument(val data: ByteArray) {
     val provider: String
     val id: String
-    val issued: DateTime
-    val updated: DateTime
+    val issued: Date
+    val updated: Date
     val encryption: Encryption
     val links: Links
     val user: User
@@ -53,15 +55,17 @@ class LicenseDocument(val data: ByteArray) {
         } catch (e: Exception) {
             throw LcpException.Parsing.MalformedJSON
         }
-        provider = if (json.has("provider")) json.getString("provider") else throw LcpException.Parsing.LicenseDocument
-        id = if (json.has("id")) json.getString("id") else throw LcpException.Parsing.LicenseDocument
-        issued = if (json.has("issued")) DateTime(json.getString("issued")) else throw LcpException.Parsing.LicenseDocument
-        encryption = if (json.has("encryption")) Encryption(json.getJSONObject("encryption")) else throw LcpException.Parsing.LicenseDocument
-        signature = if (json.has("signature")) Signature(json.getJSONObject("signature")) else throw LcpException.Parsing.LicenseDocument
-        links = if (json.has("links")) Links(json.getJSONArray("links")) else throw LcpException.Parsing.LicenseDocument
-        updated = if (json.has("updated")) DateTime(json.getString("updated")) else issued
-        user = if (json.has("user")) User(json.getJSONObject("user")) else User(JSONObject())
-        rights = if (json.has("rights")) Rights(json.getJSONObject("rights")) else Rights(JSONObject())
+
+        provider = json.optNullableString("provider") ?: throw LcpException.Parsing.LicenseDocument
+        id = json.optNullableString("id") ?: throw LcpException.Parsing.LicenseDocument
+        issued = json.optNullableString("issued")?.iso8601ToDate() ?: throw LcpException.Parsing.LicenseDocument
+        encryption = json.optJSONObject("encryption")?.let { Encryption(it) } ?: throw LcpException.Parsing.LicenseDocument
+        signature = json.optJSONObject("signature")?.let { Signature(it) } ?: throw LcpException.Parsing.LicenseDocument
+        links = json.optJSONArray("links")?.let { Links(it) } ?: throw LcpException.Parsing.LicenseDocument
+        updated = json.optNullableString("updated")?.iso8601ToDate() ?: issued
+        user = User(json.optJSONObject("user") ?: JSONObject())
+        rights = Rights(json.optJSONObject("rights") ?: JSONObject())
+
         if (link(Rel.hint) == null || link(Rel.publication) == null) {
             throw LcpException.Parsing.LicenseDocument
         }
