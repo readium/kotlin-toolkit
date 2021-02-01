@@ -9,77 +9,68 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.drm
 
-import android.net.Uri
-import androidx.activity.ComponentActivity
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.browser.customtabs.CustomTabsIntent
-import kotlinx.coroutines.runBlocking
-import org.joda.time.DateTime
+import androidx.fragment.app.FragmentActivity
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.lcp.MaterialRenewListener
 import org.readium.r2.shared.util.Try
 import java.io.File
 import java.io.Serializable
-import java.net.URL
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import java.util.*
 
-class LCPViewModel(val file: File, val activity: ComponentActivity) : DRMViewModel(activity), Serializable {
+class LCPViewModel(val lcpLicense: LcpLicense, val activity: FragmentActivity) : DRMViewModel(activity), Serializable {
 
-    private val lcpLicense: LcpLicense? = runBlocking {
-        LcpService(activity)!!
-            .retrieveLicense(file, allowUserInteraction = false)
-            ?.getOrNull()
+    companion object {
+
+        suspend fun from(file: File, activity: FragmentActivity): LCPViewModel? {
+            val service = LcpService(activity) ?: return null
+            val license = service.retrieveLicense(file, allowUserInteraction = false)?.getOrNull() ?: return null
+            return LCPViewModel(license, activity)
+        }
+
     }
 
     override val type: String = "LCP"
 
-    override val state: String? = lcpLicense?.status?.status?.rawValue
+    override val state: String? = lcpLicense.status?.status?.rawValue
 
-    override val provider: String? = lcpLicense?.license?.provider
+    override val provider: String? = lcpLicense.license.provider
 
-    override val issued: DateTime? = lcpLicense?.license?.issued
+    override val issued: Date? = lcpLicense.license.issued
 
-    override val updated: DateTime? = lcpLicense?.license?.updated
+    override val updated: Date? = lcpLicense.license.updated
 
-    override val start: DateTime? = lcpLicense?.license?.rights?.start
+    override val start: Date? = lcpLicense.license.rights.start
 
-    override val end: DateTime? = lcpLicense?.license?.rights?.end
+    override val end: Date? = lcpLicense.license.rights.end
 
     override val copiesLeft: String =
-        lcpLicense?.charactersToCopyLeft
+        lcpLicense.charactersToCopyLeft
             ?.let { "$it characters" }
             ?: super.copiesLeft
 
     override val printsLeft: String =
-        lcpLicense?.pagesToPrintLeft
+        lcpLicense.pagesToPrintLeft
             ?.let { "$it pages" }
             ?: super.printsLeft
 
-    override val canRenewLoan: Boolean = lcpLicense?.canRenewLoan ?: false
+    override val canRenewLoan: Boolean = lcpLicense.canRenewLoan
 
-    override suspend fun renewLoan(end: DateTime?): Try<Unit, Exception> {
-        val lcpLicense = lcpLicense ?: return super.renewLoan(end)
+    override suspend fun renewLoan(): Try<Date?, Exception> =
+        lcpLicense.renewLoan(renewListener)
 
-        suspend fun urlPresenter(url: URL): Unit = suspendCoroutine { cont ->
-            val intent = CustomTabsIntent.Builder().build().intent.apply {
-                data = Uri.parse(url.toString())
-            }
-
-            val launcher = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                cont.resume(Unit)
-            }
-            launcher.launch(intent)
-        }
-
-        return lcpLicense.renewLoan(end, ::urlPresenter)
-    }
+    private val renewListener = MaterialRenewListener(
+        license = lcpLicense,
+        caller = activity,
+        fragmentManager = activity.supportFragmentManager
+    )
 
     override val canReturnPublication: Boolean
-        get() = lcpLicense?.canReturnPublication ?: false
+        get() = lcpLicense.canReturnPublication
 
     override suspend fun returnPublication(): Try<Unit, Exception> =
-        lcpLicense?.returnPublication() ?: super.returnPublication()
+        lcpLicense.returnPublication()
+
 }
