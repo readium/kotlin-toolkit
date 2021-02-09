@@ -22,6 +22,7 @@ import org.readium.r2.shared.publication.services.DefaultLocatorService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.util.Ref
 import java.net.URL
 import kotlin.reflect.KClass
 
@@ -347,6 +348,7 @@ class ServicesBuilderTest {
     class BarServiceA: BarService()
 
     private val context = Publication.Service.Context(
+        Ref(),
         Manifest(metadata = Metadata(localizedTitle = LocalizedString())),
         EmptyFetcher()
     )

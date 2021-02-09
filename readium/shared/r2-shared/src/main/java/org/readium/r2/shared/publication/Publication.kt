@@ -29,6 +29,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.*
+import org.readium.r2.shared.util.Ref
 import timber.log.Timber
 import java.net.URL
 import java.net.URLEncoder
@@ -45,8 +46,6 @@ internal typealias ServiceFactory = (Publication.Service.Context) -> Publication
  * The default implementation returns Resource.Exception.NotFound for all HREFs.
  * @param servicesBuilder Holds the list of service factories used to create the instances of
  * Publication.Service attached to this Publication.
- * @param type The kind of publication it is ( EPUB, CBZ, ... )
- * @param version The version of the publication, if the type needs any.
  * @param positionsFactory Factory used to build lazily the [positions].
  */
 class Publication(
@@ -65,8 +64,19 @@ class Publication(
     @Deprecated("This will be removed in a future version. Use [Format.of] to check the format of a publication.", level = DeprecationLevel.ERROR)
     var internalData: MutableMap<String, String> = mutableMapOf()
 ) {
-    private val _services: List<Service> = servicesBuilder.build(Service.Context(manifest, fetcher))
-    private val _manifest = manifest.copy(links = manifest.links + _services.map(Service::links).flatten())
+    private val _services: List<Service>
+    private val _manifest: Manifest
+
+    init {
+        // We use a Ref<Publication> instead of passing directly `this` to the services to prevent
+        // them from using the Publication before it is fully initialized.
+        val pubRef = Ref<Publication>()
+
+        _services = servicesBuilder.build(Service.Context(pubRef, manifest, fetcher))
+        _manifest = manifest.copy(links = manifest.links + _services.map(Service::links).flatten())
+
+        pubRef.ref = this
+    }
 
     // Shortcuts to manifest properties
 
@@ -270,8 +280,16 @@ class Publication(
 
         /**
          * Container for the context from which a service is created.
+         *
+         * @param publication Reference to the parent publication.
+         *        Don't store directly the referenced publication, always access it through the
+         *        [Ref] property. The publication won't be set when the service is created or when
+         *        calling [Service.links], but you can use it during regular service operations. If
+         *        you need to initialize your service differently depending on the publication, use
+         *        `manifest`.
          */
         class Context(
+            val publication: Ref<Publication>,
             val manifest: Manifest,
             val fetcher: Fetcher
         )
@@ -303,6 +321,10 @@ class Publication(
          *
          * Called by [Publication.get] for each request.
          *
+         * Warning: If you need to request one of the publication resources to answer the request,
+         * use the [Fetcher] provided by the [Publication.Service.Context] instead of
+         * [Publication.get], otherwise it will trigger an infinite loop.
+         *
          * @return The [Resource] containing the response, or null if the service doesn't recognize
          *         this request.
          */
@@ -326,7 +348,7 @@ class Publication(
         constructor(
             contentProtection: ServiceFactory? = null,
             cover: ServiceFactory? = null,
-            locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder) },
+            locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.publication) },
             positions: ServiceFactory? = null
         ) : this(mapOf(
             ContentProtectionService::class.java.simpleName to contentProtection,
