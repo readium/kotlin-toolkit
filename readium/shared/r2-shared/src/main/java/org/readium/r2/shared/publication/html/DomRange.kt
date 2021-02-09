@@ -88,6 +88,10 @@ data class DomRange(
                     cssSelector = cssSelector,
                     textNodeIndex = textNodeIndex,
                     charOffset = json.optPositiveInt("charOffset")
+                        // The model was using `offset` before, so we still parse it to ensure
+                        // backward-compatibility for reading apps having persisted legacy Locator
+                        // models.
+                        ?: json.optPositiveInt("offset")
                 )
             }
 

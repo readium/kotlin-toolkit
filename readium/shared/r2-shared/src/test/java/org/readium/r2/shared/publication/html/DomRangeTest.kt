@@ -108,6 +108,21 @@ class DomRangeTest {
         )
     }
 
+    /**
+     * `offset` got replaced with `charOffset`, but we still need to be able to parse it to ensure
+     * backward-compatibility for apps which persisted legacy versions of the DomRange model.
+      */
+    @Test fun `parse legacy {Point} JSON`() {
+        assertEquals(
+            DomRange.Point(cssSelector = "p", textNodeIndex = 4, charOffset = 32),
+            DomRange.Point.fromJSON(JSONObject("""{
+                "cssSelector": "p",
+                "textNodeIndex": 4,
+                "offset": 32
+            }"""))
+        )
+    }
+
     @Test fun `parse {Point} invalid JSON`() {
         assertNull(DomRange.Point.fromJSON(JSONObject("""{
             "cssSelector": "p"
