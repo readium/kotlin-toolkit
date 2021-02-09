@@ -24,12 +24,12 @@ class AudioLocatorService(private val readingOrder: List<Link>) : LocatorService
     private val totalDuration: Double? =
         durations.sum().takeIf { it > 0 }
 
-    override fun locate(locator: Locator): Locator? {
+    override suspend fun locate(locator: Locator): Locator? {
         if (readingOrder.firstWithHref(locator.href) != null) {
             return locator
         }
 
-        val target = locator.locations.totalProgression?.let { locate(it) }
+        val target = locator.locations.totalProgression?.let { locateProgression(it) }
         if (target != null) {
             return target.copy(
                 title = locator.title,
@@ -40,9 +40,9 @@ class AudioLocatorService(private val readingOrder: List<Link>) : LocatorService
         return null
     }
 
-    override fun locate(progression: Double): Locator? {
+    override suspend fun locateProgression(totalProgression: Double): Locator? {
         totalDuration ?: return null
-        val positionInPublication = progression * totalDuration
+        val positionInPublication = totalProgression * totalDuration
 
         val (link, resourcePosition) = readingOrderItemAtPosition(positionInPublication)
             ?: return null
@@ -58,7 +58,7 @@ class AudioLocatorService(private val readingOrder: List<Link>) : LocatorService
                     if (duration == 0.0) 0.0
                     else positionInResource / duration
                 },
-                totalProgression = progression
+                totalProgression = totalProgression
             )
         )
     }
@@ -68,8 +68,8 @@ class AudioLocatorService(private val readingOrder: List<Link>) : LocatorService
      * start time.
      */
     private fun readingOrderItemAtPosition(position: Double): Pair<Link, Double>? {
-        var current: Double = 0.0
-        for ((i, duration) in durations.withIndex()) {
+        var current = 0.0
+        for ((i, _) in durations.withIndex()) {
             val link = readingOrder[i]
             val itemDuration = link.duration ?: 0.0
             if (position >= current && position < (current + itemDuration)) {
