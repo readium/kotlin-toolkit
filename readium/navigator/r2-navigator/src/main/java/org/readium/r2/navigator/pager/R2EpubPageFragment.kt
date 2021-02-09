@@ -72,7 +72,6 @@ class R2EpubPageFragment : Fragment() {
         webView.settings.setSupportZoom(true)
         webView.settings.builtInZoomControls = true
         webView.settings.displayZoomControls = false
-        webView.overrideUrlLoading = true
         webView.resourceUrl = resourceUrl
         webView.setPadding(0, 0, 0, 0)
 
@@ -105,16 +104,9 @@ class R2EpubPageFragment : Fragment() {
         })
 
         webView.webViewClient = object : WebViewClientCompat() {
-            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                if (!request.hasGesture()) return false
 
-                return if (webView.overrideUrlLoading) {
-                    false
-                } else {
-                    webView.overrideUrlLoading = true
-                    true
-                }
-            }
+            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
+                (webView as? R2BasicWebView)?.shouldOverrideUrlLoading(request) ?: false
 
             override fun shouldOverrideKeyEvent(view: WebView, event: KeyEvent): Boolean {
                 // Do something with the event here
