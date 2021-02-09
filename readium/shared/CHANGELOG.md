@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+* [#129](https://github.com/readium/r2-shared-kotlin/issues/129) Improve performances when reading deflated ZIP resources.
+  * For example, it helps with large image-based FXL EPUB which used to be slow to render.
 * [#136](https://github.com/readium/r2-shared-kotlin/issues/136) `null` values in JSON string properties are now properly parsed as nullable types, instead of the string `"null"`
 
 

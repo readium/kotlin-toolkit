@@ -68,6 +68,11 @@ interface Archive {
          */
         suspend fun read(range: LongRange? = null): ByteArray
 
+        /**
+         * Closes any pending resources for this entry.
+         */
+        suspend fun close()
+
     }
 
     /** List of all the archived file entries. */

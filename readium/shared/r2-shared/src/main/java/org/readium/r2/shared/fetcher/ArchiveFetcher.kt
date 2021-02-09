@@ -82,7 +82,11 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
             metadataLength()?.let { Try.success(it) }
                 ?: read().map { it.size.toLong() }
 
-        override suspend fun close() {}
+        override suspend fun close() {
+            if (::_entry.isInitialized) {
+                _entry.onSuccess { it.close() }
+            }
+        }
 
         private suspend fun metadataLength(): Long? =
             entry().getOrNull()?.length

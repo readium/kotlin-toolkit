@@ -13,7 +13,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.readRange
+import org.readium.r2.shared.util.io.CountingInputStream
 import java.io.File
+import java.io.InputStream
 import java.lang.Exception
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
@@ -32,17 +34,53 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
                 else
                     entry.compressedSize.takeUnless { it == -1L }
 
-        override suspend fun read(range: LongRange?): ByteArray {
-            val stream = withContext(Dispatchers.IO) {
-                archive.getInputStream(entry)
-            }
-            return stream.use {
-                if (range == null)
-                    it.readFully()
-                else
-                    it.readRange(range)
+        override suspend fun read(range: LongRange?): ByteArray =
+            if (range == null)
+                readFully()
+            else
+                readRange(range)
+
+        private suspend fun readFully(): ByteArray = withContext(Dispatchers.IO) {
+            archive.getInputStream(entry).use {
+                it.readFully()
             }
         }
+
+        private suspend fun readRange(range: LongRange): ByteArray =
+            stream(range.first).readRange(range)
+
+        /**
+         * Reading an entry in chunks (e.g. from the HTTP server) can be really slow if the entry
+         * is deflated in the archive, because we can't jump to an arbitrary offset in a deflated
+         * stream. This means that we need to read from the start of the entry for each chunk.
+         *
+         * To alleviate this issue, we cache a stream which will be reused as long as the chunks are
+         * requested in order.
+         *
+         * See this issue for more info: https://github.com/readium/r2-shared-kotlin/issues/129
+         */
+        private suspend fun stream(fromIndex: Long): CountingInputStream {
+            // Reuse the current stream if it didn't exceed the requested index.
+            stream
+                ?.takeIf { it.count <= fromIndex }
+                ?.let { return it }
+
+            return withContext(Dispatchers.IO) {
+                val newStream = CountingInputStream(archive.getInputStream(entry))
+                stream?.close()
+                stream = newStream
+                newStream
+            }
+        }
+
+        private var stream: CountingInputStream? = null
+
+        override suspend fun close() {
+            withContext(Dispatchers.IO) {
+                stream?.close()
+            }
+        }
+
     }
 
     override suspend fun entries(): List<Archive.Entry> =

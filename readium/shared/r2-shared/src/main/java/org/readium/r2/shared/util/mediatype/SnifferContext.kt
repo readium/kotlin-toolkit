@@ -191,7 +191,12 @@ class SnifferContext internal constructor(
         val archive = contentAsArchive() ?: return null
 
         return withContext(Dispatchers.IO) {
-            tryOrNull { archive.entry(path).read() }
+            tryOrNull {
+                val entry = archive.entry(path)
+                val bytes = entry.read()
+                entry.close()
+                bytes
+            }
         }
     }
 

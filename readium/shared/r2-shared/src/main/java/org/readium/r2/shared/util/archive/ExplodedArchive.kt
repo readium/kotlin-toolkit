@@ -43,6 +43,9 @@ internal class ExplodedArchive(private val directory: File)  : Archive {
                     it.readRange(range)
             }
         }
+
+        override suspend fun close() {}
+
     }
 
     override suspend fun entries(): List<Archive.Entry> =
