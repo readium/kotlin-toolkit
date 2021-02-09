@@ -34,15 +34,23 @@ interface LcpService {
 
     /**
      * Acquires a protected publication from a standalone LCPL's bytes.
+     *
+     * You can cancel the on-going acquisition by cancelling its parent coroutine context.
+     *
+     * @param onProgress Callback to follow the acquisition progress from 0.0 to 1.0.
      */
-    suspend fun acquirePublication(lcpl: ByteArray): Try<AcquiredPublication, LcpException>
+    suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpException>
 
     /**
-     *  Acquires a protected publication from a standalone LCPL file.
+     * Acquires a protected publication from a standalone LCPL file.
+     *
+     * You can cancel the on-going acquisition by cancelling its parent coroutine context.
+     *
+     * @param onProgress Callback to follow the acquisition progress from 0.0 to 1.0.
      */
-    suspend fun acquirePublication(lcpl: File): Try<AcquiredPublication, LcpException> = withContext(Dispatchers.IO) {
+    suspend fun acquirePublication(lcpl: File, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpException> = withContext(Dispatchers.IO) {
         try {
-            acquirePublication(lcpl.readBytes())
+            acquirePublication(lcpl.readBytes(), onProgress)
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
         }

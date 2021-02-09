@@ -22,6 +22,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.math.round
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -73,12 +74,21 @@ internal class NetworkService {
             }
         }
 
-    suspend fun download(url: URL, destination: File, mediaType: String? = null): MediaType? = withContext(Dispatchers.IO) {
+    suspend fun download(url: URL, destination: File, mediaType: String? = null, onProgress: (Double) -> Unit): MediaType? = withContext(Dispatchers.IO) {
         try {
             val connection = url.openConnection() as HttpURLConnection
             if (connection.responseCode >= 400) {
                 throw LcpException.Network(NetworkException(connection.responseCode))
             }
+
+            var readLength = 0L
+            val expectedLength =
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                    connection.contentLengthLong.toDouble()
+                } else {
+                    connection.contentLength.toDouble()
+                }
+            var lastProgress = 0.0
 
             BufferedInputStream(connection.inputStream).use { input ->
                 FileOutputStream(destination).use { output ->
@@ -86,6 +96,20 @@ internal class NetworkService {
                     var n: Int
                     while (-1 != input.read(buf).also { n = it }) {
                         output.write(buf, 0, n)
+                        readLength += n
+
+                        if (expectedLength > 0) {
+                            // Rounds the progress to avoid notifying too much which my decrease
+                            // performances.
+                            val progress = (readLength / expectedLength)
+                                .coerceIn(0.0, 1.0).roundToDecimals(2)
+                            if (lastProgress < progress) {
+                                withContext(Dispatchers.Main) {
+                                    onProgress(progress)
+                                }
+                            }
+                            lastProgress = progress
+                        }
                     }
                 }
             }
@@ -98,4 +122,10 @@ internal class NetworkService {
         }
     }
 
+}
+
+private fun Double.roundToDecimals(decimals: Int): Double {
+    var multiplier = 1.0
+    repeat(decimals) { multiplier *= 10 }
+    return round(this * multiplier) / multiplier
 }

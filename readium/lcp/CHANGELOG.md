@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* You can observe the progress of an acquisition by providing an `onProgress` closure to `LcpService.acquirePublication()`.
 * Extensibility in licenses' `Rights` model.
 
 ### Changed
@@ -17,6 +18,7 @@ All notable changes to this project will be documented in this file.
     * If your application fits Material Design guidelines, take a look at `MaterialRenewListener` for a default implementation.
 * Removed dependency on Joda's `DateTime` in public APIs.
     * You can always create a `DateTime` from the standard `Date` objects if you relied on Joda's features in the callers.
+
 
 ## [2.0.0-beta.1]
 

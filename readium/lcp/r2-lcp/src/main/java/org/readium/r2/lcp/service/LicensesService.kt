@@ -42,11 +42,11 @@ internal class LicensesService(
             true
         }
 
-    override suspend fun acquirePublication(lcpl: ByteArray): Try<LcpService.AcquiredPublication, LcpException> =
+    override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
         try {
             val licenseDocument = LicenseDocument(lcpl)
             Timber.d("license ${licenseDocument.json}")
-            fetchPublication(licenseDocument).let { Try.success(it) }
+            fetchPublication(licenseDocument, onProgress).let { Try.success(it) }
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
         }
@@ -121,7 +121,7 @@ internal class LicensesService(
         }
     }
 
-    private suspend fun fetchPublication(license: LicenseDocument): LcpService.AcquiredPublication {
+    private suspend fun fetchPublication(license: LicenseDocument, onProgress: (Double) -> Unit): LcpService.AcquiredPublication {
         val link = license.link(LicenseDocument.Rel.publication)
         val url = link?.url
             ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
@@ -131,7 +131,7 @@ internal class LicensesService(
         }
         Timber.i("LCP destination $destination")
 
-        val mediaType = network.download(url, destination, mediaType = link.type) ?: MediaType.of(mediaType = link.type) ?: MediaType.EPUB
+        val mediaType = network.download(url, destination, mediaType = link.type, onProgress = onProgress) ?: MediaType.of(mediaType = link.type) ?: MediaType.EPUB
 
         // Saves the License Document into the downloaded publication
         val container = createLicenseContainer(destination.path, mediaType)
