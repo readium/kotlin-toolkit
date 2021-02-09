@@ -6,9 +6,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* The HTTP server now requests that publication resources are not cached by browsers.
+  * Caching poses a security risk for protected publications.
+
 ## [2.0.0-beta.1]
 
-## Changed
+### Changed
 
 * Upgraded to Kotlin 1.4.10.
 * `Streamer` is now expecting a `PublicationAsset` instead of a `File`. You can create custom implementations of `PublicationAsset` to open a publication from different medium, such as a file, a remote URL, in-memory bytes, etc.
@@ -27,7 +32,7 @@ All notable changes to this project will be documented in this file.
 
 * `Container` and `ContentFilters` were replaced by a shared implementation of a [`Fetcher`](https://readium.org/architecture/proposals/002-composite-fetcher-api).
 
-## Fixed
+### Fixed
 
 * Readium can now open PDF documents of any size without crashing. However, LCP protected PDFs are still limited by the available memory.
 * Various HTTP server fixes and optimizations.

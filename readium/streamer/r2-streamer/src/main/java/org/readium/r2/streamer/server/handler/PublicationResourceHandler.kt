@@ -52,6 +52,13 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
         try {
             serveResponse(session, resource)
+                .apply {
+                    // Disable HTTP caching for publication resources, because it poses a security
+                    // threat for protected publications.
+                    addHeader("Cache-Control", "no-cache, no-store, must-revalidate")
+                    addHeader("Pragma", "no-cache")
+                    addHeader("Expires", "0")
+                }
         } catch(e: Resource.Exception) {
             Timber.e(e)
             responseFromFailure(e)
