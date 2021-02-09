@@ -78,7 +78,6 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, 
             }
         }
         divinaWebView.loadUrl("file:///android_asset/readium/divina/divinaPlayer.html")
-        divinaWebView.addJavascriptInterface(divinaWebView, "Android")
 
     }
 

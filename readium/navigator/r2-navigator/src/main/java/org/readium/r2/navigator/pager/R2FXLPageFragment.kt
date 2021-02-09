@@ -34,6 +34,8 @@ class R2FXLPageFragment : Fragment() {
     private val secondResourceUrl: String?
         get() = requireArguments().getString("secondUrl")
 
+    private var webViews = mutableListOf<WebView>()
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -80,8 +82,22 @@ class R2FXLPageFragment : Fragment() {
         }
     }
 
+    override fun onDetach() {
+        super.onDetach()
+
+        // Prevent the web views from leaking when their parent is detached.
+        // See https://stackoverflow.com/a/19391512/1474476
+        for (wv in webViews) {
+            (wv.parent as? ViewGroup)?.removeView(wv)
+            wv.removeAllViews()
+            wv.destroy()
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView(webView: R2BasicWebView, resourceUrl: String?) {
+        webViews.add(webView)
+
         val navigatorFragment = parentFragmentManager.findFragmentByTag(getString(R.string.epub_navigator_tag)) as EpubNavigatorFragment
 
         webView.navigator = navigatorFragment

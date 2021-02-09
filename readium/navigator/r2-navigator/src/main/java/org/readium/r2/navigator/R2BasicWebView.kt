@@ -120,6 +120,18 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         listener.onProgressionChanged()
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        addJavascriptInterface(this, "Android")
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        // Prevent the web view from leaking when detached
+        // See https://github.com/readium/r2-navigator-kotlin/issues/52
+        removeJavascriptInterface("Android")
+    }
+
     @android.webkit.JavascriptInterface
     open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {

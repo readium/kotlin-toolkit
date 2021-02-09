@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 * [#217](https://github.com/readium/r2-testapp-kotlin/issues/217) Interactive HTML elements are not bypassed anymore when handling touch gestures.
   * Scripts using `preventDefault()` are now taken into account and don't trigger a tap event anymore.
+* [#52](https://github.com/readium/r2-navigator-kotlin/issues/52) Memory leak in EPUB web views. This fixes ongoing media playback when closing an EPUB.
 
 
 ## [2.0.0-beta.1]

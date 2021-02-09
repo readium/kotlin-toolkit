@@ -75,7 +75,6 @@ class R2EpubPageFragment : Fragment() {
         webView.overrideUrlLoading = true
         webView.resourceUrl = resourceUrl
         webView.setPadding(0, 0, 0, 0)
-        webView.addJavascriptInterface(webView, "Android")
 
         var endReached = false
         webView.setOnOverScrolledCallback(object : R2BasicWebView.OnOverScrolledCallback {
@@ -228,6 +227,18 @@ class R2EpubPageFragment : Fragment() {
         setupPadding()
 
         return containerView
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+
+        // Prevent the web view from leaking when its parent is detached.
+        // See https://stackoverflow.com/a/19391512/1474476
+        webView?.let { wv ->
+            (wv.parent as? ViewGroup)?.removeView(wv)
+            wv.removeAllViews()
+            wv.destroy()
+        }
     }
 
     private fun setupPadding() {
