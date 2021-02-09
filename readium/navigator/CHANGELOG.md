@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+* [#217](https://github.com/readium/r2-testapp-kotlin/issues/217) Interactive HTML elements are not bypassed anymore when handling touch gestures.
+  * Scripts using `preventDefault()` are now taken into account and don't trigger a tap event anymore.
+
+
 ## [2.0.0-beta.1]
 
 ### Added

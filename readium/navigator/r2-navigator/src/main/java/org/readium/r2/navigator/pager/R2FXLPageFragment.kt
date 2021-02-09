@@ -103,12 +103,6 @@ class R2FXLPageFragment : Fragment() {
 
 
         webView.webViewClient = object : WebViewClientCompat() {
-            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                if (!request.hasGesture()) return false
-                view.loadUrl(request.url.toString())
-                return false
-            }
-
             // prevent favicon.ico to be loaded, this was causing NullPointerException in NanoHttp
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                 if (!request.isForMainFrame && request.url.path?.endsWith("/favicon.ico") == true) {

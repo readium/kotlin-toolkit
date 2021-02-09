@@ -108,8 +108,8 @@ class R2EpubPageFragment : Fragment() {
         webView.webViewClient = object : WebViewClientCompat() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 if (!request.hasGesture()) return false
+
                 return if (webView.overrideUrlLoading) {
-                    view.loadUrl(request.url.toString())
                     false
                 } else {
                     webView.overrideUrlLoading = true
