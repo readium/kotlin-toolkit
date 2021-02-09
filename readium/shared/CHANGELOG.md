@@ -6,11 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## Added
+### Added
 
 * `Publication.Service.Context` now holds a reference to the parent `Publication`. This can be used to access other services from a given `Publication.Service` implementation.
 * The default `LocatorService` implementation can be used to get a `Locator` from a global progression in the publication.
   * `publication.locateProgression(0.5)`
+
+### Fixed
+
+* [#136](https://github.com/readium/r2-shared-kotlin/issues/136) `null` values in JSON string properties are now properly parsed as nullable types, instead of the string `"null"`
 
 
 ## [2.0.0-beta.1]

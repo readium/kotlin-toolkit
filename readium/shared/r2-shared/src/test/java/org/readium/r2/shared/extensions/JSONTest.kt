@@ -1,9 +1,12 @@
 package org.readium.r2.shared.extensions
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
 
 class JSONTest {
 
@@ -65,6 +68,23 @@ class JSONTest {
             mapOf("b.1" to "hello"),
             listOf(true, 42, "world")
         ))
+    }
+
+}
+
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [28])
+class JSONAndroidTest {
+
+    // This test requires `RunWith(AndroidJUnit4::class)`, because the behavior is not buggy on the
+    // local JVM.
+    @Test
+    fun `optNullableString() handles null values`() {
+        // optString() returns "null" if the key exists but contains the `null` value.
+        // https://stackoverflow.com/questions/18226288/json-jsonobject-optstring-returns-string-null
+        val sut = JSONObject("""{ "key": null }""")
+
+        assertNull(sut.optNullableString("key"))
     }
 
 }
