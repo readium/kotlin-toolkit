@@ -19,6 +19,10 @@ All notable changes to this project will be documented in this file.
 * Removed dependency on Joda's `DateTime` in public APIs.
     * You can always create a `DateTime` from the standard `Date` objects if you relied on Joda's features in the callers.
 
+### Fixed
+
+* [#287](https://github.com/readium/r2-testapp-kotlin/issues/287) Make sure the passphrase input is visible on smaller devices in the authentication dialog.
+
 
 ## [2.0.0-beta.1]
 
