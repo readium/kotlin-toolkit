@@ -185,7 +185,7 @@ class EpubParser : PublicationParser, org.readium.r2.streamer.parser.Publication
 
     private suspend fun parseDisplayOptions(fetcher: Fetcher): Map<String, String> {
         val displayOptionsXml =
-            fetcher.readAsXmlOrNull("/META-INF/com.kobobooks.display-options.xml")
+            fetcher.readAsXmlOrNull("/META-INF/com.apple.ibooks.display-options.xml")
             ?: fetcher.readAsXmlOrNull("/META-INF/com.kobobooks.display-options.xml")
 
         return displayOptionsXml?.getFirst("platform", "")
