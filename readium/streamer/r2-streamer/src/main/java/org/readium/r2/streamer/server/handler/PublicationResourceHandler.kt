@@ -139,7 +139,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
     }
 
     private fun createResponse(status: Status, mimeType: String, data: InputStream, dataLength: Long): Response {
-        val response = newChunkedResponse(status, mimeType, data)
+        val response = newChunkedResponse(status, mimeType, data.buffered())
         response.addHeader("Accept-Ranges", "bytes")
         response.addHeader("Content-Length", dataLength.toString())
         return response
