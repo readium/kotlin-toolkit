@@ -46,6 +46,23 @@ private fun unwrapJSON(value: Any) = when (value) {
     else -> value
 }
 
+private fun wrapJSON(value: Any?): Any? = when (value) {
+    is JSONable -> value.toJSON()
+        .takeIf { it.length() > 0 }
+
+    is Map<*, *> -> value
+        .takeIf { it.isNotEmpty() }
+        ?.mapValues { wrapJSON(it.value) }
+        ?.let { JSONObject(it) }
+
+    is List<*> -> value
+        .takeIf { it.isNotEmpty() }
+        ?.mapNotNull { wrapJSON(it) }
+        ?.let { JSONArray(it) }
+
+    else -> value
+}
+
 /**
  * Maps [name] to [jsonObject], clobbering any existing name/value mapping with the same name. If
  * the [JSONObject] is empty, any existing mapping for [name] is removed.
@@ -82,25 +99,31 @@ fun JSONObject.putIfNotEmpty(name: String, jsonable: JSONable?) {
  */
 internal fun JSONObject.putIfNotEmpty(name: String, collection: Collection<*>) {
     @Suppress("NAME_SHADOWING")
-    val collection = collection.mapNotNull {
-        if (it !is JSONable) {
-            return@mapNotNull it
-        }
-
-        val json = it.toJSON()
-        if (json.length() == 0) {
-            return@mapNotNull null
-        }
-
-        return@mapNotNull json
-    }
-
+    val collection = collection.mapNotNull { wrapJSON(it) }
     if (collection.isEmpty()) {
         remove(name)
         return
     }
 
     put(name, JSONArray(collection))
+}
+
+/**
+ * Maps [name] to [map] after wrapping it in a [JSONObject], clobbering any existing name/value
+ * mapping with the same name. If the map is empty, any existing mapping for [name] is removed.
+ * If the objects in [map] are [JSONable], then they are converted to [JSONObject] first.
+ */
+internal fun JSONObject.putIfNotEmpty(name: String, map: Map<String, *>) {
+    @Suppress("NAME_SHADOWING")
+    val map = map.mapValues {
+        wrapJSON(it.value)
+    }
+    if (map.isEmpty()) {
+        remove(name)
+        return
+    }
+
+    put(name, JSONObject(map))
 }
 
 /**

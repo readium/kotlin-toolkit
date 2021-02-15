@@ -18,6 +18,7 @@ import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import java.util.*
@@ -58,10 +59,81 @@ data class Metadata(
     val description: String? = null,
     val duration: Double? = null,
     val numberOfPages: Int? = null,
-    val belongsToCollections: List<Collection> = emptyList(),
-    val belongsToSeries: List<Collection> = emptyList(),
+    val belongsTo: Map<String, List<Collection>> = emptyMap(),
     val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
 ) : JSONable, Parcelable {
+
+    constructor(
+        identifier: String? = null, // URI
+        type: String? = null, // URI (@type)
+        localizedTitle: LocalizedString,
+        localizedSubtitle: LocalizedString? = null,
+        localizedSortAs: LocalizedString? = null,
+        modified: Date? = null,
+        published: Date? = null,
+        languages: List<String> = emptyList(), // BCP 47 tag
+        subjects: List<Subject> = emptyList(),
+        authors: List<Contributor> = emptyList(),
+        translators: List<Contributor> = emptyList(),
+        editors: List<Contributor> = emptyList(),
+        artists: List<Contributor> = emptyList(),
+        illustrators: List<Contributor> = emptyList(),
+        letterers: List<Contributor> = emptyList(),
+        pencilers: List<Contributor> = emptyList(),
+        colorists: List<Contributor> = emptyList(),
+        inkers: List<Contributor> = emptyList(),
+        narrators: List<Contributor> = emptyList(),
+        contributors: List<Contributor> = emptyList(),
+        publishers: List<Contributor> = emptyList(),
+        imprints: List<Contributor> = emptyList(),
+        readingProgression: ReadingProgression = ReadingProgression.AUTO,
+        description: String? = null,
+        duration: Double? = null,
+        numberOfPages: Int? = null,
+        belongsTo: Map<String, List<Collection>> = emptyMap(),
+        belongsToCollections: List<Collection> = emptyList(),
+        belongsToSeries: List<Collection> = emptyList(),
+        otherMetadata: Map<String, Any> = mapOf()
+    ): this(
+        identifier = identifier,
+        type = type,
+        localizedTitle = localizedTitle,
+        localizedSubtitle = localizedSubtitle,
+        localizedSortAs = localizedSortAs,
+        modified = modified,
+        published = published,
+        languages = languages,
+        subjects = subjects,
+        authors = authors,
+        translators = translators,
+        editors = editors,
+        artists = artists,
+        illustrators = illustrators,
+        letterers = letterers,
+        pencilers = pencilers,
+        colorists = colorists,
+        inkers = inkers,
+        narrators = narrators,
+        contributors = contributors,
+        publishers = publishers,
+        imprints = imprints,
+        readingProgression = readingProgression,
+        description = description,
+        duration = duration,
+        numberOfPages = numberOfPages,
+        belongsTo = belongsTo
+            .toMutableMap()
+            .apply {
+                if (belongsToCollections.isNotEmpty()) {
+                    this["collection"] = belongsToCollections
+                }
+                if (belongsToSeries.isNotEmpty()) {
+                    this["series"] = belongsToSeries
+                }
+            }
+            .toMap(),
+        otherMetadata = otherMetadata
+    )
 
     /**
      * Returns the default translation string for the [localizedTitle].
@@ -73,6 +145,12 @@ data class Metadata(
      * Returns the default translation string for the [localizedSortAs].
      */
     val sortAs: String? get() = localizedSortAs?.string
+
+    val belongsToCollections: List<Collection> get() =
+        belongsTo["collection"] ?: emptyList()
+
+    val belongsToSeries: List<Collection> get() =
+        belongsTo["series"] ?: emptyList()
 
     /**
      * Computes a [ReadingProgression] when the value of [readingProgression] is set to
@@ -135,10 +213,7 @@ data class Metadata(
         put("description", description)
         put("duration", duration)
         put("numberOfPages", numberOfPages)
-        putIfNotEmpty("belongsTo", JSONObject().apply {
-            putIfNotEmpty("collection", belongsToCollections)
-            putIfNotEmpty("series", belongsToSeries)
-        })
+        putIfNotEmpty("belongsTo", belongsTo)
     }
 
     /**
@@ -191,10 +266,20 @@ data class Metadata(
             val description = json.remove("description") as? String
             val duration = json.optPositiveDouble("duration", remove = true)
             val numberOfPages = json.optPositiveInt("numberOfPages", remove = true)
-            val belongsTo = json.remove("belongsTo") as? JSONObject
-                ?: json.remove("belongs_to") as? JSONObject
-            val belongsToCollections = Collection.fromJSONArray(belongsTo?.opt("collection"), normalizeHref, warnings)
-            val belongsToSeries = Collection.fromJSONArray(belongsTo?.opt("series"), normalizeHref, warnings)
+
+            val belongsToJson = (
+                json.remove("belongsTo") as? JSONObject ?:
+                json.remove("belongs_to") as? JSONObject ?:
+                JSONObject()
+            )
+
+            val belongsTo = mutableMapOf<String, List<Collection>>()
+            for (key in belongsToJson.keys()) {
+                if (!belongsToJson.isNull(key)) {
+                    val value = belongsToJson.get(key)
+                    belongsTo[key] = Collection.fromJSONArray(value, normalizeHref, warnings)
+                }
+            }
 
             return Metadata(
                 identifier = identifier,
@@ -223,8 +308,7 @@ data class Metadata(
                 description = description,
                 duration = duration,
                 numberOfPages = numberOfPages,
-                belongsToCollections = belongsToCollections,
-                belongsToSeries = belongsToSeries,
+                belongsTo = belongsTo.toMap(),
                 otherMetadata = json.toMap()
             )
         }
@@ -260,10 +344,6 @@ data class Metadata(
 
     @Deprecated("Not used anymore", ReplaceWith("null"))
     val rights: String? get() = null
-
-    @Deprecated("Use either [belongsToCollections] or [belongsToSeries] instead", ReplaceWith("belongsToCollections"))
-    val belongsTo: Unit
-        get() = Unit
 
     @Deprecated("Renamed into [toJSON]", ReplaceWith("toJSON()"))
     fun writeJSON(): JSONObject = toJSON()
