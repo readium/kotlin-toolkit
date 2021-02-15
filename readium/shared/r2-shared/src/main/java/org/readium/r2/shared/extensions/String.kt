@@ -10,6 +10,7 @@
 package org.readium.r2.shared.extensions
 
 import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import org.json.JSONException
 import org.json.JSONObject
 import java.net.URL
@@ -19,7 +20,17 @@ import java.util.*
 
 fun String.iso8601ToDate(): Date? =
     try {
-        DateTime(this).toDate()
+        // We assume that a date without a time zone component is in UTC. To handle this properly,
+        // we need to set the default time zone of Joda to UTC, since by default it uses the local
+        // time zone. This ensures that apps see exactly the same dates (e.g. published) no matter
+        // where they are located.
+        // For the same reason, the output Date will be in UTC. Apps should convert it to the local
+        // time zone for display purposes, or keep it as UTC for storage.
+        val defaultTZ = DateTimeZone.getDefault()
+        DateTimeZone.setDefault(DateTimeZone.UTC)
+        val date = DateTime(this).toDateTime(DateTimeZone.UTC).toDate()
+        DateTimeZone.setDefault(defaultTZ)
+        date
     } catch (e: Exception) {
         null
     }
