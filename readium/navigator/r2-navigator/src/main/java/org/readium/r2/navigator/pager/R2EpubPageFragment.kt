@@ -26,6 +26,7 @@ import androidx.webkit.WebViewClientCompat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.R2WebView
@@ -51,16 +52,15 @@ class R2EpubPageFragment : Fragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val navigatorFragment = parentFragmentManager.findFragmentByTag(getString(R.string.epub_navigator_tag)) as EpubNavigatorFragment
-
+        val navigatorFragment = parentFragment as EpubNavigatorFragment
         containerView = inflater.inflate(R.layout.viewpager_fragment_epub, container, false)
         preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
 
         val webView = containerView.findViewById(R.id.webView) as R2WebView
         this.webView = webView
 
-        webView.navigator = navigatorFragment
-        webView.listener = navigatorFragment
+        webView.navigator = parentFragment as Navigator
+        webView.listener = parentFragment as R2BasicWebView.Listener
         webView.preferences = preferences
 
         webView.setScrollMode(preferences.getBoolean(SCROLL_REF, false))

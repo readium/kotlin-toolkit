@@ -243,6 +243,7 @@ function processTouchEvent(win, ev) {
             }
 
             ev.stopPropagation();
+            ev.preventDefault()
         }
     }
 }

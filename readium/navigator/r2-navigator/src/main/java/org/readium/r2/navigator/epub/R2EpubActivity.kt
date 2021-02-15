@@ -25,13 +25,13 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.navigator.util.CompositeFragmentFactory
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -48,7 +48,6 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         get() = Dispatchers.Main
 
     override lateinit var preferences: SharedPreferences
-    override lateinit var resourcePager: R2ViewPager
     override lateinit var publicationPath: String
     override lateinit var publicationFileName: String
     override lateinit var publication: Publication
@@ -62,18 +61,27 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     val adapter: R2PagerAdapter get() =
         resourcePager.adapter as R2PagerAdapter
 
+    override val resourcePager: R2ViewPager get() =
+        navigatorFragment().resourcePager
+
     private val currentFragment: R2EpubPageFragment? get() =
         adapter.mFragments.get(adapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
 
-    private val navigatorFragment: EpubNavigatorFragment get() =
-        supportFragmentManager.findFragmentById(R.id.epub_navigator) as EpubNavigatorFragment
 
     // For backward compatibility, we expose these properties only through the `R2EpubActivity`.
-    val positions: List<Locator> get() = navigatorFragment.positions
-    val currentPagerPosition: Int get() = navigatorFragment.currentPagerPosition
+    val positions: List<Locator> get() = navigatorFragment().positions
+    val currentPagerPosition: Int get() = navigatorFragment().currentPagerPosition
 
     override val currentLocator: StateFlow<Locator>
-        get() = navigatorFragment.currentLocator
+        get() = navigatorFragment().currentLocator
+
+    /**
+     * Locates the [EpubNavigatorFragment] instance.
+     *
+     * Reading apps may override this method to provide their own path to the navigator fragment.
+     */
+    open fun navigatorFragment(): EpubNavigatorFragment =
+        supportFragmentManager.findFragmentByTag(getString(R.string.epub_navigator_tag)) as EpubNavigatorFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
@@ -88,13 +96,17 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
         val initialLocator = intent.getParcelableExtra("locator") as? Locator
 
-        supportFragmentManager.fragmentFactory = EpubNavigatorFragment.createFactory(publication, baseUrl = baseUrl, initialLocator = initialLocator, listener = this)
+        // This must be done before the call to super.onCreate, including by reading apps.
+        // Because they may want to set their own factories, let's use a CompositeFragmentFactory that retains
+        // previously set factories.
+        supportFragmentManager.fragmentFactory = CompositeFragmentFactory(
+            supportFragmentManager.fragmentFactory,
+            EpubNavigatorFragment.createFactory(publication, baseUrl = baseUrl, initialLocator = initialLocator, listener = this)
+        )
 
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_r2_epub)
-
-        resourcePager = navigatorFragment.resourcePager
 
         title = null
 
@@ -126,28 +138,26 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
     override fun toggleActionBar() {
         if (allowToggleActionBar) {
-            launch {
-                if (supportActionBar!!.isShowing) {
-                    resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                            or View.SYSTEM_UI_FLAG_IMMERSIVE)
-                } else {
-                    resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-                }
+            if (supportActionBar!!.isShowing) {
+                resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE)
+            } else {
+                resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
             }
         }
     }
 
     override val readingProgression: ReadingProgression
-        get() = navigatorFragment.readingProgression
+        get() = navigatorFragment().readingProgression
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        navigatorFragment.go(locator, animated, completion)
+        navigatorFragment().go(locator, animated, completion)
 
         if (allowToggleActionBar && supportActionBar!!.isShowing) {
             resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -162,15 +172,15 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
-        return navigatorFragment.go(link, animated, completion)
+        return navigatorFragment().go(link, animated, completion)
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        return navigatorFragment.goForward(animated, completion)
+        return navigatorFragment().goForward(animated, completion)
     }
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        return navigatorFragment.goBackward(animated, completion)
+        return navigatorFragment().goBackward(animated, completion)
     }
 
     override fun onTap(point: PointF): Boolean {

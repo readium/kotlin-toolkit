@@ -15,23 +15,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.ImageView
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import com.github.chrisbanes.photoview.PhotoView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
-import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import kotlin.coroutines.CoroutineContext
 
 
-class R2CbzPageFragment(private val publication: Publication)
+class R2CbzPageFragment(private val publication: Publication, private val onTapListener: (Float, Float) -> Unit)
     : androidx.fragment.app.Fragment(), CoroutineScope  {
 
     override val coroutineContext: CoroutineContext
@@ -41,12 +37,13 @@ class R2CbzPageFragment(private val publication: Publication)
         get() = requireArguments().getParcelable("link")!!
 
     private lateinit var containerView: View
-    private lateinit var imageView: ImageView
+    private lateinit var photoView: PhotoView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         containerView = inflater.inflate(R.layout.viewpager_fragment_cbz, container, false)
-        imageView = containerView.findViewById(R.id.imageView)
+        photoView = containerView.findViewById(R.id.imageView)
+        photoView.setOnViewTapListener { _, x, y -> onTapListener(x, y) }
 
         setupPadding()
 
@@ -55,7 +52,7 @@ class R2CbzPageFragment(private val publication: Publication)
                .read()
                .getOrNull()
                ?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
-               ?.let { imageView.setImageBitmap(it) }
+               ?.let { photoView.setImageBitmap(it) }
        }
 
        return containerView
@@ -91,7 +88,7 @@ class R2CbzPageFragment(private val publication: Publication)
                 }
             }
 
-            imageView.setPadding(0, top, 0, bottom)
+            photoView.setPadding(0, top, 0, bottom)
         }
     }
 

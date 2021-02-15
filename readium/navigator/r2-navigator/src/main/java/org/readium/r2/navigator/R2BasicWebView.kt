@@ -29,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
@@ -223,7 +224,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 true
             }
             else ->
-                listener.onTap(PointF(event.clientX.toFloat(), event.clientY.toFloat()))
+                runBlocking(uiScope.coroutineContext) { listener.onTap(PointF(event.clientX.toFloat(), event.clientY.toFloat())) }
         }
     }
 

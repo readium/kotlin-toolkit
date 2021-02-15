@@ -20,6 +20,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
@@ -97,11 +98,8 @@ class R2FXLPageFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView(webView: R2BasicWebView, resourceUrl: String?) {
         webViews.add(webView)
-
-        val navigatorFragment = parentFragmentManager.findFragmentByTag(getString(R.string.epub_navigator_tag)) as EpubNavigatorFragment
-
-        webView.navigator = navigatorFragment
-        webView.listener = navigatorFragment
+        webView.navigator = parentFragment as Navigator
+        webView.listener = parentFragment as R2BasicWebView.Listener
 
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false

@@ -8,6 +8,7 @@ package org.readium.r2.navigator.image
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -28,6 +29,7 @@ import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positions
@@ -43,34 +45,6 @@ class ImageNavigatorFragment private constructor(
 ) : Fragment(), CoroutineScope by MainScope(), VisualNavigator {
 
     interface Listener : VisualNavigator.Listener
-
-    /**
-     * Factory for [ImageNavigatorFragment].
-     *
-     * @param publication Bitmap-based publication to render in the navigator.
-     * @param initialLocator The first location which should be visible when rendering the
-     *        publication. Can be used to restore the last reading location.
-     * @param listener Optional listener to implement to observe events, such as user taps.
-     */
-    class Factory(
-        private val publication: Publication,
-        private val initialLocator: Locator? = null,
-        private val listener: Listener? = null
-    ) : FragmentFactory() {
-
-        override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-            return when (className) {
-                ImageNavigatorFragment::class.java.name ->
-                    ImageNavigatorFragment(publication, initialLocator, listener)
-
-                R2CbzPageFragment::class.java.name ->
-                    R2CbzPageFragment(publication)
-
-                else -> super.instantiate(classLoader, className)
-            }
-        }
-
-    }
 
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
@@ -90,6 +64,13 @@ class ImageNavigatorFragment private constructor(
     internal var currentPagerPosition: Int = 0
     internal var resources: List<String> = emptyList()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        childFragmentManager.fragmentFactory = createFragmentFactory {
+            R2CbzPageFragment(publication) { x, y -> this.listener?.onTap(PointF(x, y)) }
+        }
+        super.onCreate(savedInstanceState)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         currentActivity = requireActivity()
         val view = inflater.inflate(R.layout.activity_r2_viewpager, container, false)
@@ -106,7 +87,7 @@ class ImageNavigatorFragment private constructor(
             }
         })
 
-        adapter = R2PagerAdapter(currentActivity.supportFragmentManager, publication.readingOrder, publication.metadata.title, Publication.TYPE.CBZ)
+        adapter = R2PagerAdapter(childFragmentManager, publication.readingOrder, publication.metadata.title, Publication.TYPE.CBZ)
 
         resourcePager.adapter = adapter
 
@@ -137,10 +118,12 @@ class ImageNavigatorFragment private constructor(
         notifyCurrentLocation()
     }
 
+    @Deprecated("Use goForward instead", replaceWith = ReplaceWith("goForward()"), level = DeprecationLevel.ERROR)
     fun nextResource(v: View?) {
         goForward()
     }
 
+    @Deprecated("Use goBackward instead", replaceWith = ReplaceWith("goBackward()"), level = DeprecationLevel.ERROR)
     fun previousResource(v: View?) {
         goBackward()
     }
@@ -197,4 +180,17 @@ class ImageNavigatorFragment private constructor(
         return current != resourcePager.currentItem
     }
 
+    companion object {
+
+        /**
+         * Factory for [ImageNavigatorFragment].
+         *
+         * @param publication Bitmap-based publication to render in the navigator.
+         * @param initialLocator The first location which should be visible when rendering the
+         *        publication. Can be used to restore the last reading location.
+         * @param listener Optional listener to implement to observe events, such as user taps.
+         */
+        fun createFactory(publication: Publication, initialLocator: Locator? = null, listener: Listener? = null): FragmentFactory =
+            createFragmentFactory { ImageNavigatorFragment(publication, initialLocator, listener) }
+    }
 }
