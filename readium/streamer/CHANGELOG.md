@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+* `Server.addPublication()` is a new API which replaces `addEpub()` and is easier to use.
+  * If the publication can be served, it will return the base URL which you need to provide to the Navigator `Activity` or `Fragment`.
+  * You do not need to give the publication filename nor add the server port in the `$key-publicationPort` `SharedPreference` value anymore.
+
 ### Changed
 
 * The HTTP server now requests that publication resources are not cached by browsers.

@@ -81,15 +81,15 @@ abstract class AbstractServer(private var port: Int, private val context: Contex
         }
     }
 
-    fun addEpub(publication: Publication, fileName: String, userPropertiesPath: String?) {
-        addEpub(publication, null, fileName = fileName, userPropertiesPath = userPropertiesPath)
+    fun addPublication(publication: Publication, userPropertiesFile: File?): URL? {
+        return addPublication(publication, null, "/${UUID.randomUUID()}", userPropertiesFile?.path)
     }
 
-    fun addEpub(publication: Publication, container: Container?, fileName: String, userPropertiesPath: String?) {
+    private fun addPublication(publication: Publication, container: Container?, filename: String, userPropertiesPath: String?): URL? {
         if (container?.rootFile?.rootFilePath?.isEmpty() == true) {
-            return
+            return null
         }
-        val baseUrl = URL(Publication.localBaseUrlOf(filename = fileName, port = port))
+        val baseUrl = URL(Publication.localBaseUrlOf(filename = filename, port = port))
         val fetcher = ServingFetcher(
             publication,
             userPropertiesPath,
@@ -111,6 +111,18 @@ abstract class AbstractServer(private var port: Int, private val context: Contex
         setRoute(JS_HANDLE, ResourceHandler::class.java, resources)
         setRoute(CSS_HANDLE, ResourceHandler::class.java, resources)
         setRoute(FONT_HANDLE, FileHandler::class.java, fonts)
+
+        return baseUrl
+    }
+
+    @Deprecated("Use the easier-to-use addPublication()", replaceWith = ReplaceWith("this.addPublication(publication, userPropertiesFile = File(userPropertiesPath))"), level = DeprecationLevel.ERROR)
+    fun addEpub(publication: Publication, fileName: String, userPropertiesPath: String?) {
+        addPublication(publication, null, filename = fileName, userPropertiesPath = userPropertiesPath)
+    }
+
+    @Deprecated("Use the easier-to-use addPublication()", replaceWith = ReplaceWith("this.addPublication(publication, userPropertiesFile = File(userPropertiesPath))"), level = DeprecationLevel.ERROR)
+    fun addEpub(publication: Publication, container: Container?, fileName: String, userPropertiesPath: String?) {
+        addPublication(publication, container, filename = fileName, userPropertiesPath = userPropertiesPath)
     }
 
     private fun setRoute(url: String, handler: Class<*>, vararg initParameter: Any) {
