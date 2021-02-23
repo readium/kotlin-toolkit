@@ -584,25 +584,24 @@ class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                     progress.dismiss()
                     presentOpeningException(it)
                 }
-                .onSuccess { it ->
-                    if (it.isRestricted) {
-                        progress.dismiss()
-                        it.protectionError?.let { error ->
+                .onSuccess { publication ->
+                    progress.dismiss()
+
+                    if (publication.isRestricted) {
+                        publication.protectionError?.let { error ->
                             Timber.d(error)
                             catalogView.longSnackbar(error.getUserMessage(this@LibraryActivity))
                         }
                     } else {
-                        prepareToServe(it, asset)
-                        progress.dismiss()
                         navigatorLauncher.launch(
                             NavigatorContract.Input(
                                 file = asset.file,
                                 mediaType = mediaType,
-                                publication = it,
+                                publication = publication,
                                 bookId = book.id,
                                 initialLocator = book.id?.let { id -> booksDB.books.currentLocator(id) },
                                 deleteOnResult = remoteAsset != null,
-                                baseUrl = Publication.localBaseUrlOf(asset.name, localPort)
+                                baseUrl = prepareToServe(publication, asset)
                             )
                     	)
                     }
@@ -610,11 +609,9 @@ class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
         }
     }
 
-    private fun prepareToServe(publication: Publication, asset: PublicationAsset) {
-        val key = publication.metadata.identifier ?: publication.metadata.title
-        preferences.edit().putString("$key-publicationPort", localPort.toString()).apply()
+    private fun prepareToServe(publication: Publication, asset: PublicationAsset): URL? {
         val userProperties = applicationContext.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
-        server.addEpub(publication, null, "/${asset.name}", userProperties)
+        return server.addPublication(publication, userPropertiesFile = File(userProperties))
     }
 
     private fun presentOpeningException(error: Publication.OpeningException) {
