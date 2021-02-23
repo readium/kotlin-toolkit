@@ -12,8 +12,7 @@ package org.readium.r2.navigator.extensions
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
-internal fun Link.withLocalUrl(filename: String, port: Int): Link {
-    val baseUrl = Publication.localBaseUrlOf(filename, port)
+internal fun Link.withBaseUrl(baseUrl: String): Link {
     check(!baseUrl.endsWith("/"))
     check(href.startsWith("/"))
     return copy(href = baseUrl + href)

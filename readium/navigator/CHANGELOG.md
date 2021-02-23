@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+* `R2EpubActivity` and `R2AudiobookActivity` require a new `baseUrl` `Intent` extra. You need to set it to the base URL returned by `Server.addPublication()` from the Streamer.
+
 ### Fixed
 
 * [#217](https://github.com/readium/r2-testapp-kotlin/issues/217) Interactive HTML elements are not bypassed anymore when handling touch gestures.

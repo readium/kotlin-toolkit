@@ -21,7 +21,7 @@ import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.extensions.withLocalUrl
+import org.readium.r2.navigator.extensions.withBaseUrl
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.isRestricted
@@ -137,6 +137,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
+        val baseUrl = intent.getStringExtra("baseUrl") ?: throw Exception("Intent extra `baseUrl` is required. Provide the URL returned by Server.addPublication()")
 
         publication = intent.getPublication(this)
         publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
@@ -145,8 +146,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
         title = null
 
-        val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())!!.toInt()
-        val readingOrderOverHttp = publication.readingOrder.map { it.withLocalUrl(publicationFileName, port) }
+        val readingOrderOverHttp = publication.readingOrder.map { it.withBaseUrl(baseUrl) }
         mediaPlayer = R2MediaPlayer(readingOrderOverHttp, this)
 
         Handler().postDelayed({

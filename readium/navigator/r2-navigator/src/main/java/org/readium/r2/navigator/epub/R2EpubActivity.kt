@@ -90,9 +90,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
-
-        val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())!!.toInt()
-        val baseUrl = Publication.localBaseUrlOf(publicationFileName, port)
+        val baseUrl = intent.getStringExtra("baseUrl") ?: throw Exception("Intent extra `baseUrl` is required. Provide the URL returned by Server.addPublication()")
 
         val initialLocator = intent.getParcelableExtra("locator") as? Locator
 
