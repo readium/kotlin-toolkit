@@ -127,7 +127,7 @@ internal class PublicationFactory(
         val (rels, properties) = computePropertiesAndRels(item, itemrefByIdref[item.id])
 
         return Link(
-            href = Href(item.href, baseHref = packageDocument.path).string,
+            href = item.href,
             type = item.mediaType,
             duration = itemMetadata[item.id]?.duration,
             rels = rels,

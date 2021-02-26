@@ -284,7 +284,7 @@ class DateTest {
 
     @Test
     fun `Publication date is rightly parsed`() {
-        val expected = DateTime.parse("1865-07-04").toDate()
+        val expected = DateTime.parse("1865-07-04T00:00:00Z").toDate()
         assertThat(epub2Metadata.published).isEqualTo(expected)
         assertThat(epub3Metadata.published).isEqualTo(expected)
     }

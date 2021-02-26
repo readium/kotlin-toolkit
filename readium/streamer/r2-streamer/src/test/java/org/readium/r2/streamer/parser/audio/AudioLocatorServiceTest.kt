@@ -6,6 +6,7 @@
 
 package org.readium.r2.streamer.parser.audio
 
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -14,7 +15,7 @@ import kotlin.test.*
 class AudioLocatorServiceTest {
 
     @Test
-    fun `locate(Locator) matching reading order HREF`() {
+    fun `locate(Locator) matching reading order HREF`() = runBlocking {
         val service = AudioLocatorService(listOf(
             Link("l1"),
             Link("l2")
@@ -25,7 +26,7 @@ class AudioLocatorServiceTest {
     }
 
     @Test
-    fun `locate(Locator) returns null if no match`() {
+    fun `locate(Locator) returns null if no match`() = runBlocking {
         val service = AudioLocatorService(listOf(
             Link("l1"),
             Link("l2")
@@ -36,7 +37,7 @@ class AudioLocatorServiceTest {
     }
 
     @Test
-    fun `locate(Locator) uses totalProgression`() {
+    fun `locate(Locator) uses totalProgression`() = runBlocking {
         val service = AudioLocatorService(listOf(
             Link("l1", type = "audio/mpeg", duration = 100.0),
             Link("l2", type = "audio/mpeg", duration = 100.0)
@@ -71,7 +72,7 @@ class AudioLocatorServiceTest {
     }
 
     @Test
-    fun `locate(Locator) using totalProgression keeps "title" and "text"`() {
+    fun `locate(Locator) using totalProgression keeps title and text`() = runBlocking {
         val service = AudioLocatorService(listOf(
             Link("l1", type = "audio/mpeg", duration = 100.0),
             Link("l2", type = "audio/mpeg", duration = 100.0)
@@ -108,7 +109,7 @@ class AudioLocatorServiceTest {
     }
 
     @Test
-    fun `locate progression`() {
+    fun `locate progression`() = runBlocking {
         val service = AudioLocatorService(listOf(
             Link("l1", type = "audio/mpeg", duration = 100.0),
             Link("l2", type = "audio/mpeg", duration = 100.0)
@@ -120,7 +121,7 @@ class AudioLocatorServiceTest {
                 progression = 0.0,
                 totalProgression = 0.0
             )),
-            service.locate(progression = 0.0)
+            service.locateProgression(0.0)
         )
 
         assertEquals(
@@ -129,7 +130,7 @@ class AudioLocatorServiceTest {
                 progression = 98/100.0,
                 totalProgression = 0.49
             )),
-            service.locate(progression = 0.49)
+            service.locateProgression(0.49)
         )
 
         assertEquals(
@@ -138,7 +139,7 @@ class AudioLocatorServiceTest {
                 progression = 0.0,
                 totalProgression = 0.5
             )),
-            service.locate(progression = 0.5)
+            service.locateProgression(0.5)
         )
 
         assertEquals(
@@ -147,7 +148,7 @@ class AudioLocatorServiceTest {
                 progression = 0.02,
                 totalProgression = 0.51
             )),
-            service.locate(progression = 0.51)
+            service.locateProgression(0.51)
         )
 
         assertEquals(
@@ -156,19 +157,19 @@ class AudioLocatorServiceTest {
                 progression = 1.0,
                 totalProgression = 1.0
             )),
-            service.locate(progression = 1.0)
+            service.locateProgression(1.0)
         )
     }
 
     @Test
-    fun `locate invalid progression`() {
+    fun `locate invalid progression`() = runBlocking {
         val service = AudioLocatorService(listOf(
             Link("l1", type = "audio/mpeg", duration = 100.0),
             Link("l2", type = "audio/mpeg", duration = 100.0)
         ))
 
-        assertNull(service.locate(progression = -0.5))
-        assertNull(service.locate(progression = 1.5))
+        assertNull(service.locateProgression(-0.5))
+        assertNull(service.locateProgression(1.5))
     }
 
 }
