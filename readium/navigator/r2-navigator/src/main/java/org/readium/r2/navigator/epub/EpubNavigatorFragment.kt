@@ -26,6 +26,7 @@ import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.htmlId
 import org.readium.r2.navigator.extensions.positionsByResource
+import org.readium.r2.navigator.extensions.withBaseUrl
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -97,7 +98,7 @@ class EpubNavigatorFragment private constructor(
         var resourceIndexDouble = 0
 
         for ((resourceIndexSingle, spineItem) in publication.readingOrder.withIndex()) {
-            val uri: String = baseUrl + spineItem.href
+            val uri: String = spineItem.withBaseUrl(baseUrl).href
             resourcesSingle.add(Pair(resourceIndexSingle, uri))
 
             // add first page to the right,

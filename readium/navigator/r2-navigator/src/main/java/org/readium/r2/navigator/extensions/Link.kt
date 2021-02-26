@@ -9,10 +9,16 @@
 
 package org.readium.r2.navigator.extensions
 
+import android.net.Uri
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
 internal fun Link.withBaseUrl(baseUrl: String): Link {
+    // Already an absolute URL?
+    if (Uri.parse(href).scheme != null) {
+        return this
+    }
+
     check(!baseUrl.endsWith("/"))
     check(href.startsWith("/"))
     return copy(href = baseUrl + href)

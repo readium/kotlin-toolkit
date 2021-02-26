@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [2.0.0-beta.2]
 
 ### Changed
 
@@ -13,7 +15,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 * [#217](https://github.com/readium/r2-testapp-kotlin/issues/217) Interactive HTML elements are not bypassed anymore when handling touch gestures.
-  * Scripts using `preventDefault()` are now taken into account and don't trigger a tap event anymore.
+  * Scripts using `preventDefault()` are now taken into account and do not trigger a tap event anymore.
 * [#150](https://github.com/readium/r2-navigator-kotlin/issues/150) External links are opened in a Chrome Custom Tab instead of the navigator's web view.
 * [#52](https://github.com/readium/r2-navigator-kotlin/issues/52) Memory leak in EPUB web views. This fixes ongoing media playback when closing an EPUB.
 
@@ -102,4 +104,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [2.0.0-alpha.1]: https://github.com/readium/r2-navigator-kotlin/compare/1.1.6...2.0.0-alpha.1
 [2.0.0-alpha.2]: https://github.com/readium/r2-navigator-kotlin/compare/2.0.0-alpha.1...2.0.0-alpha.2
 [2.0.0-beta.1]: https://github.com/readium/r2-navigator-kotlin/compare/2.0.0-alpha.2...2.0.0-beta.1
+[2.0.0-beta.2]: https://github.com/readium/r2-navigator-kotlin/compare/2.0.0-beta.1...2.0.0-beta.2
 
