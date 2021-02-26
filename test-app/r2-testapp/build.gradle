@@ -18,7 +18,7 @@ group = 'com.github.readium'
 int major = 2
 int minor = 2
 int patch = 0
-int build = 26
+int build = 27
 String type = ""
 
 def version = "$major.$minor.$patch"
@@ -74,7 +74,7 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    final READIUM_VERSION = '2.0.0-beta.1'
+    final READIUM_VERSION = '2.0.0-beta.2'
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
     } else {

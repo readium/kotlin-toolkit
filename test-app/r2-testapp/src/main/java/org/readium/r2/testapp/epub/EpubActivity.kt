@@ -913,12 +913,11 @@ class EpubActivity : R2EpubActivity(), CoroutineScope, NavigatorDelegate/*, Visu
                 screenReader.onResume()
             }
         } else {
-            Handler().postDelayed({
-                val port = preferences.getString("$publicationIdentifier-publicationPort", 0.toString())?.toInt()
-                port?.let {
-                    screenReader = R2ScreenReader(this, this, this, publication, port, publicationFileName, resourcePager.currentItem)
-                }
-            }, 500)
+            val activity = this
+            launch {
+                delay(500)
+                screenReader = R2ScreenReader(activity, activity, activity, publication, baseUrl, resourcePager.currentItem)
+            }
         }
     }
 

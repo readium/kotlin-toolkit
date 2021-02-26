@@ -31,7 +31,7 @@ import java.util.*
  * Basic screen reader overlay that uses Android's TextToSpeech
  */
 
-class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigator: VisualNavigator, var publication: Publication, private var port: Int, private var epubName: String, initialResourceIndex: Int) {
+class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigator: VisualNavigator, var publication: Publication, private var baseUrl: String, initialResourceIndex: Int) {
 
     private var initialized = false
 
@@ -185,16 +185,8 @@ class R2ScreenReader(var context: Context, var ttsCallbacks: IR2TTS, var navigat
     private fun setUtterances(): Boolean {
         //Load resource as sentences
         utterances = mutableListOf()
-        val url = Publication.localUrlOf(filename = epubName, port = port, href = items[resourceIndex].href)
+        val url = baseUrl + items[resourceIndex].href
         splitResourceAndAddToUtterances(url)
-
-//        while (++resourceIndex < items.size && utterances.size == 0) {
-//            val url = Publication.localUrlOf(filename = epubName, port = port, href = items[resourceIndex].href)
-//            splitResourceAndAddToUtterances(url)
-//        }
-//
-//        if (resourceIndex == items.size)
-//            --resourceIndex
 
         return utterances.size != 0
     }
