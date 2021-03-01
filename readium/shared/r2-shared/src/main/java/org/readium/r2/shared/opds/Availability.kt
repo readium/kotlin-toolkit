@@ -10,15 +10,14 @@
 package org.readium.r2.shared.opds
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.iso8601ToDate
+import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.toIso8601String
 import org.readium.r2.shared.util.MapCompanion
-import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import java.util.*
 

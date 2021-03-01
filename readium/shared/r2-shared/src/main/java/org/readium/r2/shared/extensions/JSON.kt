@@ -10,7 +10,7 @@
 package org.readium.r2.shared.extensions
 
 import android.os.Parcel
-import kotlinx.android.parcel.Parceler
+import kotlinx.parcelize.Parceler
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable

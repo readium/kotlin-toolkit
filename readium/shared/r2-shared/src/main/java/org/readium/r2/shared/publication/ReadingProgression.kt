@@ -10,7 +10,7 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.util.MapWithDefaultCompanion
 import java.util.*
 

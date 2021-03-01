@@ -10,8 +10,8 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.parcel.WriteWith
+import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.WriteWith
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
@@ -19,7 +19,6 @@ import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.util.logging.JsonWarning
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
