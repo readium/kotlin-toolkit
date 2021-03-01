@@ -14,6 +14,7 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.service.DeviceRepository
 import org.readium.r2.lcp.service.LicensesRepository
+import timber.log.Timber
 
 internal object LicensesTable {
     const val NAME = "Licenses"
@@ -49,12 +50,9 @@ internal class Licenses(var database: LcpDatabaseOpenHelper) : DeviceRepository,
                             return@rowParser result
                         }
                         try {
-                            if (parseList(parser).isNullOrEmpty()) {
-                                null
-                            } else {
-                                parseList(parser)[0]
-                            }
+                            parseList(parser).firstOrNull()
                         } catch (e: Exception) {
+                            Timber.d(e)
                             null
                         }
                     }

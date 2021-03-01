@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Fixed
+
+* [#267](https://github.com/readium/r2-testapp-kotlin/issues/267) Prints and copy characters left are now properly reported (contributed by [@qnga](https://github.com/readium/r2-lcp-kotlin/pull/104)).
+
 
 ## [2.0.0-beta.2]
 

@@ -115,13 +115,13 @@ internal class License(
         pagesToPrintLeft?.let { it <= pageCount }
             ?: true
 
-    override fun print(pagesCount: Int): Boolean {
+    override fun print(pageCount: Int): Boolean {
         var pagesLeft = pagesToPrintLeft ?: return true
-        if (pagesLeft < pagesCount) {
+        if (pagesLeft < pageCount) {
             return false
         }
         try {
-            pagesLeft = maxOf(0, pagesLeft - pagesCount)
+            pagesLeft = maxOf(0, pagesLeft - pageCount)
             licenses.setPrintsLeft(pagesLeft, license.id)
         } catch (error: Error) {
             if (DEBUG) Timber.e(error)
