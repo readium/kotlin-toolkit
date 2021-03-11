@@ -54,7 +54,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
     private class FullLcpResource(
         resource: Resource,
         private val license: LcpLicense
-    ) : TransformingResource(resource) {
+    ) : TransformingResource(resource, cacheBytes = true) {
 
         override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
             license.decryptFully(data, resource.link().isDeflated)
