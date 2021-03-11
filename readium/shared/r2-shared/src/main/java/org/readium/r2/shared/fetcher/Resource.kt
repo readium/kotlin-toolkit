@@ -132,9 +132,10 @@ interface Resource {
         /**
          * Creates a cached resource wrapping this resource.
          */
-        fun Resource.cached(): Resource =
-            if (this is CachingResource) this
-            else CachingResource(this)
+        @Deprecated("If you were caching a TransformingResource, build it with cacheBytes set to true." +
+                "Otherwise, please report your use case.",
+            level = DeprecationLevel.ERROR)
+        fun Resource.cached(): Resource = this
     }
 
     /**
@@ -244,7 +245,10 @@ abstract class ProxyResource(protected val resource: Resource) : Resource {
  * Warning: bytes are read and cached entirely the first time, even if only a [range] is requested.
  * So this is not appropriate for large resources.
  */
-class CachingResource(protected val resource: Resource) : Resource {
+@Deprecated("If you were caching a TransformingResource, build it with cacheBytes set to true." +
+        "Otherwise, please report your use case.",
+    level = DeprecationLevel.ERROR)
+class CachingResource(private val resource: Resource) : Resource {
 
     private lateinit var _link: Link
     private lateinit var _length: ResourceTry<Long>
@@ -291,16 +295,28 @@ class CachingResource(protected val resource: Resource) : Resource {
  * Transforms the bytes of [resource] on-the-fly.
  *
  * Warning: The transformation runs on the full content of [resource], so it's not appropriate for
- * large resources which can't be held in memory. Also, wrapping a [TransformingResource] in a
- * [CachingResource] can be a good idea to cache the result of the transformation in case multiple
- * ranges will be read.
+ * large resources which can't be held in memory. Pass [cacheBytes] = true to cache the result of
+ * the transformation. This may be useful if multiple ranges will be read.
  */
-abstract class TransformingResource(resource: Resource) : ProxyResource(resource) {
+abstract class TransformingResource(
+    resource: Resource,
+    private val cacheBytes: Boolean = false
+) : ProxyResource(resource) {
+
+    private lateinit var _bytes: ResourceTry<ByteArray>
 
     abstract suspend fun transform(data: ResourceTry<ByteArray>):  ResourceTry<ByteArray>
 
-    private suspend fun bytes(): ResourceTry<ByteArray> =
-        transform(resource.read())
+    private suspend fun bytes(): ResourceTry<ByteArray> {
+        if (::_bytes.isInitialized)
+            return _bytes
+
+        val bytes = transform(resource.read())
+        if (cacheBytes)
+            _bytes = bytes
+
+        return bytes
+    }
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
         bytes().map {
