@@ -17,28 +17,16 @@
         android:id="@+id/search"
         android:icon="@drawable/baseline_search_white_24"
         android:title="@string/epubactivity_search"
+        android:orderInCategory="20"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:iconifiedByDefault="false"
         app:showAsAction="collapseActionView|always" />
 
     <item
-        android:id="@+id/drm"
-        android:icon="@drawable/icon_drm"
-        android:title="@string/epubactivity_drm_info"
-        app:showAsAction="always"
-        tools:ignore="AlwaysShowAction"/>
-
-    <item
         android:id="@+id/screen_reader"
         android:icon="@drawable/icon_audio"
         android:title="@string/epubactivity_read_aloud_start"
-        app:showAsAction="always"
-        tools:ignore="AlwaysShowAction"/>
-
-    <item
-        android:id="@+id/bookmark"
-        android:icon="@drawable/icon_bookmark"
-        android:title="@string/epubactivity_set_bookmark"
+        android:orderInCategory="30"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction"/>
 
@@ -46,13 +34,7 @@
         android:id="@+id/settings"
         android:icon="@drawable/icon_settings"
         android:title="@string/epubactivity_settings"
-        app:showAsAction="always"
-        tools:ignore="AlwaysShowAction"/>
-
-    <item
-        android:id="@+id/toc"
-        android:icon="@drawable/icon_menu"
-        android:title="@string/epubactivity_book_nav_options"
+        android:orderInCategory="80"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction"/>
 

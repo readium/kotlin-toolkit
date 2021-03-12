@@ -300,15 +300,15 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
                 when (i) {
                     0 -> {
                         resourcePager.setBackgroundColor(Color.parseColor("#ffffff"))
-                        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
+                        //(resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
                     }
                     1 -> {
                         resourcePager.setBackgroundColor(Color.parseColor("#faf4e8"))
-                        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
+                        //(resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#000000"))
                     }
                     2 -> {
                         resourcePager.setBackgroundColor(Color.parseColor("#000000"))
-                        (resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#ffffff"))
+                        //(resourcePager.focusedChild?.findViewById(R.id.book_title) as? TextView)?.setTextColor(Color.parseColor("#ffffff"))
                     }
                 }
                 updateEnumerable(appearance)
@@ -601,11 +601,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
                     }
 
                     override fun onStopTrackingTouch(bar: SeekBar) {
-                        //Convert seekBar percent to a float value between 0.25 and 3.
-                        val speechSpeed = 0.25.toFloat() + (bar.progress.toFloat() / 100.toFloat()) * 2.75.toFloat()
                         preferences.edit().putInt("reader_TTS_speed", bar.progress).apply()
-                        // TODO this might need to be refactored
-                        (context as EpubActivity).updateScreenReaderSpeed(speechSpeed, true)
                     }
                 })
 

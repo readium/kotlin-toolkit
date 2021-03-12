@@ -42,7 +42,6 @@ import org.readium.r2.shared.extensions.extension
 import org.readium.r2.shared.extensions.mediaType
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.asset.PublicationAsset
@@ -63,7 +62,7 @@ import org.readium.r2.testapp.opds.OPDSListActivity
 import org.readium.r2.testapp.permissions.PermissionHelper
 import org.readium.r2.testapp.permissions.Permissions
 import org.readium.r2.testapp.utils.ContentResolverUtil
-import org.readium.r2.testapp.utils.NavigatorContract
+import org.readium.r2.testapp.reader.ReaderContract
 import org.readium.r2.testapp.utils.extensions.*
 import timber.log.Timber
 import java.io.File
@@ -104,7 +103,7 @@ class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
     private lateinit var catalogView: androidx.recyclerview.widget.RecyclerView
     private lateinit var alertDialog: AlertDialog
     private lateinit var documentPickerLauncher: ActivityResultLauncher<String>
-    private lateinit var navigatorLauncher: ActivityResultLauncher<NavigatorContract.Input>
+    private lateinit var readerLauncher: ActivityResultLauncher<ReaderContract.Input>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,7 +150,7 @@ class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             uri?.let { importPublicationFromUri(it) }
         }
 
-        navigatorLauncher = registerForActivityResult(NavigatorContract()) { pubData: NavigatorContract.Output? ->
+        readerLauncher = registerForActivityResult(ReaderContract()) { pubData: ReaderContract.Output? ->
             if (pubData == null)
                 return@registerForActivityResult
 
@@ -536,8 +535,8 @@ class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
             tryOrNull { File(book.href).delete() }
             val deleted = database.books.delete(book)
             if (deleted > 0) {
-                BookmarksDatabase(this).bookmarks.delete(deleted.toLong())
-                PositionsDatabase(this).positions.delete(deleted.toLong())
+                BookmarksDatabase(this).bookmarks.deleteBook(deleted.toLong())
+                HighlightsDatabase(this).highlights.deleteBook(deleted.toLong())
             }
             popup.dismiss()
             catalogView.longSnackbar("publication deleted from your library")
@@ -592,13 +591,13 @@ class LibraryActivity : AppCompatActivity(), BooksAdapter.RecyclerViewClickListe
                             catalogView.longSnackbar(error.getUserMessage(this@LibraryActivity))
                         }
                     } else {
-                        navigatorLauncher.launch(
-                            NavigatorContract.Input(
+                        readerLauncher.launch(
+                            ReaderContract.Input(
                                 file = asset.file,
                                 mediaType = asset.mediaType(),
                                 publication = publication,
-                                bookId = book.id,
-                                initialLocator = book.id?.let { id -> booksDB.books.currentLocator(id) },
+                                bookId = book.id!!,
+                                initialLocator = booksDB.books.currentLocator(book.id!!),
                                 deleteOnResult = remoteAsset != null,
                                 baseUrl = prepareToServe(publication, asset)
                             )

@@ -243,12 +243,19 @@ class BOOKMARKS(private var database: BookmarksDatabaseOpenHelper) {
         }
     }
 
-    fun delete(book_id: Long?) {
+    fun deleteBook(book_id: Long?) {
         book_id?.let {
             database.use {
                 delete(BOOKMARKSTable.NAME, "${BOOKMARKSTable.BOOK_ID} = {bookID}",
                         "bookID" to book_id)
             }
+        }
+    }
+
+    fun delete(bookmark_id: Long) {
+        database.use {
+            delete(BOOKMARKSTable.NAME, "id = {id}",
+                "id" to bookmark_id)
         }
     }
 

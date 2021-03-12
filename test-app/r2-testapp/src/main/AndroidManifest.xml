@@ -194,20 +194,12 @@
         <activity
             android:name=".epub.EpubActivity"
             android:label="@string/title_activity_epub" />
-        <activity android:name=".pdf.PdfActivity" />
         <activity
-            android:name=".comic.DiViNaActivity"
-            android:label="@string/title_activity_epub" />
+            android:name=".reader.ReaderActivity"
+            android:label="Reader" />
         <activity
-            android:name=".comic.ComicActivity"
-            android:label="@string/title_activity_epub" />
-        <activity
-            android:name=".drm.DRMManagementActivity"
-            android:label="DRM Management"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".outline.R2OutlineActivity"
-            android:label="@string/title_activity_outline" />
+            android:name=".reader.VisualReaderActivity"
+            android:label="Reader" />
         <activity
             android:name=".opds.OPDSListActivity"
             android:label="@string/title_activity_opds_list" />

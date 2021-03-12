@@ -50,7 +50,7 @@
     <string name="title_activity_r2_about">About R2 Reader</string>
     <string name="title_activity_opds_list">OPDS Feeds</string>
     <string name="title_activity_opds_detail">Detail</string>
-    <string name="title_activity_outline">Outline</string>
+    <string name="title_fragment_drm_management">DRM Management</string>
     <string name="title_activity_epub">Detail</string>
     <string name="floating_button_add_book">Add a Book</string>
     <string name="floating_button_add_feed">Add a OPDS Feed</string>
@@ -145,5 +145,14 @@
         <item>AccessibleDfA</item>
         <item>IA Writer Duospace</item>
     </string-array>
+
+    <!-- Outlines -->
+    <string name="contents_tab_label">Contents</string>
+    <string name="bookmarks_tab_label">Bookmarks</string>
+    <string name="highlights_tab_label">Highlights</string>
+    <string name="pagelist_tab_label">Page List</string>
+    <string name="landmarks_tab_label">Landmarks</string>
+    <string name="action_mode_menu_highlight">Highlight</string>
+    <string name="action_mode_menu_note">Note</string>
 
 </resources>

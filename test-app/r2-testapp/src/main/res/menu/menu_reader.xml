@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context='org.readium.r2.testapp.reader.BaseReaderFragment'>
+
+    <item
+        android:id="@+id/bookmark"
+        android:icon="@drawable/icon_bookmark"
+        android:title="@string/epubactivity_set_bookmark"
+        android:orderInCategory="70"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction"/>
+
+    <item
+        android:id="@+id/drm"
+        android:icon="@drawable/icon_drm"
+        android:title="@string/epubactivity_drm_info"
+        android:orderInCategory="90"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction"/>
+
+
+    <item
+        android:id="@+id/toc"
+        android:icon="@drawable/icon_menu"
+        android:title="@string/epubactivity_book_nav_options"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction"/>
+
+</menu>

@@ -14,6 +14,7 @@ import android.database.sqlite.SQLiteDatabase
 import org.jetbrains.anko.db.*
 import org.joda.time.DateTime
 import org.json.JSONObject
+import org.readium.r2.navigator.epub.Style
 import org.readium.r2.shared.publication.Locator
 
 class Highlight(
@@ -40,9 +41,18 @@ class Highlight(
         locations = location,
         text = locatorText
     )
+
+    fun toNavigatorHighlight() =
+        org.readium.r2.navigator.epub.Highlight(
+            highlightID,
+            locator,
+            color,
+            Style.highlight,
+            annotationMarkStyle
+        )
 }
 
-class HighligtsDatabase(context: Context) {
+class HighlightsDatabase(context: Context) {
 
     val shared: HighlightsDatabaseOpenHelper = HighlightsDatabaseOpenHelper(context)
     var highlights: HIGHLIGHTS
@@ -211,6 +221,16 @@ class HIGHLIGHTS(private var database: HighlightsDatabaseOpenHelper) {
         database.use {
             delete(HIGHLIGHTSTable.NAME, "id = {id}",
                     "id" to locator.id!!)
+        }
+    }
+
+
+    fun deleteBook(book_id: Long?) {
+        book_id?.let {
+            database.use {
+                delete(HIGHLIGHTSTable.NAME, "${HIGHLIGHTSTable.BOOK_ID} = {bookID}",
+                    "bookID" to book_id)
+            }
         }
     }
 

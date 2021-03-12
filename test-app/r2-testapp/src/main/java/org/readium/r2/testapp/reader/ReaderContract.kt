@@ -8,9 +8,9 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+package org.readium.r2.testapp.reader
 
-package org.readium.r2.testapp.utils
-
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
@@ -21,20 +21,17 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.audiobook.AudiobookActivity
-import org.readium.r2.testapp.comic.ComicActivity
-import org.readium.r2.testapp.comic.DiViNaActivity
 import org.readium.r2.testapp.epub.EpubActivity
-import org.readium.r2.testapp.pdf.PdfActivity
 import java.io.File
 import java.net.URL
 
-class NavigatorContract : ActivityResultContract<NavigatorContract.Input, NavigatorContract.Output>() {
+class ReaderContract : ActivityResultContract<ReaderContract.Input, ReaderContract.Output>() {
 
     data class Input(
         val file: File,
         val mediaType: MediaType?,
         val publication: Publication,
-        val bookId: Long?,
+        val bookId: Long,
         val initialLocator: Locator? = null,
         val deleteOnResult: Boolean = false,
         val baseUrl: URL? = null
@@ -49,10 +46,12 @@ class NavigatorContract : ActivityResultContract<NavigatorContract.Input, Naviga
     override fun createIntent(context: Context, input: Input): Intent {
         val intent = Intent(context, when (input.mediaType) {
             MediaType.EPUB -> EpubActivity::class.java
-            MediaType.PDF, MediaType.LCP_PROTECTED_PDF -> PdfActivity::class.java
-            MediaType.READIUM_AUDIOBOOK, MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK -> AudiobookActivity::class.java
-            MediaType.CBZ -> ComicActivity::class.java
-            MediaType.PDF -> DiViNaActivity::class.java
+            MediaType.ZAB, MediaType.READIUM_AUDIOBOOK,
+            MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK ->
+                AudiobookActivity::class.java
+            MediaType.CBZ, MediaType.DIVINA, MediaType.DIVINA_MANIFEST,
+            MediaType.PDF, MediaType.LCP_PROTECTED_PDF->
+                VisualReaderActivity::class.java
             else -> throw IllegalArgumentException("Unknown [mediaType]")
         })
 
@@ -81,5 +80,20 @@ class NavigatorContract : ActivityResultContract<NavigatorContract.Input, Naviga
             publication = intent.getPublication(null),
             deleteOnResult = intent.getBooleanExtra("deleteOnResult", false)
         )
+    }
+
+    companion object {
+
+        fun parseIntent(activity: Activity): Input = with(activity) {
+            Input(
+                file = File(intent.getStringExtra("publicationPath")!!),
+                mediaType = null,
+                publication = intent.getPublication(activity),
+                bookId = intent.getLongExtra("bookId", -1),
+                initialLocator = intent.getParcelableExtra("locator"),
+                deleteOnResult = intent.getBooleanExtra("deleteOnResult", false),
+                baseUrl = URL(intent.getStringExtra("baseUrl"))
+            )
+        }
     }
 }

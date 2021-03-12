@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item type="layout" name="activity_r2_viewpager">@layout/activity_epub</item>
-    <item type="layout" name="activity_r2_audiobook">@layout/activity_audiobook</item>
+    <item type="layout" name="activity_r2_epub">@layout/activity_reader</item>
+    <item type="layout" name="activity_r2_audiobook">@layout/activity_reader</item>
 </resources>

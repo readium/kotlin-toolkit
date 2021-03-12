@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context='org.readium.r2.navigator.R2EpubActivity'>
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/highlight"
-        android:title="Highlight"
-        app:showAsAction="always">
+        android:title="@string/action_mode_menu_highlight"
+        app:showAsAction="ifRoom">
     </item>
 
     <item
         android:id="@+id/note"
-        android:title="Note"
-        app:showAsAction="always">
+        android:title="@string/action_mode_menu_note"
+        app:showAsAction="ifRoom">
     </item>
 
 </menu>
