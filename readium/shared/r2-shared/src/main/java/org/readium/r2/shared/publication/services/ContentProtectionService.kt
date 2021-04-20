@@ -286,8 +286,8 @@ private sealed class RouteHandler {
 
             val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
 
-            return if (copyAllowed)
-                FailureResource(link, Resource.Exception.Forbidden)
+            return if (!copyAllowed)
+                FailureResource(link, Resource.Exception.Forbidden())
             else
                 StringResource(link, "true")
         }
@@ -324,8 +324,8 @@ private sealed class RouteHandler {
 
             val printAllowed = with(service.rights) { if (peek) canPrint(pageCount) else print(pageCount) }
 
-            return if (printAllowed)
-                FailureResource(link, Resource.Exception.Forbidden)
+            return if (!printAllowed)
+                FailureResource(link, Resource.Exception.Forbidden())
             else
                 StringResource(link, "true")
         }

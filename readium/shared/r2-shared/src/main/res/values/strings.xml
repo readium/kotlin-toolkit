@@ -20,4 +20,17 @@
     <string name="r2.shared.resource.exception.out_of_memory">The resource is too large to be read on this device</string>
     <string name="r2.shared.resource.exception.cancelled">The request was cancelled</string>
     <string name="r2.shared.resource.exception.other">A service error occurred</string>
+
+    <string name="r2.shared.http.exception.malformed_request">The provided request was not valid</string>
+    <string name="r2.shared.http.exception.malformed_response">The received response could not be decoded</string>
+    <string name="r2.shared.http.exception.timeout">Request timed out</string>
+    <string name="r2.shared.http.exception.bad_request">The provided request was not valid</string>
+    <string name="r2.shared.http.exception.unauthorized">Authentication required</string>
+    <string name="r2.shared.http.exception.forbidden">You are not authorized</string>
+    <string name="r2.shared.http.exception.not_found">Page not found</string>
+    <string name="r2.shared.http.exception.client_error">A client error occurred</string>
+    <string name="r2.shared.http.exception.server_error">A server error occurred, please try again later</string>
+    <string name="r2.shared.http.exception.offline">Your Internet connection appears to be offline</string>
+    <string name="r2.shared.http.exception.cancelled">The request was cancelled</string>
+    <string name="r2.shared.http.exception.other">A networking error occurred</string>
 </resources>

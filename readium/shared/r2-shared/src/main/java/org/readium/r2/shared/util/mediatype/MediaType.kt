@@ -37,7 +37,7 @@ import java.util.*
  * @param name A human readable name identifying the media type, which may be presented to the user.
  * @param fileExtension The default file extension to use for this media type.
  */
-class MediaType private constructor(
+class MediaType(
     string: String,
     val name: String? = null,
     val fileExtension: String? = null

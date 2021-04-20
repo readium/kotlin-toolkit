@@ -34,7 +34,7 @@ class RoutingFetcher(private val routes: List<Route>) : Fetcher {
     override suspend fun links(): List<Link> = routes.flatMap { it.fetcher.links() }
 
     override fun get(link: Link): Resource =
-        routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: FailureResource(link, Resource.Exception.NotFound)
+        routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: FailureResource(link, Resource.Exception.NotFound())
 
     override suspend fun close() {
         routes.forEach { it.fetcher.close() }

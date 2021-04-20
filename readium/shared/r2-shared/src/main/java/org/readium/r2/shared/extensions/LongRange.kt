@@ -14,3 +14,6 @@ fun LongRange.coerceFirstNonNegative() = LongRange(first.coerceAtLeast(0), last)
 fun LongRange.coerceIn(range: LongRange) = LongRange(first.coerceAtLeast(range.first), last.coerceAtMost(range.last))
 
 fun LongRange.requireLengthFitInt() = this.apply { require(last - first + 1 <= Int.MAX_VALUE) }
+
+internal fun LongRange.contains(range: LongRange) =
+    contains(range.first) && contains(range.last)

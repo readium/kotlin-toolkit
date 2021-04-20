@@ -401,28 +401,28 @@ class Publication(
         /**
          * The file format could not be recognized by any parser.
          */
-        object UnsupportedFormat : OpeningException(R.string.r2_shared_publication_opening_exception_unsupported_format)
+        class UnsupportedFormat(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_unsupported_format, cause)
 
         /**
          * The publication file was not found on the file system.
          */
-        object NotFound : OpeningException(R.string.r2_shared_publication_opening_exception_not_found)
+        class NotFound(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_not_found, cause)
 
         /**
          * The publication parser failed with the given underlying exception.
          */
-        class ParsingFailed(cause: Throwable) : OpeningException(R.string.r2_shared_publication_opening_exception_parsing_failed, cause)
+        class ParsingFailed(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_parsing_failed, cause)
 
         /**
          * We're not allowed to open the publication at all, for example because it expired.
          */
-        class Forbidden(cause: Throwable?) : OpeningException(R.string.r2_shared_publication_opening_exception_forbidden, cause)
+        class Forbidden(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_forbidden, cause)
 
         /**
          * The publication can't be opened at the moment, for example because of a networking error.
          * This error is generally temporary, so the operation may be retried or postponed.
          */
-        class Unavailable(cause: Throwable?) : OpeningException(R.string.r2_shared_publication_opening_exception_unavailable, cause)
+        class Unavailable(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_unavailable, cause)
 
         /**
          * The provided credentials are incorrect and we can't open the publication in a

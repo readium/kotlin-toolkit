@@ -71,7 +71,7 @@ class FileAsset private constructor(
             Try.failure(Publication.OpeningException.Forbidden(e))
 
         } catch (e: FileNotFoundException) {
-            Try.failure(Publication.OpeningException.NotFound)
+            Try.failure(Publication.OpeningException.NotFound(e))
         }
     }
 

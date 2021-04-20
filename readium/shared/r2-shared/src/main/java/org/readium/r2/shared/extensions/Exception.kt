@@ -34,3 +34,19 @@ inline fun <T> tryOrLog(closure: () -> T): T? =
         Timber.e(e)
         null
     }
+
+/**
+ * Finds the first cause instance of the given type.
+ */
+inline fun <reified T> Throwable.asInstance(): T? =
+    asInstance(T::class.java)
+
+/**
+ * Finds the first cause instance of the given type.
+ */
+fun <R> Throwable.asInstance(klass: Class<R>): R? =
+    @Suppress("UNCHECKED_CAST")
+    when {
+        klass.isInstance(this) -> this as R
+        else -> cause?.asInstance(klass)
+    }
