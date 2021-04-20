@@ -426,7 +426,7 @@ class EpubPositionsServiceTest {
 
                 override suspend fun length() = findResource(link.href)
                     ?.let { Try.success(it.first) }
-                    ?: Try.failure(Resource.Exception.NotFound)
+                    ?: Try.failure(Resource.Exception.NotFound())
 
                 override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.success(ByteArray(0))
 

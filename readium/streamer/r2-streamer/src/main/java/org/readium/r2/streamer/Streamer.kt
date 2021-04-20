@@ -18,6 +18,7 @@ import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
@@ -28,7 +29,7 @@ import org.readium.r2.streamer.parser.image.ImageParser
 import org.readium.r2.streamer.parser.pdf.PdfParser
 import org.readium.r2.streamer.parser.pdf.PdfiumPdfDocumentFactory
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
-import java.lang.Exception
+import kotlin.Exception
 
 internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningException>
 
@@ -45,6 +46,7 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
  * @param archiveFactory Opens an archive (e.g. ZIP, RAR), optionally protected by credentials.
  * @param pdfFactory Parses a PDF document, optionally protected by password.
+ * @param httpClient Service performing HTTP requests.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the [Manifest], the root [Fetcher] or the list of service factories of a [Publication].
  */
@@ -56,6 +58,7 @@ class Streamer constructor(
     private val contentProtections: List<ContentProtection> = emptyList(),
     private val archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
     private val pdfFactory: PdfDocumentFactory = DefaultPdfDocumentFactory(context),
+    private val httpClient: DefaultHttpClient = DefaultHttpClient(),
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
 
@@ -121,7 +124,7 @@ class Streamer constructor(
                 } catch (e: Exception) {
                     throw Publication.OpeningException.ParsingFailed(e)
                 }
-            } ?: throw Publication.OpeningException.UnsupportedFormat
+            } ?: throw Publication.OpeningException.UnsupportedFormat(Exception("Cannot find a parser for this asset"))
 
         // Transform from the Content Protection.
         protectedAsset?.let { builder.apply(it.onCreatePublication) }
@@ -145,7 +148,7 @@ class Streamer constructor(
         listOf(
             EpubParser(),
             PdfParser(context, pdfFactory),
-            ReadiumWebPubParser(pdfFactory),
+            ReadiumWebPubParser(pdfFactory, httpClient),
             ImageParser(),
             AudioParser()
         )
