@@ -30,8 +30,7 @@ internal class LcpContentProtection(
         sender: Any?
     ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? {
         if (asset !is FileAsset) {
-            Timber.e("Only `FileAsset` is supported with the `LcpContentProtection`. Make sure you are trying to open a package from the file system.")
-            return Try.failure(Publication.OpeningException.UnsupportedFormat)
+            return Try.failure(Publication.OpeningException.UnsupportedFormat(Exception("Only `FileAsset` is supported with the `LcpContentProtection`, make sure you are trying to open a package from the file system")))
         }
 
         if (!lcpService.isLcpProtected(asset.file)) {

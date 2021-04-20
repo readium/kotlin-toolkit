@@ -39,7 +39,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
             return@LazyResource resource
 
         when {
-            license == null -> FailureResource(link, Resource.Exception.Forbidden)
+            license == null -> FailureResource(link, Resource.Exception.Forbidden())
             link.isDeflated || !link.isCbcEncrypted -> FullLcpResource(resource, license)
             else -> CbcLcpResource(resource, license)
         }
