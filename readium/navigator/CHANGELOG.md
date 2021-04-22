@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!--## [Unreleased]-->
+
+## [2.0.0]
 
 ### Fixed
 
@@ -110,4 +112,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [2.0.0-alpha.2]: https://github.com/readium/r2-navigator-kotlin/compare/2.0.0-alpha.1...2.0.0-alpha.2
 [2.0.0-beta.1]: https://github.com/readium/r2-navigator-kotlin/compare/2.0.0-alpha.2...2.0.0-beta.1
 [2.0.0-beta.2]: https://github.com/readium/r2-navigator-kotlin/compare/2.0.0-beta.1...2.0.0-beta.2
+[2.0.0]: https://github.com/readium/r2-navigator-kotlin/compare/2.0.0-beta.2...2.0.0
 
