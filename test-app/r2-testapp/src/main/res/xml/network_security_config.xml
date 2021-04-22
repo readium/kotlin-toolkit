@@ -17,5 +17,9 @@
         -->
         <domain includeSubdomains="false">crl.edrlab.telesec.de</domain>
 
+        <!-- Publications from Feedbooks' catalog are downloaded through HTTP -->
+        <domain includeSubdomains="true">feedbooks.com</domain>
+        <domain includeSubdomains="true">feedbooks.net</domain>
+
     </domain-config>
 </network-security-config>

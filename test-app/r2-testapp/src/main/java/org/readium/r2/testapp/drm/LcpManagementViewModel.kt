@@ -14,14 +14,19 @@ import org.readium.r2.lcp.MaterialRenewListener
 import org.readium.r2.shared.util.Try
 import java.util.*
 
-class LcpManagementViewModel(private val lcpLicense: LcpLicense) : DrmManagementViewModel() {
+class LcpManagementViewModel(
+    private val lcpLicense: LcpLicense,
+    private val renewListener: LcpLicense.RenewListener,
+) : DrmManagementViewModel() {
 
-    class Factory(private val lcpLicense: LcpLicense)
-        : ViewModelProvider.NewInstanceFactory() {
+    class Factory(
+        private val lcpLicense: LcpLicense,
+        private val renewListener: LcpLicense.RenewListener,
+    ) : ViewModelProvider.NewInstanceFactory() {
 
         override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-            modelClass.getDeclaredConstructor(LcpLicense::class.java)
-                .newInstance(lcpLicense)
+            modelClass.getDeclaredConstructor(LcpLicense::class.java, LcpLicense.RenewListener::class.java)
+                .newInstance(lcpLicense, renewListener)
     }
 
     override val type: String = "LCP"
@@ -58,11 +63,6 @@ class LcpManagementViewModel(private val lcpLicense: LcpLicense) : DrmManagement
         get() = lcpLicense.canRenewLoan
 
     override suspend fun renewLoan(fragment: Fragment): Try<Date?, Exception> {
-        val renewListener = MaterialRenewListener(
-            license = lcpLicense,
-            caller = fragment,
-            fragmentManager = fragment.childFragmentManager
-        )
         return lcpLicense.renewLoan(renewListener)
     }
 

@@ -69,8 +69,8 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
         val leftRange = 0.0..(0.2 * viewWidth)
 
         when {
-            leftRange.contains(point.x) -> navigator.goBackward(animated = true)
-            leftRange.contains(viewWidth - point.x) -> navigator.goForward(animated = true)
+            leftRange.contains(point.x) -> navigator.goBackward()
+            leftRange.contains(viewWidth - point.x) -> navigator.goForward()
             else -> requireActivity().toggleSystemUi()
         }
 
