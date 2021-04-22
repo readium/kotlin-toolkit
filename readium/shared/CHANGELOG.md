@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!--## [Unreleased]-->
+
+## [2.0.0]
+
+### Added
 
 * `HttpFetcher` is a new publication fetcher able to serve remote resources through HTTP.
     * The actual HTTP requests are performed with an instance of `HttpClient`.
@@ -110,4 +114,5 @@ All notable changes to this project will be documented in this file.
 [2.0.0-alpha.2]: https://github.com/readium/r2-shared-kotlin/compare/2.0.0-alpha.1...2.0.0-alpha.2
 [2.0.0-beta.1]: https://github.com/readium/r2-shared-kotlin/compare/2.0.0-alpha.2...2.0.0-beta.1
 [2.0.0-beta.2]: https://github.com/readium/r2-shared-kotlin/compare/2.0.0-beta.1...2.0.0-beta.2
+[2.0.0]: https://github.com/readium/r2-shared-kotlin/compare/2.0.0-beta.2...2.0.0
 
