@@ -7,29 +7,27 @@ import android.view.ViewGroup
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.image.ImageNavigatorFragment
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.audiobook.AudioNavigatorFragment
+import org.readium.r2.testapp.audiobook.AudiobookActivity
 
 class AudioReaderFragment : BaseReaderFragment(), AudioNavigatorFragment.Listener {
 
     override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator
     private lateinit var publication: Publication
-    private lateinit var persistence: BookData
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val activity = requireActivity()
+        val activity = requireActivity() as AudiobookActivity
 
         ViewModelProvider(activity).get(ReaderViewModel::class.java).let {
             model = it
             publication = it.publication
-            persistence = it.persistence
         }
 
         childFragmentManager.fragmentFactory =
-            AudioNavigatorFragment.createFactory(publication, persistence.savedLocation, this)
+            AudioNavigatorFragment.createFactory(publication, model.initialLocation, this)
 
         super.onCreate(savedInstanceState)
     }

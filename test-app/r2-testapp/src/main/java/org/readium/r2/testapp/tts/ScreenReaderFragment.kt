@@ -10,13 +10,15 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
 import org.readium.r2.testapp.R
-import kotlinx.android.synthetic.main.fragment_screen_reader.*
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.testapp.epub.EpubActivity
@@ -56,30 +58,30 @@ class ScreenReaderFragment : Fragment(R.layout.fragment_screen_reader), ScreenRe
         super.onViewCreated(view, savedInstanceState)
         screenReader.addListener(this)
 
-        titleView.text = publication.metadata.title
+        view.findViewById<TextView>(R.id.titleView).text = publication.metadata.title
 
-        play_pause.setOnClickListener {
+        view.findViewById<ImageButton>(R.id.play_pause).setOnClickListener {
             if (screenReader.isPaused) {
                 screenReader.resumeReading()
             } else {
                 screenReader.pauseReading()
             }
         }
-        fast_forward.setOnClickListener {
+        view.findViewById<ImageButton>(R.id.fast_forward).setOnClickListener {
             if (!screenReader.nextSentence()) {
-                next_chapter.callOnClick()
+                view.findViewById<ImageButton>(R.id.next_chapter).callOnClick()
             }
         }
-        next_chapter.setOnClickListener {
+        view.findViewById<ImageButton>(R.id.next_chapter).setOnClickListener {
             screenReader.nextResource()
         }
 
-        fast_back.setOnClickListener {
+        view.findViewById<ImageButton>(R.id.fast_back).setOnClickListener {
             if (!screenReader.previousSentence()) {
-                prev_chapter.callOnClick()
+                view.findViewById<ImageButton>(R.id.prev_chapter).callOnClick()
             }
         }
-        prev_chapter.setOnClickListener {
+        view.findViewById<ImageButton>(R.id.prev_chapter).setOnClickListener {
             screenReader.previousResource()
         }
 
@@ -93,9 +95,9 @@ class ScreenReaderFragment : Fragment(R.layout.fragment_screen_reader), ScreenRe
 
     override fun onPlayStateChanged(playing: Boolean) {
         if (playing) {
-            play_pause.setImageResource(android.R.drawable.ic_media_pause)
+            view?.findViewById<ImageButton>(R.id.play_pause)?.setImageResource(android.R.drawable.ic_media_pause)
         } else {
-            play_pause.setImageResource(android.R.drawable.ic_media_play)
+            view?.findViewById<ImageButton>(R.id.play_pause)?.setImageResource(android.R.drawable.ic_media_play)
         }
     }
 
@@ -104,8 +106,8 @@ class ScreenReaderFragment : Fragment(R.layout.fragment_screen_reader), ScreenRe
     }
 
     override fun onPlayTextChanged(text: String) {
-        tts_textView.text = text
-        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(tts_textView!!, 1, 30, 1, TypedValue.COMPLEX_UNIT_DIP)
+        view?.findViewById<TextView>(R.id.tts_textView)?.text = text
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(view?.findViewById(R.id.tts_textView)!!, 1, 30, 1, TypedValue.COMPLEX_UNIT_DIP)
     }
 
     override fun onDestroyView() {

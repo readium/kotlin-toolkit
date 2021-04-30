@@ -44,16 +44,18 @@ class ReaderContract : ActivityResultContract<ReaderContract.Input, ReaderContra
     )
 
     override fun createIntent(context: Context, input: Input): Intent {
-        val intent = Intent(context, when (input.mediaType) {
-            MediaType.EPUB -> EpubActivity::class.java
-            MediaType.ZAB, MediaType.READIUM_AUDIOBOOK,
-            MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK ->
-                AudiobookActivity::class.java
-            MediaType.CBZ, MediaType.DIVINA, MediaType.DIVINA_MANIFEST,
-            MediaType.PDF, MediaType.LCP_PROTECTED_PDF->
-                VisualReaderActivity::class.java
-            else -> throw IllegalArgumentException("Unknown [mediaType]")
-        })
+        val intent = Intent(
+            context, when (input.mediaType) {
+                MediaType.EPUB, MediaType.READIUM_WEBPUB_MANIFEST, MediaType.READIUM_WEBPUB -> EpubActivity::class.java
+                MediaType.ZAB, MediaType.READIUM_AUDIOBOOK,
+                MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK ->
+                    AudiobookActivity::class.java
+                MediaType.CBZ, MediaType.DIVINA, MediaType.DIVINA_MANIFEST,
+                MediaType.PDF, MediaType.LCP_PROTECTED_PDF ->
+                    VisualReaderActivity::class.java
+                else -> throw IllegalArgumentException("Unknown [mediaType]")
+            }
+        )
 
         return intent.apply {
             putPublication(input.publication)

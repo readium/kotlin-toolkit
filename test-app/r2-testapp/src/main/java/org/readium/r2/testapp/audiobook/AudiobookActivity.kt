@@ -14,8 +14,8 @@ import org.readium.r2.testapp.outline.OutlineContract
 import org.readium.r2.testapp.outline.OutlineFragment
 import org.readium.r2.testapp.reader.AudioReaderFragment
 import org.readium.r2.testapp.reader.ReaderActivity
-import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.reader.ReaderContract
+import org.readium.r2.testapp.reader.ReaderViewModel
 
 class AudiobookActivity : R2AudiobookActivity() {
 

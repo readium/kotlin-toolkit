@@ -13,27 +13,24 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayoutMediator
-import kotlinx.android.synthetic.main.fragment_outline.*
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.landmarks
 import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.reader.BookData
 import org.readium.r2.testapp.reader.ReaderViewModel
 
 class OutlineFragment : Fragment(R.layout.fragment_outline) {
 
     lateinit var publication: Publication
-    lateinit var persistence: BookData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
             publication = it.publication
-            persistence = it.persistence
         }
 
         childFragmentManager.setFragmentResultListener(
@@ -51,8 +48,8 @@ class OutlineFragment : Fragment(R.layout.fragment_outline) {
             else -> listOf(Outline.Contents, Outline.Bookmarks)
         }
 
-        outline_pager.adapter = OutlineFragmentStateAdapter(this, publication, outlines)
-        TabLayoutMediator(outline_tab_layout, outline_pager) { tab, idx -> tab.setText(outlines[idx].label) }.attach()
+        view.findViewById<ViewPager2>(R.id.outline_pager).adapter = OutlineFragmentStateAdapter(this, publication, outlines)
+        TabLayoutMediator(view.findViewById(R.id.outline_tab_layout), view.findViewById(R.id.outline_pager)) { tab, idx -> tab.setText(outlines[idx].label) }.attach()
     }
 }
 

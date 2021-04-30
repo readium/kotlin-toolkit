@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_bookshelf">
+
+    <fragment
+        android:id="@+id/navigation_catalog_list"
+        android:name="org.readium.r2.testapp.catalogs.CatalogFeedListFragment"
+        android:label="@string/title_catalogs"
+        tools:layout="@layout/fragment_catalog_feed_list">
+        <action
+            android:id="@+id/action_navigation_catalog_list_to_navigation_catalog"
+            app:destination="@id/navigation_catalog" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_bookshelf"
+        android:name="org.readium.r2.testapp.bookshelf.BookshelfFragment"
+        android:label="@string/title_bookshelf"
+        tools:layout="@layout/fragment_bookshelf" />
+
+    <fragment
+        android:id="@+id/navigation_about"
+        android:name="org.readium.r2.testapp.about.AboutFragment"
+        android:label="@string/title_about"
+        tools:layout="@layout/fragment_about" />
+
+    <fragment
+        android:id="@+id/navigation_catalog"
+        android:name="org.readium.r2.testapp.catalogs.CatalogFragment"
+        tools:layout="@layout/fragment_catalog">
+        <action
+            android:id="@+id/action_navigation_catalog_to_navigation_catalog_detail"
+            app:destination="@id/navigation_catalog_detail" />
+        <action
+            android:id="@+id/action_navigation_catalog_self"
+            app:destination="@id/navigation_catalog" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_catalog_detail"
+        android:name="org.readium.r2.testapp.catalogs.CatalogDetailFragment"
+        tools:layout="@layout/fragment_catalog_detail" />
+</navigation>

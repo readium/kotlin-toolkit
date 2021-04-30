@@ -12,9 +12,7 @@ package org.readium.r2.testapp.opds
 
 import android.content.Context
 import com.github.kittinunf.fuel.Fuel
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.then
-import org.readium.r2.shared.promise
+import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import timber.log.Timber
 import java.io.File
@@ -38,35 +36,48 @@ class OPDSDownloader(context: Context) {
         return properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
     }
 
-    fun publicationUrl(url: String, parameters: List<Pair<String, Any?>>? = null): Promise<Pair<String, String>, Exception> {
+    suspend fun publicationUrl(url: String, parameters: List<Pair<String, Any?>>? = null): OpdsDownloadResult {
         val fileName = UUID.randomUUID().toString()
         if (DEBUG) Timber.i("download url %s", url)
-
-        return Fuel.download(url).destination { _, request_url ->
-            if (DEBUG) Timber.i("request url %s", request_url.toString())
+        val (request, response, result) = Fuel.download(url).fileDestination { _, request ->
+            if (DEBUG) Timber.i("request url %s", request.url)
             if (DEBUG) Timber.i("download destination %s %s %s", "%s%s", rootDir, fileName)
             File(rootDir, fileName)
-        }.promise() then {
-            val (_, response, _) = it
-            if (DEBUG) Timber.i("response url %s", response.url.toString())
-            if (url == response.url.toString()) {
-                Pair(rootDir + fileName, fileName)
-            } else {
-                redirectedDownload(response.url, fileName).get()
-            }
-        }
+        }.awaitStringResponseResult()
+        if (DEBUG) Timber.i("response url %s", response.url.toString())
+        return result.fold(
+            { data ->
+                if (url == response.url.toString()) {
+                    OpdsDownloadResult.OnSuccess(Pair(rootDir + fileName, fileName))
+                } else {
+                    val redirectedDownload = redirectedDownload(response.url, fileName)
+                    when (redirectedDownload) {
+                        is OpdsDownloadResult.OnSuccess -> OpdsDownloadResult.OnSuccess(redirectedDownload.data)
+                        is OpdsDownloadResult.OnFailure -> OpdsDownloadResult.OnFailure(redirectedDownload.exception)
+                    }
+                }
+            },
+            { error -> OpdsDownloadResult.OnFailure(error.message) }
+        )
     }
 
-    private fun redirectedDownload(responseUrl: URL, fileName: String): Promise<Pair<String, String>, Exception> {
-        return Fuel.download(responseUrl.toString()).destination { _, request_url ->
-            if (DEBUG) Timber.i("request url %s", request_url.toString())
+    private suspend fun redirectedDownload(responseUrl: URL, fileName: String): OpdsDownloadResult {
+        val (request, response, result) = Fuel.download(responseUrl.toString()).fileDestination { _, request ->
+            if (DEBUG) Timber.i("request url %s", request.url)
             if (DEBUG) Timber.i("download destination %s %s %s", "%s%s", rootDir, fileName)
             File(rootDir, fileName)
-        }.promise() then {
-            val (_, response, _) = it
-            if (DEBUG) Timber.i("response url %s", response.url.toString())
-            Pair(rootDir + fileName, fileName)
-        }
+        }.awaitStringResponseResult()
+        return result.fold(
+            { data ->
+                OpdsDownloadResult.OnSuccess(Pair(rootDir + fileName, fileName))
+            },
+            { error -> OpdsDownloadResult.OnFailure(error.message) }
+        )
     }
 
+}
+
+sealed class OpdsDownloadResult {
+    data class OnSuccess(val data : Pair<String, String>) : OpdsDownloadResult()
+    data class OnFailure(val exception : String?) : OpdsDownloadResult()
 }

@@ -15,7 +15,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import kotlinx.android.synthetic.main.fragment_search.*
+import androidx.recyclerview.widget.RecyclerView
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
 
@@ -44,8 +44,8 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         })
 
         searchResult.observe(viewLifecycleOwner, Observer<List<Locator>> { adapter.notifyDataSetChanged() })
-        search_listView.adapter = adapter
-        search_listView.layoutManager = LinearLayoutManager(activity)
+        view.findViewById<RecyclerView>(R.id.search_listView).adapter = adapter
+        view.findViewById<RecyclerView>(R.id.search_listView).layoutManager = LinearLayoutManager(activity)
     }
 }
 

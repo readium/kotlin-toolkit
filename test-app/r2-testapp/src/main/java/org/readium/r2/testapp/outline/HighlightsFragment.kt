@@ -6,135 +6,126 @@
 
 package org.readium.r2.testapp.outline
 
-import android.app.Activity
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.ImageView
-import android.widget.PopupMenu
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
-import kotlinx.android.synthetic.main.fragment_listview.*
-import kotlinx.android.synthetic.main.item_recycle_highlight.view.*
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.db.Highlight
-import org.readium.r2.testapp.reader.BookData
+import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.extensions.outlineTitle
 
 class HighlightsFragment : Fragment(R.layout.fragment_listview) {
 
     lateinit var publication: Publication
-    lateinit var persistence: BookData
+    lateinit var viewModel: ReaderViewModel
+    private lateinit var highlightAdapter: HighlightAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
             publication = it.publication
-            persistence = it.persistence
+            viewModel = it
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val comparator: Comparator<Highlight> = compareBy( {it.resourceIndex },{ it.location.progression })
-        val highlights = persistence.getHighlights(comparator = comparator).toMutableList()
+        highlightAdapter = HighlightAdapter(publication, onDeleteHighlightRequested = { highlight -> viewModel.deleteHighlightByHighlightId(highlight.highlightId) }, onHighlightSelectedRequested = { highlight -> onHighlightSelected(highlight) })
+        view.findViewById<RecyclerView>(R.id.list_view).apply {
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = highlightAdapter
+        }
 
-        list_view.adapter = HighlightsAdapter(
-            requireActivity(),
-            highlights,
-            publication,
-            onDeleteHighlightRequested = { persistence.removeHighlight(it.highlightID) }
-        )
-
-        list_view.setOnItemClickListener { _, _, position, _ -> onHighlightSelected(highlights[position]) }
+        val comparator: Comparator<Highlight> = compareBy({ it.resourceIndex }, { it.locator.locations.progression })
+        viewModel.getHighlights().observe(viewLifecycleOwner, {
+            val highlights = it.sortedWith(comparator).toMutableList()
+            highlightAdapter.submitList(highlights)
+        })
     }
 
     private fun onHighlightSelected(highlight: Highlight) {
         setFragmentResult(
-            OutlineContract.REQUEST_KEY,
-            OutlineContract.createResult(highlight.locator)
+                OutlineContract.REQUEST_KEY,
+                OutlineContract.createResult(highlight.locator)
         )
     }
 }
 
-private class HighlightsAdapter(
-    private val activity: Activity,
-    private val items: MutableList<Highlight>,
-    private val publication: Publication,
-    private val onDeleteHighlightRequested: (Highlight) -> Unit
-) : BaseAdapter() {
+class HighlightAdapter(private val publication: Publication,
+                       private val onDeleteHighlightRequested: (Highlight) -> Unit,
+                       private val onHighlightSelectedRequested: (Highlight) -> Unit) :
+        ListAdapter<Highlight, HighlightAdapter.ViewHolder>(HighlightsDiff()) {
 
-    private class ViewHolder(row: View) {
-        val highlightedText: TextView = row.highlight_text
-        val highlightTimestamp: TextView = row.highlight_time_stamp
-        val highlightChapter: TextView = row.highlight_chapter
-        val highlightOverflow: ImageView = row.highlight_overflow
-        val annotation: TextView = row.annotation
+    init {
+        setHasStableIds(true)
     }
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val view =
-            if (convertView == null) {
-                val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                inflater.inflate(R.layout.item_recycle_highlight, null).also {
-                    it.tag = ViewHolder(it)
+    override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int
+    ): ViewHolder {
+        return ViewHolder(
+                LayoutInflater.from(parent.context)
+                        .inflate(R.layout.item_recycle_highlight, parent, false)
+        )
+    }
+
+    override fun getItemId(position: Int): Long = position.toLong()
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val item = getItem(position)
+        holder.bind(item)
+    }
+
+    inner class ViewHolder(private val row: View) : RecyclerView.ViewHolder(row) {
+        private val highlightedText: TextView = row.findViewById(R.id.highlight_text)
+        private val highlightTimestamp: TextView = row.findViewById(R.id.highlight_time_stamp)
+        private val highlightChapter: TextView = row.findViewById(R.id.highlight_chapter)
+        private val highlightOverflow: ImageView = row.findViewById(R.id.highlight_overflow)
+        val annotation: TextView = row.findViewById(R.id.annotation)
+
+        fun bind(highlight: Highlight) {
+            highlightChapter.text = getHighlightSpineItem(highlight.resourceHref)
+            highlightedText.text = highlight.locator.text.highlight
+            annotation.text = highlight.annotation
+
+            val formattedDate = DateTime(highlight.creation).toString(DateTimeFormat.shortDateTime())
+            highlightTimestamp.text = formattedDate
+
+            highlightOverflow.setOnClickListener {
+
+                val popupMenu = PopupMenu(highlightOverflow.context, highlightChapter)
+                popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
+                popupMenu.show()
+
+                popupMenu.setOnMenuItemClickListener { item ->
+                    if (item.itemId == R.id.delete) {
+                        onDeleteHighlightRequested(highlight)
+                    }
+                    false
                 }
-            } else {
-                convertView
             }
-
-        val viewHolder = view.tag as ViewHolder
-
-        val highlight = getItem(position) as Highlight
-
-        viewHolder.highlightChapter.text = getHighlightSpineItem(highlight.resourceHref)
-        viewHolder.highlightedText.text = highlight.locatorText.highlight
-        viewHolder.annotation.text = highlight.annotation
-
-        val formattedDate = DateTime(highlight.creationDate).toString(DateTimeFormat.shortDateTime())
-        viewHolder.highlightTimestamp.text = formattedDate
-
-        viewHolder.highlightOverflow.setOnClickListener {
-
-            val popupMenu = PopupMenu(parent?.context, viewHolder.highlightChapter)
-            popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
-            popupMenu.show()
-
-            popupMenu.setOnMenuItemClickListener { item ->
-                if (item.itemId == R.id.delete) {
-                    onDeleteHighlightRequested(items[position])
-                    items.removeAt(position)
-                    notifyDataSetChanged()
-                }
-                false
+            row.setOnClickListener {
+                onHighlightSelectedRequested(highlight)
             }
         }
-
-        return view
-    }
-
-    override fun getCount(): Int {
-        return items.size
-    }
-
-    override fun getItem(position: Int): Any {
-        return items[position]
-    }
-
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
     }
 
     private fun getHighlightSpineItem(href: String): String? {
@@ -152,3 +143,22 @@ private class HighlightsAdapter(
     }
 }
 
+private class HighlightsDiff : DiffUtil.ItemCallback<Highlight>() {
+
+    override fun areItemsTheSame(
+            oldItem: Highlight,
+            newItem: Highlight
+    ): Boolean {
+        return oldItem.id == newItem.id
+                && oldItem.highlightId == newItem.highlightId
+    }
+
+    override fun areContentsTheSame(
+            oldItem: Highlight,
+            newItem: Highlight
+    ): Boolean {
+        return oldItem.annotation == newItem.annotation
+                && oldItem.color == newItem.color
+                && oldItem.annotationMarkStyle == newItem.annotationMarkStyle
+    }
+}

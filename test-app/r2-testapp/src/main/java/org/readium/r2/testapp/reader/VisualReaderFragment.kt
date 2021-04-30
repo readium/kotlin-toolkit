@@ -9,8 +9,9 @@ package org.readium.r2.testapp.reader
 import android.os.Bundle
 import android.view.View
 import android.view.WindowInsets
+import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
-import kotlinx.android.synthetic.main.fragment_reader.*
+import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.clearPadding
 import org.readium.r2.testapp.utils.hideSystemUi
 import org.readium.r2.testapp.utils.padSystemUi
@@ -30,8 +31,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
         childFragmentManager.addOnBackStackChangedListener {
             updateSystemUiVisibility()
         }
-
-        fragment_reader_container.setOnApplyWindowInsetsListener { container, insets ->
+        view.findViewById<FrameLayout>(R.id.fragment_reader_container).setOnApplyWindowInsetsListener { container, insets ->
             updateSystemUiPadding(container, insets)
             insets
         }

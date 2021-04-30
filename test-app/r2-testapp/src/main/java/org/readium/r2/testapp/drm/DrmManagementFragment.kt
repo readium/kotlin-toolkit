@@ -14,10 +14,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
-import org.jetbrains.anko.alert
-import org.jetbrains.anko.appcompat.v7.Appcompat
-import org.jetbrains.anko.design.longSnackbar
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.lcp.MaterialRenewListener
@@ -26,7 +25,7 @@ import org.readium.r2.shared.UserException
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.ReaderViewModel
 import timber.log.Timber
-import java.util.Date
+import java.util.*
 
 class DrmManagementFragment : Fragment(R.layout.fragment_drm_management) {
 
@@ -62,10 +61,10 @@ class DrmManagementFragment : Fragment(R.layout.fragment_drm_management) {
         view.findViewById<TextView>(R.id.drm_value_copies_left).text = model.copiesLeft
 
         val datesVisibility =
-            if (model.start != null && model.end != null && model.start != model.end)
-                View.VISIBLE
-            else
-                View.GONE
+                if (model.start != null && model.end != null && model.start != model.end)
+                    View.VISIBLE
+                else
+                    View.GONE
 
         view.findViewById<View>(R.id.drm_start).visibility = datesVisibility
         view.findViewById<TextView>(R.id.drm_value_start).text = model.start.toFormattedString()
@@ -74,11 +73,11 @@ class DrmManagementFragment : Fragment(R.layout.fragment_drm_management) {
 
         // Actions
         view.findViewById<TextView>(R.id.drm_label_actions).visibility =
-            if (model.canRenewLoan || model.canReturnPublication) View.VISIBLE else View.GONE
+                if (model.canRenewLoan || model.canReturnPublication) View.VISIBLE else View.GONE
 
         view.findViewById<Button>(R.id.drm_button_renew).run {
             visibility = if (model.canRenewLoan) View.VISIBLE else View.GONE
-            setOnClickListener {onRenewLoanClicked() }
+            setOnClickListener { onRenewLoanClicked() }
         }
 
         view.findViewById<Button>(R.id.drm_button_return).run {
@@ -90,43 +89,42 @@ class DrmManagementFragment : Fragment(R.layout.fragment_drm_management) {
     private fun onRenewLoanClicked() {
         lifecycleScope.launch {
             model.renewLoan(this@DrmManagementFragment)
-                .onSuccess { newDate ->
-                    requireView().findViewById<TextView>(R.id.drm_value_end).text = newDate.toFormattedString()
-                }.onFailure { exception ->
-                    exception.toastUserMessage(requireView())
-                }
+                    .onSuccess { newDate ->
+                        requireView().findViewById<TextView>(R.id.drm_value_end).text = newDate.toFormattedString()
+                    }.onFailure { exception ->
+                        exception.toastUserMessage(requireView())
+                    }
         }
     }
 
     private fun onReturnPublicationClicked() {
-        requireContext().alert(Appcompat, "This will return the publication") {
-            negativeButton("Cancel") { }
-            positiveButton("Return") {
-                lifecycleScope.launch {
-                    model.returnPublication()
-                        .onSuccess {
-                            val result = DrmManagementContract.createResult(hasReturned = true)
-                            setFragmentResult(DrmManagementContract.REQUEST_KEY, result)
-                        }.onFailure { exception ->
-                            exception.toastUserMessage(requireView())
-                        }
+        MaterialAlertDialogBuilder(requireContext())
+                .setTitle(getString(R.string.return_publication))
+                .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                    dialog.cancel()
                 }
-            }
-
-        }.build().apply {
-            setCancelable(false)
-            setCanceledOnTouchOutside(false)
-        }.show()
+                .setPositiveButton(getString(R.string.return_button)) { _, _ ->
+                    lifecycleScope.launch {
+                        model.returnPublication()
+                                .onSuccess {
+                                    val result = DrmManagementContract.createResult(hasReturned = true)
+                                    setFragmentResult(DrmManagementContract.REQUEST_KEY, result)
+                                }.onFailure { exception ->
+                                    exception.toastUserMessage(requireView())
+                                }
+                    }
+                }
+                .show()
     }
 }
 
 private fun Date?.toFormattedString() =
-    DateTime(this).toString(DateTimeFormat.shortDateTime()).orEmpty()
+        DateTime(this).toString(DateTimeFormat.shortDateTime()).orEmpty()
 
 // FIXME: the toast is drawn behind the navigation bar
-private fun Exception.toastUserMessage(view: View)  {
+private fun Exception.toastUserMessage(view: View) {
     if (this is UserException)
-        view.longSnackbar(getUserMessage(view.context))
+        Snackbar.make(view, getUserMessage(view.context), Snackbar.LENGTH_LONG).show()
 
     Timber.d(this)
 }

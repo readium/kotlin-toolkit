@@ -17,7 +17,8 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccentPrefs</item>
         <item name="android:popupAnimationStyle">@null</item>
-
+        <item name="colorSurface">@color/white</item>
+        <item name="floatingActionButtonStyle">@style/Widget.App.FloatingActionButton</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -30,6 +31,16 @@
     <style name="TabWidgetTheme" parent="AppTheme">
         <item name="android:textSize">10sp</item>
         <item name="android:textAlignment">center</item>
+    </style>
+
+    <style name="Widget.App.FloatingActionButton" parent="Widget.MaterialComponents.FloatingActionButton">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.App.FloatingActionButton</item>
+    </style>
+
+    <style name="ThemeOverlay.App.FloatingActionButton" parent="">
+        <item name="colorSecondary">@color/colorPrimary</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnSurface">@color/colorPrimary</item>
     </style>
 
 </resources>

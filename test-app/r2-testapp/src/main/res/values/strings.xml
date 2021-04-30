@@ -74,8 +74,8 @@
     <string name="bsd_license_label_accessible">[B S D 3 license]</string>
     <string name="acknowledgements_label">Acknowledgements</string>
     <string name="acknowledgements_french_state">R2 Reader wouldn\'t have been developed without the financial help of the French state.</string>
-    <string name="opds_list_more">More…</string>
-    <string name="opds_detail_download_button">Download</string>
+    <string name="catalog_list_more">More…</string>
+    <string name="catalog_detail_download_button">Download</string>
 
 
     <string name="menu_label_drm">DRM</string>
@@ -154,5 +154,46 @@
     <string name="landmarks_tab_label">Landmarks</string>
     <string name="action_mode_menu_highlight">Highlight</string>
     <string name="action_mode_menu_note">Note</string>
+    <string name="bookmark_added">Bookmark added</string>
+    <string name="bookmark_exists">Bookmark already exists</string>
 
+    <string name="title_catalogs">Catalogs</string>
+    <string name="title_bookshelf">Bookshelf</string>
+    <string name="title_about">About</string>
+    <string name="cover_image">Cover Image</string>
+    <string name="repfr">repfr</string>
+
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm_delete_book_title">Delete Book?</string>
+    <string name="confirm_delete_book_text">Are you sure you want to delete this book?</string>
+    <string name="confirm_delete_catalog_title">Delete Catalog?</string>
+    <string name="confirm_delete_catalog_text">Are you sure you want to delete this Catalog feed?</string>
+
+    <string name="add_book">Add a Book</string>
+    <string name="add_catalog">Add an Catalog Feed</string>
+    <string name="ok">OK</string>
+    <string name="save">Save</string>
+    <string name="enter_title">Enter the Title</string>
+    <string name="enter_url">Enter the URL</string>
+    <string name="invalid_title">Please enter a title</string>
+    <string name="invalid_url">Please enter a valid URL</string>
+    <string name="catalog_parse_error">Error parsing Catalog feed. Please check the URL and try again</string>
+
+    <string name="publication_image_description">Cover image for %1$s</string>
+
+    <string name="return_publication">This will return the publication</string>
+    <string name="return_button">Return</string>
+
+    <string name="end_of_chapter">End of chapter</string>
+
+    <string name="unable_to_move_pub">Unable to move publication into the library</string>
+    <string name="import_publication_success">Publication added to your library</string>
+    <string name="unable_add_pub_database">Unable to add publication to the database</string>
+    <string name="failed_parsing_catalog">Failed parsing Catalog</string>
+    <string name="next_chapter">Next chapter</string>
+    <string name="next_sentence">Next sentence</string>
+    <string name="play_and_pause">Play and pause</string>
+    <string name="previous_sentence">Previous sentence</string>
+    <string name="previous_chapter">Previous chapter</string>
 </resources>

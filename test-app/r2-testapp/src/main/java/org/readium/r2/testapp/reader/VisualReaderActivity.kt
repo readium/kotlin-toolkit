@@ -9,7 +9,8 @@ package org.readium.r2.testapp.reader
 import android.os.Bundle
 import android.view.View
 import android.view.WindowInsets
-import kotlinx.android.synthetic.main.activity_reader.*
+import android.widget.FrameLayout
+import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.clearPadding
 import org.readium.r2.testapp.utils.padSystemUi
 import org.readium.r2.testapp.utils.showSystemUi
@@ -26,10 +27,10 @@ open class VisualReaderActivity : ReaderActivity() {
         // although we need a call every time the reader is hidden
         window.decorView.setOnApplyWindowInsetsListener { view, insets ->
             val newInsets = view.onApplyWindowInsets(insets)
-            activity_container.dispatchApplyWindowInsets(newInsets)
+            findViewById<FrameLayout>(R.id.activity_container).dispatchApplyWindowInsets(newInsets)
         }
 
-        activity_container.setOnApplyWindowInsetsListener { container, insets ->
+        findViewById<FrameLayout>(R.id.activity_container).setOnApplyWindowInsetsListener { container, insets ->
             updateSystemUiPadding(container, insets)
             insets
         }
@@ -51,7 +52,7 @@ open class VisualReaderActivity : ReaderActivity() {
             readerFragment.updateSystemUiVisibility()
 
         // Seems to be required to adjust padding when transitioning from the outlines to the screen reader
-        activity_container.requestApplyInsets()
+        findViewById<FrameLayout>(R.id.activity_container).requestApplyInsets()
     }
 
     private fun updateSystemUiPadding(container: View, insets: WindowInsets) {

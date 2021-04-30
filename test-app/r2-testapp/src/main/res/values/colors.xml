@@ -18,5 +18,5 @@
 
     <color name="snackbar_background_color">@color/colorPrimaryDark</color>
     <color name="snackbar_text_color">@color/colorAccent</color>
-
+    <color name="white">#ffffff</color>
 </resources>

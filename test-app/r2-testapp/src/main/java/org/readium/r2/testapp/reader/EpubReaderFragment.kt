@@ -6,19 +6,14 @@
 
 package org.readium.r2.testapp.reader
 
+import android.app.ProgressDialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.PointF
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import androidx.appcompat.widget.SearchView
@@ -30,7 +25,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
-import org.jetbrains.anko.support.v4.indeterminateProgressDialog
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.pager.R2EpubPageFragment
@@ -43,12 +37,11 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.epub.EpubActivity
-import org.readium.r2.testapp.tts.ScreenReaderFragment
-import org.readium.r2.testapp.search.SearchViewModel
 import org.readium.r2.testapp.search.MarkJsSearchEngine
 import org.readium.r2.testapp.search.SearchFragment
+import org.readium.r2.testapp.search.SearchViewModel
 import org.readium.r2.testapp.tts.ScreenReaderContract
-import org.readium.r2.testapp.utils.hideSystemUi
+import org.readium.r2.testapp.tts.ScreenReaderFragment
 import org.readium.r2.testapp.utils.toggleSystemUi
 import timber.log.Timber
 import java.net.URL
@@ -58,7 +51,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator
     private lateinit var publication: Publication
-    private  lateinit var persistence: BookData
     lateinit var navigatorFragment: EpubNavigatorFragment
 
     private lateinit var menuScreenReader: MenuItem
@@ -81,13 +73,12 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
             model = it
             publication = it.publication
-            persistence = it.persistence
         }
 
         val baseUrl = checkNotNull(requireArguments().getString(BASE_URL_ARG))
 
         childFragmentManager.fragmentFactory =
-            EpubNavigatorFragment.createFactory(publication, baseUrl, persistence.savedLocation, this)
+            EpubNavigatorFragment.createFactory(publication, baseUrl, model.initialLocation, this)
 
         childFragmentManager.setFragmentResultListener(
             SearchFragment::class.java.name,
@@ -211,7 +202,9 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         menuSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 
             override fun onQueryTextSubmit(query: String): Boolean {
-                val progress = indeterminateProgressDialog(getString(R.string.progress_wait_while_searching_book)).apply {
+                val progress = ProgressDialog(requireContext()).apply {
+                    setMessage(getString(R.string.progress_wait_while_searching_book))
+                    isIndeterminate = true
                     show()
                 }
 

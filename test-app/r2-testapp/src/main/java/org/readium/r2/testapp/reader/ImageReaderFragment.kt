@@ -24,17 +24,15 @@ class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Liste
     override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator
     private lateinit var publication: Publication
-    private lateinit var persistence: BookData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
             model = it
             publication = it.publication
-            persistence = it.persistence
         }
 
         childFragmentManager.fragmentFactory =
-            ImageNavigatorFragment.createFactory(publication, persistence.savedLocation, this)
+            ImageNavigatorFragment.createFactory(publication, model.initialLocation, this)
 
         super.onCreate(savedInstanceState)
     }

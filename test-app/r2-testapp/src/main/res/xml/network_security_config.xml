@@ -21,5 +21,13 @@
         <domain includeSubdomains="true">feedbooks.com</domain>
         <domain includeSubdomains="true">feedbooks.net</domain>
 
+        <!--
+        Required for the Open Textbooks Catalog OPDS feed to load properly
+        open.minitex.org is for the publications
+        s3.amazonaws.com is for the cover images
+        -->
+        <domain includeSubdomains="false">open.minitex.org</domain>
+        <domain includeSubdomains="false">s3.amazonaws.com</domain>
+
     </domain-config>
 </network-security-config>

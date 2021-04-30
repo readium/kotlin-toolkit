@@ -10,18 +10,11 @@
 
 package org.readium.r2.testapp.utils.extensions
 
+import android.app.ProgressDialog
 import android.content.Context
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.jetbrains.anko.indeterminateProgressDialog
-import org.readium.r2.testapp.R
-import java.io.File
-import java.io.FileFilter
-import java.io.InputStream
-import java.net.URL
 
 
 /**
@@ -34,8 +27,8 @@ fun Context.color(@ColorRes id: Int): Int {
 }
 
 fun Context.blockingProgressDialog(message: String) =
-    indeterminateProgressDialog(message)
-        .apply {
-            setCancelable(false)
-            setCanceledOnTouchOutside(false)
+        ProgressDialog(this).apply {
+            setMessage(message)
+            isIndeterminate = true
+            show()
         }

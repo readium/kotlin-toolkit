@@ -6,28 +6,25 @@
 
 package org.readium.r2.testapp.outline
 
-import android.app.Activity
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.ImageView
-import android.widget.PopupMenu
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
-import kotlinx.android.synthetic.main.fragment_listview.*
-import kotlinx.android.synthetic.main.item_recycle_bookmark.view.*
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.db.Bookmark
-import org.readium.r2.testapp.reader.BookData
+import org.readium.r2.testapp.domain.model.Bookmark
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.extensions.outlineTitle
 import kotlin.math.roundToInt
@@ -35,31 +32,33 @@ import kotlin.math.roundToInt
 class BookmarksFragment : Fragment(R.layout.fragment_listview) {
 
     lateinit var publication: Publication
-    lateinit var persistence: BookData
+    lateinit var viewModel: ReaderViewModel
+    private lateinit var bookmarkAdapter: BookmarkAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
             publication = it.publication
-            persistence = it.persistence
+            viewModel = it
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val comparator: Comparator<Bookmark> = compareBy( {it.resourceIndex },{ it.location.progression })
-        val bookmarks = persistence.getBookmarks(comparator).toMutableList()
+        bookmarkAdapter = BookmarkAdapter(publication, onBookmarkDeleteRequested = { bookmark -> viewModel.deleteBookmark(bookmark.id!!) }, onBookmarkSelectedRequested = { bookmark -> onBookmarkSelected(bookmark) })
+        view.findViewById<RecyclerView>(R.id.list_view).apply {
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = bookmarkAdapter
+        }
 
-        list_view.adapter = BookMarksAdapter(
-            requireActivity(),
-            bookmarks,
-            publication,
-            onBookmarkDeleteRequested = { persistence.removeBookmark(it.id!!) }
-        )
-
-        list_view.setOnItemClickListener { _, _, position, _ -> onBookmarkSelected(bookmarks[position]) }
+        val comparator: Comparator<Bookmark> = compareBy({ it.resourceIndex }, { it.locator.locations.progression })
+        viewModel.getBookmarks().observe(viewLifecycleOwner, {
+            val bookmarks = it.sortedWith(comparator).toMutableList()
+            bookmarkAdapter.submitList(bookmarks)
+        })
     }
 
     private fun onBookmarkSelected(bookmark: Bookmark) {
@@ -70,73 +69,67 @@ class BookmarksFragment : Fragment(R.layout.fragment_listview) {
     }
 }
 
-private class BookMarksAdapter(
-    private val activity: Activity,
-    private val bookmarks: MutableList<Bookmark>,
-    private val publication: Publication,
-    private val onBookmarkDeleteRequested: (Bookmark) -> Unit
-) : BaseAdapter() {
+class BookmarkAdapter(private val publication: Publication, private val onBookmarkDeleteRequested: (Bookmark) -> Unit, private val onBookmarkSelectedRequested: (Bookmark) -> Unit) :
+        ListAdapter<Bookmark, BookmarkAdapter.ViewHolder>(BookmarksDiff()) {
 
-    private class ViewHolder(row: View) {
-        val bookmarkChapter: TextView = row.bookmark_chapter
-        val bookmarkProgression: TextView = row.bookmark_progression
-        val bookmarkTimestamp: TextView = row.bookmark_timestamp
-        val bookmarkOverflow: ImageView = row.overflow
+    init {
+        setHasStableIds(true)
     }
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val view =
-            if (convertView == null) {
-                val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                inflater.inflate(R.layout.item_recycle_bookmark, null).also {
-                    it.tag = ViewHolder(it)
-                }
-            } else {
-                convertView
+    override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int
+    ): ViewHolder {
+        return ViewHolder(
+                LayoutInflater.from(parent.context)
+                        .inflate(R.layout.item_recycle_bookmark, parent, false)
+        )
+    }
+
+    override fun getItemId(position: Int): Long = position.toLong()
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val item = getItem(position)
+        holder.bind(item)
+    }
+
+    inner class ViewHolder(private val row: View) : RecyclerView.ViewHolder(row) {
+        private val bookmarkChapter: TextView = row.findViewById(R.id.bookmark_chapter)
+        private val bookmarkProgression: TextView = row.findViewById(R.id.bookmark_progression)
+        private val bookmarkTimestamp: TextView = row.findViewById(R.id.bookmark_timestamp)
+        private val bookmarkOverflow: ImageView = row.findViewById(R.id.overflow)
+
+        fun bind(bookmark: Bookmark) {
+            val title = getBookSpineItem(bookmark.resourceHref)
+                    ?: "*Title Missing*"
+
+            bookmarkChapter.text = title
+            bookmark.locator.locations.progression?.let { progression ->
+                val formattedProgression = "${(progression * 100).roundToInt()}% through resource"
+                bookmarkProgression.text = formattedProgression
             }
 
-        val viewHolder = view.tag as ViewHolder
+            val formattedDate = DateTime(bookmark.creation).toString(DateTimeFormat.shortDateTime())
+            bookmarkTimestamp.text = formattedDate
 
-        val bookmark = getItem(position) as Bookmark
+            bookmarkOverflow.setOnClickListener {
 
-        val title = getBookSpineItem(bookmark.resourceHref)
-            ?:  "*Title Missing*"
+                val popupMenu = PopupMenu(bookmarkOverflow.context, bookmarkChapter)
+                popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
+                popupMenu.show()
 
-        viewHolder.bookmarkChapter.text = title
-
-        bookmark.location.progression?.let { progression ->
-            val formattedProgression = "${(progression * 100).roundToInt()}% through resource"
-            viewHolder.bookmarkProgression.text = formattedProgression
-        }
-
-        val formattedDate = DateTime(bookmark.creationDate).toString(DateTimeFormat.shortDateTime())
-        viewHolder.bookmarkTimestamp.text = formattedDate
-
-        viewHolder.bookmarkOverflow.setOnClickListener {
-
-            val popupMenu = PopupMenu(parent?.context, viewHolder.bookmarkChapter)
-            popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
-            popupMenu.show()
-
-            popupMenu.setOnMenuItemClickListener { item ->
-                if (item.itemId == R.id.delete) {
-                    onBookmarkDeleteRequested(bookmarks[position])
-                    bookmarks.removeAt(position)
-                    notifyDataSetChanged()
+                popupMenu.setOnMenuItemClickListener { item ->
+                    if (item.itemId == R.id.delete) {
+                        onBookmarkDeleteRequested(bookmark)
+                    }
+                    false
                 }
-                false
+            }
+
+            row.setOnClickListener {
+                onBookmarkSelectedRequested(bookmark)
             }
         }
-
-        return view
-    }
-
-    override fun getCount(): Int {
-        return bookmarks.size
-    }
-
-    override fun getItem(position: Int): Any {
-        return bookmarks[position]
     }
 
     private fun getBookSpineItem(href: String): String? {
@@ -152,8 +145,22 @@ private class BookMarksAdapter(
         }
         return null
     }
+}
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
+private class BookmarksDiff : DiffUtil.ItemCallback<Bookmark>() {
+
+    override fun areItemsTheSame(
+            oldItem: Bookmark,
+            newItem: Bookmark
+    ): Boolean {
+        return oldItem.id == newItem.id
+    }
+
+    override fun areContentsTheSame(
+            oldItem: Bookmark,
+            newItem: Bookmark
+    ): Boolean {
+        return oldItem.bookId == newItem.bookId
+                && oldItem.location == newItem.location
     }
 }
