@@ -88,7 +88,8 @@
             android:background="@android:color/transparent"
             android:contentDescription="@string/previous_chapter"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_skip_previous_white_24dp" />
+            android:src="@drawable/ic_baseline_skip_previous_24"
+            app:tint="@android:color/white" />
 
         <ImageButton
             android:id="@+id/fast_back"
@@ -98,7 +99,8 @@
             android:background="@android:color/transparent"
             android:contentDescription="@string/previous_sentence"
             android:scaleType="fitCenter"
-            android:src="@drawable/baseline_fast_rewind_white_24" />
+            android:src="@drawable/ic_baseline_fast_rewind_24"
+            app:tint="@android:color/white" />
 
 
         <ImageButton
@@ -109,7 +111,8 @@
             android:background="@android:color/transparent"
             android:contentDescription="@string/play_and_pause"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_play_arrow_white_24dp" />
+            android:src="@drawable/ic_baseline_play_arrow_24"
+            app:tint="@android:color/white" />
 
         <ImageButton
             android:id="@+id/fast_forward"
@@ -119,7 +122,8 @@
             android:background="@android:color/transparent"
             android:contentDescription="@string/next_sentence"
             android:scaleType="fitCenter"
-            android:src="@drawable/baseline_fast_forward_white_24" />
+            android:src="@drawable/ic_baseline_fast_forward_24"
+            app:tint="@android:color/white" />
 
         <ImageButton
             android:id="@+id/next_chapter"
@@ -129,7 +133,8 @@
             android:background="@android:color/transparent"
             android:contentDescription="@string/next_chapter"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_skip_next_white_24dp" />
+            android:src="@drawable/ic_baseline_skip_next_24"
+            app:tint="@android:color/white" />
 
 
     </LinearLayout>

@@ -7,7 +7,7 @@
 
     <item
         android:id="@+id/bookmark"
-        android:icon="@drawable/icon_bookmark"
+        android:icon="@drawable/ic_baseline_bookmark_24"
         android:title="@string/epubactivity_set_bookmark"
         android:orderInCategory="70"
         app:showAsAction="always"
@@ -15,7 +15,7 @@
 
     <item
         android:id="@+id/drm"
-        android:icon="@drawable/icon_drm"
+        android:icon="@drawable/ic_baseline_enhanced_encryption_24"
         android:title="@string/epubactivity_drm_info"
         android:orderInCategory="90"
         app:showAsAction="always"
@@ -24,7 +24,7 @@
 
     <item
         android:id="@+id/toc"
-        android:icon="@drawable/icon_menu"
+        android:icon="@drawable/ic_outline_menu_24"
         android:title="@string/epubactivity_book_nav_options"
         android:orderInCategory="100"
         app:showAsAction="always"

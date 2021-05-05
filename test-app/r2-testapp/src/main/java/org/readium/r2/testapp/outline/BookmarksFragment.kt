@@ -114,7 +114,7 @@ class BookmarkAdapter(private val publication: Publication, private val onBookma
 
             bookmarkOverflow.setOnClickListener {
 
-                val popupMenu = PopupMenu(bookmarkOverflow.context, bookmarkChapter)
+                val popupMenu = PopupMenu(bookmarkOverflow.context, bookmarkOverflow)
                 popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
                 popupMenu.show()
 

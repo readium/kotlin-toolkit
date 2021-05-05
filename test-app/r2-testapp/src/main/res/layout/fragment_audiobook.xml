@@ -118,8 +118,9 @@
         android:layout_weight="1"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_skip_previous_white_24dp"
-        android:contentDescription="TODO" />
+        android:src="@drawable/ic_baseline_skip_previous_24"
+        android:contentDescription="@string/previous_chapter"
+        app:tint="@android:color/white" />
 
     <ImageButton
         android:id="@+id/fast_back"
@@ -128,8 +129,9 @@
         android:layout_weight="1"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
-        android:src="@drawable/baseline_replay_10_white_24"
-        android:contentDescription="TODO" />
+        android:src="@drawable/ic_baseline_replay_10_24"
+        android:contentDescription="@string/replay_10"
+        app:tint="@android:color/white" />
 
 
     <ImageButton
@@ -139,8 +141,9 @@
         android:layout_weight="1"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_play_arrow_white_24dp"
-        android:contentDescription="TODO" />
+        android:src="@drawable/ic_baseline_play_arrow_24"
+        android:contentDescription="@string/play_and_pause"
+        app:tint="@android:color/white" />
 
     <ImageButton
         android:id="@+id/fast_forward"
@@ -149,8 +152,9 @@
         android:layout_weight="1"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
-        android:src="@drawable/baseline_forward_10_white_24"
-        android:contentDescription="TODO" />
+        android:src="@drawable/ic_baseline_forward_10_24"
+        android:contentDescription="@string/forward_10"
+        app:tint="@android:color/white" />
 
     <ImageButton
         android:id="@+id/next_chapter"
@@ -159,8 +163,9 @@
         android:layout_weight="1"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_skip_next_white_24dp"
-        android:contentDescription="TODO" />
+        android:src="@drawable/ic_baseline_skip_next_24"
+        android:contentDescription="@string/next_chapter"
+        app:tint="@android:color/white" />
 
 
   </LinearLayout>

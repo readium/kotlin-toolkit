@@ -15,7 +15,7 @@
 
     <item
         android:id="@+id/search"
-        android:icon="@drawable/baseline_search_white_24"
+        android:icon="@drawable/ic_baseline_search_24"
         android:title="@string/epubactivity_search"
         android:orderInCategory="20"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
@@ -24,7 +24,7 @@
 
     <item
         android:id="@+id/screen_reader"
-        android:icon="@drawable/icon_audio"
+        android:icon="@drawable/ic_baseline_headphones_24"
         android:title="@string/epubactivity_read_aloud_start"
         android:orderInCategory="30"
         app:showAsAction="always"
@@ -32,7 +32,7 @@
 
     <item
         android:id="@+id/settings"
-        android:icon="@drawable/icon_settings"
+        android:icon="@drawable/ic_outline_format_size_24"
         android:title="@string/epubactivity_settings"
         android:orderInCategory="80"
         app:showAsAction="always"

@@ -111,7 +111,7 @@ class HighlightAdapter(private val publication: Publication,
 
             highlightOverflow.setOnClickListener {
 
-                val popupMenu = PopupMenu(highlightOverflow.context, highlightChapter)
+                val popupMenu = PopupMenu(highlightOverflow.context, highlightOverflow)
                 popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
                 popupMenu.show()
 

@@ -10,7 +10,6 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
@@ -18,9 +17,9 @@ import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
-import org.readium.r2.testapp.R
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.testapp.R
 import org.readium.r2.testapp.epub.EpubActivity
 import org.readium.r2.testapp.reader.ReaderViewModel
 
@@ -95,9 +94,9 @@ class ScreenReaderFragment : Fragment(R.layout.fragment_screen_reader), ScreenRe
 
     override fun onPlayStateChanged(playing: Boolean) {
         if (playing) {
-            view?.findViewById<ImageButton>(R.id.play_pause)?.setImageResource(android.R.drawable.ic_media_pause)
+            view?.findViewById<ImageButton>(R.id.play_pause)?.setImageResource(R.drawable.ic_baseline_pause_24)
         } else {
-            view?.findViewById<ImageButton>(R.id.play_pause)?.setImageResource(android.R.drawable.ic_media_play)
+            view?.findViewById<ImageButton>(R.id.play_pause)?.setImageResource(R.drawable.ic_baseline_play_arrow_24)
         }
     }
 

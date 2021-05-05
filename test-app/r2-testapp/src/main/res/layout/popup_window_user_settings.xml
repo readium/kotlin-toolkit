@@ -57,8 +57,9 @@
                             android:layout_width="14dp"
                             android:layout_height="20dp"
                             android:layout_weight="1"
-                            app:srcCompat="@drawable/icon_decrease"
-                            android:contentDescription="TODO" />
+                            app:srcCompat="@drawable/ic_outline_light_mode_24"
+                            android:contentDescription="TODO"
+                            app:tint="@android:color/black" />
 
                         <SeekBar
                             android:id="@+id/brightness"
@@ -72,8 +73,9 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_weight="1"
-                            app:srcCompat="@drawable/icon_increse"
-                            android:contentDescription="TODO" />
+                            app:srcCompat="@drawable/ic_outline_wb_sunny_24"
+                            android:contentDescription="TODO"
+                            app:tint="@android:color/black" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -203,7 +205,8 @@
                             android:layout_width="14dp"
                             android:layout_height="20dp"
                             android:layout_weight="10"
-                            app:srcCompat="@android:drawable/ic_media_rew" />
+                            app:srcCompat="@drawable/ic_baseline_fast_rewind_24"
+                            app:tint="@android:color/black" />
 
                         <SeekBar
                             android:id="@+id/TTS_speech_speed"
@@ -217,7 +220,8 @@
                             android:layout_width="14dp"
                             android:layout_height="20dp"
                             android:layout_weight="10"
-                            app:srcCompat="@android:drawable/ic_media_ff" />
+                            app:srcCompat="@drawable/ic_baseline_fast_forward_24"
+                            app:tint="@android:color/black" />
                     </LinearLayout>
 
 
@@ -256,10 +260,11 @@
                             android:background="@drawable/rbtn_selector"
                             android:button="@null"
                             android:checked="true"
-                            android:drawableTop="@drawable/icon_justify_white"
+                            android:drawableTop="@drawable/ic_outline_format_align_justify_24"
                             android:gravity="center"
-                            android:padding="10dp"
-                            android:textColor="@drawable/rbtn_textcolor_selector" />
+                            android:padding="5dp"
+                            android:textColor="@drawable/rbtn_textcolor_selector"
+                            android:drawableTint="@drawable/rbtn_textcolor_selector" />
 
                         <RadioButton
                             android:id="@+id/alignment_left"
@@ -268,10 +273,11 @@
                             android:layout_weight="1"
                             android:background="@drawable/rbtn_selector"
                             android:button="@null"
-                            android:drawableTop="@drawable/icon_left"
+                            android:drawableTop="@drawable/ic_outline_format_align_left_24"
                             android:gravity="center"
-                            android:padding="10dp"
-                            android:textColor="@drawable/rbtn_textcolor_selector" />
+                            android:padding="5dp"
+                            android:textColor="@drawable/rbtn_textcolor_selector"
+                            android:drawableTint="@drawable/rbtn_textcolor_selector" />
 
                     </RadioGroup>
 
@@ -358,7 +364,8 @@
                             android:scaleType="fitCenter"
                             android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_pm_decrease"
-                            android:src="@drawable/icon_minus" />
+                            android:src="@drawable/ic_outline_remove_24"
+                            app:tint="@android:color/black" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -389,7 +396,8 @@
                             android:scaleType="fitCenter"
                             android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_pm_increase"
-                            android:src="@drawable/icon_plus" />
+                            android:src="@drawable/ic_outline_add_24"
+                            app:tint="@android:color/black" />
 
                     </LinearLayout>
 
@@ -409,7 +417,8 @@
                             android:scaleType="fitCenter"
                             android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_ws_decrease"
-                            android:src="@drawable/icon_minus" />
+                            android:src="@drawable/ic_outline_remove_24"
+                            app:tint="@android:color/black" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -440,7 +449,8 @@
                             android:scaleType="fitCenter"
                             android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_ws_increase"
-                            android:src="@drawable/icon_plus" />
+                            android:src="@drawable/ic_outline_add_24"
+                            app:tint="@android:color/black" />
 
                     </LinearLayout>
 
@@ -461,7 +471,8 @@
                             android:scaleType="fitCenter"
                             android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_ls_decrease"
-                            android:src="@drawable/icon_minus" />
+                            android:src="@drawable/ic_outline_remove_24"
+                            app:tint="@android:color/black" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -495,7 +506,8 @@
                             android:scaleType="fitCenter"
                             android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_ls_increase"
-                            android:src="@drawable/icon_plus" />
+                            android:src="@drawable/ic_outline_add_24"
+                            app:tint="@android:color/black" />
 
                     </LinearLayout>
 
@@ -514,7 +526,8 @@
                             android:scaleType="fitCenter"
                             android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_lh_decrease"
-                            android:src="@drawable/icon_minus" />
+                            android:src="@drawable/ic_outline_remove_24"
+                            app:tint="@android:color/black" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -541,10 +554,11 @@
                             android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:backgroundTint="@android:color/white"
-                            android:scaleType="fitCenter"
-                            android:padding="16dp"
                             android:contentDescription="@string/usersettings_description_lh_increase"
-                            android:src="@drawable/icon_plus" />
+                            android:padding="16dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_outline_add_24"
+                            app:tint="@android:color/black" />
 
                     </LinearLayout>
 

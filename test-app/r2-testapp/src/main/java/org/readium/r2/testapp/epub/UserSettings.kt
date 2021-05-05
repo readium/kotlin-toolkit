@@ -398,21 +398,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
             }
         } ?: run {
             alignmentRadios[alignment.index].isChecked = true
-            alignmentRadios[0].setCompoundDrawablesWithIntrinsicBounds(null,
-                    (if (alignment.index == 0) context.getDrawable(R.drawable.icon_justify_white) else context.getDrawable(R.drawable.icon_justify)),
-                    null, null)
-            alignmentRadios[1].setCompoundDrawablesWithIntrinsicBounds(null,
-                    (if (alignment.index == 0) context.getDrawable(R.drawable.icon_left) else context.getDrawable(R.drawable.icon_left_white)),
-                    null, null)
 
             alignmentGroup.setOnCheckedChangeListener { _, i ->
                 alignment.index = findIndexOfId(i, alignmentRadios)
-                alignmentRadios[0].setCompoundDrawablesWithIntrinsicBounds(null,
-                        (if (alignment.index == 0) context.getDrawable(R.drawable.icon_justify_white) else context.getDrawable(R.drawable.icon_justify)),
-                        null, null)
-                alignmentRadios[1].setCompoundDrawablesWithIntrinsicBounds(null,
-                        (if (alignment.index == 0) context.getDrawable(R.drawable.icon_left) else context.getDrawable(R.drawable.icon_left_white)),
-                        null, null)
                 publisherDefaultSwitch.isChecked = false
                 updateEnumerable(alignment)
                 updateViewCSS(TEXT_ALIGNMENT_REF)

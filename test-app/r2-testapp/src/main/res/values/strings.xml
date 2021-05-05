@@ -196,4 +196,6 @@
     <string name="play_and_pause">Play and pause</string>
     <string name="previous_sentence">Previous sentence</string>
     <string name="previous_chapter">Previous chapter</string>
+    <string name="replay_10">Replay previous 10 seconds</string>
+    <string name="forward_10">Fast forward 10 seconds</string>
 </resources>
