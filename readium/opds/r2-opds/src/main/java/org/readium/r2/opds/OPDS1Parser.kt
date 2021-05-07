@@ -9,7 +9,6 @@
 
 package org.readium.r2.opds
 
-import com.github.kittinunf.fuel.Fuel
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import org.joda.time.DateTime
@@ -18,10 +17,14 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.opds.*
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
-import org.readium.r2.shared.promise
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.http.DefaultHttpClient
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.fetchWithDecoder
 import java.net.URL
 
 enum class OPDSParserError {
@@ -45,18 +48,38 @@ object Namespaces {
 class OPDS1Parser {
     companion object {
 
-        fun parseURL(url: URL): Promise<ParseData, Exception> {
-            return Fuel.get(url.toString(), null).promise() then {
-                val (_, _, result) = it
-                this.parse(xmlData = result, url = url)
+        suspend fun parseUrlString(url: String, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+            return client.fetchWithDecoder(HttpRequest(url)) {
+                this.parse(it.body, URL(url))
             }
         }
 
+        suspend fun parseRequest(request: HttpRequest, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+            return client.fetchWithDecoder(request) {
+                this.parse(it.body, URL(request.url))
+            }
+        }
+
+        @Deprecated(
+            "Use `parseRequest` or `parseUrlString` with coroutines instead",
+            ReplaceWith("OPDS1Parser.parseUrlString(url)"),
+            DeprecationLevel.WARNING
+        )
+        fun parseURL(url: URL): Promise<ParseData, Exception> {
+            return DefaultHttpClient().fetchPromise(HttpRequest(url.toString())) then {
+                this.parse(xmlData = it.body, url = url)
+            }
+        }
+
+        @Deprecated(
+            "Use `parseRequest` or `parseUrlString` with coroutines instead",
+            ReplaceWith("OPDS1Parser.parseUrlString(url)"),
+            DeprecationLevel.WARNING
+        )
         @Suppress("unused")
         fun parseURL(headers: MutableMap<String,String>, url: URL): Promise<ParseData, Exception> {
-            return Fuel.get(url.toString(), null).header(headers).promise() then {
-                val (_, _, result) = it
-                this.parse(xmlData = result, url = url)
+            return DefaultHttpClient().fetchPromise(HttpRequest(url = url.toString(), headers = headers)) then {
+                this.parse(xmlData = it.body, url = url)
             }
         }
 
@@ -179,6 +202,67 @@ class OPDS1Parser {
         }
 
         @Suppress("unused")
+        suspend fun retrieveOpenSearchTemplate(feed: Feed): Try<String?, Exception> {
+
+            var openSearchURL: URL? = null
+            var selfMimeType: String? = null
+
+            for (link in feed.links) {
+                if (link.rels.contains("self")) {
+                    if (link.type != null) {
+                        selfMimeType = link.type
+                    }
+                } else if (link.rels.contains("search")) {
+                    openSearchURL = URL(link.href)
+                }
+            }
+
+            val unwrappedURL = openSearchURL?.let {
+                return@let it
+            }
+
+            return DefaultHttpClient().fetchWithDecoder(HttpRequest(unwrappedURL.toString())) {
+
+                val document = XmlParser().parse(it.body.inputStream())
+
+                val urls = document.get("Url", Namespaces.Search)
+
+                var typeAndProfileMatch: ElementNode? = null
+                var typeMatch: ElementNode? = null
+
+                selfMimeType?.let { s ->
+
+                    val selfMimeParams = parseMimeType(mimeTypeString = s)
+                    for (url in urls) {
+                        val urlMimeType = url.getAttr("type") ?: continue
+                        val otherMimeParams = parseMimeType(mimeTypeString = urlMimeType)
+                        if (selfMimeParams.type == otherMimeParams.type) {
+                            if (typeMatch == null) {
+                                typeMatch = url
+                            }
+                            if (selfMimeParams.parameters["profile"] == otherMimeParams.parameters["profile"]) {
+                                typeAndProfileMatch = url
+                                break
+                            }
+                        }
+                    }
+                    val match = typeAndProfileMatch ?: (typeMatch ?: urls[0])
+                    val template = match.getAttr("template")
+
+                    template
+
+                }
+                null
+            }
+
+        }
+
+        @Deprecated(
+            "Use `retrieveOpenSearchTemplate` with coroutines instead",
+            ReplaceWith("OPDS1Parser.retrieveOpenSearchTemplate(feed)"),
+            DeprecationLevel.WARNING
+        )
+        @Suppress("unused")
         fun fetchOpenSearchTemplate(feed: Feed): Promise<String?, Exception> {
 
             var openSearchURL: URL? = null
@@ -198,10 +282,9 @@ class OPDS1Parser {
                 return@let it
             }
 
-            return Fuel.get(unwrappedURL.toString(), null).promise() then {
-                val (_, _, result) = it
+            return DefaultHttpClient().fetchPromise(HttpRequest(unwrappedURL.toString())) then {
 
-                val document = XmlParser().parse(result.inputStream())
+                val document = XmlParser().parse(it.body.inputStream())
 
                 val urls = document.get("Url", Namespaces.Search)
 

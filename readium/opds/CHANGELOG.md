@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Added
+
+* New APIs using coroutines and R2's `HttpClient` instead of Fuel and kovenant (contributed by [@stevenzeck](https://github.com/readium/r2-opds-kotlin/pull/55)).
 
 ## [2.0.0]
 

@@ -9,17 +9,20 @@
 
 package org.readium.r2.opds
 
-import com.github.kittinunf.fuel.Fuel
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.opds.*
-import org.readium.r2.shared.promise
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.http.DefaultHttpClient
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.fetchWithDecoder
 import java.net.URL
 
 enum class OPDS2ParserError {
@@ -36,18 +39,38 @@ class OPDS2Parser {
 
         private lateinit var feed: Feed
 
-        fun parseURL(url: URL): Promise<ParseData, Exception> {
-            return Fuel.get(url.toString(), null).promise() then {
-                val (_, _, result) = it
-                this.parse(result, url)
+        suspend fun parseUrlString(url: String, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+            return client.fetchWithDecoder(HttpRequest(url)) {
+                this.parse(it.body, URL(url))
             }
         }
 
+        suspend fun parseRequest(request: HttpRequest, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+            return client.fetchWithDecoder(request) {
+                this.parse(it.body, URL(request.url))
+            }
+        }
+
+        @Deprecated(
+            "Use `parseRequest` or `parseUrlString` with coroutines instead",
+            ReplaceWith("OPDS2Parser.parseUrlString(url)"),
+            DeprecationLevel.WARNING
+        )
+        fun parseURL(url: URL): Promise<ParseData, Exception> {
+            return DefaultHttpClient().fetchPromise(HttpRequest(url.toString())) then {
+                this.parse(it.body, url)
+            }
+        }
+
+        @Deprecated(
+            "Use `parseRequest` or `parseUrlString` with coroutines instead",
+            ReplaceWith("OPDS2Parser.parseUrlString(url)"),
+            DeprecationLevel.WARNING
+        )
         @Suppress("unused")
-        fun parseURL(headers:MutableMap<String,String>, url: URL): Promise<ParseData, Exception> {
-            return Fuel.get(url.toString(), null).header(headers).promise() then {
-                val (_, _, result) = it
-                this.parse(result, url)
+        fun parseURL(headers: MutableMap<String,String>, url: URL): Promise<ParseData, Exception> {
+            return DefaultHttpClient().fetchPromise(HttpRequest(url = url.toString(), headers = headers)) then {
+                this.parse(it.body, url)
             }
         }
 
