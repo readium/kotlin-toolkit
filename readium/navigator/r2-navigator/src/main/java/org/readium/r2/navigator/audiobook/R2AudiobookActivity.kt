@@ -10,7 +10,6 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
-import kotlinx.android.synthetic.main.activity_r2_audiobook.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,6 +20,7 @@ import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.databinding.ActivityR2AudiobookBinding
 import org.readium.r2.navigator.extensions.withBaseUrl
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.*
@@ -34,6 +34,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(Locator(href = "#", type = ""))
+    private lateinit var binding: ActivityR2AudiobookBinding
 
     private fun notifyCurrentLocation() {
         val locator = publication.readingOrder[currentResource].let { resource ->
@@ -70,7 +71,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         mediaPlayer.goTo(currentResource)
         seek(locator.locations)
 
-        play_pause!!.callOnClick()
+        binding.playPause.callOnClick()
         notifyCurrentLocation()
 
         return true
@@ -86,7 +87,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         }
 
         mediaPlayer.next()
-        play_pause!!.callOnClick()
+        binding.playPause.callOnClick()
         return true
     }
 
@@ -96,7 +97,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         }
 
         mediaPlayer.previous()
-        play_pause!!.callOnClick()
+        binding.playPause.callOnClick()
         return true
     }
 
@@ -131,7 +132,8 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_r2_audiobook)
+        binding = ActivityR2AudiobookBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
@@ -157,7 +159,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 go(publication.readingOrder.first().toLocator())
             }
 
-            seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 /**
                  * Notification that the progress level has changed. Clients can use the fromUser parameter
                  * to distinguish user-initiated changes from those that occurred programmatically.
@@ -198,7 +200,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
             })
 
-            play_pause!!.setOnClickListener {
+            binding.playPause.setOnClickListener {
                 mediaPlayer.let {
                     if (it.isPlaying) {
                         it.pause()
@@ -214,27 +216,27 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 }
             }
 
-            play_pause!!.callOnClick()
+            binding.playPause.callOnClick()
 
-            fast_forward!!.setOnClickListener {
+            binding.fastForward.setOnClickListener {
                 if (startTime.toInt() + forwardTime <= finalTime) {
                     startTime += forwardTime
                     mediaPlayer.seekTo(startTime)
                 }
             }
 
-            fast_back!!.setOnClickListener {
+            binding.fastBack.setOnClickListener {
                 if (startTime.toInt() - backwardTime > 0) {
                     startTime -= backwardTime
                     mediaPlayer.seekTo(startTime)
                 }
             }
 
-            next_chapter!!.setOnClickListener {
+            binding.nextChapter.setOnClickListener {
                 goForward(false) {}
             }
 
-            prev_chapter!!.setOnClickListener {
+            binding.prevChapter.setOnClickListener {
                 goBackward(false) {}
             }
 
@@ -245,46 +247,46 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     private fun updateUI() {
 
         if (currentResource == publication.readingOrder.size - 1) {
-            next_chapter!!.isEnabled = false
-            next_chapter!!.alpha = .5f
+            binding.nextChapter.isEnabled = false
+            binding.nextChapter.alpha = .5f
 
         } else {
-            next_chapter!!.isEnabled = true
-            next_chapter!!.alpha = 1.0f
+            binding.nextChapter.isEnabled = true
+            binding.nextChapter.alpha = 1.0f
         }
         if (currentResource == 0) {
-            prev_chapter!!.isEnabled = false
-            prev_chapter!!.alpha = .5f
+            binding.prevChapter.isEnabled = false
+            binding.prevChapter.alpha = .5f
 
         } else {
-            prev_chapter!!.isEnabled = true
-            prev_chapter!!.alpha = 1.0f
+            binding.prevChapter.isEnabled = true
+            binding.prevChapter.alpha = 1.0f
         }
 
         val current = publication.readingOrder[currentResource]
-        chapterView!!.text = current.title
+        binding.chapterView.text = current.title
 
 
         if (mediaPlayer.isPlaying) {
-            play_pause!!.setImageDrawable(ContextCompat.getDrawable(this@R2AudiobookActivity, R.drawable.ic_pause_white_24dp))
+            binding.playPause.setImageDrawable(ContextCompat.getDrawable(this@R2AudiobookActivity, R.drawable.ic_pause_white_24dp))
         } else {
-            play_pause!!.setImageDrawable(ContextCompat.getDrawable(this@R2AudiobookActivity, R.drawable.ic_play_arrow_white_24dp))
+            binding.playPause.setImageDrawable(ContextCompat.getDrawable(this@R2AudiobookActivity, R.drawable.ic_play_arrow_white_24dp))
         }
 
         finalTime = mediaPlayer.duration
         startTime = mediaPlayer.currentPosition
 
-        seekBar!!.max = finalTime.toInt()
+        binding.seekBar.max = finalTime.toInt()
 
-        chapterTime!!.text = String.format("%d:%d",
+        binding.chapterTime.text = String.format("%d:%d",
                 TimeUnit.MILLISECONDS.toMinutes(finalTime.toLong()),
                 TimeUnit.MILLISECONDS.toSeconds(finalTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(finalTime.toLong())))
 
-        progressTime!!.text = String.format("%d:%d",
+        binding.progressTime.text = String.format("%d:%d",
                 TimeUnit.MILLISECONDS.toMinutes(startTime.toLong()),
                 TimeUnit.MILLISECONDS.toSeconds(startTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(startTime.toLong())))
 
-        seekBar!!.progress = startTime.toInt()
+        binding.seekBar.progress = startTime.toInt()
 
         notifyCurrentLocation()
     }
@@ -339,14 +341,14 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                     currentResource++
                 }
                 mediaPlayer.next()
-                play_pause!!.callOnClick()
+                binding.playPause.callOnClick()
             }, 100)
         } else if (currentPosition > 0 && currentResource == publication.readingOrder.size - 1) {
             mediaPlayer.pause()
-            play_pause!!.setImageDrawable(ContextCompat.getDrawable(this@R2AudiobookActivity, R.drawable.ic_play_arrow_white_24dp))
+            binding.playPause.setImageDrawable(ContextCompat.getDrawable(this@R2AudiobookActivity, R.drawable.ic_play_arrow_white_24dp))
         } else {
             mediaPlayer.pause()
-            play_pause!!.setImageDrawable(ContextCompat.getDrawable(this@R2AudiobookActivity, R.drawable.ic_play_arrow_white_24dp))
+            binding.playPause.setImageDrawable(ContextCompat.getDrawable(this@R2AudiobookActivity, R.drawable.ic_play_arrow_white_24dp))
         }
     }
 
@@ -356,10 +358,10 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 mediaPlayer.let {
                     startTime = it.mediaPlayer.currentPosition.toDouble()
                 }
-                progressTime!!.text = String.format("%d:%d",
+                binding.progressTime.text = String.format("%d:%d",
                         TimeUnit.MILLISECONDS.toMinutes(startTime.toLong()),
                         TimeUnit.MILLISECONDS.toSeconds(startTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(startTime.toLong())))
-                seekBar!!.progress = startTime.toInt()
+                binding.seekBar.progress = startTime.toInt()
 
                 notifyCurrentLocation()
 

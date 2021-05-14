@@ -30,6 +30,7 @@ import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.R2WebView
+import org.readium.r2.navigator.databinding.ViewpagerFragmentEpubBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.extensions.htmlId
 import org.readium.r2.shared.SCROLL_REF
@@ -50,13 +51,17 @@ class R2EpubPageFragment : Fragment() {
     private lateinit var containerView: View
     private lateinit var preferences: SharedPreferences
 
+    private var _binding: ViewpagerFragmentEpubBinding? = null
+    private val binding get() = _binding!!
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val navigatorFragment = parentFragment as EpubNavigatorFragment
-        containerView = inflater.inflate(R.layout.viewpager_fragment_epub, container, false)
+        _binding = ViewpagerFragmentEpubBinding.inflate(inflater, container, false)
+        containerView = binding.root
         preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
 
-        val webView = containerView.findViewById(R.id.webView) as R2WebView
+        val webView = binding.webView
         this.webView = webView
 
         webView.navigator = parentFragment as Navigator
@@ -231,6 +236,11 @@ class R2EpubPageFragment : Fragment() {
             wv.removeAllViews()
             wv.destroy()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun setupPadding() {

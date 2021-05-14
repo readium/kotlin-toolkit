@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -64,6 +65,9 @@ class ImageNavigatorFragment private constructor(
     internal var currentPagerPosition: Int = 0
     internal var resources: List<String> = emptyList()
 
+    private var _binding: ActivityR2ViewpagerBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreate(savedInstanceState: Bundle?) {
         childFragmentManager.fragmentFactory = createFragmentFactory {
             R2CbzPageFragment(publication) { x, y -> this.listener?.onTap(PointF(x, y)) }
@@ -73,10 +77,11 @@ class ImageNavigatorFragment private constructor(
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         currentActivity = requireActivity()
-        val view = inflater.inflate(R.layout.activity_r2_viewpager, container, false)
+        _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
+        val view = binding.root
 
         preferences = requireContext().getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
-        resourcePager = view.findViewById(R.id.resourcePager)
+        resourcePager = binding.resourcePager
         resourcePager.type = Publication.TYPE.CBZ
 
         positions = runBlocking { publication.positions() }
@@ -116,6 +121,11 @@ class ImageNavigatorFragment private constructor(
         // OnPageChangeListener.onPageSelected is not called on the first page of the book, so we
         // trigger the locationDidChange event manually.
         notifyCurrentLocation()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     @Deprecated("Use goForward instead", replaceWith = ReplaceWith("goForward()"), level = DeprecationLevel.ERROR)

@@ -23,6 +23,8 @@ import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.databinding.FragmentFxllayoutDoubleBinding
+import org.readium.r2.navigator.databinding.FragmentFxllayoutSingleBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
@@ -37,18 +39,25 @@ class R2FXLPageFragment : Fragment() {
 
     private var webViews = mutableListOf<WebView>()
 
+    private var _doubleBinding: FragmentFxllayoutDoubleBinding? = null
+    private val doubleBinding get() = _doubleBinding!!
+
+    private var _singleBinding: FragmentFxllayoutSingleBinding? = null
+    private val singleBinding get() = _singleBinding!!
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         secondResourceUrl?.let {
-            val view: View = inflater.inflate(R.layout.fragment_fxllayout_double, container, false)
+            _doubleBinding = FragmentFxllayoutDoubleBinding.inflate(inflater, container, false)
+            val view: View = doubleBinding.root
             view.setPadding(0, 0, 0, 0)
 
-            val r2FXLLayout = view.findViewById<View>(R.id.r2FXLLayout) as R2FXLLayout
+            val r2FXLLayout = doubleBinding.r2FXLLayout
             r2FXLLayout.isAllowParentInterceptOnScaled = true
 
-            val left = view.findViewById<View>(R.id.firstWebView) as R2BasicWebView
-            val right = view.findViewById<View>(R.id.secondWebView) as R2BasicWebView
+            val left = doubleBinding.firstWebView
+            val right = doubleBinding.secondWebView
 
             setupWebView(left, firstResourceUrl)
             setupWebView(right, secondResourceUrl)
@@ -62,13 +71,14 @@ class R2FXLPageFragment : Fragment() {
 
             return view
         }?:run {
-            val view: View = inflater.inflate(R.layout.fragment_fxllayout_single, container, false)
+            _singleBinding = FragmentFxllayoutSingleBinding.inflate(inflater, container, false)
+            val view: View = singleBinding.root
             view.setPadding(0, 0, 0, 0)
 
-            val r2FXLLayout = view.findViewById<View>(R.id.r2FXLLayout) as R2FXLLayout
+            val r2FXLLayout = singleBinding.r2FXLLayout
             r2FXLLayout.isAllowParentInterceptOnScaled = true
 
-            val webview = view.findViewById<View>(R.id.webViewSingle) as R2BasicWebView
+            val webview = singleBinding.webViewSingle
 
             setupWebView(webview, firstResourceUrl)
 
@@ -93,6 +103,12 @@ class R2FXLPageFragment : Fragment() {
             wv.removeAllViews()
             wv.destroy()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _singleBinding = null
+        _doubleBinding = null
     }
 
     @SuppressLint("SetJavaScriptEnabled")

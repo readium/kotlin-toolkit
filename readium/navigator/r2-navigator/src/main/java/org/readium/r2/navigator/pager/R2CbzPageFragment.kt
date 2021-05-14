@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
+import org.readium.r2.navigator.databinding.ViewpagerFragmentCbzBinding
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import kotlin.coroutines.CoroutineContext
@@ -39,10 +40,14 @@ class R2CbzPageFragment(private val publication: Publication, private val onTapL
     private lateinit var containerView: View
     private lateinit var photoView: PhotoView
 
+    private var _binding: ViewpagerFragmentCbzBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        containerView = inflater.inflate(R.layout.viewpager_fragment_cbz, container, false)
-        photoView = containerView.findViewById(R.id.imageView)
+        _binding = ViewpagerFragmentCbzBinding.inflate(inflater, container, false)
+        containerView = binding.root
+        photoView = binding.imageView
         photoView.setOnViewTapListener { _, x, y -> onTapListener(x, y) }
 
         setupPadding()
@@ -56,6 +61,11 @@ class R2CbzPageFragment(private val publication: Publication, private val onTapL
        }
 
        return containerView
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun setupPadding() {

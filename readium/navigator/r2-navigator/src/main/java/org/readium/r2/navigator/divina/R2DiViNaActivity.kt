@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.databinding.ActivityR2DivinaBinding
 import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Publication
@@ -45,13 +46,16 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, 
 
     lateinit var divinaWebView: R2BasicWebView
 
+    private lateinit var binding: ActivityR2DivinaBinding
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_r2_divina)
+        binding = ActivityR2DivinaBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
-        divinaWebView = findViewById(R.id.divinaWebView)
+        divinaWebView = binding.divinaWebView
         //divinaWebView.listener = this
 
         publication = intent.getPublication(this)
