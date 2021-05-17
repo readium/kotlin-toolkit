@@ -14,8 +14,6 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
-import nl.komponents.kovenant.android.startKovenant
-import nl.komponents.kovenant.android.stopKovenant
 import org.readium.r2.shared.Injectable
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
@@ -28,9 +26,6 @@ class R2App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Configure Kovenant with standard dispatchers
-        // suitable for an Android environment.
-        startKovenant()
         if (DEBUG) Timber.plant(Timber.DebugTree())
         val s = ServerSocket(if (DEBUG) 8080 else 0)
         s.close()
@@ -53,11 +48,6 @@ class R2App : Application() {
 
     override fun onTerminate() {
         super.onTerminate()
-        // Dispose of the Kovenant thread pools.
-        // For quicker shutdown you could use
-        // `force=true`, which ignores all current
-        // scheduled tasks
-        stopKovenant()
         stopServer()
     }
 

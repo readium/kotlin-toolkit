@@ -18,31 +18,18 @@ import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.github.kittinunf.fuel.Fuel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.launch
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.then
-import nl.komponents.kovenant.ui.failUi
-import nl.komponents.kovenant.ui.successUi
-import org.json.JSONObject
-import org.readium.r2.opds.OPDS1Parser
-import org.readium.r2.opds.OPDS2Parser
-import org.readium.r2.shared.opds.ParseData
-import org.readium.r2.shared.promise
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.domain.model.Catalog
-import java.net.URL
 
 
 class CatalogFeedListFragment : Fragment() {
 
-    private val catalogViewModel: CatalogViewModel by viewModels()
+    private val catalogFeedListViewModel: CatalogFeedListViewModel by viewModels()
     private lateinit var catalogsAdapter: CatalogFeedListAdapter
 
     override fun onCreateView(
@@ -50,6 +37,7 @@ class CatalogFeedListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        catalogFeedListViewModel.eventChannel.receive(this) { handleEvent(it) }
         return inflater.inflate(R.layout.fragment_catalog_feed_list, container, false)
     }
 
@@ -72,7 +60,7 @@ class CatalogFeedListFragment : Fragment() {
             )
         }
 
-        catalogViewModel.catalogs.observe(viewLifecycleOwner, {
+        catalogFeedListViewModel.catalogs.observe(viewLifecycleOwner, {
             catalogsAdapter.submitList(it)
         })
 
@@ -99,9 +87,9 @@ class CatalogFeedListFragment : Fragment() {
                 type = 1
             )
 
-            catalogViewModel.insertCatalog(oPDS2Catalog)
-            catalogViewModel.insertCatalog(oTBCatalog)
-            catalogViewModel.insertCatalog(sEBCatalog)
+            catalogFeedListViewModel.insertCatalog(oPDS2Catalog)
+            catalogFeedListViewModel.insertCatalog(oTBCatalog)
+            catalogFeedListViewModel.insertCatalog(sEBCatalog)
         }
 
         view.findViewById<FloatingActionButton>(R.id.catalogFeed_addCatalogFab).setOnClickListener {
@@ -123,49 +111,30 @@ class CatalogFeedListFragment : Fragment() {
                 } else if (!URLUtil.isValidUrl(url?.text.toString())) {
                     url?.error = getString(R.string.invalid_url)
                 } else {
-                    val parseData: Promise<ParseData, Exception>?
-                    parseData = parseURL(URL(url?.text.toString()))
-                    parseData.successUi { data ->
-                        val catalog1 = Catalog(
-                            title = title?.text.toString(),
-                            href = url?.text.toString(),
-                            type = data.type
-                        )
-                        catalogViewModel.insertCatalog(catalog1)
-                    }
-                    parseData.failUi {
-                        Snackbar.make(requireView(), getString(R.string.catalog_parse_error), Snackbar.LENGTH_LONG)
-                    }
+                    catalogFeedListViewModel.parseCatalog(
+                        url?.text.toString(),
+                        title?.text.toString()
+                    )
                     alertDialog.dismiss()
                 }
             }
         }
     }
 
-    private fun parseURL(url: URL): Promise<ParseData, Exception> {
-        return Fuel.get(url.toString(), null).promise() then {
-            val (_, _, result) = it
-            if (isJson(result)) {
-                OPDS2Parser.parse(result, url)
-            } else {
-                OPDS1Parser.parse(result, url)
+    private fun handleEvent(event: CatalogFeedListViewModel.Event) {
+        val message =
+            when (event) {
+                is CatalogFeedListViewModel.Event.FeedListEvent.CatalogParseFailed -> getString(R.string.catalog_parse_error)
             }
-        }
-    }
-
-    private fun isJson(byteArray: ByteArray): Boolean {
-        return try {
-            JSONObject(String(byteArray))
-            true
-        } catch (e: Exception) {
-            false
-        }
+        Snackbar.make(
+            requireView(),
+            message,
+            Snackbar.LENGTH_LONG
+        ).show()
     }
 
     private fun deleteCatalogModel(catalogModelId: Long) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            catalogViewModel.deleteCatalog(catalogModelId)
-        }
+        catalogFeedListViewModel.deleteCatalog(catalogModelId)
     }
 
     private fun onLongClick(catalog: Catalog) {

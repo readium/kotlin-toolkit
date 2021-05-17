@@ -38,7 +38,6 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
-import org.readium.r2.testapp.permissions.*
 import org.readium.r2.testapp.reader.ReaderContract
 import timber.log.Timber
 import java.io.File

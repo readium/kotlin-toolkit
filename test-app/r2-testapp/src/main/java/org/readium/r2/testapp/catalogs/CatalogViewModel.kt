@@ -16,19 +16,19 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import nl.komponents.kovenant.Promise
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.shared.publication.services.cover
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.testapp.R2App
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.opds.OPDSDownloader
-import org.readium.r2.testapp.opds.OpdsDownloadResult
 import org.readium.r2.testapp.utils.EventChannel
 import timber.log.Timber
 import java.io.File
@@ -40,9 +40,7 @@ import java.net.URL
 
 class CatalogViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val catalogDao = BookDatabase.getDatabase(application).catalogDao()
     private val bookDao = BookDatabase.getDatabase(application).booksDao()
-    private val repository = CatalogRepository(catalogDao)
     private val bookRepository = BookRepository(bookDao)
     private var opdsDownloader = OPDSDownloader(application.applicationContext)
     private var r2Directory = R2App.R2DIRECTORY
@@ -51,33 +49,24 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     val parseData = MutableLiveData<ParseData>()
     val showProgressBar = ObservableBoolean()
 
-    val catalogs = repository.getCatalogsFromDatabase()
-
-    fun insertCatalog(catalog: Catalog) = viewModelScope.launch {
-        repository.insertCatalog(catalog)
-    }
-
-    fun deleteCatalog(id: Long) = viewModelScope.launch {
-        repository.deleteCatalog(id)
-    }
-
-    fun parseCatalog(catalog: Catalog) {
-        var parsePromise: Promise<ParseData, Exception>? = null
+    fun parseCatalog(catalog: Catalog) = viewModelScope.launch {
+        var parseRequest: Try<ParseData, Exception>? = null
         catalog.href.let {
+            val request = HttpRequest(it)
             try {
-                parsePromise = if (catalog.type == 1) {
-                    OPDS1Parser.parseURL(URL(it))
+                parseRequest = if (catalog.type == 1) {
+                    OPDS1Parser.parseRequest(request)
                 } else {
-                    OPDS2Parser.parseURL(URL(it))
+                    OPDS2Parser.parseRequest(request)
                 }
             } catch (e: MalformedURLException) {
                 eventChannel.send(Event.FeedEvent.CatalogParseFailed)
             }
         }
-        parsePromise?.success {
+        parseRequest?.onSuccess {
             parseData.postValue(it)
         }
-        parsePromise?.fail {
+        parseRequest?.onFailure {
             Timber.e(it)
             eventChannel.send(Event.FeedEvent.CatalogParseFailed)
         }
@@ -87,17 +76,17 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         showProgressBar.set(true)
         val downloadUrl = getDownloadURL(publication)
         val publicationUrl = opdsDownloader.publicationUrl(downloadUrl.toString())
-        when (publicationUrl) {
-            is OpdsDownloadResult.OnSuccess -> {
-                val id = addPublicationToDatabase(publicationUrl.data.first, "epub", publication)
-                if (id != -1L) {
-                    detailChannel.send(Event.DetailEvent.ImportPublicationSuccess)
-                } else {
-                    detailChannel.send(Event.DetailEvent.ImportPublicationFailed)
-                }
+        publicationUrl.onSuccess {
+            val id = addPublicationToDatabase(it.first, "epub", publication)
+            if (id != -1L) {
+                detailChannel.send(Event.DetailEvent.ImportPublicationSuccess)
+            } else {
+                detailChannel.send(Event.DetailEvent.ImportPublicationFailed)
             }
-            is OpdsDownloadResult.OnFailure -> detailChannel.send(Event.DetailEvent.ImportPublicationFailed)
         }
+            .onFailure {
+                detailChannel.send(Event.DetailEvent.ImportPublicationFailed)
+            }
 
         showProgressBar.set(false)
     }
