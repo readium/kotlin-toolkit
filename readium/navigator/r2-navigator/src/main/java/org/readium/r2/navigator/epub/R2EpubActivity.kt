@@ -235,20 +235,21 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
     override fun rectangleForHighlightWithID(id: String, callback: (Rect?) -> Unit) {
         currentFragment?.webView?.rectangleForHighlightWithID(id) {
-            val rect = JSONObject(it).run {
+            val rect =
                 try {
-                    val display = windowManager.defaultDisplay
-                    val metrics = DisplayMetrics()
-                    display.getMetrics(metrics)
-                    val left = getDouble("left")
-                    val width = getDouble("width")
-                    val top = getDouble("top") * metrics.density
-                    val height = getDouble("height") * metrics.density
-                    Rect(left.toInt(), top.toInt(), width.toInt() + left.toInt(), top.toInt() + height.toInt())
+                    with(JSONObject(it)) {
+                        val display = windowManager.defaultDisplay
+                        val metrics = DisplayMetrics()
+                        display.getMetrics(metrics)
+                        val left = getDouble("left")
+                        val width = getDouble("width")
+                        val top = getDouble("top") * metrics.density
+                        val height = getDouble("height") * metrics.density
+                        Rect(left.toInt(), top.toInt(), width.toInt() + left.toInt(), top.toInt() + height.toInt())
+                    }
                 } catch (e: JSONException) {
                     null
                 }
-            }
             callback(rect)
         }
     }
