@@ -179,21 +179,29 @@ class EpubActivity : R2EpubActivity() {
                 val currentFragment = ((resourcePager.adapter as R2PagerAdapter).mFragments.get((resourcePager.adapter as R2PagerAdapter).getItemId(resourcePager.currentItem))) as? R2EpubPageFragment
 
                 currentFragment?.webView?.getCurrentSelectionRect {
-                    val rect = JSONObject(it).run {
+                    val rect =
                         try {
-                            val display = windowManager.defaultDisplay
-                            val metrics = DisplayMetrics()
-                            display.getMetrics(metrics)
-                            val left = getDouble("left")
-                            val width = getDouble("width")
-                            val top = getDouble("top") * metrics.density
-                            val height = getDouble("height") * metrics.density
-                            Rect(left.toInt(), top.toInt(), width.toInt() + left.toInt(), top.toInt() + height.toInt())
+                            with(JSONObject(it)) {
+                                val display = windowManager.defaultDisplay
+                                val metrics = DisplayMetrics()
+                                display.getMetrics(metrics)
+                                val left = getDouble("left")
+                                val width = getDouble("width")
+                                val top = getDouble("top") * metrics.density
+                                val height = getDouble("height") * metrics.density
+                                Rect(
+                                    left.toInt(),
+                                    top.toInt(),
+                                    width.toInt() + left.toInt(),
+                                    top.toInt() + height.toInt()
+                                )
+                            }
                         } catch (e: JSONException) {
                             null
                         }
+                    if (rect != null) {
+                        showHighlightPopup(size = rect)
                     }
-                    showHighlightPopup(size = rect)
                 }
                 true
             }
@@ -205,7 +213,7 @@ class EpubActivity : R2EpubActivity() {
         this.mode = mode
     }
 
-    private fun showHighlightPopup(highlightID: String? = null, size: Rect?) {
+    private fun showHighlightPopup(highlightID: String? = null, size: Rect) {
         popupWindow?.let {
             if (it.isShowing) {
                 return
@@ -373,8 +381,10 @@ class EpubActivity : R2EpubActivity() {
     }
 
     override fun highlightActivated(id: String) {
-        rectangleForHighlightWithID(id) {
-            showHighlightPopup(id, it)
+        rectangleForHighlightWithID(id) { rect ->
+            if (rect != null) {
+                showHighlightPopup(id, rect)
+            }
         }
     }
 
