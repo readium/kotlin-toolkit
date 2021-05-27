@@ -14,8 +14,8 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.use
 import timber.log.Timber
-import java.lang.IllegalStateException
 import kotlin.math.ceil
 
 suspend fun Publication.checkDecryption() {

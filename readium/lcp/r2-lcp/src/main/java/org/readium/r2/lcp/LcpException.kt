@@ -12,7 +12,7 @@ import org.readium.r2.shared.UserException
 import java.net.SocketTimeoutException
 import java.util.*
 
-sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? = null, cause: Throwable? = null) : UserException(userMessageId, args, quantity, cause) {
+sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? = null, cause: Throwable? = null) : UserException(userMessageId, quantity, *args, cause = cause) {
     constructor(@StringRes userMessageId: Int, vararg args: Any, cause: Throwable? = null) : this(userMessageId, *args, quantity = null, cause = cause)
     constructor(@PluralsRes userMessageId: Int, quantity: Int, vararg args: Any, cause: Throwable? = null) : this(userMessageId, *args, quantity = quantity, cause = cause)
 
