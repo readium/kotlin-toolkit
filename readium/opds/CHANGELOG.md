@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.
 
 * New APIs using coroutines and R2's `HttpClient` instead of Fuel and kovenant (contributed by [@stevenzeck](https://github.com/readium/r2-opds-kotlin/pull/55)).
 
+### Fixed
+
+* Links in an OPDS 2 feed are normalized to the feed base URL.
+
+
 ## [2.0.0]
 
 ### Changed
