@@ -24,6 +24,7 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer

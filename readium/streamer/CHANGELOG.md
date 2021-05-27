@@ -2,9 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-**Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
+**Warning:** Features marked as *alpha* may change or be removed in a future release without notice. Use with caution.
 
-<!--## [Unreleased]-->
+## [Unreleased]
+
+### Added
+
+* EPUB publications implement a `SearchService` to search through the content.
+
 
 ## [2.0.0]
 
@@ -62,7 +67,7 @@ All notable changes to this project will be documented in this file.
   * Get the visible position from the current `Locator` with `locations.position`.
   * The total number of positions can be retrieved with `publication.positions().size`. It is a suspending function because computing positions the first time can be expensive. 
 * `ReadiumWebPubParser` to parse all Readium Web Publication profiles, including [Audiobooks](https://readium.org/webpub-manifest/extensions/audiobook.html), [LCP for Audiobooks](https://readium.org/lcp-specs/notes/lcp-for-audiobooks.html) and [LCP for PDF](https://readium.org/lcp-specs/notes/lcp-for-pdf.html). It parses both manifests and packages.
-* (*Experimental*) `PDFParser` to parse single PDF documents.
+* (*alpha*) `PDFParser` to parse single PDF documents.
   * The PDF parser is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid/), which may increase the size of your apps. Please open an issue if this is a problem for you, as we are considering different solutions to fix this in a future release.
 
 ### Changed

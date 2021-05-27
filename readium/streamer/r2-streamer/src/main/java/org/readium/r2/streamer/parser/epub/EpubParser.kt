@@ -11,6 +11,7 @@ package org.readium.r2.streamer.parser.epub
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.Search
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
@@ -19,9 +20,11 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.publication.services.search.StringSearchService
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.container.ContainerError
@@ -80,6 +83,7 @@ class EpubParser : PublicationParser, org.readium.r2.streamer.parser.Publication
     override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
         _parse(asset, fetcher, asset.name)
 
+    @OptIn(Search::class)
     suspend fun _parse(asset: PublicationAsset, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
 
         if (asset.mediaType() != MediaType.EPUB)
@@ -108,7 +112,8 @@ class EpubParser : PublicationParser, org.readium.r2.streamer.parser.Publication
             manifest = manifest,
             fetcher = fetcher,
             servicesBuilder = Publication.ServicesBuilder(
-                positions = (EpubPositionsService)::create
+                positions = (EpubPositionsService)::create,
+                search = StringSearchService.createDefaultFactory(),
             )
         )
     }

@@ -19,6 +19,7 @@ import org.readium.r2.shared.publication.epub.layoutOf
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.util.use
 import kotlin.math.ceil
 
 /**

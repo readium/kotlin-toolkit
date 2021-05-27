@@ -18,6 +18,7 @@ import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.shared.util.use
 import timber.log.Timber
 import java.io.File
 import com.shockwave.pdfium.PdfDocument as _PdfiumDocument

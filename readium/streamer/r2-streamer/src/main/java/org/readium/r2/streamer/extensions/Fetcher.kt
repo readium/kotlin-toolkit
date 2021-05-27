@@ -17,11 +17,10 @@ import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import org.readium.r2.shared.util.use
 import java.io.File
-import java.io.FileNotFoundException
 
 /** Returns the resource data at the given [Link]'s HREF, or throws a [Resource.Exception] */
 @Throws(Resource.Exception::class)
