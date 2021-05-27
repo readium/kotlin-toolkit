@@ -126,8 +126,9 @@ class R2EpubPageFragment : Fragment() {
                     (epubNavigator?.resourcePager?.adapter as? R2PagerAdapter)?.getCurrentFragment() as? R2EpubPageFragment
 
                 if (currentFragment != null && this@R2EpubPageFragment.tag == currentFragment.tag) {
-                    var locations = epubNavigator.pendingLocator?.locations
+                    val locator = epubNavigator.pendingLocator
                     epubNavigator.pendingLocator = null
+                    var locations = locator?.locations
 
                     // TODO this seems to be needed, will need to test more
                     if (url != null && url.indexOf("#") > 0) {
@@ -142,31 +143,42 @@ class R2EpubPageFragment : Fragment() {
                             // FIXME: We need a better way to wait, because if the value is too low it fails
                             delay(200)
 
+                            val text = locator?.text
+                            if (text?.highlight != null) {
+                                if (currentWebView.scrollToText(text)) {
+                                    return@launchWhenStarted
+                                }
+
+                                // The delay is necessary before falling back on the other
+                                // locations, because scrollToText() is moving the scroll position
+                                // while looking for the text snippet.
+                                delay(100)
+                            }
+
                             val htmlId = locations.htmlId
+                            if (htmlId != null && currentWebView.scrollToId(htmlId)) {
+                                return@launchWhenStarted
+                            }
+
                             var progression = locations.progression
+                            if (progression != null) {
+                                // We need to reverse the progression with RTL because the Web View
+                                // always scrolls from left to right, no matter the reading direction.
+                                progression =
+                                    if (webView.scrollMode || navigatorFragment.readingProgression == ReadingProgression.LTR) progression
+                                    else 1 - progression
 
-                            when {
-                                htmlId != null -> currentWebView.scrollToId(htmlId)
+                                if (webView.scrollMode) {
+                                    currentWebView.scrollToPosition(progression)
 
-                                progression != null -> {
-                                    // We need to reverse the progression with RTL because the Web View
-                                    // always scrolls from left to right, no matter the reading direction.
-                                    progression =
-                                        if (webView.scrollMode || navigatorFragment.readingProgression == ReadingProgression.LTR) progression
-                                        else 1 - progression
-
-                                    if (webView.scrollMode) {
-                                        currentWebView.scrollToPosition(progression)
-
-                                    } else {
-                                        // Figure out the target web view "page" from the requested
-                                        // progression.
-                                        var item = (progression * currentWebView.numPages).roundToInt()
-                                        if (navigatorFragment.readingProgression == ReadingProgression.RTL && item > 0) {
-                                            item -= 1
-                                        }
-                                        currentWebView.setCurrentItem(item, false)
+                                } else {
+                                    // Figure out the target web view "page" from the requested
+                                    // progression.
+                                    var item = (progression * currentWebView.numPages).roundToInt()
+                                    if (navigatorFragment.readingProgression == ReadingProgression.RTL && item > 0) {
+                                        item -= 1
                                     }
+                                    currentWebView.setCurrentItem(item, false)
                                 }
                             }
                         }
