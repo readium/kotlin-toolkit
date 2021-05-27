@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!--## [Unreleased]-->
+## [Unreleased]
+
+### Fixed
+
+* Crash with `HttpRequest.setPostForm()` on Android 6.
+
 
 ## [2.0.0]
 

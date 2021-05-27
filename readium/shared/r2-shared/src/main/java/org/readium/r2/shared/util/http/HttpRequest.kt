@@ -3,7 +3,6 @@ package org.readium.r2.shared.util.http
 import android.net.Uri
 import java.io.Serializable
 import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -114,7 +113,7 @@ class HttpRequest(
 
             body = Body.Bytes(form
                 .map { (key, value) ->
-                    "$key=${URLEncoder.encode(value ?: "", StandardCharsets.UTF_8.toString())}"
+                    "$key=${URLEncoder.encode(value ?: "", "UTF-8")}"
                 }
                 .joinToString("&")
                 .toByteArray()
