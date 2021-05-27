@@ -18,6 +18,7 @@ fun URL.removeLastComponent(): URL {
         ?: return this
 
     return URL(toString()
+        .removeSuffix("?$query")
         .removeSuffix("/")
         .removeSuffix(lastPathComponent)
     )
