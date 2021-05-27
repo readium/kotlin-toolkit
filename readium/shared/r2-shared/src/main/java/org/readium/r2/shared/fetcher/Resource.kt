@@ -20,6 +20,7 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import java.io.ByteArrayInputStream
@@ -40,7 +41,7 @@ typealias ResourceTransformer = (Resource) -> Resource
 /**
  * Acts as a proxy to an actual resource by handling read access.
  */
-interface Resource {
+interface Resource : SuspendingCloseable {
 
     /**
      * Direct file to this resource, when available.
@@ -98,36 +99,6 @@ interface Resource {
      */
     suspend fun readAsXml(): ResourceTry<ElementNode> =
         read().mapCatching { XmlParser().parse(ByteArrayInputStream(it)) }
-
-    /**
-     * Closes any opened file handles.
-     *
-     * If the Resource is already closed then invoking this method has no effect.
-     */
-    suspend fun close()
-
-    /**
-     * Executes the given block function on this resource and then closes it down correctly whether an exception is thrown or not.
-     */
-    suspend fun <R> use(block: suspend (Resource) -> R): R {
-        var exception: Throwable? = null
-        try {
-            return block(this)
-        } catch (e: Throwable) {
-            exception = e
-            throw e
-        } finally {
-            if (exception == null)
-                close()
-            else
-                try {
-                    close()
-                } catch (closeException: Throwable) {
-                    exception.addSuppressed(closeException)
-                }
-
-        }
-    }
 
     companion object {
         /**

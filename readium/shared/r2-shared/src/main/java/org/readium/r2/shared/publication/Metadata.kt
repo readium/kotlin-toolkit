@@ -139,7 +139,6 @@ data class Metadata(
      */
     val title: String get() = localizedTitle.string
 
-
     /**
      * Returns the default translation string for the [localizedSortAs].
      */

@@ -10,9 +10,10 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.SuspendingCloseable
 
 /** Provides access to a [Resource] from a [Link]. */
-interface Fetcher {
+interface Fetcher : SuspendingCloseable {
 
     /**
      * Known resources available in the medium, such as file paths on the file system
@@ -35,13 +36,6 @@ interface Fetcher {
     /** Returns the [Resource] at the given [href]. */
     fun get(href: String): Resource =
         get(Link(href = href))
-
-    /**
-     * Closes any opened file handles, removes temporary files, etc.
-     *
-     * If the Fetcher is already closed then invoking this method has no effect.
-     */
-    suspend fun close()
 
     // To be able to add extensions on Fetcher.Companion in other components...
     companion object

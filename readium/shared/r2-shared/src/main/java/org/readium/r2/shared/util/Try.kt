@@ -10,32 +10,46 @@
 package org.readium.r2.shared.util
 
 /** A [Result] type which can be used as a return type. */
-class Try<out Success, out Failure: Throwable> private constructor(private val success: Success?, private val failure: Failure?) {
+sealed class Try<out Success, out Failure: Throwable> {
 
     companion object {
         /** Returns an instance that encapsulates the given value as successful value. */
-        fun <Success> success(success: Success) = Try(success, null)
+        fun <Success> success(success: Success): Try<Success, Nothing> = Success(success)
 
         /** Returns the encapsulated Throwable exception if this instance represents failure or null if it is success. */
-        fun <Failure: Throwable> failure(failure: Failure) = Try(null, failure)
+        fun <Failure: Throwable> failure(failure: Failure): Try<Nothing, Failure> = Failure(failure)
     }
 
-    val isSuccess get() = success != null
-
-    val isFailure get() = failure != null
+    abstract val isSuccess: Boolean
+    abstract val isFailure: Boolean
 
     /**
      * Returns the encapsulated value if this instance represents success
      * or throws the encapsulated Throwable exception if it is failure.
      */
-    fun getOrThrow() = success
-        ?: throw failure!!
+    abstract fun getOrThrow(): Success
 
     /** Returns the encapsulated value if this instance represents success or null if it is failure. */
-    fun getOrNull(): Success? = success
+    abstract fun getOrNull(): Success?
 
     /** Returns the encapsulated [Throwable] exception if this instance represents failure or null if it is success. */
-    fun exceptionOrNull(): Failure? = failure
+    abstract fun exceptionOrNull(): Failure?
+
+    class Success<out S, out F : Throwable>(val value: S) : Try<S, F>() {
+        override val isSuccess: Boolean get() = true
+        override val isFailure: Boolean get() = false
+        override fun getOrThrow(): S = value
+        override fun getOrNull(): S? = value
+        override fun exceptionOrNull(): F? = null
+    }
+
+    class Failure<out S, out F : Throwable>(val exception: F) : Try<S, F>() {
+        override val isSuccess: Boolean get() = false
+        override val isFailure: Boolean get() = true
+        override fun getOrThrow(): S { throw exception }
+        override fun getOrNull(): S? = null
+        override fun exceptionOrNull(): F? = exception
+    }
 
     /**
      * Returns the encapsulated result of the given transform function applied to the encapsulated value

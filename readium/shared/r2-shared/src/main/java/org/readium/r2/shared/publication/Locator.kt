@@ -12,9 +12,11 @@ package org.readium.r2.shared.publication
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
+import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
@@ -96,7 +98,6 @@ data class Locator(
                     otherLocations = json?.toMap() ?: emptyMap()
                 )
             }
-
         }
 
         @Deprecated("Renamed to [fragments]", ReplaceWith("fragments"))
@@ -186,6 +187,12 @@ data class Locator(
             )
         }
 
+        fun fromJSONArray(
+            json: JSONArray?,
+            warnings: WarningLogger? = null
+        ): List<Locator> {
+            return json.parseObjects { Locator.fromJSON(it as? JSONObject, warnings) }
+        }
     }
 
 }
@@ -203,4 +210,73 @@ fun Link.toLocator(): Locator {
             fragments = listOfNotNull(components.getOrNull(1))
         )
     )
+}
+
+/**
+ * Represents a sequential list of `Locator` objects.
+ *
+ * For example, a search result or a list of positions.
+ */
+@Parcelize
+data class LocatorCollection(
+    val metadata: Metadata = Metadata(),
+    val links: List<Link> = emptyList(),
+    val locators: List<Locator> = emptyList(),
+) : JSONable, Parcelable {
+
+    /**
+     * Holds the metadata of a `LocatorCollection`.
+     *
+     * @param numberOfItems Indicates the total number of locators in the collection.
+     */
+    @Parcelize
+    data class Metadata(
+        val localizedTitle: LocalizedString? = null,
+        val numberOfItems: Int? = null,
+        val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf(),
+    ) : JSONable, Parcelable {
+
+        /**
+         * Returns the default translation string for the [localizedTitle].
+         */
+        val title: String? get() = localizedTitle?.string
+
+        override fun toJSON() = JSONObject(otherMetadata).apply {
+            putIfNotEmpty("title", localizedTitle)
+            putOpt("numberOfItems", numberOfItems)
+        }
+
+        companion object {
+
+            fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Metadata {
+                json ?: return Metadata()
+
+                val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)
+                val numberOfItems = json.optPositiveInt("numberOfItems", remove = true)
+
+                return Metadata(
+                    localizedTitle = localizedTitle,
+                    numberOfItems = numberOfItems,
+                    otherMetadata = json.toMap()
+                )
+            }
+        }
+    }
+
+    override fun toJSON() = JSONObject().apply {
+        putIfNotEmpty("metadata", metadata.toJSON())
+        putIfNotEmpty("links", links.toJSON())
+        put("locators", locators.toJSON())
+    }
+
+    companion object {
+
+        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): LocatorCollection {
+            return LocatorCollection(
+                metadata = Metadata.fromJSON(json?.optJSONObject("metadata"), warnings),
+                links = Link.fromJSONArray(json?.optJSONArray("links"), warnings = warnings),
+                locators = Locator.fromJSONArray(json?.optJSONArray("locators"), warnings),
+            )
+        }
+    }
 }

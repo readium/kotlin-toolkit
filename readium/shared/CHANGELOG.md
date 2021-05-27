@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-**Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
+**Warning:** Features marked as *alpha* may change or be removed in a future release without notice. Use with caution.
 
 ## [Unreleased]
+
+### Added
+
+* (*alpha*) A new Publication `SearchService` to search through the resources' content, with a default implementation `StringSearchService`.
 
 ### Fixed
 

@@ -17,6 +17,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.R
 import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.HashAlgorithm
 import org.readium.r2.shared.extensions.hash
@@ -29,6 +30,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.*
+import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Ref
 import timber.log.Timber
 import java.net.URL
@@ -344,17 +346,20 @@ class Publication(
      */
     class ServicesBuilder private constructor(private var serviceFactories: MutableMap<String, ServiceFactory>) {
 
+        @OptIn(Search::class)
         @Suppress("UNCHECKED_CAST")
         constructor(
             contentProtection: ServiceFactory? = null,
             cover: ServiceFactory? = null,
             locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.publication) },
-            positions: ServiceFactory? = null
+            positions: ServiceFactory? = null,
+            search: ServiceFactory? = null,
         ) : this(mapOf(
             ContentProtectionService::class.java.simpleName to contentProtection,
             CoverService::class.java.simpleName to cover,
             LocatorService::class.java.simpleName to locator,
-            PositionsService::class.java.simpleName to positions
+            PositionsService::class.java.simpleName to positions,
+            SearchService::class.java.simpleName to search,
         ).filterValues { it != null }.toMutableMap() as MutableMap<String, ServiceFactory>)
 
         /** Builds the actual list of publication services to use in a Publication. */

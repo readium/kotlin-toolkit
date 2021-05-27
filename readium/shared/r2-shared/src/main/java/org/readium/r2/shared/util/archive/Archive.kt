@@ -13,6 +13,7 @@ import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.util.SuspendingCloseable
 import java.io.File
 
 interface ArchiveFactory {
@@ -41,12 +42,12 @@ class DefaultArchiveFactory : ArchiveFactory {
 /**
  * Represents an immutable archive.
  */
-interface Archive {
+interface Archive : SuspendingCloseable {
 
     /**
      * Holds an archive entry's metadata.
      */
-    interface Entry {
+    interface Entry : SuspendingCloseable {
 
         /** Absolute path to the entry in the archive. */
         val path: String
@@ -67,12 +68,6 @@ interface Archive {
          * available length automatically.
          */
         suspend fun read(range: LongRange? = null): ByteArray
-
-        /**
-         * Closes any pending resources for this entry.
-         */
-        suspend fun close()
-
     }
 
     /** List of all the archived file entries. */
@@ -80,8 +75,4 @@ interface Archive {
 
     /** Gets the entry at the given `path`. */
     suspend fun entry(path: String): Entry
-
-    /** Closes the archive. */
-    suspend fun close()
-
 }
