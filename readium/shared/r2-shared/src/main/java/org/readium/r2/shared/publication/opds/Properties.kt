@@ -11,6 +11,7 @@ package org.readium.r2.shared.publication.opds
 
 import org.json.JSONObject
 import org.readium.r2.shared.opds.*
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 
 // OPDS extensions for link [Properties].
@@ -69,3 +70,13 @@ val Properties.copies: Copies?
 val Properties.availability: Availability?
     get() = (this["availability"] as? Map<*, *>)
         ?.let { Availability.fromJSON(JSONObject(it)) }
+
+/**
+ * Indicates that the linked resource supports authentication with the associated Authentication
+ * Document.
+ *
+ * See https://drafts.opds.io/authentication-for-opds-1.0.html
+ */
+val Properties.authenticate: Link?
+    get() = (this["authenticate"] as? Map<*, *>)
+        ?.let { Link.fromJSON(JSONObject(it)) }

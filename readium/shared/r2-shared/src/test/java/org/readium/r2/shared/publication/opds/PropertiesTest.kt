@@ -9,9 +9,11 @@
 
 package org.readium.r2.shared.publication.opds
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.readium.r2.shared.opds.*
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 
 class PropertiesTest {
@@ -90,6 +92,31 @@ class PropertiesTest {
 
     @Test fun `get Properties {availability} when missing`() {
         assertNull(Properties().availability)
+    }
+
+    @Test fun `get Properties {authenticate} when missing`() {
+        assertNull(Properties().authenticate)
+    }
+
+    @Test fun `get Properties {authenticate} when available`() {
+        assertEquals(
+            Link(
+                href = "https://example.com/authentication.json",
+                type = "application/opds-authentication+json"
+            ),
+            Properties(otherProperties = mapOf("authenticate" to mapOf(
+                "href" to "https://example.com/authentication.json",
+                "type" to "application/opds-authentication+json",
+            ))).authenticate
+        )
+    }
+
+    @Test fun `get Properties {authenticate} when invalid`() {
+        assertNull(
+            Properties(otherProperties = mapOf("authenticate" to mapOf(
+                "type" to "application/opds-authentication+json",
+            ))).authenticate
+        )
     }
 
 }
