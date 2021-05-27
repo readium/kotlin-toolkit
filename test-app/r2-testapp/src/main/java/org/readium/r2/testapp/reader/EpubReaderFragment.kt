@@ -6,44 +6,30 @@
 
 package org.readium.r2.testapp.reader
 
-import android.app.ProgressDialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.PointF
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.edit
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.google.gson.Gson
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
-import org.readium.r2.navigator.pager.R2EpubPageFragment
-import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.presentation
-import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.epub.EpubActivity
-import org.readium.r2.testapp.search.MarkJsSearchEngine
 import org.readium.r2.testapp.search.SearchFragment
-import org.readium.r2.testapp.search.SearchViewModel
 import org.readium.r2.testapp.tts.ScreenReaderContract
 import org.readium.r2.testapp.tts.ScreenReaderFragment
 import org.readium.r2.testapp.utils.toggleSystemUi
-import timber.log.Timber
 import java.net.URL
 
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
@@ -59,7 +45,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
     private var isScreenReaderVisible = false
     private var isSearchViewIconified = true
-    lateinit var searchResult: MutableLiveData<List<Locator>>
 
     private val activity: EpubActivity
         get() = requireActivity() as EpubActivity
@@ -84,8 +69,10 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             SearchFragment::class.java.name,
             this,
             FragmentResultListener { _, result ->
-                val locator = result.getParcelable<Locator>(SearchFragment::class.java.name)!!
-                closeSearchFragment(locator)
+                menuSearch.collapseActionView()
+                result.getParcelable<Locator>(SearchFragment::class.java.name)?.let {
+                    navigatorFragment.go(it)
+                }
             }
         )
 
@@ -137,9 +124,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         menuSearch = menu.findItem(R.id.search)
         menuSearchView = menuSearch.actionView as SearchView
 
-        ViewModelProvider(this).get(SearchViewModel::class.java).let {
-            searchResult = it.result
-        }
         connectSearch()
         if (!isSearchViewIconified) menuSearch.expandActionView()
     }
@@ -151,10 +135,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     }
 
     private fun connectSearch() {
-        val searchStorage = requireActivity().getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
-        val markJsSearchEngine = MarkJsSearchEngine(activity)
-        val bookId = checkNotNull(requireArguments().getLong(BOOK_ID_ARG))
-
         menuSearch.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
 
             override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
@@ -163,36 +143,12 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 }
 
                 isSearchViewIconified = false
-                // Try to preload all resources once the SearchView has been expanded
-                // Delay to allow the keyboard to be shown immediately
-                Handler(Looper.getMainLooper()).postDelayed({
-                    navigatorFragment.resourcePager.offscreenPageLimit = publication.readingOrder.size
-                }, 100)
-
-                val previouslySearchBook = searchStorage.getLong("book", -1)
-                if (previouslySearchBook == bookId) {
-                    // Load previous research
-                    searchStorage.getString("term", null)?.let {
-                        // SearchView.setQuery doesn't work until the SearchView has been expanded
-                        Handler(Looper.getMainLooper()).post {
-                            menuSearchView.setQuery(it, false)
-                            menuSearchView.clearFocus()
-                        }
-                    }
-                    // Load previous result
-                    searchStorage.getString("result", null)?.let {
-                        searchResult.value = (Gson().fromJson(it, Array<Locator>::class.java)).toList()
-                    }
-                }
                 return true
             }
 
             override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
                 isSearchViewIconified = true
                 childFragmentManager.popBackStack()
-                Handler(Looper.getMainLooper()).postDelayed({
-                    navigatorFragment.resourcePager.offscreenPageLimit = 1
-                }, 100)
                 menuSearchView.clearFocus()
 
                 return true
@@ -202,33 +158,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         menuSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 
             override fun onQueryTextSubmit(query: String): Boolean {
-                val progress = ProgressDialog(requireContext()).apply {
-                    setMessage(getString(R.string.progress_wait_while_searching_book))
-                    isIndeterminate = true
-                    show()
-                }
-
-                // Ensure all resources are loaded
-                navigatorFragment.resourcePager.offscreenPageLimit = publication.readingOrder.size
-
-                searchResult.value = emptyList()
-                // FIXME: the search should be somehow tied to the lifecycle of the SearchResultFragment
-                Handler(Looper.getMainLooper()).postDelayed({
-                    markJsSearchEngine.search(query) { (last, result) ->
-                        searchResult.value = result
-                        progress.dismiss()
-
-                        if (last) {
-                            // Save query and result
-                            val stringResults = Gson().toJson(result)
-                            searchStorage.edit {
-                                putString("result", stringResults)
-                                putString("term", query)
-                                putLong("book", bookId)
-                            }
-                        }
-                    }
-                }, 500)
+                model.search(query)
                 menuSearchView.clearFocus()
 
                 return false
@@ -241,18 +171,13 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
         menuSearchView.findViewById<ImageView>(R.id.search_close_btn).setOnClickListener {
             menuSearchView.requestFocus()
-            searchResult.value = emptyList()
+            model.cancelSearch()
             menuSearchView.setQuery("", false)
 
             (activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).toggleSoftInput(
                 InputMethodManager.SHOW_FORCED,
                 InputMethodManager.HIDE_IMPLICIT_ONLY
             )
-
-           searchStorage.edit {
-                remove("result")
-                remove("term")
-            }
         }
     }
 
@@ -299,38 +224,10 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
     private fun showSearchFragment() {
         childFragmentManager.commit {
+            childFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG)?.let { remove(it) }
             add(R.id.fragment_reader_container, SearchFragment::class.java, Bundle(), SEARCH_FRAGMENT_TAG)
             hide(navigatorFragment)
             addToBackStack(SEARCH_FRAGMENT_TAG)
-        }
-    }
-
-    private fun closeSearchFragment(locator: Locator) {
-        menuSearch.collapseActionView()
-        locator.locations.fragments.firstOrNull()?.let { fragment ->
-            val fragments = fragment.split(",")
-                .map { it.split("=") }
-                .filter { it.size == 2 }
-                .associate { it[0] to it[1] }
-
-            val index = fragments["i"]?.toInt()
-            if (index != null) {
-                val searchStorage = activity.getSharedPreferences("org.readium.r2.search", Context.MODE_PRIVATE)
-                Handler(Looper.getMainLooper()).postDelayed({
-                    if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
-                        val currentFragment = (navigatorFragment.resourcePager.adapter as R2PagerAdapter).getCurrentFragment() as R2EpubPageFragment
-                        val resource = publication.readingOrder[navigatorFragment.resourcePager.currentItem]
-                        val resourceHref = resource.href
-                        val resourceType = resource.type ?: ""
-                        val resourceTitle = resource.title ?: ""
-
-                        currentFragment.webView?.runJavaScript("markSearch('${searchStorage.getString("term", null)}', null, '$resourceHref', '$resourceType', '$resourceTitle', '$index')") { result ->
-                            if (BuildConfig.DEBUG) Timber.d("###### $result")
-
-                        }
-                    }
-                }, 1200)
-            }
         }
     }
 

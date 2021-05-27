@@ -10,6 +10,7 @@ import android.app.Activity
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
@@ -125,6 +126,9 @@ open class ReaderActivity : AppCompatActivity(R.layout.activity_reader) {
         when(event) {
             is ReaderViewModel.Event.OpenOutlineRequested -> showOutlineFragment()
             is ReaderViewModel.Event.OpenDrmManagementRequested -> showDrmManagementFragment()
+            is ReaderViewModel.Event.Failure -> {
+                Toast.makeText(this, event.error.getUserMessage(this), Toast.LENGTH_LONG).show()
+            }
         }
     }
 

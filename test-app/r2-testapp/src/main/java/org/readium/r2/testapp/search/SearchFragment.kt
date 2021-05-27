@@ -9,46 +9,40 @@ package org.readium.r2.testapp.search
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResult
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.reader.ReaderViewModel
 
 class SearchFragment : Fragment(R.layout.fragment_search) {
 
-    private lateinit var searchResult: MutableLiveData<List<Locator>>
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        ViewModelProvider(requireParentFragment()).get(SearchViewModel::class.java).let {
-            searchResult = it.result
-        }
-    }
+    private val viewModel: ReaderViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter =  SearchResultAdapter(requireActivity(), searchResult, object : SearchResultAdapter.RecyclerViewClickListener {
-            override fun recyclerViewListClicked(v: View, position: Int) {
+        val viewScope = viewLifecycleOwner.lifecycleScope
+
+        val adapter =  SearchResultAdapter(object : SearchResultAdapter.Listener {
+            override fun onItemClicked(v: View, locator: Locator) {
                 val result = Bundle().apply {
-                    putParcelable(SearchFragment::class.java.name, searchResult.value!![position])
+                    putParcelable(SearchFragment::class.java.name, locator)
                 }
                 setFragmentResult(SearchFragment::class.java.name, result)
             }
         })
 
-        searchResult.observe(viewLifecycleOwner, Observer<List<Locator>> { adapter.notifyDataSetChanged() })
+        viewModel.searchResult
+            .onEach { adapter.submitData(it) }
+            .launchIn(viewScope)
+
         view.findViewById<RecyclerView>(R.id.search_listView).adapter = adapter
         view.findViewById<RecyclerView>(R.id.search_listView).layoutManager = LinearLayoutManager(activity)
     }
-}
-
-class SearchViewModel : ViewModel() {
-    val result: MutableLiveData<List<Locator>> = MutableLiveData(emptyList())
 }

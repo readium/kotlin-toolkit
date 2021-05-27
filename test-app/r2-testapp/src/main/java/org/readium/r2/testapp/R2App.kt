@@ -65,22 +65,6 @@ class R2App : Application() {
 //                server.loadCustomResource(assets.open("styles/test.css"), "test.css")
 //                server.loadCustomFont(assets.open("fonts/test.otf"), applicationContext, "test.otf")
 
-                server.loadCustomResource(
-                    applicationContext.assets.open("Search/mark.js"),
-                    "mark.js",
-                    Injectable.Script
-                )
-                server.loadCustomResource(
-                    applicationContext.assets.open("Search/search.js"),
-                    "search.js",
-                    Injectable.Script
-                )
-                server.loadCustomResource(
-                    applicationContext.assets.open("Search/mark.css"),
-                    "mark.css",
-                    Injectable.Style
-                )
-
                 isServerStarted = true
             }
         }
