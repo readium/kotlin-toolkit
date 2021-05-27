@@ -1,6 +1,7 @@
 package org.readium.r2.shared.util.http
 
 import android.net.Uri
+import android.os.Bundle
 import java.io.Serializable
 import java.net.URLEncoder
 import kotlin.time.Duration
@@ -12,6 +13,9 @@ import kotlin.time.ExperimentalTime
  * @param url Address of the remote resource to request.
  * @param method HTTP method to use for the request.
  * @param headers Additional HTTP headers to use.
+ * @param body Content put in the body of the HTTP request.
+ * @param extras Bundle of additional information, which might be used by a specific implementation
+ *        of HTTPClient.
  * @param connectTimeout Timeout used when establishing a connection to the resource. A null timeout
  *        is interpreted as the default value, while a timeout of zero as an infinite timeout.
  * @param readTimeout Timeout used when reading the input stream. A null timeout is interpreted
@@ -25,6 +29,7 @@ class HttpRequest(
     val method: Method = Method.GET,
     val headers: Map<String, String> = mapOf(),
     val body: Body? = null,
+    val extras: Bundle = Bundle(),
     val connectTimeout: Duration? = null,
     val readTimeout: Duration? = null,
     val allowUserInteraction: Boolean = false,
@@ -46,6 +51,7 @@ class HttpRequest(
         method = method,
         headers = headers.toMutableMap(),
         body = body,
+        extras = extras,
         connectTimeout = connectTimeout,
         readTimeout = readTimeout,
         allowUserInteraction = allowUserInteraction
@@ -61,6 +67,7 @@ class HttpRequest(
         var method: Method = Method.GET,
         var headers: MutableMap<String, String> = mutableMapOf(),
         var body: Body? = null,
+        var extras: Bundle = Bundle(),
         var connectTimeout: Duration? = null,
         var readTimeout: Duration? = null,
         var allowUserInteraction: Boolean = false,
@@ -128,6 +135,7 @@ class HttpRequest(
             method = method,
             headers = headers.toMap(),
             body = body,
+            extras = extras,
             connectTimeout = connectTimeout,
             readTimeout = readTimeout,
             allowUserInteraction = allowUserInteraction,
