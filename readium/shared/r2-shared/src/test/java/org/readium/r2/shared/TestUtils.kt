@@ -18,6 +18,7 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.use
 import java.io.File
 import java.net.URL
 
