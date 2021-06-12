@@ -1,6 +1,7 @@
 package org.readium.r2.opds
 
 import org.joda.time.DateTime
+import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 import org.readium.r2.shared.opds.Facet
@@ -14,7 +15,7 @@ import java.util.*
 
 class OPDS1ParserTest {
 
-    val fixtures = Fixtures("opds1")
+    private val fixtures = Fixtures("opds1")
 
     @Test fun `parse navigation feed`() {
         val parseData = parse("nav-feed.atom")
@@ -71,224 +72,109 @@ class OPDS1ParserTest {
 
     @Test fun `parse acquisition feed`() {
         val parseData = parse("acquisition-feed.atom")
-        assertEquals(
-            ParseData(
-                feed = Feed(
-                    title = "Unpopular Publications",
-                    type = 1,
-                    href = URL("https://example.com"),
-                    metadata = OpdsMetadata(
-                        title = "Unpopular Publications",
-                        modified = parseDate("2010-01-10T10:01:11Z")
+        assertEquals(1, parseData.type)
+        assertNull(parseData.publication)
+        assertNotNull(parseData.feed)
+        val feed = parseData.feed!!
+        assertEquals("Unpopular Publications", feed.title)
+        assertEquals(1, feed.type)
+        assertEquals(URL("https://example.com"), feed.href)
+        assertEquals(OpdsMetadata(
+            title = "Unpopular Publications",
+            modified = parseDate("2010-01-10T10:01:11Z")
+        ), feed.metadata)
+        assertEquals(mutableListOf(
+            Link(
+                href = "https://example.com/opds-catalogs/vampire.farming.xml",
+                type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                rels = setOf("related")
+            ),
+            Link(
+                href = "https://example.com/opds-catalogs/unpopular.xml",
+                type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                rels = setOf("self")
+            ),
+            Link(
+                href = "https://example.com/opds-catalogs/root.xml",
+                type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                rels = setOf("start")
+            ),
+            Link(
+                href = "https://example.com/opds-catalogs/root.xml",
+                type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                rels = setOf("up")
+            )
+        ), feed.links)
+        assertEquals(mutableListOf(
+            Facet(
+                title = "Categories",
+                metadata = OpdsMetadata(title = "Categories"),
+                links = mutableListOf(
+                    Link(
+                        href = "https://example.com/sci-fi",
+                        title = "Science-Fiction",
+                        rels = setOf("http://opds-spec.org/facet")
                     ),
-                    links = mutableListOf(
-                        Link(
-                            href = "https://example.com/opds-catalogs/vampire.farming.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
-                            rels = setOf("related")
-                        ),
-                        Link(
-                            href = "https://example.com/opds-catalogs/unpopular.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
-                            rels = setOf("self")
-                        ),
-                        Link(
-                            href = "https://example.com/opds-catalogs/root.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=navigation",
-                            rels = setOf("start")
-                        ),
-                        Link(
-                            href = "https://example.com/opds-catalogs/root.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=navigation",
-                            rels = setOf("up")
+                    Link(
+                        href = "https://example.com/romance",
+                        title = "Romance",
+                        rels = setOf("http://opds-spec.org/facet"),
+                        properties = Properties(mapOf("numberOfItems" to 600))
+                    )
+                )
+            )
+        ), feed.facets)
+        assertEquals(2, feed.publications.size)
+
+        assertJSONEquals(
+            Manifest(
+                metadata = Metadata(
+                    identifier = "urn:uuid:6409a00b-7bf2-405e-826c-3fdff0fd0734",
+                    localizedTitle = LocalizedString("Bob, Son of Bob"),
+                    modified = parseDate("2010-01-10T10:01:11Z"),
+                    published = null,
+                    languages = listOf("en"),
+                    subjects = listOf(
+                        Subject(
+                            localizedName = LocalizedString("FICTION / Men's Adventure"),
+                            scheme = "http://www.bisg.org/standards/bisac_subject/index.html",
+                            code = "FIC020000"
                         )
                     ),
-                    publications = mutableListOf(
-                        Publication(
-                            metadata = Metadata(
-                                identifier = "urn:uuid:6409a00b-7bf2-405e-826c-3fdff0fd0734",
-                                localizedTitle = LocalizedString("Bob, Son of Bob"),
-                                modified = parseDate("2010-01-10T10:01:11Z"),
-                                published = null,
-                                languages = listOf("en"),
-                                subjects = listOf(
-                                    Subject(
-                                        localizedName = LocalizedString("FICTION / Men's Adventure"),
-                                        scheme = "http://www.bisg.org/standards/bisac_subject/index.html",
-                                        code = "FIC020000"
-                                    )
-                                ),
-                                authors = listOf(
-                                    Contributor(
-                                        localizedName = LocalizedString("Bob the Recursive"),
-                                        links = listOf(Link(href = "http://opds-spec.org/authors/1285"))
-                                    )
-                                ),
-                                description = "The story of the son of the Bob and the gallant part he played in the lives of a man and a woman."
-                            ),
-                            links = listOf(
-                                Link(
-                                    href = "https://example.com/covers/4561.thmb.gif",
-                                    type = "image/gif",
-                                    rels = setOf("http://opds-spec.org/image/thumbnail")
-                                ),
-                                Link(
-                                    href = "https://example.com/opds-catalogs/entries/4571.complete.xml",
-                                    type = "application/atom+xml;type=entry;profile=opds-catalog",
-                                    title = "Complete Catalog Entry for Bob, Son of Bob",
-                                    rels = setOf("alternate")
-                                ),
-                                Link(
-                                    href = "https://example.com/content/free/4561.epub",
-                                    type = "application/epub+zip",
-                                    rels = setOf("http://opds-spec.org/acquisition")
-                                ),
-                                Link(
-                                    href = "https://example.com/content/free/4561.mobi",
-                                    type = "application/x-mobipocket-ebook",
-                                    rels = setOf("http://opds-spec.org/acquisition")
-                                )
-                            ),
-                            otherCollections = listOf(
-                                PublicationCollection(
-                                    role = "images",
-                                    links = listOf(
-                                        Link(
-                                            href = "https://example.com/covers/4561.lrg.png",
-                                            type = "image/png",
-                                            rels = setOf("http://opds-spec.org/image")
-                                        )
-                                    )
-                                )
-                            ),
-                            type = Publication.TYPE.EPUB
-                        ),
-                        Publication(
-                            metadata = Metadata(
-                                identifier = "urn:uuid:7b595b0c-e15c-4755-bf9a-b7019f5c1dab",
-                                localizedTitle = LocalizedString("Modern Online Philately"),
-                                modified = parseDate("2010-01-10T10:01:10Z"),
-                                languages = listOf("en"),
-                                authors = listOf(
-                                    Contributor(
-                                        localizedName = LocalizedString("Stampy McGee"),
-                                        links = listOf(Link(href = "http://opds-spec.org/authors/21285"))
-                                    ),
-                                    Contributor(
-                                        localizedName = LocalizedString("Alice McGee"),
-                                        links = listOf(Link(href = "http://opds-spec.org/authors/21284"))
-                                    ),
-                                    Contributor(
-                                        localizedName = LocalizedString("Harold McGee"),
-                                        links = listOf(Link(href = "http://opds-spec.org/authors/21283"))
-                                    )
-                                ),
-                                publishers = listOf(
-                                    Contributor(localizedName = LocalizedString("StampMeOnline, Inc."))
-                                ),
-                                description = "The definitive reference for the web-curious philatelist."
-                            ),
-                            links = listOf(
-                                Link(
-                                    href = "https://example.com/content/buy/11241.epub",
-                                    type = "application/epub+zip",
-                                    rels = setOf("http://opds-spec.org/acquisition/buy"),
-                                    properties = Properties(mapOf("price" to mapOf("currency" to "USD", "value" to 18.99)))
-                                )
-                            ),
-                            otherCollections = listOf(
-                                PublicationCollection(
-                                    role = "images",
-                                    links = listOf(
-                                        Link(
-                                            href = "https://example.com/covers/11241.lrg.jpg",
-                                            type = "image/jpeg",
-                                            rels = setOf("http://opds-spec.org/image")
-                                        )
-                                    )
-                                )
-                            ),
-                            type = Publication.TYPE.EPUB
+                    authors = listOf(
+                        Contributor(
+                            localizedName = LocalizedString("Bob the Recursive"),
+                            links = listOf(Link(href = "http://opds-spec.org/authors/1285"))
                         )
                     ),
-                    facets = mutableListOf(
-                        Facet(
-                            title = "Categories",
-                            metadata = OpdsMetadata(title = "Categories"),
-                            links = mutableListOf(
-                                Link(
-                                    href = "https://example.com/sci-fi",
-                                    title = "Science-Fiction",
-                                    rels = setOf("http://opds-spec.org/facet")
-                                ),
-                                Link(
-                                    href = "https://example.com/romance",
-                                    title = "Romance",
-                                    rels = setOf("http://opds-spec.org/facet"),
-                                    properties = Properties(mapOf("numberOfItems" to 600))
-                                )
-                            )
-                        )
+                    description = "The story of the son of the Bob and the gallant part he played in the lives of a man and a woman."
+                ),
+                links = listOf(
+                    Link(
+                        href = "https://example.com/covers/4561.thmb.gif",
+                        type = "image/gif",
+                        rels = setOf("http://opds-spec.org/image/thumbnail")
+                    ),
+                    Link(
+                        href = "https://example.com/opds-catalogs/entries/4571.complete.xml",
+                        type = "application/atom+xml;type=entry;profile=opds-catalog",
+                        title = "Complete Catalog Entry for Bob, Son of Bob",
+                        rels = setOf("alternate")
+                    ),
+                    Link(
+                        href = "https://example.com/content/free/4561.epub",
+                        type = "application/epub+zip",
+                        rels = setOf("http://opds-spec.org/acquisition")
+                    ),
+                    Link(
+                        href = "https://example.com/content/free/4561.mobi",
+                        type = "application/x-mobipocket-ebook",
+                        rels = setOf("http://opds-spec.org/acquisition")
                     )
                 ),
-                publication = null,
-                type = 1
-            ),
-            parseData
-        )
-    }
-
-    @Test fun `parse full entry`() {
-        val parseData = parse("entry.atom")
-        assertEquals(
-            ParseData(
-                feed = null,
-                publication = Publication(
-                    metadata = Metadata(
-                        identifier = "urn:uuid:6409a00b-7bf2-405e-826c-3fdff0fd0734",
-                        localizedTitle = LocalizedString("Bob, Son of Bob"),
-                        modified = parseDate("2010-01-10T10:01:11Z"),
-                        languages = listOf("en"),
-                        subjects = listOf(
-                            Subject(
-                                localizedName = LocalizedString("FICTION / Men's Adventure"),
-                                scheme = "http://www.bisg.org/standards/bisac_subject/index.html",
-                                code = "FIC020000"
-                            )
-                        ),
-                        authors = listOf(
-                            Contributor(
-                                localizedName = LocalizedString("Bob the Recursive"),
-                                links = listOf(Link(href = "http://opds-spec.org/authors/1285"))
-                            )
-                        ),
-                        description = "The story of the son of the Bob and the gallant part he played in the lives of a man and a woman. Bob begins his humble life under the wandering eye of his senile mother, but quickly learns how to escape into the wilder world. Follow Bob as he uncovers his father's past and uses those lessons to improve the lives of others."
-                    ),
-                    links = listOf(
-                        Link(
-                            href = "https://example.com/covers/4561.thmb.gif",
-                            type = "image/gif",
-                            rels = setOf("http://opds-spec.org/image/thumbnail")
-                        ),
-                        Link(
-                            href = "https://example.com/opds-catalogs/entries/4571.complete.xml",
-                            type = "application/atom+xml;type=entry;profile=opds-catalog",
-                            rels = setOf("self")
-                        ),
-                        Link(
-                            href = "https://example.com/content/free/4561.epub",
-                            type = "application/epub+zip",
-                            rels = setOf("http://opds-spec.org/acquisition")
-                        ),
-                        Link(
-                            href = "https://example.com/content/free/4561.mobi",
-                            type = "application/x-mobipocket-ebook",
-                            rels = setOf("http://opds-spec.org/acquisition")
-                        )
-                    ),
-                    otherCollections = listOf(
+                subcollections = mapOf(
+                    "images" to listOf(
                         PublicationCollection(
-                            role = "images",
                             links = listOf(
                                 Link(
                                     href = "https://example.com/covers/4561.lrg.png",
@@ -297,12 +183,129 @@ class OPDS1ParserTest {
                                 )
                             )
                         )
-                    ),
-                    type = Publication.TYPE.EPUB
+                    )
                 ),
-                type = 1
-            ),
-            parseData
+            ).toJSON(),
+            JSONObject(feed.publications[0].jsonManifest)
+        )
+
+        assertJSONEquals(
+            Manifest(
+                metadata = Metadata(
+                    identifier = "urn:uuid:7b595b0c-e15c-4755-bf9a-b7019f5c1dab",
+                    localizedTitle = LocalizedString("Modern Online Philately"),
+                    modified = parseDate("2010-01-10T10:01:10Z"),
+                    languages = listOf("en"),
+                    authors = listOf(
+                        Contributor(
+                            localizedName = LocalizedString("Stampy McGee"),
+                            links = listOf(Link(href = "http://opds-spec.org/authors/21285"))
+                        ),
+                        Contributor(
+                            localizedName = LocalizedString("Alice McGee"),
+                            links = listOf(Link(href = "http://opds-spec.org/authors/21284"))
+                        ),
+                        Contributor(
+                            localizedName = LocalizedString("Harold McGee"),
+                            links = listOf(Link(href = "http://opds-spec.org/authors/21283"))
+                        )
+                    ),
+                    publishers = listOf(
+                        Contributor(localizedName = LocalizedString("StampMeOnline, Inc."))
+                    ),
+                    description = "The definitive reference for the web-curious philatelist."
+                ),
+                links = listOf(
+                    Link(
+                        href = "https://example.com/content/buy/11241.epub",
+                        type = "application/epub+zip",
+                        rels = setOf("http://opds-spec.org/acquisition/buy"),
+                        properties = Properties(mapOf("price" to mapOf("currency" to "USD", "value" to 18.99)))
+                    )
+                ),
+                subcollections = mapOf(
+                    "images" to listOf(
+                        PublicationCollection(
+                            links = listOf(
+                                Link(
+                                    href = "https://example.com/covers/11241.lrg.jpg",
+                                    type = "image/jpeg",
+                                    rels = setOf("http://opds-spec.org/image")
+                                )
+                            )
+                        )
+                    )
+                ),
+            ).toJSON(),
+            JSONObject(feed.publications[1].jsonManifest)
+        )
+    }
+
+    @Test fun `parse full entry`() {
+        val parseData = parse("entry.atom")
+        assertNull(parseData.feed)
+        assertEquals(1, parseData.type)
+        val publication = parseData.publication
+        assertNotNull(publication)
+        assertJSONEquals(
+            Manifest(
+                metadata = Metadata(
+                    identifier = "urn:uuid:6409a00b-7bf2-405e-826c-3fdff0fd0734",
+                    localizedTitle = LocalizedString("Bob, Son of Bob"),
+                    modified = parseDate("2010-01-10T10:01:11Z"),
+                    languages = listOf("en"),
+                    subjects = listOf(
+                        Subject(
+                            localizedName = LocalizedString("FICTION / Men's Adventure"),
+                            scheme = "http://www.bisg.org/standards/bisac_subject/index.html",
+                            code = "FIC020000"
+                        )
+                    ),
+                    authors = listOf(
+                        Contributor(
+                            localizedName = LocalizedString("Bob the Recursive"),
+                            links = listOf(Link(href = "http://opds-spec.org/authors/1285"))
+                        )
+                    ),
+                    description = "The story of the son of the Bob and the gallant part he played in the lives of a man and a woman. Bob begins his humble life under the wandering eye of his senile mother, but quickly learns how to escape into the wilder world. Follow Bob as he uncovers his father's past and uses those lessons to improve the lives of others."
+                ),
+                links = listOf(
+                    Link(
+                        href = "https://example.com/covers/4561.thmb.gif",
+                        type = "image/gif",
+                        rels = setOf("http://opds-spec.org/image/thumbnail")
+                    ),
+                    Link(
+                        href = "https://example.com/opds-catalogs/entries/4571.complete.xml",
+                        type = "application/atom+xml;type=entry;profile=opds-catalog",
+                        rels = setOf("self")
+                    ),
+                    Link(
+                        href = "https://example.com/content/free/4561.epub",
+                        type = "application/epub+zip",
+                        rels = setOf("http://opds-spec.org/acquisition")
+                    ),
+                    Link(
+                        href = "https://example.com/content/free/4561.mobi",
+                        type = "application/x-mobipocket-ebook",
+                        rels = setOf("http://opds-spec.org/acquisition")
+                    )
+                ),
+                subcollections = mapOf(
+                    "images" to listOf(
+                        PublicationCollection(
+                            links = listOf(
+                                Link(
+                                    href = "https://example.com/covers/4561.lrg.png",
+                                    type = "image/png",
+                                    rels = setOf("http://opds-spec.org/image")
+                                )
+                            )
+                        )
+                    )
+                ),
+            ).toJSON(),
+            JSONObject(publication!!.jsonManifest)
         )
     }
 
