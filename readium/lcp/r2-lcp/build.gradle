@@ -43,7 +43,7 @@ dependencies {
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
     } else {
-        implementation "com.github.readium:r2-shared-kotlin:2.0.0"
+        implementation "com.github.readium:r2-shared-kotlin:develop-SNAPSHOT"
     }
 
 
