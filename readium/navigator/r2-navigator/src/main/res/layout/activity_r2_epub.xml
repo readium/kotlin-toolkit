@@ -16,7 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <fragment
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/epub_navigator"
         android:tag="@string/epub_navigator_tag"
         android:name="org.readium.r2.navigator.epub.EpubNavigatorFragment"
