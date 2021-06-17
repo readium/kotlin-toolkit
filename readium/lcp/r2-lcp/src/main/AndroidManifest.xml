@@ -12,5 +12,6 @@
 
     <!-- Used to get the device's name for LSD "register" -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
 </manifest>
