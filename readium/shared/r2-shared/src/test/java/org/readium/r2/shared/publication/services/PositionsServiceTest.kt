@@ -71,9 +71,6 @@ class PositionsServiceTest {
             override suspend fun positionsByReadingOrder(): List<List<Locator>> = positions
         }
 
-        val t = service.get(Link("/~readium/positions"))
-            ?.let { runBlocking { it.readAsString() } }
-
         val json = service.get(Link("/~readium/positions"))
             ?.let { runBlocking { it.readAsString() } }
             ?.getOrNull()
@@ -92,7 +89,7 @@ class PositionsServiceTest {
 
     @Test
     fun `helper for ServicesBuilder works fine`() {
-        val factory = { context: Publication.Service.Context ->
+        val factory = { _: Publication.Service.Context ->
             object : PositionsService {
                 override suspend fun positionsByReadingOrder(): List<List<Locator>> = emptyList()
             }

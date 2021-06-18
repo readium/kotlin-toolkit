@@ -265,6 +265,7 @@ class Publication(
         fun localUrlOf(filename: String, port: Int, href: String): String =
             localBaseUrlOf(filename, port) + href
 
+        @Suppress("UNUSED_PARAMETER")
         @Deprecated("Parse a RWPM with [Manifest::fromJSON] and then instantiate a Publication",
             ReplaceWith("Manifest.fromJSON(json)",
                 "org.readium.r2.shared.publication.Publication", "org.readium.r2.shared.publication.Manifest"),
@@ -467,7 +468,7 @@ class Publication(
      * The provided closure will be used to build the [PositionListFactory], with this being the
      * [Publication].
      */
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION", "UNUSED_PARAMETER")
     @Deprecated("Use [Publication.copy(serviceFactories)] instead", ReplaceWith("Publication.copy(serviceFactories = listOf(positionsServiceFactory)"), level = DeprecationLevel.ERROR)
     fun copyWithPositionsFactory(createFactory: Publication.() -> PositionListFactory): Publication {
         throw NotImplementedError()
@@ -528,6 +529,7 @@ class Publication(
      * The search order is unspecified.
      */
     @Deprecated("Use [linkWithHref()] to find a link with the given HREF", replaceWith = ReplaceWith("linkWithHref"), level = DeprecationLevel.ERROR)
+    @Suppress("UNUSED_PARAMETER")
     fun link(predicate: (Link) -> Boolean): Link? = null
 
     @Deprecated("Use [jsonManifest] instead", ReplaceWith("jsonManifest"))
@@ -537,6 +539,7 @@ class Publication(
     val contentLayout: ReadingProgression get() = metadata.effectiveReadingProgression
 
     @Deprecated("Use `metadata.effectiveReadingProgression` instead", ReplaceWith("metadata.effectiveReadingProgression"), level = DeprecationLevel.ERROR)
+    @Suppress("UNUSED_PARAMETER")
     fun contentLayoutForLanguage(language: String?) = metadata.effectiveReadingProgression
 
 }

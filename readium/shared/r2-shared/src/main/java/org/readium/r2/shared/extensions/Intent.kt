@@ -53,7 +53,7 @@ fun Intent.getPublication(activity: Activity?): Publication {
     return publication
 }
 
-fun Intent.getPublicationOrNull(activity: Activity): Publication? {
+fun Intent.getPublicationOrNull(): Publication? {
     if (hasExtra("publication")) {
         if (BuildConfig.DEBUG) {
             throw deprecationException
@@ -64,6 +64,11 @@ fun Intent.getPublicationOrNull(activity: Activity): Publication? {
 
     return getStringExtra(extraKey)?.let { PublicationRepository.get(it) }
 }
+
+@Suppress("UNUSED_PARAMETER")
+@Deprecated("The `activity` parameter is not necessary", ReplaceWith("getPublicationOrNull()"), level = DeprecationLevel.WARNING)
+fun Intent.getPublicationOrNull(activity: Activity): Publication? =
+    getPublicationOrNull()
 
 fun Intent.destroyPublication(activity: Activity?) {
     if (activity == null || activity.isFinishing) {

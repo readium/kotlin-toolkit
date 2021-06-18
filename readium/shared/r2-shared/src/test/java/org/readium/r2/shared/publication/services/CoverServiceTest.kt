@@ -75,7 +75,7 @@ class CoverServiceTest {
 
     @Test
     fun `helper for ServicesBuilder works fine`() {
-        val factory = { context: Publication.Service.Context ->
+        val factory = { _: Publication.Service.Context ->
             object : CoverService {
                 override suspend fun cover(): Bitmap? = null
             }

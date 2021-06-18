@@ -429,7 +429,7 @@ class ServicesBuilderTest {
             .build(context)
 
         assertNotNull(services.find<FooServiceC>())
-        assertThat(services.find<FooServiceC>()?.wrapped,  instanceOf(FooServiceB::class.java))
+        assertTrue(services.find<FooServiceC>()?.wrapped is FooServiceB)
         assertNotNull(services.find<BarServiceA>())
     }
 

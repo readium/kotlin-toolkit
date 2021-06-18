@@ -77,8 +77,7 @@ class UserProperties : Serializable {
         properties.add(Enumerable(index, values, ref, name))
     }
 
-    fun <T : UserProperty> getByRef(ref: String) = properties.firstOrNull {
+    inline fun <reified T : UserProperty> getByRef(ref: String) = properties.firstOrNull {
         it.ref == ref
     }!! as T
 }
-

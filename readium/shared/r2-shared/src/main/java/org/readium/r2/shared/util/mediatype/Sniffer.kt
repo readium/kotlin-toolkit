@@ -288,13 +288,13 @@ object Sniffers {
         }
 
         if (context.contentAsArchive() != null) {
-            fun isIgnored(entry: Archive.Entry, file: File): Boolean =
+            fun isIgnored(file: File): Boolean =
                 file.name.startsWith(".") || file.name == "Thumbs.db"
 
             suspend fun archiveContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
                 context.archiveEntriesAllSatisfy { entry ->
                     val file = File(entry.path)
-                    isIgnored(entry, file) || fileExtensions.contains(file.extension.toLowerCase(Locale.ROOT))
+                    isIgnored(file) || fileExtensions.contains(file.extension.toLowerCase(Locale.ROOT))
                 }
 
             if (archiveContainsOnlyExtensions(CBZ_EXTENSIONS)) {
