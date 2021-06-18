@@ -10,9 +10,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
@@ -23,18 +21,22 @@ import androidx.recyclerview.widget.RecyclerView
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.toLocator
-import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.FragmentListviewBinding
+import org.readium.r2.testapp.databinding.ItemRecycleNavigationBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.extensions.outlineTitle
 
 /*
 * Fragment to show navigation links (Table of Contents, Page lists & Landmarks)
 */
-class NavigationFragment : Fragment(R.layout.fragment_listview) {
+class NavigationFragment : Fragment() {
 
     private lateinit var publication: Publication
     private lateinit var links: List<Link>
     private lateinit var navAdapter: NavigationAdapter
+
+    private var _binding: FragmentListviewBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +46,15 @@ class NavigationFragment : Fragment(R.layout.fragment_listview) {
         }
 
         links = requireNotNull(requireArguments().getParcelableArrayList(LINKS_ARG))
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentListviewBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -60,12 +71,17 @@ class NavigationFragment : Fragment(R.layout.fragment_listview) {
             flatLinks.addAll(children)
         }
 
-        view.findViewById<RecyclerView>(R.id.list_view).apply {
+        binding.listView.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(requireContext())
             adapter = navAdapter
         }
         navAdapter.submitList(flatLinks)
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 
     private fun onLinkSelected(link: Link) {
@@ -108,8 +124,9 @@ class NavigationAdapter(private val onLinkSelected: (Link) -> Unit) :
             viewType: Int
     ): ViewHolder {
         return ViewHolder(
-                LayoutInflater.from(parent.context)
-                        .inflate(R.layout.item_recycle_navigation, parent, false)
+            ItemRecycleNavigationBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
         )
     }
 
@@ -120,14 +137,12 @@ class NavigationAdapter(private val onLinkSelected: (Link) -> Unit) :
         holder.bind(item)
     }
 
-    inner class ViewHolder(private val row: View) : RecyclerView.ViewHolder(row) {
-        private val navigationTextView: TextView = row.findViewById(R.id.navigation_textView)
-        private val indentationView: ImageView = row.findViewById(R.id.indentation)
+    inner class ViewHolder(val binding: ItemRecycleNavigationBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: Pair<Int, Link>) {
-            navigationTextView.text = item.second.outlineTitle
-            indentationView.layoutParams = LinearLayout.LayoutParams(item.first * 50, ViewGroup.LayoutParams.MATCH_PARENT)
-            row.setOnClickListener {
+            binding.navigationTextView.text = item.second.outlineTitle
+            binding.indentation.layoutParams = LinearLayout.LayoutParams(item.first * 50, ViewGroup.LayoutParams.MATCH_PARENT)
+            binding.root.setOnClickListener {
                 onLinkSelected(item.second)
             }
         }

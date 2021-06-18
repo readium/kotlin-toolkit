@@ -9,9 +9,9 @@ package org.readium.r2.testapp.tts
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.TypedValue
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageButton
-import android.widget.TextView
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
@@ -20,10 +20,11 @@ import androidx.lifecycle.ViewModelProvider
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.FragmentScreenReaderBinding
 import org.readium.r2.testapp.epub.EpubActivity
 import org.readium.r2.testapp.reader.ReaderViewModel
 
-class ScreenReaderFragment : Fragment(R.layout.fragment_screen_reader), ScreenReaderEngine.Listener {
+class ScreenReaderFragment : Fragment(), ScreenReaderEngine.Listener {
 
     private val activity: EpubActivity
         get () = requireActivity() as EpubActivity
@@ -34,6 +35,9 @@ class ScreenReaderFragment : Fragment(R.layout.fragment_screen_reader), ScreenRe
     private lateinit var publication: Publication
 
     private lateinit var screenReader: ScreenReaderEngine
+
+    private var _binding: FragmentScreenReaderBinding? = null
+    private val binding get() = _binding!!
 
     // A reference to the listener must be kept in order to prevent garbage collection
     // See https://developer.android.com/reference/android/content/SharedPreferences#registerOnSharedPreferenceChangeListener(android.content.SharedPreferences.OnSharedPreferenceChangeListener)
@@ -53,34 +57,43 @@ class ScreenReaderFragment : Fragment(R.layout.fragment_screen_reader), ScreenRe
         screenReader = ScreenReaderEngine(activity, publication)
     }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentScreenReaderBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         screenReader.addListener(this)
 
-        view.findViewById<TextView>(R.id.titleView).text = publication.metadata.title
+        binding.titleView.text = publication.metadata.title
 
-        view.findViewById<ImageButton>(R.id.play_pause).setOnClickListener {
+        binding.playPause.setOnClickListener {
             if (screenReader.isPaused) {
                 screenReader.resumeReading()
             } else {
                 screenReader.pauseReading()
             }
         }
-        view.findViewById<ImageButton>(R.id.fast_forward).setOnClickListener {
+        binding.fastForward.setOnClickListener {
             if (!screenReader.nextSentence()) {
-                view.findViewById<ImageButton>(R.id.next_chapter).callOnClick()
+                binding.nextChapter.callOnClick()
             }
         }
-        view.findViewById<ImageButton>(R.id.next_chapter).setOnClickListener {
+        binding.nextChapter.setOnClickListener {
             screenReader.nextResource()
         }
 
-        view.findViewById<ImageButton>(R.id.fast_back).setOnClickListener {
+        binding.fastBack.setOnClickListener {
             if (!screenReader.previousSentence()) {
-                view.findViewById<ImageButton>(R.id.prev_chapter).callOnClick()
+                binding.prevChapter.callOnClick()
             }
         }
-        view.findViewById<ImageButton>(R.id.prev_chapter).setOnClickListener {
+        binding.prevChapter.setOnClickListener {
             screenReader.previousResource()
         }
 
@@ -94,9 +107,9 @@ class ScreenReaderFragment : Fragment(R.layout.fragment_screen_reader), ScreenRe
 
     override fun onPlayStateChanged(playing: Boolean) {
         if (playing) {
-            view?.findViewById<ImageButton>(R.id.play_pause)?.setImageResource(R.drawable.ic_baseline_pause_24)
+            binding.playPause.setImageResource(R.drawable.ic_baseline_pause_24)
         } else {
-            view?.findViewById<ImageButton>(R.id.play_pause)?.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+            binding.playPause.setImageResource(R.drawable.ic_baseline_play_arrow_24)
         }
     }
 
@@ -105,12 +118,13 @@ class ScreenReaderFragment : Fragment(R.layout.fragment_screen_reader), ScreenRe
     }
 
     override fun onPlayTextChanged(text: String) {
-        view?.findViewById<TextView>(R.id.tts_textView)?.text = text
-        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(view?.findViewById(R.id.tts_textView)!!, 1, 30, 1, TypedValue.COMPLEX_UNIT_DIP)
+        binding.ttsTextView.text = text
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(binding.ttsTextView, 1, 30, 1, TypedValue.COMPLEX_UNIT_DIP)
     }
 
     override fun onDestroyView() {
         screenReader.removeListener(this)
+        _binding = null
         super.onDestroyView()
     }
 

@@ -7,24 +7,29 @@
 package org.readium.r2.testapp.outline
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayoutMediator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.landmarks
 import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.FragmentOutlineBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
 
-class OutlineFragment : Fragment(R.layout.fragment_outline) {
+class OutlineFragment : Fragment() {
 
     lateinit var publication: Publication
+
+    private var _binding: FragmentOutlineBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +45,15 @@ class OutlineFragment : Fragment(R.layout.fragment_outline) {
         )
     }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentOutlineBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -48,8 +62,13 @@ class OutlineFragment : Fragment(R.layout.fragment_outline) {
             else -> listOf(Outline.Contents, Outline.Bookmarks)
         }
 
-        view.findViewById<ViewPager2>(R.id.outline_pager).adapter = OutlineFragmentStateAdapter(this, publication, outlines)
-        TabLayoutMediator(view.findViewById(R.id.outline_tab_layout), view.findViewById(R.id.outline_pager)) { tab, idx -> tab.setText(outlines[idx].label) }.attach()
+        binding.outlinePager.adapter = OutlineFragmentStateAdapter(this, publication, outlines)
+        TabLayoutMediator(binding.outlineTabLayout, binding.outlinePager) { tab, idx -> tab.setText(outlines[idx].label) }.attach()
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 }
 

@@ -22,6 +22,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.allAreBitmap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.ActivityReaderBinding
 import org.readium.r2.testapp.drm.DrmManagementContract
 import org.readium.r2.testapp.drm.DrmManagementFragment
 import org.readium.r2.testapp.outline.OutlineContract
@@ -32,16 +33,22 @@ import org.readium.r2.testapp.outline.OutlineFragment
  *
  * This class can be used as it is or be inherited from.
  */
-open class ReaderActivity : AppCompatActivity(R.layout.activity_reader) {
+open class ReaderActivity : AppCompatActivity() {
 
     protected lateinit var readerFragment: VisualReaderFragment
     private lateinit var modelFactory: ReaderViewModel.Factory
     private lateinit var publication: Publication
 
+    lateinit var binding: ActivityReaderBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val inputData = ReaderContract.parseIntent(this)
         modelFactory = ReaderViewModel.Factory(applicationContext, inputData)
         super.onCreate(savedInstanceState)
+
+        binding = ActivityReaderBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
         ViewModelProvider(this).get(ReaderViewModel::class.java).let { model ->
             publication = model.publication

@@ -7,25 +7,27 @@
 package org.readium.r2.testapp.reader
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
+import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.FragmentReaderBinding
 
 /*
  * Base reader fragment class
  *
  * Provides common menu items and saves last location on stop.
  */
-abstract class BaseReaderFragment : Fragment(R.layout.fragment_reader) {
+abstract class BaseReaderFragment : Fragment() {
 
     protected abstract var model: ReaderViewModel
     protected abstract var navigator: Navigator
+
+    private var _binding: FragmentReaderBinding? = null
+    val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
@@ -39,6 +41,20 @@ abstract class BaseReaderFragment : Fragment(R.layout.fragment_reader) {
                 }
             Toast.makeText(requireContext(), getString(message), Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentReaderBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 
     override fun onStop() {

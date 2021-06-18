@@ -21,9 +21,9 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.FragmentCatalogFeedListBinding
 import org.readium.r2.testapp.domain.model.Catalog
 
 
@@ -32,13 +32,17 @@ class CatalogFeedListFragment : Fragment() {
     private val catalogFeedListViewModel: CatalogFeedListViewModel by viewModels()
     private lateinit var catalogsAdapter: CatalogFeedListAdapter
 
+    private var _binding: FragmentCatalogFeedListBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         catalogFeedListViewModel.eventChannel.receive(this) { handleEvent(it) }
-        return inflater.inflate(R.layout.fragment_catalog_feed_list, container, false)
+        _binding = FragmentCatalogFeedListBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -49,7 +53,7 @@ class CatalogFeedListFragment : Fragment() {
 
         catalogsAdapter = CatalogFeedListAdapter(onLongClick = { catalog -> onLongClick(catalog) })
 
-        view.findViewById<RecyclerView>(R.id.catalogFeed_list).apply {
+        binding.catalogFeedList.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(requireContext())
             adapter = catalogsAdapter
@@ -92,7 +96,7 @@ class CatalogFeedListFragment : Fragment() {
             catalogFeedListViewModel.insertCatalog(sEBCatalog)
         }
 
-        view.findViewById<FloatingActionButton>(R.id.catalogFeed_addCatalogFab).setOnClickListener {
+        binding.catalogFeedAddCatalogFab.setOnClickListener {
             val alertDialog = MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.add_catalog))
                 .setView(R.layout.add_catalog_dialog)
@@ -119,6 +123,11 @@ class CatalogFeedListFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 
     private fun handleEvent(event: CatalogFeedListViewModel.Event) {

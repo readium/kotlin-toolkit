@@ -8,8 +8,9 @@ package org.readium.r2.testapp.audiobook
 
 import android.app.ProgressDialog
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageView
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.lifecycleScope
@@ -21,17 +22,21 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.FragmentAudiobookBinding
 import org.readium.r2.testapp.utils.createFragmentFactory
 
 class AudioNavigatorFragment(
     val publication: Publication,
     private var initialLocator: Locator? = null,
     internal val listener: Listener? = null
-) : Fragment(R.layout.fragment_audiobook), Navigator {
+) : Fragment(), Navigator {
 
     interface Listener : Navigator.Listener
 
     private lateinit var activity: AudiobookActivity
+
+    private var _binding: FragmentAudiobookBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +44,15 @@ class AudioNavigatorFragment(
         savedInstanceState?.getParcelable<Locator>("locator")?.let {
             initialLocator = it
         }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentAudiobookBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -49,7 +63,7 @@ class AudioNavigatorFragment(
         // Setting cover
         viewLifecycleOwner.lifecycleScope.launch {
             publication.cover()?.let {
-                view.findViewById<ImageView>(R.id.imageView).setImageBitmap(it)
+                binding.imageView.setImageBitmap(it)
             }
         }
 
@@ -59,6 +73,7 @@ class AudioNavigatorFragment(
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         activity.mediaPlayer.progress!!.dismiss()
     }
 

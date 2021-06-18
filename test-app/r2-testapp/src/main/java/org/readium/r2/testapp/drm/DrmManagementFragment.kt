@@ -7,9 +7,9 @@
 package org.readium.r2.testapp.drm
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
-import android.widget.TextView
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
@@ -23,13 +23,17 @@ import org.readium.r2.lcp.MaterialRenewListener
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.shared.UserException
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.FragmentDrmManagementBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
 import timber.log.Timber
 import java.util.*
 
-class DrmManagementFragment : Fragment(R.layout.fragment_drm_management) {
+class DrmManagementFragment : Fragment() {
 
     private lateinit var model: DrmManagementViewModel
+
+    private var _binding: FragmentDrmManagementBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,19 +50,28 @@ class DrmManagementFragment : Fragment(R.layout.fragment_drm_management) {
         model = ViewModelProvider(this, modelFactory).get(LcpManagementViewModel::class.java)
     }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentDrmManagementBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         // Information
-        view.findViewById<TextView>(R.id.drm_value_license_type).text = model.type
-        view.findViewById<TextView>(R.id.drm_value_state).text = model.state
-        view.findViewById<TextView>(R.id.drm_value_provider).text = model.provider
-        view.findViewById<TextView>(R.id.drm_value_issued).text = model.issued.toFormattedString()
-        view.findViewById<TextView>(R.id.drm_value_updated).text = model.updated.toFormattedString()
+        binding.drmValueLicenseType.text = model.type
+        binding.drmValueState.text = model.state
+        binding.drmValueProvider.text = model.provider
+        binding.drmValueIssued.text = model.issued.toFormattedString()
+        binding.drmValueUpdated.text = model.updated.toFormattedString()
 
         // Rights
-        view.findViewById<TextView>(R.id.drm_value_prints_left).text = model.printsLeft
-        view.findViewById<TextView>(R.id.drm_value_copies_left).text = model.copiesLeft
+        binding.drmValuePrintsLeft.text = model.printsLeft
+        binding.drmValueCopiesLeft.text = model.copiesLeft
 
         val datesVisibility =
                 if (model.start != null && model.end != null && model.start != model.end)
@@ -66,21 +79,21 @@ class DrmManagementFragment : Fragment(R.layout.fragment_drm_management) {
                 else
                     View.GONE
 
-        view.findViewById<View>(R.id.drm_start).visibility = datesVisibility
-        view.findViewById<TextView>(R.id.drm_value_start).text = model.start.toFormattedString()
-        view.findViewById<View>(R.id.drm_end).visibility = datesVisibility
-        view.findViewById<TextView>(R.id.drm_value_end).text = model.end?.toFormattedString()
+        binding.drmStart.visibility = datesVisibility
+        binding.drmValueStart.text = model.start.toFormattedString()
+        binding.drmEnd.visibility = datesVisibility
+        binding.drmValueEnd.text = model.end?.toFormattedString()
 
         // Actions
-        view.findViewById<TextView>(R.id.drm_label_actions).visibility =
+        binding.drmLabelActions.visibility =
                 if (model.canRenewLoan || model.canReturnPublication) View.VISIBLE else View.GONE
 
-        view.findViewById<Button>(R.id.drm_button_renew).run {
+        binding.drmButtonRenew.run {
             visibility = if (model.canRenewLoan) View.VISIBLE else View.GONE
             setOnClickListener { onRenewLoanClicked() }
         }
 
-        view.findViewById<Button>(R.id.drm_button_return).run {
+        binding.drmButtonReturn.run {
             visibility = if (model.canReturnPublication) View.VISIBLE else View.GONE
             setOnClickListener { onReturnPublicationClicked() }
         }
@@ -90,7 +103,7 @@ class DrmManagementFragment : Fragment(R.layout.fragment_drm_management) {
         lifecycleScope.launch {
             model.renewLoan(this@DrmManagementFragment)
                     .onSuccess { newDate ->
-                        requireView().findViewById<TextView>(R.id.drm_value_end).text = newDate.toFormattedString()
+                        binding.drmValueEnd.text = newDate.toFormattedString()
                     }.onFailure { exception ->
                         exception.toastUserMessage(requireView())
                     }
@@ -115,6 +128,11 @@ class DrmManagementFragment : Fragment(R.layout.fragment_drm_management) {
                     }
                 }
                 .show()
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 }
 

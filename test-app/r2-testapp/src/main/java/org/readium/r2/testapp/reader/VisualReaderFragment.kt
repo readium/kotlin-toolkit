@@ -31,7 +31,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
         childFragmentManager.addOnBackStackChangedListener {
             updateSystemUiVisibility()
         }
-        view.findViewById<FrameLayout>(R.id.fragment_reader_container).setOnApplyWindowInsetsListener { container, insets ->
+        binding.fragmentReaderContainer.setOnApplyWindowInsetsListener { container, insets ->
             updateSystemUiPadding(container, insets)
             insets
         }

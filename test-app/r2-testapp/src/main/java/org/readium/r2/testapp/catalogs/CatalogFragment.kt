@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.core.view.setPadding
@@ -25,6 +24,7 @@ import org.readium.r2.testapp.MainActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.bookshelf.BookshelfFragment
 import org.readium.r2.testapp.catalogs.CatalogFeedListAdapter.Companion.CATALOGFEED
+import org.readium.r2.testapp.databinding.FragmentCatalogBinding
 import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 
@@ -34,29 +34,30 @@ class CatalogFragment : Fragment() {
     private val catalogViewModel: CatalogViewModel by viewModels()
     private lateinit var catalogListAdapter: CatalogListAdapter
     private lateinit var catalog: Catalog
-    private lateinit var progressBar: ProgressBar
     private var showFacetMenu = false
     private lateinit var facets: MutableList<Facet>
+
+    private var _binding: FragmentCatalogBinding? = null
+    private val binding get() = _binding!!
 
     // FIXME the entire way this fragment is built feels like a hack. Need a cleaner UI
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         catalogViewModel.eventChannel.receive(this) { handleEvent(it) }
         catalog = arguments?.get(CATALOGFEED) as Catalog
-        return inflater.inflate(R.layout.fragment_catalog, container, false)
+        _binding = FragmentCatalogBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         catalogListAdapter = CatalogListAdapter()
-        progressBar = view.findViewById(R.id.catalog_ProgressBar)
         setHasOptionsMenu(true)
-        val catalogLayout = view.findViewById<LinearLayout>(R.id.catalog_LinearLayout)
 
-        view.findViewById<RecyclerView>(R.id.catalog_DetailList).apply {
+        binding.catalogDetailList.apply {
             layoutManager = GridAutoFitLayoutManager(requireContext(), 120)
             adapter = catalogListAdapter
             addItemDecoration(
@@ -70,7 +71,7 @@ class CatalogFragment : Fragment() {
 
         // TODO this feels hacky, I don't want to parse the file if it has not changed
         if (catalogViewModel.parseData.value == null) {
-            progressBar.visibility = View.VISIBLE
+            binding.catalogProgressBar.visibility = View.VISIBLE
             catalogViewModel.parseCatalog(catalog)
         }
         catalogViewModel.parseData.observe(viewLifecycleOwner, { result ->
@@ -101,7 +102,7 @@ class CatalogFragment : Fragment() {
                             .navigate(R.id.action_navigation_catalog_self, bundle)
                     }
                 }
-                catalogLayout.addView(button, index)
+                binding.catalogLinearLayout.addView(button, index)
             }
 
             if (result.feed!!.publications.isNotEmpty()) {
@@ -157,8 +158,8 @@ class CatalogFragment : Fragment() {
                             submitList(group.publications)
                         }
                     }
-                    catalogLayout.addView(linearLayout)
-                    catalogLayout.addView(publicationRecyclerView)
+                    binding.catalogLinearLayout.addView(linearLayout)
+                    binding.catalogLinearLayout.addView(publicationRecyclerView)
                 }
                 if (group.navigation.isNotEmpty()) {
                     for (navigation in group.navigation) {
@@ -180,12 +181,17 @@ class CatalogFragment : Fragment() {
                                     .navigate(R.id.action_navigation_catalog_self, bundle)
                             }
                         }
-                        catalogLayout.addView(button)
+                        binding.catalogLinearLayout.addView(button)
                     }
                 }
             }
-            progressBar.visibility = View.GONE
+            binding.catalogProgressBar.visibility = View.GONE
         })
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 
     private fun handleEvent(event: CatalogViewModel.Event.FeedEvent) {
@@ -193,7 +199,7 @@ class CatalogFragment : Fragment() {
             when (event) {
                 is CatalogViewModel.Event.FeedEvent.CatalogParseFailed -> getString(R.string.failed_parsing_catalog)
             }
-        progressBar.visibility = View.GONE
+        binding.catalogProgressBar.visibility = View.GONE
         Snackbar.make(
             requireView(),
             message,

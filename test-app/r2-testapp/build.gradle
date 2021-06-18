@@ -55,9 +55,11 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
     }
     buildFeatures {
         dataBinding = true
+        viewBinding = true
     }
     buildTypes {
         release {
@@ -110,19 +112,20 @@ dependencies {
         implementation "com.github.readium:r2-lcp-kotlin:$READIUM_VERSION"
     }
 
-    implementation "androidx.activity:activity-ktx:1.3.0-alpha02"
-    implementation "androidx.appcompat:appcompat:1.3.0-beta01"
+    implementation 'androidx.core:core-ktx:1.5.0'
+    implementation "androidx.activity:activity-ktx:1.2.3"
+    implementation "androidx.appcompat:appcompat:1.3.0"
     implementation "androidx.browser:browser:1.3.0"
     implementation "androidx.cardview:cardview:1.0.0"
     implementation "androidx.constraintlayout:constraintlayout:2.0.4"
-    implementation "androidx.fragment:fragment-ktx:1.3.0"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.0"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.0"
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.4'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.3.4'
-    implementation "androidx.paging:paging-runtime-ktx:3.0.0-rc01"
-    implementation "androidx.recyclerview:recyclerview:1.1.0"
+    implementation "androidx.fragment:fragment-ktx:1.3.4"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
+    implementation "androidx.paging:paging-runtime-ktx:3.0.0"
+    implementation "androidx.recyclerview:recyclerview:1.2.1"
     implementation "androidx.viewpager2:viewpager2:1.0.0"
     implementation "androidx.webkit:webkit:1.4.0"
     //noinspection GradleDependency
@@ -138,14 +141,14 @@ dependencies {
     // AM NOTE: needs to stay this version for now (June 24,2020)
     //noinspection GradleDependency
     implementation "com.squareup.picasso:picasso:2.5.2"
-    implementation "joda-time:joda-time:2.10.5"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2"
+    implementation "joda-time:joda-time:2.10.10"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3"
     // AM NOTE: needs to stay this version for now (June 24,2020)
     //noinspection GradleDependency
     implementation 'org.jsoup:jsoup:1.13.1'
 
     // Room database
-    final room_version = '2.2.6'
+    final room_version = '2.3.0'
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     kapt "androidx.room:room-compiler:$room_version"

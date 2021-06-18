@@ -27,6 +27,7 @@ import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.*
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.PopupWindowUserSettingsBinding
 import org.readium.r2.testapp.utils.extensions.color
 import java.io.File
 
@@ -181,15 +182,15 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
     fun userSettingsPopUp(): PopupWindow {
 
         val layoutInflater = LayoutInflater.from(context)
-        val layout = layoutInflater.inflate(R.layout.popup_window_user_settings, null)
+        val layout = PopupWindowUserSettingsBinding.inflate(layoutInflater)
         val userSettingsPopup = PopupWindow(context)
-        userSettingsPopup.contentView = layout
+        userSettingsPopup.contentView = layout.root
         userSettingsPopup.width = ListPopupWindow.WRAP_CONTENT
         userSettingsPopup.height = ListPopupWindow.WRAP_CONTENT
         userSettingsPopup.isOutsideTouchable = true
         userSettingsPopup.isFocusable = true
 
-        val host = layout.findViewById(R.id.tabhost) as TabHost
+        val host = layout.tabhost
         host.setup()
 
         //Tab 1
@@ -221,7 +222,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
         val letterSpacing = userProperties.getByRef<Incremental>(LETTER_SPACING_REF)
         val lineHeight = userProperties.getByRef<Incremental>(LINE_HEIGHT_REF)
 
-        val fontSpinner: Spinner = layout.findViewById(R.id.spinner_action_settings_intervall_values) as Spinner
+        val fontSpinner: Spinner = layout.spinnerActionSettingsIntervallValues
 
         val fonts = context.resources.getStringArray(R.array.font_list)
 
@@ -277,14 +278,14 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
 
 
         // Appearance
-        val appearanceGroup = layout.findViewById(R.id.appearance) as RadioGroup
+        val appearanceGroup = layout.appearance
         val appearanceRadios = mutableListOf<RadioButton>()
-        appearanceRadios.add(layout.findViewById(R.id.appearance_default) as RadioButton)
-        (layout.findViewById(R.id.appearance_default) as RadioButton).contentDescription = "Appearance Default"
-        appearanceRadios.add(layout.findViewById(R.id.appearance_sepia) as RadioButton)
-        (layout.findViewById(R.id.appearance_sepia) as RadioButton).contentDescription = "Appearance Sepia"
-        appearanceRadios.add(layout.findViewById(R.id.appearance_night) as RadioButton)
-        (layout.findViewById(R.id.appearance_night) as RadioButton).contentDescription = "Appearance Night"
+        appearanceRadios.add(layout.appearanceDefault)
+        layout.appearanceDefault.contentDescription = "Appearance Default"
+        appearanceRadios.add(layout.appearanceSepia)
+        layout.appearanceSepia.contentDescription = "Appearance Sepia"
+        appearanceRadios.add(layout.appearanceNight)
+        layout.appearanceNight.contentDescription = "Appearance Night"
 
         UIPreset[ReadiumCSSName.appearance]?.let {
             appearanceGroup.isEnabled = false
@@ -318,8 +319,8 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
 
 
         // Font size
-        val fontDecreaseButton = layout.findViewById(R.id.font_decrease) as ImageButton
-        val fontIncreaseButton = layout.findViewById(R.id.font_increase) as ImageButton
+        val fontDecreaseButton = layout.fontDecrease
+        val fontIncreaseButton = layout.fontIncrease
 
         UIPreset[ReadiumCSSName.fontSize]?.let {
             fontDecreaseButton.isEnabled = false
@@ -340,7 +341,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
 
 
         // Publisher defaults
-        val publisherDefaultSwitch = layout.findViewById(R.id.publisher_default) as Switch
+        val publisherDefaultSwitch = layout.publisherDefault
         publisherDefaultSwitch.contentDescription = "\u00A0"
 
         publisherDefaultSwitch.isChecked = publisherDefault.on
@@ -352,7 +353,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
 
 
         // Vertical scroll
-        val scrollModeSwitch = layout.findViewById(R.id.scroll_mode) as Switch
+        val scrollModeSwitch = layout.scrollMode
         UIPreset[ReadiumCSSName.scroll]?.let { isSet ->
             scrollModeSwitch.isChecked = isSet
             scrollModeSwitch.isEnabled = false
@@ -382,13 +383,13 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
 
 
         // Text alignment
-        val alignmentGroup = layout.findViewById(R.id.TextAlignment) as RadioGroup
+        val alignmentGroup = layout.TextAlignment
         val alignmentRadios = mutableListOf<RadioButton>()
-        alignmentRadios.add(layout.findViewById(R.id.alignment_left))
-        (layout.findViewById(R.id.alignment_left) as RadioButton).contentDescription = "Alignment Left"
+        alignmentRadios.add(layout.alignmentLeft)
+        (layout.alignmentLeft).contentDescription = "Alignment Left"
 
-        alignmentRadios.add(layout.findViewById(R.id.alignment_justify))
-        (layout.findViewById(R.id.alignment_justify) as RadioButton).contentDescription = "Alignment Justified"
+        alignmentRadios.add(layout.alignmentJustify)
+        layout.alignmentJustify.contentDescription = "Alignment Justified"
 
         UIPreset[ReadiumCSSName.textAlignment]?.let {
             alignmentGroup.isEnabled = false
@@ -409,16 +410,16 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
 
 
         // Column count
-        val columnsCountGroup = layout.findViewById(R.id.columns) as RadioGroup
+        val columnsCountGroup = layout.columns
         val columnsRadios = mutableListOf<RadioButton>()
-        columnsRadios.add(layout.findViewById(R.id.column_auto))
-        (layout.findViewById(R.id.column_auto) as RadioButton).contentDescription = "Columns Auto"
+        columnsRadios.add(layout.columnAuto)
+        layout.columnAuto.contentDescription = "Columns Auto"
 
-        columnsRadios.add(layout.findViewById(R.id.column_one))
-        (layout.findViewById(R.id.column_one) as RadioButton).contentDescription = "Columns 1"
+        columnsRadios.add(layout.columnOne)
+        layout.columnOne.contentDescription = "Columns 1"
 
-        columnsRadios.add(layout.findViewById(R.id.column_two))
-        (layout.findViewById(R.id.column_two) as RadioButton).contentDescription = "Columns 2"
+        columnsRadios.add(layout.columnTwo)
+        layout.columnTwo.contentDescription = "Columns 2"
 
         UIPreset[ReadiumCSSName.columnCount]?.let {
             columnsCountGroup.isEnabled = false
@@ -439,9 +440,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
 
 
         // Page margins
-        val pageMarginsDecreaseButton = layout.findViewById(R.id.pm_decrease) as ImageButton
-        val pageMarginsIncreaseButton = layout.findViewById(R.id.pm_increase) as ImageButton
-        val pageMarginsDisplay = layout.findViewById(R.id.pm_display) as TextView
+        val pageMarginsDecreaseButton = layout.pmDecrease
+        val pageMarginsIncreaseButton = layout.pmIncrease
+        val pageMarginsDisplay = layout.pmDisplay
         pageMarginsDisplay.text = pageMargins.value.toString()
 
         UIPreset[ReadiumCSSName.pageMargins]?.let {
@@ -467,9 +468,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
 
 
         // Word spacing
-        val wordSpacingDecreaseButton = layout.findViewById(R.id.ws_decrease) as ImageButton
-        val wordSpacingIncreaseButton = layout.findViewById(R.id.ws_increase) as ImageButton
-        val wordSpacingDisplay = layout.findViewById(R.id.ws_display) as TextView
+        val wordSpacingDecreaseButton = layout.wsDecrease
+        val wordSpacingIncreaseButton = layout.wsIncrease
+        val wordSpacingDisplay = layout.wsDisplay
         wordSpacingDisplay.text = (if (wordSpacing.value == wordSpacing.min) "auto" else wordSpacing.value.toString())
 
         UIPreset[ReadiumCSSName.wordSpacing]?.let {
@@ -494,9 +495,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
         }
 
         // Letter spacing
-        val letterSpacingDecreaseButton = layout.findViewById(R.id.ls_decrease) as ImageButton
-        val letterSpacingIncreaseButton = layout.findViewById(R.id.ls_increase) as ImageButton
-        val letterSpacingDisplay = layout.findViewById(R.id.ls_display) as TextView
+        val letterSpacingDecreaseButton = layout.lsDecrease
+        val letterSpacingIncreaseButton = layout.lsIncrease
+        val letterSpacingDisplay = layout.lsDisplay
         letterSpacingDisplay.text = (if (letterSpacing.value == letterSpacing.min) "auto" else letterSpacing.value.toString())
 
         UIPreset[ReadiumCSSName.letterSpacing]?.let {
@@ -522,9 +523,9 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
 
 
         // Line height
-        val lineHeightDecreaseButton = layout.findViewById(R.id.lh_decrease) as ImageButton
-        val lineHeightIncreaseButton = layout.findViewById(R.id.lh_increase) as ImageButton
-        val lineHeightDisplay = layout.findViewById(R.id.lh_display) as TextView
+        val lineHeightDecreaseButton = layout.lhDecrease
+        val lineHeightIncreaseButton = layout.lhIncrease
+        val lineHeightDisplay = layout.lhDisplay
         lineHeightDisplay.text = (if (lineHeight.value == lineHeight.min) "auto" else lineHeight.value.toString())
 
         UIPreset[ReadiumCSSName.lineHeight]?.let {
@@ -548,7 +549,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
         }
 
         // Brightness
-        val brightnessSeekbar = layout.findViewById(R.id.brightness) as SeekBar
+        val brightnessSeekbar = layout.brightness
         val brightness = preferences.getInt("reader_brightness", 50)
         brightnessSeekbar.progress = brightness
         brightnessSeekbar.setOnSeekBarChangeListener(
@@ -571,7 +572,7 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
                 })
 
         // Speech speed
-        val speechSeekBar = layout.findViewById(R.id.TTS_speech_speed) as SeekBar
+        val speechSeekBar = layout.TTSSpeechSpeed
 
         //Get the user settings value or set the progress bar to a neutral position (1 time speech speed).
         val speed = preferences.getInt("reader_TTS_speed", (2.75 * 3.toDouble() / 11.toDouble() * 100).toInt())

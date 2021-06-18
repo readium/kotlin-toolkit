@@ -10,12 +10,11 @@ import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.ItemRecycleSearchBinding
 import org.readium.r2.testapp.utils.singleClick
 
 /**
@@ -24,8 +23,11 @@ import org.readium.r2.testapp.utils.singleClick
 class SearchResultAdapter(private var listener: Listener) : PagingDataAdapter<Locator, SearchResultAdapter.ViewHolder>(ItemCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_recycle_search, parent, false)
-        return ViewHolder(view)
+        return ViewHolder(
+            ItemRecycleSearchBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+        )
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
@@ -38,8 +40,8 @@ class SearchResultAdapter(private var listener: Listener) : PagingDataAdapter<Lo
         }
     }
 
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val textView: TextView = view.findViewById<View>(R.id.text) as TextView
+    inner class ViewHolder(val binding: ItemRecycleSearchBinding) : RecyclerView.ViewHolder(binding.root) {
+        val textView = binding.text
     }
 
     interface Listener {
