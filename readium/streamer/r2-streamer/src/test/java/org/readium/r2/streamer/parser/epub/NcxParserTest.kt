@@ -11,10 +11,13 @@ package org.readium.r2.streamer.parser.epub
 
 import org.assertj.core.api.Assertions
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
+import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertNotNull
 
+@RunWith(RobolectricTestRunner::class)
 class NcxParserTest {
     private fun parseNavigationDocument(path: String): Map<String, List<Link>> {
         val res = NcxParser::class.java.getResourceAsStream(path)

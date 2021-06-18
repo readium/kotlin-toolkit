@@ -14,6 +14,8 @@ import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.server.Resources
 import java.io.InputStream
 
+
+@Suppress("UNUSED_PARAMETER", "unused")
 @Deprecated("Use [publication.get(link)] to access publication content.", level = DeprecationLevel.ERROR)
 class Fetcher(var publication: Publication, var container: Container, private val userPropertiesPath: String?, customResources: Resources? = null) {
 

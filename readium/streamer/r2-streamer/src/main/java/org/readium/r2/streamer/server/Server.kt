@@ -147,10 +147,13 @@ abstract class AbstractServer(private var port: Int, private val context: Contex
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     @Deprecated("This is not needed anymore")
     fun loadReadiumCSSResources(assets: AssetManager) {}
+    @Suppress("UNUSED_PARAMETER")
     @Deprecated("This is not needed anymore")
     fun loadR2ScriptResources(assets: AssetManager) {}
+    @Suppress("UNUSED_PARAMETER")
     @Deprecated("This is not needed anymore")
     fun loadR2FontResources(assets: AssetManager, context: Context) {}
 

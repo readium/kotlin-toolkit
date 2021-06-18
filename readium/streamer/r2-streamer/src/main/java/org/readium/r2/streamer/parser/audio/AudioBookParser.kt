@@ -40,10 +40,10 @@ class AudioBookParser : PublicationParser {
      * This functions parse a manifest.json and build PubBox object from it
      */
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
-        _parse(fileAtPath, fallbackTitle)
+        _parse(fileAtPath)
     }
 
-    private suspend fun _parse(fileAtPath: String, fallbackTitle: String): PubBox? {
+    private suspend fun _parse(fileAtPath: String): PubBox? {
         val fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
             ?: throw ContainerError.missingFile(fileAtPath)
 

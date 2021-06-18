@@ -81,10 +81,9 @@ internal class HtmlInjector(
             // Inject all custom resourses
             for ((key, value) in it.resources) {
                 if (value is Pair<*, *>) {
-                    val res = value as Pair<String, String>
-                    if (Injectable(res.second) == Injectable.Script) {
+                    if (Injectable(value.second as String) == Injectable.Script) {
                         endIncludes.add(getHtmlScript("/${Injectable.Script.rawValue}/$key"))
-                    } else if (Injectable(res.second) == Injectable.Style) {
+                    } else if (Injectable(value.second as String) == Injectable.Style) {
                         endIncludes.add(getHtmlLink("/${Injectable.Style.rawValue}/$key"))
                     }
                 }

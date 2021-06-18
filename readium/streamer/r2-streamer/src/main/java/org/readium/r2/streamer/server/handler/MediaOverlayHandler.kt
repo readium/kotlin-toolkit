@@ -56,6 +56,7 @@ class MediaOverlayHandler : RouterNanoHTTPD.DefaultHandler() {
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun getMediaOverlay(spines: List<Link>, searchQueryPath: String): MediaOverlays? {
         // FIXME: This is not supported until the model is properly specified
         return null

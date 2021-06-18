@@ -13,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.drm.DRM
+import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Link
@@ -89,7 +90,7 @@ class EpubParser : PublicationParser, org.readium.r2.streamer.parser.Publication
         if (asset.mediaType() != MediaType.EPUB)
             return null
 
-        val opfPath = getRootFilePath(fetcher)
+        val opfPath = getRootFilePath(fetcher).addPrefix("/")
         val opfXmlDocument = fetcher.get(opfPath).readAsXml().getOrThrow()
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
             ?:  throw Exception("Invalid OPF file.")

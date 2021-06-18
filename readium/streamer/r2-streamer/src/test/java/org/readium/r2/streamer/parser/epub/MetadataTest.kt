@@ -13,6 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
 import org.joda.time.DateTime
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Collection
 import org.readium.r2.shared.publication.Contributor
 import org.readium.r2.shared.publication.LocalizedString
@@ -21,9 +22,11 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
+import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertNotNull
 import org.readium.r2.shared.publication.Link as SharedLink
 
+@RunWith(RobolectricTestRunner::class)
 class ContributorParsingTest {
     private val epub2Metadata = parsePackageDocument("package/contributors-epub2.opf").metadata
     private val epub3Metadata = parsePackageDocument("package/contributors-epub3.opf").metadata
@@ -172,6 +175,7 @@ class ContributorParsingTest {
     }
 }
 
+@RunWith(RobolectricTestRunner::class)
 class TitleTest {
     private val epub2Metadata = parsePackageDocument("package/titles-epub2.opf").metadata
     private val epub3Metadata = parsePackageDocument("package/titles-epub3.opf").metadata
@@ -226,6 +230,7 @@ class TitleTest {
     }
 }
 
+@RunWith(RobolectricTestRunner::class)
 class SubjectTest {
     private val complexMetadata = parsePackageDocument("package/subjects-complex.opf").metadata // epub3 only
 
@@ -278,6 +283,7 @@ class SubjectTest {
     }
 }
 
+@RunWith(RobolectricTestRunner::class)
 class DateTest {
     private val epub2Metadata = parsePackageDocument("package/dates-epub2.opf").metadata
     private val epub3Metadata = parsePackageDocument("package/dates-epub3.opf").metadata
@@ -297,6 +303,7 @@ class DateTest {
     }
 }
 
+@RunWith(RobolectricTestRunner::class)
 class MetadataMiscTest {
     @Test
     fun `Unique identifier is rightly parsed`() {
@@ -358,6 +365,7 @@ class MetadataMiscTest {
     }
 }
 
+@RunWith(RobolectricTestRunner::class)
 class CollectionTest {
     private val epub2Metadata = parsePackageDocument("package/collections-epub2.opf").metadata
     private val epub3Metadata = parsePackageDocument("package/collections-epub3.opf").metadata

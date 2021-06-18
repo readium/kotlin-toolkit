@@ -11,6 +11,7 @@ package org.readium.r2.streamer.parser.epub
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
@@ -19,8 +20,9 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.contains
 import org.readium.r2.shared.publication.epub.layout
 import org.readium.r2.shared.publication.presentation.*
+import org.robolectric.RobolectricTestRunner
 
-fun parsePackageDocument(path: String, displayOptions: String? = null): Manifest {
+fun parsePackageDocument(path: String): Manifest {
     val pub = PackageDocument::class.java.getResourceAsStream(path)
         ?.let { XmlParser().parse(it) }
         ?.let { PackageDocument.parse(it, "OEBPS/content.opf") }
@@ -32,6 +34,7 @@ fun parsePackageDocument(path: String, displayOptions: String? = null): Manifest
 
 const val PARSE_PUB_TIMEOUT = 1000L // milliseconds
 
+@RunWith(RobolectricTestRunner::class)
 class ReadingProgressionTest {
     @Test
     fun `No page progression direction is mapped to default`() {
@@ -58,6 +61,7 @@ class ReadingProgressionTest {
     }
 }
 
+@RunWith(RobolectricTestRunner::class)
 class LinkPropertyTest {
     private val propertiesPub = parsePackageDocument("package/links-properties.opf")
 
@@ -114,6 +118,7 @@ class LinkPropertyTest {
     }
 }
 
+@RunWith(RobolectricTestRunner::class)
 class LinkTest {
     private val resourcesPub = parsePackageDocument("package/links.opf")
 
@@ -176,6 +181,7 @@ class LinkTest {
     }
 }
 
+@RunWith(RobolectricTestRunner::class)
 class LinkMiscTest {
     fun `Fallbacks are mapped to alternates`() {
         assertThat(parsePackageDocument("package/fallbacks.opf")).isEqualTo(

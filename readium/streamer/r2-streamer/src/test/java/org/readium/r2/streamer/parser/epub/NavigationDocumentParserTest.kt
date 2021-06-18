@@ -12,16 +12,19 @@ package org.readium.r2.streamer.parser.epub
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
+import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertNotNull
 
+@RunWith(RobolectricTestRunner::class)
 class NavigationDocumentParserTest {
     private fun parseNavigationDocument(path: String): Map<String, List<Link>> {
         val res = NavigationDocumentParser::class.java.getResourceAsStream(path)
         checkNotNull(res)
         val document = XmlParser().parse(res)
-        val navigationDocument = NavigationDocumentParser.parse(document, "OEBPS/xhtml/nav.xhtml")
+        val navigationDocument = NavigationDocumentParser.parse(document, "/OEBPS/xhtml/nav.xhtml")
         assertNotNull(navigationDocument)
         return navigationDocument
     }
@@ -95,7 +98,7 @@ class NavigationDocumentParserTest {
 
     @Test
     fun `Fake Navigation Document is accepted`() {
-        Assertions.assertThat(navEmpty["toc"]).isNull()
+        assertThat(navEmpty["toc"]).isNull()
     }
 
     @Test
