@@ -14,6 +14,7 @@ import org.hamcrest.CoreMatchers.instanceOf
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Resource
@@ -23,9 +24,11 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.Ref
+import org.robolectric.RobolectricTestRunner
 import java.net.URL
 import kotlin.reflect.KClass
 
+@RunWith(RobolectricTestRunner::class)
 class PublicationTest {
 
     private fun createPublication(

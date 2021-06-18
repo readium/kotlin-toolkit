@@ -1,18 +1,16 @@
 package org.readium.r2.shared.util.mediatype
 
 import android.webkit.MimeTypeMap
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
-import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@RunWith(AndroidJUnit4::class)
-@Config(sdk = [28])
+@RunWith(RobolectricTestRunner::class)
 class SnifferTest {
 
     val fixtures = Fixtures("format")

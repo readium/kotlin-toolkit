@@ -13,9 +13,12 @@ package org.readium.r2.shared.publication
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertEquals
 
+@RunWith(RobolectricTestRunner::class)
 class ManifestTest {
 
     @Test
@@ -190,7 +193,7 @@ class ManifestTest {
                     {"href": "/manifest.json", "rel": "self"}
                 ],
                 "readingOrder": [
-                    {"href": "/chap1.html", "type": "text/html"},
+                    {"href": "/chap1.html", "type": "text/html"}
                 ],
                 "resources": [
                     {"href": "/withtype", "type": "text/html"},

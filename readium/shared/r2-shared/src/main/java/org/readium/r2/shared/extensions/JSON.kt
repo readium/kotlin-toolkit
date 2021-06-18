@@ -340,3 +340,12 @@ object JSONParceler : Parceler<Map<String, Any>> {
     }
 
 }
+
+/**
+ * Unit tests ran through Robolectric don't see the `toMap()` and `toList()` extensions for some
+ * reasons (even with proper imports). These aliases work though.
+ * I assume it might be because the most recent versions of `org.json` added a `toMap()` API which
+ * could conflict in this case.
+ */
+internal fun JSONObject.toMapTest(): Map<String, Any> = toMap()
+internal fun JSONArray.toListTest(): List<Any> = toList()

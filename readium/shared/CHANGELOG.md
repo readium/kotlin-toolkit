@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 * Crash with `HttpRequest.setPostForm()` on Android 6.
+* HREF normalization when a resource path contains special characters.
 
 
 ## [2.0.0]

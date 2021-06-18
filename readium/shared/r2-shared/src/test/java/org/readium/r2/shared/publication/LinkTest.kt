@@ -14,10 +14,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.toJSON
-import java.net.URL
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class LinkTest {
 
     @Test fun `templateParameters works fine`() {
@@ -157,7 +159,7 @@ class LinkTest {
             ),
             Link.fromJSONArray(JSONArray("""[
                 {'href': 'http://child1'},
-                {'href': 'http://child2'},
+                {'href': 'http://child2'}
             ]"""))
         )
     }
@@ -173,7 +175,7 @@ class LinkTest {
             ),
             Link.fromJSONArray(JSONArray("""[
                 {'title': 'Title'},
-                {'href': 'http://child2'},
+                {'href': 'http://child2'}
             ]"""))
         )
     }
@@ -238,7 +240,7 @@ class LinkTest {
         assertJSONEquals(
             JSONArray("""[
                 {'href': 'http://child1', 'templated': false},
-                {'href': 'http://child2', 'templated': false},
+                {'href': 'http://child2', 'templated': false}
             ]"""),
             listOf(
                 Link(href = "http://child1"),

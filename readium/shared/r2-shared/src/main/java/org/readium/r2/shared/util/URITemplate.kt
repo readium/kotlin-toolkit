@@ -59,6 +59,7 @@ data class URITemplate(val uri: String) {
 
         return Href(expanded).percentEncodedString
             .replace("~~%20~~", "%2B")
+            .replace("~~+~~", "%2B")
     }
 
 }

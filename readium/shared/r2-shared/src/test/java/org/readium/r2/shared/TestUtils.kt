@@ -13,8 +13,8 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
-import org.readium.r2.shared.extensions.toList
-import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.extensions.toListTest
+import org.readium.r2.shared.extensions.toMapTest
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -26,14 +26,14 @@ import java.net.URL
  * Asserts that two [JSONObject] are equal.
  */
 fun assertJSONEquals(expected: JSONObject, actual: JSONObject) {
-    assertEquals(expected.toMap(), actual.toMap())
+    assertEquals(expected.toMapTest(), actual.toMapTest())
 }
 
 /**
  * Asserts that two [JSONArray] are equal.
  */
 fun assertJSONEquals(expected: JSONArray, actual: JSONArray) {
-    assertEquals(expected.toList(), actual.toList())
+    assertEquals(expected.toListTest(), actual.toListTest())
 }
 
 class Fixtures(val path: String? = null) {

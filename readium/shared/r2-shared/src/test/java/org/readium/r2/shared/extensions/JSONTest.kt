@@ -1,12 +1,12 @@
 package org.readium.r2.shared.extensions
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.json.JSONArray
 import org.json.JSONObject
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.annotation.Config
+import org.robolectric.RobolectricTestRunner
 
 class JSONTest {
 
@@ -72,8 +72,7 @@ class JSONTest {
 
 }
 
-@RunWith(AndroidJUnit4::class)
-@Config(sdk = [28])
+@RunWith(RobolectricTestRunner::class)
 class JSONAndroidTest {
 
     // This test requires `RunWith(AndroidJUnit4::class)`, because the behavior is not buggy on the

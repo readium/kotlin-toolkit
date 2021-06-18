@@ -10,7 +10,6 @@
 package org.readium.r2.shared.fetcher
 
 import android.webkit.MimeTypeMap
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -18,16 +17,15 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.lengthBlocking
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.readBlocking
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
-import org.robolectric.annotation.Config
 import java.io.File
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
-@RunWith(AndroidJUnit4::class)
-@Config(sdk = [28])
+@RunWith(RobolectricTestRunner::class)
 class FileFetcherTest {
 
     private val fetcher: Fetcher

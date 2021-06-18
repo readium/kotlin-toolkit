@@ -8,12 +8,12 @@ package org.readium.r2.shared.util
 
 import android.net.Uri
 import android.net.UrlQuerySanitizer
+import android.webkit.URLUtil
 import org.readium.r2.shared.extensions.addPrefix
 import timber.log.Timber
 import java.net.IDN
 import java.net.URI
 import java.net.URL
-import java.net.URLDecoder
 
 /**
  * Represents an HREF, optionally relative to another one.
@@ -31,35 +31,35 @@ class Href(
 
     /** Returns the normalized string representation for this HREF. */
     val string: String get() {
-        if (href.isBlank()) {
-            return baseHref
+        val baseHref = baseHref.removePercentEncoding()
+        val href = href.removePercentEncoding()
+
+        // HREF is just an anchor inside the base.
+        if (href.isBlank() || href.startsWith("#")) {
+            return baseHref + href
         }
 
-        val resolved =
-            try {
-                val absoluteUri = URI.create(baseHref).resolve(href)
-                val absoluteString = absoluteUri.toString() // This is percent-decoded
-                val addSlash = absoluteUri.scheme == null && !absoluteString.startsWith("/")
-                (if (addSlash) "/" else "") + absoluteString
+        // HREF is already absolute.
+        if (Uri.parse(href).isAbsolute) {
+            return href
+        }
 
-            } catch (e: IllegalArgumentException) {
-                try {
-                    // Android's Uri is more forgiving than URI.
-                    val hrefUri = Uri.parse(href)
-                    when {
-                        hrefUri.isAbsolute -> href
-                        baseHref.startsWith("/") -> baseHref + href
-                        else -> "/$baseHref$href"
-                    }
-                } catch (e: Exception) {
-                    if (href.startsWith("http://") || href.startsWith("https://"))
-                        href
-                    else
-                        baseHref.removeSuffix("/") + href.addPrefix("/")
-                }
-            }
+        // Isolates the path from the anchor/query portion, which would be lost otherwise.
+        val splitIndex = href.indexOf("?").takeIf { it != -1 }
+            ?: href.indexOf("#").takeIf { it != -1 }
+            ?: (href.lastIndex + 1)
 
-        return URLDecoder.decode(resolved, "UTF-8")
+        val path = href.substring(0, splitIndex)
+        val suffix = href.substring(splitIndex)
+
+        return try {
+            val uri = URI.create(baseHref.percentEncodedPath()).resolve(path.percentEncodedPath())
+            val url = (if (URLUtil.isNetworkUrl(uri.toString())) uri.toString() else uri.path.addPrefix("/")) + suffix
+            return url.removePercentEncoding()
+        } catch (e: Exception) {
+            Timber.e(e)
+            "$baseHref/$href"
+        }
     }
 
     /**
@@ -85,10 +85,28 @@ class Href(
     }
 
     /** Returns the query parameters present in this HREF, in the order they appear. */
-    val queryParameters: List<QueryParameter> get() =
-        UrlQuerySanitizer(percentEncodedString).parameterList
-            .map { QueryParameter(name = it.mParameter, value = it.mValue) }
+    val queryParameters: List<QueryParameter> get() {
+        val url = percentEncodedString.substringBefore("#")
+        return UrlQuerySanitizer(url).parameterList
+            .map { p -> QueryParameter(name = p.mParameter, value = p.mValue.takeUnless { it.isBlank() }) }
+    }
 
+    /**
+     * Percent-encodes an URL path section.
+     *
+     * Equivalent to Swift's `string.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)`
+     */
+    private fun String.percentEncodedPath(): String =
+        Uri.encode(this, "$&+,/:=@")
+
+    /**
+     * Expands percent-encoded characters.
+     */
+    private fun String.removePercentEncoding(): String =
+        Uri.decode(this)
+            // If the string contains invalid percent-encoded characters, assumes that it is already
+            // percent-decoded. For example, if the string contains a standalone % character.
+            .takeIf { !it.contains("\uFFFD") } ?: this
 }
 
 fun List<Href.QueryParameter>.firstNamedOrNull(name: String): String? =
