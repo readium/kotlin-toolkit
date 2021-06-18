@@ -83,7 +83,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
-    final READIUM_VERSION = '2.0.0'
+    final READIUM_VERSION = 'develop-SNAPSHOT'
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
     } else {
