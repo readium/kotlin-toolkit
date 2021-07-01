@@ -21,7 +21,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.NavigatorDelegate
-import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
@@ -105,7 +104,7 @@ class EpubNavigatorFragment private constructor(
         // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
         var doublePageIndex = 0
         var doublePageLeft = ""
-        var doublePageRight = ""
+        var doublePageRight: String
         var resourceIndexDouble = 0
 
         for ((resourceIndexSingle, spineItem) in publication.readingOrder.withIndex()) {
@@ -234,29 +233,32 @@ class EpubNavigatorFragment private constructor(
         fun setCurrent(resources: ArrayList<*>) {
             for (resource in resources) {
                 if (resource is Pair<*, *>) {
-                    resource as Pair<Int, String>
-                    if (resource.second.endsWith(href)) {
-                        if (resourcePager.currentItem == resource.first) {
+                    val resourceFirst = resource.first as Int
+                    val resourceSecond = resource.second as String
+                    if (resourceSecond.endsWith(href)) {
+                        if (resourcePager.currentItem == resourceFirst) {
                             // reload webview if it has an anchor
                             var anchor = locator.locations.htmlId
                             if (anchor != null) {
                                 if (!anchor.startsWith("#")) {
                                     anchor = "#$anchor"
                                 }
-                                val goto = resource.second + anchor
+                                val goto = resourceSecond + anchor
                                 currentFragment?.webView?.loadUrl(goto)
                             } else {
-                                currentFragment?.webView?.loadUrl(resource.second)
+                                currentFragment?.webView?.loadUrl(resourceSecond)
                             }
                         } else {
-                            resourcePager.currentItem = resource.first
+                            resourcePager.currentItem = resourceFirst
                         }
                         break
                     }
-                } else {
-                    resource as Triple<Int, String, String>
-                    if (resource.second.endsWith(href) || resource.third.endsWith(href)) {
-                        resourcePager.currentItem = resource.first
+                } else if (resource is Triple<*,*,*>) {
+                    val resourceFirst = resource.first as Int
+                    val resourceSecond = resource.second as String
+                    val resourceThird = resource.third as String
+                    if (resourceSecond.endsWith(href) || resourceThird.endsWith(href)) {
+                        resourcePager.currentItem = resourceFirst
                         break
                     }
                 }
@@ -322,6 +324,7 @@ class EpubNavigatorFragment private constructor(
         r2Activity?.onPageEnded(end)
     }
 
+    @Suppress("DEPRECATION")
     override fun onScroll() {
         val activity = r2Activity ?: return
         if (activity.supportActionBar?.isShowing == true && activity.allowToggleActionBar) {

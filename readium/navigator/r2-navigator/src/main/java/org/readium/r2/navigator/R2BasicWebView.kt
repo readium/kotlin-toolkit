@@ -304,6 +304,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             textView.text = Html.fromHtml(safe, Html.FROM_HTML_MODE_COMPACT)
         } else {
+            @Suppress("DEPRECATION")
             textView.text = Html.fromHtml(safe)
         }
 

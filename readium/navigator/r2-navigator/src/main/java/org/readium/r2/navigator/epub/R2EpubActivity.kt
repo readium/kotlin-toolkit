@@ -135,6 +135,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    @Suppress("DEPRECATION")
     override fun toggleActionBar() {
         if (allowToggleActionBar) {
             if (supportActionBar!!.isShowing) {
@@ -155,6 +156,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     override val readingProgression: ReadingProgression
         get() = navigatorFragment().readingProgression
 
+    @Suppress("DEPRECATION")
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         navigatorFragment().go(locator, animated, completion)
 

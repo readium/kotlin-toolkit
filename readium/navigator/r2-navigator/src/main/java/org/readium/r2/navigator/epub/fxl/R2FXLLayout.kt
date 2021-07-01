@@ -170,18 +170,18 @@ class R2FXLLayout : FrameLayout {
         get() = -getMatrixValue(translateMatrix, Matrix.MTRANS_Y)
 
     constructor(context: Context) : super(context) {
-        init(context, null)
+        init(context)
     }
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init(context, attrs)
+        init(context)
     }
 
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        init(context, attrs)
+        init(context)
     }
 
-    private fun init(context: Context, attrs: AttributeSet?) {
+    private fun init(context: Context) {
         gestureListener = GestureListener()
         scaleDetector = ScaleGestureDetector(context, gestureListener)
 
@@ -259,7 +259,7 @@ class R2FXLLayout : FrameLayout {
         consumed = gestureDetector!!.onTouchEvent(ev) || consumed
         if (action == MotionEvent.ACTION_UP) {
             // manually call up
-            consumed = gestureListener!!.onUp(ev) || consumed
+            consumed = gestureListener!!.onUp() || consumed
         }
         return consumed
     }
@@ -340,7 +340,7 @@ class R2FXLLayout : FrameLayout {
             return false
         }
 
-        fun onUp(e: MotionEvent): Boolean {
+        fun onUp(): Boolean {
             var consumed = false
             if (mScrolling) {
                 panDispatcher.onPanEnd()

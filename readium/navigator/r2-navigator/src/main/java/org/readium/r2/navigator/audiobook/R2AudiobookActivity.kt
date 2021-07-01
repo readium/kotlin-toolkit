@@ -151,7 +151,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         val readingOrderOverHttp = publication.readingOrder.map { it.withBaseUrl(baseUrl) }
         mediaPlayer = R2MediaPlayer(readingOrderOverHttp, this)
 
-        Handler().postDelayed({
+        Handler(mainLooper).postDelayed({
             
         if (this.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
 
@@ -210,7 +210,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                         } else {
                             it.startPlayer()
                         }
-                        Handler().postDelayed(updateSeekTime, 100)
+                        Handler(mainLooper).postDelayed(updateSeekTime, 100)
                     }
                     this.updateUI()
                 }
@@ -330,13 +330,13 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
     override fun onPrepared() {
         seekIfNeeded()
-        Handler().postDelayed(updateSeekTime, 100)
+        Handler(mainLooper).postDelayed(updateSeekTime, 100)
         updateUI()
     }
 
     override fun onComplete(index: Int, currentPosition: Int, duration: Int) {
         if (currentResource == index && currentPosition > 0 && currentResource < publication.readingOrder.size - 1 && currentPosition >= duration - 200 && !isSeekTracking) {
-            Handler().postDelayed({
+            Handler(mainLooper).postDelayed({
                 if (currentResource < publication.readingOrder.size - 1) {
                     currentResource++
                 }
@@ -365,7 +365,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
                 notifyCurrentLocation()
 
-                Handler().postDelayed(this, 100)
+                Handler(mainLooper).postDelayed(this, 100)
             }
         }
     }

@@ -129,11 +129,13 @@ class ImageNavigatorFragment private constructor(
     }
 
     @Deprecated("Use goForward instead", replaceWith = ReplaceWith("goForward()"), level = DeprecationLevel.ERROR)
+    @Suppress("UNUSED_PARAMETER")
     fun nextResource(v: View?) {
         goForward()
     }
 
     @Deprecated("Use goBackward instead", replaceWith = ReplaceWith("goBackward()"), level = DeprecationLevel.ERROR)
+    @Suppress("UNUSED_PARAMETER")
     fun previousResource(v: View?) {
         goBackward()
     }

@@ -85,6 +85,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, 
 
     }
 
+    @Suppress("DEPRECATION")
     override fun toggleActionBar() {
         launch {
             if (supportActionBar!!.isShowing) {

@@ -30,7 +30,7 @@ internal val Locator.Locations.fragmentParameters: Map<String, String> get() =
         .map { it.split("=") }
         // Only keep named parameters
         .filter { it.size == 2 }
-        .associate { it[0].trim().toLowerCase(Locale.ROOT) to it[1].trim() }
+        .associate { it[0].trim().lowercase(Locale.ROOT) to it[1].trim() }
 
 /**
  * HTML ID fragment identifier.

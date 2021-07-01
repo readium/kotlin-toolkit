@@ -47,16 +47,18 @@ class R2PagerAdapter(val fm: FragmentManager, private val resources: List<Any>, 
     override fun getItem(position: Int): Fragment =
             when (type) {
                 Publication.TYPE.EPUB, Publication.TYPE.WEBPUB, Publication.TYPE.AUDIO -> {
-                    val single = resources[position] as Pair<Int, String>
-                    R2EpubPageFragment.newInstance(single.second)
+                    val single = resources[position] as Pair<*, *>
+                    R2EpubPageFragment.newInstance(single.second as String)
                 }
                 Publication.TYPE.FXL -> {
                     if (resources[position] is Triple<*, *, *>) {
-                        val double = resources[position] as Triple<Int, String, String>
-                        R2FXLPageFragment.newInstance(double.second, double.third)
+                        val double = resources[position] as Triple<*, *, *>
+                        R2FXLPageFragment.newInstance(double.second as String,
+                            double.third as String?
+                        )
                     } else {
-                        val single = resources[position] as Pair<Int, String>
-                        R2FXLPageFragment.newInstance(single.second)
+                        val single = resources[position] as Pair<*, *>
+                        R2FXLPageFragment.newInstance(single.second as String)
                     }
                 }
                 Publication.TYPE.CBZ ->

@@ -20,6 +20,7 @@ import android.view.animation.Interpolator
 import android.widget.EdgeEffect
 import android.widget.Scroller
 import androidx.annotation.CallSuper
+import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import kotlinx.coroutines.CoroutineScope
@@ -235,32 +236,34 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                         // consume them from each other. We do however keep track of any insets
                         // which are consumed, returning the union of our children's consumption
                         val res = mTempRect
-                        res.left = applied.systemWindowInsetLeft
-                        res.top = applied.systemWindowInsetTop
-                        res.right = applied.systemWindowInsetRight
-                        res.bottom = applied.systemWindowInsetBottom
+                        val insets = applied.getInsets(WindowInsetsCompat.Type.systemBars())
+                        res.left = insets.left
+                        res.top = insets.top
+                        res.right = insets.right
+                        res.bottom = insets.bottom
 
                         var i = 0
                         val count = childCount
                         while (i < count) {
                             val childInsets = ViewCompat
-                                    .dispatchApplyWindowInsets(getChildAt(i), applied)
+                                    .dispatchApplyWindowInsets(getChildAt(i), applied).getInsets(WindowInsetsCompat.Type.systemBars())
                             // Now keep track of any consumed by tracking each dimension's min
                             // value
-                            res.left = min(childInsets.systemWindowInsetLeft,
+                            res.left = min(childInsets.left,
                                     res.left)
-                            res.top = min(childInsets.systemWindowInsetTop,
+                            res.top = min(childInsets.top,
                                     res.top)
-                            res.right = min(childInsets.systemWindowInsetRight,
+                            res.right = min(childInsets.right,
                                     res.right)
-                            res.bottom = min(childInsets.systemWindowInsetBottom,
+                            res.bottom = min(childInsets.bottom,
                                     res.bottom)
                             i++
                         }
 
                         // Now return a new WindowInsets, using the consumed window insets
-                        return applied.replaceSystemWindowInsets(
-                                res.left, res.top, res.right, res.bottom)
+                        return WindowInsetsCompat.Builder(applied)
+                            .setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(res.left, res.top, res.right, res.bottom))
+                            .build()
                     }
                 })
     }
@@ -309,10 +312,10 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
      * @param smoothScroll True to smoothly scroll to the new item, false to transition immediately
      */
     fun setCurrentItem(item: Int, smoothScroll: Boolean) {
-        setCurrentItemInternal(item, smoothScroll, false)
+        setCurrentItemInternal(item, smoothScroll)
     }
 
-    private fun setCurrentItemInternal(item: Int, smoothScroll: Boolean, always: Boolean) {
+    private fun setCurrentItemInternal(item: Int, smoothScroll: Boolean) {
         setCurrentItemInternal(item, smoothScroll, 0)
     }
 
@@ -591,6 +594,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
      * @param offsetPixels Value in pixels indicating the offset from position.
      */
     @CallSuper
+    @Suppress("UNUSED_PARAMETER")
     private fun onPageScrolled(position: Int, offset: Float, offsetPixels: Int) {
         // Offset any decor views if needed - keep them on-screen at all times.
         if (mDecorChildCount > 0) {
