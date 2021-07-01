@@ -1,16 +1,14 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann, Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2020 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.shared.publication
 
 import android.net.Uri
 import androidx.annotation.StringRes
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -164,6 +162,8 @@ class Publication(
     /**
      * Closes any opened resource associated with the [Publication], including services.
      */
+    @DelicateCoroutinesApi
+    //TODO Change this to be a suspend function
     fun close() = GlobalScope.launch {
         try {
             fetcher.close()

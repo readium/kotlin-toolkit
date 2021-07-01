@@ -66,15 +66,15 @@ class MediaType(
         }
 
         // > Both top-level type and subtype names are case-insensitive.
-        this.type = types[0].toLowerCase(Locale.ROOT)
-        this.subtype = types[1].toLowerCase(Locale.ROOT)
+        this.type = types[0].lowercase(Locale.ROOT)
+        this.subtype = types[1].lowercase(Locale.ROOT)
 
         // > Parameter names are case-insensitive and no meaning is attached to the order in which
         // > they appear.
         val parameters = components.drop(1)
             .map { it.split("=") }
             .filter { it.size == 2 }
-            .associate { Pair(it[0].toLowerCase(Locale.ROOT), it[1]) }
+            .associate { Pair(it[0].lowercase(Locale.ROOT), it[1]) }
             .toMutableMap()
 
         // For now, we only support case-insensitive `charset`.
@@ -90,7 +90,7 @@ class MediaType(
         parameters["charset"]?.let {
             parameters["charset"] =
                 (try { Charset.forName(it).name() } catch (e: Exception) { it })
-                    .toUpperCase(Locale.ROOT)
+                    .uppercase(Locale.ROOT)
         }
 
         this.parameters = parameters

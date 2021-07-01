@@ -168,12 +168,12 @@ class DefaultHttpClient constructor(
 
         val readTimeout = readTimeout ?: this@DefaultHttpClient.readTimeout
         if (readTimeout != null) {
-            connection.readTimeout = readTimeout.toLongMilliseconds().toInt()
+            connection.readTimeout = readTimeout.inWholeMilliseconds.toInt()
         }
 
         val connectTimeout = connectTimeout ?: this@DefaultHttpClient.connectTimeout
         if (connectTimeout != null) {
-            connection.connectTimeout = connectTimeout.toLongMilliseconds().toInt()
+            connection.connectTimeout = connectTimeout.inWholeMilliseconds.toInt()
         }
         connection.allowUserInteraction = allowUserInteraction
 

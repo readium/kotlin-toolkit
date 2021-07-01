@@ -30,7 +30,7 @@ enum class ReadingProgression(val value: String) : Parcelable {
 
         override fun get(key: String?): ReadingProgression? =
             // For backward compatibility, we allow uppercase keys.
-            keys.firstOrNull { it == key?.toLowerCase(Locale.ROOT) }
+            keys.firstOrNull { it == key?.lowercase(Locale.ROOT) }
                 ?.let { map[it] }
 
     }

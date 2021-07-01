@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 
 * (*alpha*) A new Publication `SearchService` to search through the resources' content, with a default implementation `StringSearchService`.
 
+### Changed
+
+* Upgraded to Kotlin 1.5.20.
+
 ### Fixed
 
 * Crash with `HttpRequest.setPostForm()` on Android 6.

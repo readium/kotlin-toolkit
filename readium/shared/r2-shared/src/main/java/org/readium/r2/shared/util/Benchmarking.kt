@@ -20,6 +20,6 @@ internal inline fun <T> benchmark(title: String, enabled: Boolean = true, closur
     val duration = measureTime {
         result = closure()
     }
-    Timber.d("""Benchmark "$title" took %.4f seconds """.format(duration.inSeconds))
+    Timber.d("""Benchmark "$title" took %.4f seconds """.format(duration.inWholeSeconds))
     return result
 }

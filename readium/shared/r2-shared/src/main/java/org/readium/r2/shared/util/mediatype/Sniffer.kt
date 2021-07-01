@@ -12,7 +12,6 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.util.archive.Archive
 import java.io.File
 import java.net.URLConnection
 import java.util.*
@@ -44,7 +43,7 @@ object Sniffers {
             return MediaType.HTML
         }
         // [contentAsXml] will fail if the HTML is not a proper XML document, hence the doctype check.
-        if (context.contentAsXml()?.name?.toLowerCase(Locale.ROOT) == "html" || context.contentAsString()?.trimStart()?.startsWith("<!DOCTYPE html>") == true) {
+        if (context.contentAsXml()?.name?.lowercase(Locale.ROOT) == "html" || context.contentAsString()?.trimStart()?.startsWith("<!DOCTYPE html>") == true) {
             return MediaType.HTML
         }
         return null
@@ -294,7 +293,7 @@ object Sniffers {
             suspend fun archiveContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
                 context.archiveEntriesAllSatisfy { entry ->
                     val file = File(entry.path)
-                    isIgnored(file) || fileExtensions.contains(file.extension.toLowerCase(Locale.ROOT))
+                    isIgnored(file) || fileExtensions.contains(file.extension.lowercase(Locale.ROOT))
                 }
 
             if (archiveContainsOnlyExtensions(CBZ_EXTENSIONS)) {

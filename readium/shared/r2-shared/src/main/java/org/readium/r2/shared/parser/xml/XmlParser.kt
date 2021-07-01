@@ -83,14 +83,14 @@ class XmlParser(val isNamespaceAware: Boolean = true, val isCaseSensitive: Boole
 
     private fun buildElement(attributes: AttributeMap, children: MutableList<Node>, lang: String): ElementNode {
         val rawName = parser.name
-        val name = if (isCaseSensitive) rawName else rawName.toLowerCase(Locale.getDefault())
+        val name = if (isCaseSensitive) rawName else rawName.lowercase(Locale.getDefault())
         return ElementNode(name, parser.namespace, lang, attributes, children)
     }
 
     private fun buildAttribute(index: Int): Attribute {
         with(parser) {
             val rawName = getAttributeName(index)
-            val name = if (isCaseSensitive) rawName else rawName.toLowerCase(Locale.getDefault())
+            val name = if (isCaseSensitive) rawName else rawName.lowercase(Locale.getDefault())
             return Attribute(name, getAttributeNamespace(index), getAttributeValue(index))
         }
     }

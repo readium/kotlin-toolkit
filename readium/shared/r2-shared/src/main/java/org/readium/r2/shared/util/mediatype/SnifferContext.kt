@@ -42,7 +42,7 @@ class SnifferContext internal constructor(
 
     /** File extension hints. */
     val fileExtensions: List<String> = fileExtensions
-        .map { it.toLowerCase(Locale.ROOT) }
+        .map { it.lowercase(Locale.ROOT) }
 
     // Metadata
 
@@ -54,7 +54,7 @@ class SnifferContext internal constructor(
     /** Returns whether this context has any of the given file extensions, ignoring case. */
     fun hasFileExtension(vararg fileExtensions: String): Boolean {
         for (fileExtension in fileExtensions) {
-            if (this.fileExtensions.contains(fileExtension.toLowerCase(Locale.ROOT))) {
+            if (this.fileExtensions.contains(fileExtension.lowercase(Locale.ROOT))) {
                 return true
             }
         }

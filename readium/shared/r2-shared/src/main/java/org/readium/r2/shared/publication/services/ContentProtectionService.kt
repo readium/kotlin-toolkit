@@ -331,7 +331,7 @@ private sealed class RouteHandler {
         }
     }
 
-    fun String.toBooleanOrNull(): Boolean? = when (this.toLowerCase(Locale.getDefault())) {
+    fun String.toBooleanOrNull(): Boolean? = when (this.lowercase(Locale.getDefault())) {
         "true" -> true
         "false" -> false
         else -> null

@@ -167,7 +167,7 @@ data class Metadata(
             return ReadingProgression.LTR
         }
 
-        var language = languages.first().toLowerCase(Locale.ROOT)
+        var language = languages.first().lowercase(Locale.ROOT)
 
         if (language == "zh-hant" || language == "zh-tw") {
             return ReadingProgression.RTL

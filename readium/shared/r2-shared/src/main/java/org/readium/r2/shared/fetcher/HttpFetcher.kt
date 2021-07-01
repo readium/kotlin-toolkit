@@ -117,7 +117,8 @@ class HttpFetcher(
         private suspend fun stream(from: Long? = null): ResourceTry<InputStream> {
             val stream = inputStream
             if (from != null && stream != null) {
-                tryOrLog {
+                //TODO Figure out a better way to handle this Kotlin warning
+                tryOrLog<Nothing> {
                     val bytesToSkip = from - (inputStreamStart + stream.count)
                     if (bytesToSkip >= 0) {
                         stream.skip(bytesToSkip)

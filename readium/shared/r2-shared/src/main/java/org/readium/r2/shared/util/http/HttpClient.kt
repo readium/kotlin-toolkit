@@ -121,9 +121,9 @@ data class HttpResponse(
      */
     fun valuesForHeader(name: String): List<String> {
         @Suppress("NAME_SHADOWING")
-        val name = name.toLowerCase(Locale.ROOT)
+        val name = name.lowercase(Locale.ROOT)
         return headers
-            .filterKeys { it.toLowerCase(Locale.ROOT) == name }
+            .filterKeys { it.lowercase(Locale.ROOT) == name }
             .values
             .flatten()
     }
@@ -132,8 +132,8 @@ data class HttpResponse(
      * Indicates whether this server supports byte range requests.
      */
     val acceptsByteRanges: Boolean get() {
-        return valueForHeader("Accept-Ranges")?.toLowerCase(Locale.ROOT) == "bytes"
-            || valueForHeader("Content-Range")?.toLowerCase(Locale.ROOT)?.startsWith("bytes") == true
+        return valueForHeader("Accept-Ranges")?.lowercase(Locale.ROOT) == "bytes"
+            || valueForHeader("Content-Range")?.lowercase(Locale.ROOT)?.startsWith("bytes") == true
     }
 
     /**
