@@ -4,15 +4,18 @@ import org.joda.time.DateTime
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.shared.opds.Feed
 import org.readium.r2.shared.opds.OpdsMetadata
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Properties
+import org.robolectric.RobolectricTestRunner
 import java.net.URL
 import java.util.*
 
+@RunWith(RobolectricTestRunner::class)
 class OPDS1ParserTest {
 
     private val fixtures = Fixtures("opds1")
