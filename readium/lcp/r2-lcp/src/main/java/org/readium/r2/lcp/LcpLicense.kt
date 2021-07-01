@@ -6,6 +6,7 @@
 
 package org.readium.r2.lcp
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -123,6 +124,7 @@ interface LcpLicense : ContentProtectionService.UserRights {
     fun renewLoan(end: DateTime?, present: (URL, dismissed: () -> Unit) -> Unit, completion: (LcpException?) -> Unit) {}
 
     @Deprecated("Use `returnPublication()` with coroutines instead", ReplaceWith("returnPublication"))
+    @DelicateCoroutinesApi
     fun returnPublication(completion: (LcpException?) -> Unit) {
         GlobalScope.launch {
             completion(returnPublication().exceptionOrNull())

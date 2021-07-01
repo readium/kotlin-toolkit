@@ -10,10 +10,7 @@
 package org.readium.r2.lcp
 
 import android.content.Context
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.lcp.persistence.Database
 import org.readium.r2.lcp.service.*
@@ -125,6 +122,7 @@ interface LcpService {
 
 
     @Deprecated("Use `acquirePublication()` with coroutines instead", ReplaceWith("acquirePublication(lcpl)"))
+    @DelicateCoroutinesApi
     fun importPublication(lcpl: ByteArray, authentication: LcpAuthenticating?, completion: (AcquiredPublication?, LcpException?) -> Unit) {
         GlobalScope.launch {
             acquirePublication(lcpl)
@@ -134,6 +132,7 @@ interface LcpService {
     }
 
     @Deprecated("Use `retrieveLicense()` with coroutines instead", ReplaceWith("retrieveLicense(File(publication), authentication, allowUserInteraction = true)"))
+    @DelicateCoroutinesApi
     fun retrieveLicense(publication: String, authentication: LcpAuthenticating?, completion: (LcpLicense?, LcpException?) -> Unit) {
         GlobalScope.launch {
             val result = retrieveLicense(File(publication), authentication ?: LcpDialogAuthentication(), allowUserInteraction = true)

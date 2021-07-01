@@ -50,7 +50,7 @@ internal class NetworkService {
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = method.rawValue
                 if (timeout != null) {
-                    connection.connectTimeout = timeout.toLongMilliseconds().toInt()
+                    connection.connectTimeout = timeout.inWholeMilliseconds.toInt()
                 }
 
                 val status = connection.responseCode

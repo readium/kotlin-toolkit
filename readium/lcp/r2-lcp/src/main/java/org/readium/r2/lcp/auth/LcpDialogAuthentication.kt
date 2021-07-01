@@ -145,7 +145,7 @@ class LcpDialogAuthentication : LcpAuthenticating {
     private fun Context.startActivityForLink(link: Link) {
         val url = tryOrNull { Uri.parse(link.href) } ?: return
 
-        val action = when (url.scheme?.toLowerCase(Locale.ROOT)) {
+        val action = when (url.scheme?.lowercase(Locale.ROOT)) {
             "http", "https" -> Intent(Intent.ACTION_VIEW)
             "tel" -> Intent(Intent.ACTION_CALL)
             "mailto" -> Intent(Intent.ACTION_SEND)

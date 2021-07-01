@@ -1,10 +1,7 @@
 /*
- * Module: r2-lcp-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
- *
- * Copyright (c) 2018. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 apply plugin: 'com.android.library'
@@ -40,7 +37,7 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0-native-mt"
 
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
