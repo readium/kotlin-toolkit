@@ -35,8 +35,8 @@ internal class SnifferFileContent(val file: File) : SnifferContent {
 
     override suspend fun read(): ByteArray? = withContext(Dispatchers.IO) {
         try {
-            // We only read files smaller than 100KB to avoid an [OutOfMemoryError].
-            if (file.length() > 100000) {
+            // We only read files smaller than 5MB to avoid an [OutOfMemoryError].
+            if (file.length() > 5 * 1000 * 1000) {
                 null
             } else {
                 file.readBytes()
