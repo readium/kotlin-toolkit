@@ -47,7 +47,7 @@ internal class LcpdfPositionsService(
             Pair(pageCount, link)
         }
 
-        val totalPageCount = resources.sumBy { it.first }
+        val totalPageCount = resources.sumOf { it.first }
         if (totalPageCount <= 0) {
             return emptyList()
         }

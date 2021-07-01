@@ -45,18 +45,15 @@ class ParsePrefixesTest {
 
     @Test
     fun `Different prefixes can be separated by new lines`() {
-        @Test
-        fun `Multiple prefixes are rightly parsed`() {
-            val prefixes = parsePrefixes(
-                """foaf: http://xmlns.com/foaf/spec/
-                dbp: http://dbpedia.org/ontology/"""
-            )
-            assertThat(prefixes).contains(
-                entry("foaf", "http://xmlns.com/foaf/spec/"),
-                entry("dbp", "http://dbpedia.org/ontology/")
-            )
-            assertThat(prefixes).hasSize(2)
-        }
+        val prefixes = parsePrefixes(
+            """foaf: http://xmlns.com/foaf/spec/
+            dbp: http://dbpedia.org/ontology/"""
+        )
+        assertThat(prefixes).contains(
+            entry("foaf", "http://xmlns.com/foaf/spec/"),
+            entry("dbp", "http://dbpedia.org/ontology/")
+        )
+        assertThat(prefixes).hasSize(2)
     }
 
     @Test

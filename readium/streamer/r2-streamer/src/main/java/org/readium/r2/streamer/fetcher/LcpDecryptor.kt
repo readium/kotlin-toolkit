@@ -166,7 +166,7 @@ private fun DRMLicense.decryptFully(data:  ResourceTry<ByteArray>, isDeflated: B
     }
 
 private val Link.isDeflated: Boolean get() =
-    properties.encryption?.compression?.toLowerCase(java.util.Locale.ROOT) == "deflate"
+    properties.encryption?.compression?.lowercase(java.util.Locale.ROOT) == "deflate"
 
 private val Link.isCbcEncrypted: Boolean get() =
     properties.encryption?.algorithm == "http://www.w3.org/2001/04/xmlenc#aes256-cbc"

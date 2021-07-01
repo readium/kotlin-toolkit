@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 
 * EPUB publications implement a `SearchService` to search through the content.
 
+### Changed
+
+* Upgraded to Kotlin 1.5.20.
+
 
 ## [2.0.0]
 

@@ -13,7 +13,7 @@ import java.io.File
 import java.util.Locale
 
 internal val File.lowercasedExtension: String
-    get() = extension.toLowerCase(Locale.getDefault())
+    get() = extension.lowercase(Locale.getDefault())
 
 internal val File.isHiddenOrThumbs: Boolean
     get() = name.let { it.startsWith(".") || it == "Thumbs.db" }
