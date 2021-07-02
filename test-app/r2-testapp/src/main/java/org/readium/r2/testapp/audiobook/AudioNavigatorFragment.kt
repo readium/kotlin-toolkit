@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.testapp.audiobook
 
 import android.app.ProgressDialog
@@ -67,6 +69,7 @@ class AudioNavigatorFragment(
             }
         }
 
+        // TODO Replace or add a ProgressBar in the navigator to use here, then remove the deprecation annotation for this file
         activity.mediaPlayer.progress = ProgressDialog.show(requireContext(), null, getString(R.string.progress_wait_while_preparing_audiobook), true)
         initialLocator?.let { go(it) }
     }

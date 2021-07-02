@@ -12,11 +12,9 @@ package org.readium.r2.testapp.epub
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Point
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.Handler
-import android.util.DisplayMetrics
 import android.view.*
 import android.view.accessibility.AccessibilityManager
 import android.view.inputmethod.InputMethodManager
@@ -182,13 +180,11 @@ class EpubActivity : R2EpubActivity() {
                     val rect =
                         try {
                             with(JSONObject(it)) {
-                                val display = windowManager.defaultDisplay
-                                val metrics = DisplayMetrics()
-                                display.getMetrics(metrics)
+                                val density = this@EpubActivity.resources.displayMetrics.density
                                 val left = getDouble("left")
                                 val width = getDouble("width")
-                                val top = getDouble("top") * metrics.density
-                                val height = getDouble("height") * metrics.density
+                                val top = getDouble("top") * density
+                                val height = getDouble("height") * density
                                 Rect(
                                     left.toInt(),
                                     top.toInt(),
@@ -230,30 +226,31 @@ class EpubActivity : R2EpubActivity() {
 //            // when the corresponding highlight in DB is.
 //        }
 
-            val display = windowManager.defaultDisplay
-            val rect = size ?: Rect()
-
-            val mDisplaySize = Point()
-            display.getSize(mDisplaySize)
-
             val popupView = layoutInflater.inflate(
-                    if (rect.top > rect.height()) R.layout.view_action_mode_reverse else R.layout.view_action_mode,
-                    null,
-                    false
+                if (size.top > size.height()) R.layout.view_action_mode_reverse else R.layout.view_action_mode,
+                null,
+                false
             )
-            popupView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+            popupView.measure(
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
 
-            popupWindow = PopupWindow(popupView, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            popupWindow = PopupWindow(
+                popupView,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
             popupWindow?.isFocusable = true
 
-            val x = rect.left
-            val y = if (rect.top > rect.height()) rect.top - rect.height() - 80 else rect.bottom
+            val x = size.left
+            val y = if (size.top > size.height()) size.top - size.height() - 80 else size.bottom
 
             popupWindow?.showAtLocation(popupView, Gravity.NO_GRAVITY, x, y)
 
             popupView.run {
                 findViewById<View>(R.id.notch).run {
-                    setX((rect.left * 2).toFloat())
+                    setX((size.left * 2).toFloat())
                 }
                 findViewById<View>(R.id.red).setOnClickListener {
                     changeHighlightColor(highlight, Color.rgb(247, 124, 124))
@@ -425,7 +422,7 @@ class EpubActivity : R2EpubActivity() {
             userSettings = UserSettings(preferences, this, publication.userSettingsUIPreset)
             userSettings.saveChanges()
 
-            Handler().postDelayed({
+            Handler(mainLooper).postDelayed({
                 userSettings.resourcePager = resourcePager
                 userSettings.updateViewCSS(SCROLL_REF)
             }, 500)

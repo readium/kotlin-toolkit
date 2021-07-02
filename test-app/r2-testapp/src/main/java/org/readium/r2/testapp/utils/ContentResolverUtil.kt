@@ -13,14 +13,15 @@ package org.readium.r2.testapp.utils
 import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
-import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.text.TextUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.testapp.utils.extensions.toFile
-import java.io.*
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.InputStream
 import java.net.URL
 
 object ContentResolverUtil {
@@ -62,7 +63,7 @@ object ContentResolverUtil {
                 val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 val type = split[0]
                 if ("primary".equals(type, ignoreCase = true)) {
-                    return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
+                    return context.getExternalFilesDir(null).toString() + "/" + split[1]
                 }
                 // TODO handle non-primary volumes
 

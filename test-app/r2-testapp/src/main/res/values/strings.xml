@@ -135,17 +135,6 @@
     <string name="progression">Progression</string>
     <string name="timestamp">Timestamp</string>
 
-    <string-array name="font_list">
-        <item>Original</item>
-        <item>PT Serif</item>
-        <item>Roboto</item>
-        <item>Source Sans Pro</item>
-        <item>Vollkorn</item>
-        <item>OpenDyslexic</item>
-        <item>AccessibleDfA</item>
-        <item>IA Writer Duospace</item>
-    </string-array>
-
     <!-- Outlines -->
     <string name="contents_tab_label">Contents</string>
     <string name="bookmarks_tab_label">Bookmarks</string>
@@ -198,4 +187,8 @@
     <string name="previous_chapter">Previous chapter</string>
     <string name="replay_10">Replay previous 10 seconds</string>
     <string name="forward_10">Fast forward 10 seconds</string>
+    <string name="brightness_lower">Brightness lower</string>
+    <string name="brightness_higher">Brightness higher</string>
+    <string name="tts_slower">TTS slower</string>
+    <string name="tts_faster">TTS faster</string>
 </resources>

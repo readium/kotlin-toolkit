@@ -19,5 +19,5 @@ suspend fun Uri.copyToTempFile(context: Context, dir: String): File? = tryOrNull
     val mediaType = MediaType.ofUri(this, context.contentResolver)
     val path = "$dir$filename.${mediaType?.fileExtension ?: "tmp"}"
     ContentResolverUtil.getContentInputStream(context, this, path)
-    return File(path)
+    return@tryOrNull File(path)
 }

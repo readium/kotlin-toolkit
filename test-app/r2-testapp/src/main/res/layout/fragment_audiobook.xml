@@ -1,173 +1,197 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraint_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/constraint_view"
     tools:context="org.readium.r2.navigator.audiobook.R2AudiobookActivity">
 
+    <!--  TODO use this to replace ProgressDialog when Navigator is updated-->
+    <!--  <LinearLayout-->
+    <!--      android:id="@+id/audiobook_loadingProgressBar"-->
+    <!--      android:layout_width="match_parent"-->
+    <!--      android:layout_height="wrap_content"-->
+    <!--      android:layout_marginStart="20dp"-->
+    <!--      android:visibility="gone"-->
+    <!--      app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--      app:layout_constraintEnd_toEndOf="parent"-->
+    <!--      app:layout_constraintStart_toStartOf="parent"-->
+    <!--      app:layout_constraintTop_toTopOf="parent">-->
 
-  <androidx.constraintlayout.widget.ConstraintLayout
-      android:id="@+id/linearLayout"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:background="@color/colorPrimaryDark"
-      android:orientation="horizontal"
-      android:paddingBottom="8dp"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent">
+    <!--    <ProgressBar-->
+    <!--        style="?android:attr/progressBarStyle"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginEnd="20dp"-->
+    <!--        android:indeterminate="true" />-->
 
-    <TextView
-        android:id="@+id/progressTime"
-        android:layout_width="0dp"
+    <!--    <TextView-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="center_vertical"-->
+    <!--        android:text="@string/progress_wait_while_preparing_audiobook" />-->
+
+    <!--  </LinearLayout>-->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="@string/zero"
-        android:minWidth="40dp"
-        android:textColor="@android:color/white"
-        app:layout_constraintBottom_toBottomOf="@+id/chapterView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/chapterView" />
-
-    <TextView
-        android:id="@+id/chapterView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:ellipsize="end"
-        android:gravity="center"
-        android:maxLines="1"
-        android:scrollHorizontally="true"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toStartOf="@+id/chapterTime"
-        app:layout_constraintStart_toEndOf="@+id/progressTime"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Chapter" />
-
-    <TextView
-        android:id="@+id/chapterTime"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:text="@string/zero"
-        android:minWidth="40dp"
-        android:textColor="@android:color/white"
-        app:layout_constraintBottom_toBottomOf="@+id/chapterView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/chapterView" />
-
-    <SeekBar
-        android:id="@+id/seekBar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:foregroundTint="@android:color/white"
-        android:progressTint="@android:color/white"
-        android:thumbTint="@android:color/white"
+        android:background="@color/colorPrimaryDark"
+        android:orientation="horizontal"
+        android:paddingBottom="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chapterView" />
+        app:layout_constraintTop_toTopOf="parent">
 
-  </androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/progressTime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:minWidth="40dp"
+            android:text="@string/zero"
+            android:textColor="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="@+id/chapterView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/chapterView" />
+
+        <TextView
+            android:id="@+id/chapterView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:scrollHorizontally="true"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toStartOf="@+id/chapterTime"
+            app:layout_constraintStart_toEndOf="@+id/progressTime"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Chapter" />
+
+        <TextView
+            android:id="@+id/chapterTime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:minWidth="40dp"
+            android:text="@string/zero"
+            android:textColor="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="@+id/chapterView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/chapterView" />
+
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:foregroundTint="@android:color/white"
+            android:progressTint="@android:color/white"
+            android:thumbTint="@android:color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chapterView" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-  <ImageView
-      android:id="@+id/imageView"
-      android:layout_width="0dp"
-      android:layout_height="0dp"
-      android:layout_centerHorizontal="true"
-      android:adjustViewBounds="true"
-      android:cropToPadding="true"
-      android:scaleType="fitCenter"
-      app:layout_constraintBottom_toTopOf="@+id/controls"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-      android:background="@color/colorPrimaryDark"
-      android:contentDescription="TODO" />
-
-
-  <LinearLayout
-      android:id="@+id/controls"
-      android:layout_width="0dp"
-      android:layout_height="70dp"
-      android:background="@color/colorPrimaryDark"
-      android:gravity="center_vertical|center_horizontal"
-      android:orientation="horizontal"
-      android:paddingBottom="10dp"
-      android:paddingTop="10dp"
-      android:weightSum="5"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent">
-
-
-
-    <ImageButton
-        android:id="@+id/prev_chapter"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_weight="1"
-        android:background="@android:color/transparent"
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:background="@color/colorPrimaryDark"
+        android:contentDescription="TODO"
+        android:cropToPadding="true"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_baseline_skip_previous_24"
-        android:contentDescription="@string/previous_chapter"
-        app:tint="@android:color/white" />
-
-    <ImageButton
-        android:id="@+id/fast_back"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_weight="1"
-        android:background="@android:color/transparent"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_baseline_replay_10_24"
-        android:contentDescription="@string/replay_10"
-        app:tint="@android:color/white" />
+        app:layout_constraintBottom_toTopOf="@+id/controls"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
 
-    <ImageButton
-        android:id="@+id/play_pause"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_weight="1"
-        android:background="@android:color/transparent"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_baseline_play_arrow_24"
-        android:contentDescription="@string/play_and_pause"
-        app:tint="@android:color/white" />
-
-    <ImageButton
-        android:id="@+id/fast_forward"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_weight="1"
-        android:background="@android:color/transparent"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_baseline_forward_10_24"
-        android:contentDescription="@string/forward_10"
-        app:tint="@android:color/white" />
-
-    <ImageButton
-        android:id="@+id/next_chapter"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_weight="1"
-        android:background="@android:color/transparent"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_baseline_skip_next_24"
-        android:contentDescription="@string/next_chapter"
-        app:tint="@android:color/white" />
+    <LinearLayout
+        android:id="@+id/controls"
+        android:layout_width="0dp"
+        android:layout_height="70dp"
+        android:background="@color/colorPrimaryDark"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:weightSum="5"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
 
-  </LinearLayout>
+        <ImageButton
+            android:id="@+id/prev_chapter"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/previous_chapter"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_baseline_skip_previous_24"
+            app:tint="@android:color/white" />
+
+        <ImageButton
+            android:id="@+id/fast_back"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/replay_10"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_baseline_replay_10_24"
+            app:tint="@android:color/white" />
+
+
+        <ImageButton
+            android:id="@+id/play_pause"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/play_and_pause"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_baseline_play_arrow_24"
+            app:tint="@android:color/white" />
+
+        <ImageButton
+            android:id="@+id/fast_forward"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/forward_10"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_baseline_forward_10_24"
+            app:tint="@android:color/white" />
+
+        <ImageButton
+            android:id="@+id/next_chapter"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/next_chapter"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_baseline_skip_next_24"
+            app:tint="@android:color/white" />
+
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

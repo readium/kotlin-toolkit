@@ -178,7 +178,8 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
         view.setProperty(userSetting.name, userSetting.toString())
     }
 
-
+    // There isn't an easy way to migrate from TabHost/TabWidget to TabLayout
+    @Suppress("DEPRECATION")
     fun userSettingsPopUp(): PopupWindow {
 
         val layoutInflater = LayoutInflater.from(context)

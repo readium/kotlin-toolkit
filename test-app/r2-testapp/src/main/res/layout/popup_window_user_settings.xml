@@ -58,7 +58,7 @@
                             android:layout_height="20dp"
                             android:layout_weight="1"
                             app:srcCompat="@drawable/ic_outline_light_mode_24"
-                            android:contentDescription="TODO"
+                            android:contentDescription="@string/brightness_lower"
                             app:tint="@android:color/black" />
 
                         <SeekBar
@@ -74,7 +74,7 @@
                             android:layout_height="20dp"
                             android:layout_weight="1"
                             app:srcCompat="@drawable/ic_outline_wb_sunny_24"
-                            android:contentDescription="TODO"
+                            android:contentDescription="@string/brightness_higher"
                             app:tint="@android:color/black" />
                     </LinearLayout>
 
@@ -180,7 +180,7 @@
 
                     </RadioGroup>
 
-                    <Switch
+                    <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/scroll_mode"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
@@ -206,7 +206,8 @@
                             android:layout_height="20dp"
                             android:layout_weight="10"
                             app:srcCompat="@drawable/ic_baseline_fast_rewind_24"
-                            app:tint="@android:color/black" />
+                            app:tint="@android:color/black"
+                            android:contentDescription="@string/tts_slower" />
 
                         <SeekBar
                             android:id="@+id/TTS_speech_speed"
@@ -221,7 +222,8 @@
                             android:layout_height="20dp"
                             android:layout_weight="10"
                             app:srcCompat="@drawable/ic_baseline_fast_forward_24"
-                            app:tint="@android:color/black" />
+                            app:tint="@android:color/black"
+                            android:contentDescription="@string/tts_faster" />
                     </LinearLayout>
 
 
@@ -234,7 +236,7 @@
                     android:gravity="center"
                     android:orientation="vertical">
 
-                    <Switch
+                    <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/publisher_default"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"

@@ -42,8 +42,7 @@ class OPDSDownloader(context: Context) {
     }
 
     suspend fun publicationUrl(
-        url: String,
-        parameters: List<Pair<String, Any?>>? = null
+        url: String
     ): Try<Pair<String, String>, Exception> {
         val fileName = UUID.randomUUID().toString()
         if (DEBUG) Timber.i("download url %s", url)

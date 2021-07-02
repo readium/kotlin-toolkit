@@ -10,7 +10,6 @@
 
 package org.readium.r2.testapp.utils.extensions
 
-import android.app.ProgressDialog
 import android.content.Context
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
@@ -25,10 +24,3 @@ import androidx.core.content.ContextCompat
 fun Context.color(@ColorRes id: Int): Int {
     return ContextCompat.getColor(this, id)
 }
-
-fun Context.blockingProgressDialog(message: String) =
-        ProgressDialog(this).apply {
-            setMessage(message)
-            isIndeterminate = true
-            show()
-        }

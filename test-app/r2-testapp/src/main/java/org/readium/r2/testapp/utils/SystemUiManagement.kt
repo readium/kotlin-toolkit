@@ -10,12 +10,17 @@ import android.app.Activity
 import android.view.View
 import android.view.WindowInsets
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowInsetsCompat
 
+// Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
+@Suppress("DEPRECATION")
 /** Returns `true` if fullscreen or immersive mode is not set. */
 private fun Activity.isSystemUiVisible(): Boolean {
     return this.window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0
 }
 
+// Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
+@Suppress("DEPRECATION")
 /** Enable fullscreen or immersive mode. */
 fun Activity.hideSystemUi() {
     this.window.decorView.systemUiVisibility = (
@@ -28,6 +33,8 @@ fun Activity.hideSystemUi() {
             )
 }
 
+// Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
+@Suppress("DEPRECATION")
 /** Disable fullscreen or immersive mode. */
 fun Activity.showSystemUi() {
     this.window.decorView.systemUiVisibility = (
@@ -48,13 +55,16 @@ fun Activity.toggleSystemUi() {
 
 /** Set padding around view so that content doesn't overlap system UI */
 fun View.padSystemUi(insets: WindowInsets, activity: Activity) =
-    setPadding(
-        insets.systemWindowInsetLeft,
-        insets.systemWindowInsetTop + (activity as AppCompatActivity).supportActionBar!!.height,
-        insets.systemWindowInsetRight,
-        insets.systemWindowInsetBottom
-    )
+    WindowInsetsCompat.toWindowInsetsCompat(insets, this)
+        .getInsets(WindowInsetsCompat.Type.statusBars()).apply {
+            setPadding(
+                left,
+                top + (activity as AppCompatActivity).supportActionBar!!.height,
+                right,
+                bottom
+            )
+        }
 
 /** Clear padding around view */
 fun View.clearPadding() =
-    setPadding(0, 0, 0,0)
+    setPadding(0, 0, 0, 0)

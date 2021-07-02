@@ -33,7 +33,7 @@
                 tools:context=".catalogs.CatalogDetailFragment">
 
                 <ImageView
-                    android:id="@+id/catalogList_coverImage"
+                    android:id="@+id/catalogDetail_coverImage"
                     android:layout_width="match_parent"
                     android:layout_height="400dp"
                     android:contentDescription="@{@string/publication_image_description(publication.metadata.title)}" />

@@ -24,8 +24,6 @@ import org.readium.r2.shared.extensions.mediaType
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
-import org.readium.r2.shared.publication.asset.PublicationAsset
-import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
@@ -220,13 +218,13 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
                         channel.send(Event.OpenBookError(error.getUserMessage(r2Application)))
                     }
                 } else {
-                    val url = prepareToServe(it, asset)
+                    val url = prepareToServe(it)
                     callback.invoke(asset, asset.mediaType(), it, remoteAsset, url)
                 }
             }
     }
 
-    private fun prepareToServe(publication: Publication, asset: PublicationAsset): URL? {
+    private fun prepareToServe(publication: Publication): URL? {
         val userProperties =
             r2Application.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
         return server.addPublication(publication, userPropertiesFile = File(userProperties))
@@ -241,18 +239,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             }
             val coverImageFile = File("${r2Directory}covers/${imageName}.png")
 
-            var bitmap: Bitmap? = null
-            if (publication.cover() == null) {
-                publication.coverLink?.let { link ->
-                    bitmap = getBitmapFromURL(link.href)
-                } ?: run {
-                    if (publication.images.isNotEmpty()) {
-                        bitmap = getBitmapFromURL(publication.images.first().href)
-                    }
-                }
-            } else {
-                bitmap = publication.cover()
-            }
+            val bitmap: Bitmap? = publication.cover()
 
             val resized = bitmap?.let { Bitmap.createScaledBitmap(it, 120, 200, true) }
             val fos = FileOutputStream(coverImageFile)

@@ -50,17 +50,8 @@ class CatalogDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         (activity as MainActivity).supportActionBar?.title = publication?.metadata?.title
 
-        publication?.coverLink?.let { link ->
-            Picasso.with(requireContext()).load(link.href).into(binding.catalogListCoverImage)
-        } ?: run {
-            if (publication?.images?.isNotEmpty() == true) {
-                Picasso.with(requireContext()).load(publication!!.images.first().href)
-                    .into(binding.catalogListCoverImage)
-            }
-        }
-//        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-//            binding.coverImageView.setImageBitmap(mPublication?.cover())
-//        }
+        Picasso.with(requireContext()).load(publication?.images?.first()?.href)
+            .into(binding.catalogDetailCoverImage)
 
         binding.catalogDetailDownloadButton.setOnClickListener {
             publication?.let { it1 ->
