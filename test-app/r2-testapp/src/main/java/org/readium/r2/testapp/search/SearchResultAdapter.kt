@@ -19,7 +19,7 @@ import org.readium.r2.testapp.databinding.ItemRecycleSearchBinding
 import org.readium.r2.testapp.utils.singleClick
 
 /**
- * This class is an adapter for Search results' list view
+ * This class is an adapter for Search results' recycler view.
  */
 class SearchResultAdapter(private var listener: Listener) :
     PagingDataAdapter<Locator, SearchResultAdapter.ViewHolder>(ItemCallback()) {
@@ -32,19 +32,18 @@ class SearchResultAdapter(private var listener: Listener) :
         )
     }
 
-    override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val locator = getItem(position) ?: return
-        val title = locator.title?.let { "<h6>$it</h6>" }
         val html =
-            "$title\n${locator.text.before}<span style=\"background:yellow;\"><b>${locator.text.highlight}</b></span>${locator.text.after}"
-        viewHolder.textView.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            "${locator.text.before}<span style=\"background:yellow;\"><b>${locator.text.highlight}</b></span>${locator.text.after}"
+        holder.textView.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
         } else {
             @Suppress("DEPRECATION")
             Html.fromHtml(html)
         }
 
-        viewHolder.itemView.singleClick { v ->
+        holder.itemView.singleClick { v ->
             listener.onItemClicked(v, locator)
         }
     }
@@ -66,5 +65,4 @@ class SearchResultAdapter(private var listener: Listener) :
         override fun areContentsTheSame(oldItem: Locator, newItem: Locator): Boolean =
             oldItem == newItem
     }
-
 }

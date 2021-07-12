@@ -16,7 +16,7 @@
     android:background="@color/colorAccent">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/search_listView"
+        android:id="@+id/search_recyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@android:color/white"

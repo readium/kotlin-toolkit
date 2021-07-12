@@ -18,13 +18,17 @@ import kotlinx.coroutines.launch
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.search.SearchIterator
+import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
+import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.utils.EventChannel
+import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.navigator.epub.Highlight as NavigatorHighlight
 
 @OptIn(Search::class)
@@ -85,11 +89,13 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     }
 
     fun search(query: String) = viewModelScope.launch {
+        _searchLocators.clear()
         searchIterator = publication.search(query)
             .onFailure { channel.send(Event.Failure(it)) }
             .getOrNull()
 
         pagingSourceFactory.invalidate()
+        channel.send(Event.StartNewSearch)
     }
 
     fun cancelSearch() {
@@ -100,37 +106,27 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
         }
     }
 
+    val searchLocators: List<Locator> get() = _searchLocators
+    private var _searchLocators = mutableListOf<Locator>()
+
     private var searchIterator: SearchIterator? = null
 
     private val pagingSourceFactory = InvalidatingPagingSourceFactory {
-        SearchPagingSource(searchIterator)
+        SearchPagingSource(listener = PagingSourceListener())
+    }
+
+    inner class PagingSourceListener : SearchPagingSource.Listener {
+        override suspend fun next(): SearchTry<LocatorCollection?> {
+            val iterator = searchIterator ?: return Try.success(null)
+            return iterator.next().onSuccess {
+                _searchLocators.addAll(it?.locators ?: emptyList())
+            }
+        }
     }
 
     val searchResult: Flow<PagingData<Locator>> =
         Pager(PagingConfig(pageSize = 20), pagingSourceFactory = pagingSourceFactory)
             .flow.cachedIn(viewModelScope)
-
-    class SearchPagingSource(private val iterator: SearchIterator?) : PagingSource<Unit, Locator>() {
-        override val keyReuseSupported: Boolean get() = true
-        override fun getRefreshKey(state: PagingState<Unit, Locator>): Unit? = null
-
-        override suspend fun load(params: LoadParams<Unit>): LoadResult<Unit, Locator> {
-            iterator ?:
-                return LoadResult.Page(data = emptyList(), prevKey = null, nextKey = null)
-
-            return try {
-                val page = iterator.next().getOrThrow()
-                LoadResult.Page(
-                    data = page?.locators ?: emptyList(),
-                    prevKey = null,
-                    nextKey = if (page == null) null else Unit,
-                )
-
-            } catch (e: Exception) {
-                LoadResult.Error(e)
-            }
-        }
-    }
 
     class Factory(private val context: Context, private val arguments: ReaderContract.Input)
         : ViewModelProvider.NewInstanceFactory() {
@@ -143,6 +139,7 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     sealed class Event {
         object OpenOutlineRequested : Event()
         object OpenDrmManagementRequested : Event()
+        object StartNewSearch : Event()
         class Failure(val error: UserException) : Event()
     }
 
@@ -151,4 +148,3 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
         object BookmarkFailed : FeedbackEvent()
     }
 }
-
