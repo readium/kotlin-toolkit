@@ -14,6 +14,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
@@ -89,25 +91,27 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     }
 
     fun search(query: String) = viewModelScope.launch {
-        _searchLocators.clear()
+        if (query == lastSearchQuery) return@launch
+        lastSearchQuery = query
+        _searchLocators.value = emptyList()
         searchIterator = publication.search(query)
             .onFailure { channel.send(Event.Failure(it)) }
             .getOrNull()
-
         pagingSourceFactory.invalidate()
         channel.send(Event.StartNewSearch)
     }
 
-    fun cancelSearch() {
-        viewModelScope.launch {
-            searchIterator?.close()
-            searchIterator = null
-            pagingSourceFactory.invalidate()
-        }
+    fun cancelSearch() = viewModelScope.launch {
+        _searchLocators.value = emptyList()
+        searchIterator?.close()
+        searchIterator = null
+        pagingSourceFactory.invalidate()
     }
 
-    val searchLocators: List<Locator> get() = _searchLocators
-    private var _searchLocators = mutableListOf<Locator>()
+    val searchLocators: StateFlow<List<Locator>> get() = _searchLocators
+    private var _searchLocators = MutableStateFlow<List<Locator>>(emptyList())
+
+    private var lastSearchQuery: String? = null
 
     private var searchIterator: SearchIterator? = null
 
@@ -119,7 +123,7 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
         override suspend fun next(): SearchTry<LocatorCollection?> {
             val iterator = searchIterator ?: return Try.success(null)
             return iterator.next().onSuccess {
-                _searchLocators.addAll(it?.locators ?: emptyList())
+                _searchLocators.value += (it?.locators ?: emptyList())
             }
         }
     }

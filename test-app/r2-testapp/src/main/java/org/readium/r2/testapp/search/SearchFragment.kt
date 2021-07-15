@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResult
@@ -49,6 +50,10 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
             .onEach { searchAdapter.submitData(it) }
             .launchIn(viewScope)
 
+        viewModel.searchLocators
+            .onEach { binding.noResultLabel.isVisible = it.isEmpty() }
+            .launchIn(viewScope)
+
         viewModel.channel
             .receive(viewLifecycleOwner) { event ->
                 when (event) {
@@ -63,7 +68,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
             layoutManager = LinearLayoutManager(activity)
             addItemDecoration(SectionDecoration(context, object : SectionDecoration.Listener {
                 override fun isStartOfSection(itemPos: Int): Boolean =
-                    viewModel.searchLocators.run {
+                    viewModel.searchLocators.value.run {
                         when {
                             itemPos == 0 -> true
                             itemPos < 0 -> false
@@ -73,7 +78,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                     }
 
                 override fun sectionTitle(itemPos: Int): String =
-                    viewModel.searchLocators.getOrNull(itemPos)?.title ?: ""
+                    viewModel.searchLocators.value.getOrNull(itemPos)?.title ?: ""
             }))
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }

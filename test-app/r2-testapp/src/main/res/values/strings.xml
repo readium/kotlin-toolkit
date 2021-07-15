@@ -191,4 +191,5 @@
     <string name="brightness_higher">Brightness higher</string>
     <string name="tts_slower">TTS slower</string>
     <string name="tts_faster">TTS faster</string>
+    <string name="no_result">No result</string>
 </resources>
