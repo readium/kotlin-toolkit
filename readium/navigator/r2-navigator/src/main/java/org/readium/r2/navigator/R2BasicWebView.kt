@@ -386,7 +386,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     fun removeProperty(key: String) {
-        runJavaScript("removeProperty(\"$key\");")
+        runJavaScript("readium.removeProperty(\"$key\");")
     }
 
     fun getCurrentSelectionInfo(callback: (String) -> Unit) {
