@@ -72,10 +72,7 @@ internal class HtmlInjector(
 
         beginIncludes.add(getHtmlLink("/assets/readium-css/${layout.readiumCSSPath}ReadiumCSS-before.css"))
         endIncludes.add(getHtmlLink("/assets/readium-css/${layout.readiumCSSPath}ReadiumCSS-after.css"))
-        endIncludes.add(getHtmlScript("/assets/scripts/gestures.js"))
-        endIncludes.add(getHtmlScript("/assets/scripts/utils.js"))
-        endIncludes.add(getHtmlScript("/assets/scripts/crypto-sha256.js"))
-        endIncludes.add(getHtmlScript("/assets/scripts/highlight.js"))
+        endIncludes.add(getHtmlScript("/assets/scripts/readium-reflowable.js"))
 
         customResources?.let {
             // Inject all custom resourses
@@ -169,8 +166,7 @@ internal class HtmlInjector(
         if (endHeadIndex == -1)
             return content
         val includes = mutableListOf<String>()
-        includes.add(getHtmlScript("/assets/scripts/gestures.js"))
-        includes.add(getHtmlScript("/assets/scripts/utils.js"))
+        includes.add(getHtmlScript("/assets/scripts/readium-fixed.js"))
         for (element in includes) {
             resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, element).toString()
         }
