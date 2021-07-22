@@ -14,6 +14,10 @@ All notable changes to this project will be documented in this file.
 
 * Upgraded to Kotlin 1.5.20.
 
+### Fixed
+
+* EPUB style injection when a resource has a `<head>` tag with attributes.
+
 
 ## [2.0.0]
 

@@ -13,11 +13,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.LazyResource
-import org.readium.r2.shared.fetcher.ResourceTry
-import org.readium.r2.shared.fetcher.TransformingResource
-import org.readium.r2.shared.fetcher.mapCatching
+import org.readium.r2.shared.fetcher.*
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layoutOf
@@ -25,6 +21,7 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.streamer.parser.epub.ReadiumCssLayout
 import org.readium.r2.streamer.server.Resources
+import timber.log.Timber
 import java.io.File
 
 internal class HtmlInjector(
@@ -59,7 +56,12 @@ internal class HtmlInjector(
     private fun injectReflowableHtml(content: String): String {
         var resourceHtml = content
         // Inject links to css and js files
-        var beginHeadIndex = resourceHtml.indexOf("<head>", 0, false) + 6
+        val head = Regex("""<head.*>""").find(resourceHtml, 0)
+        if (head == null) {
+            Timber.e("No <head> tag found in this resource")
+            return resourceHtml
+        }
+        var beginHeadIndex = head.range.last + 1
         var endHeadIndex = resourceHtml.indexOf("</head>", 0, false)
         if (endHeadIndex == -1)
             return content
