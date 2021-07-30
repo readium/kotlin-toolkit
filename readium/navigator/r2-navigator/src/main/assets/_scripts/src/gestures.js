@@ -4,7 +4,9 @@
  * available in the top-level LICENSE file of the project.
  */
 
-window.addEventListener("DOMContentLoaded", function (event) {
+import { handleDecorationClickEvent } from "./decorator";
+
+window.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("click", onClick, false);
 });
 
@@ -15,20 +17,21 @@ function onClick(event) {
   }
 
   var pixelRatio = window.devicePixelRatio;
+  let clickEvent = {
+    defaultPrevented: event.defaultPrevented,
+    x: event.clientX * pixelRatio,
+    y: event.clientY * pixelRatio,
+    targetElement: event.target.outerHTML,
+    interactiveElement: nearestInteractiveElement(event.target),
+  };
+
+  if (handleDecorationClickEvent(event, clickEvent)) {
+    return;
+  }
 
   // Send the tap data over the JS bridge even if it's been handled within the web view, so that
   // it can be preserved and used by the toolkit if needed.
-  var shouldPreventDefault = Android.onTap(
-    JSON.stringify({
-      defaultPrevented: event.defaultPrevented,
-      screenX: event.screenX * pixelRatio,
-      screenY: event.screenY * pixelRatio,
-      clientX: event.clientX * pixelRatio,
-      clientY: event.clientY * pixelRatio,
-      targetElement: event.target.outerHTML,
-      interactiveElement: nearestInteractiveElement(event.target),
-    })
-  );
+  var shouldPreventDefault = Android.onTap(JSON.stringify(clickEvent));
 
   if (shouldPreventDefault) {
     event.stopPropagation();

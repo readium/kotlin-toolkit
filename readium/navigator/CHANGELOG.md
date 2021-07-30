@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 * The EPUB navigator is now able to navigate to a `Locator` using its `text` context. This is useful for search results or highlights missing precise locations.
+* Observe or clear the current user selection of the navigators implementing `SelectableNavigator`.
+* (*alpha*) Support for the [Decorator API](https://github.com/readium/architecture/pull/160) to draw user interface elements over a publication's content.
+    * This can be used to render highlights over a text selection, for example.
+    * For now, only the EPUB navigator implements `DecorableNavigator`, for reflowable publications. You can implement custom decoration styles with `HtmlDecorationTemplate`.
 
 ### Changed
 

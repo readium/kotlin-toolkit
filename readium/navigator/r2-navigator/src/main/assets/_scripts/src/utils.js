@@ -4,6 +4,8 @@
 //  available in the top-level LICENSE file of the project.
 //
 
+import { TextQuoteAnchor } from "./vendor/hypothesis/anchoring/types";
+
 // Catch JS errors to log them in the app.
 window.addEventListener(
   "error",
@@ -62,9 +64,7 @@ export function scrollToId(id) {
     return false;
   }
 
-  element.scrollIntoView({ inline: "start", block: "start" });
-  snapCurrentOffset();
-  return true;
+  return scrollToRect(element.getBoundingClientRect());
 }
 
 // Position must be in the range [0 - 1], 0-100%.
@@ -74,14 +74,15 @@ export function scrollToPosition(position) {
     throw "scrollToPosition() must be given a position from 0.0 to  1.0";
   }
 
+  let offset;
   if (isScrollModeEnabled()) {
-    var offset = document.scrollingElement.scrollHeight * position;
+    offset = document.scrollingElement.scrollHeight * position;
     document.scrollingElement.scrollTop = offset;
     // window.scrollTo(0, offset);
   } else {
     var documentWidth = document.scrollingElement.scrollWidth;
     var factor = isRTL() ? -1 : 1;
-    var offset = documentWidth * position * factor;
+    offset = documentWidth * position * factor;
     document.scrollingElement.scrollLeft = snapOffset(offset);
   }
 }
@@ -91,98 +92,27 @@ export function scrollToPosition(position) {
 // The expected text argument is a Locator Text object, as defined here:
 // https://readium.org/architecture/models/locators/
 export function scrollToText(text) {
-  // Wrapper around a browser Selection object.
-  function Selection(selection) {
-    this.selection = selection;
-    this.markedRanges = [];
-  }
-
-  // Removes all the ranges of the selection.
-  Selection.prototype.clear = function () {
-    this.selection.removeAllRanges();
-  };
-
-  // Saves the current selection ranges, to be restored later with reset().
-  Selection.prototype.mark = function () {
-    this.markedRanges = [];
-    for (var i = 0; i < this.selection.rangeCount; i++) {
-      this.markedRanges.push(this.selection.getRangeAt(i));
-    }
-  };
-
-  // Resets the selection with ranges previously saved with mark().
-  Selection.prototype.reset = function () {
-    this.clear();
-    for (var i = 0; i < this.markedRanges.length; i++) {
-      this.selection.addRange(this.markedRanges[i]);
-    }
-  };
-
-  // Returns the text content of the selection.
-  Selection.prototype.toString = function () {
-    return this.selection.toString();
-  };
-
-  // Extends the selection by moving the start and end positions by the given offsets.
-  Selection.prototype.adjust = function (offset, length) {
-    for (var i = 0; i <= Math.abs(offset); i++) {
-      var direction = offset >= 0 ? "forward" : "backward";
-      this.selection.modify("move", direction, "character");
-    }
-    for (var i = 0; i <= length; i++) {
-      this.selection.modify("extend", "forward", "character");
-    }
-  };
-
-  Selection.prototype.isEmpty = function () {
-    return this.selection.isCollapsed;
-  };
-
-  function removeWhitespaces(s) {
-    return s.replace(/\s+/g, "");
-  }
-
-  var highlight = text.highlight;
-  var before = text.before || "";
-  var after = text.after || "";
-  var snippet = before + highlight + after;
-  var safeSnippet = removeWhitespaces(snippet);
-
-  if (!highlight || !safeSnippet) {
+  let range = rangeFromLocator({ text });
+  if (!range) {
     return false;
   }
+  scrollToRange(range);
+  return true;
+}
 
-  var selection = new Selection(window.getSelection());
-  // We need to reset any selection to begin the search from the start of the resource.
-  selection.clear();
+function scrollToRange(range) {
+  scrollToRect(range.getBoundingClientRect());
+}
 
-  var found = false;
-  while (window.find(text.highlight, true)) {
-    if (selection.isEmpty()) {
-      break; // Prevents infinite loop in edge cases.
-    }
-
-    // Get the surrounding context to compare to the expected snippet.
-    selection.mark();
-    selection.adjust(-before.length, snippet.length);
-    var safeSelection = removeWhitespaces(selection.toString());
-    selection.reset();
-
-    if (
-      safeSelection != "" &&
-      (safeSnippet.includes(safeSelection) ||
-        safeSelection.includes(safeSnippet))
-    ) {
-      found = true;
-      break;
-    }
+function scrollToRect(rect) {
+  if (isScrollModeEnabled()) {
+    document.scrollingElement.scrollTop =
+      rect.top + window.scrollY - window.innerHeight / 2;
+  } else {
+    document.scrollingElement.scrollLeft = snapOffset(
+      rect.left + window.scrollX
+    );
   }
-
-  // Resets the selection otherwise the last found occurrence will be highlighted.
-  selection.clear();
-
-  snapCurrentOffset();
-  return found;
 }
 
 export function scrollToStart() {
@@ -256,6 +186,23 @@ function snapCurrentOffset() {
   var factor = isRTL() ? -1 : 1;
   var delta = factor * (pageWidth / 2);
   document.scrollingElement.scrollLeft = snapOffset(currentOffset + delta);
+}
+
+export function rangeFromLocator(locator) {
+  let text = locator.text;
+  if (!text || !text.highlight) {
+    return null;
+  }
+  try {
+    let anchor = new TextQuoteAnchor(document.body, text.highlight, {
+      prefix: text.before,
+      suffix: text.after,
+    });
+    return anchor.toRange();
+  } catch (e) {
+    logError(e);
+    return null;
+  }
 }
 
 /// User Settings.

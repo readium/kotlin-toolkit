@@ -34,6 +34,7 @@ import org.readium.r2.navigator.databinding.ViewpagerFragmentEpubBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.extensions.htmlId
 import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.ReadingProgression
 import java.io.IOException
@@ -44,6 +45,9 @@ class R2EpubPageFragment : Fragment() {
 
     private val resourceUrl: String?
         get() = requireArguments().getString("url")
+
+    internal val link: Link?
+        get() = requireArguments().getParcelable("link")
 
     var webView: R2WebView? = null
         private set
@@ -120,6 +124,8 @@ class R2EpubPageFragment : Fragment() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
+
+                webView.listener.onResourceLoaded(link, webView, url)
 
                 val epubNavigator = (webView.navigator as? EpubNavigatorFragment)
                 val currentFragment: R2EpubPageFragment? =
@@ -305,10 +311,11 @@ class R2EpubPageFragment : Fragment() {
 
     companion object {
 
-        fun newInstance(url: String): R2EpubPageFragment =
+        fun newInstance(url: String, link: Link? = null): R2EpubPageFragment =
             R2EpubPageFragment().apply {
                 arguments = Bundle().apply {
                     putString("url", url)
+                    putParcelable("link", link)
                 }
             }
 

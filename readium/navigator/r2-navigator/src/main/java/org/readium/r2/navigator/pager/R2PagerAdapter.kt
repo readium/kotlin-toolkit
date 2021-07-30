@@ -14,10 +14,15 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Publication
 
 
-class R2PagerAdapter(val fm: FragmentManager, private val resources: List<Any>, private val title: String, private val type: Publication.TYPE, private val publicationPath: String = "") : R2FragmentPagerAdapter(fm) {
+class R2PagerAdapter internal constructor(val fm: FragmentManager, private val resources: List<PageResource>) : R2FragmentPagerAdapter(fm) {
+
+    internal sealed class PageResource {
+        data class EpubReflowable(val link: Link, val url: String) : PageResource()
+        data class EpubFxl(val url1: String, val url2: String? = null) : PageResource()
+        data class Cbz(val link: Link) : PageResource()
+    }
 
     private var currentFragment: Fragment? = null
     private var previousFragment: Fragment? = null
@@ -45,32 +50,23 @@ class R2PagerAdapter(val fm: FragmentManager, private val resources: List<Any>, 
     }
 
     override fun getItem(position: Int): Fragment =
-            when (type) {
-                Publication.TYPE.EPUB, Publication.TYPE.WEBPUB, Publication.TYPE.AUDIO -> {
-                    val single = resources[position] as Pair<*, *>
-                    R2EpubPageFragment.newInstance(single.second as String)
-                }
-                Publication.TYPE.FXL -> {
-                    if (resources[position] is Triple<*, *, *>) {
-                        val double = resources[position] as Triple<*, *, *>
-                        R2FXLPageFragment.newInstance(double.second as String,
-                            double.third as String?
-                        )
-                    } else {
-                        val single = resources[position] as Pair<*, *>
-                        R2FXLPageFragment.newInstance(single.second as String)
-                    }
-                }
-                Publication.TYPE.CBZ ->
-                    fm.fragmentFactory
-                        .instantiate(ClassLoader.getSystemClassLoader(), R2CbzPageFragment::class.java.name)
-                        .also {
-                            it.arguments = Bundle().apply {
-                                putParcelable("link", resources[position] as Link)
+        when (val resource = resources[position]) {
+            is PageResource.EpubReflowable -> {
+                R2EpubPageFragment.newInstance(resource.url, resource.link)
+            }
+            is PageResource.EpubFxl -> {
+                R2FXLPageFragment.newInstance(resource.url1, resource.url2)
+            }
+            is PageResource.Cbz -> {
+                fm.fragmentFactory
+                    .instantiate(ClassLoader.getSystemClassLoader(), R2CbzPageFragment::class.java.name)
+                    .also {
+                        it.arguments = Bundle().apply {
+                            putParcelable("link", resource.link)
                         }
                     }
-                Publication.TYPE.DiViNa -> TODO()
             }
+        }
 
     override fun getCount(): Int {
         return resources.size

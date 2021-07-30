@@ -92,7 +92,9 @@ class ImageNavigatorFragment private constructor(
             }
         })
 
-        adapter = R2PagerAdapter(childFragmentManager, publication.readingOrder, publication.metadata.title, Publication.TYPE.CBZ)
+        val resources = publication.readingOrder
+            .map { R2PagerAdapter.PageResource.Cbz(it) }
+        adapter = R2PagerAdapter(childFragmentManager, resources)
 
         resourcePager.adapter = adapter
 

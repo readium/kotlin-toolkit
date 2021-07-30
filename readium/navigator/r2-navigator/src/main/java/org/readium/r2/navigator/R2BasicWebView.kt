@@ -1,10 +1,7 @@
 /*
- * Module: r2-navigator-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
- *
- * Copyright (c) 2018. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.navigator
@@ -12,6 +9,7 @@ package org.readium.r2.navigator
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.PointF
+import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
 import android.text.Html
@@ -33,7 +31,9 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
+import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.Href
@@ -41,11 +41,7 @@ import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-
-/**
- * Created by Aferdita Muriqi on 12/2/17.
- */
-
+@OptIn(ExperimentalDecorator::class)
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
     lateinit var listener: Listener
@@ -217,43 +213,61 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
         // FIXME: Call listener.onTap if scrollLeft|Right fails
         return when {
-            thresholdRange.contains(event.clientX) -> {
+            thresholdRange.contains(event.point.x) -> {
                 scrollLeft(false)
                 true
             }
-            thresholdRange.contains(clientWidth - event.clientX) -> {
+            thresholdRange.contains(clientWidth - event.point.x) -> {
                 scrollRight(false)
                 true
             }
             else ->
-                runBlocking(uiScope.coroutineContext) { listener.onTap(PointF(event.clientX.toFloat(), event.clientY.toFloat())) }
+                runBlocking(uiScope.coroutineContext) { listener.onTap(event.point) }
         }
+    }
+
+    /**
+     * Called from the JS code when a tap on a decoration is detected.
+     */
+    @android.webkit.JavascriptInterface
+    fun onDecorationActivated(eventJson: String): Boolean {
+        val obj = tryOrLog { JSONObject(eventJson) }
+        val id = obj?.optNullableString("id")
+        val group = obj?.optNullableString("group")
+        val rect = obj?.optRectF("rect")
+        val click = TapEvent.fromJSONObject(obj?.optJSONObject("click"))
+        if (id == null || group == null || rect == null || click == null) {
+            Timber.e("Invalid JSON for onDecorationActivated: $eventJson")
+            return false
+        }
+
+        return listener.onDecorationActivated(id, group, rect, click.point)
     }
 
     /** Produced by gestures.js */
     private data class TapEvent(
         val defaultPrevented: Boolean,
-        val screenX: Double,
-        val screenY: Double,
-        val clientX: Double,
-        val clientY: Double,
+        val point: PointF,
         val targetElement: String,
         val interactiveElement: String?
     ) {
         companion object {
-            fun fromJSON(json: String): TapEvent? {
-                val obj = tryOrNull { JSONObject(json) } ?: return null
+            fun fromJSONObject(obj: JSONObject?): TapEvent? {
+                obj ?: return null
+
+                val x = obj.optDouble("x").toFloat()
+                val y = obj.optDouble("y").toFloat()
 
                 return TapEvent(
                     defaultPrevented = obj.optBoolean("defaultPrevented"),
-                    screenX = obj.optDouble("screenX"),
-                    screenY = obj.optDouble("screenY"),
-                    clientX = obj.optDouble("clientX"),
-                    clientY = obj.optDouble("clientY"),
+                    point = PointF(x, y),
                     targetElement = obj.optString("targetElement"),
                     interactiveElement = obj.optNullableString("interactiveElement")
                 )
             }
+
+            fun fromJSON(json: String): TapEvent? =
+                fromJSONObject(tryOrNull { JSONObject(json) })
         }
     }
 
@@ -429,7 +443,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-    private suspend fun runJavaScriptSuspend(javascript: String): String = suspendCoroutine { cont ->
+    internal suspend fun runJavaScriptSuspend(javascript: String): String = suspendCoroutine { cont ->
         runJavaScript(javascript) { result ->
             cont.resume(result)
         }
@@ -464,11 +478,13 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     interface Listener {
         val readingProgression: ReadingProgression
+        fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {}
         fun onPageLoaded()
         fun onPageChanged(pageIndex: Int, totalPages: Int, url: String)
         fun onPageEnded(end: Boolean)
         fun onScroll()
         fun onTap(point: PointF): Boolean
+        fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean = false
         fun onProgressionChanged()
         fun onHighlightActivated(id: String)
         fun onHighlightAnnotationMarkActivated(id: String)

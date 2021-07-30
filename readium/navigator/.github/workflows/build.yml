@@ -1,4 +1,4 @@
-name: r2-navigator-kotlin
+name: Build
 
 on:
   push:

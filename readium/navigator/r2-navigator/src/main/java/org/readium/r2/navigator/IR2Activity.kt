@@ -10,15 +10,9 @@
 package org.readium.r2.navigator
 
 import android.content.SharedPreferences
-import android.graphics.PointF
 import android.view.View
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
 
 interface IR2Activity {
 
@@ -48,61 +42,4 @@ interface IR2TTS {
     fun playTextChanged(text: String) {}
     fun playStateChanged(playing: Boolean) {}
     fun dismissScreenReader() {}
-}
-
-
-@OptIn(ExperimentalCoroutinesApi::class)
-interface Navigator {
-
-    val currentLocator: StateFlow<Locator>
-
-    fun go(locator: Locator, animated: Boolean = false, completion: () -> Unit = {}): Boolean
-    fun go(link: Link, animated: Boolean = false, completion: () -> Unit = {}): Boolean
-    fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
-    fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
-
-    interface Listener {
-    }
-
-
-    @Deprecated("Use [currentLocator.value] instead", ReplaceWith("currentLocator.value"))
-    val currentLocation: Locator? get() = currentLocator.value
-    @Deprecated("Use [VisualNavigator.Listener] instead", ReplaceWith("VisualNavigator.Listener"))
-    interface VisualListener : VisualNavigator.Listener
-
-}
-
-interface NavigatorDelegate {
-    @Deprecated("Observe [currentLocator] instead")
-    fun locationDidChange(navigator: Navigator? = null, locator: Locator) {}
-}
-
-
-interface VisualNavigator : Navigator {
-    val readingProgression: ReadingProgression
-
-    interface Listener : Navigator.Listener {
-        fun onTap(point: PointF): Boolean = false
-    }
-}
-
-
-fun VisualNavigator.goLeft(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
-    return when (readingProgression) {
-        ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
-            goBackward(animated = animated, completion = completion)
-
-        ReadingProgression.RTL, ReadingProgression.BTT ->
-            goForward(animated = animated, completion = completion)
-    }
-}
-
-fun VisualNavigator.goRight(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
-    return when (readingProgression) {
-        ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
-            goForward(animated = animated, completion = completion)
-
-        ReadingProgression.RTL, ReadingProgression.BTT ->
-            goBackward(animated = animated, completion = completion)
-    }
 }

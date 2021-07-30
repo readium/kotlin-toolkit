@@ -1,3 +1,4 @@
+/* eslint-disable */
 //
 //  highlight.js
 //  r2-navigator-kotlin
