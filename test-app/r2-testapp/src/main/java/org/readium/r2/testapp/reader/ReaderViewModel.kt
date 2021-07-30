@@ -7,16 +7,18 @@
 package org.readium.r2.testapp.reader
 
 import android.content.Context
-import androidx.lifecycle.LiveData
+import android.graphics.Color
+import android.os.Bundle
+import androidx.annotation.ColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.readium.r2.navigator.Decoration
+import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
@@ -29,11 +31,10 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Highlight
-import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.search.SearchPagingSource
-import org.readium.r2.navigator.epub.Highlight as NavigatorHighlight
+import org.readium.r2.testapp.utils.EventChannel
 
-@OptIn(Search::class)
+@OptIn(Search::class, ExperimentalDecorator::class)
 class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewModel() {
 
     val publication: Publication = arguments.publication
@@ -52,7 +53,7 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
         repository.saveProgression(locator, bookId)
     }
 
-    fun getBookmarks() = repository.getBookmarks(bookId)
+    fun getBookmarks() = repository.bookmarksForBook(bookId)
 
     fun insertBookmark(locator: Locator) = viewModelScope.launch {
         val id = repository.insertBookmark(bookId, publication, locator)
@@ -67,27 +68,83 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
         repository.deleteBookmark(id)
     }
 
-    fun getHighlights(href: String? = null): LiveData<List<Highlight>> {
-        return if (href == null)
-            repository.getHighlights(bookId)
-        else
-            repository.getHighlights(bookId, href)
+    // Highlights
+
+    val highlights: Flow<List<Highlight>> by lazy {
+        repository.highlightsForBook(bookId)
     }
 
-    suspend fun getHighlightByHighlightId(highlightId: String): Highlight? {
-        return repository.getHighlightByHighlightId(highlightId)
+    /**
+     * Database ID of the active highlight for the current highlight pop-up. This is used to show
+     * the highlight decoration in an "active" state.
+     */
+    var activeHighlightId = MutableStateFlow<Long?>(null)
+
+    /**
+     * Current state of the highlight decorations.
+     *
+     * It will automatically be updated when the highlights database table or the current
+     * [activeHighlightId] change.
+     */
+    val highlightDecorations: Flow<List<Decoration>> by lazy {
+        highlights.combine(activeHighlightId) { highlights, activeId ->
+            highlights.flatMap { highlight ->
+                highlight.toDecorations(isActive = (highlight.id == activeId))
+            }
+        }
     }
 
-    fun insertHighlight(navigatorHighlight: NavigatorHighlight, progression: Double, annotation: String? = null) = viewModelScope.launch {
-        repository.insertHighlight(bookId, publication, navigatorHighlight, progression, annotation)
+    /**
+     * Creates a list of [Decoration] for the receiver [Highlight].
+     */
+    private fun Highlight.toDecorations(isActive: Boolean): List<Decoration> {
+        fun createDecoration(idSuffix: String, style: Decoration.Style) = Decoration(
+            id = "$id-$idSuffix",
+            locator = locator,
+            style = style,
+            extras = Bundle().apply {
+                // We store the highlight's database ID in the extras bundle, for easy retrieval
+                // later. You can store arbitrary information in the bundle.
+                putLong("id", id)
+            }
+        )
+
+        return listOfNotNull(
+            // Decoration for the actual highlight / underline.
+            createDecoration(
+                idSuffix = "highlight",
+                style = when (style) {
+                    Highlight.Style.HIGHLIGHT -> Decoration.Style.Highlight(tint = tint, isActive = isActive)
+                    Highlight.Style.UNDERLINE -> Decoration.Style.Underline(tint = tint, isActive = isActive)
+                }
+            ),
+            // Additional page margin icon decoration, if the highlight has an associated note.
+            annotation.takeIf { it.isNotEmpty() }?.let {
+                createDecoration(
+                    idSuffix = "annotation",
+                    style = DecorationStyleAnnotationMark(tint = tint),
+                )
+            }
+        )
     }
 
-    fun updateHighlight(id: String, color: Int? = null, annotation: String? = null, markStyle: String? = null) = viewModelScope.launch {
-        repository.updateHighlight(id, color, annotation, markStyle)
+    suspend fun highlightById(id: Long): Highlight? =
+        repository.highlightById(id)
+
+    fun addHighlight(locator: Locator, style: Highlight.Style, @ColorInt tint: Int, annotation: String = "") = viewModelScope.launch {
+        repository.addHighlight(bookId, style, tint, locator, annotation)
     }
 
-    fun deleteHighlightByHighlightId(highlightId: String) = viewModelScope.launch {
-        repository.deleteHighlightByHighlightId(highlightId)
+    fun updateHighlightAnnotation(id: Long, annotation: String) = viewModelScope.launch {
+        repository.updateHighlightAnnotation(id, annotation)
+    }
+
+    fun updateHighlightStyle(id: Long, style: Highlight.Style, @ColorInt tint: Int) = viewModelScope.launch {
+        repository.updateHighlightStyle(id, style, tint)
+    }
+
+    fun deleteHighlight(id: Long) = viewModelScope.launch {
+        repository.deleteHighlight(id)
     }
 
     fun search(query: String) = viewModelScope.launch {
@@ -110,6 +167,24 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
 
     val searchLocators: StateFlow<List<Locator>> get() = _searchLocators
     private var _searchLocators = MutableStateFlow<List<Locator>>(emptyList())
+
+    /**
+     * Maps the current list of search result locators into a list of [Decoration] objects to
+     * underline the results in the navigator.
+     */
+    val searchDecorations: Flow<List<Decoration>> by lazy {
+        searchLocators.map {
+            it.mapIndexed { index, locator ->
+                Decoration(
+                    // The index in the search result list is a suitable Decoration ID, as long as
+                    // we clear the search decorations between two searches.
+                    id = index.toString(),
+                    locator = locator,
+                    style = Decoration.Style.Underline(tint = Color.RED)
+                )
+            }
+        }
+    }
 
     private var lastSearchQuery: String? = null
 

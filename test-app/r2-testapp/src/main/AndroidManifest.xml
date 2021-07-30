@@ -186,9 +186,6 @@
         </activity>
 
         <activity
-            android:name=".epub.EpubActivity"
-            android:label="@string/title_activity_epub" />
-        <activity
             android:name=".reader.ReaderActivity"
             android:label="Reader" />
         <activity

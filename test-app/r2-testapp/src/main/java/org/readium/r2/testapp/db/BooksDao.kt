@@ -6,11 +6,13 @@
 
 package org.readium.r2.testapp.db
 
+import androidx.annotation.ColorInt
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.domain.model.Bookmark
 import org.readium.r2.testapp.domain.model.Highlight
@@ -51,28 +53,15 @@ interface BooksDao {
 
     /**
      * Retrieve all highlights for a specific book
-     * @param bookId The ID of the book
-     * @param href
-     * @return List of highlights for the book as LiveData
      */
-    @Query("SELECT * FROM " + Highlight.TABLE_NAME + " WHERE " + Highlight.BOOK_ID + " = :bookId AND " + Highlight.RESOURCE_HREF + " = :href")
-    fun getHighlightsForBook(bookId: Long, href: String): LiveData<List<Highlight>>
+    @Query("SELECT * FROM ${Highlight.TABLE_NAME} WHERE ${Highlight.BOOK_ID} = :bookId ORDER BY ${Highlight.TOTAL_PROGRESSION} ASC")
+    fun getHighlightsForBook(bookId: Long): Flow<List<Highlight>>
 
     /**
-     * Retrieve all highlights for a specific book
-     * @param bookId The ID of the book
-     * @return List of highlights for the book as LiveData
+     * Retrieves the highlight with the given ID.
      */
-    @Query("SELECT * FROM " + Highlight.TABLE_NAME + " WHERE " + Highlight.BOOK_ID + " = :bookId")
-    fun getHighlightsForBook(bookId: Long): LiveData<List<Highlight>>
-
-    /**
-     * Retrieve all highlights for a specific book
-     * @param highlightId The ID of the highlight
-     * @return List of highlights that match highlightId
-     */
-    @Query("SELECT * FROM " + Highlight.TABLE_NAME + " WHERE " + Highlight.HIGHLIGHT_ID + " = :highlightId")
-    suspend fun getHighlightByHighlightId(highlightId: String): MutableList<Highlight>
+    @Query("SELECT * FROM ${Highlight.TABLE_NAME} WHERE ${Highlight.ID} = :highlightId")
+    suspend fun getHighlightById(highlightId: Long): Highlight?
 
     /**
      * Inserts a bookmark
@@ -91,41 +80,28 @@ interface BooksDao {
     suspend fun insertHighlight(highlight: Highlight): Long
 
     /**
-     * Updates a highlight
-     * @param highlightId The navigator highlight ID
-     * @param color Updated color
-     * @param annotation Updated annotation
-     * @param annotationMarkStyle Updated mark style
-     * @return The ID of the highlight that was added (primary key)
+     * Updates a highlight's annotation.
      */
-    @Query("UPDATE " + Highlight.TABLE_NAME + " SET " + Highlight.COLOR + " = :color, " + Highlight.ANNOTATION + " = :annotation, " + Highlight.ANNOTATION_MARK_STYLE + " =:annotationMarkStyle WHERE " + Highlight.HIGHLIGHT_ID + "= :highlightId")
-    suspend fun updateHighlight(
-        highlightId: String,
-        color: Int,
-        annotation: String,
-        annotationMarkStyle: String
-    )
+    @Query("UPDATE ${Highlight.TABLE_NAME} SET ${Highlight.ANNOTATION} = :annotation WHERE ${Highlight.ID} = :id")
+    suspend fun updateHighlightAnnotation(id: Long, annotation: String)
+
+    /**
+     * Updates a highlight's tint and style.
+     */
+    @Query("UPDATE ${Highlight.TABLE_NAME} SET ${Highlight.TINT} = :tint, ${Highlight.STYLE} = :style WHERE ${Highlight.ID} = :id")
+    suspend fun updateHighlightStyle(id: Long, style: Highlight.Style, @ColorInt tint: Int)
 
     /**
      * Deletes a bookmark
-     * @param id The id of the bookmark to delete
      */
     @Query("DELETE FROM " + Bookmark.TABLE_NAME + " WHERE " + Bookmark.ID + " = :id")
     suspend fun deleteBookmark(id: Long)
 
     /**
-     * Deletes a highlight
-     * @param id The ID of the highlight to delete
+     * Deletes the highlight with given id.
      */
-    @Query("DELETE FROM " + Highlight.TABLE_NAME + " WHERE " + Highlight.ID + " = :id")
+    @Query("DELETE FROM ${Highlight.TABLE_NAME} WHERE ${Highlight.ID} = :id")
     suspend fun deleteHighlight(id: Long)
-
-    /**
-     * Deletes a highlight by the highlightId
-     * @param highlightId The highlightId of the highlight to delete
-     */
-    @Query("DELETE FROM " + Highlight.TABLE_NAME + " WHERE " + Highlight.HIGHLIGHT_ID + " = :highlightId")
-    suspend fun deleteHighlightByHighlightId(highlightId: String)
 
     /**
      * Saves book progression

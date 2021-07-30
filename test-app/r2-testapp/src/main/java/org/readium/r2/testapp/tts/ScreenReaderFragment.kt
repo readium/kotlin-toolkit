@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.tts
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.TypedValue
@@ -21,16 +22,11 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentScreenReaderBinding
-import org.readium.r2.testapp.epub.EpubActivity
 import org.readium.r2.testapp.reader.ReaderViewModel
 
 class ScreenReaderFragment : Fragment(), ScreenReaderEngine.Listener {
 
-    private val activity: EpubActivity
-        get () = requireActivity() as EpubActivity
-
-    private val preferences: SharedPreferences get() =
-        activity.preferences
+    private lateinit var preferences: SharedPreferences
 
     private lateinit var publication: Publication
 
@@ -49,6 +45,9 @@ class ScreenReaderFragment : Fragment(), ScreenReaderEngine.Listener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val activity = requireActivity()
+
+        preferences = activity.getPreferences(Context.MODE_PRIVATE)
 
         ViewModelProvider(activity).get(ReaderViewModel::class.java).let {
             publication = it.publication

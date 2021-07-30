@@ -6,7 +6,9 @@
 
 package org.readium.r2.testapp.bookshelf
 
+import androidx.annotation.ColorInt
 import androidx.lifecycle.LiveData
+import kotlinx.coroutines.flow.Flow
 import org.joda.time.DateTime
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -16,11 +18,12 @@ import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.domain.model.Bookmark
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.utils.extensions.authorName
+import java.util.*
 import org.readium.r2.navigator.epub.Highlight as NavigatorHighlight
 
 class BookRepository(private val booksDao: BooksDao) {
 
-    fun getBooksFromDatabase(): LiveData<List<Book>> = booksDao.getAllBooks()
+    fun books(): LiveData<List<Book>> = booksDao.getAllBooks()
 
     suspend fun insertBook(href: String, extension: String, publication: Publication): Long {
         val book = Book(
@@ -60,75 +63,27 @@ class BookRepository(private val booksDao: BooksDao) {
         return booksDao.insertBookmark(bookmark)
     }
 
-    fun getBookmarks(bookId: Long): LiveData<MutableList<Bookmark>> =
+    fun bookmarksForBook(bookId: Long): LiveData<MutableList<Bookmark>> =
         booksDao.getBookmarksForBook(bookId)
 
     suspend fun deleteBookmark(bookmarkId: Long) = booksDao.deleteBookmark(bookmarkId)
 
-    fun getHighlights(bookId: Long, href: String): LiveData<List<Highlight>> =
-        booksDao.getHighlightsForBook(bookId, href)
+    suspend fun highlightById(id: Long): Highlight? =
+        booksDao.getHighlightById(id)
 
-    fun getHighlights(bookId: Long): LiveData<List<Highlight>> =
+    fun highlightsForBook(bookId: Long): Flow<List<Highlight>> =
         booksDao.getHighlightsForBook(bookId)
 
-    suspend fun insertHighlight(
-        bookId: Long,
-        publication: Publication,
-        navigatorHighlight: NavigatorHighlight,
-        progression: Double,
-        annotation: String? = null
-    ): Long {
-        val resource =
-            publication.readingOrder.indexOfFirstWithHref(navigatorHighlight.locator.href)!!
+    suspend fun addHighlight(bookId: Long, style: Highlight.Style, @ColorInt tint: Int, locator: Locator, annotation: String): Long =
+        booksDao.insertHighlight(Highlight(bookId, style, tint, locator, annotation))
 
-        // This is required to be able to go right to a highlight from the Outline fragment,
-        // as Navigator.go doesn't support DOM ranges yet.
-        val locations = navigatorHighlight.locator.locations.copy(progression = progression)
+    suspend fun deleteHighlight(id: Long) = booksDao.deleteHighlight(id)
 
-        val highlight = Highlight(
-            creation = DateTime().toDate().time,
-            bookId = bookId,
-            highlightId = navigatorHighlight.id,
-            publicationId = publication.metadata.identifier ?: publication.metadata.title,
-            style = "style",
-            color = navigatorHighlight.color,
-            annotation = annotation ?: "",
-            annotationMarkStyle = navigatorHighlight.annotationMarkStyle ?: "",
-            resourceIndex = resource.toLong(),
-            resourceHref = navigatorHighlight.locator.href,
-            resourceType = navigatorHighlight.locator.type,
-            resourceTitle = navigatorHighlight.locator.title.orEmpty(),
-            location = locations.toJSON().toString(),
-            locatorText = navigatorHighlight.locator.text.toJSON().toString()
-        )
-
-        return booksDao.insertHighlight(highlight)
+    suspend fun updateHighlightAnnotation(id: Long, annotation: String) {
+        booksDao.updateHighlightAnnotation(id, annotation)
     }
 
-    // This will be used when highlights are redone
-//    suspend fun deleteHighlight(id: Long) = booksDao.deleteHighlight(id)
-
-    suspend fun updateHighlight(
-        id: String,
-        color: Int? = null,
-        annotation: String? = null,
-        markStyle: String? = null
-    ) {
-        val highlight = getHighlightByHighlightId(id)
-
-        if (highlight != null) {
-            val updatedColor = color ?: highlight.color
-            val updatedAnnotation = annotation ?: highlight.annotation
-            val updatedMarkStyle = markStyle ?: highlight.annotationMarkStyle
-
-            booksDao.updateHighlight(id, updatedColor, updatedAnnotation, updatedMarkStyle)
-        }
+    suspend fun updateHighlightStyle(id: Long, style: Highlight.Style, @ColorInt tint: Int) {
+        booksDao.updateHighlightStyle(id, style, tint)
     }
-
-    suspend fun getHighlightByHighlightId(highlightId: String): Highlight? {
-        return booksDao.getHighlightByHighlightId(highlightId).firstOrNull()
-    }
-
-    suspend fun deleteHighlightByHighlightId(highlightId: String) =
-        booksDao.deleteHighlightByHighlightId(highlightId)
 }

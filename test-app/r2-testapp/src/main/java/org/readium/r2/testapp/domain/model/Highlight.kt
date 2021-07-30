@@ -6,83 +6,117 @@
 
 package org.readium.r2.testapp.domain.model
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.annotation.ColorInt
+import androidx.room.*
 import org.json.JSONObject
-import org.readium.r2.navigator.epub.Style
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.MapWithDefaultCompanion
 
-@Entity(tableName = Highlight.TABLE_NAME)
+/**
+ * @param id Primary key, auto-incremented
+ * @param style Look and feel of this annotation (highlight, underline)
+ * @param title Provides additional context about the annotation
+ * @param tint Color associated with the annotation
+ * @param bookId Foreign key to the book
+ * @param href References a resource within a publication
+ * @param type References the media type of a resource within a publication
+ * @param totalProgression Overall progression in the publication
+ * @param locations Locator locations object
+ * @param text Locator text object
+ * @param annotation User-provided note attached to the annotation
+ */
+@Entity(
+    tableName = "highlights",
+    foreignKeys = [
+        ForeignKey(entity = Book::class, parentColumns = [Book.ID], childColumns = [Highlight.BOOK_ID], onDelete = ForeignKey.CASCADE)
+    ],
+)
 data class Highlight(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = ID)
-    var id: Long? = null,
+    var id: Long = 0,
     @ColumnInfo(name = CREATION_DATE, defaultValue = "CURRENT_TIMESTAMP")
     var creation: Long? = null,
     @ColumnInfo(name = BOOK_ID)
     val bookId: Long,
-    @ColumnInfo(name = HIGHLIGHT_ID)
-    val highlightId: String,
-    @ColumnInfo(name = PUBLICATION_ID)
-    val publicationId: String,
     @ColumnInfo(name = STYLE)
-    val style: String,
-    @ColumnInfo(name = COLOR)
-    val color: Int,
-    @ColumnInfo(name = ANNOTATION)
-    val annotation: String,
-    @ColumnInfo(name = ANNOTATION_MARK_STYLE)
-    val annotationMarkStyle: String,
-    @ColumnInfo(name = RESOURCE_INDEX)
-    val resourceIndex: Long,
-    @ColumnInfo(name = RESOURCE_HREF)
-    val resourceHref: String,
-    @ColumnInfo(name = RESOURCE_TYPE)
-    val resourceType: String,
-    @ColumnInfo(name = RESOURCE_TITLE)
-    val resourceTitle: String,
-    @ColumnInfo(name = LOCATION)
-    val location: String,
-    @ColumnInfo(name = LOCATOR_TEXT)
-    val locatorText: String
+    var style: Style,
+    @ColumnInfo(name = TINT, defaultValue = "0")
+    @ColorInt var tint: Int,
+    @ColumnInfo(name = HREF)
+    var href: String,
+    @ColumnInfo(name = TYPE)
+    var type: String,
+    @ColumnInfo(name = TITLE, defaultValue = "NULL")
+    var title: String? = null,
+    @ColumnInfo(name = TOTAL_PROGRESSION, defaultValue = "0")
+    var totalProgression: Double = 0.0,
+    @ColumnInfo(name = LOCATIONS, defaultValue = "{}")
+    var locations: Locator.Locations = Locator.Locations(),
+    @ColumnInfo(name = TEXT, defaultValue = "{}")
+    var text: Locator.Text = Locator.Text(),
+    @ColumnInfo(name = ANNOTATION, defaultValue = "")
+    var annotation: String = "",
 ) {
 
-    fun toNavigatorHighlight() =
-        org.readium.r2.navigator.epub.Highlight(
-            highlightId,
-            locator,
-            color,
-            Style.highlight,
-            annotationMarkStyle
+    constructor(bookId: Long, style: Style, @ColorInt tint: Int, locator: Locator, annotation: String)
+        : this(
+            bookId = bookId,
+            style = style,
+            tint = tint,
+            href = locator.href,
+            type = locator.type,
+            title = locator.title,
+            totalProgression = locator.locations.totalProgression ?: 0.0,
+            locations = locator.locations,
+            text = locator.text,
+            annotation = annotation
         )
 
-    val locator: Locator
-        get() = Locator(
-            href = resourceHref,
-            type = resourceType,
-            title = resourceTitle,
-            locations = Locator.Locations.fromJSON(JSONObject(location)),
-            text = Locator.Text.fromJSON(JSONObject(locatorText))
-        )
+    val locator: Locator get() = Locator(
+        href = href,
+        type = type,
+        title = title,
+        locations = locations,
+        text = text,
+    )
+
+    enum class Style(val value: String) {
+        HIGHLIGHT("highlight"), UNDERLINE("underline");
+
+        companion object : MapWithDefaultCompanion<String, Style>(values(), Style::value, HIGHLIGHT)
+    }
 
     companion object {
-
         const val TABLE_NAME = "HIGHLIGHTS"
         const val ID = "ID"
         const val CREATION_DATE = "CREATION_DATE"
-        const val PUBLICATION_ID = "PUBLICATION_ID"
-        const val RESOURCE_INDEX = "RESOURCE_INDEX"
-        const val RESOURCE_HREF = "RESOURCE_HREF"
-        const val RESOURCE_TYPE = "RESOURCE_TYPE"
-        const val RESOURCE_TITLE = "RESOURCE_TITLE"
-        const val LOCATION = "LOCATION"
-        const val LOCATOR_TEXT = "LOCATOR_TEXT"
         const val BOOK_ID = "BOOK_ID"
-        const val HIGHLIGHT_ID = "HIGHLIGHT_ID"
         const val STYLE = "STYLE"
-        const val COLOR = "COLOR"
+        const val TINT = "TINT"
+        const val HREF = "HREF"
+        const val TYPE = "TYPE"
+        const val TITLE = "TITLE"
+        const val TOTAL_PROGRESSION = "TOTAL_PROGRESSION"
+        const val LOCATIONS = "LOCATIONS"
+        const val TEXT = "TEXT"
         const val ANNOTATION = "ANNOTATION"
-        const val ANNOTATION_MARK_STYLE = "ANNOTATION_MARK_STYLE"
     }
+}
+
+class HighlightConverters {
+    @TypeConverter
+    fun styleFromString(value: String?): Highlight.Style = Highlight.Style(value)
+    @TypeConverter
+    fun styleToString(style: Highlight.Style): String = style.value
+
+    @TypeConverter
+    fun textFromString(value: String?): Locator.Text = Locator.Text.fromJSON(value?.let { JSONObject(it) })
+    @TypeConverter
+    fun textToString(text: Locator.Text): String = text.toJSON().toString()
+
+    @TypeConverter
+    fun locationsFromString(value: String?): Locator.Locations = Locator.Locations.fromJSON(value?.let { JSONObject(it) })
+    @TypeConverter
+    fun locationsToString(text: Locator.Locations): String = text.toJSON().toString()
 }

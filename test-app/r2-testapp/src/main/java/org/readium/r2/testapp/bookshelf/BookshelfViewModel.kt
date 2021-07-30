@@ -68,7 +68,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
     val showProgressBar = ObservableBoolean()
 
-    val books = repository.getBooksFromDatabase()
+    val books = repository.books()
 
     fun deleteBook(book: Book) = viewModelScope.launch {
         book.id?.let { repository.deleteBook(it) }

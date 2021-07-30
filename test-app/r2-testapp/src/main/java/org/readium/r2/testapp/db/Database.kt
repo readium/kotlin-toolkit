@@ -10,16 +10,15 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import org.readium.r2.testapp.domain.model.Book
-import org.readium.r2.testapp.domain.model.Bookmark
-import org.readium.r2.testapp.domain.model.Highlight
-import org.readium.r2.testapp.domain.model.Catalog
+import androidx.room.TypeConverters
+import org.readium.r2.testapp.domain.model.*
 
 @Database(
     entities = [Book::class, Bookmark::class, Highlight::class, Catalog::class],
     version = 1,
     exportSchema = false
 )
+@TypeConverters(HighlightConverters::class)
 abstract class BookDatabase : RoomDatabase() {
 
     abstract fun booksDao(): BooksDao

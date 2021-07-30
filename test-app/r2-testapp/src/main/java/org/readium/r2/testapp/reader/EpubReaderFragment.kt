@@ -11,27 +11,42 @@ import android.graphics.Color
 import android.graphics.PointF
 import android.os.Bundle
 import android.view.*
+import android.view.accessibility.AccessibilityManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
+import androidx.annotation.ColorInt
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.html.HtmlDecorationTemplate
+import org.readium.r2.navigator.html.HtmlDecorationTemplates
+import org.readium.r2.navigator.html.toCss
 import org.readium.r2.shared.APPEARANCE_REF
+import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.epub.EpubActivity
+import org.readium.r2.testapp.R2App
+import org.readium.r2.testapp.epub.UserSettings
 import org.readium.r2.testapp.search.SearchFragment
 import org.readium.r2.testapp.tts.ScreenReaderContract
 import org.readium.r2.testapp.tts.ScreenReaderFragment
+import org.readium.r2.testapp.utils.extensions.toDataUrl
 import org.readium.r2.testapp.utils.toggleSystemUi
 import java.net.URL
 
+@OptIn(ExperimentalDecorator::class)
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
     override lateinit var model: ReaderViewModel
@@ -43,13 +58,18 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     private lateinit var menuSearch: MenuItem
     lateinit var menuSearchView: SearchView
 
+    private lateinit var userSettings: UserSettings
     private var isScreenReaderVisible = false
     private var isSearchViewIconified = true
 
-    private val activity: EpubActivity
-        get() = requireActivity() as EpubActivity
+    // Accessibility
+    private var isExploreByTouchEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        check(R2App.isServerStarted)
+
+        val activity = requireActivity()
+
         if (savedInstanceState != null) {
             isScreenReaderVisible = savedInstanceState.getBoolean(IS_SCREEN_READER_VISIBLE_KEY)
             isSearchViewIconified = savedInstanceState.getBoolean(IS_SEARCH_VIEW_ICONIFIED)
@@ -63,7 +83,16 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         val baseUrl = checkNotNull(requireArguments().getString(BASE_URL_ARG))
 
         childFragmentManager.fragmentFactory =
-            EpubNavigatorFragment.createFactory(publication, baseUrl, model.initialLocation, this)
+            EpubNavigatorFragment.createFactory(
+                publication = publication,
+                baseUrl = baseUrl,
+                initialLocator = model.initialLocation,
+                listener = this,
+                config = EpubNavigatorFragment.Configuration().apply {
+                    // Register the HTML template for our custom [DecorationStyleAnnotationMark].
+                    decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate(activity)
+                }
+            )
 
         childFragmentManager.setFragmentResultListener(
             SearchFragment::class.java.name,
@@ -88,6 +117,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         )
 
         setHasOptionsMenu(true)
+
         super.onCreate(savedInstanceState)
     }
 
@@ -102,17 +132,49 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         }
         navigator = childFragmentManager.findFragmentByTag(navigatorFragmentTag) as Navigator
         navigatorFragment = navigator as EpubNavigatorFragment
+
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val activity = requireActivity()
+        userSettings = UserSettings(navigatorFragment.preferences, activity, publication.userSettingsUIPreset)
+
        // This is a hack to draw the right background color on top and bottom blank spaces
         navigatorFragment.lifecycleScope.launchWhenStarted {
-            val appearancePref = activity.preferences.getInt(APPEARANCE_REF, 0)
+            val appearancePref = navigatorFragment.preferences.getInt(APPEARANCE_REF, 0)
             val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
             navigatorFragment.resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val activity = requireActivity()
+
+        userSettings.resourcePager = navigatorFragment.resourcePager
+
+        // If TalkBack or any touch exploration service is activated we force scroll mode (and
+        // override user preferences)
+        val am = activity.getSystemService(AppCompatActivity.ACCESSIBILITY_SERVICE) as AccessibilityManager
+        isExploreByTouchEnabled = am.isTouchExplorationEnabled
+
+        if (isExploreByTouchEnabled) {
+            // Preset & preferences adapted
+            publication.userSettingsUIPreset[ReadiumCSSName.ref(SCROLL_REF)] = true
+            navigatorFragment.preferences.edit().putBoolean(SCROLL_REF, true).apply() //overriding user preferences
+            userSettings.saveChanges()
+
+            lifecycleScope.launchWhenResumed {
+                delay(500)
+                userSettings.updateViewCSS(SCROLL_REF)
+            }
+        } else {
+            if (publication.cssStyle != "cjk-vertical") {
+                publication.userSettingsUIPreset.remove(ReadiumCSSName.ref(SCROLL_REF))
+            }
         }
     }
 
@@ -174,7 +236,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             model.cancelSearch()
             menuSearchView.setQuery("", false)
 
-            (activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).toggleSoftInput(
+            (activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.toggleSoftInput(
                 InputMethodManager.SHOW_FORCED,
                 InputMethodManager.HIDE_IMPLICIT_ONLY
             )
@@ -188,12 +250,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
        return when (item.itemId) {
            R.id.settings -> {
-               activity.userSettings.userSettingsPopUp().showAsDropDown(
-                   requireActivity().findViewById(R.id.settings),
-                   0,
-                   0,
-                   Gravity.END
-               )
+               userSettings.userSettingsPopUp().showAsDropDown(requireActivity().findViewById(R.id.settings), 0, 0, Gravity.END)
                true
            }
            R.id.search -> {
@@ -268,4 +325,46 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             }
         }
     }
+}
+
+/**
+ * Example of an HTML template for a custom Decoration Style.
+ *
+ * This one will display a tinted "pen" icon in the page margin to show that a highlight has an
+ * associated note.
+ */
+@OptIn(ExperimentalDecorator::class)
+private fun annotationMarkTemplate(context: Context, @ColorInt defaultTint: Int = Color.YELLOW): HtmlDecorationTemplate {
+    // Converts the pen icon to a base 64 data URL, to be embedded in the decoration stylesheet.
+    // Alternatively, serve the image with the local HTTP server and use its URL.
+    val imageUrl = ContextCompat.getDrawable(context, R.drawable.ic_pen)
+        ?.toBitmap()?.toDataUrl()
+    requireNotNull(imageUrl)
+
+    val className = "testapp-annotation-mark"
+    return HtmlDecorationTemplate(
+        layout = HtmlDecorationTemplate.Layout.BOUNDS,
+        width = HtmlDecorationTemplate.Width.PAGE,
+        element = { decoration ->
+            val style = decoration.style as? DecorationStyleAnnotationMark
+            val tint = style?.tint ?: defaultTint
+            // Using `data-activable=1` prevents the whole decoration container from being
+            // clickable. Only the icon will respond to activation events.
+            """
+            <div><div data-activable="1" class="$className" style="background-color: ${tint.toCss()} !important"/></div>"
+            """
+        },
+        stylesheet = """
+            .$className {
+                float: left;
+                margin-left: 8px;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background: url('$imageUrl') no-repeat center;
+                background-size: auto 50%;
+                opacity: 0.8;
+            }
+            """
+    )
 }

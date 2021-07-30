@@ -30,6 +30,7 @@
             android:layout_marginBottom="20dp">
 
             <View
+                android:id="@+id/sidemark"
                 android:layout_width="4dp"
                 android:layout_height="match_parent"
                 android:background="#acd8ff"

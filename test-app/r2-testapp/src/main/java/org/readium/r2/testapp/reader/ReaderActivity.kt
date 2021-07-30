@@ -9,6 +9,7 @@ package org.readium.r2.testapp.reader
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
+import android.view.ActionMode
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -118,6 +119,11 @@ open class ReaderActivity : AppCompatActivity() {
             is DrmManagementFragment -> getString(R.string.title_fragment_drm_management)
             else -> null
         }
+    }
+
+    override fun onActionModeStarted(mode: ActionMode?) {
+        super.onActionModeStarted(mode)
+        readerFragment.onActionModeStarted(mode, menuInflater)
     }
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {

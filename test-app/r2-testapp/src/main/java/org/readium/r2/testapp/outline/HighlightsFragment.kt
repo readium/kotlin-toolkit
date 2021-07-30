@@ -14,10 +14,13 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.publication.Publication
@@ -58,18 +61,16 @@ class HighlightsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        highlightAdapter = HighlightAdapter(publication, onDeleteHighlightRequested = { highlight -> viewModel.deleteHighlightByHighlightId(highlight.highlightId) }, onHighlightSelectedRequested = { highlight -> onHighlightSelected(highlight) })
+        highlightAdapter = HighlightAdapter(publication, onDeleteHighlightRequested = { highlight -> viewModel.deleteHighlight(highlight.id) }, onHighlightSelectedRequested = { highlight -> onHighlightSelected(highlight) })
         binding.listView.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(requireContext())
             adapter = highlightAdapter
         }
 
-        val comparator: Comparator<Highlight> = compareBy({ it.resourceIndex }, { it.locator.locations.progression })
-        viewModel.getHighlights().observe(viewLifecycleOwner, {
-            val highlights = it.sortedWith(comparator).toMutableList()
-            highlightAdapter.submitList(highlights)
-        })
+        viewModel.highlights
+            .onEach { highlightAdapter.submitList(it) }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     override fun onDestroyView() {
@@ -115,7 +116,7 @@ class HighlightAdapter(private val publication: Publication,
     inner class ViewHolder(val binding: ItemRecycleHighlightBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(highlight: Highlight) {
-            binding.highlightChapter.text = getHighlightSpineItem(highlight.resourceHref)
+            binding.highlightChapter.text = highlight.title
             binding.highlightText.text = highlight.locator.text.highlight
             binding.annotation.text = highlight.annotation
 
@@ -140,38 +141,13 @@ class HighlightAdapter(private val publication: Publication,
             }
         }
     }
-
-    private fun getHighlightSpineItem(href: String): String? {
-        for (link in publication.tableOfContents) {
-            if (link.href == href) {
-                return link.outlineTitle
-            }
-        }
-        for (link in publication.readingOrder) {
-            if (link.href == href) {
-                return link.outlineTitle
-            }
-        }
-        return null
-    }
 }
 
 private class HighlightsDiff : DiffUtil.ItemCallback<Highlight>() {
 
-    override fun areItemsTheSame(
-            oldItem: Highlight,
-            newItem: Highlight
-    ): Boolean {
-        return oldItem.id == newItem.id
-                && oldItem.highlightId == newItem.highlightId
-    }
+    override fun areItemsTheSame(oldItem: Highlight, newItem: Highlight): Boolean =
+        oldItem.id == newItem.id
 
-    override fun areContentsTheSame(
-            oldItem: Highlight,
-            newItem: Highlight
-    ): Boolean {
-        return oldItem.annotation == newItem.annotation
-                && oldItem.color == newItem.color
-                && oldItem.annotationMarkStyle == newItem.annotationMarkStyle
-    }
+    override fun areContentsTheSame(oldItem: Highlight, newItem: Highlight): Boolean =
+        oldItem == newItem
 }
