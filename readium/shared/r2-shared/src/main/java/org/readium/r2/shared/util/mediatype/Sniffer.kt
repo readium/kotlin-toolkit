@@ -33,8 +33,8 @@ object Sniffers {
      * The sniffers order is important, because some formats are subsets of other formats.
      */
     val all: List<Sniffer> = listOf(
-        ::html, ::opds, ::lcpLicense, ::bitmap,
-        ::webpub, ::w3cWPUB, ::epub, ::lpf, ::archive, ::pdf
+        ::html, ::opds, ::lcpLicense, ::bitmap, ::webpub, ::w3cWPUB, ::epub, ::lpf, ::archive,
+        ::pdf, ::json
     )
 
     /** Sniffs an HTML document. */
@@ -107,7 +107,11 @@ object Sniffers {
     }
 
     /** Sniffs a bitmap image. */
+    @Suppress("RedundantSuspendModifier")
     suspend fun bitmap(context: SnifferContext): MediaType? {
+        if (context.hasFileExtension("avif") || context.hasMediaType("image/avif")) {
+            return MediaType.AVIF
+        }
         if (context.hasFileExtension("bmp", "dib") || context.hasMediaType("image/bmp", "image/x-bmp")) {
             return MediaType.BMP
         }
@@ -116,6 +120,9 @@ object Sniffers {
         }
         if (context.hasFileExtension("jpg", "jpeg", "jpe", "jif", "jfif", "jfi") || context.hasMediaType("image/jpeg")) {
             return MediaType.JPEG
+        }
+        if (context.hasFileExtension("jxl") || context.hasMediaType("image/jxl")) {
+            return MediaType.JXL
         }
         if (context.hasFileExtension("png") || context.hasMediaType("image/png")) {
             return MediaType.PNG
@@ -320,6 +327,17 @@ object Sniffers {
             return MediaType.PDF
         }
 
+        return null
+    }
+
+    /** Sniffs a JSON document. */
+    suspend fun json(context: SnifferContext): MediaType? {
+        if (context.hasMediaType("application/json")) {
+            return MediaType.JSON
+        }
+        if (context.contentAsJson() != null) {
+            return MediaType.JSON
+        }
         return null
     }
 

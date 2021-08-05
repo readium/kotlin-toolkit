@@ -24,12 +24,12 @@ import org.readium.r2.shared.extensions.toUrlOrNull
 import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.*
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Ref
+import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 import java.net.URL
 import java.net.URLEncoder
@@ -162,7 +162,7 @@ class Publication(
     /**
      * Closes any opened resource associated with the [Publication], including services.
      */
-    @DelicateCoroutinesApi
+    @OptIn(DelicateCoroutinesApi::class)
     //TODO Change this to be a suspend function
     fun close() = GlobalScope.launch {
         try {
