@@ -43,7 +43,10 @@ object Sniffers {
             return MediaType.HTML
         }
         // [contentAsXml] will fail if the HTML is not a proper XML document, hence the doctype check.
-        if (context.contentAsXml()?.name?.lowercase(Locale.ROOT) == "html" || context.contentAsString()?.trimStart()?.startsWith("<!DOCTYPE html>") == true) {
+        if (
+            context.contentAsXml()?.name?.lowercase(Locale.ROOT) == "html" ||
+            context.contentAsString()?.trimStart()?.take(15)?.lowercase() == "<!doctype html>"
+        ) {
             return MediaType.HTML
         }
         return null

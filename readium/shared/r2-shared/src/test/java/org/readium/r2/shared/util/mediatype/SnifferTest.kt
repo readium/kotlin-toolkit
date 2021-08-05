@@ -138,6 +138,7 @@ class SnifferTest {
         assertEquals(MediaType.HTML, MediaType.of(mediaType = "text/html"))
         assertEquals(MediaType.HTML, MediaType.of(mediaType = "application/xhtml+xml"))
         assertEquals(MediaType.HTML, MediaType.ofFile(fixtures.fileAt("html.unknown")))
+        assertEquals(MediaType.HTML, MediaType.ofFile(fixtures.fileAt("html-doctype-case.unknown")))
         assertEquals(MediaType.HTML, MediaType.ofFile(fixtures.fileAt("xhtml.unknown")))
     }
 
