@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-* Upgraded to Kotlin 1.5.20.
+* Upgraded to Kotlin 1.5.21 and Gradle 7.1.1
 
 ### Fixed
 
