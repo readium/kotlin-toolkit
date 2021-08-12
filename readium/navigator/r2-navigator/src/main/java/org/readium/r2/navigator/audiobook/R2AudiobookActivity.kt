@@ -173,7 +173,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                         return
                     }
                     mediaPlayer.seekTo(progress)
-                    if (DEBUG) Timber.tag("AUDIO").d("progress $progress")
+                    if (DEBUG) Timber.d("progress $progress")
                 }
 
                 /**
@@ -184,7 +184,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {
                     // do nothing
                     isSeekTracking = true
-                    if (DEBUG) Timber.tag("AUDIO").d("start tracking")
+                    if (DEBUG) Timber.d("start tracking")
                 }
 
                 /**
@@ -195,7 +195,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
                     // do nothing
                     isSeekTracking = false
-                    if (DEBUG) Timber.tag("AUDIO").d("stop tracking")
+                    if (DEBUG) Timber.d("stop tracking")
                 }
 
             })
