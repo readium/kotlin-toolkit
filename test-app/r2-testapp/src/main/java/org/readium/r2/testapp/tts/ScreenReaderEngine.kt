@@ -116,7 +116,7 @@ class ScreenReaderEngine(val context: Context, val publication: Publication) {
                 value < 0 -> 0
                 else -> value
             }
-            if (DEBUG) Timber.tag(this::class.java.simpleName).d("Current utterance index: $currentUtterance")
+            if (DEBUG) Timber.d("Current utterance index: $currentUtterance")
         }
 
     private var textToSpeech: TextToSpeech =
@@ -127,7 +127,7 @@ class ScreenReaderEngine(val context: Context, val publication: Publication) {
             })
 
     private fun onPrepared() {
-        if (DEBUG) Timber.tag(this::class.java.simpleName).d("textToSpeech initialization status: $initialized")
+        if (DEBUG) Timber.d("textToSpeech initialization status: $initialized")
         if (!initialized) {
             Toast.makeText(
                 context.applicationContext, "There was an error with the TTS initialization",
@@ -275,13 +275,13 @@ class ScreenReaderEngine(val context: Context, val publication: Publication) {
              * @param utteranceId The utterance ID of the utterance.
              */
             override fun onError(utteranceId: String?) {
-                if (DEBUG) Timber.tag(this::class.java.simpleName)
+                if (DEBUG) Timber
                     .e("Error saying: ${utterances[utteranceId!!.toInt()]}")
             }
         })
 
         if (res == TextToSpeech.ERROR) {
-            if (DEBUG) Timber.tag(this::class.java.simpleName).e("TTS failed to set callbacks")
+            if (DEBUG) Timber.e("TTS failed to set callbacks")
             return false
         }
 
@@ -312,7 +312,7 @@ class ScreenReaderEngine(val context: Context, val publication: Publication) {
 
         if (runBlocking {  configure() }) {
             if (currentUtterance >= utterances.size) {
-                if (DEBUG) Timber.tag(this::class.java.simpleName)
+                if (DEBUG) Timber
                     .e("Invalid currentUtterance value: $currentUtterance . Expected less than $utterances.size")
                 currentUtterance = 0
             }
@@ -396,7 +396,7 @@ class ScreenReaderEngine(val context: Context, val publication: Publication) {
                 resumeReading()
             }
         } catch (e: Exception) {
-            if (DEBUG) Timber.tag(this::class.java.simpleName).e(e.toString())
+            if (DEBUG) Timber.e(e.toString())
             return false
         }
 
@@ -435,7 +435,7 @@ class ScreenReaderEngine(val context: Context, val publication: Publication) {
      */
     private fun addToUtterancesQueue(utterance: String, index: Int): Boolean {
         if (textToSpeech.speak(utterance, TextToSpeech.QUEUE_ADD, null, index.toString()) == TextToSpeech.ERROR) {
-            if (DEBUG) Timber.tag(this::class.java.simpleName)
+            if (DEBUG) Timber
                 .e("Error while adding utterance: $utterance to the TTS queue")
             return false
         }
@@ -450,7 +450,7 @@ class ScreenReaderEngine(val context: Context, val publication: Publication) {
      */
     private fun flushUtterancesQueue(): Boolean {
         if (textToSpeech.speak("", TextToSpeech.QUEUE_FLUSH, null, null) == TextToSpeech.ERROR) {
-            if (DEBUG) Timber.tag(this::class.java.simpleName).e("Error while flushing TTS queue.")
+            if (DEBUG) Timber.e("Error while flushing TTS queue.")
             return false
         }
 
@@ -506,7 +506,7 @@ class ScreenReaderEngine(val context: Context, val publication: Publication) {
             true
 
         } catch (e: IOException) {
-            if (DEBUG) Timber.tag(this::class.java.simpleName).e(e.toString())
+            if (DEBUG) Timber.e(e.toString())
             false
         }
     }

@@ -10,7 +10,6 @@
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-parcelize'
 group = 'com.github.readium'
