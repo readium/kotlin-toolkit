@@ -446,18 +446,31 @@ class MediaType(
          *  - Heavy Sniffing reads the bytes to perform more advanced sniffing.
          */
         private suspend fun of(content: SnifferContent?, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<Sniffer>): MediaType? {
-            // Light sniffing
-            var context = SnifferContext(mediaTypes = mediaTypes, fileExtensions = fileExtensions)
-            for (sniffer in sniffers) {
-                val mediaType = sniffer(context)
-                if (mediaType != null) {
-                    return mediaType
+            // Light sniffing with only media type hints
+            if (mediaTypes.isNotEmpty()) {
+                val context = SnifferContext(mediaTypes = mediaTypes)
+                for (sniffer in sniffers) {
+                    val mediaType = sniffer(context)
+                    if (mediaType != null) {
+                        return mediaType
+                    }
+                }
+            }
+
+            // Light sniffing with both media type hints and file extensions
+            if (fileExtensions.isNotEmpty()) {
+                val context = SnifferContext(mediaTypes = mediaTypes, fileExtensions = fileExtensions)
+                for (sniffer in sniffers) {
+                    val mediaType = sniffer(context)
+                    if (mediaType != null) {
+                        return mediaType
+                    }
                 }
             }
 
             // Heavy sniffing
             if (content != null) {
-                context = SnifferContext(content = content, mediaTypes = mediaTypes, fileExtensions = fileExtensions)
+                val context = SnifferContext(content = content, mediaTypes = mediaTypes, fileExtensions = fileExtensions)
                 for (sniffer in sniffers) {
                     val mediaType = sniffer(context)
                     if (mediaType != null) {
@@ -470,6 +483,7 @@ class MediaType(
             // Note: This is done after the heavy sniffing of the provided [sniffers], because
             // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
             // their content (for example, for RWPM).
+            val context = SnifferContext(content = content, mediaTypes = mediaTypes, fileExtensions = fileExtensions)
             Sniffers.system(context)?.let { return it }
 
             // If nothing else worked, we try to parse the first valid media type hint.

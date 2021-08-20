@@ -32,8 +32,8 @@ import java.util.*
  */
 class SnifferContext internal constructor(
     private val content: SnifferContent? = null,
-    mediaTypes: List<String>,
-    fileExtensions: List<String>
+    mediaTypes: List<String> = emptyList(),
+    fileExtensions: List<String> = emptyList()
 ) {
 
     /** Media type hints. */

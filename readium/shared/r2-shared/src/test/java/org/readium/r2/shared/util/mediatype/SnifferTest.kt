@@ -133,13 +133,17 @@ class SnifferTest {
     fun `sniff HTML`() = runBlocking {
         assertEquals(MediaType.HTML, MediaType.of(fileExtension = "htm"))
         assertEquals(MediaType.HTML, MediaType.of(fileExtension = "html"))
-        assertEquals(MediaType.HTML, MediaType.of(fileExtension = "xht"))
-        assertEquals(MediaType.HTML, MediaType.of(fileExtension = "xhtml"))
         assertEquals(MediaType.HTML, MediaType.of(mediaType = "text/html"))
-        assertEquals(MediaType.HTML, MediaType.of(mediaType = "application/xhtml+xml"))
         assertEquals(MediaType.HTML, MediaType.ofFile(fixtures.fileAt("html.unknown")))
         assertEquals(MediaType.HTML, MediaType.ofFile(fixtures.fileAt("html-doctype-case.unknown")))
-        assertEquals(MediaType.HTML, MediaType.ofFile(fixtures.fileAt("xhtml.unknown")))
+    }
+
+    @Test
+    fun `sniff XHTML`() = runBlocking {
+        assertEquals(MediaType.XHTML, MediaType.of(fileExtension = "xht"))
+        assertEquals(MediaType.XHTML, MediaType.of(fileExtension = "xhtml"))
+        assertEquals(MediaType.XHTML, MediaType.of(mediaType = "application/xhtml+xml"))
+        assertEquals(MediaType.XHTML, MediaType.ofFile(fixtures.fileAt("xhtml.unknown")))
     }
 
     @Test

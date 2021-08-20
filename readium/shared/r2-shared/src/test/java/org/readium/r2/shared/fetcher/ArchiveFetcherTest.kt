@@ -60,13 +60,13 @@ class ArchiveFetcherTest {
         assertEquals(
             listOf(
                 createLink("/mimetype", null),
-                createLink("/EPUB/cover.xhtml" , "text/html", 259L),
+                createLink("/EPUB/cover.xhtml" , "application/xhtml+xml", 259L),
                 createLink("/EPUB/css/epub.css",  "text/css", 595L),
                 createLink("/EPUB/css/nav.css", "text/css", 306L),
                 createLink("/EPUB/images/cover.png", "image/png", 35809L),
-                createLink("/EPUB/nav.xhtml", "text/html", 2293L),
+                createLink("/EPUB/nav.xhtml", "application/xhtml+xml", 2293L),
                 createLink("/EPUB/package.opf", null, 773L),
-                createLink("/EPUB/s04.xhtml", "text/html", 118269L),
+                createLink("/EPUB/s04.xhtml", "application/xhtml+xml", 118269L),
                 createLink("/EPUB/toc.ncx", null, 1697),
                 createLink("/META-INF/container.xml", "text/xml", 176)
             ),

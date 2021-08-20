@@ -33,13 +33,30 @@ object Sniffers {
      * The sniffers order is important, because some formats are subsets of other formats.
      */
     val all: List<Sniffer> = listOf(
-        ::html, ::opds, ::lcpLicense, ::bitmap, ::webpub, ::w3cWPUB, ::epub, ::lpf, ::archive,
+        ::xhtml, ::html, ::opds, ::lcpLicense, ::bitmap, ::webpub, ::w3cWPUB, ::epub, ::lpf, ::archive,
         ::pdf, ::json
     )
 
+    /**
+     * Sniffs an XHTML document.
+     *
+     * Must precede the HTML sniffer.
+     */
+    suspend fun xhtml(context: SnifferContext): MediaType? {
+        if (context.hasFileExtension("xht", "xhtml") || context.hasMediaType("application/xhtml+xml")) {
+            return MediaType.XHTML
+        }
+        context.contentAsXml()?.let {
+            if (it.name.lowercase(Locale.ROOT) == "html" && it.namespace.lowercase(Locale.ROOT).contains("xhtml")) {
+                return MediaType.XHTML
+            }
+        }
+        return null
+    }
+
     /** Sniffs an HTML document. */
     suspend fun html(context: SnifferContext): MediaType? {
-        if (context.hasFileExtension("htm", "html", "xht", "xhtml") || context.hasMediaType("text/html", "application/xhtml+xml")) {
+        if (context.hasFileExtension("htm", "html") || context.hasMediaType("text/html")) {
             return MediaType.HTML
         }
         // [contentAsXml] will fail if the HTML is not a proper XML document, hence the doctype check.
