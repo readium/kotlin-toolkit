@@ -229,5 +229,5 @@ export function log() {
 }
 
 export function logError(message) {
-  Android.logError(message);
+  Android.logError(message, "", 0);
 }

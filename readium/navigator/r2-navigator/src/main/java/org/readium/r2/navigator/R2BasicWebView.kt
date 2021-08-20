@@ -16,6 +16,7 @@ import android.text.Html
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.webkit.URLUtil
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.widget.ImageButton
@@ -436,7 +437,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     fun runJavaScript(javascript: String, callback: ((String) -> Unit)? = null) {
-        if (BuildConfig.DEBUG) Timber.d("runJavaScript: $javascript")
+        if (BuildConfig.DEBUG) {
+            val filename = URLUtil.guessFileName(url, null, null)
+            Timber.d("runJavaScript in ${filename}: $javascript")
+        }
 
         this.evaluateJavascript(javascript) { result ->
             if (callback != null) callback(result)

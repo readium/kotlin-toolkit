@@ -309,8 +309,10 @@ class R2EpubPageFragment : Fragment() {
         }
     }
 
-    companion object {
+    internal val paddingTop: Int get() = containerView.paddingTop
+    internal val paddingBottom: Int get() = containerView.paddingBottom
 
+    companion object {
         fun newInstance(url: String, link: Link? = null): R2EpubPageFragment =
             R2EpubPageFragment().apply {
                 arguments = Bundle().apply {
@@ -318,7 +320,6 @@ class R2EpubPageFragment : Fragment() {
                     putParcelable("link", link)
                 }
             }
-
     }
 }
 

@@ -422,8 +422,13 @@ class EpubNavigatorFragment private constructor(
         return this.listener?.onTap(point) ?: false
     }
 
-    override fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean
-        = viewModel.onDecorationActivated(id, group, rect, point)
+    override fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean {
+        currentFragment?.paddingTop?.let { top ->
+            rect.top += top
+            point.y += top
+        }
+        return viewModel.onDecorationActivated(id, group, rect, point)
+    }
 
     override fun onProgressionChanged() {
         notifyCurrentLocation()
