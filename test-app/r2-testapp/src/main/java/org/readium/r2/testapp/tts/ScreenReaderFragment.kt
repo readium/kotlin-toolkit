@@ -47,7 +47,7 @@ class ScreenReaderFragment : Fragment(), ScreenReaderEngine.Listener {
         super.onCreate(savedInstanceState)
         val activity = requireActivity()
 
-        preferences = activity.getPreferences(Context.MODE_PRIVATE)
+        preferences = activity.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
         ViewModelProvider(activity).get(ReaderViewModel::class.java).let {
             publication = it.publication
