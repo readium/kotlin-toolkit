@@ -176,7 +176,12 @@ class EpubParser : PublicationParser, org.readium.r2.streamer.parser.Publication
 
     private suspend fun parseNavigationData(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>> =
         if (packageDocument.epubVersion < 3.0) {
-            val ncxItem = packageDocument.manifest.firstOrNull { MediaType.NCX.contains(it.mediaType) }
+            val ncxItem =
+                if (packageDocument.spine.toc != null) {
+                    packageDocument.manifest.firstOrNull { it.id == packageDocument.spine.toc }
+                } else {
+                    packageDocument.manifest.firstOrNull { MediaType.NCX.contains(it.mediaType) }
+                }
             ncxItem?.let {
                 val ncxPath = Href(ncxItem.href, baseHref = packageDocument.path).string
                 fetcher.readAsXmlOrNull(ncxPath)?.let { NcxParser.parse(it, ncxPath) }

@@ -86,7 +86,7 @@ internal data class Spine(
                 "ltr" -> ReadingProgression.LTR
                 else -> ReadingProgression.AUTO // null or "default"
             }
-            val ncx = if (epubVersion >= 3.0) element.getAttr("toc") else null
+            val ncx = if (epubVersion < 3.0) element.getAttr("toc") else null
             return Spine(itemrefs, pageProgressionDirection, ncx)
         }
     }
