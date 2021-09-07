@@ -31,7 +31,8 @@
         tools:targetApi="n">
         <activity android:name=".MainActivity"
             android:clearTaskOnLaunch="true"
-            android:configChanges="orientation|screenSize">
+            android:configChanges="orientation|screenSize"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -43,7 +44,8 @@
             android:name=".utils.R2DispatcherActivity"
             android:launchMode="singleInstance"
             android:noHistory="true"
-            android:theme="@android:style/Theme.NoDisplay">
+            android:theme="@android:style/Theme.NoDisplay"
+            android:exported="true">
 
             <!--
             WARNING: Matching with intent-filters on media types and file extensions is a mess.
