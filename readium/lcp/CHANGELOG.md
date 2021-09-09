@@ -8,7 +8,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-* Upgraded to Kotlin 1.5.21 and Gradle 7.1.1
+* Upgraded to Kotlin 1.5.21 and Gradle 7.1.1.
+* Migrated to Jetpack Room for the SQLite database storing rights and passphrases (contributed by [@stevenzeck](https://github.com/readium/r2-lcp-kotlin/pull/116)).
+    * Note that the internal SQL schema changed. You will need to update your app if you were querying the database manually.
 
 
 ## [2.0.0]

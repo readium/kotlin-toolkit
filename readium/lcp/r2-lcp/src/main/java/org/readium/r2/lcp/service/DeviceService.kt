@@ -9,7 +9,7 @@
 
 package org.readium.r2.lcp.service
 
-import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.SharedPreferences
 import org.readium.r2.lcp.license.model.LicenseDocument
@@ -30,9 +30,12 @@ internal class DeviceService(private val repository: DeviceRepository, private v
         }
     val name: String
         get() {
+            val bluetoothManager =
+                context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             val bluetoothName =
-                try { BluetoothAdapter.getDefaultAdapter()?.name }
-                catch(e: Exception) {
+                try {
+                    bluetoothManager.adapter.name
+                } catch (e: Exception) {
                     Timber.e(e)
                     null
                 }

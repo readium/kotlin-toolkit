@@ -10,64 +10,83 @@
 package org.readium.r2.lcp.persistence
 
 import android.content.Context
-import android.database.sqlite.SQLiteDatabase
-import org.jetbrains.anko.db.INTEGER
-import org.jetbrains.anko.db.ManagedSQLiteOpenHelper
-import org.jetbrains.anko.db.TEXT
-import org.jetbrains.anko.db.createTable
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 
-// Access property for Context
-internal val Context.database: LcpDatabaseOpenHelper
-    get() = LcpDatabaseOpenHelper.getInstance(applicationContext)
+@Database(
+    entities = [Passphrase::class, License::class],
+    version = 2,
+    exportSchema = false
+)
+internal abstract class LcpDatabase : RoomDatabase() {
 
-internal val Context.appContext: Context
-    get() = applicationContext
+    abstract fun lcpDao(): LcpDao
 
-
-internal class Database(context: Context) {
-
-    val shared: LcpDatabaseOpenHelper = LcpDatabaseOpenHelper(context)
-    var licenses: Licenses
-    var transactions: Transactions
-
-    init {
-        licenses = Licenses(shared)
-        transactions = Transactions(shared)
-    }
-
-}
-
-internal class LcpDatabaseOpenHelper(ctx: Context) : ManagedSQLiteOpenHelper(ctx, "lcpdatabase", null, 1) {
     companion object {
-        private var instance: LcpDatabaseOpenHelper? = null
+        @Volatile
+        private var INSTANCE: LcpDatabase? = null
 
-        @Synchronized
-        fun getInstance(ctx: Context): LcpDatabaseOpenHelper {
-            if (instance == null) {
-                instance = LcpDatabaseOpenHelper(ctx.applicationContext)
+        fun getDatabase(context: Context): LcpDatabase {
+            val tempInstance = INSTANCE
+            if (tempInstance != null) {
+                return tempInstance
             }
-            return instance!!
+            val MIGRATION_1_2 = object : Migration(1, 2) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                    database.execSQL(
+                        """
+                CREATE TABLE passphrases (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    license_id TEXT,
+                    provider TEXT,
+                    user_id TEXT,
+                    passphrase TEXT NOT NULL
+                )
+                """.trimIndent()
+                    )
+                    database.execSQL(
+                        """
+                INSERT INTO passphrases (license_id, provider, user_id, passphrase)
+                SELECT id, origin, userId, passphrase FROM Transactions
+                """.trimIndent()
+                    )
+                    database.execSQL("DROP TABLE Transactions")
+
+
+                    database.execSQL(
+                        """
+                CREATE TABLE new_Licenses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    license_id TEXT NOT NULL,
+                    right_print INTEGER,
+                    right_copy INTEGER,
+                    registered INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 0
+                )
+                """.trimIndent()
+                    )
+                    database.execSQL(
+                        """
+                INSERT INTO new_Licenses (license_id, right_print, right_copy, registered)
+                SELECT id, printsLeft, copiesLeft, registered FROM Licenses
+                """.trimIndent()
+                    )
+                    database.execSQL("DROP TABLE Licenses")
+                    database.execSQL("ALTER TABLE new_Licenses RENAME TO licenses")
+                }
+            }
+            synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    LcpDatabase::class.java,
+                    "lcpdatabase"
+                ).allowMainThreadQueries().addMigrations(MIGRATION_1_2).build()
+                INSTANCE = instance
+                return instance
+            }
         }
-    }
-
-    override fun onCreate(db: SQLiteDatabase) {
-
-        db.createTable(LicensesTable.NAME, true,
-                LicensesTable.ID to TEXT,
-                LicensesTable.PRINTSLEFT to INTEGER,
-                LicensesTable.COPIESLEFT to INTEGER,
-                LicensesTable.REGISTERED to INTEGER)
-
-        db.createTable(TransactionsTable.NAME, true,
-                TransactionsTable.ID to TEXT,
-                TransactionsTable.ORIGIN to TEXT,
-                TransactionsTable.USERID to TEXT,
-                TransactionsTable.PASSPHRASE to TEXT)
-
-    }
-
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // Here you can upgrade tables, as usual
     }
 }

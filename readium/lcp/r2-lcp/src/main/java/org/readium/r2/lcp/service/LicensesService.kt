@@ -84,7 +84,9 @@ internal class LicensesService(
                 device = this.device, network = this.network, passphrases = this.passphrases, context = this.context,
                 allowUserInteraction = allowUserInteraction, sender = sender) { licenseDocument ->
             try {
-                this.licenses.addLicense(licenseDocument)
+                launch {
+                    this@LicensesService.licenses.addLicense(licenseDocument)
+                }
             } catch (error: Error) {
                 Timber.d("Failed to add the LCP License to the local database: $error")
             }

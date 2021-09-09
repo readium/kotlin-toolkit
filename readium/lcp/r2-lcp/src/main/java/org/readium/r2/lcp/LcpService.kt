@@ -12,7 +12,7 @@ package org.readium.r2.lcp
 import android.content.Context
 import kotlinx.coroutines.*
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
-import org.readium.r2.lcp.persistence.Database
+import org.readium.r2.lcp.persistence.LcpDatabase
 import org.readium.r2.lcp.service.*
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.util.Try
@@ -107,12 +107,15 @@ interface LcpService {
             if (!LcpClient.isAvailable())
                 return null
 
-            val db = Database(context)
+            val db = LcpDatabase.getDatabase(context).lcpDao()
+            val deviceRepository = DeviceRepository(db)
+            val passphraseRepository = PassphrasesRepository(db)
+            val licenseRepository = LicensesRepository(db)
             val network = NetworkService()
-            val device = DeviceService(repository = db.licenses, network = network, context = context)
+            val device = DeviceService(repository = deviceRepository, network = network, context = context)
             val crl = CRLService(network = network, context = context)
-            val passphrases = PassphrasesService(repository = db.transactions)
-            return LicensesService(licenses = db.licenses, crl = crl, device = device, network = network, passphrases = passphrases, context = context)
+            val passphrases = PassphrasesService(repository = passphraseRepository)
+            return LicensesService(licenses = licenseRepository, crl = crl, device = device, network = network, passphrases = passphrases, context = context)
         }
 
         @Deprecated("Use `LcpService()` instead", ReplaceWith("LcpService(context)"), level = DeprecationLevel.ERROR)

@@ -14,6 +14,7 @@ import android.net.Uri
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
@@ -25,7 +26,6 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.anko.contentView
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.R
 import org.readium.r2.lcp.license.model.components.Link
@@ -55,7 +55,7 @@ class LcpDialogAuthentication : LcpAuthenticating {
         else null
 
     private suspend fun askPassphrase(license: LcpAuthenticating.AuthenticatedLicense, reason: LcpAuthenticating.AuthenticationReason, sender: Any?): String? {
-        val hostView = (sender as? View) ?: (sender as? Activity)?.contentView ?: (sender as? Fragment)?.view
+        val hostView = (sender as? View) ?: (sender as? Activity)?.findViewById<ViewGroup>(android.R.id.content)?.getChildAt(0) ?: (sender as? Fragment)?.view
         ?: run {
             Timber.e("No valid [sender] was passed to `LcpDialogAuthentication::retrievePassphrase()`. Make sure it is an Activity, a Fragment or a View.")
             return null

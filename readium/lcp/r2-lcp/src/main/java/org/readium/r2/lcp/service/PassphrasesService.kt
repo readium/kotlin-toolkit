@@ -50,12 +50,18 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         }
     }
 
-    fun addPassphrase(passphrase: String, hashed:Boolean, licenseId: String?, provider: String?, userId: String?) {
+    suspend fun addPassphrase(
+        passphrase: String,
+        hashed: Boolean,
+        licenseId: String,
+        provider: String,
+        userId: String?
+    ) {
         val hashedPassphrase = if (hashed) passphrase else HASH.sha256(passphrase)
         this.repository.addPassphrase(hashedPassphrase, licenseId, provider, userId)
     }
 
-    private fun possiblePassphrasesFromRepository(license: LicenseDocument): List<String> {
+    private suspend fun possiblePassphrasesFromRepository(license: LicenseDocument): List<String> {
         val passphrases: MutableSet<String> = linkedSetOf()
         val licensePassphrase = repository.passphrase(license.id)
         if (licensePassphrase != null) {
