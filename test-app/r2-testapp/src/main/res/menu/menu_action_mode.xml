@@ -5,18 +5,21 @@
     <item
         android:id="@+id/highlight"
         android:title="@string/action_mode_menu_highlight"
+        android:visible="false"
         app:showAsAction="ifRoom">
     </item>
 
     <item
         android:id="@+id/underline"
         android:title="@string/action_mode_menu_underline"
+        android:visible="false"
         app:showAsAction="ifRoom">
     </item>
 
     <item
         android:id="@+id/note"
         android:title="@string/action_mode_menu_note"
+        android:visible="false"
         app:showAsAction="ifRoom">
     </item>
 

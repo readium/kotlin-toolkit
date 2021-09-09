@@ -23,7 +23,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.domain.model.Highlight
@@ -173,35 +175,37 @@ abstract class BaseReaderFragment : Fragment() {
         R.id.purple to Color.rgb(182, 153, 255),
     )
 
-    fun onActionModeStarted(mode: ActionMode?, menuInflater: MenuInflater) {
-        val viewScope = viewLifecycleOwner.lifecycleScope
-        val navigator = (navigator as? SelectableNavigator) ?: return
+    val customSelectionActionModeCallback: ActionMode.Callback by lazy { SelectionActionModeCallback() }
 
-        this.mode = mode?.apply {
-            // Remove the default text selection menu items and set our own menu.
-            menu.clear()
-            menuInflater.inflate(R.menu.menu_action_mode, menu)
+    private inner class SelectionActionModeCallback : BaseActionModeCallback() {
+        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+            mode.menuInflater.inflate(R.menu.menu_action_mode, menu)
+            if (navigator is DecorableNavigator) {
+                menu.findItem(R.id.highlight).isVisible = true
+                menu.findItem(R.id.underline).isVisible = true
+                menu.findItem(R.id.note).isVisible = true
+            }
+            return true
+        }
 
-            fun showHighlightPopupWithStyle(style: Highlight.Style) = viewScope.launchWhenResumed {
-                // Get the rect of the current selection to know where to position the highlight
-                // popup.
-                navigator.currentSelection()?.rect?.let { selectionRect ->
-                    showHighlightPopup(selectionRect, style)
-                }
+        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+            when (item.itemId) {
+                R.id.highlight -> showHighlightPopupWithStyle(Highlight.Style.HIGHLIGHT)
+                R.id.underline -> showHighlightPopupWithStyle(Highlight.Style.UNDERLINE)
+                R.id.note -> showAnnotationPopup()
+                else -> return false
             }
 
-            menu.findItem(R.id.highlight).setOnMenuItemClickListener {
-                showHighlightPopupWithStyle(Highlight.Style.HIGHLIGHT)
-                true
-            }
-            menu.findItem(R.id.underline).setOnMenuItemClickListener {
-                showHighlightPopupWithStyle(Highlight.Style.UNDERLINE)
-                true
-            }
-            menu.findItem(R.id.note).setOnMenuItemClickListener {
-                showAnnotationPopup()
-                true
-            }
+            mode.finish()
+            return true
+        }
+    }
+
+    private fun showHighlightPopupWithStyle(style: Highlight.Style) = viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+        // Get the rect of the current selection to know where to position the highlight
+        // popup.
+        (navigator as? SelectableNavigator)?.currentSelection()?.rect?.let { selectionRect ->
+            showHighlightPopup(selectionRect, style)
         }
     }
 
@@ -319,7 +323,9 @@ abstract class BaseReaderFragment : Fragment() {
             } else {
                 val tint = highlightTints.values.random()
                 findViewById<View>(R.id.sidemark).setBackgroundColor(tint)
-                val selection = (navigator as? SelectableNavigator)?.currentSelection() ?: return@launchWhenResumed
+                val navigator = navigator as? SelectableNavigator ?: return@launchWhenResumed
+                val selection = navigator.currentSelection() ?: return@launchWhenResumed
+                navigator.clearSelection()
                 findViewById<TextView>(R.id.select_text).text = selection.locator.text.highlight
 
                 findViewById<TextView>(R.id.positive).setOnClickListener {

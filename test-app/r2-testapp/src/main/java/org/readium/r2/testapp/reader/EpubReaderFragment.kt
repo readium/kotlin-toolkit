@@ -91,6 +91,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 config = EpubNavigatorFragment.Configuration().apply {
                     // Register the HTML template for our custom [DecorationStyleAnnotationMark].
                     decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate(activity)
+                    selectionActionModeCallback = customSelectionActionModeCallback
                 }
             )
 

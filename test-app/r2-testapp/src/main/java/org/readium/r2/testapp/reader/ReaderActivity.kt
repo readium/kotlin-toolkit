@@ -121,11 +121,6 @@ open class ReaderActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActionModeStarted(mode: ActionMode?) {
-        super.onActionModeStarted(mode)
-        readerFragment.onActionModeStarted(mode, menuInflater)
-    }
-
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
         return modelFactory
     }
