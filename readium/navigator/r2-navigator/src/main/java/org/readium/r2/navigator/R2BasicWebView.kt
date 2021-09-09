@@ -9,11 +9,13 @@ package org.readium.r2.navigator
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.PointF
+import android.graphics.Rect
 import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
 import android.text.Html
 import android.util.AttributeSet
+import android.view.*
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.webkit.URLUtil
@@ -23,12 +25,10 @@ import android.widget.ImageButton
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
@@ -42,8 +42,30 @@ import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+
 @OptIn(ExperimentalDecorator::class)
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
+
+    interface Listener {
+        val readingProgression: ReadingProgression
+        fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {}
+        fun onPageLoaded()
+        fun onPageChanged(pageIndex: Int, totalPages: Int, url: String)
+        fun onPageEnded(end: Boolean)
+        fun onScroll()
+        fun onTap(point: PointF): Boolean
+        fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean = false
+        fun onProgressionChanged()
+        fun onHighlightActivated(id: String)
+        fun onHighlightAnnotationMarkActivated(id: String)
+        fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+        fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+
+        /**
+         * Returns the custom [ActionMode.Callback] to be used with the text selection menu.
+         */
+        val selectionActionModeCallback: ActionMode.Callback? get() = null
+    }
 
     lateinit var listener: Listener
     lateinit var navigator: Navigator
@@ -480,19 +502,45 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             .launchUrl(context, url)
     }
 
-    interface Listener {
-        val readingProgression: ReadingProgression
-        fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {}
-        fun onPageLoaded()
-        fun onPageChanged(pageIndex: Int, totalPages: Int, url: String)
-        fun onPageEnded(end: Boolean)
-        fun onScroll()
-        fun onTap(point: PointF): Boolean
-        fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean = false
-        fun onProgressionChanged()
-        fun onHighlightActivated(id: String)
-        fun onHighlightAnnotationMarkActivated(id: String)
-        fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
-        fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    // Text selection ActionMode overrides
+    //
+    // Since Android 12, overriding Activity.onActionModeStarted doesn't seem to work to customize
+    // the text selection menu. As an alternative, we can provide a custom ActionMode.Callback to be
+    // used by the web view.
+
+    override fun startActionMode(callback: ActionMode.Callback?): ActionMode? {
+        val customCallback = listener.selectionActionModeCallback
+            ?: return super.startActionMode(callback)
+
+        val parent = parent ?: return null
+        return parent.startActionModeForChild(this, customCallback)
+    }
+
+    /**
+     * A wrapper for the app-provided custom [ActionMode.Callback] which clears the selection when
+     * activating one of the menu items.
+     */
+    inner class CallbackWrapper(val callback: ActionMode.Callback) : ActionMode.Callback by callback {
+        override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
+            uiScope.launch { clearFocus() }
+            return callback.onActionItemClicked(mode, item)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    override fun startActionMode(callback: ActionMode.Callback?, type: Int): ActionMode? {
+        val customCallback = listener.selectionActionModeCallback
+            ?: return super.startActionMode(callback, type)
+
+        val parent = parent ?: return null
+        val wrapper = Callback2Wrapper(customCallback, callback2 = callback as? ActionMode.Callback2)
+        return parent.startActionModeForChild(this, wrapper, type)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    inner class Callback2Wrapper(val callback: ActionMode.Callback, val callback2: ActionMode.Callback2?) : ActionMode.Callback by callback, ActionMode.Callback2() {
+        override fun onGetContentRect(mode: ActionMode?, view: View?, outRect: Rect?) =
+            callback2?.onGetContentRect(mode, view, outRect)
+                ?: super.onGetContentRect(mode, view, outRect)
     }
 }

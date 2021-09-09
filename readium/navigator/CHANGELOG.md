@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 * (*alpha*) Support for the [Decorator API](https://github.com/readium/architecture/pull/160) to draw user interface elements over a publication's content.
     * This can be used to render highlights over a text selection, for example.
     * For now, only the EPUB navigator implements `DecorableNavigator`, for reflowable publications. You can implement custom decoration styles with `HtmlDecorationTemplate`.
+* Customize the EPUB selection context menu by providing a custom `ActionMode.Callback` implementation with `EpubNavigatorFragment.Configuration.selectionActionModeCallback`.
+    * This is an alternative to overriding `Activity.onActionModeStarted()` which does not seem to work anymore with Android 12.
 
 ### Changed
 

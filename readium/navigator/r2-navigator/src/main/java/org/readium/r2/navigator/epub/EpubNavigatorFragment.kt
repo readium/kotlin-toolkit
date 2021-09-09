@@ -11,6 +11,7 @@ import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
+import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -68,7 +69,14 @@ class EpubNavigatorFragment private constructor(
         /**
          * Supported HTML decoration templates.
          */
-        val decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates()
+        val decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
+
+        /**
+         * Custom [ActionMode.Callback] to be used when the user selects content.
+         *
+         * Provide one if you want to customize the selection context menu items.
+         */
+        var selectionActionModeCallback: ActionMode.Callback? = null,
     )
 
     interface PaginationListener {
@@ -485,6 +493,9 @@ class EpubNavigatorFragment private constructor(
         }
         return true
     }
+
+    override val selectionActionModeCallback: ActionMode.Callback?
+        get() = config.selectionActionModeCallback
 
     private val r2PagerAdapter: R2PagerAdapter?
         get() = if (::resourcePager.isInitialized) resourcePager.adapter as? R2PagerAdapter
