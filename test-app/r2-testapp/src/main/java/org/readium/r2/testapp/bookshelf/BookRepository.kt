@@ -53,10 +53,7 @@ class BookRepository(private val booksDao: BooksDao) {
             resourceHref = locator.href,
             resourceType = locator.type,
             resourceTitle = locator.title.orEmpty(),
-            location = Locator.Locations(
-                progression = locator.locations.progression,
-                position = locator.locations.position
-            ).toJSON().toString(),
+            location = locator.locations.toJSON().toString(),
             locatorText = Locator.Text().toJSON().toString()
         )
 
