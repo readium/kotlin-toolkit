@@ -21,6 +21,10 @@ All notable changes to this project will be documented in this file.
 * Upgraded to Kotlin 1.5.21 and Gradle 7.1.1
 * The order of precedence of `Locator` locations in the reflowable EPUB navigator is: `text`, HTML ID, then `progression`. The navigator will now fallback on less precise locations in case of failure.
 
+### Fixed
+
+* When restoring a `Locator`, The PDF navigator now falls back on `locations.position` if the `page=` fragment identifier is missing.
+
 
 ## [2.0.0]
 
