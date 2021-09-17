@@ -16,12 +16,8 @@ import org.readium.r2.shared.extensions.queryParameters
 import org.readium.r2.shared.fetcher.FailureResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.StringResource
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.LocalizedString
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ServiceFactory
-import java.lang.IllegalArgumentException
-import java.util.Locale
+import org.readium.r2.shared.publication.*
+import java.util.*
 
 /**
  * Provides information about a publication's content protection and manages user rights.
@@ -50,10 +46,15 @@ interface ContentProtectionService: Publication.Service {
     val rights: UserRights
 
     /**
+     * Known technology for this type of Content Protection.
+     */
+    val scheme: ContentProtection.Scheme? get() = null
+
+    /**
      * User-facing name for this Content Protection, e.g. "Readium LCP".
      * It could be used in a sentence such as "Protected by {name}"
      */
-    val name: LocalizedString?
+    val name: LocalizedString? get() = scheme?.name
 
     override val links: List<Link>
         get() = RouteHandler.links
@@ -204,6 +205,12 @@ val Publication.credentials: String?
 val Publication.rights: ContentProtectionService.UserRights
     get() = protectionService?.rights
         ?: ContentProtectionService.UserRights.Unrestricted
+
+/**
+ * Known technology for this type of Content Protection.
+ */
+val Publication.protectionScheme: ContentProtection.Scheme?
+    get() = protectionService?.scheme
 
 /**
  * User-facing localized name for this Content Protection, e.g. "Readium LCP".

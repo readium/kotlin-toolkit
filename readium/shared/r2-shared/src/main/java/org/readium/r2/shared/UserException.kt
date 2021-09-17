@@ -22,10 +22,10 @@ open class UserException protected constructor(
     cause: Throwable?
 ) : Exception(cause) {
 
-    constructor(@StringRes userMessageId: Int, vararg args: Any, cause: Throwable? = null)
+    constructor(@StringRes userMessageId: Int, vararg args: Any?, cause: Throwable? = null)
         : this(Content(userMessageId, *args), cause)
 
-    constructor(@PluralsRes userMessageId: Int, quantity: Int?, vararg args: Any, cause: Throwable? = null)
+    constructor(@PluralsRes userMessageId: Int, quantity: Int?, vararg args: Any?, cause: Throwable? = null)
         : this(Content(userMessageId, quantity, *args), cause)
 
     constructor(message: String, cause: Throwable? = null)
@@ -64,7 +64,7 @@ open class UserException protected constructor(
          * @param args Optional arguments to expand in the message.
          * @param quantity Quantity to use if the user message is a quantity strings.
          */
-        class LocalizedString(private val userMessageId: Int, private val args: Array<out Any>, private val quantity: Int?) : Content() {
+        class LocalizedString(private val userMessageId: Int, private val args: Array<out Any?>, private val quantity: Int?) : Content() {
             override fun getUserMessage(context: Context, cause: Throwable?, includesCauses: Boolean): String {
                 // Convert complex objects to strings, such as Date, to be interpolated.
                 val args = args.map { arg ->
@@ -98,9 +98,9 @@ open class UserException protected constructor(
         }
 
         companion object {
-            operator fun invoke(@StringRes userMessageId: Int, vararg args: Any) =
+            operator fun invoke(@StringRes userMessageId: Int, vararg args: Any?) =
                 LocalizedString(userMessageId, args, null)
-            operator fun invoke(@PluralsRes userMessageId: Int, quantity: Int?, vararg args: Any) =
+            operator fun invoke(@PluralsRes userMessageId: Int, quantity: Int?, vararg args: Any?) =
                 LocalizedString(userMessageId, args, quantity)
             operator fun invoke(cause: UserException) =
                 Exception(cause)

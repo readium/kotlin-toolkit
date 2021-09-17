@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 * (*alpha*) A new Publication `SearchService` to search through the resources' content, with a default implementation `StringSearchService`.
+* `ContentProtection.Scheme` can be used to identify protection technologies using unique URI identifiers.
 
 ### Changed
 

@@ -13,6 +13,9 @@
     <string name="r2.shared.publication.opening_exception.unavailable">Not available, please try again later</string>
     <string name="r2.shared.publication.opening_exception.incorrect_credentials">Provided credentials were incorrect</string>
 
+    <string name="r2.shared.publication.content_protection.exception.not_supported">This publication cannot be opened because it is protected with %1$s</string>
+    <string name="r2.shared.publication.content_protection.exception.not_supported.unknown">This publication cannot be opened because it is protected with an unknown DRM</string>
+
     <string name="r2.shared.resource.exception.bad_request">Invalid request which can\'t be processed</string>
     <string name="r2.shared.resource.exception.not_found">Resource not found</string>
     <string name="r2.shared.resource.exception.forbidden">You are not allowed to access the resource</string>
