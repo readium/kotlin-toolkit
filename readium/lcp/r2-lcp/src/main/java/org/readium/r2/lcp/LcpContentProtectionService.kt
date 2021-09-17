@@ -9,6 +9,7 @@
 
 package org.readium.r2.lcp
 
+import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
@@ -22,7 +23,7 @@ class LcpContentProtectionService(val license: LcpLicense?, override val error: 
     override val rights: ContentProtectionService.UserRights = license
         ?: ContentProtectionService.UserRights.AllRestricted
 
-    override val name: LocalizedString = LocalizedString("Readium LCP")
+    override val scheme = ContentProtection.Scheme.Lcp
 
     companion object {
 
