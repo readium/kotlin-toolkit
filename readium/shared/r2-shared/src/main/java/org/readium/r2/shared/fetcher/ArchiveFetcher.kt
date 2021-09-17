@@ -15,6 +15,7 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.ArchiveFactory
@@ -67,10 +68,8 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
         }
 
         override suspend fun link(): Link {
-            val compressedLength = entry().map { it.compressedLength }.getOrNull()
-                ?: return originalLink
-
-            return originalLink.addProperties(mapOf("compressedLength" to compressedLength))
+            val entry = entry().getOrNull() ?: return originalLink
+            return originalLink.addProperties(entry.toLinkProperties())
         }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
@@ -98,11 +97,25 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
 }
 
 private suspend fun Archive.Entry.toLink(): Link {
-    val link = Link(
+    return Link(
         href = path.addPrefix("/"),
-        type = MediaType.of(fileExtension = File(path).extension)?.toString()
+        type = MediaType.of(fileExtension = File(path).extension)?.toString(),
+        properties = Properties(toLinkProperties())
+    )
+}
+
+private fun Archive.Entry.toLinkProperties(): Map<String, Any> {
+    val properties = mutableMapOf<String, Any>(
+        "archive" to mapOf(
+            "entryLength" to (compressedLength ?: length ?: 0),
+            "isEntryCompressed" to (compressedLength != null)
+        )
     )
 
-    return compressedLength?.let { link.addProperties(mapOf("compressedLength" to it)) }
-        ?: link
+    compressedLength?.let {
+        // FIXME: Legacy property, should be removed in 3.0.0
+        properties["compressedLength"] = it
+    }
+
+    return properties
 }

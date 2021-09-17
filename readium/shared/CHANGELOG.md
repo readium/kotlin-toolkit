@@ -10,6 +10,15 @@ All notable changes to this project will be documented in this file.
 
 * (*alpha*) A new Publication `SearchService` to search through the resources' content, with a default implementation `StringSearchService`.
 * `ContentProtection.Scheme` can be used to identify protection technologies using unique URI identifiers.
+* `Link` objects from archive-based publication assets (e.g. an EPUB/ZIP) have additional properties for entry metadata.
+    ```json
+    "properties" {
+        "archive": {
+            "entryLength": 8273,
+            "isEntryCompressed": true
+        }
+    }
+    ```
 
 ### Changed
 

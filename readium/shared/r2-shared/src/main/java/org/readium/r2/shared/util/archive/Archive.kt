@@ -9,7 +9,6 @@
 
 package org.readium.r2.shared.util.archive
 
-import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
@@ -49,7 +48,10 @@ interface Archive : SuspendingCloseable {
      */
     interface Entry : SuspendingCloseable {
 
-        /** Absolute path to the entry in the archive. */
+        /**
+         * Absolute path to the entry in the archive.
+         * It MUST start with /.
+         */
         val path: String
 
         /**

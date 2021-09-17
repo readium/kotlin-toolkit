@@ -11,8 +11,10 @@ package org.readium.r2.shared.fetcher
 
 import android.webkit.MimeTypeMap
 import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.lengthBlocking
 import org.readium.r2.shared.linkBlocking
 import org.readium.r2.shared.publication.Link
@@ -46,29 +48,36 @@ class ArchiveFetcherTest {
             addExtensionMimeTypMapping("xml", "text/xml")
         }
 
-        fun createLink(href: String, type: String?, compressedLength: Long? = null) = Link(
-            href = href,
-            type = type,
-            properties =
-                Properties(
-                    compressedLength
-                        ?.let {mapOf("compressedLength" to compressedLength) }
-                        ?: mapOf()
+        fun createLink(href: String, type: String?, entryLength: Long, isCompressed: Boolean): Link {
+            val props = mutableMapOf<String, Any>(
+                "archive" to mapOf(
+                    "entryLength" to entryLength,
+                    "isEntryCompressed" to isCompressed
                 )
-        )
+            )
+            if (isCompressed) {
+                props["compressedLength"] = entryLength
+            }
+
+            return Link(
+                href = href,
+                type = type,
+                properties = Properties(props)
+            )
+        }
 
         assertEquals(
             listOf(
-                createLink("/mimetype", null),
-                createLink("/EPUB/cover.xhtml" , "application/xhtml+xml", 259L),
-                createLink("/EPUB/css/epub.css",  "text/css", 595L),
-                createLink("/EPUB/css/nav.css", "text/css", 306L),
-                createLink("/EPUB/images/cover.png", "image/png", 35809L),
-                createLink("/EPUB/nav.xhtml", "application/xhtml+xml", 2293L),
-                createLink("/EPUB/package.opf", null, 773L),
-                createLink("/EPUB/s04.xhtml", "application/xhtml+xml", 118269L),
-                createLink("/EPUB/toc.ncx", null, 1697),
-                createLink("/META-INF/container.xml", "text/xml", 176)
+                createLink("/mimetype", null, 20, false),
+                createLink("/EPUB/cover.xhtml" , "application/xhtml+xml", 259L, true),
+                createLink("/EPUB/css/epub.css",  "text/css", 595L, true),
+                createLink("/EPUB/css/nav.css", "text/css", 306L, true),
+                createLink("/EPUB/images/cover.png", "image/png", 35809L, true),
+                createLink("/EPUB/nav.xhtml", "application/xhtml+xml", 2293L, true),
+                createLink("/EPUB/package.opf", null, 773L, true),
+                createLink("/EPUB/s04.xhtml", "application/xhtml+xml", 118269L, true),
+                createLink("/EPUB/toc.ncx", null, 1697, true),
+                createLink("/META-INF/container.xml", "text/xml", 176, true)
             ),
             runBlocking { fetcher.links() }
         )
@@ -136,6 +145,19 @@ class ArchiveFetcherTest {
         assertFailsWith<Resource.Exception.NotFound> { resource.lengthBlocking().getOrThrow() }
     }
 
+    @Test
+    fun `Adds compressed length and archive properties to the Link`() = runBlocking {
+        assertJSONEquals(
+            JSONObject(mapOf(
+                "compressedLength" to 595L,
+                "archive" to mapOf(
+                    "entryLength" to 595L,
+                    "isEntryCompressed" to true
+                )
+            )),
+            fetcher.get(Link(href = "/EPUB/css/epub.css")).link().properties.toJSON()
+        )
+    }
 
     @Test
     fun `Original link properties are kept`() {
@@ -143,7 +165,8 @@ class ArchiveFetcherTest {
 
         assertEquals(
             Link(href = "/mimetype", properties = Properties(mapOf(
-                "other" to "property"
+                "other" to "property",
+                "archive" to mapOf("entryLength" to 20L, "isEntryCompressed" to false)
             ))),
             resource.linkBlocking()
         )
