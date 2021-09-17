@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 * EPUB publications implement a `SearchService` to search through the content.
+* Known DRM schemes (LCP and Adobe ADEPT) are now sniffed by the `Streamer`, when no registered `ContentProtection` supports them.
+    * This is helpful to present an error message when the user attempts to open a protected publication not supported by the app.
 
 ### Changed
 

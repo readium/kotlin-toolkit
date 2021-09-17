@@ -22,6 +22,7 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.streamer.parser.FallbackContentProtection
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.epub.setLayoutStyle
@@ -29,7 +30,6 @@ import org.readium.r2.streamer.parser.image.ImageParser
 import org.readium.r2.streamer.parser.pdf.PdfParser
 import org.readium.r2.streamer.parser.pdf.PdfiumPdfDocumentFactory
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
-import kotlin.Exception
 
 internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningException>
 
@@ -55,12 +55,15 @@ class Streamer constructor(
     context: Context,
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
-    private val contentProtections: List<ContentProtection> = emptyList(),
+    contentProtections: List<ContentProtection> = emptyList(),
     private val archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
     private val pdfFactory: PdfDocumentFactory = DefaultPdfDocumentFactory(context),
     private val httpClient: DefaultHttpClient = DefaultHttpClient(),
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
+
+    private val contentProtections: List<ContentProtection> =
+        contentProtections + listOf(FallbackContentProtection())
 
     /**
      * Parses a [Publication] from the given asset.
