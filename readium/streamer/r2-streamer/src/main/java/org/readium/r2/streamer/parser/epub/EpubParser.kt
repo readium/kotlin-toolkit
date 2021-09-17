@@ -78,8 +78,13 @@ object EPUBConstant {
 
 /**
  * Parses a Publication from an EPUB publication.
+ *
+ * @param reflowablePositionsStrategy Strategy used to calculate the number of positions in a
+ *        reflowable resource.
  */
-class EpubParser : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+class EpubParser(
+    private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended
+) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 
     override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
         _parse(asset, fetcher, asset.name)
@@ -113,7 +118,7 @@ class EpubParser : PublicationParser, org.readium.r2.streamer.parser.Publication
             manifest = manifest,
             fetcher = fetcher,
             servicesBuilder = Publication.ServicesBuilder(
-                positions = (EpubPositionsService)::create,
+                positions = EpubPositionsService.createFactory(reflowablePositionsStrategy),
                 search = StringSearchService.createDefaultFactory(),
             )
         )

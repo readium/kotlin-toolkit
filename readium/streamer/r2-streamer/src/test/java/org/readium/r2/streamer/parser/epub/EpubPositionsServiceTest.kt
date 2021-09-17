@@ -189,7 +189,7 @@ class EpubPositionsServiceTest {
                 Pair(51L, Link(href = "chap4")),
                 Pair(120L, Link(href = "chap5"))
             ),
-            reflowablePositionLength = 50L
+            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
         )
 
         assertEquals(
@@ -280,7 +280,7 @@ class EpubPositionsServiceTest {
             readingOrder = listOf(
                 Pair(60L, Link(href = "chap1"))
             ),
-            reflowablePositionLength = 50L
+            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
         )
 
         assertEquals(
@@ -317,7 +317,7 @@ class EpubPositionsServiceTest {
                 Pair(60L, Link(href = "chap2", properties = createProperties(layout = EpubLayout.REFLOWABLE))),
                 Pair(20000L, Link(href = "chap3", properties = createProperties(layout = EpubLayout.FIXED)))
             ),
-            reflowablePositionLength = 50L
+            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
         )
 
         assertEquals(
@@ -364,14 +364,63 @@ class EpubPositionsServiceTest {
     }
 
     @Test
-    fun `Use the encrypted {originalLength} if available, instead of the {Container}'s file length`() {
+    fun `Use the {ArchiveEntryLength} reflowable strategy`() {
         val service = createService(
             layout = EpubLayout.REFLOWABLE,
             readingOrder = listOf(
-                Pair(60L, Link(href = "chap1", properties = createProperties(encryptedOriginalLength = 20L))),
+                Pair(60L, Link(href = "chap1", properties = createProperties(archiveEntryLength = 20L))),
                 Pair(60L, Link(href = "chap2"))
             ),
-            reflowablePositionLength = 50L
+            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
+        )
+
+        assertEquals(
+            listOf(
+                listOf(
+                    Locator(
+                        href = "chap1",
+                        type = "text/html",
+                        locations = Locator.Locations(
+                            progression = 0.0,
+                            position = 1,
+                            totalProgression = 0.0
+                        )
+                    ),
+                ),
+                listOf(
+                    Locator(
+                        href = "chap2",
+                        type = "text/html",
+                        locations = Locator.Locations(
+                            progression = 0.0,
+                            position = 2,
+                            totalProgression = 1.0/3.0
+                        )
+                    ),
+                    Locator(
+                        href = "chap2",
+                        type = "text/html",
+                        locations = Locator.Locations(
+                            progression = 0.5,
+                            position = 3,
+                            totalProgression = 2.0/3.0
+                        )
+                    )
+                )
+            ),
+            runBlocking { service.positionsByReadingOrder() }
+        )
+    }
+
+    @Test
+    fun `Use the {OriginalLength} reflowable strategy`() {
+        val service = createService(
+            layout = EpubLayout.REFLOWABLE,
+            readingOrder = listOf(
+                Pair(60L, Link(href = "chap1", properties = createProperties(originalLength = 20L))),
+                Pair(60L, Link(href = "chap2"))
+            ),
+            reflowableStrategy = EpubPositionsService.ReflowableStrategy.OriginalLength(pageLength = 50)
         )
 
         assertEquals(
@@ -411,7 +460,7 @@ class EpubPositionsServiceTest {
     private fun createService(
         layout: EpubLayout? = null,
         readingOrder: List<Pair<Long, Link>>,
-        reflowablePositionLength: Long = 50L
+        reflowableStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
     ) = EpubPositionsService(
         readingOrder = readingOrder.map { it.second },
         fetcher = object : Fetcher {
@@ -436,21 +485,26 @@ class EpubPositionsServiceTest {
             override suspend fun close() {}
         },
         presentation = Presentation(layout = layout),
-        reflowablePositionLength = reflowablePositionLength
+        reflowableStrategy = reflowableStrategy
     )
 
-    private fun createProperties(layout: EpubLayout? = null, encryptedOriginalLength: Long? = null): Properties {
+    private fun createProperties(layout: EpubLayout? = null, archiveEntryLength: Long? = null, originalLength: Long? = null): Properties {
         val properties = mutableMapOf<String, Any>()
         if (layout != null) {
             properties["layout"] = layout.value
         }
-        if (encryptedOriginalLength != null) {
+        if (originalLength != null) {
             properties["encrypted"] = mapOf(
                 "algorithm" to "algo",
-                "originalLength" to encryptedOriginalLength
+                "originalLength" to originalLength
             )
         }
-
+        if (archiveEntryLength != null) {
+            properties["archive"] = mapOf(
+                "entryLength" to archiveEntryLength,
+                "isEntryCompressed" to true
+            )
+        }
         return Properties(otherProperties = properties)
     }
 

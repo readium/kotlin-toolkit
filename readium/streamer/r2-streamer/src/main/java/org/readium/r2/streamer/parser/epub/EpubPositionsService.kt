@@ -1,18 +1,17 @@
 /*
- * Module: r2-streamer-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2020 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.archive.archive
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layoutOf
@@ -30,16 +29,74 @@ import kotlin.math.ceil
  *
  * https://github.com/readium/architecture/blob/master/models/locators/best-practices/format.md#epub
  * https://github.com/readium/architecture/issues/101
- *
- * @param reflowablePositionLength Length in bytes of a position in a reflowable resource. This is
- *        used to split a single reflowable resource into several positions.
  */
-internal class EpubPositionsService(
+class EpubPositionsService(
     private val readingOrder: List<Link>,
     private val presentation: Presentation,
     private val fetcher: Fetcher,
-    private val reflowablePositionLength: Long
+    private val reflowableStrategy: ReflowableStrategy
 ) : PositionsService {
+
+    companion object {
+
+        fun createFactory(reflowableStrategy: ReflowableStrategy = ReflowableStrategy.recommended): (Publication.Service.Context) -> EpubPositionsService =
+            { context ->
+                EpubPositionsService(
+                    readingOrder = context.manifest.readingOrder,
+                    presentation = context.manifest.metadata.presentation,
+                    fetcher = context.fetcher,
+                    reflowableStrategy = reflowableStrategy
+                )
+            }
+    }
+
+    /**
+     * Strategy used to calculate the number of positions in a reflowable resource.
+     *
+     * Note that a fixed-layout resource always has a single position.
+     */
+    sealed class ReflowableStrategy {
+        /** Returns the number of positions in the given [resource] according to the strategy. */
+        abstract suspend fun positionCount(resource: Resource): Int
+
+        /**
+         * Use the original length of each resource (before compression and encryption) and split it
+         * by the given [pageLength].
+         */
+        data class OriginalLength(val pageLength: Int) : ReflowableStrategy() {
+            override suspend fun positionCount(resource: Resource): Int {
+                val length = resource.link().properties.encryption?.originalLength
+                    ?: resource.length().getOrNull()
+                    ?: 0
+                return ceil(length.toDouble() / pageLength.toDouble()).toInt()
+                    .coerceAtLeast(1)
+            }
+        }
+
+        /**
+         * Use the archive entry length (whether it is compressed or stored) and split it by the
+         * given [pageLength].
+         */
+        data class ArchiveEntryLength(val pageLength: Int) : ReflowableStrategy() {
+            override suspend fun positionCount(resource: Resource): Int {
+                val length = resource.link().properties.archive?.entryLength
+                    ?: resource.length().getOrNull()
+                    ?: 0
+                return ceil(length.toDouble() / pageLength.toDouble()).toInt()
+                    .coerceAtLeast(1)
+            }
+        }
+
+        companion object {
+            /**
+             * Recommended historical strategy: archive entry length split by 1024 bytes pages.
+             *
+             * This strategy is used by Adobe RMSDK as well.
+             * See https://github.com/readium/architecture/issues/123
+             */
+            val recommended = ArchiveEntryLength(pageLength = 1024)
+        }
+    }
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
         if (!::_positions.isInitialized)
@@ -93,18 +150,13 @@ internal class EpubPositionsService(
     )
 
     private suspend fun createReflowable(link: Link, startPosition: Int, fetcher: Fetcher): List<Locator> {
-        // If the resource is encrypted, we use the `originalLength` declared in `encryption.xml`
-        // instead of the ZIP entry length.
-        val length = link.properties.encryption?.originalLength
-            ?: fetcher.get(link).use { it.length().getOrNull() }
-            ?: return emptyList()
+        val positionCount = fetcher.get(link).use { resource ->
+            reflowableStrategy.positionCount(resource)
+        }
 
-        val pageCount = ceil(length / reflowablePositionLength.toDouble()).toInt()
-            .coerceAtLeast(1)
-
-        return (1..pageCount).map { position ->
+        return (1..positionCount).map { position ->
             createLocator(link,
-                progression = (position - 1) / pageCount.toDouble(),
+                progression = (position - 1) / positionCount.toDouble(),
                 position = startPosition + position
             )
         }
@@ -119,17 +171,4 @@ internal class EpubPositionsService(
             position = position
         )
     )
-
-    companion object {
-
-        fun create(context: Publication.Service.Context): EpubPositionsService {
-            return EpubPositionsService(
-                readingOrder = context.manifest.readingOrder,
-                presentation = context.manifest.metadata.presentation,
-                fetcher = context.fetcher,
-                reflowablePositionLength = 1024L
-            )
-        }
-
-    }
 }
