@@ -18,6 +18,7 @@ android {
 //    resourcePrefix "r2_"
 
     compileSdkVersion 30
+
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 30

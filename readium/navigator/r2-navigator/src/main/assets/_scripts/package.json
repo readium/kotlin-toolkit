@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "approx-string-match": "^1.1.0",
-    "hash.js": "^1.1.7"
+    "hash.js": "^1.1.7",
+    "string.prototype.matchall": "^4.0.5"
   }
 }

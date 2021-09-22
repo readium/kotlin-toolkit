@@ -8,6 +8,10 @@ import { log as logNative, logError } from "./utils";
 import { toNativeRect } from "./rect";
 import { TextRange } from "./vendor/hypothesis/anchoring/text-range";
 
+// Polyfill for Android API 26
+import matchAll from "string.prototype.matchall";
+matchAll.shim();
+
 const debug = true;
 
 export function getCurrentSelection() {
