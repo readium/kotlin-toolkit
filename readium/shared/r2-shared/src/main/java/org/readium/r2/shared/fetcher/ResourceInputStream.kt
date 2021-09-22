@@ -16,8 +16,9 @@ import java.io.InputStream
 /**
  * Input stream reading a [Resource]'s content.
  *
- * The underlying resource will be automatically closed at the same time that this stream is.
- * */
+ * If you experience bad performances, consider wrapping the stream in a BufferedInputStream. This
+ * is particularly useful when streaming deflated ZIP entries.
+ */
 class ResourceInputStream(
     private val resource: Resource,
     val range: LongRange? = null

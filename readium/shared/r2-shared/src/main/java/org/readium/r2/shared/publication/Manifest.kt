@@ -10,6 +10,8 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
@@ -22,6 +24,7 @@ import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import java.io.File
 
 /**
  * Holds the metadata of a Readium publication, as described in the Readium Web Publication Manifest.
@@ -75,7 +78,7 @@ data class Manifest(
     companion object {
 
         /**
-         * Parses a [Publication] from its RWPM JSON representation.
+         * Parses a [Manifest] from its RWPM JSON representation.
          *
          * If the publication can't be parsed, a warning will be logged with [warnings].
          * https://readium.org/webpub-manifest/
@@ -106,7 +109,7 @@ data class Manifest(
 
             val metadata = Metadata.fromJSON(json.remove("metadata") as? JSONObject, normalizeHref, warnings)
             if (metadata == null) {
-                warnings?.log(Publication::class.java, "[metadata] is required", json)
+                warnings?.log(Manifest::class.java, "[metadata] is required", json)
                 return null
             }
 

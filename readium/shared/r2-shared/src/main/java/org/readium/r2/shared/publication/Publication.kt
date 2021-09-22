@@ -38,6 +38,16 @@ import kotlin.reflect.KClass
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
 /**
+ * A reference uniquely identifying a publication in the reading app.
+ *
+ * For example, a database primary key for a local publication, or a source URL for a remote one.
+ *
+ * We can't use publication.metadata.identifier directly because it might be null or not really
+ * unique in the reading app. That's why sometimes we require an ID provided by the app.
+ */
+typealias PublicationId = String
+
+/**
  * The Publication shared model is the entry-point for all the metadata and services
  * related to a Readium publication.
  *

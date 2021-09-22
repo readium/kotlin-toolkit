@@ -142,6 +142,11 @@ interface Resource : SuspendingCloseable {
             : Exception(R.string.r2_shared_resource_exception_unavailable, cause)
 
         /**
+         * The Internet connection appears to be offline.
+         */
+        object Offline : Exception(R.string.r2_shared_resource_exception_offline)
+
+        /**
          * Equivalent to a 507 HTTP error.
          *
          * Used when the requested range is too large to be read in memory.
