@@ -43,15 +43,8 @@ internal class PublicationContainer(
         }
     }
 
-    override fun dataInputStream(relativePath: String): InputStream = runBlocking {
-        publication.get(relativePath).stream()
-    }
+    override fun dataInputStream(relativePath: String): InputStream =
+        ResourceInputStream(publication.get(relativePath)).buffered()
 
     private fun Publication.get(href: String) = get(Link(href))
 }
-
-
-/**
- * Creates an [InputStream] to read the content.
- */
-fun Resource.stream(): InputStream = ResourceInputStream(resource = this)
