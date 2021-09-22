@@ -13,6 +13,7 @@ import org.joda.time.DateTime
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.db.BooksDao
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.domain.model.Bookmark
@@ -25,14 +26,16 @@ class BookRepository(private val booksDao: BooksDao) {
 
     fun books(): LiveData<List<Book>> = booksDao.getAllBooks()
 
-    suspend fun insertBook(href: String, extension: String, publication: Publication): Long {
+    suspend fun get(id: Long) = booksDao.get(id)
+
+    suspend fun insertBook(href: String, mediaType: MediaType, publication: Publication): Long {
         val book = Book(
             creation = DateTime().toDate().time,
             title = publication.metadata.title,
             author = publication.metadata.authorName,
             href = href,
             identifier = publication.metadata.identifier ?: "",
-            ext = ".$extension",
+            type = mediaType.toString(),
             progression = "{}"
         )
         return booksDao.insertBook(book)
@@ -40,8 +43,8 @@ class BookRepository(private val booksDao: BooksDao) {
 
     suspend fun deleteBook(id: Long) = booksDao.deleteBook(id)
 
-    suspend fun saveProgression(locator: String, bookId: Long) =
-        booksDao.saveProgression(locator, bookId)
+    suspend fun saveProgression(locator: Locator, bookId: Long) =
+        booksDao.saveProgression(locator.toJSON().toString(), bookId)
 
     suspend fun insertBookmark(bookId: Long, publication: Publication, locator: Locator): Long {
         val resource = publication.readingOrder.indexOfFirstWithHref(locator.href)!!

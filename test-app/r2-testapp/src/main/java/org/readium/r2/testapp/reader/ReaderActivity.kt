@@ -9,7 +9,6 @@ package org.readium.r2.testapp.reader
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
-import android.view.ActionMode
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -20,6 +19,7 @@ import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.allAreAudio
 import org.readium.r2.shared.publication.allAreBitmap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.R
@@ -36,7 +36,7 @@ import org.readium.r2.testapp.outline.OutlineFragment
  */
 open class ReaderActivity : AppCompatActivity() {
 
-    protected lateinit var readerFragment: VisualReaderFragment
+    protected lateinit var readerFragment: BaseReaderFragment
     private lateinit var modelFactory: ReaderViewModel.Factory
     private lateinit var publication: Publication
 
@@ -60,7 +60,7 @@ open class ReaderActivity : AppCompatActivity() {
 
             if (publication.type == Publication.TYPE.EPUB) {
                 val baseUrl = requireNotNull(inputData.baseUrl)
-                readerFragment = EpubReaderFragment.newInstance(baseUrl, inputData.bookId)
+                readerFragment = EpubReaderFragment.newInstance(baseUrl)
 
                 supportFragmentManager.commitNow {
                     replace(R.id.activity_container, readerFragment, READER_FRAGMENT_TAG)
@@ -69,6 +69,7 @@ open class ReaderActivity : AppCompatActivity() {
                 val readerClass: Class<out Fragment> = when {
                     publication.readingOrder.all { it.mediaType == MediaType.PDF } -> PdfReaderFragment::class.java
                     publication.readingOrder.allAreBitmap -> ImageReaderFragment::class.java
+                    publication.readingOrder.allAreAudio -> AudioReaderFragment::class.java
                     else -> throw IllegalArgumentException("Cannot render publication")
                 }
 
@@ -78,7 +79,7 @@ open class ReaderActivity : AppCompatActivity() {
             }
         }
 
-        readerFragment = supportFragmentManager.findFragmentByTag(READER_FRAGMENT_TAG) as VisualReaderFragment
+        readerFragment = supportFragmentManager.findFragmentByTag(READER_FRAGMENT_TAG) as BaseReaderFragment
 
         supportFragmentManager.setFragmentResultListener(
             OutlineContract.REQUEST_KEY,

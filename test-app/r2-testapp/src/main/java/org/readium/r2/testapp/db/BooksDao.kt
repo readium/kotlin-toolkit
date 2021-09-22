@@ -37,6 +37,12 @@ interface BooksDao {
     suspend fun deleteBook(bookId: Long)
 
     /**
+     * Retrieve a book from its ID.
+     */
+    @Query("SELECT * FROM " + Book.TABLE_NAME + " WHERE " + Book.ID + " = :id")
+    suspend fun get(id: Long): Book?
+
+    /**
      * Retrieve all books
      * @return List of books as LiveData
      */

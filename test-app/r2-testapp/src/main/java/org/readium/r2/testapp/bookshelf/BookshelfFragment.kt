@@ -32,14 +32,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.squareup.picasso.Picasso
 import org.json.JSONObject
-import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.reader.ReaderContract
-import timber.log.Timber
 import java.io.File
 
 
@@ -78,7 +77,7 @@ class BookshelfFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        bookshelfAdapter = BookshelfAdapter(onBookClick = { book -> openBook(book) },
+        bookshelfAdapter = BookshelfAdapter(onBookClick = { book -> openBook(book.id) },
             onBookLongClick = { book -> confirmDeleteBook(book) })
 
         documentPickerLauncher =
@@ -90,13 +89,7 @@ class BookshelfFragment : Fragment() {
 
         readerLauncher =
             registerForActivityResult(ReaderContract()) { pubData: ReaderContract.Output? ->
-                if (pubData == null)
-                    return@registerForActivityResult
-
-                tryOrNull { pubData.publication.close() }
-                Timber.d("Publication closed")
-                if (pubData.deleteOnResult)
-                    tryOrNull { pubData.file.delete() }
+                tryOrLog { pubData?.publication?.close() }
             }
 
         binding.bookshelfBookList.apply {
@@ -245,23 +238,18 @@ class BookshelfFragment : Fragment() {
         bookshelfViewModel.deleteBook(book)
     }
 
-    private fun openBook(book: Book) {
-        bookshelfViewModel.openBook(
-            book, requireContext(),
-            callback = { asset, mediaType, publication, remoteAsset, url ->
-                readerLauncher.launch(
-                    ReaderContract.Input(
-                        file = asset.file,
-                        mediaType = mediaType,
-                        publication = publication,
-                        bookId = book.id!!,
-                        initialLocator = book.progression
-                            ?.let { Locator.fromJSON(JSONObject(it)) },
-                        deleteOnResult = remoteAsset != null,
-                        baseUrl = url
-                    )
-                )
-            })
+    private fun openBook(bookId: Long?) {
+        bookId ?: return
+
+        bookshelfViewModel.openBook(requireContext(), bookId) { book, asset, publication, url ->
+            readerLauncher.launch(ReaderContract.Input(
+                mediaType = asset.mediaType(),
+                publication = publication,
+                bookId = bookId,
+                initialLocator = book.progression?.let { Locator.fromJSON(JSONObject(it)) },
+                baseUrl = url
+            ))
+        }
     }
 
     private fun confirmDeleteBook(book: Book) {

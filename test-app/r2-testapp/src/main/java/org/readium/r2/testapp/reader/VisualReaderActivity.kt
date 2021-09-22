@@ -18,6 +18,9 @@ import org.readium.r2.testapp.utils.showSystemUi
  */
 open class VisualReaderActivity : ReaderActivity() {
 
+    private val visualReaderFragment: VisualReaderFragment
+        get() = readerFragment as VisualReaderFragment
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -44,17 +47,17 @@ open class VisualReaderActivity : ReaderActivity() {
     }
 
     private fun updateSystemUiVisibility() {
-        if (readerFragment.isHidden)
+        if (visualReaderFragment.isHidden)
             showSystemUi()
         else
-            readerFragment.updateSystemUiVisibility()
+            visualReaderFragment.updateSystemUiVisibility()
 
         // Seems to be required to adjust padding when transitioning from the outlines to the screen reader
         binding.activityContainer.requestApplyInsets()
     }
 
     private fun updateSystemUiPadding(container: View, insets: WindowInsets) {
-        if (readerFragment.isHidden)
+        if (visualReaderFragment.isHidden)
             container.padSystemUi(insets, this)
         else
             container.clearPadding()

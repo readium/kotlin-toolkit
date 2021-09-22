@@ -7,11 +7,16 @@
 package org.readium.r2.testapp.reader
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
+import org.readium.r2.navigator.DecorableNavigator
+import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.utils.clearPadding
 import org.readium.r2.testapp.utils.hideSystemUi
 import org.readium.r2.testapp.utils.padSystemUi
@@ -24,6 +29,18 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
 
     private lateinit var navigatorFragment: Fragment
 
+    private var _binding: FragmentReaderBinding? = null
+    val binding get() = _binding!!
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentReaderBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navigatorFragment = navigator as Fragment
@@ -35,6 +52,11 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
             updateSystemUiPadding(container, insets)
             insets
         }
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 
     fun updateSystemUiVisibility() {

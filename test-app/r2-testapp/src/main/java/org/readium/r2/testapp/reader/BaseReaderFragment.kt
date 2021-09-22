@@ -25,6 +25,7 @@ import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
@@ -38,11 +39,8 @@ import org.readium.r2.testapp.domain.model.Highlight
 @OptIn(ExperimentalDecorator::class)
 abstract class BaseReaderFragment : Fragment() {
 
-    protected abstract var model: ReaderViewModel
-    protected abstract var navigator: Navigator
-
-    private var _binding: FragmentReaderBinding? = null
-    val binding get() = _binding!!
+    protected abstract val model: ReaderViewModel
+    protected abstract val navigator: Navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
@@ -58,22 +56,13 @@ abstract class BaseReaderFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentReaderBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val viewScope = viewLifecycleOwner.lifecycleScope
 
         navigator.currentLocator
-            .onEach { model.saveProgression(it.toJSON().toString()) }
+            .onEach { model.saveProgression(it) }
             .launchIn(viewScope)
 
         (navigator as? DecorableNavigator)?.let { navigator ->
@@ -90,7 +79,6 @@ abstract class BaseReaderFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        _binding = null
         (navigator as? DecorableNavigator)?.removeDecorationListener(decorationListener)
         super.onDestroyView()
     }

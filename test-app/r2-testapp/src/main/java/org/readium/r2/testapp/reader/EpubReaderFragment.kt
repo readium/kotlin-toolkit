@@ -308,7 +308,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     companion object {
 
         private const val BASE_URL_ARG = "baseUrl"
-        private const val BOOK_ID_ARG = "bookId"
 
         private const val SEARCH_FRAGMENT_TAG = "search"
 
@@ -316,11 +315,10 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
         private const val IS_SEARCH_VIEW_ICONIFIED = "isSearchViewIconified"
 
-        fun newInstance(baseUrl: URL, bookId: Long): EpubReaderFragment {
+        fun newInstance(baseUrl: URL): EpubReaderFragment {
             return EpubReaderFragment().apply {
                 arguments = Bundle().apply {
                     putString(BASE_URL_ARG, baseUrl.toString())
-                    putLong(BOOK_ID_ARG, bookId)
                 }
             }
         }

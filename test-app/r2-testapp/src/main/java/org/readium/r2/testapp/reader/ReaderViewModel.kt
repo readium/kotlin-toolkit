@@ -24,6 +24,7 @@ import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
@@ -44,12 +45,14 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     val bookId = arguments.bookId
     private val repository: BookRepository
 
+    val publicationId: PublicationId get() = bookId.toString()
+
     init {
         val booksDao = BookDatabase.getDatabase(context).booksDao()
         repository = BookRepository(booksDao)
     }
 
-    fun saveProgression(locator: String) = viewModelScope.launch {
+    fun saveProgression(locator: Locator) = viewModelScope.launch {
         repository.saveProgression(locator, bookId)
     }
 

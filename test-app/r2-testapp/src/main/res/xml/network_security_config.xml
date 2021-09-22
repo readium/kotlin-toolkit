@@ -29,5 +29,10 @@
         <domain includeSubdomains="false">open.minitex.org</domain>
         <domain includeSubdomains="false">s3.amazonaws.com</domain>
 
+        <!--
+        Required to stream the Flatland audiobook sample.
+        -->
+        <domain includeSubdomains="true">archive.org</domain>
+
     </domain-config>
 </network-security-config>

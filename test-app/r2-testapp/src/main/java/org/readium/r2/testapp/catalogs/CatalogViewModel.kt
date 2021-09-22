@@ -24,6 +24,7 @@ import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.R2App
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
@@ -77,7 +78,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         val downloadUrl = getDownloadURL(publication)
         val publicationUrl = opdsDownloader.publicationUrl(downloadUrl.toString())
         publicationUrl.onSuccess {
-            val id = addPublicationToDatabase(it.first, "epub", publication)
+            val id = addPublicationToDatabase(it.first, MediaType.EPUB, publication)
             if (id != -1L) {
                 detailChannel.send(Event.DetailEvent.ImportPublicationSuccess)
             } else {
@@ -106,10 +107,10 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
 
     private suspend fun addPublicationToDatabase(
         href: String,
-        extension: String,
+        mediaType: MediaType,
         publication: Publication
     ): Long {
-        val id = bookRepository.insertBook(href, extension, publication)
+        val id = bookRepository.insertBook(href, mediaType, publication)
         storeCoverImage(publication, id.toString())
         return id
     }

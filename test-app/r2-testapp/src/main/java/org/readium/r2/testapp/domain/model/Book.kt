@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.readium.r2.shared.util.mediatype.MediaType
 import java.net.URI
 import java.nio.file.Paths
 
@@ -32,8 +33,8 @@ data class Book(
     val identifier: String,
     @ColumnInfo(name = PROGRESSION)
     val progression: String? = null,
-    @ColumnInfo(name = EXTENSION)
-    val ext: String
+    @ColumnInfo(name = TYPE)
+    val type: String
 ) {
 
     val fileName: String?
@@ -61,16 +62,18 @@ data class Book(
             return url
         }
 
+    suspend fun mediaType(): MediaType? = MediaType.of(type)
+
     companion object {
 
-        const val TABLE_NAME = "BOOKS"
-        const val ID = "ID"
-        const val CREATION_DATE = "CREATION_DATE"
-        const val HREF = "HREF"
-        const val TITLE = "TITLE"
-        const val AUTHOR = "AUTHOR"
-        const val IDENTIFIER = "IDENTIFIER"
-        const val PROGRESSION = "PROGRESSION"
-        const val EXTENSION = "EXTENSION"
+        const val TABLE_NAME = "books"
+        const val ID = "id"
+        const val CREATION_DATE = "creation_date"
+        const val HREF = "href"
+        const val TITLE = "title"
+        const val AUTHOR = "author"
+        const val IDENTIFIER = "identifier"
+        const val PROGRESSION = "progression"
+        const val TYPE = "type"
     }
 }

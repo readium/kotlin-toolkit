@@ -36,10 +36,10 @@ project.ext.versionCode = 1_000_000 * major + 10_000 * minor + 100 * patch + bui
 
 android {
 
-    compileSdkVersion 30
+    compileSdkVersion 31
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
 
         applicationId "org.readium.r2reader"
 
