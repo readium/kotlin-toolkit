@@ -40,7 +40,7 @@ import org.readium.r2.shared.publication.services.positions
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ImageNavigatorFragment private constructor(
-    internal val publication: Publication,
+    override val publication: Publication,
     private val initialLocator: Locator? = null,
     internal val listener: Listener? = null
 ) : Fragment(), CoroutineScope by MainScope(), VisualNavigator {

@@ -11,6 +11,9 @@ package org.readium.r2.navigator.extensions
 
 import org.readium.r2.shared.publication.Locator
 import java.util.*
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 
 // FIXME: This should be in r2-shared once this public API is specified.
 
@@ -51,3 +54,20 @@ internal val Locator.Locations.htmlId: String? get() {
  */
 internal val Locator.Locations.page: Int? get() =
     fragmentParameters["page"]?.toIntOrNull()
+
+/**
+ * Media fragment, used for example in audiobooks.
+ *
+ * https://www.w3.org/TR/media-frags/
+ */
+@OptIn(ExperimentalTime::class)
+internal val Locator.Locations.time: Duration? get() =
+    fragmentParameters["t"]?.toIntOrNull()?.seconds
+
+/**
+ * Computes the time position from the resource duration.
+ */
+@OptIn(ExperimentalTime::class)
+internal fun Locator.Locations.timeWithDuration(duration: Duration?): Duration? =
+    let(duration, progression) { d, p -> (p * d.inSeconds).seconds }
+        ?: time

@@ -15,6 +15,9 @@ All notable changes to this project will be documented in this file.
     * For now, only the EPUB navigator implements `DecorableNavigator`, for reflowable publications. You can implement custom decoration styles with `HtmlDecorationTemplate`.
 * Customize the EPUB selection context menu by providing a custom `ActionMode.Callback` implementation with `EpubNavigatorFragment.Configuration.selectionActionModeCallback`.
     * This is an alternative to overriding `Activity.onActionModeStarted()` which does not seem to work anymore with Android 12.
+* (*alpha*) A new audiobook navigator based on Android's [`MediaSession`](https://developer.android.com/guide/topics/media-apps/working-with-a-media-session).
+    * It supports out-of-the-box media style notifications and background playback.
+    * ExoPlayer is used by default for the actual playback, but you can use a custom player by implementing `MediaPlayer`.
 
 ### Changed
 

@@ -57,7 +57,7 @@ import kotlin.reflect.KClass
  */
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalDecorator::class)
 class EpubNavigatorFragment private constructor(
-    internal val publication: Publication,
+    override val publication: Publication,
     private val baseUrl: String,
     private val initialLocator: Locator?,
     internal val listener: Listener?,

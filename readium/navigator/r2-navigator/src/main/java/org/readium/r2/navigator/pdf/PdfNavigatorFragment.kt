@@ -41,7 +41,7 @@ import timber.log.Timber
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PdfNavigatorFragment internal constructor(
-    private val publication: Publication,
+    override val publication: Publication,
     private val initialLocator: Locator? = null,
     private val listener: Listener? = null
 ) : Fragment(), VisualNavigator {

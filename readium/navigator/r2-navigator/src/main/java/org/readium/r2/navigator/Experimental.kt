@@ -10,3 +10,8 @@ package org.readium.r2.navigator
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
 annotation class ExperimentalDecorator
+
+@RequiresOptIn(message = "The new Audiobook navigator is still experimental. The API may be changed in the future without notice.")
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
+annotation class ExperimentalAudiobook
