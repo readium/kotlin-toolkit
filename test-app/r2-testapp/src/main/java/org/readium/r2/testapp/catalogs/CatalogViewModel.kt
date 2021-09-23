@@ -92,18 +92,10 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         showProgressBar.set(false)
     }
 
-    private fun getDownloadURL(publication: Publication): URL? {
-        var url: URL? = null
-        val links = publication.links
-        for (link in links) {
-            val href = link.href
-            if (href.contains(Publication.EXTENSION.EPUB.value) || href.contains(Publication.EXTENSION.LCPL.value)) {
-                url = URL(href)
-                break
-            }
-        }
-        return url
-    }
+    private fun getDownloadURL(publication: Publication): URL? =
+        publication.links
+            .firstOrNull { it.mediaType.isPublication }
+            ?.let { URL(it.href) }
 
     private suspend fun addPublicationToDatabase(
         href: String,
