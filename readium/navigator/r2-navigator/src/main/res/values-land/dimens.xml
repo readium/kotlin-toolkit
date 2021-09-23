@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="r2.navigator.epub.vertical_padding">20dp</dimen>
+</resources>

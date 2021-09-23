@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="documentSelectorArray">
+        <item>Select from Device</item>
+        <item>Enter a URL</item>
+    </string-array>
+
+    <string-array name="font_list">
+        <item>Original</item>
+        <item>PT Serif</item>
+        <item>Roboto</item>
+        <item>Source Sans Pro</item>
+        <item>Vollkorn</item>
+        <item>OpenDyslexic</item>
+        <item>AccessibleDfA</item>
+        <item>IA Writer Duospace</item>
+    </string-array>
+</resources>

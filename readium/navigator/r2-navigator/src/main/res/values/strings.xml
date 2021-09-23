@@ -1,0 +1,20 @@
+<!--
+  ~ Module: r2-navigator-kotlin
+  ~ Developers: Aferdita Muriqi, Clément Baumann
+  ~
+  ~ Copyright (c) 2018. Readium Foundation. All rights reserved.
+  ~ Use of this source code is governed by a BSD-style license which is detailed in the
+  ~ LICENSE file present in the project repository where this source code is maintained.
+  -->
+
+<resources>
+
+    <string name="end_of_chapter">end of chapter</string>
+    <string name="end_of_chapter_indicator">~ ~ ~</string>
+    <string name="zero">00:00</string>
+    <string name="epub_navigator_tag">epub_navigator</string>
+    <string name="image_navigator_tag">image_navigator</string>
+    <string name="r2_media_notification_channel_name">Audiobook</string>
+    <string name="r2_media_notification_channel_description">Audiobook currently being played</string>
+
+</resources>

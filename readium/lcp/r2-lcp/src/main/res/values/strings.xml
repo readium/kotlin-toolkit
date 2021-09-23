@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2020 Readium Foundation. All rights reserved.
+  Use of this source code is governed by the BSD-style license
+  available in the top-level LICENSE file of the project.
+-->
+
+<resources>
+
+    <!-- LCP Authentication Dialog -->
+
+    <string name="r2_lcp_dialog_continue">Continue</string>
+    <string name="r2_lcp_dialog_cancel">Cancel</string>
+    <string name="r2_lcp_dialog_reason_passphraseNotFound">Passphrase Required</string>
+    <string name="r2_lcp_dialog_reason_invalidPassphrase">Incorrect Passphrase</string>
+    <string name="r2_lcp_dialog_prompt">This publication is protected by Readium LCP.\n\nIn order to open it, we need to know the passphrase required by: \n\n%1$s.\n\nTo help you remember it, the following hint is available:</string>
+    <string name="r2_lcp_dialog_forgotPassphrase">Forgot your passphrase?</string>
+    <string name="r2_lcp_dialog_help">Need more help?</string>
+    <string name="r2_lcp_dialog_support">Support</string>
+    <string name="r2_lcp_dialog_support_web">Website</string>
+    <string name="r2_lcp_dialog_support_phone">Phone</string>
+    <string name="r2_lcp_dialog_support_mail">Mail</string>
+
+    <!-- LCP Exceptions User Messages -->
+
+    <string name="r2.lcp.exception.license_interaction_not_available">This interaction is not available</string>
+    <string name="r2.lcp.exception.license_profile_not_supported">This License has a profile identifier that this app cannot handle, the publication cannot be processed</string>
+    <string name="r2.lcp.exception.crl_fetching">Can\'t retrieve the Certificate Revocation List</string>
+    <string name="r2.lcp.exception.network">Network error</string>
+    <string name="r2.lcp.exception.runtime">Unexpected LCP error</string>
+    <string name="r2.lcp.exception.unknown">Unknown LCP error</string>
+
+    <string name="r2.lcp.exception.license_status.cancelled">This license was cancelled on %1$s</string>
+    <string name="r2.lcp.exception.license_status.returned">This license has been returned on %1$s</string>
+    <string name="r2.lcp.exception.license_status.not_started">This license starts on %1$s</string>
+    <string name="r2.lcp.exception.license_status.expired">This license expired on %1$s</string>
+    <plurals name="r2.lcp.exception.license_status.revoked">
+        <item quantity="one">This license was revoked by its provider on %1$s. It was registered by %2$d device.</item>
+        <item quantity="other">This license was revoked by its provider on %1$s. It was registered by %2$d devices.</item>
+    </plurals>
+
+    <string name="r2.lcp.exception.renew.renew_failed">Your publication could not be renewed properly</string>
+    <string name="r2.lcp.exception.renew.invalid_renewal_period">Incorrect renewal period, your publication could not be renewed</string>
+    <string name="r2.lcp.exception.renew.unexpected_server_error">An unexpected error has occurred on the server</string>
+
+    <string name="r2.lcp.exception.return.return_failed">Your publication could not be returned properly</string>
+    <string name="r2.lcp.exception.return.already_returned_or_expired">Your publication has already been returned before or is expired</string>
+    <string name="r2.lcp.exception.return.unexpected_server_error">An unexpected error has occurred on the server</string>
+
+    <string name="r2.lcp.exception.parsing">The JSON is not representing a valid document</string>
+    <string name="r2.lcp.exception.parsing.malformed_json">The JSON is malformed and can\'t be parsed</string>
+    <string name="r2.lcp.exception.parsing.license_document">The JSON is not representing a valid License Document</string>
+    <string name="r2.lcp.exception.parsing.status_document">The JSON is not representing a valid Status Document</string>
+
+    <string name="r2.lcp.exception.container.open_failed">Can\'t open the license container</string>
+    <string name="r2.lcp.exception.container.file_not_found">License not found in container</string>
+    <string name="r2.lcp.exception.container.read_failed">Can\'t read license from container</string>
+    <string name="r2.lcp.exception.container.write_failed">Can\'t write license in container</string>
+
+    <string name="r2.lcp.exception.license_integrity.certificate_revoked">Certificate has been revoked in the CRL</string>
+    <string name="r2.lcp.exception.license_integrity.invalid_certificate_signature">Certificate has not been signed by CA</string>
+    <string name="r2.lcp.exception.license_integrity.invalid_license_signature_date">License has been issued by an expired certificate</string>
+    <string name="r2.lcp.exception.license_integrity.invalid_license_signature">License signature does not match</string>
+    <string name="r2.lcp.exception.license_integrity.invalid_user_key_check">User key check invalid</string>
+
+    <string name="r2.lcp.exception.decryption.content_key_decrypt_error">Unable to decrypt encrypted content key from user key</string>
+    <string name="r2.lcp.exception.decryption.content_decrypt_error">Unable to decrypt encrypted content from content key</string>
+
+</resources>
