@@ -1,0 +1,37 @@
+/*
+ * Copyright 2021 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
+buildscript {
+    ext.kotlin_version = '1.5.31'
+
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.0.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

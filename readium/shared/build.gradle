@@ -11,8 +11,6 @@ plugins {
     id 'maven-publish'
 }
 
-group='com.github.readium'
-
 android {
     compileSdkVersion 31
     defaultConfig {
@@ -44,6 +42,9 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 from components.release
+
+                groupId = 'com.github.readium'
+                artifactId = 'readium-shared'
             }
         }
     }

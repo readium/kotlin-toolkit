@@ -1,2 +1,5 @@
 jdk:
   - openjdk11
+before_install:
+  - git lfs pull
+
