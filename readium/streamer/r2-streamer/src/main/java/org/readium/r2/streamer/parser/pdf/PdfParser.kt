@@ -61,7 +61,7 @@ class PdfParser(
         )
 
         val servicesBuilder = Publication.ServicesBuilder(
-            positions = (PdfPositionsService)::create,
+            positions = PdfPositionsService.Companion::create,
             cover = document.cover?.let { InMemoryCoverService.createFactory(it) }
         )
 
