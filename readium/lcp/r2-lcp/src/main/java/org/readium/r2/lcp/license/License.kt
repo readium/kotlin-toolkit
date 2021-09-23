@@ -30,7 +30,9 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 import java.net.HttpURLConnection
 import java.util.*
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 internal class License(
     private var documents: ValidatedDocuments,
     private val validation: LicenseValidation,

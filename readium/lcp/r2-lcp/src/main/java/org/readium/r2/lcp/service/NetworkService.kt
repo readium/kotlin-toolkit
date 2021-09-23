@@ -31,6 +31,7 @@ internal typealias URLParameters = Map<String, String?>
 
 internal class NetworkException(val status: Int?, cause: Throwable? = null) : Exception("Network failure with status $status", cause)
 
+@OptIn(ExperimentalTime::class)
 internal class NetworkService {
     enum class Method(val rawValue: String) {
         GET("GET"), POST("POST"), PUT("PUT");
@@ -40,7 +41,6 @@ internal class NetworkService {
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     suspend fun fetch(url: String, method: Method = Method.GET, parameters: URLParameters = emptyMap(), timeout: Duration? = null): Try<ByteArray, NetworkException> =
         withContext(Dispatchers.IO) {
             try {

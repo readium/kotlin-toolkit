@@ -16,10 +16,10 @@ group='com.github.readium'
 
 android {
 
-    compileSdkVersion 30
+    compileSdkVersion 31
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -56,7 +56,7 @@ dependencies {
     if (findProject(':r2-shared')) {
         implementation project(':r2-shared')
     } else {
-        implementation "com.github.readium:r2-shared-kotlin:develop-SNAPSHOT"
+        implementation "com.github.readium:r2-shared-kotlin:2.1.0"
     }
 
 

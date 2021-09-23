@@ -17,10 +17,12 @@ import org.readium.r2.lcp.license.model.components.Link
 import timber.log.Timber
 import java.io.Serializable
 import java.util.*
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 internal class DeviceService(private val repository: DeviceRepository, private val network: NetworkService, val context: Context):Serializable {
 
-    val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+    private val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
     val id: String
         get() {

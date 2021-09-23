@@ -19,7 +19,9 @@ import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 import java.util.*
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 internal class CRLService(val network: NetworkService, val context: Context) {
 
     private val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.lcp", Context.MODE_PRIVATE)
