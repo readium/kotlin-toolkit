@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 **Warning:** Features marked as *alpha* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!--## [Unreleased]-->
+
+## [2.1.0]
 
 ### Added
 
@@ -22,7 +24,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-* Upgraded to Kotlin 1.5.21 and Gradle 7.1.1
+* Upgraded to Kotlin 1.5.31 and Gradle 7.1.1
 
 ### Fixed
 
@@ -139,4 +141,5 @@ All notable changes to this project will be documented in this file.
 [2.0.0-beta.1]: https://github.com/readium/r2-shared-kotlin/compare/2.0.0-alpha.2...2.0.0-beta.1
 [2.0.0-beta.2]: https://github.com/readium/r2-shared-kotlin/compare/2.0.0-beta.1...2.0.0-beta.2
 [2.0.0]: https://github.com/readium/r2-shared-kotlin/compare/2.0.0-beta.2...2.0.0
+[2.1.0]: https://github.com/readium/r2-shared-kotlin/compare/2.0.0...2.1.0
 
