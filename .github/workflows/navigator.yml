@@ -1,5 +1,9 @@
 name: Navigator
-on: [ push, pull_request ]
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
 
 jobs:
   build:
@@ -9,6 +13,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          lfs: 'true'
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
@@ -31,6 +37,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          lfs: 'true'
       - name: Install dependencies
         run: npm install --prefix "$scripts"
       - name: Lint JavaScript
@@ -40,5 +48,5 @@ jobs:
       - name: Check if bundled scripts are up-to-date
         run: |
             make scripts
-            git diff --exit-code --name-only readium/navigator/src/main/assets/readium/scripts
+            git diff --exit-code --name-only src/main/assets/readium/scripts
 

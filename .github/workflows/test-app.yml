@@ -1,4 +1,4 @@
-name: Shared
+name: Test App
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build and test
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +21,4 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Build
-        run: ./gradlew clean :readium:shared:build -x test
-      - name: Test
-        run: ./gradlew :readium:shared:test --continue
+        run: ./gradlew clean :test-app:build
