@@ -30,7 +30,7 @@ If you can, drag and drop screenshots or a screencast to show the problem, they 
 <!--
 If you can, drag and drop the publication used to reproduce the problem, after zipping it.
 
-Then, explain the steps to reproduce the problem from the Test App (https://github.com/readium/r2-testapp-kotlin). For example:
+Then, explain the steps to reproduce the problem from the Test App. For example:
 
 1. Open book X
 2. Go to chapter Y
@@ -42,15 +42,7 @@ Then, explain the steps to reproduce the problem from the Test App (https://gith
 
 <!-- Fill in the following information -->
 
-#### Readium versions
-
-<!-- Remove unused modules -->
-
-* `r2-shared-kotlin`:
-* `r2-streamer-kotlin`:
-* `r2-navigator-kotlin`:
-* `r2-opds-kotlin`:
-* `r2-lcp-kotlin`:
+* Readium version:
 
 #### Development environment
 
