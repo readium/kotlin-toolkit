@@ -58,7 +58,7 @@ class AudioParser :  PublicationParser {
     }
 
     private suspend fun accepts(asset: PublicationAsset, fetcher: Fetcher): Boolean {
-        if (asset.mediaType() == MediaType.ZAB)
+        if (asset.mediaTypeTest() == MediaType.ZAB)
             return true
 
         val allowedExtensions = audioExtensions +

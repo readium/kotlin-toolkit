@@ -43,7 +43,7 @@ class FileAsset private constructor(
     override val name: String
         get() = file.name
 
-    override suspend fun mediaType(): MediaType {
+    override suspend fun mediaTypeTest(): MediaType {
         if (!::_mediaType.isInitialized) {
             _mediaType = knownMediaType
                 ?: MediaType.ofFile(file, mediaType = mediaTypeHint)

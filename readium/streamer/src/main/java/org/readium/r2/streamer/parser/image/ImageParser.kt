@@ -66,7 +66,7 @@ class ImageParser : PublicationParser {
     }
 
     private suspend fun accepts(asset: PublicationAsset, fetcher: Fetcher): Boolean {
-        if (asset.mediaType() == MediaType.CBZ)
+        if (asset.mediaTypeTest() == MediaType.CBZ)
             return true
 
         val allowedExtensions = listOf("acbf", "txt", "xml")

@@ -139,7 +139,7 @@ class Streamer constructor(
         val publication = builder
             .apply(onCreatePublication)
             .build()
-            .apply { addLegacyProperties(asset.mediaType()) }
+            .apply { addLegacyProperties(asset.mediaTypeTest()) }
 
         Try.success(publication)
 

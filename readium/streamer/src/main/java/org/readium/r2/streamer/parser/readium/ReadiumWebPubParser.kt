@@ -50,7 +50,7 @@ class ReadiumWebPubParser(
         fetcher: Fetcher,
         warnings: WarningLogger?
     ): Publication.Builder? {
-        val mediaType = asset.mediaType()
+        val mediaType = asset.mediaTypeTest()
 
         if (!mediaType.isReadiumWebPubProfile)
             return null
@@ -84,12 +84,12 @@ class ReadiumWebPubParser(
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
         val readingOrder = manifest.readingOrder
-        if (asset.mediaType() == MediaType.LCP_PROTECTED_PDF && (readingOrder.isEmpty() || !readingOrder.all { it.mediaType.matches(MediaType.PDF) })) {
+        if (asset.mediaTypeTest() == MediaType.LCP_PROTECTED_PDF && (readingOrder.isEmpty() || !readingOrder.all { it.mediaType.matches(MediaType.PDF) })) {
             throw Exception("Invalid LCP Protected PDF.")
         }
 
         val servicesBuilder = Publication.ServicesBuilder().apply {
-            when (asset.mediaType()) {
+            when (asset.mediaTypeTest()) {
                 MediaType.LCP_PROTECTED_PDF ->
                     positionsServiceFactory = pdfFactory?.let { LcpdfPositionsService.create(it) }
 
@@ -108,7 +108,7 @@ class ReadiumWebPubParser(
 
         val file = File(fileAtPath)
         val asset = FileAsset(file)
-        val mediaType = asset.mediaType()
+        val mediaType = asset.mediaTypeTest()
         var baseFetcher = try {
             ArchiveFetcher.fromPath(file.path) ?: FileFetcher(href = "/${file.name}", file = file)
         } catch (e: SecurityException) {

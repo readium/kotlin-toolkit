@@ -145,7 +145,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
                     )
             }
 
-        val mediaType = publicationAsset.mediaType()
+        val mediaType = publicationAsset.mediaTypeTest()
         val fileName = "${UUID.randomUUID()}.${mediaType.fileExtension}"
         val libraryAsset = FileAsset(File(r2Directory + fileName), mediaType)
 
@@ -161,7 +161,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
         streamer.open(libraryAsset, allowUserInteraction = false, sender = r2Application)
             .onSuccess {
-                addPublicationToDatabase(libraryAsset.file.path, libraryAsset.mediaType(), it).let { id ->
+                addPublicationToDatabase(libraryAsset.file.path, libraryAsset.mediaTypeTest(), it).let { id ->
 
                     showProgressBar.set(false)
                     if (id != -1L)

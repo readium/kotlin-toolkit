@@ -23,7 +23,7 @@ interface PublicationAsset {
      *
      * If unknown, fallback on `MediaType.BINARY`.
      */
-    suspend fun mediaType(): MediaType
+    suspend fun mediaTypeTest(): MediaType
 
     /**
      * Creates a fetcher used to access the asset's content.

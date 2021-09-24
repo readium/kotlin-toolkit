@@ -92,7 +92,7 @@ class EpubParser(
     @OptIn(Search::class)
     suspend fun _parse(asset: PublicationAsset, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
 
-        if (asset.mediaType() != MediaType.EPUB)
+        if (asset.mediaTypeTest() != MediaType.EPUB)
             return null
 
         val opfPath = getRootFilePath(fetcher).addPrefix("/")

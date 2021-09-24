@@ -49,7 +49,7 @@ internal class FallbackContentProtection : ContentProtection {
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? {
-        val scheme: Scheme = sniffScheme(fetcher, asset.mediaType())
+        val scheme: Scheme = sniffScheme(fetcher, asset.mediaTypeTest())
             ?: return null
 
         val protectedFile = ContentProtection.ProtectedAsset(

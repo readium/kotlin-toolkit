@@ -41,7 +41,7 @@ class PdfParser(
         _parse(asset, fetcher, asset.name)
 
     suspend fun _parse(asset: PublicationAsset, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
-        if (asset.mediaType() != MediaType.PDF)
+        if (asset.mediaTypeTest() != MediaType.PDF)
             return null
 
         val fileHref = fetcher.links().firstOrNull { it.mediaType == MediaType.PDF }?.href
