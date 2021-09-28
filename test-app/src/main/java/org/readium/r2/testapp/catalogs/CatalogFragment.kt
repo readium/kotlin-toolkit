@@ -9,8 +9,10 @@ package org.readium.r2.testapp.catalogs
 import android.os.Bundle
 import android.view.*
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.os.bundleOf
 import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
@@ -129,8 +131,10 @@ class CatalogFragment : Fragment() {
                             )
                         })
                         if (group.links.size > 0) {
-                            addView(TextView(requireContext()).apply {
-                                text = getString(R.string.catalog_list_more)
+                            addView(ImageView(requireContext()).apply {
+                                // FIXME Have the arrow at the very end
+                                setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_baseline_arrow_forward_24))
+                                contentDescription = getString(R.string.catalog_list_more)
                                 gravity = Gravity.END
                                 layoutParams = LinearLayout.LayoutParams(
                                     LinearLayout.LayoutParams.WRAP_CONTENT,
