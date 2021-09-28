@@ -1,3 +1,10 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:77f575ed95fa164843dbdfffab297fff9d03245ce567ecac8f6f0f8b93dfc0c4
-size 177
+<!DOCTYPE html>
+<html lang=en>
+  <head>
+    <title>sample HTML document</title>
+    <meta charset='utf-8'>
+  </head>
+  <body>
+    <p>Sample HTML document.</p>
+  </body>
+</html>
