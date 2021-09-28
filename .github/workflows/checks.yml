@@ -1,4 +1,4 @@
-name: Navigator
+name: Checks
 
 on:
   push:
@@ -19,9 +19,9 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Build
-        run: ./gradlew clean :readium:navigator:build -x test
+        run: ./gradlew clean build -x test
       - name: Test
-        run: ./gradlew :readium:navigator:test --continue
+        run: ./gradlew test --continue
 
   lint:
     name: Lint
