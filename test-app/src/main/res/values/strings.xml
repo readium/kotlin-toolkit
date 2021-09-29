@@ -204,4 +204,5 @@
     <string name="go_backward_30_seconds">Go backward 30 seconds</string>
     <string name="play_or_pause">Play or pause</string>
     <string name="go_forward_30_seconds">Go forward 30 seconds</string>
+    <string name="select_a_font">Select a font</string>
 </resources>
