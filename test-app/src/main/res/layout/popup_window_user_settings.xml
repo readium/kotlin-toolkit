@@ -127,7 +127,8 @@
                             android:id="@+id/spinner_action_settings_intervall_values"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
-                            android:spinnerMode="dialog"/>
+                            android:spinnerMode="dialog"
+                            android:contentDescription="@string/select_a_font"/>
                     </LinearLayout>
 
                     <RadioGroup
