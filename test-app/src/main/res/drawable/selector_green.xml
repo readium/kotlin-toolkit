@@ -17,9 +17,26 @@
         </layer-list>
     </item>
     <item android:state_checked="false">
-        <shape android:shape="oval">
-            <solid android:color="#adf77b" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="oval">
+                    <solid android:color="#000"/>
+                    <size
+                        android:width="15dp"
+                        android:height="15dp"/>
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="oval">
+                    <stroke android:color="@android:color/transparent"
+                        android:width="20dp"/>
+                    <solid android:color="#adf77b"/>
+                    <size
+                        android:width="10dp"
+                        android:height="10dp"/>
+                </shape>
+            </item>
+        </layer-list>
 
     </item>
 </selector>

@@ -74,7 +74,7 @@
     <string name="bsd_license_label_accessible">[B S D 3 license]</string>
     <string name="acknowledgements_label">Acknowledgements</string>
     <string name="acknowledgements_french_state">R2 Reader wouldn\'t have been developed without the financial help of the French state.</string>
-    <string name="catalog_list_more">More…</string>
+    <string name="catalog_list_more">More</string>
     <string name="catalog_detail_download_button">Download</string>
 
 
@@ -186,11 +186,23 @@
     <string name="play_and_pause">Play and pause</string>
     <string name="previous_sentence">Previous sentence</string>
     <string name="previous_chapter">Previous chapter</string>
-    <string name="replay_10">Replay previous 10 seconds</string>
-    <string name="forward_10">Fast forward 10 seconds</string>
     <string name="brightness_lower">Brightness lower</string>
     <string name="brightness_higher">Brightness higher</string>
     <string name="tts_slower">TTS slower</string>
     <string name="tts_faster">TTS faster</string>
     <string name="no_result">No result</string>
+    <string name="note">Note</string>
+    <string name="add_a_note">Add a note</string>
+    <string name="add_an_annotation">Add an annotation</string>
+    <string name="delete_highlight_or_annotation">Delete highlight or annotation</string>
+    <string name="yellow">Yellow</string>
+    <string name="green">Green</string>
+    <string name="blue">Blue</string>
+    <string name="red">Red</string>
+    <string name="purple">Purple</string>
+    <string name="seek_bar">Seek bar</string>
+    <string name="go_backward_30_seconds">Go backward 30 seconds</string>
+    <string name="play_or_pause">Play or pause</string>
+    <string name="go_forward_30_seconds">Go forward 30 seconds</string>
+    <string name="select_a_font">Select a font</string>
 </resources>
