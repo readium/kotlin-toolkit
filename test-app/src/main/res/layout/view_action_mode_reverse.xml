@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -8,59 +10,49 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/background_action_mode"
-        android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <RadioGroup
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:orientation="horizontal">
 
             <RadioButton
                 android:id="@+id/yellow"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="14dp"
-                android:layout_marginTop="6dp"
-                android:layout_marginEnd="10dp"
-                android:layout_marginBottom="6dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="@drawable/selector_yellow"
                 android:button="@android:color/transparent"
                 android:contentDescription="@string/yellow" />
 
             <RadioButton
                 android:id="@+id/green"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="10dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="@drawable/selector_green"
                 android:button="@android:color/transparent"
                 android:contentDescription="@string/green" />
 
             <RadioButton
                 android:id="@+id/blue"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="10dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="@drawable/selector_blue"
                 android:button="@android:color/transparent"
                 android:contentDescription="@string/blue" />
 
             <RadioButton
                 android:id="@+id/red"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="10dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="@drawable/selector_red"
                 android:button="@android:color/transparent"
                 android:contentDescription="@string/red" />
 
             <RadioButton
                 android:id="@+id/purple"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="10dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="@drawable/selector_purple"
                 android:button="@android:color/transparent"
                 android:contentDescription="@string/purple" />
@@ -68,39 +60,32 @@
         </RadioGroup>
 
         <View
-            android:layout_width="0.5dp"
+            android:layout_width="0.6dp"
             android:layout_height="match_parent"
-            android:layout_marginStart="4dp"
             android:background="#b9b9b9" />
 
-        <ImageView
+        <ImageButton
             android:id="@+id/annotation"
-            android:layout_width="21dp"
-            android:layout_height="21dp"
-            android:layout_marginStart="9dp"
-            android:layout_marginTop="7.5dp"
-            android:layout_marginEnd="9.5dp"
-            android:layout_marginBottom="7.5dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
             android:contentDescription="@string/add_an_annotation"
-            android:scaleType="fitXY"
-            android:src="@drawable/ic_pen" />
+            android:src="@drawable/ic_baseline_edit_24"
+            app:tint="#FFFFFF" />
 
         <View
-            android:layout_width="0.5dp"
+            android:layout_width="0.6dp"
             android:layout_height="match_parent"
             android:background="#b9b9b9" />
 
-        <ImageView
+        <ImageButton
             android:id="@+id/del"
-            android:layout_width="14dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="12.5dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="13dp"
-            android:layout_marginBottom="8.6dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
             android:contentDescription="@string/delete_highlight_or_annotation"
-            android:scaleType="fitXY"
-            android:src="@drawable/ic_delete" />
+            android:src="@drawable/ic_baseline_delete_24"
+            app:tint="#FFFFFF" />
 
     </LinearLayout>
 
@@ -108,6 +93,7 @@
         android:id="@+id/notch"
         android:layout_width="18dp"
         android:layout_height="9dp"
-        android:src="@drawable/ic_notch" />
+        android:src="@drawable/ic_notch"
+        tools:ignore="ContentDescription" />
 
 </LinearLayout>

@@ -335,7 +335,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 private fun annotationMarkTemplate(context: Context, @ColorInt defaultTint: Int = Color.YELLOW): HtmlDecorationTemplate {
     // Converts the pen icon to a base 64 data URL, to be embedded in the decoration stylesheet.
     // Alternatively, serve the image with the local HTTP server and use its URL.
-    val imageUrl = ContextCompat.getDrawable(context, R.drawable.ic_pen)
+    val imageUrl = ContextCompat.getDrawable(context, R.drawable.ic_baseline_edit_24)
         ?.toBitmap()?.toDataUrl()
     requireNotNull(imageUrl)
 
