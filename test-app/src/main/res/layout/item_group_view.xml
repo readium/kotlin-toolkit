@@ -2,26 +2,21 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context=".catalogs.CatalogFeedListFragment">
 
+    <include
+        android:id="@+id/groupView_groupPublications"
+        layout="@layout/item_recycle_horizontal" />
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/catalogFeed_list"
+        android:id="@+id/groupView_groupLinks"
         android:name="org.readium.r2.testapp.opds"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         tools:context="org.readium.r2.testapp.opds"
         tools:listitem="@layout/item_recycle_button" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/catalogFeed_addCatalogFab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_margin="16dp"
-        android:contentDescription="@string/add_catalog"
-        android:src="@drawable/ic_add_white_24dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
