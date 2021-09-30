@@ -37,9 +37,11 @@ import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.ReadingProgression
+import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
 import kotlin.math.roundToInt
+import kotlin.time.Duration
 
 class R2EpubPageFragment : Fragment() {
 
@@ -48,6 +50,9 @@ class R2EpubPageFragment : Fragment() {
 
     internal val link: Link?
         get() = requireArguments().getParcelable("link")
+
+    private val positionCount: Long
+        get() = requireArguments().getLong("positionCount")
 
     var webView: R2WebView? = null
         private set
@@ -147,18 +152,15 @@ class R2EpubPageFragment : Fragment() {
 
                         lifecycleScope.launchWhenStarted {
                             // FIXME: We need a better way to wait, because if the value is too low it fails
-                            delay(200)
+                            // The layout time varies depending on the resource length, so we use
+                            // the position count to influence the delay time.
+                            delay((positionCount * 10) + 200)
 
                             val text = locator?.text
                             if (text?.highlight != null) {
                                 if (currentWebView.scrollToText(text)) {
                                     return@launchWhenStarted
                                 }
-
-                                // The delay is necessary before falling back on the other
-                                // locations, because scrollToText() is moving the scroll position
-                                // while looking for the text snippet.
-                                delay(100)
                             }
 
                             val htmlId = locations.htmlId
@@ -313,11 +315,12 @@ class R2EpubPageFragment : Fragment() {
     internal val paddingBottom: Int get() = containerView.paddingBottom
 
     companion object {
-        fun newInstance(url: String, link: Link? = null): R2EpubPageFragment =
+        fun newInstance(url: String, link: Link? = null, positionCount: Int = 0): R2EpubPageFragment =
             R2EpubPageFragment().apply {
                 arguments = Bundle().apply {
                     putString("url", url)
                     putParcelable("link", link)
+                    putLong("positionCount", positionCount.toLong())
                 }
             }
     }
