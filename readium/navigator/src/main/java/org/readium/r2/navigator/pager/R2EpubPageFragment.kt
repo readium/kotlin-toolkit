@@ -20,6 +20,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.core.view.ViewCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
@@ -73,6 +74,7 @@ class R2EpubPageFragment : Fragment() {
         val webView = binding.webView
         this.webView = webView
 
+        webView.visibility = View.INVISIBLE
         webView.navigator = parentFragment as Navigator
         webView.listener = parentFragment as R2BasicWebView.Listener
         webView.internalListener = WebViewListener()
@@ -287,6 +289,7 @@ class R2EpubPageFragment : Fragment() {
             loadLocator(locator)
         }
 
+        webView.visibility = View.VISIBLE
         webView.listener.onPageLoaded()
     }
 
