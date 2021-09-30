@@ -281,22 +281,23 @@ class R2EpubPageFragment : Fragment() {
         if (!isLoading) return
         isLoading = false
 
-        if (!isCurrentResource) return
-
         // The layout time varies depending on the resource length, so we use the position count to
         // influence the delay time.
         delay((positionCount * 10) + 200)
 
         val webView = requireNotNull(webView)
-        val epubNavigator = requireNotNull(webView.navigator as? EpubNavigatorFragment)
-        val locator = epubNavigator.pendingLocator
-        epubNavigator.pendingLocator = null
-        if (locator != null) {
-            loadLocator(locator)
-        }
-
         webView.visibility = View.VISIBLE
-        webView.listener.onPageLoaded()
+
+        if (isCurrentResource) {
+            val epubNavigator = requireNotNull(webView.navigator as? EpubNavigatorFragment)
+            val locator = epubNavigator.pendingLocator
+            epubNavigator.pendingLocator = null
+            if (locator != null) {
+                loadLocator(locator)
+            }
+
+            webView.listener.onPageLoaded()
+        }
     }
 
     private suspend fun loadLocator(locator: Locator) {
