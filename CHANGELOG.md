@@ -4,7 +4,19 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *alpha* may change or be removed in a future release without notice. Use with caution.
 
-<!--## [Unreleased]-->
+## [Unreleased]
+
+### Changed
+
+#### Navigator
+
+* Improve loading of EPUB reflowable resources.
+    * Resources are hidden until fully loaded and positioned.
+    * Intermediary locators are not broadcasted as `currentLocator` anymore while loading a resource.
+    * Improved accuracy when jumping to the middle of a large resource.
+    * `EpubNavigatorFragment.PaginationListener.onPageLoaded()` is now called only a single time, for the currently visible page.
+    * `VisualNavigator.Listener.onTap()` is called even when a resource is not fully loaded.
+
 
 ## [2.1.0]
 
