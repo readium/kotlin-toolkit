@@ -391,6 +391,7 @@ class EpubNavigatorFragment private constructor(
     override fun onPageLoaded() {
         r2Activity?.onPageLoaded()
         paginationListener?.onPageLoaded()
+        notifyCurrentLocation()
     }
 
     override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
@@ -568,6 +569,10 @@ class EpubNavigatorFragment private constructor(
         debounceLocationNotificationJob?.cancel()
         debounceLocationNotificationJob = launch {
             delay(100L)
+
+            if (pendingLocator != null) {
+                return@launch
+            }
 
             // The transition has stabilized, so we can ask the web view to refresh its current
             // item to reflect the current scroll position.
