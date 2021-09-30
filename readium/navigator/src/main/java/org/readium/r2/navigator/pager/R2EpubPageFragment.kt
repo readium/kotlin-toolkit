@@ -12,6 +12,7 @@ package org.readium.r2.navigator.pager
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.PointF
 import android.os.Bundle
 import android.util.Base64
 import android.util.DisplayMetrics
@@ -20,7 +21,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.core.view.ViewCompat
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
@@ -194,6 +194,12 @@ class R2EpubPageFragment : Fragment() {
 
         setupPadding()
 
+        // Forward a tap event when the web view is not ready to propagate the taps. This allows
+        // to toggle a navigation UI while a page is loading, for example.
+        binding.root.setOnClickListenerWithPoint { _, point ->
+            webView.listener.onTap(point)
+        }
+
         return containerView
     }
 
@@ -354,4 +360,20 @@ class R2EpubPageFragment : Fragment() {
     }
 }
 
+/**
+ * Same as setOnClickListener, but will also report the tap point in the view.
+ */
+private fun View.setOnClickListenerWithPoint(action: (View, PointF) -> Unit) {
+    var point = PointF()
 
+    setOnTouchListener { v, event ->
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            point = PointF(event.x, event.y)
+        }
+        false
+    }
+
+    setOnClickListener {
+        action(it, point)
+    }
+}
