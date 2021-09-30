@@ -431,10 +431,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     fun setProperty(key: String, value: String) {
-        runJavaScript("readium.setProperty(\"$key\", \"$value\");") {
-            // Used to redraw highlights when user settings changed.
-            listener.onPageLoaded()
-        }
+        runJavaScript("readium.setProperty(\"$key\", \"$value\");")
     }
 
     fun removeProperty(key: String) {
