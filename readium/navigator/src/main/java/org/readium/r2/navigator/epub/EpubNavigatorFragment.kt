@@ -262,7 +262,6 @@ class EpubNavigatorFragment private constructor(
     internal var pendingLocator: Locator? = null
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        pendingLocator = locator
 
         val href = locator.href
             // Remove anchor
@@ -292,6 +291,7 @@ class EpubNavigatorFragment private constructor(
         resourcePager.adapter = adapter
 
         if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
+            pendingLocator = locator
             setCurrent(resourcesSingle)
         } else {
 
