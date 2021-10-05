@@ -13,7 +13,6 @@ import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Problem Details for HTTP APIs.
@@ -63,7 +62,3 @@ data class ProblemDetails(
     }
 
 }
-
-/** JSON Problem Details JSON object */
-val MediaType.Companion.PROBLEM_DETAILS get() =
-    MediaType("application/problem+json", name = "HTTP Problem Details", fileExtension = "json")
