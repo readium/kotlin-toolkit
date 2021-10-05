@@ -13,12 +13,11 @@ import android.content.ContentResolver
 import android.net.Uri
 
 internal fun ContentResolver.queryProjection(uri: Uri, projection: String): String? =
-    query(uri, arrayOf(projection), null, null, null)?.use { cursor ->
-        try {
+    tryOrLog<String?> {
+        query(uri, arrayOf(projection), null, null, null)?.use { cursor ->
             if (cursor.moveToFirst()) {
                 return cursor.getString(0)
             }
-        } catch (e: Exception) {}
-
-        return null
+            return null
+        }
     }
