@@ -79,8 +79,14 @@ internal class SnifferBytesContent(val getBytes: () -> ByteArray) : SnifferConte
 /** Used to sniff a content URI. */
 internal class SnifferUriContent(val uri: Uri, val contentResolver: ContentResolver) : SnifferContent {
 
-    override suspend fun read(): ByteArray? =
-        stream()?.readBytes()
+    override suspend fun read(): ByteArray? = withContext(Dispatchers.IO) {
+        try {
+            stream()?.readBytes()
+        } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
+            Timber.e(e)
+            null
+        }
+    }
 
     override suspend fun stream(): InputStream? = withContext(Dispatchers.IO) {
         try {
