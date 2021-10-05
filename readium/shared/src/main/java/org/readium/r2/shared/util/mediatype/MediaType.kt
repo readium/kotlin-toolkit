@@ -291,6 +291,7 @@ class MediaType(
         val JAVASCRIPT = MediaType("text/javascript", fileExtension = "js")
         val JPEG = MediaType("image/jpeg", fileExtension = "jpeg")
         val JSON = MediaType("application/json")
+        val JSON_PROBLEM_DETAILS = MediaType("application/problem+json", name = "HTTP Problem Details", fileExtension = "json")
         val JXL = MediaType("image/jxl", fileExtension = "jxl")
         val LCP_LICENSE_DOCUMENT = MediaType("application/vnd.readium.lcp.license.v1.0+json", name = "LCP License", fileExtension = "lcpl")
         val LCP_PROTECTED_AUDIOBOOK = MediaType("application/audiobook+lcp", name = "LCP Protected Audiobook", fileExtension = "lcpa")
