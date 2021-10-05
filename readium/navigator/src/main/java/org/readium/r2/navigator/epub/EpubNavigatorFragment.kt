@@ -63,7 +63,7 @@ class EpubNavigatorFragment private constructor(
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
     internal val config: Configuration,
-): Fragment(), CoroutineScope by MainScope(), VisualNavigator, SelectableNavigator, DecorableNavigator, R2BasicWebView.Listener {
+): Fragment(), CoroutineScope by MainScope(), VisualNavigator, SelectableNavigator, DecorableNavigator {
 
     data class Configuration(
         /**
@@ -380,122 +380,175 @@ class EpubNavigatorFragment private constructor(
 
     // R2BasicWebView.Listener
 
-    override fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {
-        run(viewModel.onResourceLoaded(link, webView))
-    }
+    internal val webViewListener: R2BasicWebView.Listener = WebViewListener()
 
-    override fun onPageLoaded() {
-        r2Activity?.onPageLoaded()
-        paginationListener?.onPageLoaded()
-    }
+    private inner class WebViewListener : R2BasicWebView.Listener {
 
-    override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
-        r2Activity?.onPageChanged(pageIndex = pageIndex, totalPages = totalPages, url = url)
-        if(paginationListener != null) {
-            // Find current locator
-            val resource = publication.readingOrder[resourcePager.currentItem]
-            val progression = currentFragment?.webView?.progression?.coerceIn(0.0, 1.0) ?: 0.0
-            val positions = publication.positionsByResource[resource.href]?.takeIf { it.isNotEmpty() }
+        override val readingProgression: ReadingProgression
+            get() = this@EpubNavigatorFragment.readingProgression
+
+        override fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {
+            run(viewModel.onResourceLoaded(link, webView))
+        }
+
+        override fun onPageLoaded() {
+            r2Activity?.onPageLoaded()
+            paginationListener?.onPageLoaded()
+        }
+
+        override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
+            r2Activity?.onPageChanged(pageIndex = pageIndex, totalPages = totalPages, url = url)
+            if(paginationListener != null) {
+                // Find current locator
+                val resource = publication.readingOrder[resourcePager.currentItem]
+                val progression = currentFragment?.webView?.progression?.coerceIn(0.0, 1.0) ?: 0.0
+                val positions = publication.positionsByResource[resource.href]?.takeIf { it.isNotEmpty() }
                     ?: return
 
-            val positionIndex = ceil(progression * (positions.size - 1)).toInt()
-            if (!positions.indices.contains(positionIndex)) {
-                return
+                val positionIndex = ceil(progression * (positions.size - 1)).toInt()
+                if (!positions.indices.contains(positionIndex)) {
+                    return
+                }
+
+                val locator = positions[positionIndex].copyWithLocations(progression = progression)
+                // Pageindex is actually the page number so to get a zero based index we subtract one.
+                paginationListener.onPageChanged(pageIndex - 1, totalPages, locator)
             }
-
-            val locator = positions[positionIndex].copyWithLocations(progression = progression)
-            // Pageindex is actually the page number so to get a zero based index we subtract one.
-            paginationListener.onPageChanged(pageIndex - 1, totalPages, locator)
         }
-    }
 
-    override fun onPageEnded(end: Boolean) {
-        r2Activity?.onPageEnded(end)
-    }
-
-    @Suppress("DEPRECATION")
-    override fun onScroll() {
-        val activity = r2Activity ?: return
-        if (activity.supportActionBar?.isShowing == true && activity.allowToggleActionBar) {
-            resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                or View.SYSTEM_UI_FLAG_IMMERSIVE)
+        override fun onPageEnded(end: Boolean) {
+            r2Activity?.onPageEnded(end)
         }
-    }
 
-    override fun onTap(point: PointF): Boolean {
-        return this.listener?.onTap(point) ?: false
-    }
-
-    override fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean {
-        currentFragment?.paddingTop?.let { top ->
-            rect.top += top
-            point.y += top
+        @Suppress("DEPRECATION")
+        override fun onScroll() {
+            val activity = r2Activity ?: return
+            if (activity.supportActionBar?.isShowing == true && activity.allowToggleActionBar) {
+                resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE)
+            }
         }
-        return viewModel.onDecorationActivated(id, group, rect, point)
-    }
 
-    override fun onProgressionChanged() {
-        notifyCurrentLocation()
-    }
+        override fun onTap(point: PointF): Boolean {
+            return listener?.onTap(point) ?: false
+        }
 
-    override fun onHighlightActivated(id: String) {
-        r2Activity?.highlightActivated(id)
-    }
+        override fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean {
+            currentFragment?.paddingTop?.let { top ->
+                rect.top += top
+                point.y += top
+            }
+            return viewModel.onDecorationActivated(id, group, rect, point)
+        }
 
-    override fun onHighlightAnnotationMarkActivated(id: String) {
-        r2Activity?.highlightAnnotationMarkActivated(id)
+        override fun onProgressionChanged() {
+            notifyCurrentLocation()
+        }
+
+        override fun onHighlightActivated(id: String) {
+            r2Activity?.highlightActivated(id)
+        }
+
+        override fun onHighlightAnnotationMarkActivated(id: String) {
+            r2Activity?.highlightAnnotationMarkActivated(id)
+        }
+
+        override fun goForward(animated: Boolean, completion: () -> Unit): Boolean =
+            goToNextResource(animated, completion)
+
+        override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean =
+            goToPreviousResource(animated, completion)
+
+        override val selectionActionModeCallback: ActionMode.Callback?
+            get() = config.selectionActionModeCallback
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        launch {
-            if (resourcePager.currentItem < resourcePager.adapter!!.count - 1) {
-
-                resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
-
-                if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
-                    // The view has RTL layout
-                    currentFragment?.webView?.apply {
-                        setCurrentItem(numPages - 1, false)
-                    }
-                } else {
-                    // The view has LTR layout
-                    currentFragment?.webView?.apply {
-                        setCurrentItem(0, false)
-                    }
-                }
-            }
+        if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
+            return goToNextResource(animated, completion)
         }
+
+        val webView = currentFragment?.webView ?: return false
+
+        when (readingProgression) {
+            ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
+                webView.scrollRight(animated)
+
+            ReadingProgression.RTL, ReadingProgression.BTT ->
+                webView.scrollLeft(animated)
+        }
+        launch { completion() }
         return true
     }
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        launch {
-            if (resourcePager.currentItem > 0) {
-
-                resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
-
-                if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
-                    // The view has RTL layout
-                    currentFragment?.webView?.apply {
-                        setCurrentItem(0, false)
-                    }
-                } else {
-                    // The view has LTR layout
-                    currentFragment?.webView?.apply {
-                        setCurrentItem(numPages - 1, false)
-                    }
-                }
-            }
+        if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
+            return goToPreviousResource(animated, completion)
         }
+
+        val webView = currentFragment?.webView ?: return false
+
+        when (readingProgression) {
+            ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
+                webView.scrollLeft(animated)
+
+            ReadingProgression.RTL, ReadingProgression.BTT ->
+                webView.scrollRight(animated)
+        }
+        launch { completion() }
         return true
     }
 
-    override val selectionActionModeCallback: ActionMode.Callback?
-        get() = config.selectionActionModeCallback
+    private fun goToNextResource(animated: Boolean, completion: () -> Unit): Boolean {
+        val adapter = resourcePager.adapter ?: return false
+        if (resourcePager.currentItem >= adapter.count - 1) {
+            return false
+        }
+
+        resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
+
+        if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+            // The view has RTL layout
+            currentFragment?.webView?.apply {
+                setCurrentItem(numPages - 1, false)
+            }
+        } else {
+            // The view has LTR layout
+            currentFragment?.webView?.apply {
+                setCurrentItem(0, false)
+            }
+        }
+
+        launch { completion() }
+        return true
+    }
+
+    private fun goToPreviousResource(animated: Boolean, completion: () -> Unit): Boolean {
+        if (resourcePager.currentItem <= 0) {
+            return false
+        }
+
+        resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
+
+        if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+            // The view has RTL layout
+            currentFragment?.webView?.apply {
+                setCurrentItem(0, false)
+            }
+        } else {
+            // The view has LTR layout
+            currentFragment?.webView?.apply {
+                setCurrentItem(numPages - 1, false)
+            }
+        }
+
+        launch { completion() }
+        return true
+    }
 
     private val r2PagerAdapter: R2PagerAdapter?
         get() = if (::resourcePager.isInitialized) resourcePager.adapter as? R2PagerAdapter
