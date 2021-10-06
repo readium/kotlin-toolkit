@@ -352,6 +352,9 @@ object Sniffers {
 
     /** Sniffs a JSON document. */
     suspend fun json(context: SnifferContext): MediaType? {
+        if (context.hasMediaType("application/problem+json")) {
+            return MediaType.JSON_PROBLEM_DETAILS
+        }
         if (context.hasMediaType("application/json")) {
             return MediaType.JSON
         }

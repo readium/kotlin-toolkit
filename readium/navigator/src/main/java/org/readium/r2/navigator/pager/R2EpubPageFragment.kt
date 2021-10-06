@@ -68,8 +68,8 @@ class R2EpubPageFragment : Fragment() {
         val webView = binding.webView
         this.webView = webView
 
-        webView.navigator = parentFragment as Navigator
-        webView.listener = parentFragment as R2BasicWebView.Listener
+        webView.navigator = navigatorFragment
+        webView.listener = navigatorFragment.webViewListener
         webView.preferences = preferences
 
         webView.setScrollMode(preferences.getBoolean(SCROLL_REF, false))

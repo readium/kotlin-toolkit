@@ -102,7 +102,7 @@ class HttpException(
 
     /** Response body parsed as a JSON problem details. */
     val problemDetails: ProblemDetails? by lazy {
-        if (body == null || mediaType?.matches(MediaType.PROBLEM_DETAILS) != true) {
+        if (body == null || mediaType?.matches(MediaType.JSON_PROBLEM_DETAILS) != true) {
             return@lazy null
         }
 

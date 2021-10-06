@@ -114,8 +114,9 @@ class R2FXLPageFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView(webView: R2BasicWebView, resourceUrl: String?) {
         webViews.add(webView)
-        webView.navigator = parentFragment as Navigator
-        webView.listener = parentFragment as R2BasicWebView.Listener
+        val navigator = parentFragment as EpubNavigatorFragment
+        webView.navigator = navigator
+        webView.listener = navigator.webViewListener
 
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
