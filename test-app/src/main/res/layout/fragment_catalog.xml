@@ -25,12 +25,30 @@
             android:orientation="vertical">
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/catalog_DetailList"
+                android:id="@+id/catalog_NavigationList"
+                android:name="org.readium.r2.testapp.catalogs.CatalogFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                tools:context="org.readium.r2.testapp.catalogs.CatalogFragment"
+                tools:listitem="@layout/item_recycle_button" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/catalog_PublicationsList"
                 android:name="org.readium.r2.testapp.catalogs.CatalogFragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 tools:context="org.readium.r2.testapp.catalogs.CatalogFragment"
                 tools:listitem="@layout/item_recycle_catalog" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/catalog_GroupList"
+                android:name="org.readium.r2.testapp.catalogs.CatalogFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:context="org.readium.r2.testapp.catalogs.CatalogFragment"
+                tools:listitem="@layout/item_group_view" />
 
         </LinearLayout>
 
