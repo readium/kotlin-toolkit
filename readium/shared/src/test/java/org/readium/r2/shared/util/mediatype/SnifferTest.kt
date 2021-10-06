@@ -282,6 +282,15 @@ class SnifferTest {
     }
 
     @Test
+    fun `sniff JSON problem details`() = runBlocking {
+        assertEquals(MediaType.JSON_PROBLEM_DETAILS, MediaType.of(mediaType = "application/problem+json"))
+        assertEquals(MediaType.JSON_PROBLEM_DETAILS, MediaType.of(mediaType = "application/problem+json; charset=utf-8"))
+
+        // The sniffing of a JSON document should not take precedence over the JSON problem details.
+        assertEquals(MediaType.JSON_PROBLEM_DETAILS, MediaType.ofBytes({ """{"title": "Message"}""".toByteArray() }, mediaType = "application/problem+json"))
+    }
+
+    @Test
     fun `sniff system media types`() = runBlocking {
         shadowOf(MimeTypeMap.getSingleton()).addExtensionMimeTypMapping("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         val xlsx = MediaType.parse(

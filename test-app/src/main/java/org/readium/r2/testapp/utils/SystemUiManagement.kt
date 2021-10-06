@@ -9,7 +9,6 @@ package org.readium.r2.testapp.utils
 import android.app.Activity
 import android.view.View
 import android.view.WindowInsets
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsCompat
 
 // Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
@@ -56,10 +55,10 @@ fun Activity.toggleSystemUi() {
 /** Set padding around view so that content doesn't overlap system UI */
 fun View.padSystemUi(insets: WindowInsets, activity: Activity) =
     WindowInsetsCompat.toWindowInsetsCompat(insets, this)
-        .getInsets(WindowInsetsCompat.Type.statusBars()).apply {
+        .getInsets(WindowInsetsCompat.Type.systemBars()).apply {
             setPadding(
                 left,
-                top + (activity as AppCompatActivity).supportActionBar!!.height,
+                top,
                 right,
                 bottom
             )

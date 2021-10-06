@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *alpha* may change or be removed in a future release without notice. Use with caution.
 
-<!--## [Unreleased]-->
+## [Unreleased]
+
+### Navigator
+
+#### Fixed
+
+* `EpubNavigatorFragment`'s `goForward()` and `goBackward()` are now jumping to the previous or next pages instead of resources.
+
 
 ## [2.1.0]
 
