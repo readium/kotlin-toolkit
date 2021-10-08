@@ -24,7 +24,6 @@ import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Navigator
@@ -77,7 +76,6 @@ class R2EpubPageFragment : Fragment() {
         webView.visibility = View.INVISIBLE
         webView.navigator = parentFragment as Navigator
         webView.listener = parentFragment as R2BasicWebView.Listener
-        webView.internalListener = WebViewListener()
         webView.preferences = preferences
 
         webView.setScrollMode(preferences.getBoolean(SCROLL_REF, false))
@@ -135,12 +133,12 @@ class R2EpubPageFragment : Fragment() {
 
                 webView.listener.onResourceLoaded(link, webView, url)
 
-                viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-                    // This is a safety measure in case the WebView doesn't send the resize event
-                    // which would trigger onPageLayout(). To avoid blocking the publication, we
-                    // consider the page to be loaded after maximum 10 seconds.
-                    delay(10000)
-                    onLoadPage()
+                // To make sure the page is properly laid out before jumping to the target locator,
+                // we execute a dummy JavaScript and wait for the callback result.
+                webView.evaluateJavascript("true") {
+                    viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+                        onLoadPage()
+                    }
                 }
             }
 
@@ -281,10 +279,6 @@ class R2EpubPageFragment : Fragment() {
         if (!isLoading) return
         isLoading = false
 
-        // The layout time varies depending on the resource length, so we use the position count to
-        // influence the delay time.
-        delay((positionCount * 10) + 200)
-
         val webView = requireNotNull(webView)
         webView.visibility = View.VISIBLE
 
@@ -335,16 +329,6 @@ class R2EpubPageFragment : Fragment() {
                     item -= 1
                 }
                 webView.setCurrentItem(item, false)
-            }
-        }
-    }
-
-    private inner class WebViewListener : R2BasicWebView.InternalListener {
-        override fun onPageLayout() {
-            if (!isLoading) return
-
-            viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-                onLoadPage()
             }
         }
     }

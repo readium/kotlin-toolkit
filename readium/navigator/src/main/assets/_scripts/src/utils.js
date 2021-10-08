@@ -19,11 +19,6 @@ window.addEventListener(
 window.addEventListener(
   "load",
   function () {
-    const observer = new ResizeObserver(() => {
-      requestAnimationFrame(() => Android.onPageLayout());
-    });
-    observer.observe(document.body);
-
     window.addEventListener("orientationchange", function () {
       onViewportWidthChanged();
       snapCurrentOffset();
