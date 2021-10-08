@@ -13,66 +13,63 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.ItemRecycleButtonBinding
 import org.readium.r2.testapp.domain.model.Catalog
 
-class CatalogFeedListAdapter(private val onLongClick: (Catalog) -> Unit) :
-    ListAdapter<Catalog, CatalogFeedListAdapter.ViewHolder>(CatalogListDiff()) {
+class NavigationAdapter(val type: Int) :
+    ListAdapter<Link, NavigationAdapter.ViewHolder>(LinkDiff()) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): ViewHolder {
         return ViewHolder(
-            ItemRecycleButtonBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            ItemRecycleButtonBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
         )
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
+        val link = getItem(position)
 
-        val catalog = getItem(position)
-
-        viewHolder.bind(catalog)
+        viewHolder.bind(link)
     }
 
     inner class ViewHolder(private val binding: ItemRecycleButtonBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(catalog: Catalog) {
-            binding.catalogListButton.text = catalog.title
+        fun bind(link: Link) {
+            binding.catalogListButton.text = link.title
             binding.catalogListButton.setOnClickListener {
-                val bundle = bundleOf(CATALOGFEED to catalog)
+                val catalog1 = Catalog(
+                    href = link.href,
+                    title = link.title!!,
+                    type = type
+                )
+                val bundle = bundleOf(CatalogFeedListAdapter.CATALOGFEED to catalog1)
                 Navigation.findNavController(it)
-                    .navigate(R.id.action_navigation_catalog_list_to_navigation_catalog, bundle)
-            }
-            binding.catalogListButton.setOnLongClickListener {
-                onLongClick(catalog)
-                true
+                    .navigate(R.id.action_navigation_catalog_self, bundle)
             }
         }
     }
 
-    companion object {
-        const val CATALOGFEED = "catalogFeed"
-    }
-
-    private class CatalogListDiff : DiffUtil.ItemCallback<Catalog>() {
+    private class LinkDiff : DiffUtil.ItemCallback<Link>() {
 
         override fun areItemsTheSame(
-            oldItem: Catalog,
-            newItem: Catalog
+            oldItem: Link,
+            newItem: Link
         ): Boolean {
-            return oldItem.id == newItem.id
+            return oldItem == newItem
         }
 
         override fun areContentsTheSame(
-            oldItem: Catalog,
-            newItem: Catalog
+            oldItem: Link,
+            newItem: Link
         ): Boolean {
-            return oldItem.title == newItem.title
-                    && oldItem.href == newItem.href
-                    && oldItem.type == newItem.type
+            return oldItem == newItem
         }
     }
 

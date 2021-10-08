@@ -9,7 +9,6 @@ package org.readium.r2.testapp.catalogs
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -21,18 +20,15 @@ import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.ItemRecycleCatalogBinding
 
-class CatalogListAdapter :
-    ListAdapter<Publication, CatalogListAdapter.ViewHolder>(PublicationListDiff()) {
+class PublicationAdapter :
+    ListAdapter<Publication, PublicationAdapter.ViewHolder>(PublicationListDiff()) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): ViewHolder {
         return ViewHolder(
-            DataBindingUtil.inflate(
-                LayoutInflater.from(parent.context),
-                R.layout.item_recycle_catalog, parent, false
-            )
+            ItemRecycleCatalogBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         )
     }
 

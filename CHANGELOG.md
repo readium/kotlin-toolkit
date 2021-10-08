@@ -17,6 +17,12 @@ All notable changes to this project will be documented in this file. Take a look
     * `EpubNavigatorFragment.PaginationListener.onPageLoaded()` is now called only a single time, for the currently visible page.
     * `VisualNavigator.Listener.onTap()` is called even when a resource is not fully loaded.
 
+### Fixed
+
+#### Navigator
+
+* `EpubNavigatorFragment`'s `goForward()` and `goBackward()` are now jumping to the previous or next pages instead of resources.
+
 
 ## [2.1.0]
 

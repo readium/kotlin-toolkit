@@ -22,6 +22,7 @@ import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentOutlineBinding
+import org.readium.r2.testapp.reader.ReaderActivity
 import org.readium.r2.testapp.reader.ReaderViewModel
 
 class OutlineFragment : Fragment() {
@@ -37,6 +38,8 @@ class OutlineFragment : Fragment() {
         ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
             publication = it.publication
         }
+
+        (activity as ReaderActivity?)?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         childFragmentManager.setFragmentResultListener(
             OutlineContract.REQUEST_KEY,

@@ -33,14 +33,14 @@
         tools:layout="@layout/fragment_catalog">
         <action
             android:id="@+id/action_navigation_catalog_to_navigation_catalog_detail"
-            app:destination="@id/navigation_catalog_detail" />
+            app:destination="@id/navigation_publication_detail" />
         <action
             android:id="@+id/action_navigation_catalog_self"
             app:destination="@id/navigation_catalog" />
     </fragment>
 
     <fragment
-        android:id="@+id/navigation_catalog_detail"
-        android:name="org.readium.r2.testapp.catalogs.CatalogDetailFragment"
-        tools:layout="@layout/fragment_catalog_detail" />
+        android:id="@+id/navigation_publication_detail"
+        android:name="org.readium.r2.testapp.catalogs.PublicationDetailFragment"
+        tools:layout="@layout/fragment_publication_detail" />
 </navigation>
