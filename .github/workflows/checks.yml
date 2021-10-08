@@ -36,7 +36,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install dependencies
-        run: npm install --prefix "$scripts"
+        run: make install
       - name: Lint JavaScript
         run: yarn --cwd "$scripts" run lint
       - name: Check JavaScript formatting
@@ -44,5 +44,5 @@ jobs:
       - name: Check if bundled scripts are up-to-date
         run: |
             make scripts
-            git diff --exit-code --name-only src/main/assets/readium/scripts
+            git diff --exit-code --name-only src/main/assets/readium/scripts/*.js
 
