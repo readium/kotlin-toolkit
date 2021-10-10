@@ -6,6 +6,7 @@
 
 buildscript {
     ext.kotlin_version = '1.5.31'
+    ext.dokka_version = '1.5.30'
 
     repositories {
         google()
@@ -18,8 +19,11 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
     }
 }
+
+apply plugin: 'org.jetbrains.dokka'
 
 allprojects {
     repositories {
@@ -32,6 +36,28 @@ allprojects {
     }
 }
 
+subprojects { project ->
+    if (project.name == 'test-app' || project.name == 'readium') return
+    apply plugin: 'org.jetbrains.dokka'
+    tasks.named("dokkaGfmPartial") {
+        dokkaSourceSets {
+            configureEach {
+                reportUndocumented.set(false)
+                skipEmptyPackages.set(false)
+                skipDeprecated.set(true)
+            }
+        }
+    }
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+task cleanDocs(type: Delete) {
+    delete "${project.rootDir}/docs/readium", "${project.rootDir}/docs/index.md"
+}
+
+tasks.dokkaGfmMultiModule.configure {
+    outputDirectory = new File("${project.rootDir}/docs")
 }

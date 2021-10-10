@@ -1,0 +1,59 @@
+site_name: Readium Kotlin
+
+# Meta tags (placed in header)
+site_description: Readium Kotlin is an Android library for rendering books
+site_author: Readium Foundation
+site_url: https://github.com/readium/kotlin-toolkit
+
+# Repository (add link to repository on each page)
+repo_name: kotlin-toolkit
+repo_url: https://github.com/readium/kotlin-toolkit
+
+# Copyright (shown at the footer)
+copyright: 'Copyright &copy; 2021 Readium Foundation'
+
+# Material theme
+theme:
+  name: 'material'
+  #  favicon: favicon.svg
+  social:
+    - type: 'github'
+      link: 'https://github.com/readium/kotlin-toolkit'
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - footnotes
+  - meta
+  - def_list
+  - toc:
+      permalink: true
+#  - pymdownx.betterem:
+#      smart_enable: all
+#  - pymdownx.caret
+#  - pymdownx.inlinehilite
+#  - pymdownx.magiclink
+#  - pymdownx.smartsymbols
+#  - pymdownx.superfences
+
+# Dev server binding
+#dev_addr: 127.0.0.1:3001
+
+nav:
+  - Home: migration-guide.md
+  - API Docs:
+      - Navigator: readium/navigator/index.md
+      - Shared: readium/shared/index.md
+      - Streamer: readium/streamer/index.md
+      - LCP: readium/lcp/index.md
+      - OPDS: readium/opds/index.md
+
+extra_css:
+  - readium_colors.css
+
+extra:
+  version:
+    provider: mike
+

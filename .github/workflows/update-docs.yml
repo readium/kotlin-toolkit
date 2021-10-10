@@ -1,0 +1,42 @@
+name: Build and deploy MkDocs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  LATEST_VERSION: 2.1.0
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dokka
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mkdocs mkdocs-material mike
+
+      - uses: actions/setup-java@v2
+        with:
+          java-version: 11
+          distribution: 'adopt'
+
+      - name: Run Dokka
+        run: ./gradlew dokkaGfmMultiModule
+
+      - name: Run MkDocs
+        run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          mike deploy ${{ env.LATEST_VERSION }}
+          mike set-default ${{ env.LATEST_VERSION }}
+          mike deploy --rebase --push --update-aliases ${{ env.LATEST_VERSION }} latest
