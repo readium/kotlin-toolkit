@@ -7,19 +7,15 @@
 package org.readium.r2.testapp.catalogs
 
 import android.os.Bundle
-import android.view.*
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.appcompat.content.res.AppCompatResources
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import org.readium.r2.shared.opds.Facet
 import org.readium.r2.testapp.MainActivity
@@ -34,7 +30,9 @@ import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 class CatalogFragment : Fragment() {
 
     private val catalogViewModel: CatalogViewModel by viewModels()
-    private lateinit var catalogListAdapter: CatalogListAdapter
+    private lateinit var publicationAdapter: PublicationAdapter
+    private lateinit var groupAdapter: GroupAdapter
+    private lateinit var navigationAdapter: NavigationAdapter
     private lateinit var catalog: Catalog
     private var showFacetMenu = false
     private lateinit var facets: MutableList<Facet>
@@ -42,7 +40,6 @@ class CatalogFragment : Fragment() {
     private var _binding: FragmentCatalogBinding? = null
     private val binding get() = _binding!!
 
-    // FIXME the entire way this fragment is built feels like a hack. Need a cleaner UI
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -56,17 +53,34 @@ class CatalogFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        catalogListAdapter = CatalogListAdapter()
+        publicationAdapter = PublicationAdapter()
+        navigationAdapter = NavigationAdapter(catalog.type)
+        groupAdapter = GroupAdapter(catalog.type)
         setHasOptionsMenu(true)
 
-        binding.catalogDetailList.apply {
+        binding.catalogNavigationList.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = navigationAdapter
+            addItemDecoration(
+                CatalogFeedListFragment.VerticalSpaceItemDecoration(
+                    10
+                )
+            )
+        }
+
+        binding.catalogPublicationsList.apply {
             layoutManager = GridAutoFitLayoutManager(requireContext(), 120)
-            adapter = catalogListAdapter
+            adapter = publicationAdapter
             addItemDecoration(
                 BookshelfFragment.VerticalSpaceItemDecoration(
                     10
                 )
             )
+        }
+
+        binding.catalogGroupList.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = groupAdapter
         }
 
         (activity as MainActivity).supportActionBar?.title = catalog.title
@@ -85,110 +99,10 @@ class CatalogFragment : Fragment() {
             }
             requireActivity().invalidateOptionsMenu()
 
-            result.feed!!.navigation.forEachIndexed { index, navigation ->
-                val button = Button(requireContext())
-                button.apply {
-                    layoutParams = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    )
-                    text = navigation.title
-                    setOnClickListener {
-                        val catalog1 = Catalog(
-                            href = navigation.href,
-                            title = navigation.title!!,
-                            type = catalog.type
-                        )
-                        val bundle = bundleOf(CATALOGFEED to catalog1)
-                        Navigation.findNavController(it)
-                            .navigate(R.id.action_navigation_catalog_self, bundle)
-                    }
-                }
-                binding.catalogLinearLayout.addView(button, index)
-            }
+            navigationAdapter.submitList(result.feed!!.navigation)
+            publicationAdapter.submitList(result.feed!!.publications)
+            groupAdapter.submitList(result.feed!!.groups)
 
-            if (result.feed!!.publications.isNotEmpty()) {
-                catalogListAdapter.submitList(result.feed!!.publications)
-            }
-
-            for (group in result.feed!!.groups) {
-                if (group.publications.isNotEmpty()) {
-                    val linearLayout = LinearLayout(requireContext()).apply {
-                        orientation = LinearLayout.HORIZONTAL
-                        setPadding(10)
-                        layoutParams = LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
-                            1f
-                        )
-                        weightSum = 2f
-                        addView(TextView(requireContext()).apply {
-                            text = group.title
-                            layoutParams = LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                1f
-                            )
-                        })
-                        if (group.links.size > 0) {
-                            addView(ImageView(requireContext()).apply {
-                                // FIXME Have the arrow at the very end
-                                setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_baseline_arrow_forward_24))
-                                contentDescription = getString(R.string.catalog_list_more)
-                                gravity = Gravity.END
-                                layoutParams = LinearLayout.LayoutParams(
-                                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                                    1f
-                                )
-                                setOnClickListener {
-                                    val catalog1 = Catalog(
-                                        href = group.links.first().href,
-                                        title = group.title,
-                                        type = catalog.type
-                                    )
-                                    val bundle = bundleOf(CATALOGFEED to catalog1)
-                                    Navigation.findNavController(it)
-                                        .navigate(R.id.action_navigation_catalog_self, bundle)
-                                }
-                            })
-                        }
-                    }
-                    val publicationRecyclerView = RecyclerView(requireContext()).apply {
-                        layoutManager = LinearLayoutManager(requireContext())
-                        (layoutManager as LinearLayoutManager).orientation =
-                            LinearLayoutManager.HORIZONTAL
-                        adapter = CatalogListAdapter().apply {
-                            submitList(group.publications)
-                        }
-                    }
-                    binding.catalogLinearLayout.addView(linearLayout)
-                    binding.catalogLinearLayout.addView(publicationRecyclerView)
-                }
-                if (group.navigation.isNotEmpty()) {
-                    for (navigation in group.navigation) {
-                        val button = Button(requireContext())
-                        button.apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT
-                            )
-                            text = navigation.title
-                            setOnClickListener {
-                                val catalog1 = Catalog(
-                                    href = navigation.href,
-                                    title = navigation.title!!,
-                                    type = catalog.type
-                                )
-                                val bundle = bundleOf(CATALOGFEED to catalog1)
-                                Navigation.findNavController(it)
-                                    .navigate(R.id.action_navigation_catalog_self, bundle)
-                            }
-                        }
-                        binding.catalogLinearLayout.addView(button)
-                    }
-                }
-            }
             binding.catalogProgressBar.visibility = View.GONE
         })
     }

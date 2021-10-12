@@ -9,6 +9,7 @@ package org.readium.r2.testapp.reader
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -120,6 +121,9 @@ open class ReaderActivity : AppCompatActivity() {
             is DrmManagementFragment -> getString(R.string.title_fragment_drm_management)
             else -> null
         }
+        if (supportFragmentManager.fragments.last() !is OutlineFragment) {
+            supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        }
     }
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
@@ -156,10 +160,25 @@ open class ReaderActivity : AppCompatActivity() {
 
     private fun showDrmManagementFragment() {
         supportFragmentManager.commit {
-            add(R.id.activity_container, DrmManagementFragment::class.java, Bundle(), DRM_FRAGMENT_TAG)
+            add(
+                R.id.activity_container,
+                DrmManagementFragment::class.java,
+                Bundle(),
+                DRM_FRAGMENT_TAG
+            )
             hide(readerFragment)
             addToBackStack(null)
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                supportFragmentManager.popBackStack()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     companion object {

@@ -50,10 +50,7 @@ internal class PdfiumDocument(
         core.getTableOfContents(document).map { it.toOutlineNode() }
     }
 
-    companion object {
-
-    }
-
+    companion object
 }
 
 private fun PdfiumCore.renderCover(document: _PdfiumDocument): Bitmap? {
@@ -68,6 +65,9 @@ private fun PdfiumCore.renderCover(document: _PdfiumDocument): Bitmap? {
         return bitmap
 
     } catch (e: Exception) {
+        Timber.e(e)
+        return null
+    } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
         Timber.e(e)
         return null
     }

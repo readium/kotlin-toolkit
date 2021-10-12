@@ -20,15 +20,15 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.MainActivity
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.databinding.FragmentCatalogDetailBinding
+import org.readium.r2.testapp.databinding.FragmentPublicationDetailBinding
 
 
-class CatalogDetailFragment : Fragment() {
+class PublicationDetailFragment : Fragment() {
 
     private var publication: Publication? = null
     private val catalogViewModel: CatalogViewModel by viewModels()
 
-    private var _binding: FragmentCatalogDetailBinding? = null
+    private var _binding: FragmentPublicationDetailBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -37,7 +37,7 @@ class CatalogDetailFragment : Fragment() {
     ): View {
         _binding = DataBindingUtil.inflate(
             LayoutInflater.from(context),
-            R.layout.fragment_catalog_detail, container, false
+            R.layout.fragment_publication_detail, container, false
         )
         catalogViewModel.detailChannel.receive(this) { handleEvent(it) }
         publication = arguments?.getPublicationOrNull()

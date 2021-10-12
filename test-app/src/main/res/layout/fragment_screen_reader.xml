@@ -10,6 +10,7 @@
     android:id="@+id/tts_overlay"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginTop="?attr/actionBarSize"
     android:background="@color/colorAccent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -82,8 +83,8 @@
 
         <ImageButton
             android:id="@+id/prev_chapter"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="@string/previous_chapter"
@@ -93,8 +94,8 @@
 
         <ImageButton
             android:id="@+id/fast_back"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="@string/previous_sentence"
@@ -116,8 +117,8 @@
 
         <ImageButton
             android:id="@+id/fast_forward"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="@string/next_sentence"
@@ -127,8 +128,8 @@
 
         <ImageButton
             android:id="@+id/next_chapter"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:contentDescription="@string/next_chapter"
