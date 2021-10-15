@@ -8,7 +8,7 @@ help:
 	"
 
 install:
-	npm install --prefix "$(SCRIPTS_PATH)"
+	yarn --cwd "$(SCRIPTS_PATH)" install --frozen-lockfile
 
 scripts:
 	yarn --cwd "$(SCRIPTS_PATH)" run format
