@@ -1,0 +1,1878 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.">
+      
+      
+      
+        <meta name="author" content="Readium Foundation">
+      
+      
+        <link rel="canonical" href="https://github.com/readium/kotlin-toolkit/2.1.0/readium/navigator/navigator/org.readium.r2.navigator.pdf/-r2-pdf-activity/">
+      
+      <link rel="icon" href="../../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.3">
+    
+    
+      
+        <title>Index - Readium Kotlin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.5143246d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../../../../readium_colors.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL("../../../../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#r2pdfactivity" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../.." title="Readium Kotlin" class="md-header__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Readium Kotlin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Index
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/readium/kotlin-toolkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../.." title="Readium Kotlin" class="md-nav__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Readium Kotlin
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/readium/kotlin-toolkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../migration-guide/" class="md-nav__link">
+        Migration Guide
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../shared/" class="md-nav__link">
+        Shared
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../streamer/" class="md-nav__link">
+        Streamer
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        Navigator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../opds/" class="md-nav__link">
+        OPDS
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../lcp/" class="md-nav__link">
+        LCP
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    Properties
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/readium/kotlin-toolkit/edit/master/docs/readium/navigator/navigator/org.readium.r2.navigator.pdf/-r2-pdf-activity/index.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <p>//<a href="../../../">navigator</a>/<a href="../">org.readium.r2.navigator.pdf</a>/<a href="./">R2PdfActivity</a></p>
+<h1 id="r2pdfactivity">R2PdfActivity<a class="headerlink" href="#r2pdfactivity" title="Permanent link">&para;</a></h1>
+<p>[androidJvm]\
+abstract class <a href="./">R2PdfActivity</a> : <a href="https://developer.android.com/reference/kotlin/androidx/appcompat/app/AppCompatActivity.html">AppCompatActivity</a>, <a href="../-pdf-navigator-fragment/-listener/">PdfNavigatorFragment.Listener</a></p>
+<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./#-652519453%2FFunctions%2F-535623568">addContentView</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-652519453%2FFunctions%2F-535623568">addContentView</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/view/ViewGroup.LayoutParams.html">ViewGroup.LayoutParams</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1898328035%2FFunctions%2F-535623568">addOnContextAvailableListener</a></td>
+<td>[androidJvm]<br>override fun <a href="./#1898328035%2FFunctions%2F-535623568">addOnContextAvailableListener</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>listener: <a href="https://developer.android.com/reference/kotlin/androidx/activity/contextaware/OnContextAvailableListener.html">OnContextAvailableListener</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1950433422%2FFunctions%2F-535623568">applyOverrideConfiguration</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1950433422%2FFunctions%2F-535623568">applyOverrideConfiguration</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/res/Configuration.html">Configuration</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-149173880%2FFunctions%2F-535623568">attachBaseContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-149173880%2FFunctions%2F-535623568">attachBaseContext</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-936523269%2FFunctions%2F-535623568">bindIsolatedService</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-936523269%2FFunctions%2F-535623568">bindIsolatedService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p3: <a href="https://developer.android.com/reference/kotlin/java/util/concurrent/Executor.html">Executor</a>, p4: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#2022335150%2FFunctions%2F-535623568">bindService</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#2022335150%2FFunctions%2F-535623568">bindService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>open override fun <a href="./#-764880913%2FFunctions%2F-535623568">bindService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://developer.android.com/reference/kotlin/java/util/concurrent/Executor.html">Executor</a>, p3: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-365950384%2FFunctions%2F-535623568">bindServiceAsUser</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-365950384%2FFunctions%2F-535623568">bindServiceAsUser</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://developer.android.com/reference/kotlin/android/os/UserHandle.html">UserHandle</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-315710025%2FFunctions%2F-535623568">checkCallingOrSelfPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-315710025%2FFunctions%2F-535623568">checkCallingOrSelfPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#832829402%2FFunctions%2F-535623568">checkCallingOrSelfUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#832829402%2FFunctions%2F-535623568">checkCallingOrSelfUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#-1013919811%2FFunctions%2F-535623568">checkCallingOrSelfUriPermissions</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1013919811%2FFunctions%2F-535623568">checkCallingOrSelfUriPermissions</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>&gt;, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a></td>
+</tr>
+<tr>
+<td><a href="./#893466952%2FFunctions%2F-535623568">checkCallingPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#893466952%2FFunctions%2F-535623568">checkCallingPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#1348946283%2FFunctions%2F-535623568">checkCallingUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1348946283%2FFunctions%2F-535623568">checkCallingUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#1966715980%2FFunctions%2F-535623568">checkCallingUriPermissions</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1966715980%2FFunctions%2F-535623568">checkCallingUriPermissions</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>&gt;, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a></td>
+</tr>
+<tr>
+<td><a href="./#-1698615512%2FFunctions%2F-535623568">checkPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1698615512%2FFunctions%2F-535623568">checkPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#1389999028%2FFunctions%2F-535623568">checkSelfPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1389999028%2FFunctions%2F-535623568">checkSelfPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#2104701707%2FFunctions%2F-535623568">checkUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#2104701707%2FFunctions%2F-535623568">checkUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><br>open override fun <a href="./#1290765996%2FFunctions%2F-535623568">checkUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>?, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p5: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#-1934262484%2FFunctions%2F-535623568">checkUriPermissions</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1934262484%2FFunctions%2F-535623568">checkUriPermissions</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>&gt;, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a></td>
+</tr>
+<tr>
+<td><a href="./#1442022420%2FFunctions%2F-535623568">closeContextMenu</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1442022420%2FFunctions%2F-535623568">closeContextMenu</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-1220759843%2FFunctions%2F-535623568">closeOptionsMenu</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1220759843%2FFunctions%2F-535623568">closeOptionsMenu</a>()</td>
+</tr>
+<tr>
+<td><a href="./#1250560058%2FFunctions%2F-535623568">createAttributionContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1250560058%2FFunctions%2F-535623568">createAttributionContext</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="./#-1154826084%2FFunctions%2F-535623568">createConfigurationContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1154826084%2FFunctions%2F-535623568">createConfigurationContext</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/res/Configuration.html">Configuration</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="./#1358229057%2FFunctions%2F-535623568">createContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1358229057%2FFunctions%2F-535623568">createContext</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ContextParams.html">ContextParams</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="./#1654585621%2FFunctions%2F-535623568">createContextForSplit</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1654585621%2FFunctions%2F-535623568">createContextForSplit</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="./#-2131343837%2FFunctions%2F-535623568">createDeviceProtectedStorageContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-2131343837%2FFunctions%2F-535623568">createDeviceProtectedStorageContext</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="./#-296982170%2FFunctions%2F-535623568">createDisplayContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-296982170%2FFunctions%2F-535623568">createDisplayContext</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/Display.html">Display</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="./#212314043%2FFunctions%2F-535623568">createPackageContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#212314043%2FFunctions%2F-535623568">createPackageContext</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="./#-286030396%2FFunctions%2F-535623568">createPendingResult</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-286030396%2FFunctions%2F-535623568">createPendingResult</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/app/PendingIntent.html">PendingIntent</a></td>
+</tr>
+<tr>
+<td><a href="./#-1685281025%2FFunctions%2F-535623568">createWindowContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1685281025%2FFunctions%2F-535623568">createWindowContext</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><br>open override fun <a href="./#291506760%2FFunctions%2F-535623568">createWindowContext</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/Display.html">Display</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="./#-2015717810%2FFunctions%2F-535623568">databaseList</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-2015717810%2FFunctions%2F-535623568">databaseList</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="./#1521633731%2FFunctions%2F-535623568">deleteDatabase</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1521633731%2FFunctions%2F-535623568">deleteDatabase</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1794089596%2FFunctions%2F-535623568">deleteFile</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1794089596%2FFunctions%2F-535623568">deleteFile</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1249690503%2FFunctions%2F-535623568">deleteSharedPreferences</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1249690503%2FFunctions%2F-535623568">deleteSharedPreferences</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-819509184%2FFunctions%2F-535623568">dismissKeyboardShortcutsHelper</a></td>
+<td>[androidJvm]<br>fun <a href="./#-819509184%2FFunctions%2F-535623568">dismissKeyboardShortcutsHelper</a>()</td>
+</tr>
+<tr>
+<td><a href="./#264619370%2FFunctions%2F-535623568">dispatchFragmentsOnCreateView</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a><br>fun <a href="./#264619370%2FFunctions%2F-535623568">dispatchFragmentsOnCreateView</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a>p0: <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>?, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p2: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p3: <a href="https://developer.android.com/reference/kotlin/android/util/AttributeSet.html">AttributeSet</a>): <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-1136387127%2FFunctions%2F-535623568">dispatchGenericMotionEvent</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1136387127%2FFunctions%2F-535623568">dispatchGenericMotionEvent</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/MotionEvent.html">MotionEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1347079600%2FFunctions%2F-535623568">dispatchKeyEvent</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1347079600%2FFunctions%2F-535623568">dispatchKeyEvent</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/KeyEvent.html">KeyEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#564099754%2FFunctions%2F-535623568">dispatchKeyShortcutEvent</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#564099754%2FFunctions%2F-535623568">dispatchKeyShortcutEvent</a>(event: <a href="https://developer.android.com/reference/kotlin/android/view/KeyEvent.html">KeyEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-636023982%2FFunctions%2F-535623568">dispatchPopulateAccessibilityEvent</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-636023982%2FFunctions%2F-535623568">dispatchPopulateAccessibilityEvent</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/accessibility/AccessibilityEvent.html">AccessibilityEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1308980251%2FFunctions%2F-535623568">dispatchTouchEvent</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1308980251%2FFunctions%2F-535623568">dispatchTouchEvent</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/MotionEvent.html">MotionEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-639240474%2FFunctions%2F-535623568">dispatchTrackballEvent</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-639240474%2FFunctions%2F-535623568">dispatchTrackballEvent</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/MotionEvent.html">MotionEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1193062016%2FFunctions%2F-535623568">dump</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1193062016%2FFunctions%2F-535623568">dump</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a>p1: <a href="https://developer.android.com/reference/kotlin/java/io/FileDescriptor.html">FileDescriptor</a>?, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p2: <a href="https://developer.android.com/reference/kotlin/java/io/PrintWriter.html">PrintWriter</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a>p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;?)</td>
+</tr>
+<tr>
+<td><a href="./#-373876383%2FFunctions%2F-535623568">enforceCallingOrSelfPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-373876383%2FFunctions%2F-535623568">enforceCallingOrSelfPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#1996391077%2FFunctions%2F-535623568">enforceCallingOrSelfUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1996391077%2FFunctions%2F-535623568">enforceCallingOrSelfUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>)</td>
+</tr>
+<tr>
+<td><a href="./#577330480%2FFunctions%2F-535623568">enforceCallingPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#577330480%2FFunctions%2F-535623568">enforceCallingPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#370165494%2FFunctions%2F-535623568">enforceCallingUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#370165494%2FFunctions%2F-535623568">enforceCallingUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1911070116%2FFunctions%2F-535623568">enforcePermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1911070116%2FFunctions%2F-535623568">enforcePermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-2129139702%2FFunctions%2F-535623568">enforceUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-2129139702%2FFunctions%2F-535623568">enforceUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>)<br>open override fun <a href="./#355973580%2FFunctions%2F-535623568">enforceUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>?, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p5: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p6: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-2010483676%2FFunctions%2F-535623568">ensureViewModelStore</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-2010483676%2FFunctions%2F-535623568">ensureViewModelStore</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-248336243%2FFunctions%2F-535623568">enterPictureInPictureMode</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-248336243%2FFunctions%2F-535623568">enterPictureInPictureMode</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/PictureInPictureParams.html">PictureInPictureParams</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1346241261%2FFunctions%2F-535623568">fileList</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1346241261%2FFunctions%2F-535623568">fileList</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="./#-1527164432%2FFunctions%2F-535623568">findViewById</a></td>
+<td>[androidJvm]<br>open override fun &lt;<a href="./#-1527164432%2FFunctions%2F-535623568">T</a> : <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>&gt; <a href="./#-1527164432%2FFunctions%2F-535623568">findViewById</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/IdRes.html">IdRes</a>p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="./#-1527164432%2FFunctions%2F-535623568">T</a></td>
+</tr>
+<tr>
+<td><a href="finish/">finish</a></td>
+<td>[androidJvm]<br>open override fun <a href="finish/">finish</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-1038546362%2FFunctions%2F-535623568">finishActivity</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1038546362%2FFunctions%2F-535623568">finishActivity</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-635508049%2FFunctions%2F-535623568">finishAffinity</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-635508049%2FFunctions%2F-535623568">finishAffinity</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-1828020174%2FFunctions%2F-535623568">finishAfterTransition</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1828020174%2FFunctions%2F-535623568">finishAfterTransition</a>()</td>
+</tr>
+<tr>
+<td><a href="./#96995203%2FFunctions%2F-535623568">finishAndRemoveTask</a></td>
+<td>[androidJvm]<br>open fun <a href="./#96995203%2FFunctions%2F-535623568">finishAndRemoveTask</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-2108225789%2FFunctions%2F-535623568">getActionBar</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-2108225789%2FFunctions%2F-535623568">getActionBar</a>(): <a href="https://developer.android.com/reference/kotlin/android/app/ActionBar.html">ActionBar</a>?</td>
+</tr>
+<tr>
+<td><a href="./#706283228%2FFunctions%2F-535623568">getActivityResultRegistry</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>override fun <a href="./#706283228%2FFunctions%2F-535623568">getActivityResultRegistry</a>(): <a href="https://developer.android.com/reference/kotlin/androidx/activity/result/ActivityResultRegistry.html">ActivityResultRegistry</a></td>
+</tr>
+<tr>
+<td><a href="./#1526237776%2FFunctions%2F-535623568">getApplication</a></td>
+<td>[androidJvm]<br>fun <a href="./#1526237776%2FFunctions%2F-535623568">getApplication</a>(): <a href="https://developer.android.com/reference/kotlin/android/app/Application.html">Application</a></td>
+</tr>
+<tr>
+<td><a href="./#720574270%2FFunctions%2F-535623568">getApplicationContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#720574270%2FFunctions%2F-535623568">getApplicationContext</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="./#875309695%2FFunctions%2F-535623568">getApplicationInfo</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#875309695%2FFunctions%2F-535623568">getApplicationInfo</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/pm/ApplicationInfo.html">ApplicationInfo</a></td>
+</tr>
+<tr>
+<td><a href="./#-1028304091%2FFunctions%2F-535623568">getAssets</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1028304091%2FFunctions%2F-535623568">getAssets</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/res/AssetManager.html">AssetManager</a></td>
+</tr>
+<tr>
+<td><a href="./#745115299%2FFunctions%2F-535623568">getAttributionSource</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#745115299%2FFunctions%2F-535623568">getAttributionSource</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/AttributionSource.html">AttributionSource</a></td>
+</tr>
+<tr>
+<td><a href="./#-2059689374%2FFunctions%2F-535623568">getAttributionTag</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-2059689374%2FFunctions%2F-535623568">getAttributionTag</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
+</tr>
+<tr>
+<td><a href="./#1836627711%2FFunctions%2F-535623568">getBaseContext</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1836627711%2FFunctions%2F-535623568">getBaseContext</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="./#-803358382%2FFunctions%2F-535623568">getCacheDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-803358382%2FFunctions%2F-535623568">getCacheDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="./#-2093832307%2FFunctions%2F-535623568">getCallingActivity</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-2093832307%2FFunctions%2F-535623568">getCallingActivity</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/ComponentName.html">ComponentName</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-1745389992%2FFunctions%2F-535623568">getCallingPackage</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1745389992%2FFunctions%2F-535623568">getCallingPackage</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-1601610448%2FFunctions%2F-535623568">getChangingConfigurations</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1601610448%2FFunctions%2F-535623568">getChangingConfigurations</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#1242041746%2FFunctions%2F-535623568">getClassLoader</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1242041746%2FFunctions%2F-535623568">getClassLoader</a>(): <a href="https://developer.android.com/reference/kotlin/java/lang/ClassLoader.html">ClassLoader</a></td>
+</tr>
+<tr>
+<td><a href="./#1138511077%2FFunctions%2F-535623568">getCodeCacheDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1138511077%2FFunctions%2F-535623568">getCodeCacheDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="./#1612713529%2FFunctions%2F-535623568">getColor</a></td>
+<td>[androidJvm]<br>fun <a href="./#1612713529%2FFunctions%2F-535623568">getColor</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#49622702%2FFunctions%2F-535623568">getColorStateList</a></td>
+<td>[androidJvm]<br>fun <a href="./#49622702%2FFunctions%2F-535623568">getColorStateList</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/res/ColorStateList.html">ColorStateList</a></td>
+</tr>
+<tr>
+<td><a href="./#-1710268232%2FFunctions%2F-535623568">getComponentName</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1710268232%2FFunctions%2F-535623568">getComponentName</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/ComponentName.html">ComponentName</a></td>
+</tr>
+<tr>
+<td><a href="./#-1924753378%2FFunctions%2F-535623568">getContentResolver</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1924753378%2FFunctions%2F-535623568">getContentResolver</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/ContentResolver.html">ContentResolver</a></td>
+</tr>
+<tr>
+<td><a href="./#261968391%2FFunctions%2F-535623568">getContentScene</a></td>
+<td>[androidJvm]<br>open fun <a href="./#261968391%2FFunctions%2F-535623568">getContentScene</a>(): <a href="https://developer.android.com/reference/kotlin/android/transition/Scene.html">Scene</a></td>
+</tr>
+<tr>
+<td><a href="./#1914863227%2FFunctions%2F-535623568">getContentTransitionManager</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1914863227%2FFunctions%2F-535623568">getContentTransitionManager</a>(): <a href="https://developer.android.com/reference/kotlin/android/transition/TransitionManager.html">TransitionManager</a></td>
+</tr>
+<tr>
+<td><a href="./#-1699869637%2FFunctions%2F-535623568">getCurrentFocus</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1699869637%2FFunctions%2F-535623568">getCurrentFocus</a>(): <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>?</td>
+</tr>
+<tr>
+<td><a href="./#1182335943%2FFunctions%2F-535623568">getDatabasePath</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1182335943%2FFunctions%2F-535623568">getDatabasePath</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="./#666732474%2FFunctions%2F-535623568">getDataDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#666732474%2FFunctions%2F-535623568">getDataDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="./#932761855%2FFunctions%2F-535623568">getDefaultViewModelProviderFactory</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>open override fun <a href="./#932761855%2FFunctions%2F-535623568">getDefaultViewModelProviderFactory</a>(): <a href="https://developer.android.com/reference/kotlin/androidx/lifecycle/ViewModelProvider.Factory.html">ViewModelProvider.Factory</a></td>
+</tr>
+<tr>
+<td><a href="./#1783008893%2FFunctions%2F-535623568">getDelegate</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>open fun <a href="./#1783008893%2FFunctions%2F-535623568">getDelegate</a>(): <a href="https://developer.android.com/reference/kotlin/androidx/appcompat/app/AppCompatDelegate.html">AppCompatDelegate</a></td>
+</tr>
+<tr>
+<td><a href="./#264472777%2FFunctions%2F-535623568">getDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#264472777%2FFunctions%2F-535623568">getDir</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="./#488073307%2FFunctions%2F-535623568">getDisplay</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#488073307%2FFunctions%2F-535623568">getDisplay</a>(): <a href="https://developer.android.com/reference/kotlin/android/view/Display.html">Display</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-953197380%2FFunctions%2F-535623568">getDrawable</a></td>
+<td>[androidJvm]<br>fun <a href="./#-953197380%2FFunctions%2F-535623568">getDrawable</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/graphics/drawable/Drawable.html">Drawable</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-921690152%2FFunctions%2F-535623568">getDrawerToggleDelegate</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a><br>open override fun <a href="./#-921690152%2FFunctions%2F-535623568">getDrawerToggleDelegate</a>(): <a href="https://developer.android.com/reference/kotlin/androidx/appcompat/app/ActionBarDrawerToggle.Delegate.html">ActionBarDrawerToggle.Delegate</a>?</td>
+</tr>
+<tr>
+<td><a href="./#544398023%2FFunctions%2F-535623568">getExternalCacheDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#544398023%2FFunctions%2F-535623568">getExternalCacheDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>?</td>
+</tr>
+<tr>
+<td><a href="./#1262724320%2FFunctions%2F-535623568">getExternalCacheDirs</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1262724320%2FFunctions%2F-535623568">getExternalCacheDirs</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="./#-1987272293%2FFunctions%2F-535623568">getExternalFilesDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1987272293%2FFunctions%2F-535623568">getExternalFilesDir</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-2070683431%2FFunctions%2F-535623568">getExternalFilesDirs</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-2070683431%2FFunctions%2F-535623568">getExternalFilesDirs</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="./#1078368190%2FFunctions%2F-535623568">getExternalMediaDirs</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1078368190%2FFunctions%2F-535623568">getExternalMediaDirs</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="./#-2018610489%2FFunctions%2F-535623568">getFilesDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-2018610489%2FFunctions%2F-535623568">getFilesDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="./#-1523976920%2FFunctions%2F-535623568">getFileStreamPath</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1523976920%2FFunctions%2F-535623568">getFileStreamPath</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="./#-1000759074%2FFunctions%2F-535623568">getIntent</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1000759074%2FFunctions%2F-535623568">getIntent</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a></td>
+</tr>
+<tr>
+<td><a href="./#-977658074%2FFunctions%2F-535623568">getLastNonConfigurationInstance</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-977658074%2FFunctions%2F-535623568">getLastNonConfigurationInstance</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-755744763%2FFunctions%2F-535623568">getLayoutInflater</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-755744763%2FFunctions%2F-535623568">getLayoutInflater</a>(): <a href="https://developer.android.com/reference/kotlin/android/view/LayoutInflater.html">LayoutInflater</a></td>
+</tr>
+<tr>
+<td><a href="./#-363549909%2FFunctions%2F-535623568">getLifecycle</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>open override fun <a href="./#-363549909%2FFunctions%2F-535623568">getLifecycle</a>(): <a href="https://developer.android.com/reference/kotlin/androidx/lifecycle/Lifecycle.html">Lifecycle</a></td>
+</tr>
+<tr>
+<td><a href="./#-376937214%2FFunctions%2F-535623568">getLocalClassName</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-376937214%2FFunctions%2F-535623568">getLocalClassName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="./#1205639281%2FFunctions%2F-535623568">getMainExecutor</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1205639281%2FFunctions%2F-535623568">getMainExecutor</a>(): <a href="https://developer.android.com/reference/kotlin/java/util/concurrent/Executor.html">Executor</a></td>
+</tr>
+<tr>
+<td><a href="./#400244339%2FFunctions%2F-535623568">getMainLooper</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#400244339%2FFunctions%2F-535623568">getMainLooper</a>(): <a href="https://developer.android.com/reference/kotlin/android/os/Looper.html">Looper</a></td>
+</tr>
+<tr>
+<td><a href="./#-1704478464%2FFunctions%2F-535623568">getMaxNumPictureInPictureActions</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1704478464%2FFunctions%2F-535623568">getMaxNumPictureInPictureActions</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#-1703977600%2FFunctions%2F-535623568">getMediaController</a></td>
+<td>[androidJvm]<br>fun <a href="./#-1703977600%2FFunctions%2F-535623568">getMediaController</a>(): <a href="https://developer.android.com/reference/kotlin/android/media/session/MediaController.html">MediaController</a></td>
+</tr>
+<tr>
+<td><a href="./#13623128%2FFunctions%2F-535623568">getMenuInflater</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>open override fun <a href="./#13623128%2FFunctions%2F-535623568">getMenuInflater</a>(): <a href="https://developer.android.com/reference/kotlin/android/view/MenuInflater.html">MenuInflater</a></td>
+</tr>
+<tr>
+<td><a href="./#1811406884%2FFunctions%2F-535623568">getNoBackupFilesDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1811406884%2FFunctions%2F-535623568">getNoBackupFilesDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="./#252787007%2FFunctions%2F-535623568">getObbDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#252787007%2FFunctions%2F-535623568">getObbDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="./#812717416%2FFunctions%2F-535623568">getObbDirs</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#812717416%2FFunctions%2F-535623568">getObbDirs</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="./#1039536402%2FFunctions%2F-535623568">getOnBackPressedDispatcher</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>override fun <a href="./#1039536402%2FFunctions%2F-535623568">getOnBackPressedDispatcher</a>(): <a href="https://developer.android.com/reference/kotlin/androidx/activity/OnBackPressedDispatcher.html">OnBackPressedDispatcher</a></td>
+</tr>
+<tr>
+<td><a href="./#-814243443%2FFunctions%2F-535623568">getOpPackageName</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-814243443%2FFunctions%2F-535623568">getOpPackageName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="./#-1681869883%2FFunctions%2F-535623568">getPackageCodePath</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1681869883%2FFunctions%2F-535623568">getPackageCodePath</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="./#224992758%2FFunctions%2F-535623568">getPackageManager</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#224992758%2FFunctions%2F-535623568">getPackageManager</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/pm/PackageManager.html">PackageManager</a></td>
+</tr>
+<tr>
+<td><a href="./#-1158183924%2FFunctions%2F-535623568">getPackageName</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1158183924%2FFunctions%2F-535623568">getPackageName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="./#512700484%2FFunctions%2F-535623568">getPackageResourcePath</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#512700484%2FFunctions%2F-535623568">getPackageResourcePath</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="./#-417920553%2FFunctions%2F-535623568">getParams</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-417920553%2FFunctions%2F-535623568">getParams</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/ContextParams.html">ContextParams</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-78472560%2FFunctions%2F-535623568">getParent</a></td>
+<td>[androidJvm]<br>fun <a href="./#-78472560%2FFunctions%2F-535623568">getParent</a>(): <a href="https://developer.android.com/reference/kotlin/android/app/Activity.html">Activity</a></td>
+</tr>
+<tr>
+<td><a href="./#1492932869%2FFunctions%2F-535623568">getParentActivityIntent</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1492932869%2FFunctions%2F-535623568">getParentActivityIntent</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-427727546%2FFunctions%2F-535623568">getPreferences</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-427727546%2FFunctions%2F-535623568">getPreferences</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/SharedPreferences.html">SharedPreferences</a></td>
+</tr>
+<tr>
+<td><a href="./#-581473925%2FFunctions%2F-535623568">getReferrer</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-581473925%2FFunctions%2F-535623568">getReferrer</a>(): <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>?</td>
+</tr>
+<tr>
+<td><a href="./#1038606840%2FFunctions%2F-535623568">getRequestedOrientation</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1038606840%2FFunctions%2F-535623568">getRequestedOrientation</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#-404044493%2FFunctions%2F-535623568">getResources</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-404044493%2FFunctions%2F-535623568">getResources</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/res/Resources.html">Resources</a></td>
+</tr>
+<tr>
+<td><a href="./#2075539550%2FFunctions%2F-535623568">getSavedStateRegistry</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>override fun <a href="./#2075539550%2FFunctions%2F-535623568">getSavedStateRegistry</a>(): <a href="https://developer.android.com/reference/kotlin/androidx/savedstate/SavedStateRegistry.html">SavedStateRegistry</a></td>
+</tr>
+<tr>
+<td><a href="./#-630770%2FFunctions%2F-535623568">getSearchEvent</a></td>
+<td>[androidJvm]<br>fun <a href="./#-630770%2FFunctions%2F-535623568">getSearchEvent</a>(): <a href="https://developer.android.com/reference/kotlin/android/view/SearchEvent.html">SearchEvent</a></td>
+</tr>
+<tr>
+<td><a href="./#1470789827%2FFunctions%2F-535623568">getSharedPreferences</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1470789827%2FFunctions%2F-535623568">getSharedPreferences</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/SharedPreferences.html">SharedPreferences</a></td>
+</tr>
+<tr>
+<td><a href="./#-382132249%2FFunctions%2F-535623568">getSplashScreen</a></td>
+<td>[androidJvm]<br>fun <a href="./#-382132249%2FFunctions%2F-535623568">getSplashScreen</a>(): <a href="https://developer.android.com/reference/kotlin/android/window/SplashScreen.html">SplashScreen</a></td>
+</tr>
+<tr>
+<td><a href="./#-1083071447%2FFunctions%2F-535623568">getString</a></td>
+<td>[androidJvm]<br>fun <a href="./#-1083071447%2FFunctions%2F-535623568">getString</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><br>fun <a href="./#1906424039%2FFunctions%2F-535623568">getString</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, vararg p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="./#993354804%2FFunctions%2F-535623568">getSupportActionBar</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a><br>open fun <a href="./#993354804%2FFunctions%2F-535623568">getSupportActionBar</a>(): <a href="https://developer.android.com/reference/kotlin/androidx/appcompat/app/ActionBar.html">ActionBar</a>?</td>
+</tr>
+<tr>
+<td><a href="./#396613922%2FFunctions%2F-535623568">getSupportFragmentManager</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>open fun <a href="./#396613922%2FFunctions%2F-535623568">getSupportFragmentManager</a>(): <a href="https://developer.android.com/reference/kotlin/androidx/fragment/app/FragmentManager.html">FragmentManager</a></td>
+</tr>
+<tr>
+<td><a href="./#192054068%2FFunctions%2F-535623568">getSupportParentActivityIntent</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a><br>open override fun <a href="./#192054068%2FFunctions%2F-535623568">getSupportParentActivityIntent</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?</td>
+</tr>
+<tr>
+<td><a href="./#1869678890%2FFunctions%2F-535623568">getSystemService</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1869678890%2FFunctions%2F-535623568">getSystemService</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><br>fun &lt;<a href="./#-1033418729%2FFunctions%2F-535623568">T</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>&gt; <a href="./#-1033418729%2FFunctions%2F-535623568">getSystemService</a>(p0: <a href="https://developer.android.com/reference/kotlin/java/lang/Class.html">Class</a>&lt;<a href="./#-1033418729%2FFunctions%2F-535623568">T</a>&gt;): <a href="./#-1033418729%2FFunctions%2F-535623568">T</a></td>
+</tr>
+<tr>
+<td><a href="./#-1607307550%2FFunctions%2F-535623568">getSystemServiceName</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1607307550%2FFunctions%2F-535623568">getSystemServiceName</a>(p0: <a href="https://developer.android.com/reference/kotlin/java/lang/Class.html">Class</a>&lt;*&gt;): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-1226887558%2FFunctions%2F-535623568">getTaskId</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1226887558%2FFunctions%2F-535623568">getTaskId</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#-1417941683%2FFunctions%2F-535623568">getText</a></td>
+<td>[androidJvm]<br>fun <a href="./#-1417941683%2FFunctions%2F-535623568">getText</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char-sequence/index.html">CharSequence</a></td>
+</tr>
+<tr>
+<td><a href="./#945814313%2FFunctions%2F-535623568">getTheme</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#945814313%2FFunctions%2F-535623568">getTheme</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/res/Resources.Theme.html">Resources.Theme</a></td>
+</tr>
+<tr>
+<td><a href="./#671976584%2FFunctions%2F-535623568">getTitle</a></td>
+<td>[androidJvm]<br>fun <a href="./#671976584%2FFunctions%2F-535623568">getTitle</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char-sequence/index.html">CharSequence</a></td>
+</tr>
+<tr>
+<td><a href="./#-815012881%2FFunctions%2F-535623568">getTitleColor</a></td>
+<td>[androidJvm]<br>fun <a href="./#-815012881%2FFunctions%2F-535623568">getTitleColor</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#-123874808%2FFunctions%2F-535623568">getViewModelStore</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>open override fun <a href="./#-123874808%2FFunctions%2F-535623568">getViewModelStore</a>(): <a href="https://developer.android.com/reference/kotlin/androidx/lifecycle/ViewModelStore.html">ViewModelStore</a></td>
+</tr>
+<tr>
+<td><a href="./#819156245%2FFunctions%2F-535623568">getVoiceInteractor</a></td>
+<td>[androidJvm]<br>open fun <a href="./#819156245%2FFunctions%2F-535623568">getVoiceInteractor</a>(): <a href="https://developer.android.com/reference/kotlin/android/app/VoiceInteractor.html">VoiceInteractor</a></td>
+</tr>
+<tr>
+<td><a href="./#714135997%2FFunctions%2F-535623568">getVolumeControlStream</a></td>
+<td>[androidJvm]<br>fun <a href="./#714135997%2FFunctions%2F-535623568">getVolumeControlStream</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#1004659210%2FFunctions%2F-535623568">getWindow</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1004659210%2FFunctions%2F-535623568">getWindow</a>(): <a href="https://developer.android.com/reference/kotlin/android/view/Window.html">Window</a></td>
+</tr>
+<tr>
+<td><a href="./#-130996765%2FFunctions%2F-535623568">getWindowManager</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-130996765%2FFunctions%2F-535623568">getWindowManager</a>(): <a href="https://developer.android.com/reference/kotlin/android/view/WindowManager.html">WindowManager</a></td>
+</tr>
+<tr>
+<td><a href="./#715282874%2FFunctions%2F-535623568">grantUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#715282874%2FFunctions%2F-535623568">grantUriPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-27928292%2FFunctions%2F-535623568">hasWindowFocus</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-27928292%2FFunctions%2F-535623568">hasWindowFocus</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1946521782%2FFunctions%2F-535623568">invalidateOptionsMenu</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1946521782%2FFunctions%2F-535623568">invalidateOptionsMenu</a>()</td>
+</tr>
+<tr>
+<td><a href="./#1073823551%2FFunctions%2F-535623568">isActivityTransitionRunning</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1073823551%2FFunctions%2F-535623568">isActivityTransitionRunning</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1931207062%2FFunctions%2F-535623568">isChangingConfigurations</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1931207062%2FFunctions%2F-535623568">isChangingConfigurations</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1947658526%2FFunctions%2F-535623568">isChild</a></td>
+<td>[androidJvm]<br>fun <a href="./#1947658526%2FFunctions%2F-535623568">isChild</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-423188415%2FFunctions%2F-535623568">isDestroyed</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-423188415%2FFunctions%2F-535623568">isDestroyed</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1565618010%2FFunctions%2F-535623568">isDeviceProtectedStorage</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1565618010%2FFunctions%2F-535623568">isDeviceProtectedStorage</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1522152277%2FFunctions%2F-535623568">isFinishing</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1522152277%2FFunctions%2F-535623568">isFinishing</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#80260575%2FFunctions%2F-535623568">isImmersive</a></td>
+<td>[androidJvm]<br>open fun <a href="./#80260575%2FFunctions%2F-535623568">isImmersive</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#49252659%2FFunctions%2F-535623568">isInMultiWindowMode</a></td>
+<td>[androidJvm]<br>open fun <a href="./#49252659%2FFunctions%2F-535623568">isInMultiWindowMode</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1297157635%2FFunctions%2F-535623568">isInPictureInPictureMode</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1297157635%2FFunctions%2F-535623568">isInPictureInPictureMode</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#386928344%2FFunctions%2F-535623568">isLaunchedFromBubble</a></td>
+<td>[androidJvm]<br>open fun <a href="./#386928344%2FFunctions%2F-535623568">isLaunchedFromBubble</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1903895843%2FFunctions%2F-535623568">isLocalVoiceInteractionSupported</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1903895843%2FFunctions%2F-535623568">isLocalVoiceInteractionSupported</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1776278686%2FFunctions%2F-535623568">isRestricted</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1776278686%2FFunctions%2F-535623568">isRestricted</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#2027112825%2FFunctions%2F-535623568">isTaskRoot</a></td>
+<td>[androidJvm]<br>open fun <a href="./#2027112825%2FFunctions%2F-535623568">isTaskRoot</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#2131014658%2FFunctions%2F-535623568">isUiContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#2131014658%2FFunctions%2F-535623568">isUiContext</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1356218592%2FFunctions%2F-535623568">isVoiceInteraction</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1356218592%2FFunctions%2F-535623568">isVoiceInteraction</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1896831266%2FFunctions%2F-535623568">isVoiceInteractionRoot</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1896831266%2FFunctions%2F-535623568">isVoiceInteractionRoot</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#2027345122%2FFunctions%2F-535623568">markFragmentsCreated</a></td>
+<td>[androidJvm]<br>open fun <a href="./#2027345122%2FFunctions%2F-535623568">markFragmentsCreated</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-1531556325%2FFunctions%2F-535623568">moveDatabaseFrom</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1531556325%2FFunctions%2F-535623568">moveDatabaseFrom</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-336755131%2FFunctions%2F-535623568">moveSharedPreferencesFrom</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-336755131%2FFunctions%2F-535623568">moveSharedPreferencesFrom</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1282212521%2FFunctions%2F-535623568">moveTaskToBack</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1282212521%2FFunctions%2F-535623568">moveTaskToBack</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1674464237%2FFunctions%2F-535623568">navigateUpTo</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1674464237%2FFunctions%2F-535623568">navigateUpTo</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1790084466%2FFunctions%2F-535623568">obtainStyledAttributes</a></td>
+<td>[androidJvm]<br>fun <a href="./#1790084466%2FFunctions%2F-535623568">obtainStyledAttributes</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a>): <a href="https://developer.android.com/reference/kotlin/android/content/res/TypedArray.html">TypedArray</a><br>fun <a href="./#-1642243463%2FFunctions%2F-535623568">obtainStyledAttributes</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/util/AttributeSet.html">AttributeSet</a>?, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a>): <a href="https://developer.android.com/reference/kotlin/android/content/res/TypedArray.html">TypedArray</a><br>fun <a href="./#-1436889597%2FFunctions%2F-535623568">obtainStyledAttributes</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a>): <a href="https://developer.android.com/reference/kotlin/android/content/res/TypedArray.html">TypedArray</a><br>fun <a href="./#1344552345%2FFunctions%2F-535623568">obtainStyledAttributes</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/util/AttributeSet.html">AttributeSet</a>?, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/res/TypedArray.html">TypedArray</a></td>
+</tr>
+<tr>
+<td><a href="./#841259903%2FFunctions%2F-535623568">onActionModeFinished</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#841259903%2FFunctions%2F-535623568">onActionModeFinished</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/ActionMode.html">ActionMode</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-312043496%2FFunctions%2F-535623568">onActionModeStarted</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-312043496%2FFunctions%2F-535623568">onActionModeStarted</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/ActionMode.html">ActionMode</a>)</td>
+</tr>
+<tr>
+<td><a href="./#799400472%2FFunctions%2F-535623568">onActivityReenter</a></td>
+<td>[androidJvm]<br>open fun <a href="./#799400472%2FFunctions%2F-535623568">onActivityReenter</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1522048086%2FFunctions%2F-535623568">onActivityResult</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/CallSuper.html">CallSuper</a><br>open override fun <a href="./#-1522048086%2FFunctions%2F-535623568">onActivityResult</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a>p2: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-1518739575%2FFunctions%2F-535623568">onApplyThemeResource</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1518739575%2FFunctions%2F-535623568">onApplyThemeResource</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/res/Resources.Theme.html">Resources.Theme</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#353137244%2FFunctions%2F-535623568">onAttachedToWindow</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#353137244%2FFunctions%2F-535623568">onAttachedToWindow</a>()</td>
+</tr>
+<tr>
+<td><a href="./#1244181503%2FFunctions%2F-535623568">onBackPressed</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/MainThread.html">MainThread</a><br>open override fun <a href="./#1244181503%2FFunctions%2F-535623568">onBackPressed</a>()</td>
+</tr>
+<tr>
+<td><a href="./#1324975259%2FFunctions%2F-535623568">onChildTitleChanged</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1324975259%2FFunctions%2F-535623568">onChildTitleChanged</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/Activity.html">Activity</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char-sequence/index.html">CharSequence</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1681265737%2FFunctions%2F-535623568">onConfigurationChanged</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1681265737%2FFunctions%2F-535623568">onConfigurationChanged</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://developer.android.com/reference/kotlin/android/content/res/Configuration.html">Configuration</a>)</td>
+</tr>
+<tr>
+<td><a href="../-pdf-navigator-fragment/-listener/on-configure-pdf-view/">onConfigurePdfView</a></td>
+<td>[androidJvm]<br>open fun <a href="../-pdf-navigator-fragment/-listener/on-configure-pdf-view/">onConfigurePdfView</a>(configurator: PDFView.Configurator)<br>Called when configuring PDFView.</td>
+</tr>
+<tr>
+<td><a href="./#394797256%2FFunctions%2F-535623568">onContentChanged</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#394797256%2FFunctions%2F-535623568">onContentChanged</a>()</td>
+</tr>
+<tr>
+<td><a href="./#1812307060%2FFunctions%2F-535623568">onContextItemSelected</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1812307060%2FFunctions%2F-535623568">onContextItemSelected</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/MenuItem.html">MenuItem</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#306528228%2FFunctions%2F-535623568">onContextMenuClosed</a></td>
+<td>[androidJvm]<br>open fun <a href="./#306528228%2FFunctions%2F-535623568">onContextMenuClosed</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/Menu.html">Menu</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1495493222%2FFunctions%2F-535623568">onCreate</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1495493222%2FFunctions%2F-535623568">onCreate</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/os/PersistableBundle.html">PersistableBundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-1293424512%2FFunctions%2F-535623568">onCreateContextMenu</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1293424512%2FFunctions%2F-535623568">onCreateContextMenu</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/ContextMenu.html">ContextMenu</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>, p2: <a href="https://developer.android.com/reference/kotlin/android/view/ContextMenu.ContextMenuInfo.html">ContextMenu.ContextMenuInfo</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1717196879%2FFunctions%2F-535623568">onCreateDescription</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1717196879%2FFunctions%2F-535623568">onCreateDescription</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char-sequence/index.html">CharSequence</a>?</td>
+</tr>
+<tr>
+<td><a href="./#2062770608%2FFunctions%2F-535623568">onCreateNavigateUpTaskStack</a></td>
+<td>[androidJvm]<br>open fun <a href="./#2062770608%2FFunctions%2F-535623568">onCreateNavigateUpTaskStack</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/TaskStackBuilder.html">TaskStackBuilder</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-825108757%2FFunctions%2F-535623568">onCreateOptionsMenu</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-825108757%2FFunctions%2F-535623568">onCreateOptionsMenu</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/Menu.html">Menu</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#45730038%2FFunctions%2F-535623568">onCreatePanelMenu</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#45730038%2FFunctions%2F-535623568">onCreatePanelMenu</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p1: <a href="https://developer.android.com/reference/kotlin/android/view/Menu.html">Menu</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-691578688%2FFunctions%2F-535623568">onCreatePanelView</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-691578688%2FFunctions%2F-535623568">onCreatePanelView</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>?</td>
+</tr>
+<tr>
+<td><a href="./#232313904%2FFunctions%2F-535623568">onCreateSupportNavigateUpTaskStack</a></td>
+<td>[androidJvm]<br>open fun <a href="./#232313904%2FFunctions%2F-535623568">onCreateSupportNavigateUpTaskStack</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://developer.android.com/reference/kotlin/androidx/core/app/TaskStackBuilder.html">TaskStackBuilder</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1932875352%2FFunctions%2F-535623568">onCreateView</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a><br>open override fun <a href="./#-1932875352%2FFunctions%2F-535623568">onCreateView</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p1: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p2: <a href="https://developer.android.com/reference/kotlin/android/util/AttributeSet.html">AttributeSet</a>): <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>?<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a><br>open override fun <a href="./#-324107199%2FFunctions%2F-535623568">onCreateView</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a>p0: <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>?, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p2: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p3: <a href="https://developer.android.com/reference/kotlin/android/util/AttributeSet.html">AttributeSet</a>): <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>?</td>
+</tr>
+<tr>
+<td><a href="on-current-locator-changed/">onCurrentLocatorChanged</a></td>
+<td>[androidJvm]<br>open fun <a href="on-current-locator-changed/">onCurrentLocatorChanged</a>(locator: <a href="../../../../shared/shared/org.readium.r2.shared.publication/-locator/">Locator</a>)<br>Override this event handler to save the current location in the publication in a database.</td>
+</tr>
+<tr>
+<td><a href="./#-1677605091%2FFunctions%2F-535623568">onDestroy</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1677605091%2FFunctions%2F-535623568">onDestroy</a>()</td>
+</tr>
+<tr>
+<td><a href="./#808892479%2FFunctions%2F-535623568">onDetachedFromWindow</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#808892479%2FFunctions%2F-535623568">onDetachedFromWindow</a>()</td>
+</tr>
+<tr>
+<td><a href="./#1066137542%2FFunctions%2F-535623568">onEnterAnimationComplete</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1066137542%2FFunctions%2F-535623568">onEnterAnimationComplete</a>()</td>
+</tr>
+<tr>
+<td><a href="./#1628846596%2FFunctions%2F-535623568">onGenericMotionEvent</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1628846596%2FFunctions%2F-535623568">onGenericMotionEvent</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/MotionEvent.html">MotionEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1666408073%2FFunctions%2F-535623568">onGetDirectActions</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1666408073%2FFunctions%2F-535623568">onGetDirectActions</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/os/CancellationSignal.html">CancellationSignal</a>, p1: <a href="https://developer.android.com/reference/kotlin/java/util/function/Consumer.html">Consumer</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/app/DirectAction.html">DirectAction</a>&gt;&gt;)</td>
+</tr>
+<tr>
+<td><a href="./#-725353038%2FFunctions%2F-535623568">onKeyDown</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-725353038%2FFunctions%2F-535623568">onKeyDown</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/view/KeyEvent.html">KeyEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1340579935%2FFunctions%2F-535623568">onKeyLongPress</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1340579935%2FFunctions%2F-535623568">onKeyLongPress</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/view/KeyEvent.html">KeyEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#441707645%2FFunctions%2F-535623568">onKeyMultiple</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#441707645%2FFunctions%2F-535623568">onKeyMultiple</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://developer.android.com/reference/kotlin/android/view/KeyEvent.html">KeyEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1852777318%2FFunctions%2F-535623568">onKeyShortcut</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1852777318%2FFunctions%2F-535623568">onKeyShortcut</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/view/KeyEvent.html">KeyEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#37075185%2FFunctions%2F-535623568">onKeyUp</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#37075185%2FFunctions%2F-535623568">onKeyUp</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/view/KeyEvent.html">KeyEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1083603883%2FFunctions%2F-535623568">onLocalVoiceInteractionStarted</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1083603883%2FFunctions%2F-535623568">onLocalVoiceInteractionStarted</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-1292435319%2FFunctions%2F-535623568">onLocalVoiceInteractionStopped</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1292435319%2FFunctions%2F-535623568">onLocalVoiceInteractionStopped</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-124266192%2FFunctions%2F-535623568">onLowMemory</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-124266192%2FFunctions%2F-535623568">onLowMemory</a>()</td>
+</tr>
+<tr>
+<td><a href="./#467064475%2FFunctions%2F-535623568">onMenuItemSelected</a></td>
+<td>[androidJvm]<br>override fun <a href="./#467064475%2FFunctions%2F-535623568">onMenuItemSelected</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p1: <a href="https://developer.android.com/reference/kotlin/android/view/MenuItem.html">MenuItem</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1715435469%2FFunctions%2F-535623568">onMenuOpened</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1715435469%2FFunctions%2F-535623568">onMenuOpened</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/view/Menu.html">Menu</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1017195442%2FFunctions%2F-535623568">onMultiWindowModeChanged</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/CallSuper.html">CallSuper</a><br>open override fun <a href="./#1017195442%2FFunctions%2F-535623568">onMultiWindowModeChanged</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)<br>open fun <a href="./#-579519849%2FFunctions%2F-535623568">onMultiWindowModeChanged</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/res/Configuration.html">Configuration</a>)</td>
+</tr>
+<tr>
+<td><a href="./#272358303%2FFunctions%2F-535623568">onNavigateUp</a></td>
+<td>[androidJvm]<br>open fun <a href="./#272358303%2FFunctions%2F-535623568">onNavigateUp</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-855790343%2FFunctions%2F-535623568">onNewIntent</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/CallSuper.html">CallSuper</a><br>open override fun <a href="./#-855790343%2FFunctions%2F-535623568">onNewIntent</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1928706616%2FFunctions%2F-535623568">onNightModeChanged</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1928706616%2FFunctions%2F-535623568">onNightModeChanged</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-506784605%2FFunctions%2F-535623568">onOptionsItemSelected</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-506784605%2FFunctions%2F-535623568">onOptionsItemSelected</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/MenuItem.html">MenuItem</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1188579155%2FFunctions%2F-535623568">onOptionsMenuClosed</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1188579155%2FFunctions%2F-535623568">onOptionsMenuClosed</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/Menu.html">Menu</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-605556033%2FFunctions%2F-535623568">onPanelClosed</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-605556033%2FFunctions%2F-535623568">onPanelClosed</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p1: <a href="https://developer.android.com/reference/kotlin/android/view/Menu.html">Menu</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-414451761%2FFunctions%2F-535623568">onPause</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-414451761%2FFunctions%2F-535623568">onPause</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-1343051192%2FFunctions%2F-535623568">onPerformDirectAction</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1343051192%2FFunctions%2F-535623568">onPerformDirectAction</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>, p2: <a href="https://developer.android.com/reference/kotlin/android/os/CancellationSignal.html">CancellationSignal</a>, p3: <a href="https://developer.android.com/reference/kotlin/java/util/function/Consumer.html">Consumer</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>&gt;)</td>
+</tr>
+<tr>
+<td><a href="./#-1598174988%2FFunctions%2F-535623568">onPictureInPictureModeChanged</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/CallSuper.html">CallSuper</a><br>open override fun <a href="./#-1598174988%2FFunctions%2F-535623568">onPictureInPictureModeChanged</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)<br>open fun <a href="./#1807731181%2FFunctions%2F-535623568">onPictureInPictureModeChanged</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/res/Configuration.html">Configuration</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-631987684%2FFunctions%2F-535623568">onPictureInPictureRequested</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-631987684%2FFunctions%2F-535623568">onPictureInPictureRequested</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1210218221%2FFunctions%2F-535623568">onPictureInPictureUiStateChanged</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1210218221%2FFunctions%2F-535623568">onPictureInPictureUiStateChanged</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/PictureInPictureUiState.html">PictureInPictureUiState</a>)</td>
+</tr>
+<tr>
+<td><a href="./#755634413%2FFunctions%2F-535623568">onPointerCaptureChanged</a></td>
+<td>[androidJvm]<br>open fun <a href="./#755634413%2FFunctions%2F-535623568">onPointerCaptureChanged</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1408766795%2FFunctions%2F-535623568">onPostCreate</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1408766795%2FFunctions%2F-535623568">onPostCreate</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a>p0: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)<br>open fun <a href="./#-1126572378%2FFunctions%2F-535623568">onPostCreate</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/os/PersistableBundle.html">PersistableBundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-621011178%2FFunctions%2F-535623568">onPostResume</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-621011178%2FFunctions%2F-535623568">onPostResume</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-366149865%2FFunctions%2F-535623568">onPrepareNavigateUpTaskStack</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-366149865%2FFunctions%2F-535623568">onPrepareNavigateUpTaskStack</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/TaskStackBuilder.html">TaskStackBuilder</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-90596124%2FFunctions%2F-535623568">onPrepareOptionsMenu</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-90596124%2FFunctions%2F-535623568">onPrepareOptionsMenu</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/Menu.html">Menu</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#2133124851%2FFunctions%2F-535623568">onPreparePanel</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#2133124851%2FFunctions%2F-535623568">onPreparePanel</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a>p1: <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>?, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p2: <a href="https://developer.android.com/reference/kotlin/android/view/Menu.html">Menu</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1576638073%2FFunctions%2F-535623568">onPrepareSupportNavigateUpTaskStack</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1576638073%2FFunctions%2F-535623568">onPrepareSupportNavigateUpTaskStack</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://developer.android.com/reference/kotlin/androidx/core/app/TaskStackBuilder.html">TaskStackBuilder</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1232228773%2FFunctions%2F-535623568">onProvideAssistContent</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1232228773%2FFunctions%2F-535623568">onProvideAssistContent</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/assist/AssistContent.html">AssistContent</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1477722778%2FFunctions%2F-535623568">onProvideAssistData</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1477722778%2FFunctions%2F-535623568">onProvideAssistData</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1927998462%2FFunctions%2F-535623568">onProvideKeyboardShortcuts</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1927998462%2FFunctions%2F-535623568">onProvideKeyboardShortcuts</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/view/KeyboardShortcutGroup.html">KeyboardShortcutGroup</a>&gt;, p1: <a href="https://developer.android.com/reference/kotlin/android/view/Menu.html">Menu</a>?, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#89494607%2FFunctions%2F-535623568">onProvideReferrer</a></td>
+<td>[androidJvm]<br>open fun <a href="./#89494607%2FFunctions%2F-535623568">onProvideReferrer</a>(): <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a></td>
+</tr>
+<tr>
+<td><a href="./#324382530%2FFunctions%2F-535623568">onRequestPermissionsResult</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/CallSuper.html">CallSuper</a><br>open override fun <a href="./#324382530%2FFunctions%2F-535623568">onRequestPermissionsResult</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a>)</td>
+</tr>
+<tr>
+<td><a href="../-pdf-navigator-fragment/-listener/on-resource-load-failed/">onResourceLoadFailed</a></td>
+<td>[androidJvm]<br>open fun <a href="../-pdf-navigator-fragment/-listener/on-resource-load-failed/">onResourceLoadFailed</a>(link: <a href="../../../../shared/shared/org.readium.r2.shared.publication/-link/">Link</a>, error: <a href="../../../../shared/shared/org.readium.r2.shared.fetcher/-resource/-exception/">Resource.Exception</a>)<br>Called when a PDF resource failed to be loaded, for example because of an <a href="https://developer.android.com/reference/kotlin/java/lang/OutOfMemoryError.html">OutOfMemoryError</a>.</td>
+</tr>
+<tr>
+<td><a href="./#1918519552%2FFunctions%2F-535623568">onRestart</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1918519552%2FFunctions%2F-535623568">onRestart</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-227989352%2FFunctions%2F-535623568">onRestoreInstanceState</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-227989352%2FFunctions%2F-535623568">onRestoreInstanceState</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>)<br>open fun <a href="./#2129192468%2FFunctions%2F-535623568">onRestoreInstanceState</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/os/PersistableBundle.html">PersistableBundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-876959768%2FFunctions%2F-535623568">onResume</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-876959768%2FFunctions%2F-535623568">onResume</a>()</td>
+</tr>
+<tr>
+<td><a href="./#928551247%2FFunctions%2F-535623568">onResumeFragments</a></td>
+<td>[androidJvm]<br>open fun <a href="./#928551247%2FFunctions%2F-535623568">onResumeFragments</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-535503907%2FFunctions%2F-535623568">onRetainNonConfigurationInstance</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a><br>override fun <a href="./#-535503907%2FFunctions%2F-535623568">onRetainNonConfigurationInstance</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-317582822%2FFunctions%2F-535623568">onSaveInstanceState</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/CallSuper.html">CallSuper</a><br>open override fun <a href="./#-317582822%2FFunctions%2F-535623568">onSaveInstanceState</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>outState: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>)<br>open fun <a href="./#811680277%2FFunctions%2F-535623568">onSaveInstanceState</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/PersistableBundle.html">PersistableBundle</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1896099401%2FFunctions%2F-535623568">onSearchRequested</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1896099401%2FFunctions%2F-535623568">onSearchRequested</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>open override fun <a href="./#1053649730%2FFunctions%2F-535623568">onSearchRequested</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/SearchEvent.html">SearchEvent</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1620072907%2FFunctions%2F-535623568">onStart</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1620072907%2FFunctions%2F-535623568">onStart</a>()</td>
+</tr>
+<tr>
+<td><a href="./#326701440%2FFunctions%2F-535623568">onStateNotSaved</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#326701440%2FFunctions%2F-535623568">onStateNotSaved</a>()</td>
+</tr>
+<tr>
+<td><a href="./#827511329%2FFunctions%2F-535623568">onStop</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#827511329%2FFunctions%2F-535623568">onStop</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-1124305045%2FFunctions%2F-535623568">onSupportActionModeFinished</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/CallSuper.html">CallSuper</a><br>open override fun <a href="./#-1124305045%2FFunctions%2F-535623568">onSupportActionModeFinished</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://developer.android.com/reference/kotlin/androidx/appcompat/view/ActionMode.html">ActionMode</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1415609320%2FFunctions%2F-535623568">onSupportActionModeStarted</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/CallSuper.html">CallSuper</a><br>open override fun <a href="./#-1415609320%2FFunctions%2F-535623568">onSupportActionModeStarted</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://developer.android.com/reference/kotlin/androidx/appcompat/view/ActionMode.html">ActionMode</a>)</td>
+</tr>
+<tr>
+<td><a href="./#68831388%2FFunctions%2F-535623568">onSupportNavigateUp</a></td>
+<td>[androidJvm]<br>open fun <a href="./#68831388%2FFunctions%2F-535623568">onSupportNavigateUp</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator/-visual-navigator/-listener/on-tap/">onTap</a></td>
+<td>[androidJvm]<br>open fun <a href="../../org.readium.r2.navigator/-visual-navigator/-listener/on-tap/">onTap</a>(point: <a href="https://developer.android.com/reference/kotlin/android/graphics/PointF.html">PointF</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Called when the user tapped the content, but nothing handled the event internally (eg. by following an internal link).</td>
+</tr>
+<tr>
+<td><a href="./#-439623066%2FFunctions%2F-535623568">onTitleChanged</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-439623066%2FFunctions%2F-535623568">onTitleChanged</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char-sequence/index.html">CharSequence</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1063399889%2FFunctions%2F-535623568">onTopResumedActivityChanged</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1063399889%2FFunctions%2F-535623568">onTopResumedActivityChanged</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1666515626%2FFunctions%2F-535623568">onTouchEvent</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1666515626%2FFunctions%2F-535623568">onTouchEvent</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/MotionEvent.html">MotionEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-606180703%2FFunctions%2F-535623568">onTrackballEvent</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-606180703%2FFunctions%2F-535623568">onTrackballEvent</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/MotionEvent.html">MotionEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-571240634%2FFunctions%2F-535623568">onTrimMemory</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-571240634%2FFunctions%2F-535623568">onTrimMemory</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1612486344%2FFunctions%2F-535623568">onUserInteraction</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1612486344%2FFunctions%2F-535623568">onUserInteraction</a>()</td>
+</tr>
+<tr>
+<td><a href="./#320186300%2FFunctions%2F-535623568">onUserLeaveHint</a></td>
+<td>[androidJvm]<br>open fun <a href="./#320186300%2FFunctions%2F-535623568">onUserLeaveHint</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-1250318987%2FFunctions%2F-535623568">onWindowAttributesChanged</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1250318987%2FFunctions%2F-535623568">onWindowAttributesChanged</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/WindowManager.LayoutParams.html">WindowManager.LayoutParams</a>)</td>
+</tr>
+<tr>
+<td><a href="./#223445956%2FFunctions%2F-535623568">onWindowFocusChanged</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#223445956%2FFunctions%2F-535623568">onWindowFocusChanged</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#524415698%2FFunctions%2F-535623568">onWindowStartingActionMode</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#524415698%2FFunctions%2F-535623568">onWindowStartingActionMode</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/ActionMode.Callback.html">ActionMode.Callback</a>): <a href="https://developer.android.com/reference/kotlin/android/view/ActionMode.html">ActionMode</a>?<br>open override fun <a href="./#541659979%2FFunctions%2F-535623568">onWindowStartingActionMode</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/ActionMode.Callback.html">ActionMode.Callback</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/view/ActionMode.html">ActionMode</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-1221758%2FFunctions%2F-535623568">onWindowStartingSupportActionMode</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a><br>open override fun <a href="./#-1221758%2FFunctions%2F-535623568">onWindowStartingSupportActionMode</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://developer.android.com/reference/kotlin/androidx/appcompat/view/ActionMode.Callback.html">ActionMode.Callback</a>): <a href="https://developer.android.com/reference/kotlin/androidx/appcompat/view/ActionMode.html">ActionMode</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-321075321%2FFunctions%2F-535623568">openContextMenu</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-321075321%2FFunctions%2F-535623568">openContextMenu</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-436133483%2FFunctions%2F-535623568">openFileInput</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-436133483%2FFunctions%2F-535623568">openFileInput</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/java/io/FileInputStream.html">FileInputStream</a></td>
+</tr>
+<tr>
+<td><a href="./#-1288028519%2FFunctions%2F-535623568">openFileOutput</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1288028519%2FFunctions%2F-535623568">openFileOutput</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/java/io/FileOutputStream.html">FileOutputStream</a></td>
+</tr>
+<tr>
+<td><a href="./#1724316293%2FFunctions%2F-535623568">openOptionsMenu</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1724316293%2FFunctions%2F-535623568">openOptionsMenu</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-352848248%2FFunctions%2F-535623568">openOrCreateDatabase</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-352848248%2FFunctions%2F-535623568">openOrCreateDatabase</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://developer.android.com/reference/kotlin/android/database/sqlite/SQLiteDatabase.CursorFactory.html">SQLiteDatabase.CursorFactory</a>): <a href="https://developer.android.com/reference/kotlin/android/database/sqlite/SQLiteDatabase.html">SQLiteDatabase</a><br>open override fun <a href="./#1846808329%2FFunctions%2F-535623568">openOrCreateDatabase</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://developer.android.com/reference/kotlin/android/database/sqlite/SQLiteDatabase.CursorFactory.html">SQLiteDatabase.CursorFactory</a>, p3: <a href="https://developer.android.com/reference/kotlin/android/database/DatabaseErrorHandler.html">DatabaseErrorHandler</a>?): <a href="https://developer.android.com/reference/kotlin/android/database/sqlite/SQLiteDatabase.html">SQLiteDatabase</a></td>
+</tr>
+<tr>
+<td><a href="./#-848669009%2FFunctions%2F-535623568">overridePendingTransition</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-848669009%2FFunctions%2F-535623568">overridePendingTransition</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#151152734%2FFunctions%2F-535623568">peekAvailableContext</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a><br>open override fun <a href="./#151152734%2FFunctions%2F-535623568">peekAvailableContext</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>?</td>
+</tr>
+<tr>
+<td><a href="./#1864516089%2FFunctions%2F-535623568">postponeEnterTransition</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1864516089%2FFunctions%2F-535623568">postponeEnterTransition</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-2032215845%2FFunctions%2F-535623568">recreate</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-2032215845%2FFunctions%2F-535623568">recreate</a>()</td>
+</tr>
+<tr>
+<td><a href="./#1746376759%2FFunctions%2F-535623568">registerActivityLifecycleCallbacks</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1746376759%2FFunctions%2F-535623568">registerActivityLifecycleCallbacks</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/Application.ActivityLifecycleCallbacks.html">Application.ActivityLifecycleCallbacks</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1516453775%2FFunctions%2F-535623568">registerComponentCallbacks</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1516453775%2FFunctions%2F-535623568">registerComponentCallbacks</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ComponentCallbacks.html">ComponentCallbacks</a>)</td>
+</tr>
+<tr>
+<td><a href="./#754690300%2FFunctions%2F-535623568">registerForActivityResult</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>override fun &lt;<a href="./#754690300%2FFunctions%2F-535623568">I</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>, <a href="./#754690300%2FFunctions%2F-535623568">O</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>&gt; <a href="./#754690300%2FFunctions%2F-535623568">registerForActivityResult</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>contract: <a href="https://developer.android.com/reference/kotlin/androidx/activity/result/contract/ActivityResultContract.html">ActivityResultContract</a>&lt;<a href="./#754690300%2FFunctions%2F-535623568">I</a>, <a href="./#754690300%2FFunctions%2F-535623568">O</a>&gt;, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>callback: <a href="https://developer.android.com/reference/kotlin/androidx/activity/result/ActivityResultCallback.html">ActivityResultCallback</a>&lt;<a href="./#754690300%2FFunctions%2F-535623568">O</a>&gt;): <a href="https://developer.android.com/reference/kotlin/androidx/activity/result/ActivityResultLauncher.html">ActivityResultLauncher</a>&lt;<a href="./#754690300%2FFunctions%2F-535623568">I</a>&gt;<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>override fun &lt;<a href="./#772146783%2FFunctions%2F-535623568">I</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>, <a href="./#772146783%2FFunctions%2F-535623568">O</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>&gt; <a href="./#772146783%2FFunctions%2F-535623568">registerForActivityResult</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>contract: <a href="https://developer.android.com/reference/kotlin/androidx/activity/result/contract/ActivityResultContract.html">ActivityResultContract</a>&lt;<a href="./#772146783%2FFunctions%2F-535623568">I</a>, <a href="./#772146783%2FFunctions%2F-535623568">O</a>&gt;, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>registry: <a href="https://developer.android.com/reference/kotlin/androidx/activity/result/ActivityResultRegistry.html">ActivityResultRegistry</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>callback: <a href="https://developer.android.com/reference/kotlin/androidx/activity/result/ActivityResultCallback.html">ActivityResultCallback</a>&lt;<a href="./#772146783%2FFunctions%2F-535623568">O</a>&gt;): <a href="https://developer.android.com/reference/kotlin/androidx/activity/result/ActivityResultLauncher.html">ActivityResultLauncher</a>&lt;<a href="./#772146783%2FFunctions%2F-535623568">I</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="./#2070422321%2FFunctions%2F-535623568">registerForContextMenu</a></td>
+<td>[androidJvm]<br>open fun <a href="./#2070422321%2FFunctions%2F-535623568">registerForContextMenu</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>)</td>
+</tr>
+<tr>
+<td><a href="./#369060837%2FFunctions%2F-535623568">registerReceiver</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#369060837%2FFunctions%2F-535623568">registerReceiver</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/content/IntentFilter.html">IntentFilter</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?<br>open override fun <a href="./#180699224%2FFunctions%2F-535623568">registerReceiver</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/content/IntentFilter.html">IntentFilter</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?<br>open override fun <a href="./#1896280668%2FFunctions%2F-535623568">registerReceiver</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/content/IntentFilter.html">IntentFilter</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?): <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?<br>open override fun <a href="./#-444475007%2FFunctions%2F-535623568">registerReceiver</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/content/IntentFilter.html">IntentFilter</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?</td>
+</tr>
+<tr>
+<td><a href="./#1568969140%2FFunctions%2F-535623568">releaseInstance</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1568969140%2FFunctions%2F-535623568">releaseInstance</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-2046743102%2FFunctions%2F-535623568">removeOnContextAvailableListener</a></td>
+<td>[androidJvm]<br>override fun <a href="./#-2046743102%2FFunctions%2F-535623568">removeOnContextAvailableListener</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>listener: <a href="https://developer.android.com/reference/kotlin/androidx/activity/contextaware/OnContextAvailableListener.html">OnContextAvailableListener</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1513000075%2FFunctions%2F-535623568">reportFullyDrawn</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1513000075%2FFunctions%2F-535623568">reportFullyDrawn</a>()</td>
+</tr>
+<tr>
+<td><a href="./#1897880531%2FFunctions%2F-535623568">requestDragAndDropPermissions</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1897880531%2FFunctions%2F-535623568">requestDragAndDropPermissions</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/DragEvent.html">DragEvent</a>): <a href="https://developer.android.com/reference/kotlin/android/view/DragAndDropPermissions.html">DragAndDropPermissions</a></td>
+</tr>
+<tr>
+<td><a href="./#-118591778%2FFunctions%2F-535623568">requestPermissions</a></td>
+<td>[androidJvm]<br>fun <a href="./#-118591778%2FFunctions%2F-535623568">requestPermissions</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#602908592%2FFunctions%2F-535623568">requestShowKeyboardShortcuts</a></td>
+<td>[androidJvm]<br>fun <a href="./#602908592%2FFunctions%2F-535623568">requestShowKeyboardShortcuts</a>()</td>
+</tr>
+<tr>
+<td><a href="./#1008014993%2FFunctions%2F-535623568">requestWindowFeature</a></td>
+<td>[androidJvm]<br>fun <a href="./#1008014993%2FFunctions%2F-535623568">requestWindowFeature</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#595482482%2FFunctions%2F-535623568">requireViewById</a></td>
+<td>[androidJvm]<br>fun &lt;<a href="./#595482482%2FFunctions%2F-535623568">T</a> : <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>&gt; <a href="./#595482482%2FFunctions%2F-535623568">requireViewById</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="./#595482482%2FFunctions%2F-535623568">T</a></td>
+</tr>
+<tr>
+<td><a href="./#-1459364395%2FFunctions%2F-535623568">revokeUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1459364395%2FFunctions%2F-535623568">revokeUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)<br>open override fun <a href="./#-401097840%2FFunctions%2F-535623568">revokeUriPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1975015607%2FFunctions%2F-535623568">runOnUiThread</a></td>
+<td>[androidJvm]<br>fun <a href="./#1975015607%2FFunctions%2F-535623568">runOnUiThread</a>(p0: <a href="https://developer.android.com/reference/kotlin/java/lang/Runnable.html">Runnable</a>)</td>
+</tr>
+<tr>
+<td><a href="./#689861098%2FFunctions%2F-535623568">sendBroadcast</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#689861098%2FFunctions%2F-535623568">sendBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>)<br>open override fun <a href="./#281415540%2FFunctions%2F-535623568">sendBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#288711986%2FFunctions%2F-535623568">sendBroadcastAsUser</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#288711986%2FFunctions%2F-535623568">sendBroadcastAsUser</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/UserHandle.html">UserHandle</a>)<br>open override fun <a href="./#546382636%2FFunctions%2F-535623568">sendBroadcastAsUser</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/UserHandle.html">UserHandle</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#298882104%2FFunctions%2F-535623568">sendBroadcastWithMultiplePermissions</a></td>
+<td>[androidJvm]<br>open fun <a href="./#298882104%2FFunctions%2F-535623568">sendBroadcastWithMultiplePermissions</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;)</td>
+</tr>
+<tr>
+<td><a href="./#-2119529981%2FFunctions%2F-535623568">sendOrderedBroadcast</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-2119529981%2FFunctions%2F-535623568">sendOrderedBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)<br>open override fun <a href="./#2070291024%2FFunctions%2F-535623568">sendOrderedBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p2: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p3: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p5: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p6: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)<br>open override fun <a href="./#-1131561336%2FFunctions%2F-535623568">sendOrderedBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p4: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?, p5: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p6: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p7: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)<br>open fun <a href="./#1922483713%2FFunctions%2F-535623568">sendOrderedBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p4: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p5: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?, p6: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p7: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?, p8: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#1495784840%2FFunctions%2F-535623568">sendOrderedBroadcastAsUser</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1495784840%2FFunctions%2F-535623568">sendOrderedBroadcastAsUser</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/UserHandle.html">UserHandle</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p4: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?, p5: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p6: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p7: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-1108993724%2FFunctions%2F-535623568">setActionBar</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1108993724%2FFunctions%2F-535623568">setActionBar</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/widget/Toolbar.html">Toolbar</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#376493809%2FFunctions%2F-535623568">setContentTransitionManager</a></td>
+<td>[androidJvm]<br>open fun <a href="./#376493809%2FFunctions%2F-535623568">setContentTransitionManager</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/transition/TransitionManager.html">TransitionManager</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1721756371%2FFunctions%2F-535623568">setContentView</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1721756371%2FFunctions%2F-535623568">setContentView</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>)<br>open override fun <a href="./#-1986977500%2FFunctions%2F-535623568">setContentView</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/LayoutRes.html">LayoutRes</a>p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)<br>open override fun <a href="./#252290882%2FFunctions%2F-535623568">setContentView</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/view/ViewGroup.LayoutParams.html">ViewGroup.LayoutParams</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1824989643%2FFunctions%2F-535623568">setDefaultKeyMode</a></td>
+<td>[androidJvm]<br>fun <a href="./#1824989643%2FFunctions%2F-535623568">setDefaultKeyMode</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1834414904%2FFunctions%2F-535623568">setEnterSharedElementCallback</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1834414904%2FFunctions%2F-535623568">setEnterSharedElementCallback</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/SharedElementCallback.html">SharedElementCallback</a>)<br>open fun <a href="./#1601388294%2FFunctions%2F-535623568">setEnterSharedElementCallback</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a>p0: <a href="https://developer.android.com/reference/kotlin/androidx/core/app/SharedElementCallback.html">SharedElementCallback</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-1951695356%2FFunctions%2F-535623568">setExitSharedElementCallback</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1951695356%2FFunctions%2F-535623568">setExitSharedElementCallback</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/SharedElementCallback.html">SharedElementCallback</a>)<br>open fun <a href="./#1319338974%2FFunctions%2F-535623568">setExitSharedElementCallback</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a>p0: <a href="https://developer.android.com/reference/kotlin/androidx/core/app/SharedElementCallback.html">SharedElementCallback</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-912515041%2FFunctions%2F-535623568">setFeatureDrawable</a></td>
+<td>[androidJvm]<br>fun <a href="./#-912515041%2FFunctions%2F-535623568">setFeatureDrawable</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/graphics/drawable/Drawable.html">Drawable</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-892724069%2FFunctions%2F-535623568">setFeatureDrawableAlpha</a></td>
+<td>[androidJvm]<br>fun <a href="./#-892724069%2FFunctions%2F-535623568">setFeatureDrawableAlpha</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1600818357%2FFunctions%2F-535623568">setFeatureDrawableResource</a></td>
+<td>[androidJvm]<br>fun <a href="./#1600818357%2FFunctions%2F-535623568">setFeatureDrawableResource</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1884656987%2FFunctions%2F-535623568">setFeatureDrawableUri</a></td>
+<td>[androidJvm]<br>fun <a href="./#1884656987%2FFunctions%2F-535623568">setFeatureDrawableUri</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1187445989%2FFunctions%2F-535623568">setFinishOnTouchOutside</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1187445989%2FFunctions%2F-535623568">setFinishOnTouchOutside</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-496320618%2FFunctions%2F-535623568">setImmersive</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-496320618%2FFunctions%2F-535623568">setImmersive</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1727786731%2FFunctions%2F-535623568">setInheritShowWhenLocked</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1727786731%2FFunctions%2F-535623568">setInheritShowWhenLocked</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-696482206%2FFunctions%2F-535623568">setIntent</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-696482206%2FFunctions%2F-535623568">setIntent</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>)</td>
+</tr>
+<tr>
+<td><a href="./#534698986%2FFunctions%2F-535623568">setLocusContext</a></td>
+<td>[androidJvm]<br>open fun <a href="./#534698986%2FFunctions%2F-535623568">setLocusContext</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/LocusId.html">LocusId</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#345348023%2FFunctions%2F-535623568">setMediaController</a></td>
+<td>[androidJvm]<br>fun <a href="./#345348023%2FFunctions%2F-535623568">setMediaController</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/media/session/MediaController.html">MediaController</a>)</td>
+</tr>
+<tr>
+<td><a href="./#2122172224%2FFunctions%2F-535623568">setPictureInPictureParams</a></td>
+<td>[androidJvm]<br>open fun <a href="./#2122172224%2FFunctions%2F-535623568">setPictureInPictureParams</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/PictureInPictureParams.html">PictureInPictureParams</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-502080758%2FFunctions%2F-535623568">setRequestedOrientation</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-502080758%2FFunctions%2F-535623568">setRequestedOrientation</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-540228529%2FFunctions%2F-535623568">setResult</a></td>
+<td>[androidJvm]<br>fun <a href="./#-540228529%2FFunctions%2F-535623568">setResult</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)<br>fun <a href="./#-1158025824%2FFunctions%2F-535623568">setResult</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>)</td>
+</tr>
+<tr>
+<td><a href="./#2015957586%2FFunctions%2F-535623568">setShowWhenLocked</a></td>
+<td>[androidJvm]<br>open fun <a href="./#2015957586%2FFunctions%2F-535623568">setShowWhenLocked</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1308768586%2FFunctions%2F-535623568">setSupportActionBar</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1308768586%2FFunctions%2F-535623568">setSupportActionBar</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a>p0: <a href="https://developer.android.com/reference/kotlin/androidx/appcompat/widget/Toolbar.html">Toolbar</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-1241466222%2FFunctions%2F-535623568">setTaskDescription</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1241466222%2FFunctions%2F-535623568">setTaskDescription</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/ActivityManager.TaskDescription.html">ActivityManager.TaskDescription</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1492744364%2FFunctions%2F-535623568">setTheme</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1492744364%2FFunctions%2F-535623568">setTheme</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/res/Resources.Theme.html">Resources.Theme</a>?)<br>open override fun <a href="./#-848582791%2FFunctions%2F-535623568">setTheme</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/StyleRes.html">StyleRes</a>p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#428356874%2FFunctions%2F-535623568">setTitle</a></td>
+<td>[androidJvm]<br>open fun <a href="./#428356874%2FFunctions%2F-535623568">setTitle</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char-sequence/index.html">CharSequence</a>)<br>open fun <a href="./#-448484046%2FFunctions%2F-535623568">setTitle</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-299059848%2FFunctions%2F-535623568">setTranslucent</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-299059848%2FFunctions%2F-535623568">setTranslucent</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1223219349%2FFunctions%2F-535623568">setTurnScreenOn</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1223219349%2FFunctions%2F-535623568">setTurnScreenOn</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-937109057%2FFunctions%2F-535623568">setVisible</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-937109057%2FFunctions%2F-535623568">setVisible</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-2130446553%2FFunctions%2F-535623568">setVolumeControlStream</a></td>
+<td>[androidJvm]<br>fun <a href="./#-2130446553%2FFunctions%2F-535623568">setVolumeControlStream</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1342078786%2FFunctions%2F-535623568">setVrModeEnabled</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1342078786%2FFunctions%2F-535623568">setVrModeEnabled</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/ComponentName.html">ComponentName</a>)</td>
+</tr>
+<tr>
+<td><a href="./#979814755%2FFunctions%2F-535623568">shouldShowRequestPermissionRationale</a></td>
+<td>[androidJvm]<br>open fun <a href="./#979814755%2FFunctions%2F-535623568">shouldShowRequestPermissionRationale</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1897505624%2FFunctions%2F-535623568">shouldUpRecreateTask</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1897505624%2FFunctions%2F-535623568">shouldUpRecreateTask</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#367507473%2FFunctions%2F-535623568">showAssist</a></td>
+<td>[androidJvm]<br>open fun <a href="./#367507473%2FFunctions%2F-535623568">showAssist</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1477638263%2FFunctions%2F-535623568">showLockTaskEscapeMessage</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1477638263%2FFunctions%2F-535623568">showLockTaskEscapeMessage</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-839047195%2FFunctions%2F-535623568">startActionMode</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-839047195%2FFunctions%2F-535623568">startActionMode</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/ActionMode.Callback.html">ActionMode.Callback</a>): <a href="https://developer.android.com/reference/kotlin/android/view/ActionMode.html">ActionMode</a>?<br>open fun <a href="./#-669383592%2FFunctions%2F-535623568">startActionMode</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/ActionMode.Callback.html">ActionMode.Callback</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/view/ActionMode.html">ActionMode</a>?</td>
+</tr>
+<tr>
+<td><a href="./#976395171%2FFunctions%2F-535623568">startActivities</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#976395171%2FFunctions%2F-535623568">startActivities</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>&gt;)<br>open override fun <a href="./#-519158902%2FFunctions%2F-535623568">startActivities</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>&gt;, p1: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#129134735%2FFunctions%2F-535623568">startActivity</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#129134735%2FFunctions%2F-535623568">startActivity</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>)<br>open override fun <a href="./#-605581538%2FFunctions%2F-535623568">startActivity</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-1777591661%2FFunctions%2F-535623568">startActivityFromFragment</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1777591661%2FFunctions%2F-535623568">startActivityFromFragment</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://developer.android.com/reference/kotlin/androidx/fragment/app/Fragment.html">Fragment</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)<br>open fun <a href="./#735116954%2FFunctions%2F-535623568">startActivityFromFragment</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://developer.android.com/reference/kotlin/androidx/fragment/app/Fragment.html">Fragment</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a>p3: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-459743168%2FFunctions%2F-535623568">startActivityIfNeeded</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-459743168%2FFunctions%2F-535623568">startActivityIfNeeded</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>open fun <a href="./#1813641165%2FFunctions%2F-535623568">startActivityIfNeeded</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-291854073%2FFunctions%2F-535623568">startForegroundService</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-291854073%2FFunctions%2F-535623568">startForegroundService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://developer.android.com/reference/kotlin/android/content/ComponentName.html">ComponentName</a>?</td>
+</tr>
+<tr>
+<td><a href="./#-1028122110%2FFunctions%2F-535623568">startInstrumentation</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1028122110%2FFunctions%2F-535623568">startInstrumentation</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ComponentName.html">ComponentName</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p2: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1364634351%2FFunctions%2F-535623568">startIntentSender</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1364634351%2FFunctions%2F-535623568">startIntentSender</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/IntentSender.html">IntentSender</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)<br>open override fun <a href="./#944572252%2FFunctions%2F-535623568">startIntentSender</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/IntentSender.html">IntentSender</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p5: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#1177981524%2FFunctions%2F-535623568">startLocalVoiceInteraction</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1177981524%2FFunctions%2F-535623568">startLocalVoiceInteraction</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1759344354%2FFunctions%2F-535623568">startLockTask</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1759344354%2FFunctions%2F-535623568">startLockTask</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-1814455073%2FFunctions%2F-535623568">startNextMatchingActivity</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1814455073%2FFunctions%2F-535623568">startNextMatchingActivity</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>open fun <a href="./#-1412702002%2FFunctions%2F-535623568">startNextMatchingActivity</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#1851940207%2FFunctions%2F-535623568">startPostponedEnterTransition</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1851940207%2FFunctions%2F-535623568">startPostponedEnterTransition</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-478932714%2FFunctions%2F-535623568">startSearch</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-478932714%2FFunctions%2F-535623568">startSearch</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>, p2: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1648257764%2FFunctions%2F-535623568">startService</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1648257764%2FFunctions%2F-535623568">startService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://developer.android.com/reference/kotlin/android/content/ComponentName.html">ComponentName</a>?</td>
+</tr>
+<tr>
+<td><a href="./#1150656037%2FFunctions%2F-535623568">startSupportActionMode</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a><br>open fun <a href="./#1150656037%2FFunctions%2F-535623568">startSupportActionMode</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://developer.android.com/reference/kotlin/androidx/appcompat/view/ActionMode.Callback.html">ActionMode.Callback</a>): <a href="https://developer.android.com/reference/kotlin/androidx/appcompat/view/ActionMode.html">ActionMode</a>?</td>
+</tr>
+<tr>
+<td><a href="./#1860702247%2FFunctions%2F-535623568">stopLocalVoiceInteraction</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1860702247%2FFunctions%2F-535623568">stopLocalVoiceInteraction</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-285436616%2FFunctions%2F-535623568">stopLockTask</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-285436616%2FFunctions%2F-535623568">stopLockTask</a>()</td>
+</tr>
+<tr>
+<td><a href="./#784453104%2FFunctions%2F-535623568">stopService</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#784453104%2FFunctions%2F-535623568">stopService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-691651435%2FFunctions%2F-535623568">superDispatchKeyEvent</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-691651435%2FFunctions%2F-535623568">superDispatchKeyEvent</a>(event: <a href="https://developer.android.com/reference/kotlin/android/view/KeyEvent.html">KeyEvent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-875696123%2FFunctions%2F-535623568">supportFinishAfterTransition</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-875696123%2FFunctions%2F-535623568">supportFinishAfterTransition</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-850970929%2FFunctions%2F-535623568">supportInvalidateOptionsMenu</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-850970929%2FFunctions%2F-535623568">supportInvalidateOptionsMenu</a>()</td>
+</tr>
+<tr>
+<td><a href="./#901519858%2FFunctions%2F-535623568">supportNavigateUpTo</a></td>
+<td>[androidJvm]<br>open fun <a href="./#901519858%2FFunctions%2F-535623568">supportNavigateUpTo</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-2075072244%2FFunctions%2F-535623568">supportPostponeEnterTransition</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-2075072244%2FFunctions%2F-535623568">supportPostponeEnterTransition</a>()</td>
+</tr>
+<tr>
+<td><a href="./#-1656536080%2FFunctions%2F-535623568">supportRequestWindowFeature</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1656536080%2FFunctions%2F-535623568">supportRequestWindowFeature</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#134986295%2FFunctions%2F-535623568">supportShouldUpRecreateTask</a></td>
+<td>[androidJvm]<br>open fun <a href="./#134986295%2FFunctions%2F-535623568">supportShouldUpRecreateTask</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-2033309118%2FFunctions%2F-535623568">supportStartPostponedEnterTransition</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-2033309118%2FFunctions%2F-535623568">supportStartPostponedEnterTransition</a>()</td>
+</tr>
+<tr>
+<td><a href="./#1120732996%2FFunctions%2F-535623568">takeKeyEvents</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1120732996%2FFunctions%2F-535623568">takeKeyEvents</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1891181639%2FFunctions%2F-535623568">triggerSearch</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1891181639%2FFunctions%2F-535623568">triggerSearch</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#391044623%2FFunctions%2F-535623568">unbindService</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#391044623%2FFunctions%2F-535623568">unbindService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1246757122%2FFunctions%2F-535623568">unregisterActivityLifecycleCallbacks</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1246757122%2FFunctions%2F-535623568">unregisterActivityLifecycleCallbacks</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/app/Application.ActivityLifecycleCallbacks.html">Application.ActivityLifecycleCallbacks</a>)</td>
+</tr>
+<tr>
+<td><a href="./#441017302%2FFunctions%2F-535623568">unregisterComponentCallbacks</a></td>
+<td>[androidJvm]<br>open fun <a href="./#441017302%2FFunctions%2F-535623568">unregisterComponentCallbacks</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ComponentCallbacks.html">ComponentCallbacks</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1919084810%2FFunctions%2F-535623568">unregisterForContextMenu</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1919084810%2FFunctions%2F-535623568">unregisterForContextMenu</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/View.html">View</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1949248458%2FFunctions%2F-535623568">unregisterReceiver</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1949248458%2FFunctions%2F-535623568">unregisterReceiver</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>)</td>
+</tr>
+<tr>
+<td><a href="./#178246991%2FFunctions%2F-535623568">updateServiceGroup</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#178246991%2FFunctions%2F-535623568">updateServiceGroup</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./#698859857%2FProperties%2F-535623568">mContextAwareHelper</a></td>
+<td>[androidJvm]<br>val <a href="./#698859857%2FProperties%2F-535623568">mContextAwareHelper</a>: <a href="https://developer.android.com/reference/kotlin/androidx/activity/contextaware/ContextAwareHelper.html">ContextAwareHelper</a></td>
+</tr>
+<tr>
+<td><a href="./#-398947335%2FProperties%2F-535623568">mCreated</a></td>
+<td>[androidJvm]<br>val <a href="./#-398947335%2FProperties%2F-535623568">mCreated</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-606872726%2FProperties%2F-535623568">mFragmentLifecycleRegistry</a></td>
+<td>[androidJvm]<br>val <a href="./#-606872726%2FProperties%2F-535623568">mFragmentLifecycleRegistry</a>: <a href="https://developer.android.com/reference/kotlin/androidx/lifecycle/LifecycleRegistry.html">LifecycleRegistry</a></td>
+</tr>
+<tr>
+<td><a href="./#411038238%2FProperties%2F-535623568">mFragments</a></td>
+<td>[androidJvm]<br>val <a href="./#411038238%2FProperties%2F-535623568">mFragments</a>: <a href="https://developer.android.com/reference/kotlin/androidx/fragment/app/FragmentController.html">FragmentController</a></td>
+</tr>
+<tr>
+<td><a href="./#-2127419414%2FProperties%2F-535623568">mResumed</a></td>
+<td>[androidJvm]<br>val <a href="./#-2127419414%2FProperties%2F-535623568">mResumed</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#700845483%2FProperties%2F-535623568">mSavedStateRegistryController</a></td>
+<td>[androidJvm]<br>val <a href="./#700845483%2FProperties%2F-535623568">mSavedStateRegistryController</a>: <a href="https://developer.android.com/reference/kotlin/androidx/savedstate/SavedStateRegistryController.html">SavedStateRegistryController</a></td>
+</tr>
+<tr>
+<td><a href="./#1144460468%2FProperties%2F-535623568">mStopped</a></td>
+<td>[androidJvm]<br>val <a href="./#1144460468%2FProperties%2F-535623568">mStopped</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+</tbody>
+</table>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2021 Readium Foundation
+          </div>
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../../../../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../../../../assets/javascripts/workers/search.8397ff9e.min.js", "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.f89c2efe.min.js"></script>
+      
+    
+  </body>
+</html>

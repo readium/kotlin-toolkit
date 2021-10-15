@@ -1,0 +1,614 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.">
+      
+      
+      
+        <meta name="author" content="Readium Foundation">
+      
+      
+        <link rel="canonical" href="https://github.com/readium/kotlin-toolkit/2.1.0/readium/shared/shared/org.readium.r2.shared.extensions/">
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.3">
+    
+    
+      
+        <title>Index - Readium Kotlin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.5143246d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../../../readium_colors.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL("../../../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#package-orgreadiumr2sharedextensions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="Readium Kotlin" class="md-header__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Readium Kotlin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Index
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/readium/kotlin-toolkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="Readium Kotlin" class="md-nav__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Readium Kotlin
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/readium/kotlin-toolkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../migration-guide/" class="md-nav__link">
+        Migration Guide
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        Shared
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../streamer/" class="md-nav__link">
+        Streamer
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../navigator/" class="md-nav__link">
+        Navigator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../opds/" class="md-nav__link">
+        OPDS
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../lcp/" class="md-nav__link">
+        LCP
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    Types
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    Properties
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/readium/kotlin-toolkit/edit/master/docs/readium/shared/shared/org.readium.r2.shared.extensions/index.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <p>//<a href="../../">shared</a>/<a href="./">org.readium.r2.shared.extensions</a></p>
+<h1 id="package-orgreadiumr2sharedextensions">Package org.readium.r2.shared.extensions<a class="headerlink" href="#package-orgreadiumr2sharedextensions" title="Permanent link">&para;</a></h1>
+<h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="-j-s-o-n-parceler/">JSONParceler</a></td>
+<td>[androidJvm]<br>object <a href="-j-s-o-n-parceler/">JSONParceler</a> : Parceler&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>&gt;&gt; <br>Implementation of a Parceler to be used with @Parcelize to serialize JSON objects.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="add-prefix/">addPrefix</a></td>
+<td>[androidJvm]<br>fun <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>.<a href="add-prefix/">addPrefix</a>(prefix: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char-sequence/index.html">CharSequence</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><br>If this string starts with the given <a href="add-prefix/">prefix</a>, returns this string. Otherwise, returns a copy of this string after adding the <a href="add-prefix/">prefix</a>.</td>
+</tr>
+<tr>
+<td><a href="as-instance/">asInstance</a></td>
+<td>[androidJvm]<br>inline fun &lt;<a href="as-instance/">T</a>&gt; <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html">Throwable</a>.<a href="as-instance/">asInstance</a>(): <a href="as-instance/">T</a>?<br>fun &lt;<a href="as-instance/">R</a>&gt; <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html">Throwable</a>.<a href="as-instance/">asInstance</a>(klass: <a href="https://developer.android.com/reference/kotlin/java/lang/Class.html">Class</a>&lt;<a href="as-instance/">R</a>&gt;): <a href="as-instance/">R</a>?<br>Finds the first cause instance of the given type.</td>
+</tr>
+<tr>
+<td><a href="coerce-first-non-negative/">coerceFirstNonNegative</a></td>
+<td>[androidJvm]<br>fun <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.ranges/-long-range/index.html">LongRange</a>.<a href="coerce-first-non-negative/">coerceFirstNonNegative</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.ranges/-long-range/index.html">LongRange</a></td>
+</tr>
+<tr>
+<td><a href="coerce-in/">coerceIn</a></td>
+<td>[androidJvm]<br>fun <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.ranges/-long-range/index.html">LongRange</a>.<a href="coerce-in/">coerceIn</a>(range: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.ranges/-long-range/index.html">LongRange</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.ranges/-long-range/index.html">LongRange</a></td>
+</tr>
+<tr>
+<td><a href="destroy-publication/">destroyPublication</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>.<a href="destroy-publication/">destroyPublication</a>(activity: <a href="https://developer.android.com/reference/kotlin/android/app/Activity.html">Activity</a>?)</td>
+</tr>
+<tr>
+<td><a href="get-publication/">getPublication</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>.<a href="get-publication/">getPublication</a>(activity: <a href="https://developer.android.com/reference/kotlin/android/app/Activity.html">Activity</a>?): <a href="../org.readium.r2.shared.publication/-publication/">Publication</a></td>
+</tr>
+<tr>
+<td><a href="get-publication-or-null/">getPublicationOrNull</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>.<a href="get-publication-or-null/">getPublicationOrNull</a>(): <a href="../org.readium.r2.shared.publication/-publication/">Publication</a>?<br>fun <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>.<a href="get-publication-or-null/">getPublicationOrNull</a>(): <a href="../org.readium.r2.shared.publication/-publication/">Publication</a>?</td>
+</tr>
+<tr>
+<td><a href="inflate/">inflate</a></td>
+<td>[androidJvm]<br>fun <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a>.<a href="inflate/">inflate</a>(nowrap: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false, bufferSize: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 32 * 1024): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><br>Inflates a ZIP-compressed <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a>.</td>
+</tr>
+<tr>
+<td><a href="iso8601-to-date/">iso8601ToDate</a></td>
+<td>[androidJvm]<br>fun <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>.<a href="iso8601-to-date/">iso8601ToDate</a>(): <a href="https://developer.android.com/reference/kotlin/java/util/Date.html">Date</a>?</td>
+</tr>
+<tr>
+<td><a href="is-parent-of/">isParentOf</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>.<a href="is-parent-of/">isParentOf</a>(other: <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Returns whether the other is a descendant of this file.</td>
+</tr>
+<tr>
+<td><a href="map-not-null/">mapNotNull</a></td>
+<td>[androidJvm]<br>fun &lt;<a href="map-not-null/">T</a>&gt; <a href="https://developer.android.com/reference/kotlin/org/json/JSONArray.html">JSONArray</a>.<a href="map-not-null/">mapNotNull</a>(transform: (<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>) -&gt; <a href="map-not-null/">T</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="map-not-null/">T</a>&gt;<br>Returns a list containing the results of applying the given transform function to each element in the original <a href="https://developer.android.com/reference/kotlin/org/json/JSONArray.html">JSONArray</a>. If the tranform returns null, it is not included in the output list.<br>[androidJvm]<br>fun &lt;<a href="map-not-null/">T</a>&gt; <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="map-not-null/">mapNotNull</a>(transform: (<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html">Pair</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>&gt;) -&gt; <a href="map-not-null/">T</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="map-not-null/">T</a>&gt;<br>Returns a list containing the results of applying the given transform function to each element in the original <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>. If the tranform returns null, it is not included in the output list.</td>
+</tr>
+<tr>
+<td><a href="md5/">md5</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>.<a href="md5/">md5</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>Computes the MD5 hash of the file.<br>[androidJvm]<br>fun <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a>.<a href="md5/">md5</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>Computes the MD5 hash of the byte array.</td>
+</tr>
+<tr>
+<td><a href="media-type/">mediaType</a></td>
+<td>[androidJvm]<br>suspend fun <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>.<a href="media-type/">mediaType</a>(mediaTypeHint: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null): <a href="../org.readium.r2.shared.util.mediatype/-media-type/">MediaType</a><br>Sniffs the media type of the file.</td>
+</tr>
+<tr>
+<td><a href="opt-nullable-boolean/">optNullableBoolean</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="opt-nullable-boolean/">optNullableBoolean</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, remove: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>?<br>Returns the value mapped by <a href="opt-nullable-boolean/">name</a> if it exists, coercing it if necessary, or null if no such mapping exists. If <a href="opt-nullable-boolean/">remove</a> is true, then the mapping will be removed from the <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.</td>
+</tr>
+<tr>
+<td><a href="opt-nullable-double/">optNullableDouble</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="opt-nullable-double/">optNullableDouble</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, remove: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a>?<br>Returns the value mapped by <a href="opt-nullable-double/">name</a> if it exists, coercing it if necessary, or null if no such mapping exists. If <a href="opt-nullable-double/">remove</a> is true, then the mapping will be removed from the <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.</td>
+</tr>
+<tr>
+<td><a href="opt-nullable-int/">optNullableInt</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="opt-nullable-int/">optNullableInt</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, remove: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>?<br>Returns the value mapped by <a href="opt-nullable-int/">name</a> if it exists, coercing it if necessary, or null if no such mapping exists. If <a href="opt-nullable-int/">remove</a> is true, then the mapping will be removed from the <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.</td>
+</tr>
+<tr>
+<td><a href="opt-nullable-long/">optNullableLong</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="opt-nullable-long/">optNullableLong</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, remove: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a>?<br>Returns the value mapped by <a href="opt-nullable-long/">name</a> if it exists, coercing it if necessary, or null if no such mapping exists. If <a href="opt-nullable-long/">remove</a> is true, then the mapping will be removed from the <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.</td>
+</tr>
+<tr>
+<td><a href="opt-nullable-string/">optNullableString</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="opt-nullable-string/">optNullableString</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, remove: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>Returns the value mapped by <a href="opt-nullable-string/">name</a> if it exists, coercing it if necessary, or null if no such mapping exists. If <a href="opt-nullable-string/">remove</a> is true, then the mapping will be removed from the <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.</td>
+</tr>
+<tr>
+<td><a href="opt-positive-double/">optPositiveDouble</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="opt-positive-double/">optPositiveDouble</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, fallback: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a> = -1.0, remove: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a>?<br>Returns the value mapped by <a href="opt-positive-double/">name</a> if it exists and is a positive double or can be coerced to a positive double, or <a href="opt-positive-double/">fallback</a> otherwise. If <a href="opt-positive-double/">remove</a> is true, then the mapping will be removed from the <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.</td>
+</tr>
+<tr>
+<td><a href="opt-positive-int/">optPositiveInt</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="opt-positive-int/">optPositiveInt</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, fallback: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = -1, remove: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>?<br>Returns the value mapped by <a href="opt-positive-int/">name</a> if it exists and is a positive integer or can be coerced to a positive integer, or <a href="opt-positive-int/">fallback</a> otherwise. If <a href="opt-positive-int/">remove</a> is true, then the mapping will be removed from the <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.</td>
+</tr>
+<tr>
+<td><a href="opt-strings-from-array-or-single/">optStringsFromArrayOrSingle</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="opt-strings-from-array-or-single/">optStringsFromArrayOrSingle</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, remove: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;<br>Returns the value mapped by <a href="opt-strings-from-array-or-single/">name</a> if it exists and is either a <a href="https://developer.android.com/reference/kotlin/org/json/JSONArray.html">JSONArray</a> of <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> or a single <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> value, or an empty list otherwise. If <a href="opt-strings-from-array-or-single/">remove</a> is true, then the mapping will be removed from the <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.</td>
+</tr>
+<tr>
+<td><a href="put-if-not-empty/">putIfNotEmpty</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="put-if-not-empty/">putIfNotEmpty</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, jsonArray: <a href="https://developer.android.com/reference/kotlin/org/json/JSONArray.html">JSONArray</a>?)<br>Maps <a href="put-if-not-empty/">name</a> to <a href="put-if-not-empty/">jsonArray</a>, clobbering any existing name/value mapping with the same name. If the <a href="https://developer.android.com/reference/kotlin/org/json/JSONArray.html">JSONArray</a> is empty, any existing mapping for <a href="put-if-not-empty/">name</a> is removed.<br>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="put-if-not-empty/">putIfNotEmpty</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, jsonObject: <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>?)<br>Maps <a href="put-if-not-empty/">name</a> to <a href="put-if-not-empty/">jsonObject</a>, clobbering any existing name/value mapping with the same name. If the <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a> is empty, any existing mapping for <a href="put-if-not-empty/">name</a> is removed.<br>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="put-if-not-empty/">putIfNotEmpty</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, jsonable: <a href="../org.readium.r2.shared/-j-s-o-nable/">JSONable</a>?)<br>Maps <a href="put-if-not-empty/">name</a> to <a href="put-if-not-empty/">jsonable</a> after converting it to a <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>, clobbering any existing name/value mapping with the same name. If the <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a> argument is empty, any existing mapping for <a href="put-if-not-empty/">name</a> is removed.</td>
+</tr>
+<tr>
+<td><a href="put-publication/">putPublication</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>.<a href="put-publication/">putPublication</a>(publication: <a href="../org.readium.r2.shared.publication/-publication/">Publication</a>)<br>fun <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>.<a href="put-publication/">putPublication</a>(publication: <a href="../org.readium.r2.shared.publication/-publication/">Publication</a>)</td>
+</tr>
+<tr>
+<td><a href="put-publication-from/">putPublicationFrom</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>.<a href="put-publication-from/">putPublicationFrom</a>(activity: <a href="https://developer.android.com/reference/kotlin/android/app/Activity.html">Activity</a>)<br>fun <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>.<a href="put-publication-from/">putPublicationFrom</a>(activity: <a href="https://developer.android.com/reference/kotlin/android/app/Activity.html">Activity</a>)</td>
+</tr>
+<tr>
+<td><a href="remove-last-component/">removeLastComponent</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/java/net/URL.html">URL</a>.<a href="remove-last-component/">removeLastComponent</a>(): <a href="https://developer.android.com/reference/kotlin/java/net/URL.html">URL</a></td>
+</tr>
+<tr>
+<td><a href="require-length-fit-int/">requireLengthFitInt</a></td>
+<td>[androidJvm]<br>fun <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.ranges/-long-range/index.html">LongRange</a>.<a href="require-length-fit-int/">requireLengthFitInt</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.ranges/-long-range/index.html">LongRange</a></td>
+</tr>
+<tr>
+<td><a href="to-iso8601-string/">toIso8601String</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/java/util/Date.html">Date</a>.<a href="to-iso8601-string/">toIso8601String</a>(timeZone: <a href="https://developer.android.com/reference/kotlin/java/util/TimeZone.html">TimeZone</a> = TimeZone.getTimeZone("UTC")): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="to-list/">toList</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONArray.html">JSONArray</a>.<a href="to-list/">toList</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>&gt;<br>Unwraps recursively the <a href="https://developer.android.com/reference/kotlin/org/json/JSONArray.html">JSONArray</a> to a List.</td>
+</tr>
+<tr>
+<td><a href="to-map/">toMap</a></td>
+<td>[androidJvm]<br>fun <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a>.<a href="to-map/">toMap</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>&gt;<br>Unwraps recursively the <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a> to a Map.</td>
+</tr>
+<tr>
+<td><a href="to-png/">toPng</a></td>
+<td>[androidJvm]<br>suspend fun <a href="https://developer.android.com/reference/kotlin/android/graphics/Bitmap.html">Bitmap</a>.<a href="to-png/">toPng</a>(quality: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 100): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a>?</td>
+</tr>
+<tr>
+<td><a href="try-or/">tryOr</a></td>
+<td>[androidJvm]<br>inline fun &lt;<a href="try-or/">T</a>&gt; <a href="try-or/">tryOr</a>(default: <a href="try-or/">T</a>, closure: () -&gt; <a href="try-or/">T</a>): <a href="try-or/">T</a><br>Returns the result of the given <a href="try-or/">closure</a>, or <a href="try-or/">default</a> if an <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html">Exception</a> was raised.</td>
+</tr>
+<tr>
+<td><a href="try-or-log/">tryOrLog</a></td>
+<td>[androidJvm]<br>inline fun &lt;<a href="try-or-log/">T</a>&gt; <a href="try-or-log/">tryOrLog</a>(closure: () -&gt; <a href="try-or-log/">T</a>): <a href="try-or-log/">T</a>?<br>Returns the result of the given <a href="try-or-log/">closure</a>, or null if an <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html">Exception</a> was raised. The <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html">Exception</a> will be logged.</td>
+</tr>
+<tr>
+<td><a href="try-or-null/">tryOrNull</a></td>
+<td>[androidJvm]<br>inline fun &lt;<a href="try-or-null/">T</a>&gt; <a href="try-or-null/">tryOrNull</a>(closure: () -&gt; <a href="try-or-null/">T</a>): <a href="try-or-null/">T</a>?<br>Returns the result of the given <a href="try-or-null/">closure</a>, or null if an <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html">Exception</a> was raised.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="extension/">extension</a></td>
+<td>[androidJvm]<br>val <a href="https://developer.android.com/reference/kotlin/java/net/URL.html">URL</a>.<a href="extension/">extension</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>Returns the file extension of the URL.</td>
+</tr>
+</tbody>
+</table>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2021 Readium Foundation
+          </div>
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../../../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../../../assets/javascripts/workers/search.8397ff9e.min.js", "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.f89c2efe.min.js"></script>
+      
+    
+  </body>
+</html>

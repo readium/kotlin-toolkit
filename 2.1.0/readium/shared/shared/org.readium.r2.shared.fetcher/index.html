@@ -1,0 +1,556 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.">
+      
+      
+      
+        <meta name="author" content="Readium Foundation">
+      
+      
+        <link rel="canonical" href="https://github.com/readium/kotlin-toolkit/2.1.0/readium/shared/shared/org.readium.r2.shared.fetcher/">
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.3">
+    
+    
+      
+        <title>Index - Readium Kotlin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.5143246d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../../../readium_colors.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL("../../../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#package-orgreadiumr2sharedfetcher" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="Readium Kotlin" class="md-header__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Readium Kotlin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Index
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/readium/kotlin-toolkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="Readium Kotlin" class="md-nav__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Readium Kotlin
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/readium/kotlin-toolkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../migration-guide/" class="md-nav__link">
+        Migration Guide
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        Shared
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../streamer/" class="md-nav__link">
+        Streamer
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../navigator/" class="md-nav__link">
+        Navigator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../opds/" class="md-nav__link">
+        OPDS
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../lcp/" class="md-nav__link">
+        LCP
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    Types
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    Functions
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/readium/kotlin-toolkit/edit/master/docs/readium/shared/shared/org.readium.r2.shared.fetcher/index.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <p>//<a href="../../">shared</a>/<a href="./">org.readium.r2.shared.fetcher</a></p>
+<h1 id="package-orgreadiumr2sharedfetcher">Package org.readium.r2.shared.fetcher<a class="headerlink" href="#package-orgreadiumr2sharedfetcher" title="Permanent link">&para;</a></h1>
+<h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="-archive-fetcher/">ArchiveFetcher</a></td>
+<td>[androidJvm]<br>class <a href="-archive-fetcher/">ArchiveFetcher</a> : <a href="-fetcher/">Fetcher</a><br>Provides access to entries of an archive.</td>
+</tr>
+<tr>
+<td><a href="-base-bytes-resource/">BaseBytesResource</a></td>
+<td>[androidJvm]<br>sealed class <a href="-base-bytes-resource/">BaseBytesResource</a> : <a href="-resource/">Resource</a></td>
+</tr>
+<tr>
+<td><a href="-buffering-resource/">BufferingResource</a></td>
+<td>[androidJvm]<br>class <a href="-buffering-resource/">BufferingResource</a>(resource: <a href="-resource/">Resource</a>, resourceLength: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a>?, bufferSize: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a>) : <a href="-proxy-resource/">ProxyResource</a><br>Wraps a <a href="-resource/">Resource</a> and buffers its content.</td>
+</tr>
+<tr>
+<td><a href="-bytes-resource/">BytesResource</a></td>
+<td>[androidJvm]<br>class <a href="-bytes-resource/">BytesResource</a>(link: <a href="../org.readium.r2.shared.publication/-link/">Link</a>, bytes: suspend () -&gt; <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a>) : <a href="-base-bytes-resource/">BaseBytesResource</a><br>Creates a Resource serving <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a>.</td>
+</tr>
+<tr>
+<td><a href="-default-resource-content-extractor-factory/">DefaultResourceContentExtractorFactory</a></td>
+<td>[androidJvm]<br>class <a href="-default-resource-content-extractor-factory/">DefaultResourceContentExtractorFactory</a> : <a href="-resource-content-extractor/-factory/">ResourceContentExtractor.Factory</a></td>
+</tr>
+<tr>
+<td><a href="-empty-fetcher/">EmptyFetcher</a></td>
+<td>[androidJvm]<br>class <a href="-empty-fetcher/">EmptyFetcher</a> : <a href="-fetcher/">Fetcher</a><br>A <a href="-fetcher/">Fetcher</a> providing no resources at all.</td>
+</tr>
+<tr>
+<td><a href="-failure-resource/">FailureResource</a></td>
+<td>[androidJvm]<br>class <a href="-failure-resource/">FailureResource</a>(link: <a href="../org.readium.r2.shared.publication/-link/">Link</a>, error: <a href="-resource/-exception/">Resource.Exception</a>) : <a href="-resource/">Resource</a><br>Creates a Resource that will always return the given <a href="../../../../readium/shared/org.readium.r2.shared.fetcher/-failure-resource/error.md">error</a>.</td>
+</tr>
+<tr>
+<td><a href="-fetcher/">Fetcher</a></td>
+<td>[androidJvm]<br>interface <a href="-fetcher/">Fetcher</a> : <a href="../org.readium.r2.shared.util/-suspending-closeable/">SuspendingCloseable</a><br>Provides access to a <a href="-resource/">Resource</a> from a <a href="../org.readium.r2.shared.publication/-link/">Link</a>.</td>
+</tr>
+<tr>
+<td><a href="-file-fetcher/">FileFetcher</a></td>
+<td>[androidJvm]<br>class <a href="-file-fetcher/">FileFetcher</a>(paths: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>&gt;) : <a href="-fetcher/">Fetcher</a><br>Provides access to resources on the local file system.</td>
+</tr>
+<tr>
+<td><a href="-html-resource-content-extractor/">HtmlResourceContentExtractor</a></td>
+<td>[androidJvm]<br>class <a href="-html-resource-content-extractor/">HtmlResourceContentExtractor</a> : <a href="-resource-content-extractor/">ResourceContentExtractor</a><br><a href="-resource-content-extractor/">ResourceContentExtractor</a> implementation for HTML resources.</td>
+</tr>
+<tr>
+<td><a href="-http-fetcher/">HttpFetcher</a></td>
+<td>[androidJvm]<br>class <a href="-http-fetcher/">HttpFetcher</a>(client: <a href="../org.readium.r2.shared.util.http/-http-client/">HttpClient</a>, baseUrl: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?) : <a href="-fetcher/">Fetcher</a><br>Fetches remote resources through HTTP.</td>
+</tr>
+<tr>
+<td><a href="-lazy-resource/">LazyResource</a></td>
+<td>[androidJvm]<br>class <a href="-lazy-resource/">LazyResource</a>(factory: suspend () -&gt; <a href="-resource/">Resource</a>) : <a href="-resource/">Resource</a><br>Wraps a <a href="-resource/">Resource</a> which will be created only when first accessing one of its members.</td>
+</tr>
+<tr>
+<td><a href="-proxy-resource/">ProxyResource</a></td>
+<td>[androidJvm]<br>abstract class <a href="-proxy-resource/">ProxyResource</a>(resource: <a href="-resource/">Resource</a>) : <a href="-resource/">Resource</a><br>A base class for a <a href="-resource/">Resource</a> which acts as a proxy to another one.</td>
+</tr>
+<tr>
+<td><a href="-resource/">Resource</a></td>
+<td>[androidJvm]<br>interface <a href="-resource/">Resource</a> : <a href="../org.readium.r2.shared.util/-suspending-closeable/">SuspendingCloseable</a><br>Acts as a proxy to an actual resource by handling read access.</td>
+</tr>
+<tr>
+<td><a href="-resource-content-extractor/">ResourceContentExtractor</a></td>
+<td>[androidJvm]<br>interface <a href="-resource-content-extractor/">ResourceContentExtractor</a><br>Extracts pure content from a marked-up (e.g. HTML) or binary (e.g. PDF) resource.</td>
+</tr>
+<tr>
+<td><a href="-resource-input-stream/">ResourceInputStream</a></td>
+<td>[androidJvm]<br>class <a href="-resource-input-stream/">ResourceInputStream</a>(resource: <a href="-resource/">Resource</a>, range: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.ranges/-long-range/index.html">LongRange</a>?) : <a href="https://developer.android.com/reference/kotlin/java/io/InputStream.html">InputStream</a><br>Input stream reading a <a href="-resource/">Resource</a>'s content.</td>
+</tr>
+<tr>
+<td><a href="./#297627862%2FClasslikes%2F-1314458482">ResourceTransformer</a></td>
+<td>[androidJvm]<br>typealias <a href="./#297627862%2FClasslikes%2F-1314458482">ResourceTransformer</a> = (<a href="-resource/">Resource</a>) -&gt; <a href="-resource/">Resource</a><br>Implements the transformation of a Resource. It can be used, for example, to decrypt, deobfuscate, inject CSS or JavaScript, correct content – e.g. adding a missing dir="rtl" in an HTML document, pre-process – e.g. before indexing a publication's content, etc.<br>If the transformation doesn't apply, simply return resource unchanged.</td>
+</tr>
+<tr>
+<td><a href="./#-1147628428%2FClasslikes%2F-1314458482">ResourceTry</a></td>
+<td>[androidJvm]<br>typealias <a href="./#-1147628428%2FClasslikes%2F-1314458482">ResourceTry</a>&lt;<a href="./#-1147628428%2FClasslikes%2F-1314458482">SuccessT</a>&gt; = <a href="../org.readium.r2.shared.util/-try/">Try</a>&lt;<a href="./#-1147628428%2FClasslikes%2F-1314458482">SuccessT</a>, <a href="-resource/-exception/">Resource.Exception</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="-routing-fetcher/">RoutingFetcher</a></td>
+<td>[androidJvm]<br>class <a href="-routing-fetcher/">RoutingFetcher</a>(routes: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="-routing-fetcher/-route/">RoutingFetcher.Route</a>&gt;) : <a href="-fetcher/">Fetcher</a><br>Routes requests to child fetchers, depending on a provided predicate.</td>
+</tr>
+<tr>
+<td><a href="-string-resource/">StringResource</a></td>
+<td>[androidJvm]<br>class <a href="-string-resource/">StringResource</a>(link: <a href="../org.readium.r2.shared.publication/-link/">Link</a>, string: suspend () -&gt; <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>) : <a href="-base-bytes-resource/">BaseBytesResource</a><br>Creates a Resource serving a <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>.</td>
+</tr>
+<tr>
+<td><a href="-transforming-fetcher/">TransformingFetcher</a></td>
+<td>[androidJvm]<br>class <a href="-transforming-fetcher/">TransformingFetcher</a>(fetcher: <a href="-fetcher/">Fetcher</a>, transformers: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="./#297627862%2FClasslikes%2F-1314458482">ResourceTransformer</a>&gt;) : <a href="-fetcher/">Fetcher</a><br>Transforms the resources' content of a child fetcher using a list of <a href="./#297627862%2FClasslikes%2F-1314458482">ResourceTransformer</a> functions.</td>
+</tr>
+<tr>
+<td><a href="-transforming-resource/">TransformingResource</a></td>
+<td>[androidJvm]<br>abstract class <a href="-transforming-resource/">TransformingResource</a>(resource: <a href="-resource/">Resource</a>, cacheBytes: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>) : <a href="-proxy-resource/">ProxyResource</a><br>Transforms the bytes of <a href="../../../../readium/shared/org.readium.r2.shared.fetcher/-transforming-resource/resource.md">resource</a> on-the-fly.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="buffered/">buffered</a></td>
+<td>[androidJvm]<br>fun <a href="-resource/">Resource</a>.<a href="buffered/">buffered</a>(resourceLength: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a>? = null, size: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a> = BufferingResource.DEFAULT_BUFFER_SIZE): <a href="-buffering-resource/">BufferingResource</a><br>Wraps this resource in a <a href="-buffering-resource/">BufferingResource</a> to improve reading performances.</td>
+</tr>
+<tr>
+<td><a href="flat-map-catching/">flatMapCatching</a></td>
+<td>[androidJvm]<br>inline fun &lt;<a href="flat-map-catching/">R</a>, <a href="flat-map-catching/">S</a>&gt; <a href="./#-1147628428%2FClasslikes%2F-1314458482">ResourceTry</a>&lt;<a href="flat-map-catching/">S</a>&gt;.<a href="flat-map-catching/">flatMapCatching</a>(transform: (<a href="flat-map-catching/">S</a>) -&gt; <a href="./#-1147628428%2FClasslikes%2F-1314458482">ResourceTry</a>&lt;<a href="flat-map-catching/">R</a>&gt;): <a href="./#-1147628428%2FClasslikes%2F-1314458482">ResourceTry</a>&lt;<a href="flat-map-catching/">R</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="map-catching/">mapCatching</a></td>
+<td>[androidJvm]<br>inline fun &lt;<a href="map-catching/">R</a>, <a href="map-catching/">S</a>&gt; <a href="./#-1147628428%2FClasslikes%2F-1314458482">ResourceTry</a>&lt;<a href="map-catching/">S</a>&gt;.<a href="map-catching/">mapCatching</a>(transform: (<a href="map-catching/">S</a>) -&gt; <a href="map-catching/">R</a>): <a href="./#-1147628428%2FClasslikes%2F-1314458482">ResourceTry</a>&lt;<a href="map-catching/">R</a>&gt;<br>Maps the result with the given <a href="map-catching/">transform</a></td>
+</tr>
+</tbody>
+</table>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2021 Readium Foundation
+          </div>
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../../../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../../../assets/javascripts/workers/search.8397ff9e.min.js", "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.f89c2efe.min.js"></script>
+      
+    
+  </body>
+</html>
