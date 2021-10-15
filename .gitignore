@@ -73,3 +73,6 @@ lint/reports/
 
 # Android Profiling
 *.hprof
+
+# Docs
+docs/readium
