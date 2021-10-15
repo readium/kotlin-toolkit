@@ -8,7 +8,7 @@ help:
 	"
 
 install:
-	yarn --cwd "$(SCRIPTS_PATH)" install
+	yarn --cwd "$(SCRIPTS_PATH)" install --frozen-lockfile
 
 scripts:
 	yarn --cwd "$(SCRIPTS_PATH)" run format
