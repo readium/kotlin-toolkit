@@ -1,6 +1,7 @@
-name: Build and deploy MkDocs to GitHub Pages
+name: Update documentation
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -9,7 +10,7 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout dokka
+      - name: Checkout
         uses: actions/checkout@v2
 
       - name: Set up Python
