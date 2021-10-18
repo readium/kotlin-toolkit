@@ -1,73 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
 
-        <import type="android.view.View" />
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-        <variable
-            name="publication"
-            type="org.readium.r2.shared.publication.Publication" />
-
-        <variable
-            name="viewModel"
-            type="org.readium.r2.testapp.catalogs.CatalogViewModel" />
-
-    </data>
-
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-        <androidx.core.widget.NestedScrollView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fillViewport="true">
+            android:orientation="vertical"
+            android:padding="10dp"
+            tools:context=".catalogs.PublicationDetailFragment">
 
-            <LinearLayout
+            <ImageView
+                android:id="@+id/catalogDetail_coverImage"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="10dp"
-                tools:context=".catalogs.PublicationDetailFragment">
+                android:layout_height="400dp"
+                android:contentDescription="@string/cover_image" />
 
-                <ImageView
-                    android:id="@+id/catalogDetail_coverImage"
-                    android:layout_width="match_parent"
-                    android:layout_height="400dp"
-                    android:contentDescription="@{@string/publication_image_description(publication.metadata.title)}" />
+            <TextView
+                android:id="@+id/catalogDetail_titleText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="24sp" />
 
-                <TextView
-                    android:id="@+id/catalogDetail_titleText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@{publication.metadata.title}"
-                    android:textSize="24sp" />
+            <TextView
+                android:id="@+id/catalogDetail_descriptionText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-                <TextView
-                    android:id="@+id/catalogDetail_descriptionText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@{publication.metadata.description}" />
+            <Button
+                android:id="@+id/catalogDetail_downloadButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/catalog_detail_download_button" />
+        </LinearLayout>
 
-                <Button
-                    android:id="@+id/catalogDetail_downloadButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/catalog_detail_download_button" />
-            </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-        </androidx.core.widget.NestedScrollView>
-
-        <ProgressBar
-            android:id="@+id/catalogDetail_progressBar"
-            style="?android:attr/progressBarStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="@color/white"
-            android:visibility="@{viewModel.showProgressBar ? View.VISIBLE : View.GONE}" />
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-</layout>
+    <ProgressBar
+        android:id="@+id/catalogDetail_progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@color/white"
+        android:visibility="gone" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

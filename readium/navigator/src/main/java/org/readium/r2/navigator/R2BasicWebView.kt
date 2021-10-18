@@ -206,7 +206,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-
     /**
      * Called from the JS code when a tap is detected.
      * If the JS indicates the tap is being handled within the web view, don't take action,
@@ -416,10 +415,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     fun setProperty(key: String, value: String) {
-        runJavaScript("readium.setProperty(\"$key\", \"$value\");") {
-            // Used to redraw highlights when user settings changed.
-            listener.onPageLoaded()
-        }
+        runJavaScript("readium.setProperty(\"$key\", \"$value\");")
     }
 
     fun removeProperty(key: String) {
