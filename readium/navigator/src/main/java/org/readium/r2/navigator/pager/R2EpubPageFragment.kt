@@ -135,9 +135,7 @@ class R2EpubPageFragment : Fragment() {
                 // To make sure the page is properly laid out before jumping to the target locator,
                 // we execute a dummy JavaScript and wait for the callback result.
                 webView.evaluateJavascript("true") {
-                    viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-                        onLoadPage()
-                    }
+                    onLoadPage()
                 }
             }
 
@@ -274,29 +272,30 @@ class R2EpubPageFragment : Fragment() {
         return tag == currentFragment.tag
     }
 
-    private suspend fun onLoadPage() {
+    private fun onLoadPage() {
         if (!isLoading) return
         isLoading = false
 
-        val webView = requireNotNull(webView)
-        webView.visibility = View.VISIBLE
+        if (view == null) return
 
-        if (isCurrentResource) {
-            val epubNavigator = requireNotNull(webView.navigator as? EpubNavigatorFragment)
-            val locator = epubNavigator.pendingLocator
-            epubNavigator.pendingLocator = null
-            if (locator != null) {
-                loadLocator(locator)
+        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+            val webView = requireNotNull(webView)
+            webView.visibility = View.VISIBLE
+
+            if (isCurrentResource) {
+                val epubNavigator = requireNotNull(webView.navigator as? EpubNavigatorFragment)
+                val locator = epubNavigator.pendingLocator
+                epubNavigator.pendingLocator = null
+                if (locator != null) {
+                    loadLocator(webView, epubNavigator.readingProgression, locator)
+                }
+
+                webView.listener.onPageLoaded()
             }
-
-            webView.listener.onPageLoaded()
         }
     }
 
-    private suspend fun loadLocator(locator: Locator) {
-        val webView = requireNotNull(webView)
-        val epubNavigator = requireNotNull(webView.navigator as? EpubNavigatorFragment)
-
+    private suspend fun loadLocator(webView: R2WebView, readingProgression: ReadingProgression, locator: Locator) {
         val text = locator.text
         if (text.highlight != null) {
             if (webView.scrollToText(text)) {
@@ -314,7 +313,7 @@ class R2EpubPageFragment : Fragment() {
             // We need to reverse the progression with RTL because the Web View
             // always scrolls from left to right, no matter the reading direction.
             progression =
-                if (webView.scrollMode || epubNavigator.readingProgression == ReadingProgression.LTR) progression
+                if (webView.scrollMode || readingProgression == ReadingProgression.LTR) progression
                 else 1 - progression
 
             if (webView.scrollMode) {
@@ -324,7 +323,7 @@ class R2EpubPageFragment : Fragment() {
                 // Figure out the target web view "page" from the requested
                 // progression.
                 var item = (progression * webView.numPages).roundToInt()
-                if (epubNavigator.readingProgression == ReadingProgression.RTL && item > 0) {
+                if (readingProgression == ReadingProgression.RTL && item > 0) {
                     item -= 1
                 }
                 webView.setCurrentItem(item, false)
