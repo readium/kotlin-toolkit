@@ -28,6 +28,7 @@ import org.readium.r2.navigator.databinding.FragmentFxllayoutSingleBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
+import org.readium.r2.shared.publication.Link
 
 class R2FXLPageFragment : Fragment() {
 
@@ -136,7 +137,9 @@ class R2FXLPageFragment : Fragment() {
         webView.webViewClient = object : WebViewClientCompat() {
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
-                (webView as? R2BasicWebView)?.shouldOverrideUrlLoading(request) ?: false
+                (webView as? R2BasicWebView)?.shouldOverrideUrlLoading(request) {
+                    navigator.go(Link(it))
+                } ?: false
 
             // prevent favicon.ico to be loaded, this was causing NullPointerException in NanoHttp
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {

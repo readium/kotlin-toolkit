@@ -475,7 +475,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
      * Prevents opening external links in the web view.
      * To be called from the WebViewClient implementation attached to the web view.
      */
-    internal fun shouldOverrideUrlLoading(request: WebResourceRequest): Boolean {
+    internal fun shouldOverrideUrlLoading(
+        request: WebResourceRequest,
+        onInternalLinkClick: (url: String) -> Unit = {}
+    ): Boolean {
         val resourceUrl = url ?: return false
 
         // List of hosts that are allowed to be loaded in the web view.
@@ -488,7 +491,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             openExternalLink(request.url)
             return true
         }
-
+        onInternalLinkClick(
+            // Drop the UUID of the publication and keep only the href needed for navigation
+            request.url.pathSegments.drop(1).joinToString("/", "/")
+        )
         return false
     }
 

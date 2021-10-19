@@ -120,7 +120,9 @@ class R2EpubPageFragment : Fragment() {
         webView.webViewClient = object : WebViewClientCompat() {
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
-                (webView as? R2BasicWebView)?.shouldOverrideUrlLoading(request) ?: false
+                (webView as? R2BasicWebView)?.shouldOverrideUrlLoading(request) {
+                    navigatorFragment.go(Link(it))
+                } ?: false
 
             override fun shouldOverrideKeyEvent(view: WebView, event: KeyEvent): Boolean {
                 // Do something with the event here
