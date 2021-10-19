@@ -22,10 +22,14 @@ import com.github.barteksc.pdfviewer.PDFView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
+import org.readium.r2.navigator.presentation.Presentation
+import org.readium.r2.navigator.presentation.PresentationKey
+import org.readium.r2.navigator.presentation.PresentationSettings
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
@@ -33,7 +37,6 @@ import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.use
 import timber.log.Timber
-import java.util.*
 
 /**
  * Navigator for PDF publications.
@@ -43,8 +46,9 @@ import java.util.*
 @OptIn(ExperimentalCoroutinesApi::class)
 class PdfNavigatorFragment internal constructor(
     override val publication: Publication,
-    private val initialLocator: Locator? = null,
-    private val listener: Listener? = null
+    private val initialLocator: Locator?,
+    private val listener: Listener?,
+    settings: PresentationSettings,
 ) : Fragment(), VisualNavigator {
 
     interface Listener : VisualNavigator.Listener {
@@ -99,10 +103,10 @@ class PdfNavigatorFragment internal constructor(
         outState.putParcelable(KEY_LOCATOR, _currentLocator.value)
     }
 
-    private fun goToHref(href: String, page: Int, animated: Boolean = false, completion: () -> Unit = {}): Boolean {
+    private fun goToHref(href: String, page: Int, animated: Boolean, forceReload: Boolean, completion: () -> Unit = {}): Boolean {
         val link = publication.linkWithHref(href) ?: return false
 
-        if (currentHref == href) {
+        if (currentHref == href && !forceReload) {
             pdfView.jumpTo(page, animated)
             completion()
 
@@ -159,7 +163,7 @@ class PdfNavigatorFragment internal constructor(
 
         return true
     }
-    
+
     private fun pageNumberToIndex(page: Int): Int {
         var index = (page - 1).coerceAtLeast(0)
         if (isPagesOrderReversed) {
@@ -185,11 +189,11 @@ class PdfNavigatorFragment internal constructor(
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         // FIXME: `position` is relative to the full publication, which would cause an issue for a publication containing several PDFs resources. Only publications with a single PDF resource are supported at the moment, so we're fine.
         val pageNumber = locator.locations.page ?: locator.locations.position ?: 1
-        return goToHref(locator.href, pageNumberToIndex(pageNumber), animated, completion)
+        return goToHref(locator.href, pageNumberToIndex(pageNumber), animated, forceReload = false, completion)
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean =
-        goToHref(link.href, pageNumberToIndex(1), animated, completion)
+        goToHref(link.href, pageNumberToIndex(1), animated, forceReload = false, completion)
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
         val page = pageIndexToNumber(pdfView.currentPage)
@@ -209,19 +213,48 @@ class PdfNavigatorFragment internal constructor(
         return true
     }
 
+    private var _presentation = MutableStateFlow(presentationFromSettings(settings))
+    override val presentation: StateFlow<Presentation> get() = _presentation.asStateFlow()
+
+    override fun applySettings(settings: PresentationSettings) {
+        val page = pageIndexToNumber(pdfView.currentPage)
+        _presentation.value = presentationFromSettings(settings)
+
+        currentHref?.let { href ->
+            goToHref(href, page = pageNumberToIndex(page), animated = false, forceReload = true)
+        }
+    }
+
+    private fun presentationFromSettings(settings: PresentationSettings): Presentation {
+        val supportedReadingProgressions = listOf(
+            ReadingProgression.LTR, ReadingProgression.RTL,
+            ReadingProgression.TTB, ReadingProgression.BTT,
+        )
+        return Presentation(
+//            PresentationKey.CONTINUOUS to Presentation.ToggleProperty( settings.continuous ?: true ),
+            PresentationKey.READING_PROGRESSION to Presentation.StringProperty(
+                ReadingProgression,
+                value = settings.readingProgression?.takeIf { supportedReadingProgressions.contains(it) }
+                    ?: publication.metadata.readingProgression.takeIf { supportedReadingProgressions.contains(it) }
+                    ?: ReadingProgression.TTB,
+                supportedValues = supportedReadingProgressions,
+                labelForValue = { c, v -> TODO("Localized label for reading progression") }
+            )
+        )
+    }
+
 
     // VisualNavigator
 
-    override val readingProgression: ReadingProgression =
-        publication.metadata.readingProgression.takeIf { it != ReadingProgression.AUTO }
-            ?: ReadingProgression.TTB
+    override val readingProgression: ReadingProgression get() =
+        (presentation.value.readingProgression?.value ?: ReadingProgression.TTB)
 
     /**
      * Indicates whether the order of the [PDFView] pages is reversed to take into account
      * right-to-left and bottom-to-top reading progressions.
      */
-    private val isPagesOrderReversed: Boolean =
-        readingProgression == ReadingProgression.RTL || readingProgression == ReadingProgression.BTT
+    private val isPagesOrderReversed: Boolean get() =
+        (readingProgression == ReadingProgression.RTL || readingProgression == ReadingProgression.BTT)
 
 
     // [PDFView] Listeners
@@ -249,8 +282,13 @@ class PdfNavigatorFragment internal constructor(
          *        Can be used to restore the last reading location.
          * @param listener Optional listener to implement to observe events, such as user taps.
          */
-        fun createFactory(publication: Publication, initialLocator: Locator? = null, listener: Listener? = null): FragmentFactory =
-            createFragmentFactory { PdfNavigatorFragment(publication, initialLocator, listener) }
+        fun createFactory(
+            publication: Publication,
+            initialLocator: Locator? = null,
+            listener: Listener? = null,
+            settings: PresentationSettings = PresentationSettings(),
+        ): FragmentFactory =
+            createFragmentFactory { PdfNavigatorFragment(publication, initialLocator, listener, settings) }
 
     }
 

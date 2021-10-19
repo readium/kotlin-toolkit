@@ -89,7 +89,7 @@ interface Navigator {
      * some of the provided settings. They are only used as guidelines to compute the Presentation
      * Properties.
      */
-    fun apply(settings: PresentationSettings) {}
+    fun applySettings(settings: PresentationSettings) {}
 
     interface Listener
 

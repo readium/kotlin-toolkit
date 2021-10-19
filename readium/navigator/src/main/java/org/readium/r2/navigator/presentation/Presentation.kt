@@ -1,6 +1,8 @@
 package org.readium.r2.navigator.presentation
 
+import android.content.Context
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.Try
 
 data class PresentationKey(val key: String) {
@@ -19,20 +21,26 @@ data class PresentationKey(val key: String) {
 data class Presentation(
     val properties: Map<PresentationKey, Property<*>?> = emptyMap()
 ) {
+
+    constructor(vararg properties: Pair<PresentationKey, Property<*>?>) : this(mapOf(*properties))
+
     val continuous: ToggleProperty? get() =
         properties[PresentationKey.CONTINUOUS] as? ToggleProperty
 
     val readingProgression: EnumProperty<ReadingProgression>? get() =
-        properties[PresentationKey.READING_PROGRESSION] as? EnumProperty<ReadingProgression>
+        (properties[PresentationKey.READING_PROGRESSION] as? StringProperty)
+            ?.let { EnumProperty(ReadingProgression, it, ReadingProgression.default) }
 
     /**
      * Holds the current value and the metadata of a Presentation Property of type [T].
+     *
+     * @param value Current value for the property.
      */
-    interface Property<T> {
-        /**
-         * Current value for the property.
-         */
-        val value: T
+    sealed class Property<T>(
+        val value: T,
+        private val isActiveForSettings: (PresentationSettings) -> Boolean,
+        private val activateInSettings: (settings: PresentationSettings) -> Try<PresentationSettings, Exception>,
+    ) {
 
         /**
          * Determines whether the property will be active when the given settings are applied to the
@@ -43,7 +51,8 @@ data class Presentation(
          *
          * This is useful to determine whether to grey out a view in the user settings interface.
          */
-        fun isActiveForSettings(settings: PresentationSettings): Boolean
+        fun isActiveForSettings(settings: PresentationSettings): Boolean =
+            isActiveForSettings.invoke(settings)
 
         /**
          * Modifies the given settings to make sure the property will be activated when applying them to
@@ -54,7 +63,8 @@ data class Presentation(
          *
          * If the property cannot be activated, returns a user-facing localized error.
          */
-        fun activateInSettings(settings: PresentationSettings): Try<PresentationSettings, Exception>
+        fun activateInSettings(settings: PresentationSettings): Try<PresentationSettings, Exception> =
+            activateInSettings.invoke(settings)
     }
 
     /**
@@ -65,7 +75,7 @@ data class Presentation(
         value: Boolean,
         isActiveForSettings: (PresentationSettings) -> Boolean = { true },
         activateInSettings: (settings: PresentationSettings) -> Try<PresentationSettings, Exception> = { Try.Success(it) }
-    ) : BaseProperty<Boolean>(value, isActiveForSettings, activateInSettings)
+    ) : Property<Boolean>(value, isActiveForSettings, activateInSettings)
 
     /**
      * Property representable as a dropdown menu or radio buttons group in the user interface. For
@@ -79,8 +89,8 @@ data class Presentation(
         val supportedValues: List<String>?,
         isActiveForSettings: (PresentationSettings) -> Boolean = { true },
         activateInSettings: (settings: PresentationSettings) -> Try<PresentationSettings, Exception> = { Try.success(it) },
-        private val labelForValue: (String) -> String = { it },
-    ) : BaseProperty<String>(value, isActiveForSettings, activateInSettings) {
+        private val labelForValue: (Context, String) -> String = { _, v -> v },
+    ) : Property<String>(value, isActiveForSettings, activateInSettings) {
 
         /**
          * Returns a user-facing localized label for the given value, which can be used in the user
@@ -89,45 +99,49 @@ data class Presentation(
          * For example, with the "reading progression" property, the value ltr has for label "Left to
          * right" in English.
          */
-        fun labelForValue(value: String): String =
-            labelForValue.invoke(value)
+        fun labelForValue(context: Context, value: String): String =
+            labelForValue.invoke(context, value)
+
+        companion object {
+            operator fun <T : Enum<T>> invoke(
+                mapper: MapCompanion<String, T>,
+                value: T,
+                supportedValues: List<T>,
+                isActiveForSettings: (PresentationSettings) -> Boolean = { true },
+                activateInSettings: (settings: PresentationSettings) -> Try<PresentationSettings, Exception> = { Try.success(it) },
+                labelForValue: (Context, T) -> String = { _, v -> v.name },
+            ): StringProperty =
+                StringProperty(
+                    mapper.getKey(value),
+                    supportedValues = supportedValues.map { mapper.getKey(it) },
+                    isActiveForSettings = isActiveForSettings,
+                    activateInSettings = activateInSettings,
+                    labelForValue = { c, v ->
+                        mapper.get(v)?.let { labelForValue(c, it) } ?: v
+                    }
+                )
+        }
     }
 
-    /**
-     * Property representable as a dropdown menu or radio buttons group in the user interface. For
-     * example, "reading progression" or "font family".
-     */
     class EnumProperty<T : Enum<T>>(
-        value: T,
-        isActiveForSettings: (PresentationSettings) -> Boolean = { true },
-        activateInSettings: (settings: PresentationSettings) -> Try<PresentationSettings, Exception> = { Try.success(it) },
-        private val labelForValue: (T) -> String = { it.name },
-    ) : BaseProperty<T>(
-        value,
-        isActiveForSettings, activateInSettings
+        private val mapper: MapCompanion<String, T>,
+        private val stringProperty: StringProperty,
+        private val defaultValue: T,
     ) {
-        /**
-         * Returns a user-facing localized label for the given value, which can be used in the user
-         * interface.
-         *
-         * For example, with the "reading progression" property, the value ltr has for label "Left to
-         * right" in English.
-         */
-        fun labelForValue(value: T): String =
-            labelForValue.invoke(value)
-    }
 
-    abstract class BaseProperty<T>(
-        override val value: T,
-        private val isActiveForSettings: (PresentationSettings) -> Boolean,
-        private val activateInSettings: (settings: PresentationSettings) -> Try<PresentationSettings, Exception>,
-    ) : Property<T> {
+        val value: T get() = mapper.get(stringProperty.value) ?: defaultValue
 
-        override fun isActiveForSettings(settings: PresentationSettings): Boolean =
-            isActiveForSettings.invoke(settings)
+        val supportedValues: List<T>? = stringProperty.supportedValues
+            ?.mapNotNull { mapper.get(it) }
 
-        override fun activateInSettings(settings: PresentationSettings): Try<PresentationSettings, Exception> =
-            activateInSettings.invoke(settings)
+        fun isActiveForSettings(settings: PresentationSettings): Boolean =
+            stringProperty.isActiveForSettings(settings)
+
+        fun activateInSettings(settings: PresentationSettings): Try<PresentationSettings, Exception> =
+            stringProperty.activateInSettings(settings)
+
+        fun labelForValue(context: Context, value: T): String =
+            stringProperty.labelForValue(context, mapper.getKey(value))
     }
 }
 
@@ -136,11 +150,15 @@ data class Presentation(
  * Properties. The keys must be valid Presentation Property Keys.
  */
 data class PresentationSettings(val settings: Map<PresentationKey, Any?> = emptyMap()) {
+
+    constructor(vararg settings: Pair<PresentationKey, Any?>) : this(mapOf(*settings))
+
     val continuous: Boolean?
         get() = settings[PresentationKey.CONTINUOUS] as? Boolean
 
     val readingProgression: ReadingProgression?
-        get() = settings[PresentationKey.READING_PROGRESSION] as? ReadingProgression
+        get() = (settings[PresentationKey.READING_PROGRESSION] as? String)
+            ?.let { ReadingProgression.get(it) }
 
     /**
      * Returns a copy of this object after modifying the settings in the given closure.

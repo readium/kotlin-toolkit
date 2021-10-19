@@ -26,7 +26,7 @@ package org.readium.r2.shared.util
  */
 open class MapCompanion<K, E>(
     protected val map: Map<K, E>,
-    private val keySelector: ((E) -> K)? = null
+    private val keySelector: (E) -> K
 ) {
 
     constructor(elements: Array<E>, keySelector: (E) -> K):
@@ -48,13 +48,9 @@ open class MapCompanion<K, E>(
         key?.let { map[key] }
 
     /**
-     * Returns the key matching the given [element], or null if not found.
+     * Returns the key matching the given [element].
      */
-    open fun getKey(element: E?): K?  {
-        element ?: return null
-        return keySelector?.invoke(element)
-            ?: map.filterValues { it == element }.keys.firstOrNull()
-    }
+    open fun getKey(element: E): K = keySelector(element)
 
     /**
      * Alias to [get], to be used like `keyMapper("a_key")`.
@@ -69,10 +65,10 @@ open class MapCompanion<K, E>(
 /**
  * Extends a [MapCompanion] by adding a [default] value as a fallback.
  */
-open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, val default: E) : MapCompanion<K, E>(map) {
+open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, keySelector: (E) -> K, val default: E) : MapCompanion<K, E>(map, keySelector) {
 
     constructor(elements: Array<E>, keySelector: (E) -> K, default: E):
-        this(elements.associateBy(keySelector), default)
+        this(elements.associateBy(keySelector), keySelector, default)
 
     /**
      * Returns the element matching the [key], or the [default] value as a fallback.

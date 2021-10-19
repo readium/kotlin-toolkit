@@ -1,5 +1,6 @@
 package org.readium.r2.navigator.presentation
 
+import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -16,8 +17,8 @@ import org.readium.r2.shared.util.getOrDefault
 @OptIn(ExperimentalCoroutinesApi::class)
 class PresentationController(
     val navigator: Navigator,
-    val appSettings: PresentationSettings,
-    userSettings: PresentationSettings,
+    val appSettings: PresentationSettings = PresentationSettings(),
+    userSettings: PresentationSettings = PresentationSettings(),
 ) {
     private val _userSettings = MutableStateFlow(userSettings)
     val userSettings: StateFlow<PresentationSettings>
@@ -57,7 +58,7 @@ class PresentationController(
                         supportedValues = property?.supportedValues,
                         isAvailable = property != null,
                         isActive = property?.isActiveForSettings(userSettings) ?: false,
-                        labelForValue = { property?.labelForValue(it) ?: it }
+                        labelForValue = { c, v -> property?.labelForValue(c, v) ?: v }
                     )
                 }
 
@@ -75,8 +76,9 @@ class PresentationController(
     /**
      * Applies the current set of [userSettings] to the Navigator.
      */
-    fun apply() {
-        navigator.apply(appSettings.merge(userSettings.value))
+    fun commit(changes: PresentationController.() -> Unit = {}) {
+        changes()
+        navigator.applySettings(appSettings.merge(userSettings.value))
     }
 
     /**
@@ -95,7 +97,7 @@ class PresentationController(
             if (value == null) {
                 remove(setting.key)
             } else {
-                set(setting.key, value)
+                set(setting.key, setting.toJson(value))
             }
         }
 
@@ -123,32 +125,28 @@ class PresentationController(
 
         val readingProgression: EnumSetting<ReadingProgression>? get() =
             (properties[PresentationKey.READING_PROGRESSION] as? StringSetting)
-                ?.let { EnumSetting(it, ReadingProgression) }
+                ?.let { EnumSetting(ReadingProgression, it) }
     }
 
     /**
      * Holds the current value and the metadata of a Presentation Setting of type [T].
+     *
+     * @param key Presentation Key for this setting.
+     * @param value Current value for the property.
+     * @param isAvailable Indicates whether the Presentation Setting is available for the [navigator].
+     * @param isActive Indicates whether the Presentation Setting is active for the current set of
+     *        [userSettings].
      */
-    interface Setting<T> {
+    sealed class Setting<T>(
+        val key: PresentationKey,
+        val value: T,
+        val isAvailable: Boolean,
+        val isActive: Boolean,
+    ) {
         /**
-         * Presentation Key for this setting.
+         * Serializes the given value to its JSON type.
          */
-        val key: PresentationKey
-
-        /**
-         * Current value for the property.
-         */
-        val value: T
-
-        /**
-         * Indicates whether the Presentation Setting is available for the [navigator].
-         */
-        val isAvailable: Boolean
-
-        /**
-         * Indicates whether the Presentation Setting is active for the current set of [userSettings].
-         */
-        val isActive: Boolean
+        open fun toJson(value: T): Any = value as Any
     }
 
     class ToggleSetting(
@@ -156,7 +154,7 @@ class PresentationController(
         value: Boolean,
         isAvailable: Boolean,
         isActive: Boolean,
-    ) : BaseSetting<Boolean>(key, value, isAvailable = isAvailable, isActive = isActive)
+    ) : Setting<Boolean>(key, value, isAvailable = isAvailable, isActive = isActive)
 
     class StringSetting(
         key: PresentationKey,
@@ -164,8 +162,8 @@ class PresentationController(
         val supportedValues: List<String>?,
         isAvailable: Boolean,
         isActive: Boolean,
-        private val labelForValue: (String) -> String
-    ) : BaseSetting<String>(key, value, isAvailable = isAvailable, isActive = isActive) {
+        private val labelForValue: (Context, String) -> String
+    ) : Setting<String>(key, value, isAvailable = isAvailable, isActive = isActive) {
 
         /**
          * Returns a user-facing localized label for the given value, which can be used in the user
@@ -174,14 +172,17 @@ class PresentationController(
          * For example, with the "reading progression" property, the value ltr has for label "Left to
          * right" in English.
          */
-        fun labelForValue(value: String): String =
-            labelForValue.invoke(value)
+        fun labelForValue(context: Context, value: String): String =
+            labelForValue.invoke(context, value)
     }
 
     class EnumSetting<T : Enum<T>>(
-        private val stringSetting: StringSetting,
         private val mapper: MapCompanion<String, T>,
-    ) : BaseSetting<T?>(stringSetting.key, mapper.get(stringSetting.value), isAvailable = stringSetting.isAvailable, isActive = stringSetting.isActive) {
+        private val stringSetting: StringSetting,
+    ) : Setting<T?>(stringSetting.key, mapper.get(stringSetting.value), isAvailable = stringSetting.isAvailable, isActive = stringSetting.isActive) {
+
+        override fun toJson(value: T?): Any =
+            value?.let { stringSetting.toJson(mapper.getKey(it)) } as Any
 
         val supportedValues: List<T>? = stringSetting.supportedValues
             ?.mapNotNull { mapper.get(it) }
@@ -194,14 +195,7 @@ class PresentationController(
          * For example, with the "reading progression" property, the value ltr has for label "Left to
          * right" in English.
          */
-        fun labelForValue(value: T): String =
-            stringSetting.labelForValue(mapper.getKey(value) ?: value.name)
+        fun labelForValue(context: Context, value: T): String =
+            stringSetting.labelForValue(context, mapper.getKey(value))
     }
-
-    abstract class BaseSetting<T>(
-        override val key: PresentationKey,
-        override val value: T,
-        override val isAvailable: Boolean,
-        override val isActive: Boolean
-    ) : Setting<T>
 }

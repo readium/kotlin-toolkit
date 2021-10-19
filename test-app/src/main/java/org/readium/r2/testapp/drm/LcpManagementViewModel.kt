@@ -24,7 +24,7 @@ class LcpManagementViewModel(
         private val renewListener: LcpLicense.RenewListener,
     ) : ViewModelProvider.NewInstanceFactory() {
 
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T =
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
             modelClass.getDeclaredConstructor(LcpLicense::class.java, LcpLicense.RenewListener::class.java)
                 .newInstance(lcpLicense, renewListener)
     }
