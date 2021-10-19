@@ -18,16 +18,19 @@ package org.readium.r2.shared.util
  *     PAGINATED("paginated"),
  *     REFLOWABLE("reflowable");
  *
- *     companion object : KeyMapper<String, Layout>(values(), Layout::value)
+ *     companion object : MapCompanion<String, Layout>(values(), Layout::value)
  * }
  *
  * val layout: Layout? = Layout("reflowable")
  * ```
  */
-open class MapCompanion<K, E>(protected val map: Map<K, E>) {
+open class MapCompanion<K, E>(
+    protected val map: Map<K, E>,
+    private val keySelector: ((E) -> K)? = null
+) {
 
     constructor(elements: Array<E>, keySelector: (E) -> K):
-        this(elements.associateBy(keySelector))
+        this(elements.associateBy(keySelector), keySelector)
 
     /**
      * Returns the available [keys].
@@ -36,13 +39,22 @@ open class MapCompanion<K, E>(protected val map: Map<K, E>) {
         get() = map.keys
 
     /**
-     * Returns the element matching the [key], or [null] if not found.
+     * Returns the element matching the [key], or null if not found.
      *
-     * To be overriden in subclasses if custom retrieval is needed – for example, testing lowercase
+     * To be overridden in subclasses if custom retrieval is needed – for example, testing lowercase
      * keys.
      */
     open fun get(key: K?): E? =
         key?.let { map[key] }
+
+    /**
+     * Returns the key matching the given [element], or null if not found.
+     */
+    open fun getKey(element: E?): K?  {
+        element ?: return null
+        return keySelector?.invoke(element)
+            ?: map.filterValues { it == element }.keys.firstOrNull()
+    }
 
     /**
      * Alias to [get], to be used like `keyMapper("a_key")`.

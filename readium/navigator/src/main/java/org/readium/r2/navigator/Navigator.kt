@@ -9,8 +9,12 @@ package org.readium.r2.navigator
 import android.graphics.PointF
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.readium.r2.navigator.media.MediaPlayback
+import org.readium.r2.navigator.presentation.Presentation
+import org.readium.r2.navigator.presentation.PresentationSettings
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -71,6 +75,21 @@ interface Navigator {
      * Moves to the previous content portion (eg. page) in the reading progression direction.
      */
     fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+
+    /**
+     * Current values for the Presentation Properties and their metadata.
+     */
+    val presentation: StateFlow<Presentation> get() = MutableStateFlow(Presentation()).asStateFlow()
+
+    /**
+     * Submits a new set of Presentation Settings used by the Navigator to recompute its
+     * Presentation Properties.
+     *
+     * Note that the Navigator might not update its presentation right away, or might even ignore
+     * some of the provided settings. They are only used as guidelines to compute the Presentation
+     * Properties.
+     */
+    fun apply(settings: PresentationSettings) {}
 
     interface Listener
 

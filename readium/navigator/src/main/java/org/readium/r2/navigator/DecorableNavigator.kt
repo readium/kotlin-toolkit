@@ -31,6 +31,7 @@ interface DecorableNavigator : Navigator {
      *
      * The Navigator will decide when to actually render each decoration efficiently. Your only
      * responsibility is to submit the updated list of decorations when there are changes.
+     *
      * Name each decoration group as you see fit. A good practice is to use the name of the feature
      * requiring decorations, e.g. annotation, search, tts, etc.
      */
@@ -141,7 +142,7 @@ typealias DecorationId = String
 
 /** Represents an atomic change in a list of [Decoration] objects. */
 @ExperimentalDecorator
-sealed class DecorationChange {
+internal sealed class DecorationChange {
     data class Added(val decoration: Decoration) : DecorationChange()
     data class Updated(val decoration: Decoration) : DecorationChange()
     data class Moved(val id: DecorationId, val fromPosition: Int, val toPosition: Int) : DecorationChange()
@@ -154,7 +155,7 @@ sealed class DecorationChange {
  * The changes need to be applied in the same order, one by one.
  */
 @ExperimentalDecorator
-suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map<String, List<DecorationChange>> = withContext(Dispatchers.IO) {
+internal suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map<String, List<DecorationChange>> = withContext(Dispatchers.IO) {
     val source = this@changesByHref
     val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
         override fun getOldListSize(): Int = source.size
