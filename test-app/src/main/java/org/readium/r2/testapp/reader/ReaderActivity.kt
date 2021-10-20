@@ -12,12 +12,16 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.readium.r2.navigator.ExperimentalPresentation
+import org.readium.r2.navigator.presentation.PresentationController
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.allAreAudio
@@ -35,11 +39,12 @@ import org.readium.r2.testapp.outline.OutlineFragment
  *
  * This class can be used as it is or be inherited from.
  */
+@OptIn(ExperimentalPresentation::class)
 open class ReaderActivity : AppCompatActivity() {
 
     protected lateinit var readerFragment: BaseReaderFragment
+    protected val model: ReaderViewModel by viewModels()
     private lateinit var modelFactory: ReaderViewModel.Factory
-    private lateinit var publication: Publication
 
     lateinit var binding: ActivityReaderBinding
 
@@ -52,10 +57,9 @@ open class ReaderActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        ViewModelProvider(this).get(ReaderViewModel::class.java).let { model ->
-            publication = model.publication
-            model.channel.receive(this) { handleReaderFragmentEvent(it) }
-        }
+        val publication = model.publication
+
+        model.channel.receive(this) { handleReaderFragmentEvent(it) }
 
         if (savedInstanceState == null) {
 
@@ -117,7 +121,7 @@ open class ReaderActivity : AppCompatActivity() {
 
     private fun updateActivityTitle() {
         title = when (supportFragmentManager.fragments.last()) {
-            is OutlineFragment -> publication.metadata.title
+            is OutlineFragment -> model.publication.metadata.title
             is DrmManagementFragment -> getString(R.string.title_fragment_drm_management)
             else -> null
         }

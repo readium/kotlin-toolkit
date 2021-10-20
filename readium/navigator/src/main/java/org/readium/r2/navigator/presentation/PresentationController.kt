@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.getOrDefault
 @OptIn(ExperimentalCoroutinesApi::class)
 @ExperimentalPresentation
 class PresentationController(
-    coroutineScope: CoroutineScope,
+    private val coroutineScope: CoroutineScope,
     val navigator: Navigator,
     val appSettings: PresentationSettings = PresentationSettings(),
     userSettings: PresentationSettings = PresentationSettings(),
@@ -86,9 +86,11 @@ class PresentationController(
     /**
      * Applies the current set of settings to the Navigator.
      */
-    suspend fun commit(changes: PresentationController.(Settings) -> Unit = {}) {
+    fun commit(changes: PresentationController.(Settings) -> Unit = {}) {
         changes(settings.value)
-        navigator.applySettings(appSettings.merge(userSettings.value))
+        coroutineScope.launch {
+            navigator.applySettings(appSettings.merge(userSettings.value))
+        }
     }
 
     /**
@@ -134,6 +136,8 @@ class PresentationController(
     data class Settings(
         val settings: Map<PresentationKey, Setting<*>?> = mutableMapOf()
     ) {
+        constructor(vararg settings: Pair<PresentationKey, Setting<*>?>) : this(mapOf(*settings))
+
         val continuous: ToggleSetting? get() =
             settings[PresentationKey.CONTINUOUS] as? ToggleSetting
 
@@ -192,8 +196,25 @@ class PresentationController(
 
     class EnumSetting<T : Enum<T>>(
         private val mapper: MapCompanion<String, T>,
-        private val stringSetting: StringSetting,
+        val stringSetting: StringSetting,
     ) : Setting<T?>(stringSetting.key, mapper.get(stringSetting.value), isAvailable = stringSetting.isAvailable, isActive = stringSetting.isActive) {
+
+        constructor(
+            mapper: MapCompanion<String, T>,
+            key: PresentationKey,
+            value: T,
+            supportedValues: List<T>?,
+            isAvailable: Boolean,
+            isActive: Boolean,
+            labelForValue: (Context, T) -> String
+        ) : this(mapper, StringSetting(
+            key,
+            mapper.getKey(value),
+            supportedValues?.map { mapper.getKey(it) },
+            isAvailable = isAvailable,
+            isActive = isActive,
+            labelForValue = { c, v -> mapper.get(v)?.let { labelForValue(c, it) } ?: v }
+        ))
 
         override fun toJson(value: T?): Any =
             value?.let { stringSetting.toJson(mapper.getKey(it)) } as Any

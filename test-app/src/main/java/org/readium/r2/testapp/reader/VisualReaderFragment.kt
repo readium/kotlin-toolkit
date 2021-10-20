@@ -11,11 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
-import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
-import org.readium.r2.navigator.DecorableNavigator
-import org.readium.r2.navigator.ExperimentalDecorator
-import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.utils.clearPadding
 import org.readium.r2.testapp.utils.hideSystemUi
@@ -25,7 +21,7 @@ import org.readium.r2.testapp.utils.showSystemUi
 /*
  * Adds fullscreen support to the BaseReaderFragment
  */
-abstract class VisualReaderFragment : BaseReaderFragment() {
+abstract class VisualReaderFragment: BaseReaderFragment() {
 
     private lateinit var navigatorFragment: Fragment
 

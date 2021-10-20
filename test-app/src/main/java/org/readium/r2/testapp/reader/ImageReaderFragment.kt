@@ -21,16 +21,9 @@ import org.readium.r2.testapp.utils.toggleSystemUi
 
 class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Listener {
 
-    override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator
-    private lateinit var publication: Publication
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
-            model = it
-            publication = it.publication
-        }
-
         childFragmentManager.fragmentFactory =
             ImageNavigatorFragment.createFactory(publication, model.initialLocation, this)
 

@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.ExperimentalPresentation
+import org.readium.r2.navigator.presentation.PresentationController
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
@@ -35,7 +37,7 @@ import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
 
-@OptIn(Search::class, ExperimentalDecorator::class)
+@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalPresentation::class)
 class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewModel() {
 
     val publication: Publication = arguments.publication
@@ -43,6 +45,8 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
     val fragmentChannel = EventChannel(Channel<FeedbackEvent>(Channel.BUFFERED), viewModelScope)
     val bookId = arguments.bookId
+    var presentation: PresentationController? = null
+
     private val repository: BookRepository
 
     val publicationId: PublicationId get() = bookId.toString()

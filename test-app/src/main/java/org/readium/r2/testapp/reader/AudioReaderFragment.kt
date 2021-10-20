@@ -26,7 +26,6 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalAudiobook::class, ExperimentalTime::class)
 class AudioReaderFragment : BaseReaderFragment() {
 
-    override val model: ReaderViewModel by activityViewModels()
     override val navigator: Navigator get() = mediaNavigator
 
     private lateinit var mediaNavigator: MediaNavigator

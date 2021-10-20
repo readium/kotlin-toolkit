@@ -17,6 +17,7 @@ import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -44,9 +45,9 @@ import org.readium.r2.testapp.domain.model.Highlight
 @OptIn(ExperimentalDecorator::class, ExperimentalPresentation::class)
 abstract class BaseReaderFragment : Fragment() {
 
-    protected abstract val model: ReaderViewModel
+    protected val model: ReaderViewModel by activityViewModels()
+    protected val publication: Publication get() = model.publication
     protected abstract val navigator: Navigator
-    protected var presentation: PresentationController? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
@@ -67,7 +68,7 @@ abstract class BaseReaderFragment : Fragment() {
 
         val viewScope = viewLifecycleOwner.lifecycleScope
 
-        presentation = PresentationController(viewScope, navigator)
+        model.presentation = PresentationController(viewScope, navigator)
 
         navigator.currentLocator
             .onEach { model.saveProgression(it) }
@@ -88,6 +89,10 @@ abstract class BaseReaderFragment : Fragment() {
 
     override fun onDestroyView() {
         (navigator as? DecorableNavigator)?.removeDecorationListener(decorationListener)
+
+        // Prevent a Context memory leak, as PresentationController holds the NavigatorFragment.
+        model.presentation = null
+
         super.onDestroyView()
     }
 
@@ -116,9 +121,15 @@ abstract class BaseReaderFragment : Fragment() {
                 model.channel.send(ReaderViewModel.Event.OpenDrmManagementRequested)
                 true
             }
+            R.id.settings -> {
+                onOpenSettings()
+                true
+            }
             else -> false
         }
     }
+
+    protected open fun onOpenSettings() {}
 
     fun go(locator: Locator, animated: Boolean) =
         navigator.go(locator, animated)

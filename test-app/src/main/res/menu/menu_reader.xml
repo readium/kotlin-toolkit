@@ -14,6 +14,14 @@
         tools:ignore="AlwaysShowAction"/>
 
     <item
+        android:id="@+id/settings"
+        android:icon="@drawable/ic_baseline_settings_24"
+        android:title="@string/epubactivity_settings"
+        android:orderInCategory="80"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction"/>
+
+    <item
         android:id="@+id/drm"
         android:icon="@drawable/ic_baseline_enhanced_encryption_24"
         android:title="@string/epubactivity_drm_info"

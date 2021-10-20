@@ -49,9 +49,7 @@ import java.net.URL
 @OptIn(ExperimentalDecorator::class)
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
-    override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator
-    private lateinit var publication: Publication
     lateinit var navigatorFragment: EpubNavigatorFragment
 
     private lateinit var menuScreenReader: MenuItem
@@ -73,11 +71,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         if (savedInstanceState != null) {
             isScreenReaderVisible = savedInstanceState.getBoolean(IS_SCREEN_READER_VISIBLE_KEY)
             isSearchViewIconified = savedInstanceState.getBoolean(IS_SEARCH_VIEW_ICONIFIED)
-        }
-
-        ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
-            model = it
-            publication = it.publication
         }
 
         val baseUrl = checkNotNull(requireArguments().getString(BASE_URL_ARG))
