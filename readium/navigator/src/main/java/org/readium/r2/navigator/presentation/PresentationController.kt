@@ -4,10 +4,11 @@ import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.MapCompanion
-import org.readium.r2.shared.util.MapWithDefaultCompanion
 import org.readium.r2.shared.util.getOrDefault
 
 /**
@@ -15,20 +16,29 @@ import org.readium.r2.shared.util.getOrDefault
  * settings interface.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
+@ExperimentalPresentation
 class PresentationController(
+    coroutineScope: CoroutineScope,
     val navigator: Navigator,
     val appSettings: PresentationSettings = PresentationSettings(),
     userSettings: PresentationSettings = PresentationSettings(),
 ) {
+
+    private val _settings = MutableStateFlow(combineSettings(userSettings, navigator.presentation.value))
+    val settings: StateFlow<Settings>
+        get() = _settings.asStateFlow()
+
     private val _userSettings = MutableStateFlow(userSettings)
     val userSettings: StateFlow<PresentationSettings>
         get() = _userSettings.asStateFlow()
 
-    suspend fun settings(scope: CoroutineScope): StateFlow<Settings> =
-        userSettings.combine(navigator.presentation) { userSettings, presentation ->
-            combineSettings(userSettings, presentation)
+    init {
+        coroutineScope.launch {
+            _userSettings.combine(navigator.presentation) { userSettings, presentation ->
+                combineSettings(userSettings, presentation)
+            }.collect { _settings.value = it }
         }
-        .stateIn(scope)
+    }
 
     private fun combineSettings(userSettings: PresentationSettings, presentation: Presentation): Settings {
         val settings = mutableMapOf<PresentationKey, Setting<*>>()
@@ -74,10 +84,10 @@ class PresentationController(
     }
 
     /**
-     * Applies the current set of [userSettings] to the Navigator.
+     * Applies the current set of settings to the Navigator.
      */
-    fun commit(changes: PresentationController.() -> Unit = {}) {
-        changes()
+    suspend fun commit(changes: PresentationController.(Settings) -> Unit = {}) {
+        changes(settings.value)
         navigator.applySettings(appSettings.merge(userSettings.value))
     }
 
@@ -92,7 +102,9 @@ class PresentationController(
      * Changes the value of the given setting.
      * The new value will be set in the user settings.
      */
-    fun <T> set(setting: Setting<T>, value: T?) {
+    fun <T> set(setting: Setting<T>?, value: T?) {
+        setting ?: return
+
         var settings = userSettings.value.copy {
             if (value == null) {
                 remove(setting.key)
@@ -113,18 +125,20 @@ class PresentationController(
     /**
      * Inverts the value of the given toggle setting.
      */
-    fun toggle(property: ToggleSetting) {
-        set(property, !property.value)
+    fun toggle(setting: ToggleSetting?) {
+        setting ?: return
+
+        set(setting, !setting.value)
     }
 
     data class Settings(
-        val properties: Map<PresentationKey, Setting<*>?> = mutableMapOf()
+        val settings: Map<PresentationKey, Setting<*>?> = mutableMapOf()
     ) {
         val continuous: ToggleSetting? get() =
-            properties[PresentationKey.CONTINUOUS] as? ToggleSetting
+            settings[PresentationKey.CONTINUOUS] as? ToggleSetting
 
         val readingProgression: EnumSetting<ReadingProgression>? get() =
-            (properties[PresentationKey.READING_PROGRESSION] as? StringSetting)
+            (settings[PresentationKey.READING_PROGRESSION] as? StringSetting)
                 ?.let { EnumSetting(ReadingProgression, it) }
     }
 

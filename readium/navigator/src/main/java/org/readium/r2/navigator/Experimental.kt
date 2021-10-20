@@ -15,3 +15,8 @@ annotation class ExperimentalDecorator
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
 annotation class ExperimentalAudiobook
+
+@RequiresOptIn(message = "Support for the Presentation API is still experimental. The API may be changed in the future without notice.")
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
+annotation class ExperimentalPresentation

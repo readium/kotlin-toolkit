@@ -1,10 +1,12 @@
 package org.readium.r2.navigator.presentation
 
 import android.content.Context
+import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.Try
 
+@ExperimentalPresentation
 data class PresentationKey(val key: String) {
     companion object {
         val CONTINUOUS = PresentationKey("continuous")
@@ -18,6 +20,7 @@ data class PresentationKey(val key: String) {
  * Holds the current values for the Presentation Properties determining how a publication is
  * rendered by a Navigator. For example, "font size" or "playback rate".
  */
+@ExperimentalPresentation
 data class Presentation(
     val properties: Map<PresentationKey, Property<*>?> = emptyMap()
 ) {
@@ -149,6 +152,7 @@ data class Presentation(
  * Holds a list of key-value pairs provided by the app to influence a Navigator's Presentation
  * Properties. The keys must be valid Presentation Property Keys.
  */
+@ExperimentalPresentation
 data class PresentationSettings(val settings: Map<PresentationKey, Any?> = emptyMap()) {
 
     constructor(vararg settings: Pair<PresentationKey, Any?>) : this(mapOf(*settings))

@@ -17,4 +17,15 @@
     <string name="r2_media_notification_channel_name">Audiobook</string>
     <string name="r2_media_notification_channel_description">Audiobook currently being played</string>
 
+    <!-- Presentation -->
+
+    <!-- Default value for a presentation property -->
+    <string name="readium.navigator.presentation.default">Default</string>
+
+    <!-- Reading progression -->
+    <string name="readium.navigator.presentation.readingProgression.ltr">Left-to-right</string>
+    <string name="readium.navigator.presentation.readingProgression.rtl">Right-to-left</string>
+    <string name="readium.navigator.presentation.readingProgression.ttb">Top-to-bottom</string>
+    <string name="readium.navigator.presentation.readingProgression.btt">Bottom-to-top</string>
+
 </resources>

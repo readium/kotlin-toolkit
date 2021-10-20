@@ -25,6 +25,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.navigator.ExperimentalPresentation
+import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.presentation.Presentation
@@ -44,7 +46,7 @@ import timber.log.Timber
  * To use this [Fragment], create a factory with `PdfNavigatorFragment.createFactory()`.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class PdfNavigatorFragment internal constructor(
+class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal constructor(
     override val publication: Publication,
     private val initialLocator: Locator?,
     private val listener: Listener?,
@@ -213,32 +215,43 @@ class PdfNavigatorFragment internal constructor(
         return true
     }
 
-    private var _presentation = MutableStateFlow(presentationFromSettings(settings))
+    @ExperimentalPresentation
+    private var _presentation = MutableStateFlow(createPresentation(settings, fallback = null))
+    @ExperimentalPresentation
     override val presentation: StateFlow<Presentation> get() = _presentation.asStateFlow()
 
-    override fun applySettings(settings: PresentationSettings) {
+    @ExperimentalPresentation
+    override suspend fun applySettings(settings: PresentationSettings) {
         val page = pageIndexToNumber(pdfView.currentPage)
-        _presentation.value = presentationFromSettings(settings)
+        _presentation.value = createPresentation(settings, fallback = presentation.value)
 
         currentHref?.let { href ->
             goToHref(href, page = pageNumberToIndex(page), animated = false, forceReload = true)
         }
     }
 
-    private fun presentationFromSettings(settings: PresentationSettings): Presentation {
+    @ExperimentalPresentation
+    private fun createPresentation(settings: PresentationSettings, fallback: Presentation?): Presentation {
         val supportedReadingProgressions = listOf(
             ReadingProgression.LTR, ReadingProgression.RTL,
             ReadingProgression.TTB, ReadingProgression.BTT,
         )
+
         return Presentation(
-//            PresentationKey.CONTINUOUS to Presentation.ToggleProperty( settings.continuous ?: true ),
             PresentationKey.READING_PROGRESSION to Presentation.StringProperty(
                 ReadingProgression,
                 value = settings.readingProgression?.takeIf { supportedReadingProgressions.contains(it) }
+                    ?: fallback?.readingProgression?.value
                     ?: publication.metadata.readingProgression.takeIf { supportedReadingProgressions.contains(it) }
                     ?: ReadingProgression.TTB,
                 supportedValues = supportedReadingProgressions,
-                labelForValue = { c, v -> TODO("Localized label for reading progression") }
+                labelForValue = { c, v -> c.getString(when (v) {
+                    ReadingProgression.RTL -> R.string.readium_navigator_presentation_readingProgression_rtl
+                    ReadingProgression.LTR -> R.string.readium_navigator_presentation_readingProgression_ltr
+                    ReadingProgression.TTB -> R.string.readium_navigator_presentation_readingProgression_ttb
+                    ReadingProgression.BTT -> R.string.readium_navigator_presentation_readingProgression_btt
+                    ReadingProgression.AUTO -> R.string.readium_navigator_presentation_default
+                }) }
             )
         )
     }
@@ -246,6 +259,7 @@ class PdfNavigatorFragment internal constructor(
 
     // VisualNavigator
 
+    @OptIn(ExperimentalPresentation::class)
     override val readingProgression: ReadingProgression get() =
         (presentation.value.readingProgression?.value ?: ReadingProgression.TTB)
 
@@ -282,6 +296,7 @@ class PdfNavigatorFragment internal constructor(
          *        Can be used to restore the last reading location.
          * @param listener Optional listener to implement to observe events, such as user taps.
          */
+        @OptIn(ExperimentalPresentation::class)
         fun createFactory(
             publication: Publication,
             initialLocator: Locator? = null,

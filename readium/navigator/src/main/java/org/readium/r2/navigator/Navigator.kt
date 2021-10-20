@@ -79,6 +79,7 @@ interface Navigator {
     /**
      * Current values for the Presentation Properties and their metadata.
      */
+    @ExperimentalPresentation
     val presentation: StateFlow<Presentation> get() = MutableStateFlow(Presentation()).asStateFlow()
 
     /**
@@ -89,7 +90,8 @@ interface Navigator {
      * some of the provided settings. They are only used as guidelines to compute the Presentation
      * Properties.
      */
-    fun applySettings(settings: PresentationSettings) {}
+    @ExperimentalPresentation
+    suspend fun applySettings(settings: PresentationSettings) {}
 
     interface Listener
 
