@@ -1,15 +1,13 @@
 package org.readium.r2.testapp.reader.settings
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,6 +16,8 @@ import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.presentation.PresentationController
 import org.readium.r2.navigator.presentation.PresentationKey
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
 
 @Composable
@@ -72,6 +72,30 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
                 )
             }
         }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+
+        settings.overflow?.let { overflow ->
+            val values = overflow.supportedValues ?: return@let
+
+            Text(
+                text = "Overflow",
+                modifier = Modifier.padding(bottom = 8.dp),
+                style = MaterialTheme.typography.subtitle2,
+            )
+            ToggleButtonGroup(
+                options = values,
+                selectedOption = overflow.value ?: Overflow.AUTO,
+                onSelectOption = { value ->
+                    commit {
+                        set(overflow, value)
+                    }
+                }) { option ->
+                Text(overflow.labelForValue(context, option))
+            }
+        }
+    }
+}
     }
 }
 

@@ -3,6 +3,8 @@ package org.readium.r2.navigator.presentation
 import android.content.Context
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.Try
 
@@ -10,6 +12,7 @@ import org.readium.r2.shared.util.Try
 data class PresentationKey(val key: String) {
     companion object {
         val CONTINUOUS = PresentationKey("continuous")
+        val OVERFLOW = PresentationKey("overflow")
         val READING_PROGRESSION = PresentationKey("readingProgression")
     }
 
@@ -33,6 +36,10 @@ data class Presentation(
     val readingProgression: EnumProperty<ReadingProgression>? get() =
         (properties[PresentationKey.READING_PROGRESSION] as? StringProperty)
             ?.let { EnumProperty(ReadingProgression, it, ReadingProgression.default) }
+
+    val overflow: EnumProperty<Overflow>? get() =
+        (properties[PresentationKey.OVERFLOW] as? StringProperty)
+            ?.let { EnumProperty(Overflow, it, Overflow.DEFAULT) }
 
     /**
      * Holds the current value and the metadata of a Presentation Property of type [T].
@@ -163,6 +170,10 @@ data class PresentationSettings(val settings: Map<PresentationKey, Any?> = empty
     val readingProgression: ReadingProgression?
         get() = (settings[PresentationKey.READING_PROGRESSION] as? String)
             ?.let { ReadingProgression.get(it) }
+
+    val overflow: Overflow?
+        get() = (settings[PresentationKey.OVERFLOW] as? String)
+            ?.let { Overflow.get(it) }
 
     /**
      * Returns a copy of this object after modifying the settings in the given closure.

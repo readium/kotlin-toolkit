@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.getOrDefault
 
@@ -144,6 +145,10 @@ class PresentationController(
         val readingProgression: EnumSetting<ReadingProgression>? get() =
             (settings[PresentationKey.READING_PROGRESSION] as? StringSetting)
                 ?.let { EnumSetting(ReadingProgression, it) }
+
+        val overflow: EnumSetting<Overflow>? get() =
+            (settings[PresentationKey.OVERFLOW] as? StringSetting)
+                ?.let { EnumSetting(Overflow, it) }
     }
 
     /**

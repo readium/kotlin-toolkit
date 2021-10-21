@@ -36,6 +36,8 @@ import org.readium.r2.navigator.presentation.PresentationSettings
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.presentation.Presentation.Overflow
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.use
@@ -106,6 +108,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
         outState.putParcelable(KEY_LOCATOR, _currentLocator.value)
     }
 
+    @OptIn(ExperimentalPresentation::class)
     private fun goToHref(href: String, page: Int, animated: Boolean, forceReload: Boolean, completion: () -> Unit = {}): Boolean {
         val link = publication.linkWithHref(href) ?: return false
 
@@ -116,6 +119,8 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
         } else {
             lifecycleScope.launch {
                 try {
+                    val paginated = presentation.value.overflow?.value == Overflow.PAGINATED
+
                     pdfView
                         .run {
                             publication.get(link).use { resource ->
@@ -132,6 +137,9 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
                             }
                         }
                         .swipeHorizontal(readingProgression.isHorizontal ?: false)
+                        .pageSnap(paginated)
+                        .autoSpacing(paginated)
+                        .pageFling(paginated)
                         .spacing(10)
                         // Customization of [PDFView] is done before setting the listeners,
                         // to avoid overriding them in reading apps, which would break the
@@ -231,6 +239,10 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
             ReadingProgression.TTB, ReadingProgression.BTT,
         )
 
+        val supportedOverflows = listOf(
+            Overflow.PAGINATED, Overflow.SCROLLED
+        )
+
         return Presentation(
             PresentationKey.READING_PROGRESSION to Presentation.StringProperty(
                 ReadingProgression,
@@ -245,6 +257,20 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
                     ReadingProgression.TTB -> R.string.readium_navigator_presentation_readingProgression_ttb
                     ReadingProgression.BTT -> R.string.readium_navigator_presentation_readingProgression_btt
                     ReadingProgression.AUTO -> R.string.readium_navigator_presentation_default
+                }) }
+            ),
+
+            PresentationKey.OVERFLOW to Presentation.StringProperty(
+                Overflow,
+                value = settings.overflow?.takeIf { supportedOverflows.contains(it) }
+                    ?: fallback?.overflow?.value
+                    ?: publication.metadata.presentation.overflow?.takeIf { supportedOverflows.contains(it) }
+                    ?: Overflow.SCROLLED,
+                supportedValues = supportedOverflows,
+                labelForValue = { c, v -> c.getString(when (v) {
+                    Overflow.PAGINATED -> R.string.readium_navigator_presentation_overflow_paginated
+                    Overflow.SCROLLED -> R.string.readium_navigator_presentation_overflow_scrolled
+                    Overflow.AUTO -> R.string.readium_navigator_presentation_default
                 }) }
             )
         )

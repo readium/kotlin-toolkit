@@ -28,4 +28,8 @@
     <string name="readium.navigator.presentation.readingProgression.ttb">Top-to-bottom</string>
     <string name="readium.navigator.presentation.readingProgression.btt">Bottom-to-top</string>
 
+    <!-- Overflow -->
+    <string name="readium.navigator.presentation.overflow.paginated">Paginated</string>
+    <string name="readium.navigator.presentation.overflow.scrolled">Scrolled</string>
+
 </resources>
