@@ -5,6 +5,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,13 +68,7 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
         settings.readingProgression?.let { readingProgression ->
             val values = readingProgression.supportedValues ?: return@let
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Reading progression",
-                    style = MaterialTheme.typography.subtitle2,
-                )
+            Section("Reading progression", isActive = readingProgression.isActive) {
                 ToggleButtonGroup(
                     options = values,
                     activeOption = readingProgression.effectiveValue,
@@ -100,13 +95,7 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
         settings.overflow?.let { overflow ->
             val values = overflow.supportedValues ?: return@let
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Overflow",
-                    style = MaterialTheme.typography.subtitle2,
-                )
+            Section("Overflow") {
                 ToggleButtonGroup(
                     options = values,
                     activeOption = overflow.effectiveValue,
@@ -120,6 +109,41 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
                 }
             }
         }
+        
+        settings.pageSpacing?.let { pageSpacing ->
+            Section("Page spacing", isActive = pageSpacing.isActive) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    DecrementButton {
+                        commit {
+                            decrement(pageSpacing)
+                        }
+                    }
+                    Text(pageSpacing.labelForValue(context, pageSpacing.userValue ?: pageSpacing.effectiveValue ?: 0.5))
+                    IncrementButton {
+                        commit {
+                            increment(pageSpacing)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DecrementButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        Icon(Icons.Default.Remove, contentDescription = "Less")
+    }
+}
+
+@Composable
+fun IncrementButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        Icon(Icons.Default.Add, contentDescription = "More")
     }
 }
 
@@ -152,10 +176,45 @@ fun PresetsButton(commit: CommitPresentation, vararg presets: Pair<String, Updat
 }
 
 @Composable
+private fun Section(title: String, isActive: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
+    val alpha = if (isActive) 1.0f else ContentAlpha.disabled
+    CompositionLocalProvider(LocalContentAlpha provides alpha) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.subtitle2,
+            )
+            content()
+        }
+    }
+}
+
+@Composable
 @Preview(showBackground = true)
 @OptIn(ExperimentalPresentation::class)
 fun PreviewFixedSettingsView() {
     FixedSettingsView(settings = PresentationController.Settings(
+        PresentationKey.OVERFLOW to PresentationController.EnumSetting(
+            Overflow,
+            key = PresentationKey.OVERFLOW,
+            userValue = Overflow.PAGINATED,
+            effectiveValue = null,
+            supportedValues = listOf(Overflow.PAGINATED, Overflow.SCROLLED),
+            isActive = true,
+            isAvailable = true,
+            labelForValue = { _, v -> v.name }
+        ).stringSetting,
+        PresentationKey.PAGE_SPACING to PresentationController.RangeSetting(
+            key = PresentationKey.PAGE_SPACING,
+            userValue = 0.3,
+            effectiveValue = 0.6,
+            stepCount = 20,
+            isActive = true,
+            isAvailable = true,
+            labelForValue = { _, v -> v.toString() }
+        ),
         PresentationKey.READING_PROGRESSION to PresentationController.EnumSetting(
             ReadingProgression,
             key = PresentationKey.READING_PROGRESSION,
@@ -169,15 +228,5 @@ fun PreviewFixedSettingsView() {
             isAvailable = true,
             labelForValue = { _, v -> v.name }
         ).stringSetting,
-        PresentationKey.OVERFLOW to PresentationController.EnumSetting(
-            Overflow,
-            key = PresentationKey.OVERFLOW,
-            userValue = Overflow.PAGINATED,
-            effectiveValue = null,
-            supportedValues = listOf(Overflow.PAGINATED, Overflow.SCROLLED),
-            isActive = true,
-            isAvailable = true,
-            labelForValue = { _, v -> v.name }
-        ).stringSetting
     ), commit = {})
 }

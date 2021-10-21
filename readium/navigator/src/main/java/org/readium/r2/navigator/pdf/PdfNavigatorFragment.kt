@@ -44,8 +44,10 @@ import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.use
 import timber.log.Timber
+import kotlin.math.roundToInt
 
 /**
  * Navigator for PDF publications.
@@ -128,7 +130,8 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
         } else {
             lifecycleScope.launch {
                 try {
-                    val paginated = presentation.value.overflow?.value == Overflow.PAGINATED
+                    val paginated = requireNotNull(presentation.value.overflow).value == Overflow.PAGINATED
+                    val pageSpacing = requireNotNull(presentation.value.pageSpacing).value
 
                     pdfView
                         .run {
@@ -149,7 +152,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
                         .pageSnap(paginated)
                         .autoSpacing(paginated)
                         .pageFling(paginated)
-                        .spacing(10)
+                        .spacing(pageSpacingForValue(pageSpacing))
                         // Customization of [PDFView] is done before setting the listeners,
                         // to avoid overriding them in reading apps, which would break the
                         // navigator.
@@ -254,6 +257,44 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
         )
 
         return Presentation(
+            PresentationKey.PAGE_SPACING to Presentation.RangeProperty(
+                value = settings.pageSpacing ?: 0.2,
+                stepCount = 10,
+                isActiveForSettings = {
+                    it.overflow != Overflow.PAGINATED
+                },
+                activateInSettings = {
+                    Try.success(
+                        if (it.overflow != Overflow.PAGINATED) {
+                            it
+                        } else {
+                            it.copy {
+                                this[PresentationKey.OVERFLOW] = Overflow.SCROLLED
+                            }
+                        }
+                    )
+                },
+                labelForValue = { _, v ->
+                    "${pageSpacingForValue(v)} dp"
+                }
+            ),
+
+            PresentationKey.OVERFLOW to Presentation.StringProperty(
+                Overflow,
+                value = settings.overflow?.let {
+                    it.takeIf { supportedOverflows.contains(it) }
+                        ?: fallback?.overflow?.value
+                }
+                    ?: publication.metadata.presentation.overflow?.takeIf { supportedOverflows.contains(it) }
+                    ?: Overflow.SCROLLED,
+                supportedValues = supportedOverflows,
+                labelForValue = { c, v -> c.getString(when (v) {
+                    Overflow.PAGINATED -> R.string.readium_navigator_presentation_overflow_paginated
+                    Overflow.SCROLLED -> R.string.readium_navigator_presentation_overflow_scrolled
+                    Overflow.AUTO -> R.string.readium_navigator_presentation_default
+                }) }
+            ),
+
             PresentationKey.READING_PROGRESSION to Presentation.StringProperty(
                 ReadingProgression,
                 value = settings.readingProgression?.let {
@@ -271,24 +312,10 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
                     ReadingProgression.AUTO -> R.string.readium_navigator_presentation_default
                 }) }
             ),
-
-            PresentationKey.OVERFLOW to Presentation.StringProperty(
-                Overflow,
-                value = settings.overflow?.let {
-                        it.takeIf { supportedOverflows.contains(it) }
-                            ?: fallback?.overflow?.value
-                    }
-                    ?: publication.metadata.presentation.overflow?.takeIf { supportedOverflows.contains(it) }
-                    ?: Overflow.SCROLLED,
-                supportedValues = supportedOverflows,
-                labelForValue = { c, v -> c.getString(when (v) {
-                    Overflow.PAGINATED -> R.string.readium_navigator_presentation_overflow_paginated
-                    Overflow.SCROLLED -> R.string.readium_navigator_presentation_overflow_scrolled
-                    Overflow.AUTO -> R.string.readium_navigator_presentation_default
-                }) }
-            )
         )
     }
+
+    private fun pageSpacingForValue(value: Double): Int = (50 * value).roundToInt()
 
 
     // VisualNavigator

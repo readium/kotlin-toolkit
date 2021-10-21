@@ -206,13 +206,16 @@ class PresentationController(
         val continuous: ToggleSetting? get() =
             settings[PresentationKey.CONTINUOUS] as? ToggleSetting
 
-        val readingProgression: EnumSetting<ReadingProgression>? get() =
-            (settings[PresentationKey.READING_PROGRESSION] as? StringSetting)
-                ?.let { EnumSetting(ReadingProgression, it) }
-
         val overflow: EnumSetting<Overflow>? get() =
             (settings[PresentationKey.OVERFLOW] as? StringSetting)
                 ?.let { EnumSetting(Overflow, it) }
+
+        val pageSpacing: RangeSetting? get() =
+            settings[PresentationKey.PAGE_SPACING] as? RangeSetting
+
+        val readingProgression: EnumSetting<ReadingProgression>? get() =
+            (settings[PresentationKey.READING_PROGRESSION] as? StringSetting)
+                ?.let { EnumSetting(ReadingProgression, it) }
     }
 
     /**

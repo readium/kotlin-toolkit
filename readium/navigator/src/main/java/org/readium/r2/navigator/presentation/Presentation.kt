@@ -15,6 +15,7 @@ data class PresentationKey(val key: String) {
     companion object {
         val CONTINUOUS = PresentationKey("continuous")
         val OVERFLOW = PresentationKey("overflow")
+        val PAGE_SPACING = PresentationKey("pageSpacing")
         val READING_PROGRESSION = PresentationKey("readingProgression")
     }
 
@@ -35,13 +36,16 @@ data class Presentation(
     val continuous: ToggleProperty? get() =
         properties[PresentationKey.CONTINUOUS] as? ToggleProperty
 
-    val readingProgression: EnumProperty<ReadingProgression>? get() =
-        (properties[PresentationKey.READING_PROGRESSION] as? StringProperty)
-            ?.let { EnumProperty(ReadingProgression, it, ReadingProgression.default) }
-
     val overflow: EnumProperty<Overflow>? get() =
         (properties[PresentationKey.OVERFLOW] as? StringProperty)
             ?.let { EnumProperty(Overflow, it, Overflow.DEFAULT) }
+
+    val pageSpacing: RangeProperty? get() =
+        properties[PresentationKey.PAGE_SPACING] as? RangeProperty
+
+    val readingProgression: EnumProperty<ReadingProgression>? get() =
+        (properties[PresentationKey.READING_PROGRESSION] as? StringProperty)
+            ?.let { EnumProperty(ReadingProgression, it, ReadingProgression.default) }
 
     /**
      * Holds the current value and the metadata of a Presentation Property of type [T].
@@ -199,13 +203,16 @@ data class PresentationSettings(val settings: Map<PresentationKey, Any?> = empty
     val continuous: Boolean?
         get() = settings[PresentationKey.CONTINUOUS] as? Boolean
 
-    val readingProgression: ReadingProgression?
-        get() = (settings[PresentationKey.READING_PROGRESSION] as? String)
-            ?.let { ReadingProgression.get(it) }
-
     val overflow: Overflow?
         get() = (settings[PresentationKey.OVERFLOW] as? String)
             ?.let { Overflow.get(it) }
+
+    val pageSpacing: Double?
+        get() = settings[PresentationKey.PAGE_SPACING] as? Double
+
+    val readingProgression: ReadingProgression?
+        get() = (settings[PresentationKey.READING_PROGRESSION] as? String)
+            ?.let { ReadingProgression.get(it) }
 
     /**
      * Returns a copy of this object after modifying the settings in the given closure.
