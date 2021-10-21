@@ -13,6 +13,7 @@ import org.readium.r2.shared.publication.presentation.Presentation.Fit
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.getOrDefault
+import java.lang.ref.WeakReference
 import kotlin.math.round
 
 /**
@@ -23,12 +24,11 @@ import kotlin.math.round
 @ExperimentalPresentation
 class PresentationController(
     private val coroutineScope: CoroutineScope,
-    val navigator: Navigator,
     val appSettings: PresentationSettings = PresentationSettings(),
     userSettings: PresentationSettings = PresentationSettings(),
 ) {
 
-    private val _settings = MutableStateFlow(combineSettings(userSettings, navigator.presentation.value))
+    private val _settings = MutableStateFlow(combineSettings(userSettings, Presentation()))
     val settings: StateFlow<Settings>
         get() = _settings.asStateFlow()
 
@@ -36,7 +36,12 @@ class PresentationController(
     val userSettings: StateFlow<PresentationSettings>
         get() = _userSettings.asStateFlow()
 
-    init {
+    private var _navigator: WeakReference<Navigator>? = null
+    private val navigator: Navigator? get() = _navigator?.get()
+
+    fun attach(navigator: Navigator) {
+        _navigator = WeakReference(navigator)
+
         coroutineScope.launch {
             _userSettings.combine(navigator.presentation) { userSettings, presentation ->
                 combineSettings(userSettings, presentation)
@@ -106,7 +111,7 @@ class PresentationController(
     fun commit(changes: PresentationController.(Settings) -> Unit = {}) {
         changes(settings.value)
         coroutineScope.launch {
-            navigator.applySettings(appSettings.merge(userSettings.value))
+            navigator?.applySettings(appSettings.merge(userSettings.value))
         }
     }
 
@@ -139,7 +144,7 @@ class PresentationController(
             }
         }
 
-        val navigatorProperty = navigator.presentation.value.properties[setting.key]
+        val navigatorProperty = navigator?.presentation?.value?.properties?.get(setting.key)
         if (navigatorProperty != null) {
             settings = navigatorProperty.activateInSettings(settings)
                 .getOrDefault(settings)

@@ -28,8 +28,12 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
     override lateinit var navigator: Navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        childFragmentManager.fragmentFactory =
-            PdfNavigatorFragment.createFactory(publication, model.initialLocation, this)
+        childFragmentManager.fragmentFactory = PdfNavigatorFragment.createFactory(
+            publication = publication,
+            initialLocator = model.initialLocation,
+            listener = this,
+            settings = model.presentation.userSettings.value
+        )
 
         super.onCreate(savedInstanceState)
     }

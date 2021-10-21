@@ -60,7 +60,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
     override val publication: Publication,
     private val initialLocator: Locator?,
     private val listener: Listener?,
-    settings: PresentationSettings,
+    settings: PresentationSettings?,
 ) : Fragment(), VisualNavigator {
 
     interface Listener : VisualNavigator.Listener {
@@ -237,7 +237,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
     }
 
     @ExperimentalPresentation
-    private var _presentation = MutableStateFlow(createPresentation(settings, fallback = null))
+    private var _presentation = MutableStateFlow(createPresentation(settings ?: PresentationSettings(), fallback = null))
     @ExperimentalPresentation
     override val presentation: StateFlow<Presentation> get() = _presentation.asStateFlow()
 
@@ -413,7 +413,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
             publication: Publication,
             initialLocator: Locator? = null,
             listener: Listener? = null,
-            settings: PresentationSettings = PresentationSettings(),
+            settings: PresentationSettings? = null,
         ): FragmentFactory =
             createFragmentFactory { PdfNavigatorFragment(publication, initialLocator, listener, settings) }
 

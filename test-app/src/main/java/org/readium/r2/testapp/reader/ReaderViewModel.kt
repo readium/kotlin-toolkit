@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.ExperimentalPresentation
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.presentation.PresentationController
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
@@ -45,7 +46,7 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
     val fragmentChannel = EventChannel(Channel<FeedbackEvent>(Channel.BUFFERED), viewModelScope)
     val bookId = arguments.bookId
-    var presentation: PresentationController? = null
+    val presentation: PresentationController = PresentationController(viewModelScope)
 
     private val repository: BookRepository
 
@@ -54,6 +55,10 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     init {
         val booksDao = BookDatabase.getDatabase(context).booksDao()
         repository = BookRepository(booksDao)
+    }
+
+    fun onNavigatorCreated(navigator: Navigator) {
+        presentation.attach(navigator)
     }
 
     fun saveProgression(locator: Locator) = viewModelScope.launch {

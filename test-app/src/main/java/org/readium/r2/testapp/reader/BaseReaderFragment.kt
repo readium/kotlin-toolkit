@@ -68,8 +68,6 @@ abstract class BaseReaderFragment : Fragment() {
 
         val viewScope = viewLifecycleOwner.lifecycleScope
 
-        model.presentation = PresentationController(viewScope, navigator)
-
         navigator.currentLocator
             .onEach { model.saveProgression(it) }
             .launchIn(viewScope)
@@ -85,14 +83,12 @@ abstract class BaseReaderFragment : Fragment() {
                 .onEach { navigator.applyDecorations(it, "search") }
                 .launchIn(viewScope)
         }
+
+        model.onNavigatorCreated(navigator)
     }
 
     override fun onDestroyView() {
         (navigator as? DecorableNavigator)?.removeDecorationListener(decorationListener)
-
-        // Prevent a Context memory leak, as PresentationController holds the NavigatorFragment.
-        model.presentation = null
-
         super.onDestroyView()
     }
 
