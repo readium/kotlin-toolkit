@@ -10,8 +10,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Added
 
-* The PDF navigator now honors the publication reading progression with support for right-to-left and horizontal scrolling.
-    * The default (auto) reading progression for PDF is top-to-bottom, which is vertical scrolling.
+* PDF navigator
+    * The navigator now honors the publication reading progression with support for right-to-left and horizontal scrolling.
+        * The default (auto) reading progression for PDF is top-to-bottom, which is vertical scrolling.
+    * Support for internal and external links.
 
 #### Fixed
 

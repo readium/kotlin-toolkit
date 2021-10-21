@@ -10,15 +10,18 @@
 package org.readium.r2.navigator.pdf
 
 import android.graphics.PointF
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
+import com.github.barteksc.pdfviewer.model.LinkTapEvent
 import com.github.barteksc.pdfviewer.util.FitPolicy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +37,7 @@ import org.readium.r2.navigator.presentation.Presentation
 import org.readium.r2.navigator.presentation.PresentationKey
 import org.readium.r2.navigator.presentation.PresentationSettings
 import org.readium.r2.navigator.util.createFragmentFactory
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
@@ -108,6 +112,11 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
         outState.putParcelable(KEY_LOCATOR, _currentLocator.value)
     }
 
+    private fun goToPageIndex(index: Int, completion: () -> Unit = {}): Boolean {
+        val href = currentHref ?: return false
+        return goToHref(href, index, animated = false, forceReload = false)
+    }
+
     @OptIn(ExperimentalPresentation::class)
     private fun goToHref(href: String, page: Int, animated: Boolean, forceReload: Boolean, completion: () -> Unit = {}): Boolean {
         val link = publication.linkWithHref(href) ?: return false
@@ -149,6 +158,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
                         .pageFitPolicy(FitPolicy.WIDTH)
                         .onPageChange { index, _ -> onPageChanged(pageIndexToNumber(index)) }
                         .onTap { event -> onTap(event) }
+                        .linkHandler { event -> onTapLink(event) }
                         .load()
 
                     currentHref = href
@@ -303,6 +313,32 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
         e ?: return false
         val listener = (listener as? VisualNavigator.Listener) ?: return false
         return listener.onTap(PointF(e.x, e.y))
+    }
+
+    private fun onTapLink(event: LinkTapEvent) {
+        val page = event.link.destPageIdx
+        val uri = event.link.uri
+        if (page != null) {
+            goToPageIndex(page)
+
+        } else if (uri != null) {
+            openExternalUri(uri)
+        }
+    }
+
+    private fun openExternalUri(uri: String) {
+        val context = context ?: return
+
+        tryOrLog {
+            var url = Uri.parse(uri)
+            if (url.scheme == null) {
+                url = url.buildUpon().scheme("http").build()
+            }
+
+            CustomTabsIntent.Builder()
+                .build()
+                .launchUrl(context, url)
+        }
     }
 
     companion object {
