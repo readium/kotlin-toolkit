@@ -7,10 +7,13 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.extensions.toStringPercentage
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.getOrDefault
+import kotlin.math.ceil
+import kotlin.math.round
 
 /**
  * Helper class which simplifies the modification of Presentation Settings and designing a user
@@ -57,6 +60,19 @@ class PresentationController(
                         effectiveValue = property?.value,
                         isAvailable = property != null,
                         isActive = property?.isActiveForSettings(userSettings) ?: false,
+                    )
+                }
+
+                (navigatorProperty is Presentation.RangeProperty || userValue is Double) -> {
+                    val property = navigatorProperty as? Presentation.RangeProperty
+                    RangeSetting(
+                        key = key,
+                        userValue = userValue as? Double,
+                        effectiveValue = property?.value,
+                        stepCount = property?.stepCount,
+                        isAvailable = property != null,
+                        isActive = property?.isActiveForSettings(userSettings) ?: false,
+                        labelForValue = { c, v -> property?.labelForValue(c, v) ?: v.toStringPercentage() }
                     )
                 }
 
@@ -155,6 +171,33 @@ class PresentationController(
         }
     }
 
+    /**
+     * Increments the value of the given range setting to the next effective step.
+     */
+    fun increment(setting: RangeSetting?) {
+        setting ?: return
+
+        val step = setting.step
+        val value = setting.userValue ?: setting.effectiveValue ?: 0.5
+
+        set(setting, (value + step).roundToStep(setting.step).coerceAtMost(1.0))
+    }
+
+    /**
+     * Decrements the value of the given range setting to the previous effective step.
+     */
+    fun decrement(setting: RangeSetting?) {
+        setting ?: return
+
+        val step = setting.step
+        val value = setting.userValue ?: setting.effectiveValue ?: 0.5
+
+        set(setting, (value - step).roundToStep(setting.step).coerceAtLeast(0.0))
+    }
+
+    private fun Double.roundToStep(step: Double): Double =
+        round(this / step) * step
+
     data class Settings(
         val settings: Map<PresentationKey, Setting<*>?> = mutableMapOf()
     ) {
@@ -203,6 +246,32 @@ class PresentationController(
         isActive: Boolean,
     ) : Setting<Boolean>(key, userValue, effectiveValue, isAvailable = isAvailable, isActive = isActive)
 
+    class RangeSetting(
+        key: PresentationKey,
+        userValue: Double?,
+        effectiveValue: Double?,
+        val stepCount: Int?,
+        isAvailable: Boolean,
+        isActive: Boolean,
+        private val labelForValue: (Context, Double) -> String,
+    ) : Setting<Double>(key, userValue, effectiveValue, isAvailable = isAvailable, isActive = isActive) {
+
+        /**
+         * Returns a user-facing localized label for the given value, which can be used in the user
+         * interface.
+         *
+         * For example, with the "font size" property, the value 0.4 might have for label "12 pt",
+         * depending on the Navigator.
+         */
+        fun labelForValue(context: Context, value: Double): String =
+            labelForValue.invoke(context, value)
+
+        internal val step: Double get() =
+            if (stepCount == null || stepCount == 0) 0.1
+            else 1.0 / stepCount
+
+    }
+
     class StringSetting(
         key: PresentationKey,
         userValue: String?,
@@ -210,7 +279,7 @@ class PresentationController(
         val supportedValues: List<String>?,
         isAvailable: Boolean,
         isActive: Boolean,
-        private val labelForValue: (Context, String) -> String
+        private val labelForValue: (Context, String) -> String,
     ) : Setting<String>(key, userValue, effectiveValue, isAvailable = isAvailable, isActive = isActive) {
 
         /**

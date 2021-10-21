@@ -2,11 +2,13 @@ package org.readium.r2.navigator.presentation
 
 import android.content.Context
 import org.readium.r2.navigator.ExperimentalPresentation
+import org.readium.r2.navigator.extensions.toStringPercentage
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.Try
+import java.text.NumberFormat
 
 @ExperimentalPresentation
 data class PresentationKey(val key: String) {
@@ -86,6 +88,36 @@ data class Presentation(
         isActiveForSettings: (PresentationSettings) -> Boolean = { true },
         activateInSettings: (settings: PresentationSettings) -> Try<PresentationSettings, Exception> = { Try.Success(it) }
     ) : Property<Boolean>(value, isActiveForSettings, activateInSettings)
+
+    /**
+     * Property representable as a draggable slider or a pair of increment/decrement buttons. For
+     * example, "font size" or "playback volume".
+     *
+     * A range value is valid between 0.0 to 1.0.
+     *
+     * You can specify a [stepCount] number of discrete values in the range. A given range property
+     * might not have the same number of effective steps. Therefore, knowing the number of steps is
+     * important to make sure that incrementing a property triggers a visible change in the
+     * Navigator. [stepCount] can be null for continuous properties, such as "playback volume".
+     */
+    class RangeProperty(
+        value: Double,
+        val stepCount: Int? = null,
+        isActiveForSettings: (PresentationSettings) -> Boolean = { true },
+        activateInSettings: (settings: PresentationSettings) -> Try<PresentationSettings, Exception> = { Try.Success(it) },
+        private val labelForValue: (Context, Double) -> String = { _, v -> v.toStringPercentage() },
+    ) : Property<Double>(value.coerceIn(0.0..1.0), isActiveForSettings, activateInSettings) {
+
+        /**
+         * Returns a user-facing localized label for the given value, which can be used in the user
+         * interface.
+         *
+         * For example, with the "font size" property, the value 0.4 might have for label "12 pt",
+         * depending on the Navigator.
+         */
+        fun labelForValue(context: Context, value: Double): String =
+            labelForValue.invoke(context, value)
+    }
 
     /**
      * Property representable as a dropdown menu or radio buttons group in the user interface. For

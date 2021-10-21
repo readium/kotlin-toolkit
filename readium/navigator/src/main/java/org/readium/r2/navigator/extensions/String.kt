@@ -6,6 +6,8 @@
 
 package org.readium.r2.navigator.extensions
 
+import java.text.NumberFormat
+
 /**
  * Splits a [String] in two components, at the given delimiter.
  */
@@ -14,3 +16,12 @@ internal fun String.splitAt(delimiter: String): Pair<String, String?> {
     val components = split(delimiter, limit = 2)
     return Pair(components[0], components.getOrNull(1))
 }
+
+/**
+ * Formats a 0.0-1.0 range into a localized string, e.g. "42%".
+ */
+internal fun Double.toStringPercentage() =
+    NumberFormat.getPercentInstance().run {
+        maximumFractionDigits = 0
+        format(this@toStringPercentage)
+    }
