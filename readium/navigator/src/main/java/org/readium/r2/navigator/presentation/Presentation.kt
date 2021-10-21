@@ -4,16 +4,16 @@ import android.content.Context
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.extensions.toStringPercentage
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.publication.presentation.Presentation.Fit
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.Try
-import java.text.NumberFormat
 
 @ExperimentalPresentation
 data class PresentationKey(val key: String) {
     companion object {
         val CONTINUOUS = PresentationKey("continuous")
+        val FIT = PresentationKey("fit")
         val OVERFLOW = PresentationKey("overflow")
         val PAGE_SPACING = PresentationKey("pageSpacing")
         val READING_PROGRESSION = PresentationKey("readingProgression")
@@ -35,6 +35,10 @@ data class Presentation(
 
     val continuous: ToggleProperty? get() =
         properties[PresentationKey.CONTINUOUS] as? ToggleProperty
+
+    val fit: EnumProperty<Fit>? get() =
+        (properties[PresentationKey.FIT] as? StringProperty)
+            ?.let { EnumProperty(Fit, it, Fit.DEFAULT) }
 
     val overflow: EnumProperty<Overflow>? get() =
         (properties[PresentationKey.OVERFLOW] as? StringProperty)
@@ -200,8 +204,26 @@ data class PresentationSettings(val settings: Map<PresentationKey, Any?> = empty
 
     constructor(vararg settings: Pair<PresentationKey, Any?>) : this(mapOf(*settings))
 
+    constructor(
+        continuous: Boolean? = null,
+        fit: Fit? = null,
+        overflow: Overflow? = null,
+        pageSpacing: Double? = null,
+        readingProgression: ReadingProgression? = null
+    ) : this(
+        PresentationKey.CONTINUOUS to continuous,
+        PresentationKey.FIT to fit,
+        PresentationKey.OVERFLOW to overflow,
+        PresentationKey.PAGE_SPACING to pageSpacing,
+        PresentationKey.READING_PROGRESSION to readingProgression,
+    )
+
     val continuous: Boolean?
         get() = settings[PresentationKey.CONTINUOUS] as? Boolean
+
+    val fit: Fit?
+        get() = (settings[PresentationKey.FIT] as? String)
+            ?.let { Fit.get(it) }
 
     val overflow: Overflow?
         get() = (settings[PresentationKey.OVERFLOW] as? String)

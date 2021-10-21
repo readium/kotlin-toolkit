@@ -14,6 +14,8 @@ import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.presentation.PresentationController
 import org.readium.r2.navigator.presentation.PresentationKey
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.publication.presentation.Presentation.Fit
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
 
@@ -91,25 +93,11 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
                 }
             }
         }
-        
-        settings.overflow?.let { overflow ->
-            val values = overflow.supportedValues ?: return@let
 
-            Section("Overflow") {
-                ToggleButtonGroup(
-                    options = values,
-                    activeOption = overflow.effectiveValue,
-                    selectedOption = overflow.userValue,
-                    onSelectOption = { value ->
-                        commit {
-                            toggle(overflow, value)
-                        }
-                    }) { option ->
-                    Text(overflow.labelForValue(context, option))
-                }
-            }
-        }
-        
+        EnumSection("Fit", settings.fit, commit)
+
+        EnumSection("Overflow", settings.overflow, commit)
+
         settings.pageSpacing?.let { pageSpacing ->
             Section("Page spacing", isActive = pageSpacing.isActive) {
                 Row(
@@ -129,6 +117,43 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun Section(title: String, isActive: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
+    val alpha = if (isActive) 1.0f else ContentAlpha.disabled
+    CompositionLocalProvider(LocalContentAlpha provides alpha) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.subtitle2,
+            )
+            content()
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalPresentation::class)
+private fun <T : Enum<T>> EnumSection(title: String, setting: PresentationController.EnumSetting<T>?, commit: CommitPresentation) {
+    setting ?: return
+    val values = setting.supportedValues ?: return
+
+    Section(title) {
+        ToggleButtonGroup(
+            options = values,
+            activeOption = setting.effectiveValue,
+            selectedOption = setting.userValue,
+            onSelectOption = { value ->
+                commit {
+                    toggle(setting, value)
+                }
+            }) { option ->
+            Text(setting.labelForValue(LocalContext.current, option))
         }
     }
 }
@@ -176,26 +201,20 @@ fun PresetsButton(commit: CommitPresentation, vararg presets: Pair<String, Updat
 }
 
 @Composable
-private fun Section(title: String, isActive: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
-    val alpha = if (isActive) 1.0f else ContentAlpha.disabled
-    CompositionLocalProvider(LocalContentAlpha provides alpha) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.subtitle2,
-            )
-            content()
-        }
-    }
-}
-
-@Composable
 @Preview(showBackground = true)
 @OptIn(ExperimentalPresentation::class)
 fun PreviewFixedSettingsView() {
     FixedSettingsView(settings = PresentationController.Settings(
+        PresentationKey.FIT to PresentationController.EnumSetting(
+            Fit,
+            key = PresentationKey.FIT,
+            userValue = Fit.COVER,
+            effectiveValue = null,
+            supportedValues = listOf(Fit.COVER, Fit.CONTAIN, Fit.HEIGHT, Fit.WIDTH),
+            isActive = true,
+            isAvailable = true,
+            labelForValue = { _, v -> v.name }
+        ).stringSetting,
         PresentationKey.OVERFLOW to PresentationController.EnumSetting(
             Overflow,
             key = PresentationKey.OVERFLOW,

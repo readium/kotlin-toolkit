@@ -28,6 +28,12 @@
     <string name="readium.navigator.presentation.readingProgression.ttb">Top-to-bottom</string>
     <string name="readium.navigator.presentation.readingProgression.btt">Bottom-to-top</string>
 
+    <!-- Fit -->
+    <string name="readium.navigator.presentation.fit.width">Width</string>
+    <string name="readium.navigator.presentation.fit.height">Height</string>
+    <string name="readium.navigator.presentation.fit.contain">Contain</string>
+    <string name="readium.navigator.presentation.fit.cover">Cover</string>
+
     <!-- Overflow -->
     <string name="readium.navigator.presentation.overflow.paginated">Paginated</string>
     <string name="readium.navigator.presentation.overflow.scrolled">Scrolled</string>

@@ -40,6 +40,7 @@ import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.presentation.Presentation.Fit
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
@@ -132,6 +133,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
                 try {
                     val paginated = requireNotNull(presentation.value.overflow).value == Overflow.PAGINATED
                     val pageSpacing = requireNotNull(presentation.value.pageSpacing).value
+                    val fit = requireNotNull(presentation.value.fit).value
 
                     pdfView
                         .run {
@@ -158,7 +160,11 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
                         // navigator.
                         .apply { listener?.onConfigurePdfView(this) }
                         .defaultPage(page)
-                        .pageFitPolicy(FitPolicy.WIDTH)
+                        .pageFitPolicy(when (fit) {
+                            Fit.WIDTH -> FitPolicy.WIDTH
+                            Fit.HEIGHT -> FitPolicy.HEIGHT
+                            else -> FitPolicy.BOTH
+                        })
                         .onPageChange { index, _ -> onPageChanged(pageIndexToNumber(index)) }
                         .onTap { event -> onTap(event) }
                         .linkHandler { event -> onTapLink(event) }
@@ -247,13 +253,15 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
 
     @ExperimentalPresentation
     private fun createPresentation(settings: PresentationSettings, fallback: Presentation?): Presentation {
+        val supportedFits = listOf(
+            Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT
+        )
+        val supportedOverflows = listOf(
+            Overflow.PAGINATED, Overflow.SCROLLED
+        )
         val supportedReadingProgressions = listOf(
             ReadingProgression.LTR, ReadingProgression.RTL,
             ReadingProgression.TTB, ReadingProgression.BTT,
-        )
-
-        val supportedOverflows = listOf(
-            Overflow.PAGINATED, Overflow.SCROLLED
         )
 
         return Presentation(
@@ -277,6 +285,23 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
                 labelForValue = { _, v ->
                     "${pageSpacingForValue(v)} dp"
                 }
+            ),
+
+            PresentationKey.FIT to Presentation.StringProperty(
+                Fit,
+                value = settings.fit?.let {
+                    it.takeIf { supportedFits.contains(it) }
+                        ?: fallback?.fit?.value
+                    }
+                    ?: publication.metadata.presentation.fit?.takeIf { supportedFits.contains(it) }
+                    ?: Fit.CONTAIN,
+                supportedValues = supportedFits,
+                labelForValue = { c, v -> c.getString(when (v) {
+                    Fit.WIDTH -> R.string.readium_navigator_presentation_fit_width
+                    Fit.HEIGHT -> R.string.readium_navigator_presentation_fit_height
+                    Fit.CONTAIN -> R.string.readium_navigator_presentation_fit_contain
+                    Fit.COVER -> R.string.readium_navigator_presentation_fit_cover
+                }) }
             ),
 
             PresentationKey.OVERFLOW to Presentation.StringProperty(
