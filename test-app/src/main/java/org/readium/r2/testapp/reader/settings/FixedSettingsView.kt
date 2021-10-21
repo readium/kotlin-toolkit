@@ -1,9 +1,6 @@
 package org.readium.r2.testapp.reader.settings
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -41,11 +38,11 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
     val context = LocalContext.current
 
     Column(
-        modifier = Modifier.padding(24.dp)
+        modifier = Modifier.padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
             text = "User settings",
-            modifier = Modifier.padding(bottom = 16.dp),
             style = MaterialTheme.typography.subtitle1,
         )
 
@@ -67,56 +64,60 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
             },
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         settings.readingProgression?.let { readingProgression ->
             val values = readingProgression.supportedValues ?: return@let
 
-            Text(
-                text = "Reading progression",
-                modifier = Modifier.padding(bottom = 8.dp),
-                style = MaterialTheme.typography.subtitle2,
-            )
-            ToggleButtonGroup(
-                options = values,
-                selectedOption = readingProgression.value ?: ReadingProgression.LTR,
-                onSelectOption = { value ->
-                    commit {
-                        set(readingProgression, value)
-                    }
-                }) { option ->
-                Icon(
-                    imageVector = when (option) {
-                        ReadingProgression.LTR -> Icons.Default.KeyboardArrowRight
-                        ReadingProgression.RTL -> Icons.Default.KeyboardArrowLeft
-                        ReadingProgression.TTB -> Icons.Default.KeyboardArrowDown
-                        ReadingProgression.BTT -> Icons.Default.KeyboardArrowUp
-                        ReadingProgression.AUTO -> Icons.Default.Clear
-                    },
-                    contentDescription = readingProgression.labelForValue(context, option)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Reading progression",
+                    style = MaterialTheme.typography.subtitle2,
                 )
+                ToggleButtonGroup(
+                    options = values,
+                    activeOption = readingProgression.effectiveValue,
+                    selectedOption = readingProgression.userValue,
+                    onSelectOption = { value ->
+                        commit {
+                            toggle(readingProgression, value)
+                        }
+                    }) { option ->
+                    Icon(
+                        imageVector = when (option) {
+                            ReadingProgression.LTR -> Icons.Default.KeyboardArrowRight
+                            ReadingProgression.RTL -> Icons.Default.KeyboardArrowLeft
+                            ReadingProgression.TTB -> Icons.Default.KeyboardArrowDown
+                            ReadingProgression.BTT -> Icons.Default.KeyboardArrowUp
+                            ReadingProgression.AUTO -> Icons.Default.Clear
+                        },
+                        contentDescription = readingProgression.labelForValue(context, option)
+                    )
+                }
             }
         }
         
-        Spacer(modifier = Modifier.height(16.dp))
-
         settings.overflow?.let { overflow ->
             val values = overflow.supportedValues ?: return@let
 
-            Text(
-                text = "Overflow",
-                modifier = Modifier.padding(bottom = 8.dp),
-                style = MaterialTheme.typography.subtitle2,
-            )
-            ToggleButtonGroup(
-                options = values,
-                selectedOption = overflow.value ?: Overflow.AUTO,
-                onSelectOption = { value ->
-                    commit {
-                        set(overflow, value)
-                    }
-                }) { option ->
-                Text(overflow.labelForValue(context, option))
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Overflow",
+                    style = MaterialTheme.typography.subtitle2,
+                )
+                ToggleButtonGroup(
+                    options = values,
+                    activeOption = overflow.effectiveValue,
+                    selectedOption = overflow.userValue,
+                    onSelectOption = { value ->
+                        commit {
+                            toggle(overflow, value)
+                        }
+                    }) { option ->
+                    Text(overflow.labelForValue(context, option))
+                }
             }
         }
     }
@@ -158,7 +159,8 @@ fun PreviewFixedSettingsView() {
         PresentationKey.READING_PROGRESSION to PresentationController.EnumSetting(
             ReadingProgression,
             key = PresentationKey.READING_PROGRESSION,
-            value = ReadingProgression.TTB,
+            userValue = ReadingProgression.TTB,
+            effectiveValue = null,
             supportedValues = listOf(
                 ReadingProgression.LTR, ReadingProgression.RTL,
                 ReadingProgression.TTB, ReadingProgression.BTT
@@ -170,8 +172,9 @@ fun PreviewFixedSettingsView() {
         PresentationKey.OVERFLOW to PresentationController.EnumSetting(
             Overflow,
             key = PresentationKey.OVERFLOW,
-            value = Overflow.PAGINATED,
-            supportedValues = listOf(Overflow.AUTO, Overflow.PAGINATED, Overflow.SCROLLED),
+            userValue = Overflow.PAGINATED,
+            effectiveValue = null,
+            supportedValues = listOf(Overflow.PAGINATED, Overflow.SCROLLED),
             isActive = true,
             isAvailable = true,
             labelForValue = { _, v -> v.name }

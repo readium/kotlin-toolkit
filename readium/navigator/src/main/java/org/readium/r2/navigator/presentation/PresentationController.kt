@@ -51,10 +51,10 @@ class PresentationController(
             val setting: Setting<*>? = when {
                 (navigatorProperty is Presentation.ToggleProperty || userValue is Boolean) -> {
                     val property = navigatorProperty as? Presentation.ToggleProperty
-                    val value = userValue as? Boolean
                     ToggleSetting(
                         key = key,
-                        value = value ?: property?.value ?: false,
+                        userValue = userValue as? Boolean,
+                        effectiveValue = property?.value,
                         isAvailable = property != null,
                         isActive = property?.isActiveForSettings(userSettings) ?: false,
                     )
@@ -62,10 +62,10 @@ class PresentationController(
 
                 (navigatorProperty is Presentation.StringProperty || userValue is String) -> {
                     val property = navigatorProperty as? Presentation.StringProperty
-                    val value = userValue as? String
                     StringSetting(
                         key = key,
-                        value = value ?: property?.value ?: "",
+                        userValue = userValue as? String,
+                        effectiveValue = property?.value,
                         supportedValues = property?.supportedValues,
                         isAvailable = property != null,
                         isActive = property?.isActiveForSettings(userSettings) ?: false,
@@ -138,7 +138,21 @@ class PresentationController(
     fun toggle(setting: ToggleSetting?) {
         setting ?: return
 
-        set(setting, !setting.value)
+        set(setting, !(setting.userValue ?: setting.effectiveValue ?: false))
+    }
+
+    /**
+     * Inverts the value of the given setting. If the setting is already set to the given value, it
+     * is nulled out.
+     */
+    fun <T> toggle(setting: Setting<T>?, value: T) {
+        setting ?: return
+
+        if (setting.userValue == value) {
+            reset(setting)
+        } else {
+            set(setting, value)
+        }
     }
 
     data class Settings(
@@ -162,14 +176,16 @@ class PresentationController(
      * Holds the current value and the metadata of a Presentation Setting of type [T].
      *
      * @param key Presentation Key for this setting.
-     * @param value Current value for the property.
+     * @param userValue Value taken from the current user settings.
+     * @param effectiveValue Actual value in effect for the navigator.
      * @param isAvailable Indicates whether the Presentation Setting is available for the [navigator].
      * @param isActive Indicates whether the Presentation Setting is active for the current set of
      *        [userSettings].
      */
     sealed class Setting<T>(
         val key: PresentationKey,
-        val value: T,
+        val userValue: T?,
+        val effectiveValue: T?,
         val isAvailable: Boolean,
         val isActive: Boolean,
     ) {
@@ -181,19 +197,21 @@ class PresentationController(
 
     class ToggleSetting(
         key: PresentationKey,
-        value: Boolean,
+        userValue: Boolean?,
+        effectiveValue: Boolean?,
         isAvailable: Boolean,
         isActive: Boolean,
-    ) : Setting<Boolean>(key, value, isAvailable = isAvailable, isActive = isActive)
+    ) : Setting<Boolean>(key, userValue, effectiveValue, isAvailable = isAvailable, isActive = isActive)
 
     class StringSetting(
         key: PresentationKey,
-        value: String,
+        userValue: String?,
+        effectiveValue: String?,
         val supportedValues: List<String>?,
         isAvailable: Boolean,
         isActive: Boolean,
         private val labelForValue: (Context, String) -> String
-    ) : Setting<String>(key, value, isAvailable = isAvailable, isActive = isActive) {
+    ) : Setting<String>(key, userValue, effectiveValue, isAvailable = isAvailable, isActive = isActive) {
 
         /**
          * Returns a user-facing localized label for the given value, which can be used in the user
@@ -209,19 +227,27 @@ class PresentationController(
     class EnumSetting<T : Enum<T>>(
         private val mapper: MapCompanion<String, T>,
         val stringSetting: StringSetting,
-    ) : Setting<T?>(stringSetting.key, mapper.get(stringSetting.value), isAvailable = stringSetting.isAvailable, isActive = stringSetting.isActive) {
+    ) : Setting<T?>(
+        stringSetting.key,
+        mapper.get(stringSetting.userValue),
+        mapper.get(stringSetting.effectiveValue),
+        isAvailable = stringSetting.isAvailable,
+        isActive = stringSetting.isActive
+    ) {
 
         constructor(
             mapper: MapCompanion<String, T>,
             key: PresentationKey,
-            value: T,
+            userValue: T?,
+            effectiveValue: T?,
             supportedValues: List<T>?,
             isAvailable: Boolean,
             isActive: Boolean,
             labelForValue: (Context, T) -> String
         ) : this(mapper, StringSetting(
             key,
-            mapper.getKey(value),
+            userValue?.let { mapper.getKey(it) },
+            effectiveValue?.let { mapper.getKey(it) },
             supportedValues?.map { mapper.getKey(it) },
             isAvailable = isAvailable,
             isActive = isActive,

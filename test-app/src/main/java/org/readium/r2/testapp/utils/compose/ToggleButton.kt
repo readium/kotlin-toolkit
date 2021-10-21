@@ -2,13 +2,11 @@ package org.readium.r2.testapp.utils.compose
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 
 // A very basic implementation of Material Design's Toggle Button for Compose.
 // https://material.io/components/buttons#toggle-button
@@ -16,7 +14,8 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun <T> ToggleButtonGroup(
     options: List<T>,
-    selectedOption: T,
+    activeOption: T?,
+    selectedOption: T?,
     onSelectOption: (T) -> Unit,
     enabled: (T) -> Boolean = { true },
     content: @Composable RowScope.(T) -> Unit
@@ -25,7 +24,8 @@ fun <T> ToggleButtonGroup(
         for (option in options) {
             ToggleButton(
                 enabled = enabled(option),
-                active = selectedOption == option,
+                active = activeOption == option,
+                selected = selectedOption == option,
                 onClick = { onSelectOption(option) },
                 content = { content(option) }
             )
@@ -38,6 +38,7 @@ fun ToggleButton(
     onClick: () -> Unit,
     enabled: Boolean = true,
     active: Boolean = false,
+    selected: Boolean = false,
     content: @Composable RowScope.() -> Unit
 ) {
     OutlinedButton(
@@ -47,11 +48,14 @@ fun ToggleButton(
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colors.onBackground,
             backgroundColor =
-                if (active) MaterialTheme.colors.onBackground
+                if (selected) MaterialTheme.colors.onBackground
                     .copy(alpha = 0.15f)
                     .compositeOver(MaterialTheme.colors.background)
                 else MaterialTheme.colors.surface
-        )
+        ),
+        elevation =
+            if (active) ButtonDefaults.elevation(defaultElevation = 2.dp)
+            else null
     )
 }
 
@@ -60,6 +64,7 @@ fun ToggleButton(
 fun PreviewToggleButtonGroup() {
     ToggleButtonGroup(
         options = listOf("1", "2", "3"),
+        activeOption = "2",
         selectedOption = "2",
         onSelectOption = {}
     ) { option ->
