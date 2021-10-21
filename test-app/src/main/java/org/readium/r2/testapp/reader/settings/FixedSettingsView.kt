@@ -1,6 +1,8 @@
 package org.readium.r2.testapp.reader.settings
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -15,8 +17,7 @@ import org.readium.r2.navigator.presentation.PresentationController
 import org.readium.r2.navigator.presentation.PresentationKey
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.publication.presentation.Presentation.Fit
-import org.readium.r2.shared.publication.presentation.Presentation.Overflow
+import org.readium.r2.shared.publication.presentation.Presentation.*
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
 
 @OptIn(ExperimentalPresentation::class)
@@ -41,7 +42,9 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
     val context = LocalContext.current
 
     Column(
-        modifier = Modifier.padding(24.dp),
+        modifier = Modifier
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
@@ -95,8 +98,8 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
         }
 
         EnumSection("Fit", settings.fit, commit)
-
         EnumSection("Overflow", settings.overflow, commit)
+        EnumSection("Orientation", settings.orientation, commit)
 
         settings.pageSpacing?.let { pageSpacing ->
             Section("Page spacing", isActive = pageSpacing.isActive) {
@@ -211,6 +214,16 @@ fun PreviewFixedSettingsView() {
             userValue = Fit.COVER,
             effectiveValue = null,
             supportedValues = listOf(Fit.COVER, Fit.CONTAIN, Fit.HEIGHT, Fit.WIDTH),
+            isActive = true,
+            isAvailable = true,
+            labelForValue = { _, v -> v.name }
+        ).stringSetting,
+        PresentationKey.ORIENTATION to PresentationController.EnumSetting(
+            Orientation,
+            key = PresentationKey.ORIENTATION,
+            userValue = Orientation.LANDSCAPE,
+            effectiveValue = null,
+            supportedValues = listOf(Orientation.PORTRAIT, Orientation.LANDSCAPE),
             isActive = true,
             isAvailable = true,
             labelForValue = { _, v -> v.name }

@@ -22,20 +22,24 @@
     <!-- Default value for a presentation property -->
     <string name="readium.navigator.presentation.default">Default</string>
 
-    <!-- Reading progression -->
-    <string name="readium.navigator.presentation.readingProgression.ltr">Left-to-right</string>
-    <string name="readium.navigator.presentation.readingProgression.rtl">Right-to-left</string>
-    <string name="readium.navigator.presentation.readingProgression.ttb">Top-to-bottom</string>
-    <string name="readium.navigator.presentation.readingProgression.btt">Bottom-to-top</string>
-
     <!-- Fit -->
     <string name="readium.navigator.presentation.fit.width">Width</string>
     <string name="readium.navigator.presentation.fit.height">Height</string>
     <string name="readium.navigator.presentation.fit.contain">Contain</string>
     <string name="readium.navigator.presentation.fit.cover">Cover</string>
 
+    <!-- Orientation -->
+    <string name="readium.navigator.presentation.orientation.portrait">Portrait</string>
+    <string name="readium.navigator.presentation.orientation.landscape">Landscape</string>
+
     <!-- Overflow -->
     <string name="readium.navigator.presentation.overflow.paginated">Paginated</string>
     <string name="readium.navigator.presentation.overflow.scrolled">Scrolled</string>
+
+    <!-- Reading progression -->
+    <string name="readium.navigator.presentation.readingProgression.ltr">Left-to-right</string>
+    <string name="readium.navigator.presentation.readingProgression.rtl">Right-to-left</string>
+    <string name="readium.navigator.presentation.readingProgression.ttb">Top-to-bottom</string>
+    <string name="readium.navigator.presentation.readingProgression.btt">Bottom-to-top</string>
 
 </resources>

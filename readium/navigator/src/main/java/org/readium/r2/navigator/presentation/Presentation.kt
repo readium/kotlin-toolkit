@@ -6,19 +6,17 @@ import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.extensions.toStringPercentage
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation.Fit
-import org.readium.r2.shared.publication.presentation.Presentation.Overflow
+import org.readium.r2.shared.publication.presentation.Presentation.*
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.logging.WarningLogger
 
 @ExperimentalPresentation
 data class PresentationKey(val key: String) {
     companion object {
         val CONTINUOUS = PresentationKey("continuous")
         val FIT = PresentationKey("fit")
+        val ORIENTATION = PresentationKey("orientation")
         val OVERFLOW = PresentationKey("overflow")
         val PAGE_SPACING = PresentationKey("pageSpacing")
         val READING_PROGRESSION = PresentationKey("readingProgression")
@@ -44,6 +42,10 @@ data class Presentation(
     val fit: EnumProperty<Fit>? get() =
         (properties[PresentationKey.FIT] as? StringProperty)
             ?.let { EnumProperty(Fit, it, Fit.DEFAULT) }
+
+    val orientation: EnumProperty<Orientation>? get() =
+        (properties[PresentationKey.ORIENTATION] as? StringProperty)
+            ?.let { EnumProperty(Orientation, it, Orientation.DEFAULT) }
 
     val overflow: EnumProperty<Overflow>? get() =
         (properties[PresentationKey.OVERFLOW] as? StringProperty)
@@ -212,12 +214,14 @@ data class PresentationSettings(val settings: Map<PresentationKey, Any?> = empty
     constructor(
         continuous: Boolean? = null,
         fit: Fit? = null,
+        orientation: Orientation? = null,
         overflow: Overflow? = null,
         pageSpacing: Double? = null,
         readingProgression: ReadingProgression? = null
     ) : this(
         PresentationKey.CONTINUOUS to continuous,
         PresentationKey.FIT to fit,
+        PresentationKey.ORIENTATION to orientation,
         PresentationKey.OVERFLOW to overflow,
         PresentationKey.PAGE_SPACING to pageSpacing,
         PresentationKey.READING_PROGRESSION to readingProgression,
@@ -229,6 +233,10 @@ data class PresentationSettings(val settings: Map<PresentationKey, Any?> = empty
     val fit: Fit?
         get() = (settings[PresentationKey.FIT] as? String)
             ?.let { Fit.get(it) }
+
+    val orientation: Orientation?
+        get() = (settings[PresentationKey.ORIENTATION] as? String)
+            ?.let { Orientation.get(it) }
 
     val overflow: Overflow?
         get() = (settings[PresentationKey.OVERFLOW] as? String)

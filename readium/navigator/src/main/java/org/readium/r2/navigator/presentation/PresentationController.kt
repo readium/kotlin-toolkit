@@ -9,8 +9,7 @@ import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.extensions.toStringPercentage
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation.Fit
-import org.readium.r2.shared.publication.presentation.Presentation.Overflow
+import org.readium.r2.shared.publication.presentation.Presentation.*
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.getOrDefault
 import java.lang.ref.WeakReference
@@ -222,6 +221,10 @@ class PresentationController(
         val fit: EnumSetting<Fit>? get() =
             (settings[PresentationKey.FIT] as? StringSetting)
                 ?.let { EnumSetting(Fit, it) }
+
+        val orientation: EnumSetting<Orientation>? get() =
+            (settings[PresentationKey.ORIENTATION] as? StringSetting)
+                ?.let { EnumSetting(Orientation, it) }
 
         val overflow: EnumSetting<Overflow>? get() =
             (settings[PresentationKey.OVERFLOW] as? StringSetting)

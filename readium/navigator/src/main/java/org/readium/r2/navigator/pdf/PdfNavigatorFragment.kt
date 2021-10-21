@@ -9,6 +9,7 @@
 
 package org.readium.r2.navigator.pdf
 
+import android.content.pm.ActivityInfo
 import android.graphics.PointF
 import android.net.Uri
 import android.os.Bundle
@@ -41,6 +42,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.presentation.Presentation.Fit
+import org.readium.r2.shared.publication.presentation.Presentation.Orientation
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
@@ -131,6 +133,12 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
         } else {
             lifecycleScope.launch {
                 try {
+                    activity?.requestedOrientation = when (requireNotNull(presentation.value.orientation).value) {
+                        Orientation.AUTO -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                        Orientation.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                        Orientation.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    }
+
                     val paginated = requireNotNull(presentation.value.overflow).value == Overflow.PAGINATED
                     val pageSpacing = requireNotNull(presentation.value.pageSpacing).value
                     val fit = requireNotNull(presentation.value.fit).value
@@ -256,6 +264,9 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
         val supportedFits = listOf(
             Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT
         )
+        val supportedOrientations = listOf(
+            Orientation.PORTRAIT, Orientation.LANDSCAPE
+        )
         val supportedOverflows = listOf(
             Overflow.PAGINATED, Overflow.SCROLLED
         )
@@ -301,6 +312,22 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
                     Fit.HEIGHT -> R.string.readium_navigator_presentation_fit_height
                     Fit.CONTAIN -> R.string.readium_navigator_presentation_fit_contain
                     Fit.COVER -> R.string.readium_navigator_presentation_fit_cover
+                }) }
+            ),
+
+            PresentationKey.ORIENTATION to Presentation.StringProperty(
+                Orientation,
+                value = settings.orientation?.let {
+                    it.takeIf { supportedOrientations.contains(it) }
+                        ?: fallback?.orientation?.value
+                    }
+                    ?: publication.metadata.presentation.orientation?.takeIf { supportedOrientations.contains(it) }
+                    ?: Orientation.AUTO,
+                supportedValues = supportedOrientations,
+                labelForValue = { c, v -> c.getString(when (v) {
+                    Orientation.AUTO -> R.string.readium_navigator_presentation_default
+                    Orientation.LANDSCAPE -> R.string.readium_navigator_presentation_orientation_landscape
+                    Orientation.PORTRAIT -> R.string.readium_navigator_presentation_orientation_portrait
                 }) }
             ),
 
