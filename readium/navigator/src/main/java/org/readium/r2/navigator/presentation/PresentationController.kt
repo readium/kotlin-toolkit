@@ -19,6 +19,9 @@ import kotlin.math.round
 /**
  * Helper class which simplifies the modification of Presentation Settings and designing a user
  * settings interface.
+ *
+ * @param autoActivateOnChange Requests the navigator to activate a non-active setting when its
+ *        value is changed.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @ExperimentalPresentation
@@ -26,6 +29,7 @@ class PresentationController(
     private val coroutineScope: CoroutineScope,
     userSettings: PresentationSettings? = null,
     appSettings: PresentationSettings? = null,
+    private val autoActivateOnChange: Boolean = true,
 ) {
 
     val appSettings: PresentationSettings = appSettings ?: PresentationSettings()
@@ -146,10 +150,12 @@ class PresentationController(
             }
         }
 
-        val navigatorProperty = navigator?.presentation?.value?.properties?.get(setting.key)
-        if (navigatorProperty != null) {
-            settings = navigatorProperty.activateInSettings(settings)
-                .getOrDefault(settings)
+        if (autoActivateOnChange) {
+            val navigatorProperty = navigator?.presentation?.value?.properties?.get(setting.key)
+            if (navigatorProperty != null) {
+                settings = navigatorProperty.activateInSettings(settings)
+                    .getOrDefault(settings)
+            }
         }
 
         _userSettings.value = settings
