@@ -52,23 +52,32 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
             style = MaterialTheme.typography.subtitle1,
         )
 
-        PresetsButton(commit,
-            "Reset to defaults" to {
-                reset()
-            },
-            "Scrolled" to { settings ->
-                set(settings.readingProgression, ReadingProgression.TTB)
-                set(settings.overflow, Overflow.SCROLLED)
-            },
-            "Paginated" to { settings ->
-                set(settings.readingProgression, ReadingProgression.LTR)
-                set(settings.overflow, Overflow.PAGINATED)
-            },
-            "Manga" to { settings ->
-                set(settings.readingProgression, ReadingProgression.RTL)
-                set(settings.overflow, Overflow.PAGINATED)
-            },
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            PresetsButton(
+                commit,
+                "Scrolled" to { settings ->
+                    set(settings.readingProgression, ReadingProgression.TTB)
+                    set(settings.overflow, Overflow.SCROLLED)
+                },
+                "Paginated" to { settings ->
+                    set(settings.readingProgression, ReadingProgression.LTR)
+                    set(settings.overflow, Overflow.PAGINATED)
+                },
+                "Manga" to { settings ->
+                    set(settings.readingProgression, ReadingProgression.RTL)
+                    set(settings.overflow, Overflow.PAGINATED)
+                },
+            )
+            Button(
+                onClick = {
+                    commit { reset() }
+                },
+            ) {
+                Text("Reset")
+            }
+        }
 
         settings.readingProgression?.let { readingProgression ->
             val values = readingProgression.supportedValues ?: return@let
