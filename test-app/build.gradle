@@ -66,6 +66,13 @@ android {
     }
     packagingOptions {
         exclude 'META-INF/*'
+
+        // Necessary when building with both liblcp and readium-navigator.
+        // See https://github.com/readium/kotlin-toolkit/issues/29
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86_64/libc++_shared.so'
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
     }
 
     sourceSets {

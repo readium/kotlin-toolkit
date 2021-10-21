@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
+import com.github.barteksc.pdfviewer.util.FitPolicy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -137,14 +138,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
                         // navigator.
                         .apply { listener?.onConfigurePdfView(this) }
                         .defaultPage(page)
-                        .onRender { _, _, _ ->
-                            pdfView.fitToWidth()
-                            // Using `fitToWidth` often breaks the use of `defaultPage`, so we
-                            // need to jump manually to the target page.
-                            pdfView.jumpTo(page, false)
-
-                            completion()
-                        }
+                        .pageFitPolicy(FitPolicy.WIDTH)
                         .onPageChange { index, _ -> onPageChanged(pageIndexToNumber(index)) }
                         .onTap { event -> onTap(event) }
                         .load()

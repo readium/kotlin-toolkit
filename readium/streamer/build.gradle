@@ -60,7 +60,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-annotations:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-core:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION"
-    implementation "com.github.barteksc:pdfium-android:1.7.1"
+    implementation "com.github.barteksc:pdfium-android:1.9.0"
     implementation "com.jakewharton.timber:timber:4.7.1"
     //noinspection GradleDependency
     implementation ("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
