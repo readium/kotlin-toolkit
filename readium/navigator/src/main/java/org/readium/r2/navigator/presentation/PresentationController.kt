@@ -102,6 +102,13 @@ class PresentationController(
     }
 
     /**
+     * Clears the given user setting to revert to the Navigator default value.
+     */
+    fun <T> reset(setting: Setting<T>?) {
+        set(setting, null)
+    }
+
+    /**
      * Changes the value of the given setting.
      * The new value will be set in the user settings.
      */

@@ -256,8 +256,10 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
         return Presentation(
             PresentationKey.READING_PROGRESSION to Presentation.StringProperty(
                 ReadingProgression,
-                value = settings.readingProgression?.takeIf { supportedReadingProgressions.contains(it) }
-                    ?: fallback?.readingProgression?.value
+                value = settings.readingProgression?.let {
+                        it.takeIf { supportedReadingProgressions.contains(it) }
+                            ?: fallback?.readingProgression?.value
+                    }
                     ?: publication.metadata.readingProgression.takeIf { supportedReadingProgressions.contains(it) }
                     ?: ReadingProgression.TTB,
                 supportedValues = supportedReadingProgressions,
@@ -272,8 +274,10 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
 
             PresentationKey.OVERFLOW to Presentation.StringProperty(
                 Overflow,
-                value = settings.overflow?.takeIf { supportedOverflows.contains(it) }
-                    ?: fallback?.overflow?.value
+                value = settings.overflow?.let {
+                        it.takeIf { supportedOverflows.contains(it) }
+                            ?: fallback?.overflow?.value
+                    }
                     ?: publication.metadata.presentation.overflow?.takeIf { supportedOverflows.contains(it) }
                     ?: Overflow.SCROLLED,
                 supportedValues = supportedOverflows,
