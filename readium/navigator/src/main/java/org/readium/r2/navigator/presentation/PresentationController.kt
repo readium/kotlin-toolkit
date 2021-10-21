@@ -24,15 +24,17 @@ import kotlin.math.round
 @ExperimentalPresentation
 class PresentationController(
     private val coroutineScope: CoroutineScope,
-    val appSettings: PresentationSettings = PresentationSettings(),
-    userSettings: PresentationSettings = PresentationSettings(),
+    userSettings: PresentationSettings? = null,
+    appSettings: PresentationSettings? = null,
 ) {
 
-    private val _settings = MutableStateFlow(combineSettings(userSettings, Presentation()))
+    val appSettings: PresentationSettings = appSettings ?: PresentationSettings()
+
+    private val _settings = MutableStateFlow(combineSettings(userSettings ?: PresentationSettings(), Presentation()))
     val settings: StateFlow<Settings>
         get() = _settings.asStateFlow()
 
-    private val _userSettings = MutableStateFlow(userSettings)
+    private val _userSettings = MutableStateFlow(userSettings ?: PresentationSettings())
     val userSettings: StateFlow<PresentationSettings>
         get() = _userSettings.asStateFlow()
 

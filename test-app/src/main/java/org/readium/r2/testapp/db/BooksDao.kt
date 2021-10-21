@@ -13,6 +13,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import org.readium.r2.navigator.ExperimentalPresentation
+import org.readium.r2.navigator.presentation.PresentationSettings
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.domain.model.Bookmark
 import org.readium.r2.testapp.domain.model.Highlight
@@ -116,4 +118,14 @@ interface BooksDao {
      */
     @Query("UPDATE " + Book.TABLE_NAME + " SET " + Book.PROGRESSION + " = :locator WHERE " + Book.ID + "= :id")
     suspend fun saveProgression(locator: String, id: Long)
+
+    /**
+     * Saves the current set of user settings for this book.
+     *
+     * Note that this API relies on JSONableConverters to automatically serialize
+     * [PresentationSettings].
+     */
+    @OptIn(ExperimentalPresentation::class)
+    @Query("UPDATE " + Book.TABLE_NAME + " SET " + Book.USER_SETTINGS + " = :userSettings WHERE " + Book.ID + "= :id")
+    suspend fun saveUserSettings(id: Long, userSettings: PresentationSettings)
 }

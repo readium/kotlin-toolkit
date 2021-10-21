@@ -11,6 +11,9 @@ import android.os.Build
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.json.JSONObject
+import org.readium.r2.navigator.ExperimentalPresentation
+import org.readium.r2.navigator.presentation.PresentationSettings
 import org.readium.r2.shared.util.mediatype.MediaType
 import java.net.URI
 import java.nio.file.Paths
@@ -34,7 +37,9 @@ data class Book(
     @ColumnInfo(name = PROGRESSION)
     val progression: String? = null,
     @ColumnInfo(name = TYPE)
-    val type: String
+    val type: String,
+    @ColumnInfo(name = USER_SETTINGS)
+    val userSettingsJson: String? = null,
 ) {
 
     val fileName: String?
@@ -62,6 +67,10 @@ data class Book(
             return url
         }
 
+    @OptIn(ExperimentalPresentation::class)
+    val userSettings: PresentationSettings get() =
+        PresentationSettings.fromJSON(userSettingsJson?.let { JSONObject(it) })
+
     suspend fun mediaType(): MediaType? = MediaType.of(type)
 
     companion object {
@@ -75,5 +84,6 @@ data class Book(
         const val IDENTIFIER = "identifier"
         const val PROGRESSION = "progression"
         const val TYPE = "type"
+        const val USER_SETTINGS = "user_settings"
     }
 }

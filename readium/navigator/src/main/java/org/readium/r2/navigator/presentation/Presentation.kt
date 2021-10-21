@@ -1,13 +1,18 @@
 package org.readium.r2.navigator.presentation
 
 import android.content.Context
+import org.json.JSONObject
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.extensions.toStringPercentage
+import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.Fit
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.logging.WarningLogger
 
 @ExperimentalPresentation
 data class PresentationKey(val key: String) {
@@ -200,7 +205,7 @@ data class Presentation(
  * Properties. The keys must be valid Presentation Property Keys.
  */
 @ExperimentalPresentation
-data class PresentationSettings(val settings: Map<PresentationKey, Any?> = emptyMap()) {
+data class PresentationSettings(val settings: Map<PresentationKey, Any?> = emptyMap()) : JSONable {
 
     constructor(vararg settings: Pair<PresentationKey, Any?>) : this(mapOf(*settings))
 
@@ -251,4 +256,15 @@ data class PresentationSettings(val settings: Map<PresentationKey, Any?> = empty
                 .groupBy({ it.key }, { it.value })
                 .mapValues { it.value.firstOrNull() }
         )
+
+    override fun toJSON(): JSONObject =
+        JSONObject(settings.mapKeys { it.key.key })
+
+    companion object {
+
+        fun fromJSON(json: JSONObject?): PresentationSettings {
+            val settings = json?.toMap()?.mapKeys { PresentationKey(it.key) }
+            return PresentationSettings(settings ?: emptyMap())
+        }
+    }
 }

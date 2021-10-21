@@ -17,6 +17,7 @@ import androidx.paging.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.ExperimentalPresentation
@@ -41,20 +42,23 @@ import org.readium.r2.testapp.utils.EventChannel
 @OptIn(Search::class, ExperimentalDecorator::class, ExperimentalPresentation::class)
 class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewModel() {
 
+    private val repository = BookRepository(BookDatabase.getDatabase(context).booksDao())
+
     val publication: Publication = arguments.publication
     val initialLocation: Locator? = arguments.initialLocator
     val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
     val fragmentChannel = EventChannel(Channel<FeedbackEvent>(Channel.BUFFERED), viewModelScope)
     val bookId = arguments.bookId
-    val presentation: PresentationController = PresentationController(viewModelScope)
-
-    private val repository: BookRepository
-
+    val book = runBlocking { repository.get(bookId) }
     val publicationId: PublicationId get() = bookId.toString()
+    val presentation = PresentationController(viewModelScope, userSettings = book?.userSettings)
 
     init {
-        val booksDao = BookDatabase.getDatabase(context).booksDao()
-        repository = BookRepository(booksDao)
+        viewModelScope.launch {
+            presentation.userSettings.collect {
+                repository.saveUserSettings(bookId, it)
+            }
+        }
     }
 
     fun onNavigatorCreated(navigator: Navigator) {

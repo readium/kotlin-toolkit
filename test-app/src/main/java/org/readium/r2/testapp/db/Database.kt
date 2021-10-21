@@ -12,13 +12,17 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import org.readium.r2.testapp.domain.model.*
+import org.readium.r2.testapp.utils.extensions.JSONableConverters
 
 @Database(
     entities = [Book::class, Bookmark::class, Highlight::class, Catalog::class],
     version = 1,
     exportSchema = false
 )
-@TypeConverters(HighlightConverters::class)
+@TypeConverters(
+    HighlightConverters::class,
+    JSONableConverters::class
+)
 abstract class BookDatabase : RoomDatabase() {
 
     abstract fun booksDao(): BooksDao
