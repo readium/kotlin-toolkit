@@ -65,6 +65,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
          * Returns the custom [ActionMode.Callback] to be used with the text selection menu.
          */
         val selectionActionModeCallback: ActionMode.Callback? get() = null
+
+        /**
+         * Offers an opportunity to override a request loaded by the given web view.
+         */
+        fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean = false
     }
 
     lateinit var listener: Listener
@@ -471,31 +476,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-    /**
-     * Prevents opening external links in the web view.
-     * To be called from the WebViewClient implementation attached to the web view.
-     */
-    internal fun shouldOverrideUrlLoading(
-        request: WebResourceRequest,
-        onInternalLinkClick: (url: String) -> Unit = {}
-    ): Boolean {
-        val resourceUrl = url ?: return false
+    internal fun shouldOverrideUrlLoading(request: WebResourceRequest): Boolean {
+        if (resourceUrl == request.url?.toString()) return false
 
-        // List of hosts that are allowed to be loaded in the web view.
-        // The host of the page already loaded in the web view is always allowed.
-        val passthroughHosts = listOfNotNull(
-            "localhost", "127.0.0.1",
-            tryOrNull { Uri.parse(resourceUrl) }?.host
-        )
-        if (!passthroughHosts.contains(request.url.host)) {
-            openExternalLink(request.url)
-            return true
-        }
-        onInternalLinkClick(
-            // Drop the UUID of the publication and keep only the href needed for navigation
-            request.url.pathSegments.drop(1).joinToString("/", "/")
-        )
-        return false
+        return listener.shouldOverrideUrlLoading(this, request)
     }
 
     private fun openExternalLink(url: Uri) {
