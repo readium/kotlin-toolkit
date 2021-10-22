@@ -482,12 +482,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         return listener.shouldOverrideUrlLoading(this, request)
     }
 
-    private fun openExternalLink(url: Uri) {
-        CustomTabsIntent.Builder()
-            .build()
-            .launchUrl(context, url)
-    }
-
     // Text selection ActionMode overrides
     //
     // Since Android 12, overriding Activity.onActionModeStarted doesn't seem to work to customize
