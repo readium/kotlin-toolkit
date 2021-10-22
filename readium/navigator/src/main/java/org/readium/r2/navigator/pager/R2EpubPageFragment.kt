@@ -72,6 +72,7 @@ class R2EpubPageFragment : Fragment() {
         val webView = binding.webView
         this.webView = webView
 
+        webView.setProxy("", 0, "localhost|0.0.0.0|127.*|[::1]")
         webView.visibility = View.INVISIBLE
         webView.navigator = navigatorFragment
         webView.listener = navigatorFragment.webViewListener

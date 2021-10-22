@@ -6,18 +6,21 @@
 
 package org.readium.r2.navigator
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
+import android.net.Proxy
 import android.net.Uri
 import android.os.Build
+import android.os.Parcelable
 import android.text.Html
+import android.util.ArrayMap
 import android.util.AttributeSet
 import android.view.*
-import android.view.Gravity
-import android.view.LayoutInflater
 import android.webkit.URLUtil
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -538,5 +541,46 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         override fun onGetContentRect(mode: ActionMode?, view: View?, outRect: Rect?) =
             callback2?.onGetContentRect(mode, view, outRect)
                 ?: super.onGetContentRect(mode, view, outRect)
+    }
+
+    /**
+     * Sets the Web View proxy.
+     *
+     * Attempt at fixing https://github.com/readium/kotlin-toolkit/issues/33
+     *
+     * Taken from: https://stackoverflow.com/a/26781539
+     */
+    @SuppressLint("DiscouragedPrivateApi", "PrivateApi")
+    fun setProxy(host: String?, port: Int, exclusionList: String?) = tryOrLog {
+        val properties = System.getProperties()
+        properties.setProperty("http.proxyHost", host)
+        properties.setProperty("http.proxyPort", port.toString())
+        properties.setProperty("https.proxyHost", host)
+        properties.setProperty("https.proxyPort", port.toString())
+        properties.setProperty("http.nonProxyHosts", exclusionList)
+        properties.setProperty("https.nonProxyHosts", exclusionList)
+        val applictionCls = Class.forName("android.app.Application")
+        val loadedApkField = applictionCls.getDeclaredField("mLoadedApk")
+        loadedApkField.isAccessible = true
+        val loadedApk = loadedApkField.get(context) ?: return@tryOrLog
+        val loadedApkCls = Class.forName("android.app.LoadedApk")
+        val receiversField = loadedApkCls.getDeclaredField("mReceivers")
+        receiversField.isAccessible = true
+        val receivers = receiversField.get(loadedApk) as ArrayMap<*, *>
+        for (receiverMap in receivers.values) {
+            for (rec in (receiverMap as ArrayMap<*, *>).keys) {
+                val clazz = rec.javaClass
+                if (clazz.name.contains("ProxyChangeListener")) {
+                    val onReceiveMethod = clazz.getDeclaredMethod( "onReceive", Context::class.java, Intent::class.java )
+                    val intent = Intent(Proxy.PROXY_CHANGE_ACTION)
+                    val cls = Class.forName("android.net.ProxyInfo")
+                    val constructor = cls.getConstructor( String::class.java, Integer.TYPE, String::class.java )
+                    constructor.isAccessible = true
+                    val proxyProperties = constructor.newInstance(host, port, exclusionList)
+                    intent.putExtra("proxy", proxyProperties as Parcelable)
+                    onReceiveMethod.invoke(rec, context, intent)
+                }
+            }
+        }
     }
 }
