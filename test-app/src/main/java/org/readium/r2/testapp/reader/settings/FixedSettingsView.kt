@@ -57,11 +57,11 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
         ) {
             PresetsButton(
                 commit,
-                "Scrolled" to { settings ->
+                "Document" to { settings ->
                     set(settings.readingProgression, ReadingProgression.TTB)
                     set(settings.overflow, Overflow.SCROLLED)
                 },
-                "Paginated" to { settings ->
+                "Ebook" to { settings ->
                     set(settings.readingProgression, ReadingProgression.LTR)
                     set(settings.overflow, Overflow.PAGINATED)
                 },
