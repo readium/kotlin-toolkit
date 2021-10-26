@@ -15,7 +15,7 @@ class HtmlInjectorTest {
                 <?xml version="1.0" encoding="utf-8"?>
                 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
                 <html xmlns="http://www.w3.org/1999/xhtml">
-                    <head><meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
+                    <head><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -48,7 +48,7 @@ class HtmlInjectorTest {
                 <?xml version="1.0" encoding="utf-8"?>
                 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
                 <html xmlns="http://www.w3.org/1999/xhtml">
-                    <head xmlns:xlink="http://www.w3.org/1999/xlink"><meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
+                    <head xmlns:xlink="http://www.w3.org/1999/xlink"><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -79,7 +79,7 @@ class HtmlInjectorTest {
         assertEquals(
             """
                 <?xml version="1.0" encoding="utf-8"?>
-                <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head xmlns:xlink="http://www.w3.org/1999/xlink"><meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
+                <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head xmlns:xlink="http://www.w3.org/1999/xlink"><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
                 <title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
                 <script type="text/javascript" src="/assets/scripts/readium-reflowable.js"></script>
                 <style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>
@@ -100,7 +100,7 @@ class HtmlInjectorTest {
                 <?xml version="1.0" encoding="utf-8"?>
                 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><HEAD
                  xmlns:xlink="http://www.w3.org/1999/xlink"
-                 ><meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
+                 ><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
                 <title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
                 <script type="text/javascript" src="/assets/scripts/readium-reflowable.js"></script>
                 <style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>

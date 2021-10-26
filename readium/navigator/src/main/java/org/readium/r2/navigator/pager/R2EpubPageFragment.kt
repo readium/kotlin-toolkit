@@ -12,6 +12,7 @@ package org.readium.r2.navigator.pager
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.PointF
 import android.os.Bundle
 import android.util.Base64
 import android.util.DisplayMetrics
@@ -23,10 +24,8 @@ import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.R2WebView
@@ -49,6 +48,9 @@ class R2EpubPageFragment : Fragment() {
     internal val link: Link?
         get() = requireArguments().getParcelable("link")
 
+    private val positionCount: Long
+        get() = requireArguments().getLong("positionCount")
+
     var webView: R2WebView? = null
         private set
 
@@ -57,6 +59,8 @@ class R2EpubPageFragment : Fragment() {
 
     private var _binding: ViewpagerFragmentEpubBinding? = null
     private val binding get() = _binding!!
+
+    private var isLoading: Boolean = false
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -68,6 +72,7 @@ class R2EpubPageFragment : Fragment() {
         val webView = binding.webView
         this.webView = webView
 
+        webView.visibility = View.INVISIBLE
         webView.navigator = navigatorFragment
         webView.listener = navigatorFragment.webViewListener
         webView.preferences = preferences
@@ -127,71 +132,11 @@ class R2EpubPageFragment : Fragment() {
 
                 webView.listener.onResourceLoaded(link, webView, url)
 
-                val epubNavigator = (webView.navigator as? EpubNavigatorFragment)
-                val currentFragment: R2EpubPageFragment? =
-                    (epubNavigator?.resourcePager?.adapter as? R2PagerAdapter)?.getCurrentFragment() as? R2EpubPageFragment
-
-                if (currentFragment != null && this@R2EpubPageFragment.tag == currentFragment.tag) {
-                    val locator = epubNavigator.pendingLocator
-                    epubNavigator.pendingLocator = null
-                    var locations = locator?.locations
-
-                    // TODO this seems to be needed, will need to test more
-                    if (url != null && url.indexOf("#") > 0) {
-                        val id = url.substringAfterLast("#")
-                        locations = Locator.Locations(fragments = listOf(id))
-                    }
-
-                    val currentWebView = currentFragment.webView
-                    if (currentWebView != null && locations != null) {
-
-                        lifecycleScope.launchWhenStarted {
-                            // FIXME: We need a better way to wait, because if the value is too low it fails
-                            delay(200)
-
-                            val text = locator?.text
-                            if (text?.highlight != null) {
-                                if (currentWebView.scrollToText(text)) {
-                                    return@launchWhenStarted
-                                }
-
-                                // The delay is necessary before falling back on the other
-                                // locations, because scrollToText() is moving the scroll position
-                                // while looking for the text snippet.
-                                delay(100)
-                            }
-
-                            val htmlId = locations.htmlId
-                            if (htmlId != null && currentWebView.scrollToId(htmlId)) {
-                                return@launchWhenStarted
-                            }
-
-                            var progression = locations.progression
-                            if (progression != null) {
-                                // We need to reverse the progression with RTL because the Web View
-                                // always scrolls from left to right, no matter the reading direction.
-                                progression =
-                                    if (webView.scrollMode || navigatorFragment.readingProgression == ReadingProgression.LTR) progression
-                                    else 1 - progression
-
-                                if (webView.scrollMode) {
-                                    currentWebView.scrollToPosition(progression)
-
-                                } else {
-                                    // Figure out the target web view "page" from the requested
-                                    // progression.
-                                    var item = (progression * currentWebView.numPages).roundToInt()
-                                    if (navigatorFragment.readingProgression == ReadingProgression.RTL && item > 0) {
-                                        item -= 1
-                                    }
-                                    currentWebView.setCurrentItem(item, false)
-                                }
-                            }
-                        }
-                    }
-
+                // To make sure the page is properly laid out before jumping to the target locator,
+                // we execute a dummy JavaScript and wait for the callback result.
+                webView.evaluateJavascript("true") {
+                    onLoadPage()
                 }
-                webView.listener.onPageLoaded()
             }
 
             // prevent favicon.ico to be loaded, this was causing NullPointerException in NanoHttp
@@ -237,9 +182,18 @@ class R2EpubPageFragment : Fragment() {
             false
         }
 
-        resourceUrl?.let { webView.loadUrl(it) }
+        resourceUrl?.let {
+            isLoading = true
+            webView.loadUrl(it)
+        }
 
         setupPadding()
+
+        // Forward a tap event when the web view is not ready to propagate the taps. This allows
+        // to toggle a navigation UI while a page is loading, for example.
+        binding.root.setOnClickListenerWithPoint { _, point ->
+            webView.listener.onTap(point)
+        }
 
         return containerView
     }
@@ -312,15 +266,97 @@ class R2EpubPageFragment : Fragment() {
     internal val paddingTop: Int get() = containerView.paddingTop
     internal val paddingBottom: Int get() = containerView.paddingBottom
 
+    private val isCurrentResource: Boolean get() {
+        val epubNavigator = webView?.navigator as? EpubNavigatorFragment ?: return false
+        val currentFragment = (epubNavigator.resourcePager.adapter as? R2PagerAdapter)?.getCurrentFragment() as? R2EpubPageFragment ?: return false
+        return tag == currentFragment.tag
+    }
+
+    private fun onLoadPage() {
+        if (!isLoading) return
+        isLoading = false
+
+        if (view == null) return
+
+        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+            val webView = requireNotNull(webView)
+            webView.visibility = View.VISIBLE
+
+            if (isCurrentResource) {
+                val epubNavigator = requireNotNull(webView.navigator as? EpubNavigatorFragment)
+                val locator = epubNavigator.pendingLocator
+                epubNavigator.pendingLocator = null
+                if (locator != null) {
+                    loadLocator(webView, epubNavigator.readingProgression, locator)
+                }
+
+                webView.listener.onPageLoaded()
+            }
+        }
+    }
+
+    private suspend fun loadLocator(webView: R2WebView, readingProgression: ReadingProgression, locator: Locator) {
+        val text = locator.text
+        if (text.highlight != null) {
+            if (webView.scrollToText(text)) {
+                return
+            }
+        }
+
+        val htmlId = locator.locations.htmlId
+        if (htmlId != null && webView.scrollToId(htmlId)) {
+            return
+        }
+
+        var progression = locator.locations.progression
+        if (progression != null) {
+            // We need to reverse the progression with RTL because the Web View
+            // always scrolls from left to right, no matter the reading direction.
+            progression =
+                if (webView.scrollMode || readingProgression == ReadingProgression.LTR) progression
+                else 1 - progression
+
+            if (webView.scrollMode) {
+                webView.scrollToPosition(progression)
+
+            } else {
+                // Figure out the target web view "page" from the requested
+                // progression.
+                var item = (progression * webView.numPages).roundToInt()
+                if (readingProgression == ReadingProgression.RTL && item > 0) {
+                    item -= 1
+                }
+                webView.setCurrentItem(item, false)
+            }
+        }
+    }
+
     companion object {
-        fun newInstance(url: String, link: Link? = null): R2EpubPageFragment =
+        fun newInstance(url: String, link: Link? = null, positionCount: Int = 0): R2EpubPageFragment =
             R2EpubPageFragment().apply {
                 arguments = Bundle().apply {
                     putString("url", url)
                     putParcelable("link", link)
+                    putLong("positionCount", positionCount.toLong())
                 }
             }
     }
 }
 
+/**
+ * Same as setOnClickListener, but will also report the tap point in the view.
+ */
+private fun View.setOnClickListenerWithPoint(action: (View, PointF) -> Unit) {
+    var point = PointF()
 
+    setOnTouchListener { v, event ->
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            point = PointF(event.x, event.y)
+        }
+        false
+    }
+
+    setOnClickListener {
+        action(it, point)
+    }
+}

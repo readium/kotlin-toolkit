@@ -122,7 +122,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
      * Position of the last motion event.
      */
     private var mLastMotionX: Float = 0.toFloat()
-    private var mLastMotionY: Float = 0.toFloat()
     private var mInitialMotionX: Float = 0.toFloat()
     private var mInitialMotionY: Float = 0.toFloat()
 
@@ -685,7 +684,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 mInitialMotionX = ev.x
                 mLastMotionX = mInitialMotionX
                 mInitialMotionY = ev.y
-                mLastMotionY = mInitialMotionY
                 mActivePointerId = ev.getPointerId(0)
             }
             MotionEvent.ACTION_MOVE -> {
@@ -700,18 +698,15 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     val pointerIndex = ev.findPointerIndex(mActivePointerId)
                     val x = ev.getX(pointerIndex)
                     val xDiff = abs(x - mLastMotionX)
-                    val y = ev.getY(pointerIndex)
-                    val yDiff = abs(y - mLastMotionY)
-                    if (DEBUG) Timber.v("Moved x to $x,$y diff=$xDiff,$yDiff")
+                    if (DEBUG) Timber.v("Moved x to $x diff=$xDiff")
 
-                    if (xDiff > mTouchSlop && xDiff > yDiff) {
+                    if (xDiff > mTouchSlop) {
                         if (DEBUG) Timber.v("Starting drag!")
                         mIsBeingDragged = true
                         mLastMotionX = if (x - mInitialMotionX > 0)
                             mInitialMotionX + mTouchSlop
                         else
                             mInitialMotionX - mTouchSlop
-                        mLastMotionY = y
                         setScrollState(SCROLL_STATE_DRAGGING)
                         setScrollingCacheEnabled(true)
                     }
