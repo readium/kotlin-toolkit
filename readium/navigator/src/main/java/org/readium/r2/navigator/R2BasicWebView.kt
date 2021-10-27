@@ -65,6 +65,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
          * Returns the custom [ActionMode.Callback] to be used with the text selection menu.
          */
         val selectionActionModeCallback: ActionMode.Callback? get() = null
+
+        /**
+         * Offers an opportunity to override a request loaded by the given web view.
+         */
+        fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean = false
     }
 
     lateinit var listener: Listener
@@ -471,31 +476,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-    /**
-     * Prevents opening external links in the web view.
-     * To be called from the WebViewClient implementation attached to the web view.
-     */
     internal fun shouldOverrideUrlLoading(request: WebResourceRequest): Boolean {
-        val resourceUrl = url ?: return false
+        if (resourceUrl == request.url?.toString()) return false
 
-        // List of hosts that are allowed to be loaded in the web view.
-        // The host of the page already loaded in the web view is always allowed.
-        val passthroughHosts = listOfNotNull(
-            "localhost", "127.0.0.1",
-            tryOrNull { Uri.parse(resourceUrl) }?.host
-        )
-        if (!passthroughHosts.contains(request.url.host)) {
-            openExternalLink(request.url)
-            return true
-        }
-
-        return false
-    }
-
-    private fun openExternalLink(url: Uri) {
-        CustomTabsIntent.Builder()
-            .build()
-            .launchUrl(context, url)
+        return listener.shouldOverrideUrlLoading(this, request)
     }
 
     // Text selection ActionMode overrides

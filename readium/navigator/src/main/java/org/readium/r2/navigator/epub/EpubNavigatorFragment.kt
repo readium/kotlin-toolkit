@@ -10,11 +10,15 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.RectF
+import android.net.Uri
 import android.os.Bundle
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.collection.forEach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -46,7 +50,6 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
-import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import kotlin.math.ceil
 import kotlin.reflect.KClass
@@ -262,7 +265,6 @@ class EpubNavigatorFragment private constructor(
     internal var pendingLocator: Locator? = null
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-
         val href = locator.href
             // Remove anchor
             .substringBefore("#")
@@ -470,6 +472,36 @@ class EpubNavigatorFragment private constructor(
 
         override val selectionActionModeCallback: ActionMode.Callback?
             get() = config.selectionActionModeCallback
+
+        /**
+         * Prevents opening external links in the web view and handles internal links.
+         */
+        override fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean {
+            val url = request.url?.toString()
+                ?: return false
+
+            val baseUrl = baseUrl.takeIf { it.isNotBlank() }
+                ?: publication.linkWithRel("self")?.href
+                ?: return false
+
+            if (!url.startsWith(baseUrl)) {
+                openExternalLink(request.url)
+            } else {
+                // Navigate to an internal link
+                go(Link(href = url.removePrefix(baseUrl).addPrefix("/")))
+            }
+
+            return true
+        }
+
+        private fun openExternalLink(url: Uri) {
+            val context = context ?: return
+            tryOrLog {
+                CustomTabsIntent.Builder()
+                    .build()
+                    .launchUrl(context, url)
+            }
+        }
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
