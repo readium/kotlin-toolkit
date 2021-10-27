@@ -68,6 +68,10 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
     val books = repository.books()
 
+    init {
+        copySamplesFromAssetsToStorage()
+    }
+
     fun deleteBook(book: Book) = viewModelScope.launch {
         book.id?.let { repository.deleteBook(it) }
         tryOrNull { File(book.href).delete() }
