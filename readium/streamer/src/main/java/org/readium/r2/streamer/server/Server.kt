@@ -25,9 +25,17 @@ import java.net.URL
 import java.net.URLDecoder
 import java.util.*
 
-class Server(port: Int, context: Context) : AbstractServer(port, context.applicationContext)
+class Server(
+    port: Int,
+    context: Context,
+    enableReadiumNavigatorSupport: Boolean = true
+) : AbstractServer(port, context.applicationContext, enableReadiumNavigatorSupport)
 
-abstract class AbstractServer(private var port: Int, private val context: Context) : RouterNanoHTTPD("127.0.0.1", port) {
+abstract class AbstractServer(
+    private var port: Int,
+    private val context: Context,
+    private val enableReadiumNavigatorSupport: Boolean = true,
+) : RouterNanoHTTPD("127.0.0.1", port) {
 
     private val MANIFEST_HANDLE = "/manifest"
     private val JSON_MANIFEST_HANDLE = "/manifest.json"
@@ -81,7 +89,7 @@ abstract class AbstractServer(private var port: Int, private val context: Contex
         }
     }
 
-    fun addPublication(publication: Publication, userPropertiesFile: File?): URL? {
+    fun addPublication(publication: Publication, userPropertiesFile: File? = null): URL? {
         return addPublication(publication, null, "/${UUID.randomUUID()}", userPropertiesFile?.path)
     }
 
@@ -92,6 +100,7 @@ abstract class AbstractServer(private var port: Int, private val context: Contex
         val baseUrl = URL(Publication.localBaseUrlOf(filename = filename, port = port))
         val fetcher = ServingFetcher(
             publication,
+            enableReadiumNavigatorSupport,
             userPropertiesPath,
             customResources
         )
