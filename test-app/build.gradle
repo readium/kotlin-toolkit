@@ -112,7 +112,7 @@ dependencies {
     // AM NOTE: needs to stay this version for now (June 24,2020)
     //noinspection GradleDependency
     implementation "com.squareup.picasso:picasso:2.5.2"
-    implementation "joda-time:joda-time:2.10.10"
+    implementation "joda-time:joda-time:2.10.13"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
     // AM NOTE: needs to stay this version for now (June 24,2020)
     //noinspection GradleDependency
