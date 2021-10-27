@@ -22,7 +22,7 @@ Make sure that you have the `$readium_version` property set in your root `build.
 
 ```gradle
 buildscript {
-    ext.readium_version = '2.1.0'
+    ext.readium_version = '2.1.1'
 }
 
 allprojects {
