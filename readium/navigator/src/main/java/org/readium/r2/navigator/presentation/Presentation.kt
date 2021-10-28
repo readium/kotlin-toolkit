@@ -220,11 +220,11 @@ data class PresentationSettings(val settings: Map<PresentationKey, Any?> = empty
         readingProgression: ReadingProgression? = null
     ) : this(
         PresentationKey.CONTINUOUS to continuous,
-        PresentationKey.FIT to fit,
-        PresentationKey.ORIENTATION to orientation,
-        PresentationKey.OVERFLOW to overflow,
+        PresentationKey.FIT to fit?.value,
+        PresentationKey.ORIENTATION to orientation?.value,
+        PresentationKey.OVERFLOW to overflow?.value,
         PresentationKey.PAGE_SPACING to pageSpacing,
-        PresentationKey.READING_PROGRESSION to readingProgression,
+        PresentationKey.READING_PROGRESSION to readingProgression?.value,
     )
 
     val continuous: Boolean?

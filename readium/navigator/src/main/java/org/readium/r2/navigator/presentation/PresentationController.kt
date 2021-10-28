@@ -33,7 +33,7 @@ class PresentationController(
 
     val appSettings: PresentationSettings = appSettings ?: PresentationSettings()
 
-    private val _settings = MutableStateFlow(combineSettings(userSettings ?: PresentationSettings(), Presentation()))
+    private val _settings = MutableStateFlow(Settings(userSettings ?: PresentationSettings()))
     val settings: StateFlow<Settings>
         get() = _settings.asStateFlow()
 
@@ -49,65 +49,9 @@ class PresentationController(
 
         coroutineScope.launch {
             _userSettings.combine(navigator.presentation) { userSettings, presentation ->
-                combineSettings(userSettings, presentation)
+                Settings(userSettings, presentation)
             }.collect { _settings.value = it }
         }
-    }
-
-    private fun combineSettings(userSettings: PresentationSettings, presentation: Presentation): Settings {
-        val settings = mutableMapOf<PresentationKey, Setting<*>>()
-
-        for (key in userSettings.settings.keys + presentation.properties.keys) {
-            val userValue = userSettings.settings[key]
-            val navigatorProperty = presentation.properties[key]
-
-            val setting: Setting<*>? = when {
-                (navigatorProperty is Presentation.ToggleProperty || userValue is Boolean) -> {
-                    val property = navigatorProperty as? Presentation.ToggleProperty
-                    ToggleSetting(
-                        key = key,
-                        userValue = userValue as? Boolean,
-                        effectiveValue = property?.value,
-                        isAvailable = property != null,
-                        isActive = property?.isActiveForSettings(userSettings) ?: false,
-                    )
-                }
-
-                (navigatorProperty is Presentation.RangeProperty || userValue is Double) -> {
-                    val property = navigatorProperty as? Presentation.RangeProperty
-                    RangeSetting(
-                        key = key,
-                        userValue = userValue as? Double,
-                        effectiveValue = property?.value,
-                        stepCount = property?.stepCount,
-                        isAvailable = property != null,
-                        isActive = property?.isActiveForSettings(userSettings) ?: false,
-                        labelForValue = { c, v -> property?.labelForValue(c, v) ?: v.toStringPercentage() }
-                    )
-                }
-
-                (navigatorProperty is Presentation.StringProperty || userValue is String) -> {
-                    val property = navigatorProperty as? Presentation.StringProperty
-                    StringSetting(
-                        key = key,
-                        userValue = userValue as? String,
-                        effectiveValue = property?.value,
-                        supportedValues = property?.supportedValues,
-                        isAvailable = property != null,
-                        isActive = property?.isActiveForSettings(userSettings) ?: false,
-                        labelForValue = { c, v -> property?.labelForValue(c, v) ?: v }
-                    )
-                }
-
-                else -> null
-            }
-
-            if (setting != null) {
-                settings[key] = setting
-            }
-        }
-
-        return Settings(settings)
     }
 
     /**
@@ -166,7 +110,7 @@ class PresentationController(
     fun toggle(setting: ToggleSetting?) {
         setting ?: return
 
-        set(setting, !(setting.userValue ?: setting.effectiveValue ?: false))
+        set(setting, !(setting.value ?: setting.effectiveValue ?: false))
     }
 
     /**
@@ -176,7 +120,7 @@ class PresentationController(
     fun <T> toggle(setting: Setting<T>?, value: T) {
         setting ?: return
 
-        if (setting.userValue == value) {
+        if (setting.value == value) {
             reset(setting)
         } else {
             set(setting, value)
@@ -190,7 +134,7 @@ class PresentationController(
         setting ?: return
 
         val step = setting.step
-        val value = setting.userValue ?: setting.effectiveValue ?: 0.5
+        val value = setting.value ?: setting.effectiveValue ?: 0.5
 
         set(setting, (value + step).roundToStep(setting.step).coerceAtMost(1.0))
     }
@@ -202,7 +146,7 @@ class PresentationController(
         setting ?: return
 
         val step = setting.step
-        val value = setting.userValue ?: setting.effectiveValue ?: 0.5
+        val value = setting.value ?: setting.effectiveValue ?: 0.5
 
         set(setting, (value - step).roundToStep(setting.step).coerceAtLeast(0.0))
     }
@@ -211,38 +155,78 @@ class PresentationController(
         round(this / step) * step
 
     data class Settings(
-        val settings: Map<PresentationKey, Setting<*>?> = mutableMapOf()
+        val settings: PresentationSettings,
+        val presentation: Presentation = Presentation(),
     ) {
-        constructor(vararg settings: Pair<PresentationKey, Setting<*>?>) : this(mapOf(*settings))
 
-        val continuous: ToggleSetting? get() =
-            settings[PresentationKey.CONTINUOUS] as? ToggleSetting
+        inline operator fun <reified T : Setting<*>> get(key: PresentationKey): T? {
+            val property = presentation.properties[key]
+            val userValue = settings.settings[key]
+            val klass = T::class.java
+            return when {
+                klass.isAssignableFrom(ToggleSetting::class.java) && property is Presentation.ToggleProperty? -> {
+                    ToggleSetting(
+                        key = key,
+                        userValue = userValue as? Boolean,
+                        effectiveValue = property?.value,
+                        isAvailable = property != null,
+                        isActive = property?.isActiveForSettings(settings) ?: false,
+                    )
+                }
+                klass.isAssignableFrom(RangeSetting::class.java) && property is Presentation.RangeProperty? -> {
+                    RangeSetting(
+                        key = key,
+                        userValue = userValue as? Double,
+                        effectiveValue = property?.value,
+                        stepCount = property?.stepCount,
+                        isAvailable = property != null,
+                        isActive = property?.isActiveForSettings(settings) ?: false,
+                        labelForValue = { c, v -> property?.labelForValue(c, v) ?: v.toStringPercentage() }
+                    )
+                }
+                klass.isAssignableFrom(StringSetting::class.java) && property is Presentation.StringProperty? -> {
+                    StringSetting(
+                        key = key,
+                        userValue = userValue as? String,
+                        effectiveValue = property?.value,
+                        supportedValues = property?.supportedValues,
+                        isAvailable = property != null,
+                        isActive = property?.isActiveForSettings(settings) ?: false,
+                        labelForValue = { c, v -> property?.labelForValue(c, v) ?: v }
+                    )
+                }
+                else -> null
+            } as? T
+        }
 
-        val fit: EnumSetting<Fit>? get() =
-            (settings[PresentationKey.FIT] as? StringSetting)
-                ?.let { EnumSetting(Fit, it) }
+        fun <T : Enum<T>> getEnum(key: PresentationKey, mapper: MapCompanion<String, T>): EnumSetting<T>? =
+            get<StringSetting>(key)
+                ?.let { EnumSetting(mapper, it) }
 
-        val orientation: EnumSetting<Orientation>? get() =
-            (settings[PresentationKey.ORIENTATION] as? StringSetting)
-                ?.let { EnumSetting(Orientation, it) }
+        val continuous: ToggleSetting?
+            get() = get(PresentationKey.CONTINUOUS)
 
-        val overflow: EnumSetting<Overflow>? get() =
-            (settings[PresentationKey.OVERFLOW] as? StringSetting)
-                ?.let { EnumSetting(Overflow, it) }
+        val fit: EnumSetting<Fit>?
+            get() = getEnum(PresentationKey.FIT, Fit)
 
-        val pageSpacing: RangeSetting? get() =
-            settings[PresentationKey.PAGE_SPACING] as? RangeSetting
+        val orientation: EnumSetting<Orientation>?
+            get() = getEnum(PresentationKey.ORIENTATION, Orientation)
 
-        val readingProgression: EnumSetting<ReadingProgression>? get() =
-            (settings[PresentationKey.READING_PROGRESSION] as? StringSetting)
-                ?.let { EnumSetting(ReadingProgression, it) }
+        val overflow: EnumSetting<Overflow>?
+            get() = getEnum(PresentationKey.OVERFLOW, Overflow)
+
+        val pageSpacing: RangeSetting?
+            get() = get(PresentationKey.PAGE_SPACING)
+
+        val readingProgression: EnumSetting<ReadingProgression>?
+            get() = getEnum(PresentationKey.READING_PROGRESSION, ReadingProgression)
     }
 
     /**
      * Holds the current value and the metadata of a Presentation Setting of type [T].
      *
      * @param key Presentation Key for this setting.
-     * @param userValue Value taken from the current user settings.
+     * @param value Value taken from the current Presentation Settings.
      * @param effectiveValue Actual value in effect for the navigator.
      * @param isAvailable Indicates whether the Presentation Setting is available for the [navigator].
      * @param isActive Indicates whether the Presentation Setting is active for the current set of
@@ -250,7 +234,7 @@ class PresentationController(
      */
     sealed class Setting<T>(
         val key: PresentationKey,
-        val userValue: T?,
+        val value: T?,
         val effectiveValue: T?,
         val isAvailable: Boolean,
         val isActive: Boolean,
@@ -321,7 +305,7 @@ class PresentationController(
         val stringSetting: StringSetting,
     ) : Setting<T?>(
         stringSetting.key,
-        mapper.get(stringSetting.userValue),
+        mapper.get(stringSetting.value),
         mapper.get(stringSetting.effectiveValue),
         isAvailable = stringSetting.isAvailable,
         isActive = stringSetting.isActive
