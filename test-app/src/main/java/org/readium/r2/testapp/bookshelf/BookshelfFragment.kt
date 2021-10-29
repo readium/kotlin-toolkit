@@ -19,6 +19,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -34,7 +35,7 @@ import org.readium.r2.testapp.reader.ReaderContract
 
 class BookshelfFragment : Fragment() {
 
-    private val bookshelfViewModel: BookshelfViewModel by viewModels()
+    private val bookshelfViewModel: BookshelfViewModel by activityViewModels()
     private lateinit var bookshelfAdapter: BookshelfAdapter
     private lateinit var documentPickerLauncher: ActivityResultLauncher<String>
     private lateinit var readerLauncher: ActivityResultLauncher<ReaderContract.Input>

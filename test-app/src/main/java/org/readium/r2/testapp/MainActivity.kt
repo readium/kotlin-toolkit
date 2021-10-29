@@ -7,6 +7,7 @@
 package org.readium.r2.testapp
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -20,14 +21,11 @@ import org.readium.r2.testapp.bookshelf.BookshelfViewModel
 class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
-    private lateinit var viewModel: BookshelfViewModel
+    private val viewModel: BookshelfViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        viewModel =
-            ViewModelProvider(this).get(BookshelfViewModel::class.java)
 
         intent.data?.let {
             viewModel.importPublicationFromUri(it)
