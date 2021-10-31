@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import androidx.activity.addCallback
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
@@ -43,7 +42,7 @@ class AudioReaderFragment : BaseReaderFragment() {
         // Get the currently playing navigator from the media service, if it is the same pub ID.
         // Otherwise, ask to switch to the new publication.
         mediaNavigator = mediaService.currentNavigator.value?.takeIf { it.publicationId == model.publicationId }
-            ?: mediaService.getNavigator(context, model.publication, model.publicationId, model.initialLocation)
+            ?: mediaService.getNavigator(context, model.publication, model.publicationId, model.location)
 
         mediaNavigator.play()
 

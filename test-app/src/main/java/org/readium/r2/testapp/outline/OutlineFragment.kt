@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.setFragmentResult
@@ -22,7 +23,6 @@ import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentOutlineBinding
-import org.readium.r2.testapp.reader.ReaderActivity
 import org.readium.r2.testapp.reader.ReaderViewModel
 
 class OutlineFragment : Fragment() {
@@ -39,7 +39,7 @@ class OutlineFragment : Fragment() {
             publication = it.publication
         }
 
-        (activity as ReaderActivity?)?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        (activity as AppCompatActivity?)?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         childFragmentManager.setFragmentResultListener(
             OutlineContract.REQUEST_KEY,

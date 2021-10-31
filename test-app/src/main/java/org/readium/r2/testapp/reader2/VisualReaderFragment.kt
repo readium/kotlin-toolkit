@@ -4,15 +4,13 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.reader
+package org.readium.r2.testapp.reader2
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowInsets
 import androidx.fragment.app.Fragment
-import org.readium.r2.testapp.databinding.FragmentReaderBinding
+import org.readium.r2.testapp.databinding.Reader2FragmentReaderBinding
 import org.readium.r2.testapp.utils.clearPadding
 import org.readium.r2.testapp.utils.hideSystemUi
 import org.readium.r2.testapp.utils.padSystemUi
@@ -21,43 +19,24 @@ import org.readium.r2.testapp.utils.showSystemUi
 /*
  * Adds fullscreen support to the BaseReaderFragment
  */
-abstract class VisualReaderFragment : BaseReaderFragment() {
+abstract class VisualReaderFragment : Fragment() {
 
-    private lateinit var navigatorFragment: Fragment
-
-    private var _binding: FragmentReaderBinding? = null
-    val binding get() = _binding!!
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentReaderBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    protected abstract var binding: Reader2FragmentReaderBinding?
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        navigatorFragment = navigator as Fragment
 
         childFragmentManager.addOnBackStackChangedListener {
             updateSystemUiVisibility()
         }
-
-        binding.fragmentReaderContainer.setOnApplyWindowInsetsListener { container, insets ->
+        binding!!.fragmentReader2Navigator.setOnApplyWindowInsetsListener { container, insets ->
             updateSystemUiPadding(container, insets)
             insets
         }
     }
 
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
-    }
-
     fun updateSystemUiVisibility() {
-        if (navigatorFragment.isHidden)
+        if (this.isHidden)
             requireActivity().showSystemUi()
         else
             requireActivity().hideSystemUi()
@@ -66,7 +45,7 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
     }
 
     private fun updateSystemUiPadding(container: View, insets: WindowInsets) {
-        if (navigatorFragment.isHidden) {
+        if (this.isHidden) {
             container.padSystemUi(insets, requireActivity())
         } else {
             container.clearPadding()

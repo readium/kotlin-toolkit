@@ -4,13 +4,13 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.reader
+package org.readium.r2.testapp.reader2
 
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowInsets
-import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+import android.view.WindowManager
 import org.readium.r2.testapp.utils.clearPadding
 import org.readium.r2.testapp.utils.padSystemUi
 import org.readium.r2.testapp.utils.showSystemUi
@@ -18,13 +18,18 @@ import org.readium.r2.testapp.utils.showSystemUi
 /**
  * Adds fullscreen support to the ReaderActivity
  */
-open class VisualReaderActivity : ReaderActivity() {
+class VisualReaderActivity : ReaderActivity() {
 
     private val visualReaderFragment: VisualReaderFragment
         get() = readerFragment as VisualReaderFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+        }
 
         // Without this, activity_reader_container receives the insets only once,
         // although we need a call every time the reader is hidden
