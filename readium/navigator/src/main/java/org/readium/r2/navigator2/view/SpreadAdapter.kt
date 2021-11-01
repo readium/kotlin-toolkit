@@ -10,7 +10,7 @@ interface SpreadAdapter {
 
     fun bind(view: View)
 
-    fun unbind()
+    fun unbind(view: View)
 
     fun scrollTo(locations: Locator.Locations, view: View) {}
 

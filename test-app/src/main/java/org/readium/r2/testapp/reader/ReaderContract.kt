@@ -42,9 +42,9 @@ class ReaderContract : ActivityResultContract<ReaderContract.Input, ReaderContra
                 MediaType.ZAB, MediaType.READIUM_AUDIOBOOK,
                 MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK ->
                     ReaderActivity::class.java
-                MediaType.EPUB, MediaType.READIUM_WEBPUB_MANIFEST, MediaType.READIUM_WEBPUB,
-                    MediaType.PDF, MediaType.LCP_PROTECTED_PDF ->
+                MediaType.EPUB, MediaType.PDF, MediaType.LCP_PROTECTED_PDF ->
                     org.readium.r2.testapp.reader.VisualReaderActivity::class.java
+                MediaType.READIUM_WEBPUB_MANIFEST, MediaType.READIUM_WEBPUB,
                 MediaType.CBZ, MediaType.DIVINA, MediaType.DIVINA_MANIFEST ->
                     org.readium.r2.testapp.reader2.VisualReaderActivity::class.java
                 else -> throw IllegalArgumentException("Unknown [mediaType]")

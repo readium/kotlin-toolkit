@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:ignore="WebViewLayout">
+    <WebView
+        android:id="@+id/r2_item_webview_webview"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
+        android:minHeight="100dp"
+        android:minWidth="100dp"
+        android:padding="10dp" />
+
+</FrameLayout>

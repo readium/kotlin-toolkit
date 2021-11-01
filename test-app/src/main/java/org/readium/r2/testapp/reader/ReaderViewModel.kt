@@ -43,6 +43,7 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
     val fragmentChannel = EventChannel(Channel<FeedbackEvent>(Channel.BUFFERED), viewModelScope)
     val bookId = arguments.bookId
+    val baseUrl = arguments.baseUrl
     private val repository: BookRepository
 
     val publicationId: PublicationId get() = bookId.toString()

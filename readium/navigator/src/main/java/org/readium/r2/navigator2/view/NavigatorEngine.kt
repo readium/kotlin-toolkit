@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import org.readium.r2.navigator2.settings.PresentationProperties
 import org.readium.r2.navigator2.settings.PresentationSettings
+import org.readium.r2.navigator2.view.html.HtmlSpreadAdapterFactory
 import org.readium.r2.navigator2.view.image.ImageSpreadAdapterFactory
 import org.readium.r2.navigator2.view.layout.EffectiveReadingProgression
 import org.readium.r2.shared.publication.Link
@@ -111,8 +112,12 @@ internal class NavigatorEngine(
                 configuration.emptyBitmap
             )
 
-        return listOf(
-            imageSpreadAdapterFactory
+        val htmlSpreadAdapterFactory =
+            configuration.baseUrl?.let { HtmlSpreadAdapterFactory(publication, it.toString()) }
+
+        return listOfNotNull(
+            imageSpreadAdapterFactory,
+            htmlSpreadAdapterFactory
         )
     }
 

@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
@@ -56,8 +57,10 @@ open class ReaderActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
+            val baseUrl = requireNotNull(inputData.baseUrl)
+            val bundle = bundleOf("BASE_URL" to baseUrl)
             supportFragmentManager.commitNow {
-                replace(R.id.activity_container, ReaderFragment::class.java, Bundle(), READER_FRAGMENT_TAG)
+                replace(R.id.activity_container, ReaderFragment::class.java, bundle, READER_FRAGMENT_TAG)
             }
         }
 

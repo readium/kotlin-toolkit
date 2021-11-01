@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.readium.r2.lcp.lcpLicense
+import org.readium.r2.navigator2.view.NavigatorConfiguration
 import org.readium.r2.navigator2.view.NavigatorListener
 import org.readium.r2.navigator2.view.NavigatorView
 import org.readium.r2.shared.publication.Locator
@@ -26,6 +27,7 @@ import org.readium.r2.testapp.databinding.Reader2FragmentReaderBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.toggleSystemUi
 import timber.log.Timber
+import java.net.URL
 
 class ReaderFragment : VisualReaderFragment(), NavigatorListener {
 
@@ -33,6 +35,7 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
     private lateinit var model: ReaderViewModel
     private lateinit var publication: Publication
     private lateinit var navigator: NavigatorView
+    private var baseUrl: URL? = null
 
     private val currentResource: Int
         get() {
@@ -47,10 +50,10 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
         ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
             model = it
             publication = it.publication
+            baseUrl = it.baseUrl
         }
 
         super.onCreate(savedInstanceState)
-
 
         model.fragmentChannel.receive(this) { event ->
             val message =
@@ -101,7 +104,10 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
         super.onViewCreated(view, savedInstanceState)
         navigator = view.findViewById(R.id.fragment_reader2_navigator)
         navigator.listener = this
-        navigator.settings = navigator.settings.copy(spread = Presentation.Spread.LANDSCAPE, continuous = false)
+        navigator.settings = navigator.settings.copy(
+            spread = Presentation.Spread.LANDSCAPE, continuous = true
+        )
+        navigator.configuration = NavigatorConfiguration(baseUrl)
         navigator.loadPublication(publication)
 
         model.location?.let {

@@ -61,7 +61,7 @@ internal class ImageSpreadAdapter(
         }
     }
 
-    override fun unbind() {
+    override fun unbind(view: View) {
         bindingJob?.cancel()
         bindingJob = null
     }

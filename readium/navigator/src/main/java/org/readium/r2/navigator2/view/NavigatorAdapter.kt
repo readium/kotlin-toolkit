@@ -59,7 +59,7 @@ internal class NavigatorAdapter(
 
     override fun onViewRecycled(holder: ViewHolder) {
         super.onViewRecycled(holder)
-        holder.adapter?.unbind()
+        holder.adapter?.unbind(holder.view)
         holder.adapter = null
         holder.itemView.tag = null
         boundAdapters.remove(holder.adapter)
