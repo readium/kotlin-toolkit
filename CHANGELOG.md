@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *alpha* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [2.1.1]
 
 ### Changed
 
@@ -22,7 +24,8 @@ All notable changes to this project will be documented in this file. Take a look
 #### Navigator
 
 * `EpubNavigatorFragment`'s `goForward()` and `goBackward()` are now jumping to the previous or next pages instead of resources.
-* [#20](https://github.com/readium/kotlin-toolkit/issues/20) EPUB navigator stuck between two pages with vertical swipes
+* [#20](https://github.com/readium/kotlin-toolkit/issues/20) EPUB navigator stuck between two pages with vertical swipes.
+* [#27](https://github.com/readium/kotlin-toolkit/issues/27) Internal links break the EPUB navigator (contributed by [@mihai-wolfpack](https://github.com/readium/kotlin-toolkit/pull/28)).
 
 
 ## [2.1.0]
@@ -462,3 +465,4 @@ server.loadCustomResource(assets.open("scripts/highlight.js"), "highlight.js", I
 
 [unreleased]: https://github.com/readium/kotlin-toolkit/compare/main...HEAD
 [2.1.0]: https://github.com/readium/kotlin-kotlin/compare/2.0.0...2.1.0
+[2.1.1]: https://github.com/readium/kotlin-kotlin/compare/2.1.0...2.1.1

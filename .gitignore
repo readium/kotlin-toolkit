@@ -47,6 +47,7 @@ captures/
 .idea/dictionaries
 .idea/libraries
 .idea/jarRepositories.xml
+.idea/misc.xml
 # Android Studio 3 in .gitignore file.
 .idea/caches
 .idea/modules.xml
@@ -76,3 +77,6 @@ lint/reports/
 
 # Android Profiling
 *.hprof
+
+# Docs
+docs/readium
