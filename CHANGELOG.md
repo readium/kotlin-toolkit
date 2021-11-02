@@ -6,16 +6,40 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
-### Navigator
+### Added
 
-#### Added
+#### Navigator
 
 * The PDF navigator now honors the publication reading progression with support for right-to-left and horizontal scrolling.
     * The default (auto) reading progression for PDF is top-to-bottom, which is vertical scrolling.
 
-#### Fixed
+### Fixed
+
+#### Navigator
+
+* Fixed turning pages of an EPUB reflowable resource with an odd number of columns. A virtual blank trailing column is appended to the resource when displayed as two columns.
+
+
+## [2.1.1]
+
+### Changed
+
+#### Navigator
+
+* Improve loading of EPUB reflowable resources.
+    * Resources are hidden until fully loaded and positioned.
+    * Intermediary locators are not broadcasted as `currentLocator` anymore while loading a resource.
+    * Improved accuracy when jumping to the middle of a large resource.
+    * `EpubNavigatorFragment.PaginationListener.onPageLoaded()` is now called only a single time, for the currently visible page.
+    * `VisualNavigator.Listener.onTap()` is called even when a resource is not fully loaded.
+
+### Fixed
+
+#### Navigator
 
 * `EpubNavigatorFragment`'s `goForward()` and `goBackward()` are now jumping to the previous or next pages instead of resources.
+* [#20](https://github.com/readium/kotlin-toolkit/issues/20) EPUB navigator stuck between two pages with vertical swipes.
+* [#27](https://github.com/readium/kotlin-toolkit/issues/27) Internal links break the EPUB navigator (contributed by [@mihai-wolfpack](https://github.com/readium/kotlin-toolkit/pull/28)).
 
 
 ## [2.1.0]
@@ -455,3 +479,4 @@ server.loadCustomResource(assets.open("scripts/highlight.js"), "highlight.js", I
 
 [unreleased]: https://github.com/readium/kotlin-toolkit/compare/main...HEAD
 [2.1.0]: https://github.com/readium/kotlin-kotlin/compare/2.0.0...2.1.0
+[2.1.1]: https://github.com/readium/kotlin-kotlin/compare/2.1.0...2.1.1

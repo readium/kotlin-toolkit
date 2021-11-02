@@ -8,14 +8,15 @@ package org.readium.r2.testapp.bookshelf
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.ItemRecycleBookBinding
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.utils.singleClick
+import java.io.File
 
 
 class BookshelfAdapter(
@@ -28,9 +29,8 @@ class BookshelfAdapter(
         viewType: Int
     ): ViewHolder {
         return ViewHolder(
-            DataBindingUtil.inflate(
-                LayoutInflater.from(parent.context),
-                R.layout.item_recycle_book, parent, false
+            ItemRecycleBookBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
             )
         )
     }
@@ -46,7 +46,13 @@ class BookshelfAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(book: Book) {
-            binding.book = book
+            binding.bookshelfTitleText.text = book.title
+            val coverImageFile =
+                File("${binding.root.context?.filesDir?.path}/covers/${book.id}.png")
+            Picasso.with(binding.root.context)
+                .load(coverImageFile)
+                .placeholder(R.drawable.cover)
+                .into(binding.bookshelfCoverImage)
             binding.root.singleClick {
                 onBookClick(book)
             }
@@ -71,9 +77,9 @@ class BookshelfAdapter(
             newItem: Book
         ): Boolean {
             return oldItem.title == newItem.title
-                && oldItem.href == newItem.href
-                && oldItem.author == newItem.author
-                && oldItem.identifier == newItem.identifier
+                    && oldItem.href == newItem.href
+                    && oldItem.author == newItem.author
+                    && oldItem.identifier == newItem.identifier
         }
     }
 
