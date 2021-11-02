@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.presentation.PresentationController
 import org.readium.r2.navigator.presentation.PresentationKey
+import org.readium.r2.navigator.presentation.PresentationSettings
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.Presentation.*
@@ -86,7 +87,7 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
                 ToggleButtonGroup(
                     options = values,
                     activeOption = readingProgression.effectiveValue,
-                    selectedOption = readingProgression.userValue,
+                    selectedOption = readingProgression.value,
                     onSelectOption = { value ->
                         commit {
                             toggle(readingProgression, value)
@@ -121,7 +122,7 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
                             decrement(pageSpacing)
                         }
                     }
-                    Text(pageSpacing.labelForValue(context, pageSpacing.userValue ?: pageSpacing.effectiveValue ?: 0.5))
+                    Text(pageSpacing.labelForValue(context, pageSpacing.value ?: pageSpacing.effectiveValue ?: 0.5))
                     IncrementButton {
                         commit {
                             increment(pageSpacing)
@@ -159,7 +160,7 @@ private fun <T : Enum<T>> EnumSection(title: String, setting: PresentationContro
         ToggleButtonGroup(
             options = values,
             activeOption = setting.effectiveValue,
-            selectedOption = setting.userValue,
+            selectedOption = setting.value,
             onSelectOption = { value ->
                 commit {
                     toggle(setting, value)
@@ -216,58 +217,47 @@ fun PresetsButton(commit: CommitPresentation, vararg presets: Pair<String, Updat
 @Preview(showBackground = true)
 @OptIn(ExperimentalPresentation::class)
 fun PreviewFixedSettingsView() {
-    FixedSettingsView(settings = PresentationController.Settings(
-        PresentationKey.FIT to PresentationController.EnumSetting(
-            Fit,
-            key = PresentationKey.FIT,
-            userValue = Fit.COVER,
-            effectiveValue = null,
-            supportedValues = listOf(Fit.COVER, Fit.CONTAIN, Fit.HEIGHT, Fit.WIDTH),
-            isActive = true,
-            isAvailable = true,
-            labelForValue = { _, v -> v.name }
-        ).stringSetting,
-        PresentationKey.ORIENTATION to PresentationController.EnumSetting(
-            Orientation,
-            key = PresentationKey.ORIENTATION,
-            userValue = Orientation.LANDSCAPE,
-            effectiveValue = null,
-            supportedValues = listOf(Orientation.PORTRAIT, Orientation.LANDSCAPE),
-            isActive = true,
-            isAvailable = true,
-            labelForValue = { _, v -> v.name }
-        ).stringSetting,
-        PresentationKey.OVERFLOW to PresentationController.EnumSetting(
-            Overflow,
-            key = PresentationKey.OVERFLOW,
-            userValue = Overflow.PAGINATED,
-            effectiveValue = null,
-            supportedValues = listOf(Overflow.PAGINATED, Overflow.SCROLLED),
-            isActive = true,
-            isAvailable = true,
-            labelForValue = { _, v -> v.name }
-        ).stringSetting,
-        PresentationKey.PAGE_SPACING to PresentationController.RangeSetting(
-            key = PresentationKey.PAGE_SPACING,
-            userValue = 0.3,
-            effectiveValue = 0.6,
-            stepCount = 20,
-            isActive = true,
-            isAvailable = true,
-            labelForValue = { _, v -> v.toString() }
-        ),
-        PresentationKey.READING_PROGRESSION to PresentationController.EnumSetting(
-            ReadingProgression,
-            key = PresentationKey.READING_PROGRESSION,
-            userValue = ReadingProgression.TTB,
-            effectiveValue = null,
-            supportedValues = listOf(
-                ReadingProgression.LTR, ReadingProgression.RTL,
-                ReadingProgression.TTB, ReadingProgression.BTT
+    FixedSettingsView(
+        settings = PresentationController.Settings(
+            presentation = org.readium.r2.navigator.presentation.Presentation(
+                PresentationKey.FIT to org.readium.r2.navigator.presentation.Presentation.StringProperty(
+                    value = "",
+                    supportedValues = listOf(Fit.CONTAIN, Fit.HEIGHT, Fit.WIDTH).map { it.value },
+                ),
+                PresentationKey.ORIENTATION to org.readium.r2.navigator.presentation.Presentation.StringProperty(
+                    value = "",
+                    supportedValues = listOf(
+                        Orientation.PORTRAIT,
+                        Orientation.LANDSCAPE
+                    ).map { it.value },
+                ),
+                PresentationKey.OVERFLOW to org.readium.r2.navigator.presentation.Presentation.StringProperty(
+                    value = "",
+                    supportedValues = listOf(
+                        Overflow.PAGINATED,
+                        Overflow.SCROLLED
+                    ).map { it.value },
+                ),
+                PresentationKey.PAGE_SPACING to org.readium.r2.navigator.presentation.Presentation.RangeProperty(
+                    value = 0.6,
+                    stepCount = 20,
+                ),
+                PresentationKey.READING_PROGRESSION to org.readium.r2.navigator.presentation.Presentation.StringProperty(
+                    value = "",
+                    supportedValues = listOf(
+                        ReadingProgression.LTR, ReadingProgression.RTL,
+                        ReadingProgression.TTB, ReadingProgression.BTT
+                    ).map { it.value },
+                ),
             ),
-            isActive = true,
-            isAvailable = true,
-            labelForValue = { _, v -> v.name }
-        ).stringSetting,
-    ), commit = {})
+            userSettings = PresentationSettings(
+                fit = Fit.WIDTH,
+                orientation = Orientation.LANDSCAPE,
+                overflow = Overflow.PAGINATED,
+                pageSpacing = 0.3,
+                readingProgression = ReadingProgression.TTB
+            ),
+        ),
+        commit = {},
+    )
 }

@@ -89,6 +89,10 @@ class PdfNavigatorFragment internal constructor(
 
     lateinit var pdfView: PDFView
 
+    private val currentPage: Int get() =
+        if (!::pdfView.isInitialized) 0
+        else pdfView.currentPage
+
     private lateinit var positionsByReadingOrder: List<List<Locator>>
     private var positionCount: Int = 1
 
@@ -233,7 +237,7 @@ class PdfNavigatorFragment internal constructor(
         goToHref(link.href, pageNumberToIndex(1), animated, forceReload = false, completion)
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        val page = pageIndexToNumber(pdfView.currentPage)
+        val page = pageIndexToNumber(currentPage)
         if (page >= positionCount) return false
 
         pdfView.jumpTo(pageNumberToIndex(page + 1), animated)
@@ -242,7 +246,7 @@ class PdfNavigatorFragment internal constructor(
     }
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        val page = pageIndexToNumber(pdfView.currentPage)
+        val page = pageIndexToNumber(currentPage)
         if (page <= 1) return false
 
         pdfView.jumpTo(pageNumberToIndex(page - 1), animated)
@@ -257,7 +261,7 @@ class PdfNavigatorFragment internal constructor(
 
     @ExperimentalPresentation
     override suspend fun applySettings(settings: PresentationSettings) {
-        val page = pageIndexToNumber(pdfView.currentPage)
+        val page = pageIndexToNumber(currentPage)
         _presentation.value = createPresentation(settings, fallback = presentation.value)
 
         currentHref?.let { href ->
@@ -292,7 +296,7 @@ class PdfNavigatorFragment internal constructor(
             PresentationKey.PAGE_SPACING to Presentation.RangeProperty(
                 value = firstValidRange(
                     settings.pageSpacing,
-                    fallback?.pageSpacing?.value,
+                    fallback?.pageSpacing?.value?.takeIf { settings.pageSpacing != null },
                     defaults.pageSpacing
                 ) ?: 0.2,
                 stepCount = 10,
@@ -317,7 +321,7 @@ class PdfNavigatorFragment internal constructor(
 
             PresentationKey.FIT to Presentation.StringProperty(
                 Fit,
-                value = fits.firstIn(settings.fit, fallback?.fit?.value)
+                value = fits.firstIn(settings.fit, fallback?.fit?.value?.takeIf { settings.fit != null })
                     ?: fits.firstIn(publication.metadata.presentation.fit, defaults.fit)
                     ?: Fit.CONTAIN,
                 supportedValues = fits,
@@ -331,7 +335,7 @@ class PdfNavigatorFragment internal constructor(
 
             PresentationKey.ORIENTATION to Presentation.StringProperty(
                 Orientation,
-                value = orientations.firstIn(settings.orientation, fallback?.orientation?.value)
+                value = orientations.firstIn(settings.orientation, fallback?.orientation?.value?.takeIf { settings.orientation != null })
                     ?: orientations.firstIn(publication.metadata.presentation.orientation, defaults.orientation)
                     ?: Orientation.AUTO,
                 supportedValues = orientations,
@@ -344,7 +348,7 @@ class PdfNavigatorFragment internal constructor(
 
             PresentationKey.OVERFLOW to Presentation.StringProperty(
                 Overflow,
-                value = overflows.firstIn(settings.overflow, fallback?.overflow?.value)
+                value = overflows.firstIn(settings.overflow, fallback?.overflow?.value?.takeIf { settings.overflow != null })
                     ?: overflows.firstIn(publication.metadata.presentation.overflow, defaults.overflow)
                     ?: Overflow.SCROLLED,
                 supportedValues = overflows,
@@ -357,7 +361,7 @@ class PdfNavigatorFragment internal constructor(
 
             PresentationKey.READING_PROGRESSION to Presentation.StringProperty(
                 ReadingProgression,
-                value = readingProgressions.firstIn(settings.readingProgression, fallback?.readingProgression?.value)
+                value = readingProgressions.firstIn(settings.readingProgression, fallback?.readingProgression?.value?.takeIf { settings.readingProgression != null })
                     ?: readingProgressions.firstIn(publication.metadata.readingProgression, defaults.readingProgression)
                     ?: ReadingProgression.TTB,
                 supportedValues = readingProgressions,

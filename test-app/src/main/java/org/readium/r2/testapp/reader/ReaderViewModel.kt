@@ -51,12 +51,12 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     val bookId = arguments.bookId
     val book = runBlocking { repository.get(bookId) }
     val publicationId: PublicationId get() = bookId.toString()
-    val presentation = PresentationController(viewModelScope, userSettings = book?.userSettings)
+    val presentation = PresentationController(settings = book?.userSettings, coroutineScope = viewModelScope)
 
     init {
         viewModelScope.launch {
-            presentation.userSettings.collect {
-                repository.saveUserSettings(bookId, it)
+            presentation.settings.collect {
+                repository.saveUserSettings(bookId, it.userSettings)
             }
         }
     }

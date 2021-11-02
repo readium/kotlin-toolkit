@@ -32,7 +32,6 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
             publication = publication,
             initialLocator = model.initialLocation,
             listener = this,
-            settings = model.presentation.userSettings.value
         )
 
         super.onCreate(savedInstanceState)
