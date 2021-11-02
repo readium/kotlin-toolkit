@@ -70,8 +70,6 @@ internal class HtmlInjector(
 
         val endIncludes = mutableListOf<String>()
         val beginIncludes = mutableListOf<String>()
-        beginIncludes.add("<meta name=\"viewport\" content=\"width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\" />")
-
         beginIncludes.add(getHtmlLink("/assets/readium-css/${layout.readiumCSSPath}ReadiumCSS-before.css"))
         endIncludes.add(getHtmlLink("/assets/readium-css/${layout.readiumCSSPath}ReadiumCSS-after.css"))
         endIncludes.add(getHtmlScript("/assets/scripts/readium-reflowable.js"))

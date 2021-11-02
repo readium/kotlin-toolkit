@@ -9,7 +9,6 @@ package org.readium.r2.testapp.catalogs
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import androidx.databinding.ObservableBoolean
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -48,7 +47,6 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     val detailChannel = EventChannel(Channel<Event.DetailEvent>(Channel.BUFFERED), viewModelScope)
     val eventChannel = EventChannel(Channel<Event.FeedEvent>(Channel.BUFFERED), viewModelScope)
     val parseData = MutableLiveData<ParseData>()
-    val showProgressBar = ObservableBoolean()
 
     fun parseCatalog(catalog: Catalog) = viewModelScope.launch {
         var parseRequest: Try<ParseData, Exception>? = null
@@ -74,7 +72,6 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun downloadPublication(publication: Publication) = viewModelScope.launch {
-        showProgressBar.set(true)
         val downloadUrl = getDownloadURL(publication)
         val publicationUrl = opdsDownloader.publicationUrl(downloadUrl.toString())
         publicationUrl.onSuccess {
@@ -88,8 +85,6 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
             .onFailure {
                 detailChannel.send(Event.DetailEvent.ImportPublicationFailed)
             }
-
-        showProgressBar.set(false)
     }
 
     private fun getDownloadURL(publication: Publication): URL? =

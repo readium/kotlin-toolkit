@@ -19,7 +19,7 @@ import org.readium.r2.shared.publication.Link
 class R2PagerAdapter internal constructor(val fm: FragmentManager, private val resources: List<PageResource>) : R2FragmentPagerAdapter(fm) {
 
     internal sealed class PageResource {
-        data class EpubReflowable(val link: Link, val url: String) : PageResource()
+        data class EpubReflowable(val link: Link, val url: String, val positionCount: Int) : PageResource()
         data class EpubFxl(val url1: String, val url2: String? = null) : PageResource()
         data class Cbz(val link: Link) : PageResource()
     }
@@ -52,7 +52,7 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
     override fun getItem(position: Int): Fragment =
         when (val resource = resources[position]) {
             is PageResource.EpubReflowable -> {
-                R2EpubPageFragment.newInstance(resource.url, resource.link)
+                R2EpubPageFragment.newInstance(resource.url, resource.link, positionCount = resource.positionCount)
             }
             is PageResource.EpubFxl -> {
                 R2FXLPageFragment.newInstance(resource.url1, resource.url2)

@@ -41,15 +41,14 @@ import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.presentation.Presentation.Fit
-import org.readium.r2.shared.publication.presentation.Presentation.Orientation
-import org.readium.r2.shared.publication.presentation.Presentation.Overflow
+import org.readium.r2.shared.publication.presentation.Presentation.*
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.use
 import timber.log.Timber
+import java.util.*
 import kotlin.math.roundToInt
 
 /**

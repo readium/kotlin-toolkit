@@ -11,7 +11,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import androidx.databinding.ObservableBoolean
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -66,9 +65,12 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     )
     private var r2Directory: String = R2App.R2DIRECTORY
     val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
-    val showProgressBar = ObservableBoolean()
 
     val books = repository.books()
+
+    init {
+        copySamplesFromAssetsToStorage()
+    }
 
     fun deleteBook(book: Book) = viewModelScope.launch {
         book.id?.let { repository.deleteBook(it) }
@@ -111,7 +113,6 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         uri: Uri,
         sourceUrl: String? = null
     ) = viewModelScope.launch {
-        showProgressBar.set(true)
         uri.copyToTempFile(r2Application, r2Directory)
             ?.let {
                 importPublication(it, sourceUrl)
@@ -138,7 +139,6 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
                         {
                             tryOrNull { sourceFile.delete() }
                             Timber.d(it)
-                            showProgressBar.set(false)
                             channel.send(Event.ImportPublicationFailed(it.message))
                             return
                         }
@@ -154,7 +154,6 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         } catch (e: Exception) {
             Timber.d(e)
             tryOrNull { publicationAsset.file.delete() }
-            showProgressBar.set(false)
             channel.send(Event.UnableToMovePublication)
             return
         }
@@ -163,7 +162,6 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             .onSuccess {
                 addPublicationToDatabase(libraryAsset.file.path, libraryAsset.mediaType(), it).let { id ->
 
-                    showProgressBar.set(false)
                     if (id != -1L)
                         channel.send(Event.ImportPublicationSuccess)
                     else
@@ -173,7 +171,6 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             .onFailure {
                 tryOrNull { libraryAsset.file.delete() }
                 Timber.d(it)
-                showProgressBar.set(false)
                 channel.send(Event.ImportPublicationFailed(it.getUserMessage(r2Application)))
             }
     }

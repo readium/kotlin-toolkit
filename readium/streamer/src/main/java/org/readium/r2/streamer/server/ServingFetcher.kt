@@ -17,21 +17,30 @@ import org.readium.r2.streamer.fetcher.HtmlInjector
 
 internal class ServingFetcher(
     val publication: Publication,
+    private val enableReadiumNavigatorSupport: Boolean,
     userPropertiesPath: String?,
-    customResources: Resources? = null
+    customResources: Resources? = null,
 ) : Fetcher {
 
-    private val htmlInjector: HtmlInjector =
+    private val htmlInjector: HtmlInjector by lazy {
         HtmlInjector(
             publication,
             userPropertiesPath,
             customResources
         )
+    }
 
     override suspend fun links(): List<Link> = emptyList()
 
     override fun get(link: Link): Resource {
         val resource = publication.get(link)
+        return if (enableReadiumNavigatorSupport)
+            transformResourceForReadiumNavigator(resource)
+        else
+            resource
+    }
+
+    private fun transformResourceForReadiumNavigator(resource: Resource): Resource {
         return if (publication.type == Publication.TYPE.EPUB)
             htmlInjector.transform(resource)
         else
