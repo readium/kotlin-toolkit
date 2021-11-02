@@ -10,11 +10,15 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.RectF
+import android.net.Uri
 import android.os.Bundle
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.collection.forEach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -46,7 +50,7 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
-import org.readium.r2.shared.publication.services.positions
+import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import kotlin.math.ceil
 import kotlin.reflect.KClass
 
@@ -96,6 +100,7 @@ class EpubNavigatorFragment private constructor(
         EpubNavigatorViewModel.createFactory(config.decorationTemplates.copy())
     }
 
+    internal lateinit var positionsByReadingOrder: List<List<Locator>>
     internal lateinit var positions: List<Locator>
     lateinit var resourcePager: R2ViewPager
 
@@ -126,17 +131,19 @@ class EpubNavigatorFragment private constructor(
         _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        positions = runBlocking { publication.positions() }
+        positionsByReadingOrder = runBlocking { publication.positionsByReadingOrder() }
+        positions = positionsByReadingOrder.flatten()
         publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
 
         resourcePager = binding.resourcePager
         resourcePager.type = Publication.TYPE.EPUB
 
         if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
-            resourcesSingle = publication.readingOrder.map { link ->
+            resourcesSingle = publication.readingOrder.mapIndexed { index, link ->
                 PageResource.EpubReflowable(
                     link = link,
-                    url = link.withBaseUrl(baseUrl).href
+                    url = link.withBaseUrl(baseUrl).href,
+                    positionCount = positionsByReadingOrder.getOrNull(index)?.size ?: 0
                 )
             }
 
@@ -258,8 +265,6 @@ class EpubNavigatorFragment private constructor(
     internal var pendingLocator: Locator? = null
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        pendingLocator = locator
-
         val href = locator.href
             // Remove anchor
             .substringBefore("#")
@@ -288,6 +293,7 @@ class EpubNavigatorFragment private constructor(
         resourcePager.adapter = adapter
 
         if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
+            pendingLocator = locator
             setCurrent(resourcesSingle)
         } else {
 
@@ -394,6 +400,7 @@ class EpubNavigatorFragment private constructor(
         override fun onPageLoaded() {
             r2Activity?.onPageLoaded()
             paginationListener?.onPageLoaded()
+            notifyCurrentLocation()
         }
 
         override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
@@ -465,6 +472,36 @@ class EpubNavigatorFragment private constructor(
 
         override val selectionActionModeCallback: ActionMode.Callback?
             get() = config.selectionActionModeCallback
+
+        /**
+         * Prevents opening external links in the web view and handles internal links.
+         */
+        override fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean {
+            val url = request.url?.toString()
+                ?: return false
+
+            val baseUrl = baseUrl.takeIf { it.isNotBlank() }
+                ?: publication.linkWithRel("self")?.href
+                ?: return false
+
+            if (!url.startsWith(baseUrl)) {
+                openExternalLink(request.url)
+            } else {
+                // Navigate to an internal link
+                go(Link(href = url.removePrefix(baseUrl).addPrefix("/")))
+            }
+
+            return true
+        }
+
+        private fun openExternalLink(url: Uri) {
+            val context = context ?: return
+            tryOrLog {
+                CustomTabsIntent.Builder()
+                    .build()
+                    .launchUrl(context, url)
+            }
+        }
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
@@ -617,6 +654,10 @@ class EpubNavigatorFragment private constructor(
         debounceLocationNotificationJob?.cancel()
         debounceLocationNotificationJob = launch {
             delay(100L)
+
+            if (pendingLocator != null) {
+                return@launch
+            }
 
             // The transition has stabilized, so we can ask the web view to refresh its current
             // item to reflect the current scroll position.

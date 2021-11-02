@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.material.snackbar.Snackbar
@@ -35,14 +34,11 @@ class PublicationDetailFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = DataBindingUtil.inflate(
-            LayoutInflater.from(context),
-            R.layout.fragment_publication_detail, container, false
+        _binding = FragmentPublicationDetailBinding.inflate(
+            inflater, container, false
         )
         catalogViewModel.detailChannel.receive(this) { handleEvent(it) }
         publication = arguments?.getPublicationOrNull()
-        binding.publication = publication
-        binding.viewModel = catalogViewModel
         return binding.root
     }
 
@@ -53,8 +49,12 @@ class PublicationDetailFragment : Fragment() {
         Picasso.with(requireContext()).load(publication?.images?.first()?.href)
             .into(binding.catalogDetailCoverImage)
 
+        binding.catalogDetailDescriptionText.text = publication?.metadata?.description
+        binding.catalogDetailTitleText.text = publication?.metadata?.title
+
         binding.catalogDetailDownloadButton.setOnClickListener {
             publication?.let { it1 ->
+                binding.catalogDetailProgressBar.visibility = View.VISIBLE
                 catalogViewModel.downloadPublication(
                     it1
                 )
@@ -68,6 +68,7 @@ class PublicationDetailFragment : Fragment() {
                 is CatalogViewModel.Event.DetailEvent.ImportPublicationSuccess -> getString(R.string.import_publication_success)
                 is CatalogViewModel.Event.DetailEvent.ImportPublicationFailed -> getString(R.string.unable_add_pub_database)
             }
+        binding.catalogDetailProgressBar.visibility = View.GONE
         Snackbar.make(
             requireView(),
             message,
