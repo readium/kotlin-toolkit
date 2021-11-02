@@ -262,11 +262,11 @@ data class PresentationSettings(val settings: Map<PresentationKey, Any?> = empty
         PresentationSettings(
             (other.settings.entries + settings.entries)
                 .groupBy({ it.key }, { it.value })
-                .mapValues { it.value.firstOrNull() }
+                .mapValues { (_, value) -> value.firstOrNull { it != null } }
         )
 
     override fun toJSON(): JSONObject =
-        JSONObject(settings.mapKeys { it.key.key })
+        JSONObject(settings.filterValues { it != null }.mapKeys { it.key.key })
 
     companion object {
 
