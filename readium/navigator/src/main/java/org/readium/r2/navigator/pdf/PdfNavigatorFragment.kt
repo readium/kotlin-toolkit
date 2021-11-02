@@ -268,23 +268,33 @@ class PdfNavigatorFragment internal constructor(
     @ExperimentalPresentation
     private fun createPresentation(settings: PresentationSettings, fallback: Presentation?): Presentation {
         val defaults = config.defaultSettings
-        val supportedFits = listOf(
+        val fits = listOf(
             Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT
         )
-        val supportedOrientations = listOf(
+        val orientations = listOf(
             Orientation.PORTRAIT, Orientation.LANDSCAPE
         )
-        val supportedOverflows = listOf(
+        val overflows = listOf(
             Overflow.PAGINATED, Overflow.SCROLLED
         )
-        val supportedReadingProgressions = listOf(
+        val readingProgressions = listOf(
             ReadingProgression.LTR, ReadingProgression.RTL,
             ReadingProgression.TTB, ReadingProgression.BTT,
         )
 
+        fun <T> List<T>.firstIn(vararg values: T?): T? =
+            values.firstOrNull { it != null && contains(it) }
+
+        fun firstValidRange(vararg values: Double?): Double? =
+            values.firstOrNull { it != null && it in 0.0..1.0 }
+
         return Presentation(
             PresentationKey.PAGE_SPACING to Presentation.RangeProperty(
-                value = settings.pageSpacing ?: defaults.pageSpacing ?: 0.2,
+                value = firstValidRange(
+                    settings.pageSpacing,
+                    fallback?.pageSpacing?.value,
+                    defaults.pageSpacing
+                ) ?: 0.2,
                 stepCount = 10,
                 isActiveForSettings = {
                     it.overflow != Overflow.PAGINATED
@@ -307,14 +317,10 @@ class PdfNavigatorFragment internal constructor(
 
             PresentationKey.FIT to Presentation.StringProperty(
                 Fit,
-                value = settings.fit?.let {
-                        it.takeIf { supportedFits.contains(it) }
-                            ?: fallback?.fit?.value
-                    }
-                    ?: publication.metadata.presentation.fit?.takeIf { supportedFits.contains(it) }
-                    ?: defaults.fit?.takeIf { supportedFits.contains(it) }
+                value = fits.firstIn(settings.fit, fallback?.fit?.value)
+                    ?: fits.firstIn(publication.metadata.presentation.fit, defaults.fit)
                     ?: Fit.CONTAIN,
-                supportedValues = supportedFits,
+                supportedValues = fits,
                 labelForValue = { c, v -> c.getString(when (v) {
                     Fit.WIDTH -> R.string.readium_navigator_presentation_fit_width
                     Fit.HEIGHT -> R.string.readium_navigator_presentation_fit_height
@@ -325,14 +331,10 @@ class PdfNavigatorFragment internal constructor(
 
             PresentationKey.ORIENTATION to Presentation.StringProperty(
                 Orientation,
-                value = settings.orientation?.let {
-                        it.takeIf { supportedOrientations.contains(it) }
-                            ?: fallback?.orientation?.value
-                    }
-                    ?: publication.metadata.presentation.orientation?.takeIf { supportedOrientations.contains(it) }
-                    ?: defaults.orientation?.takeIf { supportedOrientations.contains(it) }
+                value = orientations.firstIn(settings.orientation, fallback?.orientation?.value)
+                    ?: orientations.firstIn(publication.metadata.presentation.orientation, defaults.orientation)
                     ?: Orientation.AUTO,
-                supportedValues = supportedOrientations,
+                supportedValues = orientations,
                 labelForValue = { c, v -> c.getString(when (v) {
                     Orientation.AUTO -> R.string.readium_navigator_presentation_default
                     Orientation.LANDSCAPE -> R.string.readium_navigator_presentation_orientation_landscape
@@ -342,14 +344,10 @@ class PdfNavigatorFragment internal constructor(
 
             PresentationKey.OVERFLOW to Presentation.StringProperty(
                 Overflow,
-                value = settings.overflow?.let {
-                        it.takeIf { supportedOverflows.contains(it) }
-                            ?: fallback?.overflow?.value
-                    }
-                    ?: publication.metadata.presentation.overflow?.takeIf { supportedOverflows.contains(it) }
-                    ?: defaults.overflow?.takeIf { supportedOverflows.contains(it) }
+                value = overflows.firstIn(settings.overflow, fallback?.overflow?.value)
+                    ?: overflows.firstIn(publication.metadata.presentation.overflow, defaults.overflow)
                     ?: Overflow.SCROLLED,
-                supportedValues = supportedOverflows,
+                supportedValues = overflows,
                 labelForValue = { c, v -> c.getString(when (v) {
                     Overflow.PAGINATED -> R.string.readium_navigator_presentation_overflow_paginated
                     Overflow.SCROLLED -> R.string.readium_navigator_presentation_overflow_scrolled
@@ -359,14 +357,10 @@ class PdfNavigatorFragment internal constructor(
 
             PresentationKey.READING_PROGRESSION to Presentation.StringProperty(
                 ReadingProgression,
-                value = settings.readingProgression?.let {
-                        it.takeIf { supportedReadingProgressions.contains(it) }
-                            ?: fallback?.readingProgression?.value
-                    }
-                    ?: publication.metadata.readingProgression.takeIf { supportedReadingProgressions.contains(it) }
-                    ?: defaults.readingProgression?.takeIf { supportedReadingProgressions.contains(it) }
+                value = readingProgressions.firstIn(settings.readingProgression, fallback?.readingProgression?.value)
+                    ?: readingProgressions.firstIn(publication.metadata.readingProgression, defaults.readingProgression)
                     ?: ReadingProgression.TTB,
-                supportedValues = supportedReadingProgressions,
+                supportedValues = readingProgressions,
                 labelForValue = { c, v -> c.getString(when (v) {
                     ReadingProgression.RTL -> R.string.readium_navigator_presentation_readingProgression_rtl
                     ReadingProgression.LTR -> R.string.readium_navigator_presentation_readingProgression_ltr
