@@ -58,11 +58,11 @@ import kotlin.math.roundToInt
  * To use this [Fragment], create a factory with `PdfNavigatorFragment.createFactory()`.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal constructor(
+class PdfNavigatorFragment internal constructor(
     override val publication: Publication,
     private val initialLocator: Locator?,
     private val listener: Listener?,
-    settings: PresentationSettings?,
+    private val config: Configuration,
 ) : Fragment(), VisualNavigator {
 
     interface Listener : VisualNavigator.Listener {
@@ -76,6 +76,12 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
         fun onResourceLoadFailed(link: Link, error: Resource.Exception) {}
 
     }
+
+    @OptIn(ExperimentalPresentation::class)
+    data class Configuration(
+        val settings: PresentationSettings = PresentationSettings(),
+        val defaultSettings: PresentationSettings = PresentationSettings(),
+    )
 
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
@@ -245,7 +251,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
     }
 
     @ExperimentalPresentation
-    private var _presentation = MutableStateFlow(createPresentation(settings ?: PresentationSettings(), fallback = null))
+    private var _presentation = MutableStateFlow(createPresentation(config.settings, fallback = null))
     @ExperimentalPresentation
     override val presentation: StateFlow<Presentation> get() = _presentation.asStateFlow()
 
@@ -261,6 +267,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
 
     @ExperimentalPresentation
     private fun createPresentation(settings: PresentationSettings, fallback: Presentation?): Presentation {
+        val defaults = config.defaultSettings
         val supportedFits = listOf(
             Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT
         )
@@ -277,7 +284,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
 
         return Presentation(
             PresentationKey.PAGE_SPACING to Presentation.RangeProperty(
-                value = settings.pageSpacing ?: 0.2,
+                value = settings.pageSpacing ?: defaults.pageSpacing ?: 0.2,
                 stepCount = 10,
                 isActiveForSettings = {
                     it.overflow != Overflow.PAGINATED
@@ -301,10 +308,11 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
             PresentationKey.FIT to Presentation.StringProperty(
                 Fit,
                 value = settings.fit?.let {
-                    it.takeIf { supportedFits.contains(it) }
-                        ?: fallback?.fit?.value
+                        it.takeIf { supportedFits.contains(it) }
+                            ?: fallback?.fit?.value
                     }
                     ?: publication.metadata.presentation.fit?.takeIf { supportedFits.contains(it) }
+                    ?: defaults.fit?.takeIf { supportedFits.contains(it) }
                     ?: Fit.CONTAIN,
                 supportedValues = supportedFits,
                 labelForValue = { c, v -> c.getString(when (v) {
@@ -318,10 +326,11 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
             PresentationKey.ORIENTATION to Presentation.StringProperty(
                 Orientation,
                 value = settings.orientation?.let {
-                    it.takeIf { supportedOrientations.contains(it) }
-                        ?: fallback?.orientation?.value
+                        it.takeIf { supportedOrientations.contains(it) }
+                            ?: fallback?.orientation?.value
                     }
                     ?: publication.metadata.presentation.orientation?.takeIf { supportedOrientations.contains(it) }
+                    ?: defaults.orientation?.takeIf { supportedOrientations.contains(it) }
                     ?: Orientation.AUTO,
                 supportedValues = supportedOrientations,
                 labelForValue = { c, v -> c.getString(when (v) {
@@ -334,10 +343,11 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
             PresentationKey.OVERFLOW to Presentation.StringProperty(
                 Overflow,
                 value = settings.overflow?.let {
-                    it.takeIf { supportedOverflows.contains(it) }
-                        ?: fallback?.overflow?.value
-                }
+                        it.takeIf { supportedOverflows.contains(it) }
+                            ?: fallback?.overflow?.value
+                    }
                     ?: publication.metadata.presentation.overflow?.takeIf { supportedOverflows.contains(it) }
+                    ?: defaults.overflow?.takeIf { supportedOverflows.contains(it) }
                     ?: Overflow.SCROLLED,
                 supportedValues = supportedOverflows,
                 labelForValue = { c, v -> c.getString(when (v) {
@@ -354,6 +364,7 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
                             ?: fallback?.readingProgression?.value
                     }
                     ?: publication.metadata.readingProgression.takeIf { supportedReadingProgressions.contains(it) }
+                    ?: defaults.readingProgression?.takeIf { supportedReadingProgressions.contains(it) }
                     ?: ReadingProgression.TTB,
                 supportedValues = supportedReadingProgressions,
                 labelForValue = { c, v -> c.getString(when (v) {
@@ -440,9 +451,9 @@ class PdfNavigatorFragment @OptIn(ExperimentalPresentation::class) internal cons
             publication: Publication,
             initialLocator: Locator? = null,
             listener: Listener? = null,
-            settings: PresentationSettings? = null,
+            config: Configuration = Configuration(),
         ): FragmentFactory =
-            createFragmentFactory { PdfNavigatorFragment(publication, initialLocator, listener, settings) }
+            createFragmentFactory { PdfNavigatorFragment(publication, initialLocator, listener, config) }
 
     }
 
