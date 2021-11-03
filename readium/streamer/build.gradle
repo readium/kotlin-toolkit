@@ -60,7 +60,9 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-annotations:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-core:$JACKSON_VERSION"
     implementation "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION"
-    implementation "com.github.barteksc:pdfium-android:1.9.0"
+    // PdfiumAndroid 1.9.0 conflicts with liblcp, see https://github.com/readium/kotlin-toolkit/issues/29
+    //noinspection GradleDependency
+    implementation "com.github.barteksc:pdfium-android:1.8.2"
     implementation "com.jakewharton.timber:timber:4.7.1"
     //noinspection GradleDependency
     implementation ("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
