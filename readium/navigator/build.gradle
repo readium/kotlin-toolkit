@@ -49,6 +49,9 @@ afterEvaluate {
 
                 groupId = 'com.github.readium'
                 artifactId = 'readium-navigator'
+
+                artifact sourcesJar
+                artifact javadocsJar
             }
         }
     }

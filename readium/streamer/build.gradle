@@ -45,6 +45,9 @@ afterEvaluate {
 
                 groupId = 'com.github.readium'
                 artifactId = 'readium-streamer'
+
+                artifact sourcesJar
+                artifact javadocsJar
             }
         }
     }

@@ -45,6 +45,9 @@ afterEvaluate {
 
                 groupId = 'com.github.readium'
                 artifactId = 'readium-lcp'
+
+                artifact sourcesJar
+                artifact javadocsJar
             }
         }
     }
