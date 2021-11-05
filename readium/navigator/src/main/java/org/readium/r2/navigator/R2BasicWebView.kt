@@ -26,7 +26,6 @@ import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.browser.customtabs.CustomTabsIntent
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.json.JSONObject
