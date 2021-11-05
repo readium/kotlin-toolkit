@@ -44,6 +44,9 @@ internal class SnifferFileContent(val file: File) : SnifferContent {
         } catch (e: Exception) {
             Timber.e(e)
             null
+        } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
+            Timber.e(e)
+            null
         }
     }
 
@@ -54,7 +57,6 @@ internal class SnifferFileContent(val file: File) : SnifferContent {
             Timber.e(e)
             null
         }
-
 }
 
 /** Used to sniff a bytes array. */
