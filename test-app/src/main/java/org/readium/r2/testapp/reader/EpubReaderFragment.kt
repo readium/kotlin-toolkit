@@ -274,11 +274,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         }
     }
 
-    override fun onTap(point: PointF): Boolean {
-        requireActivity().toggleSystemUi()
-        return true
-    }
-
     private fun showSearchFragment() {
         childFragmentManager.commit {
             childFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG)?.let { remove(it) }
