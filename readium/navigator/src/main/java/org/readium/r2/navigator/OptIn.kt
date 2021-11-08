@@ -6,12 +6,18 @@
 
 package org.readium.r2.navigator
 
-@RequiresOptIn(message = "Support for the Decorator API is still experimental. The API may be changed in the future without notice.")
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "Support for the Decorator API is still experimental. The API may be changed in the future without notice."
+)
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
 annotation class ExperimentalDecorator
 
-@RequiresOptIn(message = "The new Audiobook navigator is still experimental. The API may be changed in the future without notice.")
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "The new Audiobook navigator is still experimental. The API may be changed in the future without notice."
+)
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
 annotation class ExperimentalAudiobook

@@ -18,7 +18,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.collection.forEach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -43,6 +42,7 @@ import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOrLog
@@ -51,6 +51,7 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.util.launchWebBrowser
 import kotlin.math.ceil
 import kotlin.reflect.KClass
 
@@ -494,13 +495,10 @@ class EpubNavigatorFragment private constructor(
             return true
         }
 
+        @OptIn(InternalReadiumApi::class)
         private fun openExternalLink(url: Uri) {
             val context = context ?: return
-            tryOrLog {
-                CustomTabsIntent.Builder()
-                    .build()
-                    .launchUrl(context, url)
-            }
+            launchWebBrowser(context, url)
         }
     }
 
