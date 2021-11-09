@@ -12,6 +12,18 @@ All notable changes to this project will be documented in this file. Take a look
 
 * The PDF navigator now honors the publication reading progression with support for right-to-left and horizontal scrolling.
     * The default (auto) reading progression for PDF is top-to-bottom, which is vertical scrolling.
+* A new convenience utility `EdgeTapNavigation` to trigger page turns while tapping the screen edges.
+    * It takes into account the navigator reading progression to move into the right direction.
+    * Call it from the `VisualNavigator.Listener.onTap()` callback as demonstrated below:
+    ```kotlin
+    override fun onTap(point: PointF): Boolean {
+        val navigated = edgeTapNavigation.onTap(point, requireView())
+        if (!navigated) {
+            // Fallback action, for example toggling the app bar.
+        }
+        return true
+    }
+    ```
 
 ### Fixed
 
