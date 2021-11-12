@@ -18,10 +18,7 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.allAreAudio
-import org.readium.r2.shared.publication.allAreBitmap
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.ActivityReaderBinding
@@ -59,7 +56,7 @@ open class ReaderActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
 
-            if (publication.type == Publication.TYPE.EPUB) {
+            if (publication.type == Publication.TYPE.EPUB || publication.readingOrder.allAreHtml) {
                 val baseUrl = requireNotNull(inputData.baseUrl)
                 readerFragment = EpubReaderFragment.newInstance(baseUrl)
 
