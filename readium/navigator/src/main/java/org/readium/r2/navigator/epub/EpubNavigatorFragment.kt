@@ -139,64 +139,72 @@ class EpubNavigatorFragment private constructor(
         resourcePager = binding.resourcePager
         resourcePager.type = Publication.TYPE.EPUB
 
-        if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
-            resourcesSingle = publication.readingOrder.mapIndexed { index, link ->
-                PageResource.EpubReflowable(
-                    link = link,
-                    url = link.withBaseUrl(baseUrl).href,
-                    positionCount = positionsByReadingOrder.getOrNull(index)?.size ?: 0
-                )
+        when (publication.metadata.presentation.layout) {
+            EpubLayout.REFLOWABLE, null -> {
+                resourcesSingle = publication.readingOrder.mapIndexed { index, link ->
+                    PageResource.EpubReflowable(
+                        link = link,
+                        url = link.withBaseUrl(baseUrl).href,
+                        positionCount = positionsByReadingOrder.getOrNull(index)?.size ?: 0
+                    )
+                }
+
+                adapter = R2PagerAdapter(childFragmentManager, resourcesSingle)
+                resourcePager.type = Publication.TYPE.EPUB
             }
 
-            adapter = R2PagerAdapter(childFragmentManager, resourcesSingle)
-            resourcePager.type = Publication.TYPE.EPUB
+            EpubLayout.FIXED -> {
+                val resourcesSingle = mutableListOf<PageResource>()
+                val resourcesDouble = mutableListOf<PageResource>()
 
-        } else {
-            val resourcesSingle = mutableListOf<PageResource>()
-            val resourcesDouble = mutableListOf<PageResource>()
+                // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
+                var doublePageLeft = ""
+                var doublePageRight = ""
 
-            // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
-            var doublePageLeft = ""
-            var doublePageRight = ""
+                for ((index, link) in publication.readingOrder.withIndex()) {
+                    val url = link.withBaseUrl(baseUrl).href
+                    resourcesSingle.add(PageResource.EpubFxl(url))
 
-            for ((index, link) in publication.readingOrder.withIndex()) {
-                val url = link.withBaseUrl(baseUrl).href
-                resourcesSingle.add(PageResource.EpubFxl(url))
-
-                // add first page to the right,
-                if (index == 0) {
-                    resourcesDouble.add(PageResource.EpubFxl("", url))
-                } else {
-                    // add double pages, left & right
-                    if (doublePageLeft == "") {
-                        doublePageLeft = url
+                    // add first page to the right,
+                    if (index == 0) {
+                        resourcesDouble.add(PageResource.EpubFxl("", url))
                     } else {
-                        doublePageRight = url
-                        resourcesDouble.add(PageResource.EpubFxl(doublePageLeft, doublePageRight))
-                        doublePageLeft = ""
+                        // add double pages, left & right
+                        if (doublePageLeft == "") {
+                            doublePageLeft = url
+                        } else {
+                            doublePageRight = url
+                            resourcesDouble.add(
+                                PageResource.EpubFxl(
+                                    doublePageLeft,
+                                    doublePageRight
+                                )
+                            )
+                            doublePageLeft = ""
+                        }
                     }
                 }
-            }
-            // add last page if there is only a left page remaining
-            if (doublePageLeft != "") {
-                resourcesDouble.add(PageResource.EpubFxl(doublePageLeft, ""))
-            }
-
-            this.resourcesSingle = resourcesSingle
-            this.resourcesDouble = resourcesDouble
-
-            resourcePager.type = Publication.TYPE.FXL
-            adapter = when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
-                1 -> {
-                    R2PagerAdapter(childFragmentManager, resourcesSingle)
+                // add last page if there is only a left page remaining
+                if (doublePageLeft != "") {
+                    resourcesDouble.add(PageResource.EpubFxl(doublePageLeft, ""))
                 }
-                2 -> {
-                    R2PagerAdapter(childFragmentManager, resourcesDouble)
-                }
-                else -> {
-                    // TODO based on device
-                    // TODO decide if 1 page or 2 page
-                    R2PagerAdapter(childFragmentManager, resourcesSingle)
+
+                this.resourcesSingle = resourcesSingle
+                this.resourcesDouble = resourcesDouble
+
+                resourcePager.type = Publication.TYPE.FXL
+                adapter = when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
+                    1 -> {
+                        R2PagerAdapter(childFragmentManager, resourcesSingle)
+                    }
+                    2 -> {
+                        R2PagerAdapter(childFragmentManager, resourcesDouble)
+                    }
+                    else -> {
+                        // TODO based on device
+                        // TODO decide if 1 page or 2 page
+                        R2PagerAdapter(childFragmentManager, resourcesSingle)
+                    }
                 }
             }
         }
