@@ -92,7 +92,7 @@ class ArchiveFetcherTest {
     @Test
     fun `Reading a missing entry returns NotFound`() {
         val resource = fetcher.get(Link(href = "/unknown"))
-        assertFailsWith<Resource.Exception.NotFound> { resource.lengthBlocking().getOrThrow() }
+        assertFailsWith<Resource.Exception.NotFound> { resource.readBlocking().getOrThrow() }
     }
 
     @Test
