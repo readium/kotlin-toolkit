@@ -34,14 +34,7 @@ internal class ServingFetcher(
 
     override fun get(link: Link): Resource {
         val resource = publication.get(link)
-        return if (enableReadiumNavigatorSupport)
-            transformResourceForReadiumNavigator(resource)
-        else
-            resource
-    }
-
-    private fun transformResourceForReadiumNavigator(resource: Resource): Resource {
-        return if (publication.type == Publication.TYPE.EPUB)
+        return if (enableReadiumNavigatorSupport && link.mediaType.isHtml)
             htmlInjector.transform(resource)
         else
             resource
