@@ -280,6 +280,7 @@ internal class LicenseValidation(
                     is State.registerDevice -> registerDevice(state.documents.license, state.link)
                     is State.valid -> notifyObservers(state.documents, null)
                     is State.failure -> notifyObservers(null, state.error)
+                    State.cancelled -> notifyObservers(null, null)
                 }
             }
         } catch (error: Exception) {
@@ -315,6 +316,8 @@ internal class LicenseValidation(
     private suspend fun fetchStatus(license: LicenseDocument) {
         val url = license.url(LicenseDocument.Rel.status, preferredType = MediaType.LCP_STATUS_DOCUMENT).toString()
         // Short timeout to avoid blocking the License, since the LSD is optional.
+        // FIXME: To remove after bumping to Kotlin 1.6
+        @Suppress("DEPRECATION")
         val data = network.fetch(url, timeout = Duration.seconds(5))
             .getOrElse { throw LcpException.Network(it) }
 
@@ -329,6 +332,8 @@ internal class LicenseValidation(
     private suspend fun fetchLicense(status: StatusDocument) {
         val url = status.url(StatusDocument.Rel.license, preferredType = MediaType.LCP_LICENSE_DOCUMENT).toString()
         // Short timeout to avoid blocking the License, since it can be updated next time.
+        // FIXME: To remove after bumping to Kotlin 1.6
+        @Suppress("DEPRECATION")
         val data = network.fetch(url, timeout = Duration.seconds(5))
             .getOrElse { throw LcpException.Network(it) }
 
