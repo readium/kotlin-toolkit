@@ -274,6 +274,8 @@ class EpubNavigatorFragment private constructor(
     internal var pendingLocator: Locator? = null
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        listener?.onJumpToLocator(locator)
+
         val href = locator.href
             // Remove anchor
             .substringBefore("#")

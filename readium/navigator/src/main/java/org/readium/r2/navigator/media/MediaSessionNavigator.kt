@@ -8,8 +8,6 @@ package org.readium.r2.navigator.media
 
 import android.media.session.PlaybackState
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaControllerCompat.TransportControls
@@ -43,8 +41,11 @@ private val skipBackwardInterval: Duration = Duration.seconds(30)
 class MediaSessionNavigator(
     override val publication: Publication,
     val publicationId: PublicationId,
-    val controller: MediaControllerCompat
+    val controller: MediaControllerCompat,
+    var listener: Listener? = null
 ) : MediaNavigator, CoroutineScope by MainScope() {
+
+    interface Listener: MediaNavigator.Listener
 
     /**
      * Indicates whether the media session is loaded with a resource from this [publication]. This
@@ -175,6 +176,8 @@ class MediaSessionNavigator(
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         if (!isActive) return false
+
+        listener?.onJumpToLocator(locator)
 
         transportControls.playFromMediaId("$publicationId#${locator.href}", Bundle().apply {
             putParcelable("locator", locator)

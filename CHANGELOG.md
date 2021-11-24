@@ -24,6 +24,9 @@ All notable changes to this project will be documented in this file. Take a look
         return true
     }
     ```
+* The new `Navigator.Listener.onJumpToLocator()` API is called every time the navigator will jump to a discontinuous location.
+    * For example, it is called when clicking on internal links or programmatically calling `Navigator.go()`, but not when turning pages.
+    * You can use this callback to implement a navigation history by differentiating between continuous and discontinuous moves.
 
 ### Fixed
 
