@@ -34,9 +34,7 @@ import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
-import org.readium.r2.navigator.presentation.Presentation
-import org.readium.r2.navigator.presentation.PresentationKey
-import org.readium.r2.navigator.presentation.PresentationSettings
+import org.readium.r2.navigator.presentation.*
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.fetcher.Resource
@@ -56,13 +54,13 @@ import kotlin.math.roundToInt
  *
  * To use this [Fragment], create a factory with `PdfNavigatorFragment.createFactory()`.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalPresentation::class)
 class PdfNavigatorFragment internal constructor(
     override val publication: Publication,
     private val initialLocator: Locator?,
     private val listener: Listener?,
     private val config: Configuration,
-) : Fragment(), VisualNavigator {
+) : Fragment(), VisualNavigator, PresentableNavigator {
 
     interface Listener : VisualNavigator.Listener {
 
@@ -78,8 +76,8 @@ class PdfNavigatorFragment internal constructor(
 
     @OptIn(ExperimentalPresentation::class)
     data class Configuration(
-        val settings: PresentationSettings = PresentationSettings(),
-        val defaultSettings: PresentationSettings = PresentationSettings(),
+        val settings: PresentationValues = PresentationValues(),
+        val defaultSettings: PresentationValues = PresentationValues(),
     )
 
     init {
@@ -142,15 +140,16 @@ class PdfNavigatorFragment internal constructor(
         } else {
             lifecycleScope.launch {
                 try {
-                    activity?.requestedOrientation = when (requireNotNull(presentation.value.orientation).value) {
+                    val values = presentation.value.values
+                    activity?.requestedOrientation = when (requireNotNull(values.orientation)) {
                         Orientation.AUTO -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                         Orientation.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                         Orientation.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                     }
 
-                    val paginated = requireNotNull(presentation.value.overflow).value == Overflow.PAGINATED
-                    val pageSpacing = requireNotNull(presentation.value.pageSpacing).value
-                    val fit = requireNotNull(presentation.value.fit).value
+                    val paginated = (requireNotNull(values.overflow) == Overflow.PAGINATED)
+                    val pageSpacing = requireNotNull(values.pageSpacing)
+                    val fit = requireNotNull(values.fit)
 
                     pdfView
                         .run {
@@ -254,14 +253,14 @@ class PdfNavigatorFragment internal constructor(
     }
 
     @ExperimentalPresentation
-    private var _presentation = MutableStateFlow(createPresentation(config.settings, fallback = null))
+    private var _presentation = MutableStateFlow(PdfPresentation(config.settings))
     @ExperimentalPresentation
     override val presentation: StateFlow<Presentation> get() = _presentation.asStateFlow()
 
     @ExperimentalPresentation
-    override suspend fun applySettings(settings: PresentationSettings) {
+    override suspend fun applyPresentationSettings(settings: PresentationValues) {
         val page = pageIndexToNumber(currentPage)
-        _presentation.value = createPresentation(settings, fallback = presentation.value)
+        _presentation.value = PdfPresentation(settings, fallback = presentation.value)
 
         currentHref?.let { href ->
             goToHref(href, page = pageNumberToIndex(page), animated = false, forceReload = true)
@@ -269,110 +268,83 @@ class PdfNavigatorFragment internal constructor(
     }
 
     @ExperimentalPresentation
-    private fun createPresentation(settings: PresentationSettings, fallback: Presentation?): Presentation {
-        val defaults = config.defaultSettings
-        val fits = listOf(
-            Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT
-        )
-        val orientations = listOf(
-            Orientation.PORTRAIT, Orientation.LANDSCAPE
-        )
-        val overflows = listOf(
-            Overflow.PAGINATED, Overflow.SCROLLED
-        )
-        val readingProgressions = listOf(
-            ReadingProgression.LTR, ReadingProgression.RTL,
-            ReadingProgression.TTB, ReadingProgression.BTT,
-        )
+    private inner class PdfPresentation(
+        settings: PresentationValues,
+        fallback: Presentation? = null
+    ) : Presentation {
 
-        fun <T> List<T>.firstIn(vararg values: T?): T? =
-            values.firstOrNull { it != null && contains(it) }
+        override val values: PresentationValues
 
-        fun firstValidRange(vararg values: Double?): Double? =
-            values.firstOrNull { it != null && it in 0.0..1.0 }
+        private val fits: List<Fit>
+        private val orientations: List<Orientation>
+        private val overflows: List<Overflow>
+        private val readingProgressions: List<ReadingProgression>
 
-        return Presentation(
-            PresentationKey.PAGE_SPACING to Presentation.RangeProperty(
-                value = firstValidRange(
-                    settings.pageSpacing,
-                    fallback?.pageSpacing?.value?.takeIf { settings.pageSpacing != null },
-                    defaults.pageSpacing
-                ) ?: 0.2,
-                stepCount = 10,
-                isActiveForSettings = {
-                    it.overflow != Overflow.PAGINATED
-                },
-                activateInSettings = {
-                    Try.success(
-                        if (it.overflow != Overflow.PAGINATED) {
-                            it
-                        } else {
-                            it.copy {
-                                this[PresentationKey.OVERFLOW] = Overflow.SCROLLED
-                            }
-                        }
-                    )
-                },
-                labelForValue = { _, v ->
-                    "${pageSpacingForValue(v)} dp"
-                }
-            ),
+        init {
+            fun <T> List<T>.firstIn(vararg values: T?): T? =
+                values.firstOrNull { it != null && contains(it) }
 
-            PresentationKey.FIT to Presentation.StringProperty(
-                Fit,
-                value = fits.firstIn(settings.fit, fallback?.fit?.value?.takeIf { settings.fit != null })
-                    ?: fits.firstIn(publication.metadata.presentation.fit, defaults.fit)
-                    ?: Fit.CONTAIN,
-                supportedValues = fits,
-                labelForValue = { c, v -> c.getString(when (v) {
-                    Fit.WIDTH -> R.string.readium_navigator_presentation_fit_width
-                    Fit.HEIGHT -> R.string.readium_navigator_presentation_fit_height
-                    Fit.CONTAIN -> R.string.readium_navigator_presentation_fit_contain
-                    Fit.COVER -> R.string.readium_navigator_presentation_fit_cover
-                }) }
-            ),
+            fun firstValidRange(vararg values: Double?): Double? =
+                values.firstOrNull { it != null && it in 0.0..1.0 }
 
-            PresentationKey.ORIENTATION to Presentation.StringProperty(
-                Orientation,
-                value = orientations.firstIn(settings.orientation, fallback?.orientation?.value?.takeIf { settings.orientation != null })
-                    ?: orientations.firstIn(publication.metadata.presentation.orientation, defaults.orientation)
-                    ?: Orientation.AUTO,
-                supportedValues = orientations,
-                labelForValue = { c, v -> c.getString(when (v) {
-                    Orientation.AUTO -> R.string.readium_navigator_presentation_default
-                    Orientation.LANDSCAPE -> R.string.readium_navigator_presentation_orientation_landscape
-                    Orientation.PORTRAIT -> R.string.readium_navigator_presentation_orientation_portrait
-                }) }
-            ),
+            val defaults = config.defaultSettings
 
-            PresentationKey.OVERFLOW to Presentation.StringProperty(
-                Overflow,
-                value = overflows.firstIn(settings.overflow, fallback?.overflow?.value?.takeIf { settings.overflow != null })
-                    ?: overflows.firstIn(publication.metadata.presentation.overflow, defaults.overflow)
-                    ?: Overflow.SCROLLED,
-                supportedValues = overflows,
-                labelForValue = { c, v -> c.getString(when (v) {
-                    Overflow.PAGINATED -> R.string.readium_navigator_presentation_overflow_paginated
-                    Overflow.SCROLLED -> R.string.readium_navigator_presentation_overflow_scrolled
-                    Overflow.AUTO -> R.string.readium_navigator_presentation_default
-                }) }
-            ),
+            fits = listOf(
+                Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT
+            )
+            val fit = fits.firstIn(settings.fit, fallback?.values?.fit?.takeIf { settings.fit != null })
+                ?: fits.firstIn(publication.metadata.presentation.fit, defaults.fit)
+                ?: Fit.CONTAIN
 
-            PresentationKey.READING_PROGRESSION to Presentation.StringProperty(
-                ReadingProgression,
-                value = readingProgressions.firstIn(settings.readingProgression, fallback?.readingProgression?.value?.takeIf { settings.readingProgression != null })
-                    ?: readingProgressions.firstIn(publication.metadata.readingProgression, defaults.readingProgression)
-                    ?: ReadingProgression.TTB,
-                supportedValues = readingProgressions,
-                labelForValue = { c, v -> c.getString(when (v) {
-                    ReadingProgression.RTL -> R.string.readium_navigator_presentation_readingProgression_rtl
-                    ReadingProgression.LTR -> R.string.readium_navigator_presentation_readingProgression_ltr
-                    ReadingProgression.TTB -> R.string.readium_navigator_presentation_readingProgression_ttb
-                    ReadingProgression.BTT -> R.string.readium_navigator_presentation_readingProgression_btt
-                    ReadingProgression.AUTO -> R.string.readium_navigator_presentation_default
-                }) }
-            ),
-        )
+            orientations = listOf(
+                Orientation.PORTRAIT, Orientation.LANDSCAPE
+            )
+            val orientation = orientations.firstIn(settings.orientation, fallback?.values?.orientation?.takeIf { settings.orientation != null })
+                ?: orientations.firstIn(publication.metadata.presentation.orientation, defaults.orientation)
+                ?: Orientation.AUTO
+
+            overflows = listOf(
+                Overflow.PAGINATED, Overflow.SCROLLED
+            )
+            val overflow = overflows.firstIn(settings.overflow, fallback?.values?.overflow?.takeIf { settings.overflow != null })
+                ?: overflows.firstIn(publication.metadata.presentation.overflow, defaults.overflow)
+                ?: Overflow.SCROLLED
+
+            val pageSpacing = firstValidRange(
+                settings.pageSpacing,
+                fallback?.values?.pageSpacing?.takeIf { settings.pageSpacing != null },
+                defaults.pageSpacing
+            ) ?: 0.0
+
+            readingProgressions = listOf(
+                ReadingProgression.LTR, ReadingProgression.RTL,
+                ReadingProgression.TTB, ReadingProgression.BTT,
+            )
+            val readingProgression = readingProgressions.firstIn(settings.readingProgression, fallback?.values?.readingProgression?.takeIf { settings.readingProgression != null })
+                ?: readingProgressions.firstIn(publication.metadata.readingProgression, defaults.readingProgression)
+                ?: ReadingProgression.TTB
+
+            values = PresentationValues(
+                fit = fit,
+                orientation = orientation,
+                overflow = overflow,
+                pageSpacing = pageSpacing,
+                readingProgression = readingProgression
+            )
+        }
+
+        override fun <V> constraintsForKey(key: PresentationKey<V, *>): PresentationValueConstraints<V>? {
+            val constraints = when (key) {
+                PresentationKey.FIT -> PresentationEnumConstraints(supportedValues = fits)
+                PresentationKey.ORIENTATION -> PresentationEnumConstraints(supportedValues = orientations)
+                PresentationKey.OVERFLOW -> PresentationEnumConstraints(supportedValues = overflows)
+                PresentationKey.PAGE_SPACING -> PresentationRangeConstraints(stepCount = 20)
+                PresentationKey.READING_PROGRESSION -> PresentationEnumConstraints(supportedValues = readingProgressions)
+                else -> null
+            }
+            @Suppress("UNCHECKED_CAST")
+            return constraints as PresentationValueConstraints<V>?
+        }
     }
 
     private fun pageSpacingForValue(value: Double): Int = (50 * value).roundToInt()
@@ -382,7 +354,7 @@ class PdfNavigatorFragment internal constructor(
 
     @OptIn(ExperimentalPresentation::class)
     override val readingProgression: ReadingProgression get() =
-        (presentation.value.readingProgression?.value ?: ReadingProgression.TTB)
+        (presentation.value.values.readingProgression ?: ReadingProgression.TTB)
 
     /**
      * Indicates whether the order of the [PDFView] pages is reversed to take into account

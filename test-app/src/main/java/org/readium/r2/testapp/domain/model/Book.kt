@@ -13,7 +13,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import org.json.JSONObject
 import org.readium.r2.navigator.ExperimentalPresentation
-import org.readium.r2.navigator.presentation.PresentationSettings
+import org.readium.r2.navigator.presentation.PresentationValues
 import org.readium.r2.shared.util.mediatype.MediaType
 import java.net.URI
 import java.nio.file.Paths
@@ -68,8 +68,8 @@ data class Book(
         }
 
     @OptIn(ExperimentalPresentation::class)
-    val userSettings: PresentationSettings get() =
-        PresentationSettings.fromJSON(userSettingsJson?.let { JSONObject(it) })
+    val userSettings: PresentationValues get() =
+        PresentationValues.fromJSON(userSettingsJson?.let { JSONObject(it) })
 
     suspend fun mediaType(): MediaType? = MediaType.of(type)
 

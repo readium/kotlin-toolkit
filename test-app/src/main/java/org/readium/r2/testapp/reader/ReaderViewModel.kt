@@ -22,7 +22,9 @@ import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.presentation.PresentableNavigator
 import org.readium.r2.navigator.presentation.PresentationController
+import org.readium.r2.navigator.presentation.PresentationValues
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
@@ -51,18 +53,23 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     val bookId = arguments.bookId
     val book = runBlocking { repository.get(bookId) }
     val publicationId: PublicationId get() = bookId.toString()
-    val presentation = PresentationController(settings = book?.userSettings, coroutineScope = viewModelScope)
+    val presentation = PresentationController(
+        settings = book?.userSettings ?: PresentationValues(),
+        coroutineScope = viewModelScope
+    )
 
     init {
         viewModelScope.launch {
             presentation.settings.collect {
-                repository.saveUserSettings(bookId, it.userSettings)
+                repository.saveUserSettings(bookId, it.values)
             }
         }
     }
 
-    fun onNavigatorCreated(navigator: Navigator) {
-        presentation.attach(navigator)
+    fun onNavigatorCreated(navigator: Navigator) = viewModelScope.launch {
+        if (navigator is PresentableNavigator) {
+            presentation.bind(navigator)
+        }
     }
 
     fun saveProgression(locator: Locator) = viewModelScope.launch {

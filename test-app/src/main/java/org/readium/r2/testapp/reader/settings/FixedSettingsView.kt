@@ -9,17 +9,14 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.presentation.PresentationController
-import org.readium.r2.navigator.presentation.PresentationKey
-import org.readium.r2.navigator.presentation.PresentationSettings
+import org.readium.r2.navigator.presentation.supportedValues
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.Presentation.*
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
+import org.readium.r2.testapp.utils.extensions.formatPercentage
 
 @OptIn(ExperimentalPresentation::class)
 typealias UpdatePresentation = PresentationController.(PresentationController.Settings) -> Unit
@@ -40,8 +37,6 @@ fun FixedSettingsView(presentation: PresentationController) {
 @Composable
 @OptIn(ExperimentalPresentation::class)
 private fun FixedSettingsView(settings: PresentationController.Settings, commit: CommitPresentation) {
-    val context = LocalContext.current
-
     Column(
         modifier = Modifier
             .padding(24.dp)
@@ -101,7 +96,7 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
                             ReadingProgression.BTT -> Icons.Default.KeyboardArrowUp
                             ReadingProgression.AUTO -> Icons.Default.Clear
                         },
-                        contentDescription = readingProgression.labelForValue(context, option)
+                        contentDescription = option.value
                     )
                 }
             }
@@ -122,7 +117,7 @@ private fun FixedSettingsView(settings: PresentationController.Settings, commit:
                             decrement(pageSpacing)
                         }
                     }
-                    Text(pageSpacing.labelForValue(context, pageSpacing.value ?: pageSpacing.effectiveValue ?: 0.5))
+                    Text(String.formatPercentage(pageSpacing.value ?: pageSpacing.effectiveValue ?: 0.0))
                     IncrementButton {
                         commit {
                             increment(pageSpacing)
@@ -152,7 +147,7 @@ private fun Section(title: String, isActive: Boolean = true, content: @Composabl
 
 @Composable
 @OptIn(ExperimentalPresentation::class)
-private fun <T : Enum<T>> EnumSection(title: String, setting: PresentationController.EnumSetting<T>?, commit: CommitPresentation) {
+private fun <T : Enum<T>> EnumSection(title: String, setting: PresentationController.Setting<T, *>?, commit: CommitPresentation) {
     setting ?: return
     val values = setting.supportedValues ?: return
 
@@ -166,7 +161,7 @@ private fun <T : Enum<T>> EnumSection(title: String, setting: PresentationContro
                     toggle(setting, value)
                 }
             }) { option ->
-            Text(setting.labelForValue(LocalContext.current, option))
+            Text(option.name)
         }
     }
 }
@@ -211,53 +206,4 @@ fun PresetsButton(commit: CommitPresentation, vararg presets: Pair<String, Updat
             }
         }
     }
-}
-
-@Composable
-@Preview(showBackground = true)
-@OptIn(ExperimentalPresentation::class)
-fun PreviewFixedSettingsView() {
-    FixedSettingsView(
-        settings = PresentationController.Settings(
-            presentation = org.readium.r2.navigator.presentation.Presentation(
-                PresentationKey.FIT to org.readium.r2.navigator.presentation.Presentation.StringProperty(
-                    value = "",
-                    supportedValues = listOf(Fit.CONTAIN, Fit.HEIGHT, Fit.WIDTH).map { it.value },
-                ),
-                PresentationKey.ORIENTATION to org.readium.r2.navigator.presentation.Presentation.StringProperty(
-                    value = "",
-                    supportedValues = listOf(
-                        Orientation.PORTRAIT,
-                        Orientation.LANDSCAPE
-                    ).map { it.value },
-                ),
-                PresentationKey.OVERFLOW to org.readium.r2.navigator.presentation.Presentation.StringProperty(
-                    value = "",
-                    supportedValues = listOf(
-                        Overflow.PAGINATED,
-                        Overflow.SCROLLED
-                    ).map { it.value },
-                ),
-                PresentationKey.PAGE_SPACING to org.readium.r2.navigator.presentation.Presentation.RangeProperty(
-                    value = 0.6,
-                    stepCount = 20,
-                ),
-                PresentationKey.READING_PROGRESSION to org.readium.r2.navigator.presentation.Presentation.StringProperty(
-                    value = "",
-                    supportedValues = listOf(
-                        ReadingProgression.LTR, ReadingProgression.RTL,
-                        ReadingProgression.TTB, ReadingProgression.BTT
-                    ).map { it.value },
-                ),
-            ),
-            userSettings = PresentationSettings(
-                fit = Fit.WIDTH,
-                orientation = Orientation.LANDSCAPE,
-                overflow = Overflow.PAGINATED,
-                pageSpacing = 0.3,
-                readingProgression = ReadingProgression.TTB
-            ),
-        ),
-        commit = {},
-    )
 }

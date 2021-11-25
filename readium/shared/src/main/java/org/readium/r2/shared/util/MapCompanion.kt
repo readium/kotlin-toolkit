@@ -27,7 +27,7 @@ package org.readium.r2.shared.util
 open class MapCompanion<K, E>(
     protected val map: Map<K, E>,
     private val keySelector: (E) -> K
-) {
+) : ValueCoder<E?, K?> {
 
     constructor(elements: Array<E>, keySelector: (E) -> K):
         this(elements.associateBy(keySelector), keySelector)
@@ -60,6 +60,11 @@ open class MapCompanion<K, E>(
     @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("get(key)"))
     open fun from(key: K?): E? = get(key)
 
+    override fun decode(rawValue: K?): E? =
+        get(rawValue)
+
+    override fun encode(value: E?): K? =
+        value?.let { getKey(it) }
 }
 
 /**

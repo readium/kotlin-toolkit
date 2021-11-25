@@ -11,7 +11,7 @@ import androidx.lifecycle.LiveData
 import kotlinx.coroutines.flow.Flow
 import org.joda.time.DateTime
 import org.readium.r2.navigator.ExperimentalPresentation
-import org.readium.r2.navigator.presentation.PresentationSettings
+import org.readium.r2.navigator.presentation.PresentationValues
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
@@ -49,7 +49,7 @@ class BookRepository(private val booksDao: BooksDao) {
         booksDao.saveProgression(locator.toJSON().toString(), bookId)
 
     @OptIn(ExperimentalPresentation::class)
-    suspend fun saveUserSettings(bookId: Long, settings: PresentationSettings) =
+    suspend fun saveUserSettings(bookId: Long, settings: PresentationValues) =
         booksDao.saveUserSettings(bookId, settings)
 
     suspend fun insertBookmark(bookId: Long, publication: Publication, locator: Locator): Long {

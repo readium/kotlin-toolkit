@@ -24,17 +24,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.*
-import org.readium.r2.navigator.presentation.Presentation
-import org.readium.r2.navigator.presentation.PresentationController
-import org.readium.r2.navigator.presentation.PresentationKey
-import org.readium.r2.navigator.presentation.PresentationSettings
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.domain.model.Highlight
 
 /*
