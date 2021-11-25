@@ -23,6 +23,7 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.*
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.ValueCoder
+import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
 typealias PresentationToggle = Boolean
@@ -135,6 +136,32 @@ data class PresentationValues(val values: @WriteWith<PresentationValuesParceler>
     }
 }
 
+/**
+ * Implementation of a [Parceler] to be used with [@Parcelize] to serialize [PresentationValues].
+ */
+@ExperimentalPresentation
+object PresentationValuesParceler : Parceler<Map<AnyPresentationKey, Any?>> {
+
+    override fun create(parcel: Parcel): Map<AnyPresentationKey, Any?> =
+        try {
+            parcel.readString()?.let {
+                JSONObject(it).toMap()
+                    .mapKeys { pair -> AnyPresentationKey(pair.key) }
+            } ?: emptyMap()
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to read a PresentationValues from a Parcel")
+            emptyMap()
+        }
+
+    override fun Map<AnyPresentationKey, Any?>.write(parcel: Parcel, flags: Int) {
+        try {
+            parcel.writeString(JSONObject(mapKeys { it.key.key }).toString())
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to write a PresentationValues into a Parcel")
+        }
+    }
+}
+
 @ExperimentalPresentation
 interface PresentableNavigator : Navigator {
     val presentation: StateFlow<Presentation>
@@ -158,9 +185,9 @@ interface Presentation {
 }
 
 @ExperimentalPresentation
-interface PresentationValueConstraints<T> {
+interface PresentationValueConstraints<V> {
     val extras: Map<String, Any?>
-    fun validate(value: T): Boolean = true
+    fun validate(value: V): Boolean = true
     fun isActiveForValues(values: PresentationValues): Boolean = true
     fun activateInValues(values: PresentationValues): Try<PresentationValues, UserException> = Try.success(values)
 }
@@ -196,36 +223,69 @@ class PresentationEnumConstraints<E : Enum<E>>(
     supportedValues: List<E>? = null,
     extras: Map<String, Any?> = emptyMap()
 ) : PresentationValueConstraints<E> {
+
     override val extras: Map<String, Any?> =
         extras.merge("supportedValues" to supportedValues)
+
+    override fun validate(value: E): Boolean =
+        supportedValues?.contains(value) ?: true
 }
 
 @ExperimentalPresentation
 val <E: Enum<E>> PresentationValueConstraints<E>.supportedValues: List<E>?
     get() = extras["supportedValues"] as? List<E>
 
-/**
- * Implementation of a [Parceler] to be used with [@Parcelize] to serialize [PresentationValues].
- */
 @ExperimentalPresentation
-object PresentationValuesParceler : Parceler<Map<AnyPresentationKey, Any?>> {
+class PresentationValueAndConstraints<V>(
+    private vararg val constraints: PresentationValueConstraints<V>
+) : PresentationValueConstraints<V> {
 
-    override fun create(parcel: Parcel): Map<AnyPresentationKey, Any?> =
-        try {
-            parcel.readString()?.let {
-                JSONObject(it).toMap()
-                    .mapKeys { pair -> AnyPresentationKey(pair.key) }
-            } ?: emptyMap()
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to read a PresentationValues from a Parcel")
-            emptyMap()
+    override val extras: Map<String, Any?> get() =
+        constraints.fold(emptyMap()) { extras, c ->
+            extras.merge(c.extras)
         }
 
-    override fun Map<AnyPresentationKey, Any?>.write(parcel: Parcel, flags: Int) {
-        try {
-            parcel.writeString(JSONObject(mapKeys { it.key.key }).toString())
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to write a PresentationValues into a Parcel")
+    override fun validate(value: V): Boolean =
+        constraints.all { it.validate(value) }
+
+    override fun isActiveForValues(values: PresentationValues): Boolean =
+        constraints.all { it.isActiveForValues(values) }
+
+    override fun activateInValues(values: PresentationValues): Try<PresentationValues, UserException> {
+        var res = values
+        for (c in constraints) {
+            res = c.activateInValues(res)
+                .getOrElse { return Try.failure(it) }
         }
+        return Try.success(res)
     }
 }
+
+@ExperimentalPresentation
+operator fun <V> PresentationValueConstraints<V>.plus(other: PresentationValueConstraints<V>): PresentationValueConstraints<V> =
+    PresentationValueAndConstraints(this, other)
+
+@ExperimentalPresentation
+class PresentationValueDependencyConstraints<V>(
+    private val requiredValues: PresentationValues,
+    override val extras: Map<String, Any?> = emptyMap()
+) : PresentationValueConstraints<V> {
+
+    override fun isActiveForValues(values: PresentationValues): Boolean {
+        val requiredVals = requiredValues.values.filterValues { it != null }
+        for ((key, value) in requiredVals) {
+            if (value != values.values[key]) {
+                return false
+            }
+        }
+        return true
+    }
+
+    override fun activateInValues(values: PresentationValues): Try<PresentationValues, UserException> {
+        return Try.success(values.merge(requiredValues))
+    }
+}
+
+@ExperimentalPresentation
+fun <V> PresentationValueConstraints<V>.require(values: PresentationValues): PresentationValueConstraints<V> =
+    this + PresentationValueDependencyConstraints(values)

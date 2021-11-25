@@ -339,6 +339,7 @@ class PdfNavigatorFragment internal constructor(
                 PresentationKey.ORIENTATION -> PresentationEnumConstraints(supportedValues = orientations)
                 PresentationKey.OVERFLOW -> PresentationEnumConstraints(supportedValues = overflows)
                 PresentationKey.PAGE_SPACING -> PresentationRangeConstraints(stepCount = 20)
+                    .require(PresentationValues(overflow = Overflow.PAGINATED))
                 PresentationKey.READING_PROGRESSION -> PresentationEnumConstraints(supportedValues = readingProgressions)
                 else -> null
             }
