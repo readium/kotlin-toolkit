@@ -75,10 +75,14 @@ interface Navigator {
     interface Listener {
 
         /**
-         * Called when the navigator will interrupt the linear reading progression to jump to the
-         * given locator.
+         * Called when the navigator jumps to an explicit location, which might break the linear
+         * reading progression.
          *
-         * This occurs for example when clicking on internal links or calling [go] programmatically.
+         * For example, it is called when clicking on internal links or programmatically calling
+         * [go], but not when turning pages.
+         *
+         * You can use this callback to implement a navigation history by differentiating between
+         * continuous and discontinuous moves.
          */
         fun onJumpToLocator(locator: Locator) {}
     }
