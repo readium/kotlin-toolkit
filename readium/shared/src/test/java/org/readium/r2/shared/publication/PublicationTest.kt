@@ -56,6 +56,7 @@ class PublicationTest {
         servicesBuilder = servicesBuilder
     )
 
+    @Suppress("DEPRECATION")
     @Test fun `get the type computed from the manifest content`() {
         val fixtures = Fixtures("format")
         fun parseAt(path: String): Publication =
