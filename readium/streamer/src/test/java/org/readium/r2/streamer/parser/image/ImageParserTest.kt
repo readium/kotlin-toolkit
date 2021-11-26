@@ -12,9 +12,8 @@ package org.readium.r2.streamer.parser.image
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.FileFetcher
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.firstWithRel
@@ -52,6 +51,11 @@ class ImageParserTest {
     @Test
     fun `JPG is accepted`() {
         assertNotNull(parser.parseBlocking(jpgAsset, jpgFetcher))
+    }
+
+    @Test
+    fun `conformsTo contains the Divina profile`() {
+        assertEquals(listOf(Publication.Profile.DIVINA), parser.parseBlocking(cbzAsset, cbzFetcher)?.manifest?.metadata?.conformsTo)
     }
 
     @Test
