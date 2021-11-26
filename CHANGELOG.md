@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Added
 
+#### Shared
+
+* A new `Publication.conformsTo()` API to identify the profile of a publication.
+* Support for the [`conformsTo` RWPM metadata](https://github.com/readium/webpub-manifest/issues/65), to identify the profile of a `Publication`.
+
 #### Navigator
 
 * The PDF navigator now honors the publication reading progression with support for right-to-left and horizontal scrolling.
@@ -24,6 +29,13 @@ All notable changes to this project will be documented in this file. Take a look
         return true
     }
     ```
+
+### Deprecated
+
+#### Shared
+
+* `Publication.type` is now deprecated in favor of the new `Publication.conformsTo()` API which is more accurate.
+    * For example, replace `publication.type == Publication.TYPE.EPUB` with `publication.conformsTo(Publication.Profile.EPUB)` before opening a publication with the `EpubNavigatorFragment`.
 
 ### Fixed
 
