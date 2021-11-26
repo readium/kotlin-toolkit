@@ -34,6 +34,7 @@ import java.util.*
 data class Metadata(
     val identifier: String? = null, // URI
     val type: String? = null, // URI (@type)
+    val conformsTo: List<Publication.Profile> = emptyList(),
     val localizedTitle: LocalizedString,
     val localizedSubtitle: LocalizedString? = null,
     val localizedSortAs: LocalizedString? = null,
@@ -65,6 +66,7 @@ data class Metadata(
     constructor(
         identifier: String? = null, // URI
         type: String? = null, // URI (@type)
+        conformsTo: List<Publication.Profile> = emptyList(),
         localizedTitle: LocalizedString,
         localizedSubtitle: LocalizedString? = null,
         localizedSortAs: LocalizedString? = null,
@@ -96,6 +98,7 @@ data class Metadata(
     ): this(
         identifier = identifier,
         type = type,
+        conformsTo = conformsTo,
         localizedTitle = localizedTitle,
         localizedSubtitle = localizedSubtitle,
         localizedSortAs = localizedSortAs,
@@ -187,6 +190,7 @@ data class Metadata(
     override fun toJSON() = JSONObject(otherMetadata).apply {
         put("identifier", identifier)
         put("@type", type)
+        putIfNotEmpty("conformsTo", conformsTo.map { it.uri })
         putIfNotEmpty("title", localizedTitle)
         putIfNotEmpty("subtitle", localizedSubtitle)
         put("modified", modified?.toIso8601String())
@@ -241,6 +245,8 @@ data class Metadata(
 
             val identifier = json.remove("identifier") as? String
             val type = json.remove("@type") as? String
+            val conformsTo = json.optStringsFromArrayOrSingle("conformsTo", remove = true)
+                .map { Publication.Profile(it) }
             val localizedSubtitle = LocalizedString.fromJSON(json.remove("subtitle"), warnings)
             val modified = (json.remove("modified") as? String)?.iso8601ToDate()
             val published = (json.remove("published") as? String)?.iso8601ToDate()
@@ -282,6 +288,7 @@ data class Metadata(
             return Metadata(
                 identifier = identifier,
                 type = type,
+                conformsTo = conformsTo,
                 localizedTitle = localizedTitle,
                 localizedSubtitle = localizedSubtitle,
                 localizedSortAs = localizedSortAs,
