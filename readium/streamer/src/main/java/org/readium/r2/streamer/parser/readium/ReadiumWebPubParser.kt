@@ -129,7 +129,10 @@ class ReadiumWebPubParser(
         } ?: return@runBlocking null
 
         val publication = builder.build()
-            .apply { type = mediaType.toPublicationType() }
+            .apply {
+                @Suppress("DEPRECATION")
+                type = mediaType.toPublicationType()
+            }
 
         val container = PublicationContainer(
             publication = publication,

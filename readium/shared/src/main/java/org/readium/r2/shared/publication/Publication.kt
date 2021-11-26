@@ -107,7 +107,7 @@ class Publication(
 
     val subcollections: Map<String, List<PublicationCollection>> get() = _manifest.subcollections
 
-    // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
+    @Deprecated("Use conformsTo() to check the kind of a publication.", level = DeprecationLevel.WARNING)
     var type: TYPE = when {
         metadata.type == "http://schema.org/Audiobook" || readingOrder.allAreAudio -> TYPE.AUDIO
         readingOrder.allAreBitmap -> TYPE.DiViNa
