@@ -8,6 +8,8 @@ package org.readium.r2.navigator.presentation
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.ExperimentalPresentation
@@ -24,7 +26,7 @@ import kotlin.math.round
  * Helper class which simplifies the modification of Presentation Settings and designing a user
  * settings interface.
  *
- * @param autoActivateOnChange Requests the navigator to activate a non-active setting when its
+ * @param autoActivateSettings Requests the navigator to activate a non-active setting when its
  *        value is changed.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -32,7 +34,7 @@ import kotlin.math.round
 class PresentationController(
     settings: PresentationValues = PresentationValues(),
     private val coroutineScope: CoroutineScope,
-    private val autoActivateOnChange: Boolean = true,
+    private val autoActivateSettings: Boolean = true,
     private var autoCommit: Boolean = true,
     private val onAdjust: (PresentationValues) -> PresentationValues = { it },
     private val onCommit: (PresentationValues) -> Unit = {},
@@ -45,20 +47,33 @@ class PresentationController(
     val settings: StateFlow<Settings>
         get() = _settings.asStateFlow()
 
-    private var _navigator: WeakReference<PresentableNavigator>? = null
-    private val navigator: PresentableNavigator? get() = _navigator?.get()
+    private val commitedValues = MutableSharedFlow<PresentationValues>()
 
-    suspend fun bind(navigator: PresentableNavigator) {
-        _navigator = WeakReference(navigator)
-        coroutineScope.launch {
-            if (autoCommit) {
-                navigator.applyPresentationSettings(settings.value.adjustedValues)
+    init {
+        commitedValues
+            .onEach { onCommit(it) }
+            .launchIn(coroutineScope)
+
+        this.settings
+            .distinctUntilChangedBy(Settings::adjustedValues)
+            .onEach {
+                if (autoCommit) {
+                    commit(it)
+                }
             }
+            .launchIn(coroutineScope)
+    }
 
-            navigator.presentation.collect { presentation ->
+    fun bind(navigator: PresentableNavigator) {
+        navigator.presentation
+            .onEach { presentation ->
                 _settings.value = _settings.value.copy(presentation = presentation)
             }
-        }
+            .launchIn(coroutineScope)
+
+        commitedValues
+            .onEach { navigator.applyPresentationSettings(it) }
+            .launchIn(coroutineScope)
     }
 
     /**
@@ -72,9 +87,15 @@ class PresentationController(
             autoCommit = oldAutoCommit
         }
 
-        coroutineScope.launch {
-            navigator?.applyPresentationSettings(settings.value.adjustedValues)
+        if (autoCommit) {
+            coroutineScope.launch {
+                commit(settings.value)
+            }
         }
+    }
+
+    private suspend fun commit(settings: Settings) {
+        commitedValues.emit(settings.adjustedValues)
     }
 
     /**
@@ -115,7 +136,7 @@ class PresentationController(
             }
         }
 
-        if (autoActivateOnChange) {
+        if (autoActivateSettings) {
             settings.presentation?.constraintsForKey(setting.key)?.let { constraints ->
                 values = constraints.activateInValues(values)
                     .getOrDefault(values)
@@ -209,7 +230,7 @@ class PresentationController(
             )
         }
 
-        val continuous: Setting<Boolean, Boolean>?
+        val continuous: Setting<PresentationToggle, Boolean>?
             get() = get(PresentationKey.CONTINUOUS)
 
         val fit: Setting<Fit, String>?
@@ -221,7 +242,7 @@ class PresentationController(
         val overflow: Setting<Overflow, String>?
             get() = get(PresentationKey.OVERFLOW, Overflow)
 
-        val pageSpacing: Setting<Double, Double>?
+        val pageSpacing: Setting<PresentationRange, Double>?
             get() = get(PresentationKey.PAGE_SPACING)
 
         val readingProgression: Setting<ReadingProgression, String>?
@@ -240,7 +261,7 @@ class PresentationController(
 }
 
 @ExperimentalPresentation
-val PresentationController.Setting<Double, *>.step: Double get() =
+val PresentationController.Setting<PresentationRange, *>.step: Double get() =
     constraints?.step ?: 0.1
 
 @ExperimentalPresentation

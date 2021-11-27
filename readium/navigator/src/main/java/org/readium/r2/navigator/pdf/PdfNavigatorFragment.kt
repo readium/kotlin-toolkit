@@ -333,8 +333,9 @@ class PdfNavigatorFragment internal constructor(
             )
         }
 
-        override fun <V> constraintsForKey(key: PresentationKey<V, *>): PresentationValueConstraints<V>? {
-            val constraints = when (key) {
+        @Suppress("UNCHECKED_CAST")
+        override fun <V> constraintsForKey(key: PresentationKey<V, *>): PresentationValueConstraints<V>? =
+            when (key) {
                 PresentationKey.FIT -> PresentationEnumConstraints(supportedValues = fits)
                 PresentationKey.ORIENTATION -> PresentationEnumConstraints(supportedValues = orientations)
                 PresentationKey.OVERFLOW -> PresentationEnumConstraints(supportedValues = overflows)
@@ -342,10 +343,7 @@ class PdfNavigatorFragment internal constructor(
                     .require(PresentationValues(overflow = Overflow.PAGINATED))
                 PresentationKey.READING_PROGRESSION -> PresentationEnumConstraints(supportedValues = readingProgressions)
                 else -> null
-            }
-            @Suppress("UNCHECKED_CAST")
-            return constraints as PresentationValueConstraints<V>?
-        }
+            } as PresentationValueConstraints<V>?
     }
 
     private fun pageSpacingForValue(value: Double): Int = (50 * value).roundToInt()

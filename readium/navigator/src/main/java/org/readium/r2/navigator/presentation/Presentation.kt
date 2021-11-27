@@ -162,8 +162,9 @@ object PresentationValuesParceler : Parceler<Map<AnyPresentationKey, Any?>> {
     }
 }
 
-@ExperimentalPresentation
 interface PresentableNavigator : Navigator {
+
+    @ExperimentalPresentation
     val presentation: StateFlow<Presentation>
 
     /**
@@ -174,6 +175,7 @@ interface PresentableNavigator : Navigator {
      * some of the provided settings. They are only used as guidelines to compute the Presentation
      * Properties.
      */
+    @ExperimentalPresentation
     suspend fun applyPresentationSettings(settings: PresentationValues) {}
 }
 
