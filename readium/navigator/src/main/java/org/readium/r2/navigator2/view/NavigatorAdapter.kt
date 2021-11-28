@@ -82,7 +82,7 @@ internal class NavigatorAdapter(
     fun scrollTo(locations: Locator.Locations, view: View, position: Int) {
         Timber.d("Adapter.scrollTo called")
         val adapter = spreads[position].adapter
-        adapter.scrollTo(locations, view)
+        adapter.scrollForLocations(locations, view)
     }
 
     fun applySettings(settings: Settings) {

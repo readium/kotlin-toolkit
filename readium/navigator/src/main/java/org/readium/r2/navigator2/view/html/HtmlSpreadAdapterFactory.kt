@@ -12,6 +12,7 @@ import org.readium.r2.navigator2.view.SpreadAdapter
 import org.readium.r2.navigator2.view.SpreadAdapterFactory
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
+import android.view.MotionEvent
 
 class HtmlSpreadAdapterFactory(
     private val publication: Publication,

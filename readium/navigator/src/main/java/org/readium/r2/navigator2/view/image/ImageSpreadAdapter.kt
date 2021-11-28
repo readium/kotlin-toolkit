@@ -2,6 +2,7 @@ package org.readium.r2.navigator2.view.image
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.PointF
 import android.util.Size
 import android.view.View
 import android.widget.ImageView
@@ -14,6 +15,7 @@ import org.readium.r2.navigator2.view.ResourceAdapter
 import org.readium.r2.navigator2.view.SpreadAdapter
 import org.readium.r2.navigator2.view.layout.EffectiveReadingProgression
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.getOrElse
 import kotlin.math.max
@@ -64,6 +66,10 @@ internal class ImageSpreadAdapter(
     override fun unbind(view: View) {
         bindingJob?.cancel()
         bindingJob = null
+    }
+
+    override fun scrollForLocations(locations: Locator.Locations, view: View): PointF {
+        return PointF(0f, 0f)
     }
 
     override fun resourceAdapters(view: View): List<ResourceAdapter> {

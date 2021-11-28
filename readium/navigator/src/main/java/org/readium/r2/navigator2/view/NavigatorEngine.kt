@@ -2,6 +2,8 @@ package org.readium.r2.navigator2.view
 
 import android.content.Context
 import android.content.res.Configuration
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import org.readium.r2.navigator2.settings.PresentationProperties
 import org.readium.r2.navigator2.settings.PresentationSettings
 import org.readium.r2.navigator2.view.html.HtmlSpreadAdapterFactory
@@ -134,6 +136,7 @@ internal class NavigatorEngine(
     suspend fun goTo(locator: Locator) {
         val spreadIndex = adapter.positionForHref(locator.href)
         readingView.scrollToPosition(spreadIndex)
+        currentCoroutineContext().ensureActive()
         val view = checkNotNull(readingView.findViewByPosition(spreadIndex))
         adapter.scrollTo(locator.locations, view, spreadIndex)
     }

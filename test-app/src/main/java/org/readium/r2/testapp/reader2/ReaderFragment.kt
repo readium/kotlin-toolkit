@@ -17,11 +17,8 @@ import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator2.view.NavigatorConfiguration
 import org.readium.r2.navigator2.view.NavigatorListener
 import org.readium.r2.navigator2.view.NavigatorView
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.publication.toLocator
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.Reader2FragmentReaderBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
@@ -105,7 +102,10 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
         navigator = view.findViewById(R.id.fragment_reader2_navigator)
         navigator.listener = this
         navigator.settings = navigator.settings.copy(
-            spread = Presentation.Spread.LANDSCAPE, continuous = true
+            spread = Presentation.Spread.LANDSCAPE,
+            continuous = true,
+            overflow = Presentation.Overflow.SCROLLED,
+            readingProgression = ReadingProgression.TTB
         )
         navigator.configuration = NavigatorConfiguration(baseUrl)
         navigator.loadPublication(publication)

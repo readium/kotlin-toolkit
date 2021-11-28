@@ -1,5 +1,6 @@
 package org.readium.r2.navigator2.view
 
+import android.graphics.PointF
 import android.view.View
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -12,7 +13,7 @@ interface SpreadAdapter {
 
     fun unbind(view: View)
 
-    fun scrollTo(locations: Locator.Locations, view: View) {}
+    fun scrollForLocations(locations: Locator.Locations, view: View): PointF
 
     fun applySettings() {}
 
