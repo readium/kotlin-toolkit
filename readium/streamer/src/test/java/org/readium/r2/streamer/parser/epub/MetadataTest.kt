@@ -304,9 +304,9 @@ class MetadataMiscTest {
     @Test
     fun `conformsTo contains the EPUB profile`() {
         val epub2Metadata = parsePackageDocument("package/contributors-epub2.opf").metadata
-        assertThat(epub2Metadata.conformsTo).isEqualTo(listOf(Publication.Profile.EPUB))
+        assertThat(epub2Metadata.conformsTo).isEqualTo(setOf(Publication.Profile.EPUB))
         val epub3Metadata = parsePackageDocument("package/contributors-epub3.opf").metadata
-        assertThat(epub3Metadata.conformsTo).isEqualTo(listOf(Publication.Profile.EPUB))
+        assertThat(epub3Metadata.conformsTo).isEqualTo(setOf(Publication.Profile.EPUB))
     }
 
     @Test

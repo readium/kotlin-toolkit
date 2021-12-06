@@ -55,7 +55,7 @@ class ImageParserTest {
 
     @Test
     fun `conformsTo contains the Divina profile`() {
-        assertEquals(listOf(Publication.Profile.DIVINA), parser.parseBlocking(cbzAsset, cbzFetcher)?.manifest?.metadata?.conformsTo)
+        assertEquals(setOf(Publication.Profile.DIVINA), parser.parseBlocking(cbzAsset, cbzFetcher)?.manifest?.metadata?.conformsTo)
     }
 
     @Test
