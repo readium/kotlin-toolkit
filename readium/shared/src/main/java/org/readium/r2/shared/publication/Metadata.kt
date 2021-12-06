@@ -34,7 +34,7 @@ import java.util.*
 data class Metadata(
     val identifier: String? = null, // URI
     val type: String? = null, // URI (@type)
-    val conformsTo: List<Publication.Profile> = emptyList(),
+    val conformsTo: Set<Publication.Profile> = emptySet(),
     val localizedTitle: LocalizedString,
     val localizedSubtitle: LocalizedString? = null,
     val localizedSortAs: LocalizedString? = null,
@@ -66,7 +66,7 @@ data class Metadata(
     constructor(
         identifier: String? = null, // URI
         type: String? = null, // URI (@type)
-        conformsTo: List<Publication.Profile> = emptyList(),
+        conformsTo: Set<Publication.Profile> = emptySet(),
         localizedTitle: LocalizedString,
         localizedSubtitle: LocalizedString? = null,
         localizedSortAs: LocalizedString? = null,
@@ -247,6 +247,7 @@ data class Metadata(
             val type = json.remove("@type") as? String
             val conformsTo = json.optStringsFromArrayOrSingle("conformsTo", remove = true)
                 .map { Publication.Profile(it) }
+                .toSet()
             val localizedSubtitle = LocalizedString.fromJSON(json.remove("subtitle"), warnings)
             val modified = (json.remove("modified") as? String)?.iso8601ToDate()
             val published = (json.remove("published") as? String)?.iso8601ToDate()

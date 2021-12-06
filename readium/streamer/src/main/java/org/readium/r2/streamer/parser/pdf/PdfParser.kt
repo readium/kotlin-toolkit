@@ -52,7 +52,7 @@ class PdfParser(
         val manifest = Manifest(
             metadata = Metadata(
                 identifier = document.identifier,
-                conformsTo = listOf(Publication.Profile.PDF),
+                conformsTo = setOf(Publication.Profile.PDF),
                 localizedTitle = LocalizedString(document.title?.ifBlank { null } ?: fallbackTitle),
                 authors = listOfNotNull(document.author).map { Contributor(name = it) },
                 numberOfPages = document.pageCount

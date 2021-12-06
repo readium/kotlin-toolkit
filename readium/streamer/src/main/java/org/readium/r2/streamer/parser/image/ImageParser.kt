@@ -53,7 +53,7 @@ class ImageParser : PublicationParser {
 
         val manifest = Manifest(
             metadata = Metadata(
-                conformsTo = listOf(Publication.Profile.DIVINA),
+                conformsTo = setOf(Publication.Profile.DIVINA),
                 localizedTitle = LocalizedString(title)
             ),
             readingOrder = readingOrder

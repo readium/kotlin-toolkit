@@ -165,7 +165,7 @@ internal class PubMetadataAdapter(
 
     fun metadata() = Metadata(
         identifier = identifier,
-        conformsTo = listOf(Publication.Profile.EPUB),
+        conformsTo = setOf(Publication.Profile.EPUB),
         modified = modified,
         published = published,
         languages = languages,

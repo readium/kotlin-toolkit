@@ -33,7 +33,7 @@ import kotlin.reflect.KClass
 class PublicationTest {
 
     private fun createPublication(
-        conformsTo: List<Publication.Profile> = emptyList(),
+        conformsTo: Set<Profile> = emptySet(),
         title: String = "Title",
         language: String = "en",
         readingProgression: ReadingProgression = ReadingProgression.AUTO,
@@ -165,7 +165,7 @@ class PublicationTest {
     @Test fun `conforms to the given profile`() {
         // An empty reading order doesn't conform to anything.
         assertFalse(
-            createPublication(readingOrder = emptyList(), conformsTo = listOf(Profile.EPUB))
+            createPublication(readingOrder = emptyList(), conformsTo = setOf(Profile.EPUB))
                 .conformsTo(Profile.EPUB)
         )
 
@@ -207,13 +207,13 @@ class PublicationTest {
             createPublication(readingOrder = listOf(
                 Link(href = "c1.xhtml", type = "application/xhtml+xml"),
                 Link(href = "c2.xhtml", type = "application/xhtml+xml"),
-            ), conformsTo = listOf(Profile.EPUB)).conformsTo(Profile.EPUB)
+            ), conformsTo = setOf(Profile.EPUB)).conformsTo(Profile.EPUB)
         )
         assertTrue(
             createPublication(readingOrder = listOf(
                 Link(href = "c1.html", type = "text/html"),
                 Link(href = "c2.html", type = "text/html"),
-            ), conformsTo = listOf(Profile.EPUB)).conformsTo(Profile.EPUB)
+            ), conformsTo = setOf(Profile.EPUB)).conformsTo(Profile.EPUB)
         )
         assertFalse(
             createPublication(readingOrder = listOf(
@@ -231,7 +231,7 @@ class PublicationTest {
             createPublication(readingOrder = listOf(
                 Link(href = "c1.pdf", type = "application/pdf"),
                 Link(href = "c2.pdf", type = "application/pdf"),
-            ), conformsTo = listOf(Profile.EPUB)).conformsTo(Profile.EPUB)
+            ), conformsTo = setOf(Profile.EPUB)).conformsTo(Profile.EPUB)
         )
 
         // Implicit conformance always take precedence over explicit profiles.
@@ -239,13 +239,13 @@ class PublicationTest {
             createPublication(readingOrder = listOf(
                 Link(href = "c1.mp3", type = "audio/mpeg"),
                 Link(href = "c2.aac", type = "audio/aac"),
-            ), conformsTo = listOf(Profile.DIVINA)).conformsTo(Profile.AUDIOBOOK)
+            ), conformsTo = setOf(Profile.DIVINA)).conformsTo(Profile.AUDIOBOOK)
         )
         assertFalse(
             createPublication(readingOrder = listOf(
                 Link(href = "c1.mp3", type = "audio/mpeg"),
                 Link(href = "c2.aac", type = "audio/aac"),
-            ), conformsTo = listOf(Profile.DIVINA)).conformsTo(Profile.DIVINA)
+            ), conformsTo = setOf(Profile.DIVINA)).conformsTo(Profile.DIVINA)
         )
 
         // Unknown profile
@@ -253,7 +253,7 @@ class PublicationTest {
         assertTrue(
             createPublication(
                 readingOrder = listOf(Link(href = "file")),
-                conformsTo = listOf(profile)
+                conformsTo = setOf(profile)
             ).conformsTo(profile)
         )
     }

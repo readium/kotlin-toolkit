@@ -29,7 +29,7 @@ class MetadataTest {
             Metadata(
                 identifier = "1234",
                 type = "epub",
-                conformsTo = listOf(Publication.Profile.EPUB, Publication.Profile.PDF),
+                conformsTo = setOf(Publication.Profile.EPUB, Publication.Profile.PDF),
                 localizedTitle = LocalizedString.fromStrings(mapOf(
                     "en" to "Title",
                     "fr" to "Titre"
@@ -124,7 +124,7 @@ class MetadataTest {
     @Test fun `parse JSON with single profile`() {
         assertEquals(
             Metadata(
-                conformsTo = listOf(Publication.Profile.DIVINA),
+                conformsTo = setOf(Publication.Profile.DIVINA),
                 localizedTitle = LocalizedString("Title"),
             ),
             Metadata.fromJSON(JSONObject("""{
@@ -222,7 +222,7 @@ class MetadataTest {
             Metadata(
                 identifier = "1234",
                 type = "epub",
-                conformsTo = listOf(Publication.Profile.EPUB, Publication.Profile.PDF),
+                conformsTo = setOf(Publication.Profile.EPUB, Publication.Profile.PDF),
                 localizedTitle = LocalizedString.fromStrings(mapOf(
                     "en" to "Title",
                     "fr" to "Titre"

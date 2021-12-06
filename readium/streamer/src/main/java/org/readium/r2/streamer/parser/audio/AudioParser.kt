@@ -45,7 +45,7 @@ class AudioParser :  PublicationParser {
 
         val manifest = Manifest(
             metadata = Metadata(
-                conformsTo = listOf(Publication.Profile.AUDIOBOOK),
+                conformsTo = setOf(Publication.Profile.AUDIOBOOK),
                 localizedTitle = LocalizedString(title)
             ),
             readingOrder = readingOrder
