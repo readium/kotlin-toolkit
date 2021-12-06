@@ -5,6 +5,7 @@
     },
     "globals": {
         "Android": "readonly",
+        "global": "writable",
         "readium": "writable"
     },
     "extends": "eslint:recommended",
