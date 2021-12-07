@@ -63,7 +63,10 @@ class CBZParser : PublicationParser {
                 manifest = manifest.copy(metadata = metadata)
             }
             ?.build()
-            ?.apply { type = Publication.TYPE.CBZ }
+            ?.apply {
+                @Suppress("DEPRECATION")
+                type = Publication.TYPE.CBZ
+            }
             ?: return null
 
         val container = PublicationContainer(

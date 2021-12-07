@@ -24,6 +24,7 @@ import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import org.readium.r2.shared.util.mediatype.MediaType
 import java.io.File
 
 /**
@@ -42,6 +43,26 @@ data class Manifest(
     val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
 
 ) : JSONable, Parcelable {
+
+    /**
+     * Returns whether this manifest conforms to the given Readium Web Publication Profile.
+     */
+    fun conformsTo(profile: Publication.Profile): Boolean {
+        if (readingOrder.isEmpty()) {
+            return false
+        }
+
+        return when (profile) {
+            Publication.Profile.AUDIOBOOK -> readingOrder.allAreAudio
+            Publication.Profile.DIVINA -> readingOrder.allAreBitmap
+            Publication.Profile.EPUB ->
+                // EPUB needs to be explicitly indicated in `conformsTo`, otherwise
+                // it could be a regular Web Publication.
+                readingOrder.allAreHtml && metadata.conformsTo.contains(Publication.Profile.EPUB)
+            Publication.Profile.PDF -> readingOrder.allMatchMediaType(MediaType.PDF)
+            else -> metadata.conformsTo.contains(profile)
+        }
+    }
 
     /**
      * Finds the first [Link] with the given relation in the manifest's links.

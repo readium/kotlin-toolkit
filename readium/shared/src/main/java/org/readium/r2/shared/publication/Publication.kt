@@ -7,10 +7,12 @@
 package org.readium.r2.shared.publication
 
 import android.net.Uri
+import android.os.Parcelable
 import androidx.annotation.StringRes
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.R
@@ -105,7 +107,7 @@ class Publication(
 
     val subcollections: Map<String, List<PublicationCollection>> get() = _manifest.subcollections
 
-    // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
+    @Deprecated("Use conformsTo() to check the kind of a publication.", level = DeprecationLevel.WARNING)
     var type: TYPE = when {
         metadata.type == "http://schema.org/Audiobook" || readingOrder.allAreAudio -> TYPE.AUDIO
         readingOrder.allAreBitmap -> TYPE.DiViNa
@@ -128,6 +130,12 @@ class Publication(
     val baseUrl: URL?
         get() = links.firstWithRel("self")
             ?.let { it.href.toUrlOrNull()?.removeLastComponent() }
+
+    /**
+     * Returns whether this publication conforms to the given Readium Web Publication Profile.
+     */
+    fun conformsTo(profile: Profile): Boolean =
+        manifest.conformsTo(profile)
 
     /**
      * Finds the first [Link] with the given HREF in the publication's links.
@@ -284,6 +292,26 @@ class Publication(
             throw NotImplementedError()
         }
 
+    }
+
+    /**
+     * Represents a Readium Web Publication Profile a [Publication] can conform to.
+     *
+     * For a list of supported profiles, see the registry:
+     * https://readium.org/webpub-manifest/profiles/
+     */
+    @Parcelize
+    data class Profile(val uri: String) : Parcelable {
+        companion object {
+            /** Profile for EPUB publications. */
+            val EPUB = Profile("https://readium.org/webpub-manifest/profiles/epub")
+            /** Profile for audiobooks. */
+            val AUDIOBOOK = Profile("https://readium.org/webpub-manifest/profiles/audiobook")
+            /** Profile for visual narratives (comics, manga and bandes dessinées). */
+            val DIVINA = Profile("https://readium.org/webpub-manifest/profiles/divina")
+            /** Profile for PDF documents. */
+            val PDF = Profile("https://readium.org/webpub-manifest/profiles/pdf")
+        }
     }
 
     /**

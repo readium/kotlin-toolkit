@@ -56,7 +56,7 @@ open class ReaderActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
 
-            if (publication.type == Publication.TYPE.EPUB || publication.readingOrder.allAreHtml) {
+            if (publication.conformsTo(Publication.Profile.EPUB)) {
                 val baseUrl = requireNotNull(inputData.baseUrl)
                 readerFragment = EpubReaderFragment.newInstance(baseUrl)
 
@@ -65,9 +65,9 @@ open class ReaderActivity : AppCompatActivity() {
                 }
             } else {
                 val readerClass: Class<out Fragment> = when {
-                    publication.readingOrder.all { it.mediaType == MediaType.PDF } -> PdfReaderFragment::class.java
-                    publication.readingOrder.allAreBitmap -> ImageReaderFragment::class.java
-                    publication.readingOrder.allAreAudio -> AudioReaderFragment::class.java
+                    publication.conformsTo(Publication.Profile.PDF) -> PdfReaderFragment::class.java
+                    publication.conformsTo(Publication.Profile.DIVINA) -> ImageReaderFragment::class.java
+                    publication.conformsTo(Publication.Profile.AUDIOBOOK) -> AudioReaderFragment::class.java
                     else -> throw IllegalArgumentException("Cannot render publication")
                 }
 
