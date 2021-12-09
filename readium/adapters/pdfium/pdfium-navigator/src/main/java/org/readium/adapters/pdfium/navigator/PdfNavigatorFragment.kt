@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.pdf
+package org.readium.adapters.pdfium.navigator
 
 import android.graphics.PointF
 import android.os.Bundle
@@ -22,8 +22,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.pdf.extensions.page
+import org.readium.adapters.pdfium.navigator.extensions.page
 import org.readium.r2.navigator.util.createFragmentFactory
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.isRestricted
@@ -37,6 +38,7 @@ import timber.log.Timber
  * To use this [Fragment], create a factory with `PdfNavigatorFragment.createFactory()`.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
+@PdfSupport
 class PdfNavigatorFragment internal constructor(
     override val publication: Publication,
     private val initialLocator: Locator? = null,

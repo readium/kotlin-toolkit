@@ -60,7 +60,7 @@ class Streamer constructor(
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection> = emptyList(),
     private val archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
-    private val pdfFactory: PdfDocumentFactory = DefaultPdfDocumentFactory(context),
+    private val pdfFactory: PdfDocumentFactory? = DefaultPdfDocumentFactory(context),
     private val httpClient: DefaultHttpClient = DefaultHttpClient(),
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
@@ -153,7 +153,7 @@ class Streamer constructor(
     private val defaultParsers: List<PublicationParser> by lazy {
         listOfNotNull(
             EpubParser(),
-            newPdfParser(pdfFactory),
+            pdfFactory?.let { newPdfParser(it) },
             ReadiumWebPubParser(pdfFactory, httpClient),
             ImageParser(),
             AudioParser()
@@ -203,27 +203,11 @@ class DefaultPdfDocumentFactory private constructor (
 ) : PdfDocumentFactory by factory {
 
     companion object {
-        operator fun invoke(context: Context): PdfDocumentFactory {
-            val pdfiumPdfDocumentFactory = tryOrLog {
-                Class.forName("org.readium.adapters.pdfium.PdfiumPdfDocumentFactory")
-            }
-            return if (pdfiumPdfDocumentFactory != null) {
-                pdfiumPdfDocumentFactory.getConstructor(Context::class.java)
+        operator fun invoke(context: Context): PdfDocumentFactory? =
+            tryOrNull {
+                Class.forName("org.readium.adapters.pdfium.document.PdfiumPdfDocumentFactory")
+                    .getConstructor(Context::class.java)
                     .newInstance(context) as PdfDocumentFactory
-
-            } else {
-                NullPdfDocumentFactory()
             }
-        }
-    }
-
-    private class NullPdfDocumentFactory : PdfDocumentFactory {
-        override suspend fun open(file: File, password: String?): PdfDocument {
-            error("No PdfDocumentFactory provided")
-        }
-
-        override suspend fun open(resource: Resource, password: String?): PdfDocument {
-            error("No PdfDocumentFactory provided")
-        }
     }
 }

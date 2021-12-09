@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.pdf.extensions
+package org.readium.adapters.pdfium.navigator.extensions
 
 import org.readium.r2.navigator.extensions.fragmentParameters
 import org.readium.r2.shared.publication.Locator

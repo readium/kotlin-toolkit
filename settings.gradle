@@ -14,12 +14,13 @@ include 'readium:streamer:streamer-pdf'
 
 include 'readium:navigator'
 include 'readium:navigator:navigator-core'
-include 'readium:navigator:navigator-pdf'
 
 include 'readium:opds'
 include 'readium:lcp'
 
 include 'readium:adapters:pdfium'
+include 'readium:adapters:pdfium:pdfium-document'
+include 'readium:adapters:pdfium:pdfium-navigator'
 
 if (!System.env.JITPACK) {
     include 'test-app'

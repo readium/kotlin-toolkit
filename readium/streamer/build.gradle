@@ -57,5 +57,4 @@ dependencies {
 
     api project(':readium:streamer:streamer-core')
     api project(':readium:streamer:streamer-pdf')
-    api project(':readium:adapters:pdfium')
 }

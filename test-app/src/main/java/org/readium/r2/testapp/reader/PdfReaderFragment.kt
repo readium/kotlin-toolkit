@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.reader
 
-import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,14 +13,15 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
+import org.readium.adapters.pdfium.navigator.PdfNavigatorFragment
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.pdf.PdfNavigatorFragment
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.utils.toggleSystemUi
 
+@OptIn(PdfSupport::class)
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
     override lateinit var model: ReaderViewModel

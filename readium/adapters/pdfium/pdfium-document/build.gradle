@@ -44,7 +44,7 @@ afterEvaluate {
                 from components.release
 
                 groupId = 'com.github.readium'
-                artifactId = 'readium-adapter-pdfium'
+                artifactId = 'readium-adapter-pdfium-document'
 
                 artifact sourcesJar
                 artifact javadocsJar
@@ -56,7 +56,16 @@ afterEvaluate {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    api project(':readium:adapters:pdfium:pdfium-document')
-    api project(':readium:adapters:pdfium:pdfium-navigator')
+    api project(':readium:shared')
+
+    implementation "com.github.barteksc:pdfium-android:1.7.1"
+    implementation "com.jakewharton.timber:timber:4.7.1"
 }
 
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        freeCompilerArgs += [
+            "-Xopt-in=org.readium.r2.shared.InternalReadiumApi",
+        ]
+    }
+}
