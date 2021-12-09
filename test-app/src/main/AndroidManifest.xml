@@ -193,6 +193,9 @@
             android:name=".reader2.VisualReaderActivity"
             android:label="Reader" />
         <activity
+            android:name=".reader3.VisualReaderActivity"
+            android:label="Reader" />
+        <activity
             android:name=".reader.VisualReaderActivity"
             android:label="Reader" />
 

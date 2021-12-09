@@ -1,26 +1,24 @@
-package org.readium.r2.testapp.reader2
+package org.readium.r2.testapp.reader3
 
 import android.graphics.PointF
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.readium.r2.lcp.lcpLicense
-import org.readium.r2.navigator2.view.NavigatorConfiguration
 import org.readium.r2.navigator2.view.NavigatorListener
 import org.readium.r2.navigator2.view.NavigatorView
+import org.readium.r2.navigator3.Navigator
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.databinding.Reader2FragmentReaderBinding
+import org.readium.r2.testapp.databinding.Reader3FragmentReaderBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.toggleSystemUi
 import timber.log.Timber
@@ -28,7 +26,7 @@ import java.net.URL
 
 class ReaderFragment : VisualReaderFragment(), NavigatorListener {
 
-    override var binding: Reader2FragmentReaderBinding? = null
+    override var binding: Reader3FragmentReaderBinding? = null
     private lateinit var model: ReaderViewModel
     private lateinit var publication: Publication
     private lateinit var navigator: NavigatorView
@@ -93,13 +91,25 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = Reader2FragmentReaderBinding.inflate(inflater, container, false)
-        return binding!!.root
+        val binding = Reader3FragmentReaderBinding.inflate(inflater, container, false)
+        binding.fragmentReader3Navigator.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner))
+            setContent { 
+                Navigator(
+                    publication = publication,
+                    links = publication.readingOrder,
+                    baseUrl = baseUrl.toString(),
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+        this.binding = binding
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //navigator = view.findViewById(R.id.fragment_reader2_navigator)
+        /*navigator = view.findViewById(R.id.fragment_reader3_navigator)
         navigator.listener = this
         navigator.settings = navigator.settings.copy(
             spread = Presentation.Spread.LANDSCAPE,
@@ -113,7 +123,7 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
         model.location?.let {
             Timber.d("Restoring last location saved $it")
             viewLifecycleOwner.lifecycleScope.launch { navigator.goTo(it) }
-        }
+        }*/
     }
 
     override fun onTap(point: PointF): Boolean {
