@@ -48,7 +48,7 @@ afterEvaluate {
                 from components.release
 
                 groupId = 'com.github.readium'
-                artifactId = 'readium-navigator'
+                artifactId = 'readium-navigator-core'
 
                 artifact sourcesJar
                 artifact javadocsJar
