@@ -11,6 +11,7 @@ package org.readium.r2.streamer
 
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
@@ -152,7 +153,7 @@ class Streamer constructor(
     private val defaultParsers: List<PublicationParser> by lazy {
         listOfNotNull(
             EpubParser(),
-            newPdfParser(context, pdfFactory),
+            newPdfParser(pdfFactory),
             ReadiumWebPubParser(pdfFactory, httpClient),
             ImageParser(),
             AudioParser()
@@ -189,14 +190,22 @@ internal fun MediaType?.toPublicationType(): Publication.TYPE =
     }
 
 @PdfSupport
+private fun newPdfParser(pdfFactory: PdfDocumentFactory): PublicationParser? =
+    tryOrLog {
+        Class.forName("org.readium.r2.streamer.pdf.PdfParser")
+            .getConstructor(PdfDocumentFactory::class.java)
+            .newInstance(pdfFactory) as PublicationParser
+    }
+
+@PdfSupport
 class DefaultPdfDocumentFactory private constructor (
     private val factory: PdfDocumentFactory
 ) : PdfDocumentFactory by factory {
 
     companion object {
         operator fun invoke(context: Context): PdfDocumentFactory {
-            val pdfiumPdfDocumentFactory = tryOrNull {
-                Class.forName("org.readium.r2.streamer.pdf.PdfiumPdfDocumentFactory")
+            val pdfiumPdfDocumentFactory = tryOrLog {
+                Class.forName("org.readium.r2.streamer.pdf.pdfium.PdfiumPdfDocumentFactory")
             }
             return if (pdfiumPdfDocumentFactory != null) {
                 pdfiumPdfDocumentFactory.getConstructor(Context::class.java)
@@ -218,11 +227,3 @@ class DefaultPdfDocumentFactory private constructor (
         }
     }
 }
-
-@PdfSupport
-private fun newPdfParser(context: Context, pdfFactory: PdfDocumentFactory): PublicationParser? =
-    tryOrNull {
-        Class.forName("org.readium.r2.streamer.parser.pdf.PdfParser")
-            .getConstructor(Context::class.java, PdfDocumentFactory::class.java)
-            .newInstance(context, pdfFactory) as PublicationParser
-    }

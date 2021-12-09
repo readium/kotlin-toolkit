@@ -7,6 +7,7 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
+    id 'kotlin-parcelize'
     id 'maven-publish'
 }
 
@@ -43,7 +44,7 @@ afterEvaluate {
                 from components.release
 
                 groupId = 'com.github.readium'
-                artifactId = 'readium-streamer'
+                artifactId = 'readium-streamer-pdf-pdfium'
 
                 artifact sourcesJar
                 artifact javadocsJar
@@ -55,7 +56,17 @@ afterEvaluate {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
+    api project(':readium:shared')
     api project(':readium:streamer:core')
-    api project(':readium:streamer:pdf')
-    api project(':readium:streamer:pdf:pdfium')
+
+    implementation "com.github.barteksc:pdfium-android:1.7.1"
+    implementation "com.jakewharton.timber:timber:4.7.1"
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        freeCompilerArgs += [
+            "-Xopt-in=org.readium.r2.shared.InternalReadiumApi",
+        ]
+    }
 }

@@ -6,13 +6,14 @@
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
-package org.readium.r2.streamer.parser.pdf
+package org.readium.r2.streamer.pdf
 
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.streamer.pdf.PdfPositionsService
 
 class PdfPositionsServiceTest {
 

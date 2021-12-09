@@ -1,15 +1,5 @@
-/*
- * Module: r2-shared-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
- */
+package org.readium.r2.streamer.pdf
 
-package org.readium.r2.streamer.parser.pdf
-
-import android.content.Context
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
@@ -25,22 +15,18 @@ import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
-import org.readium.r2.streamer.pdf.PdfiumPdfDocumentFactory
 import java.io.File
 
 /**
  * Parses a PDF file into a Readium [Publication].
  */
 @PdfSupport
-class PdfParser(
-    context: Context,
-    private val pdfFactory: PdfDocumentFactory = PdfiumPdfDocumentFactory(context)
-) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+class PdfParser(private val pdfFactory: PdfDocumentFactory) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 
     override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
         _parse(asset, fetcher, asset.name)
 
-    suspend fun _parse(asset: PublicationAsset, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
+    private suspend fun _parse(asset: PublicationAsset, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
         if (asset.mediaType() != MediaType.PDF)
             return null
 

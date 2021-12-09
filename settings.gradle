@@ -11,6 +11,7 @@ include 'readium:shared'
 include 'readium:streamer'
 include 'readium:streamer:core'
 include 'readium:streamer:pdf'
+include 'readium:streamer:pdf:pdfium'
 
 include 'readium:navigator'
 include 'readium:navigator:core'
