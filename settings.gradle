@@ -9,17 +9,17 @@ rootProject.name = "Readium"
 include 'readium:shared'
 
 include 'readium:streamer'
-include 'readium:streamer:core'
-include 'readium:streamer:pdf'
-include 'readium:streamer:pdf:pdfium'
+include 'readium:streamer:streamer-core'
+include 'readium:streamer:streamer-pdf'
 
 include 'readium:navigator'
-include 'readium:navigator:core'
-include 'readium:navigator:pdf'
+include 'readium:navigator:navigator-core'
+include 'readium:navigator:navigator-pdf'
 
 include 'readium:opds'
-
 include 'readium:lcp'
+
+include 'readium:adapters:pdfium'
 
 if (!System.env.JITPACK) {
     include 'test-app'

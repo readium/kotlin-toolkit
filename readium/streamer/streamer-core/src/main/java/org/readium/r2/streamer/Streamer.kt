@@ -191,7 +191,7 @@ internal fun MediaType?.toPublicationType(): Publication.TYPE =
 
 @PdfSupport
 private fun newPdfParser(pdfFactory: PdfDocumentFactory): PublicationParser? =
-    tryOrLog {
+    tryOrNull {
         Class.forName("org.readium.r2.streamer.pdf.PdfParser")
             .getConstructor(PdfDocumentFactory::class.java)
             .newInstance(pdfFactory) as PublicationParser
@@ -205,7 +205,7 @@ class DefaultPdfDocumentFactory private constructor (
     companion object {
         operator fun invoke(context: Context): PdfDocumentFactory {
             val pdfiumPdfDocumentFactory = tryOrLog {
-                Class.forName("org.readium.r2.streamer.pdf.pdfium.PdfiumPdfDocumentFactory")
+                Class.forName("org.readium.adapters.pdfium.PdfiumPdfDocumentFactory")
             }
             return if (pdfiumPdfDocumentFactory != null) {
                 pdfiumPdfDocumentFactory.getConstructor(Context::class.java)

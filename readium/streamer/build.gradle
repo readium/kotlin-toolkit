@@ -55,7 +55,7 @@ afterEvaluate {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    api project(':readium:streamer:core')
-    api project(':readium:streamer:pdf')
-    api project(':readium:streamer:pdf:pdfium')
+    api project(':readium:streamer:streamer-core')
+    api project(':readium:streamer:streamer-pdf')
+    api project(':readium:adapters:pdfium')
 }

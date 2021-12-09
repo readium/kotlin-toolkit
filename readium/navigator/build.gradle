@@ -53,6 +53,6 @@ afterEvaluate {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    api project(':readium:navigator:core')
-    api project(':readium:navigator:pdf')
+    api project(':readium:navigator:navigator-core')
+    api project(':readium:navigator:navigator-pdf')
 }

@@ -1,4 +1,4 @@
-package org.readium.r2.streamer.pdf.pdfium
+package org.readium.adapters.pdfium
 
 import android.content.Context
 import android.graphics.Bitmap
