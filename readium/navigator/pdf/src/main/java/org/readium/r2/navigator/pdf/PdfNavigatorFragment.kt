@@ -1,10 +1,7 @@
 /*
- * Module: r2-navigator-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2021 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.navigator.pdf
@@ -25,7 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.extensions.page
+import org.readium.r2.navigator.pdf.extensions.page
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
@@ -33,7 +30,6 @@ import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.use
 import timber.log.Timber
-import java.util.*
 
 /**
  * Navigator for PDF publications.

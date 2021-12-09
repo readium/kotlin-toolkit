@@ -6,11 +6,13 @@
 
 rootProject.name = "Readium"
 
-include ':readium:shared'
-include ':readium:streamer'
-include ':readium:navigator'
-include ':readium:opds'
-include ':readium:lcp'
+include 'readium:shared'
+include 'readium:streamer'
+include 'readium:navigator'
+include 'readium:navigator:core'
+include 'readium:navigator:pdf'
+include 'readium:opds'
+include 'readium:lcp'
 
 if (!System.env.JITPACK) {
     include 'test-app'

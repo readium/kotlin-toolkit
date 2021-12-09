@@ -9,6 +9,7 @@
 
 package org.readium.r2.navigator.extensions
 
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import java.util.*
 import kotlin.time.Duration
@@ -22,7 +23,8 @@ import kotlin.time.seconds
 /**
  * All named parameters found in the fragments, such as `p=5`.
  */
-internal val Locator.Locations.fragmentParameters: Map<String, String> get() =
+@InternalReadiumApi
+val Locator.Locations.fragmentParameters: Map<String, String> get() =
     fragments
         // Concatenates fragments together, after dropping any #
         .map { it.removePrefix("#") }
@@ -48,12 +50,6 @@ internal val Locator.Locations.htmlId: String? get() {
 
     return id?.removePrefix("#")
 }
-
-/**
- * Page fragment identifier, used for example in PDF.
- */
-internal val Locator.Locations.page: Int? get() =
-    fragmentParameters["page"]?.toIntOrNull()
 
 /**
  * Media fragment, used for example in audiobooks.

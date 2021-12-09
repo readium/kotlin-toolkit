@@ -1,4 +1,4 @@
-SCRIPTS_PATH := src/main/assets/_scripts
+SCRIPTS_PATH := readium/navigator/core/src/main/assets/_scripts
 
 help:
 	@echo "Usage: make <target>\n\n\
