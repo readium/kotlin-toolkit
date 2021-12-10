@@ -1,0 +1,76 @@
+/*
+ * Copyright 2018 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-parcelize'
+    id 'maven-publish'
+}
+
+android {
+    compileSdkVersion 31
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 31
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
+    kotlinOptions {
+        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        allWarningsAsErrors = true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt')
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+                groupId = 'com.github.readium'
+                artifactId = 'readium-adapter-nanohttpd'
+
+                artifact sourcesJar
+                artifact javadocsJar
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+    api project(':readium:shared')
+
+    final JACKSON_VERSION = '2.12.4'
+    implementation "com.fasterxml.jackson.core:jackson-annotations:$JACKSON_VERSION"
+    implementation "com.fasterxml.jackson.core:jackson-core:$JACKSON_VERSION"
+    implementation "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION"
+    implementation "com.jakewharton.timber:timber:4.7.1"
+    //noinspection GradleDependency
+    implementation ("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
+        exclude group: 'org.parboiled'
+    }
+    //noinspection GradleDependency
+    implementation ("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
+        exclude group: 'org.parboiled'
+    }
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
+}
+

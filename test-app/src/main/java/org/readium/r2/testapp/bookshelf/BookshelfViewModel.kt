@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.readium.adapters.nanohttpd.Server
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.extensions.mediaType
@@ -30,7 +31,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.Streamer
-import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.R2App
 import org.readium.r2.testapp.db.BookDatabase
@@ -109,20 +109,14 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun importPublicationFromUri(
-        uri: Uri,
-        sourceUrl: String? = null
-    ) = viewModelScope.launch {
+    fun importPublicationFromUri(uri: Uri) = viewModelScope.launch {
         uri.copyToTempFile(r2Application, r2Directory)
             ?.let {
-                importPublication(it, sourceUrl)
+                importPublication(it)
             }
     }
 
-    private suspend fun importPublication(
-        sourceFile: File,
-        sourceUrl: String? = null
-    ) {
+    private suspend fun importPublication(sourceFile: File) {
         val sourceMediaType = sourceFile.mediaType()
         val publicationAsset: FileAsset =
             if (sourceMediaType != MediaType.LCP_LICENSE_DOCUMENT)

@@ -58,7 +58,7 @@ open class VisualReaderActivity : ReaderActivity() {
 
     private fun updateSystemUiPadding(container: View, insets: WindowInsets) {
         if (visualReaderFragment.isHidden)
-            container.padSystemUi(insets, this)
+            container.padSystemUi(insets)
         else
             container.clearPadding()
     }

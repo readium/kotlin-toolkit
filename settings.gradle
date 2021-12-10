@@ -9,8 +9,6 @@ rootProject.name = "Readium"
 include 'readium:shared'
 
 include 'readium:streamer'
-include 'readium:streamer:streamer-core'
-include 'readium:streamer:streamer-pdf'
 
 include 'readium:navigator'
 include 'readium:navigator:navigator-core'
@@ -18,6 +16,7 @@ include 'readium:navigator:navigator-core'
 include 'readium:opds'
 include 'readium:lcp'
 
+include 'readium:adapters:nanohttpd'
 include 'readium:adapters:pdfium'
 include 'readium:adapters:pdfium:pdfium-document'
 include 'readium:adapters:pdfium:pdfium-navigator'

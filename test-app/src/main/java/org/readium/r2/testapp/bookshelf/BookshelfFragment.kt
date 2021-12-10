@@ -119,7 +119,7 @@ class BookshelfFragment : Fragment() {
                                 val url = urlEditText.text.toString()
                                 val uri = Uri.parse(url)
                                 binding.bookshelfProgressBar.visibility = View.VISIBLE
-                                bookshelfViewModel.importPublicationFromUri(uri, url)
+                                bookshelfViewModel.importPublicationFromUri(uri)
                                 urlDialog.dismiss()
                             }
                         }

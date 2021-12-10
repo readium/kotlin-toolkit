@@ -70,7 +70,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     private fun updateSystemUiPadding(container: View, insets: WindowInsets) {
         if (navigatorFragment.isHidden) {
-            container.padSystemUi(insets, requireActivity())
+            container.padSystemUi(insets)
         } else {
             container.clearPadding()
         }
