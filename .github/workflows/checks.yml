@@ -26,11 +26,8 @@ jobs:
   lint:
     name: Lint
     runs-on: macos-latest
-    defaults:
-      run:
-        working-directory: readium/navigator
     env:
-      scripts: ${{ 'src/main/assets/_scripts' }}
+      scripts: ${{ 'readium/navigator/src/main/assets/_scripts' }}
 
     steps:
       - name: Checkout

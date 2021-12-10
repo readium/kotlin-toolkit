@@ -7,12 +7,8 @@
 rootProject.name = "Readium"
 
 include 'readium:shared'
-
 include 'readium:streamer'
-
 include 'readium:navigator'
-include 'readium:navigator:navigator-core'
-
 include 'readium:opds'
 include 'readium:lcp'
 

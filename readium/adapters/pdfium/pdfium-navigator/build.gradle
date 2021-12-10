@@ -61,7 +61,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
     api project(':readium:shared')
-    api project(':readium:navigator:navigator-core')
+    api project(':readium:navigator')
 
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'androidx.core:core-ktx:1.6.0'

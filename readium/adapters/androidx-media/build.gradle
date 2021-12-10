@@ -57,7 +57,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
     api project(':readium:shared')
-    api project(':readium:navigator:navigator-core')
+    api project(':readium:navigator')
 
     implementation "androidx.media:media:1.4.3"
     implementation "com.jakewharton.timber:timber:4.7.1"
