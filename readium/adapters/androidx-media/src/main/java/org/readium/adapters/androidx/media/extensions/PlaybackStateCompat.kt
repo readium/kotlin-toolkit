@@ -4,12 +4,12 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media.extensions
+package org.readium.adapters.androidx.media.extensions
 
 import android.os.SystemClock
 import android.support.v4.media.session.PlaybackStateCompat
 import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.media.MediaPlayback
+import org.readium.r2.navigator.MediaPlayback
 
 internal inline val PlaybackStateCompat.isPrepared get() =
     (state == PlaybackStateCompat.STATE_BUFFERING) ||

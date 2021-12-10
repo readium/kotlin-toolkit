@@ -4,10 +4,9 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media.extensions
+package org.readium.adapters.androidx.media.extensions
 
 import android.support.v4.media.MediaMetadataCompat
-import org.readium.r2.navigator.extensions.splitAt
 
 internal val MediaMetadataCompat.id: String? get() =
     getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)

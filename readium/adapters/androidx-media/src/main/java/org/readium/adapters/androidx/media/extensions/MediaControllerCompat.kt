@@ -4,11 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media.extensions
+package org.readium.adapters.androidx.media.extensions
 
 import android.support.v4.media.session.MediaControllerCompat
 import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.media.MediaService
+import org.readium.adapters.androidx.media.MediaService
 import org.readium.r2.shared.publication.PublicationId
 
 @ExperimentalAudiobook

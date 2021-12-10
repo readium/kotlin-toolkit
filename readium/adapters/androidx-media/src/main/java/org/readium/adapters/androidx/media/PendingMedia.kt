@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media
+package org.readium.adapters.androidx.media
 
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.shared.publication.Locator

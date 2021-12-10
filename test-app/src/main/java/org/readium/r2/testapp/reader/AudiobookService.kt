@@ -9,14 +9,18 @@ package org.readium.r2.testapp.reader
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Build
+import android.support.v4.media.session.MediaSessionCompat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.readium.adapters.androidx.media.MediaPlayer
+import org.readium.adapters.androidx.media.MediaService
+import org.readium.adapters.androidx.media.PendingMedia
+import org.readium.adapters.exoplayer.ExoMediaPlayer
 import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.media.MediaService
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.testapp.bookshelf.BookRepository
@@ -46,6 +50,10 @@ class AudiobookService : MediaService() {
                     books.saveProgression(locator, pubId.toLong())
                 }
         }
+    }
+
+    override fun onCreatePlayer(mediaSession: MediaSessionCompat, media: PendingMedia): MediaPlayer {
+        return ExoMediaPlayer(this, mediaSession, media)
     }
 
     override suspend fun onCreateNotificationIntent(publicationId: PublicationId, publication: Publication): PendingIntent? {

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.audio
+package org.readium.adapters.exoplayer
 
 import android.net.Uri
 import com.google.android.exoplayer2.C.LENGTH_UNSET

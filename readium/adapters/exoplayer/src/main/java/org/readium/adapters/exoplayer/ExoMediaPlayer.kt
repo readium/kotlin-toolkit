@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media
+package org.readium.adapters.exoplayer
 
 import android.app.Notification
 import android.app.PendingIntent
@@ -32,10 +32,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.readium.adapters.androidx.media.MediaPlayer
+import org.readium.adapters.androidx.media.PendingMedia
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.R
-import org.readium.r2.navigator.audio.PublicationDataSource
-import org.readium.r2.navigator.extensions.timeWithDuration
 import org.readium.r2.shared.extensions.asInstance
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
@@ -90,7 +90,7 @@ class ExoMediaPlayer(
         .build()
         .apply {
             addListener(PlayerListener())
-    //        addAnalyticsListener(EventLogger(null))
+            //        addAnalyticsListener(EventLogger(null))
         }
 
     // FIXME: ExoPlayer's media session connector doesn't handle the playback speed yet, so I used a custom solution until we create our own connector
@@ -107,23 +107,23 @@ class ExoMediaPlayer(
             MEDIA_NOTIFICATION_ID,
             MEDIA_CHANNEL_ID
         )
-        .setChannelNameResourceId(R.string.r2_media_notification_channel_name)
-        .setChannelDescriptionResourceId(R.string.r2_media_notification_channel_description)
-        .setMediaDescriptionAdapter(DescriptionAdapter(mediaSession.controller, media))
-        .setNotificationListener(NotificationListener())
-        .setRewindActionIconResourceId(R.drawable.r2_media_notification_rewind)
-        .setFastForwardActionIconResourceId(R.drawable.r2_media_notification_fastforward)
-        .build()
-        .apply {
-            setMediaSessionToken(mediaSession.sessionToken)
-            setPlayer(player)
-            setSmallIcon(R.drawable.exo_notification_small_icon)
-            setUsePlayPauseActions(true)
-            setUseStopAction(false)
-            setUseChronometer(false)
-            setUseRewindAction(true)
-            setUseRewindActionInCompactView(true)
-        }
+            .setChannelNameResourceId(R.string.r2_media_notification_channel_name)
+            .setChannelDescriptionResourceId(R.string.r2_media_notification_channel_description)
+            .setMediaDescriptionAdapter(DescriptionAdapter(mediaSession.controller, media))
+            .setNotificationListener(NotificationListener())
+            .setRewindActionIconResourceId(R.drawable.r2_media_notification_rewind)
+            .setFastForwardActionIconResourceId(R.drawable.r2_media_notification_fastforward)
+            .build()
+            .apply {
+                setMediaSessionToken(mediaSession.sessionToken)
+                setPlayer(player)
+                setSmallIcon(R.drawable.exo_notification_small_icon)
+                setUsePlayPauseActions(true)
+                setUseStopAction(false)
+                setUseChronometer(false)
+                setUseRewindAction(true)
+                setUseRewindActionInCompactView(true)
+            }
 
     private val mediaSessionConnector = MediaSessionConnector(mediaSession)
 
@@ -192,12 +192,12 @@ class ExoMediaPlayer(
 
     private inner class PlaybackPreparer : MediaSessionConnector.PlaybackPreparer {
 
-        override fun onCommand(player: Player, controlDispatcher: ControlDispatcher, command: String, extras: Bundle?, cb: ResultReceiver?): Boolean =
+        override fun onCommand(player: Player, controlDispatcher: @Suppress("DEPRECATION") ControlDispatcher, command: String, extras: Bundle?, cb: ResultReceiver?): Boolean =
             listener?.onCommand(command, extras, cb) ?: false
 
         override fun getSupportedPrepareActions(): Long =
             PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
-            PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID
+                    PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID
 
         override fun onPrepare(playWhenReady: Boolean) {}
 
@@ -275,5 +275,30 @@ class ExoMediaPlayer(
     }
 }
 
-private const val MEDIA_CHANNEL_ID = "org.readium.r2.navigator.media"
+private const val MEDIA_CHANNEL_ID = "org.readium.adapters.androidx.media"
 private const val MEDIA_NOTIFICATION_ID = 0xb339 // Arbitrary number used to identify our notification
+
+/**
+ * Computes the time position from the resource duration.
+ */
+@OptIn(ExperimentalTime::class)
+internal fun Locator.Locations.timeWithDuration(duration: Duration?): Duration? {
+    val progression = progression
+    if (duration == null || progression == null) {
+        return time
+    }
+    // FIXME: To remove after bumping to Kotlin 1.6
+    @Suppress("DEPRECATION")
+    return Duration.seconds((progression * duration.inWholeSeconds))
+}
+
+/**
+ * Media fragment, used for example in audiobooks.
+ *
+ * https://www.w3.org/TR/media-frags/
+ */
+@OptIn(ExperimentalTime::class)
+// FIXME: To remove after bumping to Kotlin 1.6
+@Suppress("DEPRECATION")
+internal val Locator.Locations.time: Duration? get() =
+    fragmentParameters["t"]?.toIntOrNull()?.let { Duration.seconds(it) }

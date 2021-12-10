@@ -14,11 +14,13 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import org.json.JSONArray
 import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import java.util.*
 
 /**
  * Provides a precise location in a publication in a format that can be stored and shared.
@@ -73,6 +75,41 @@ data class Locator(
          * `locations["cssSelector"] == locations.otherLocations["cssSelector"]`
          */
         operator fun get(key: String): Any? = otherLocations[key]
+
+        // Fragment helpers
+        // Reference: https://www.w3.org/TR/fragid-best-practices
+
+        /**
+         * All named parameters found in the fragments, such as `p=5`.
+         */
+        @InternalReadiumApi
+        val fragmentParameters: Map<String, String> get() =
+            fragments
+                // Concatenates fragments together, after dropping any #
+                .map { it.removePrefix("#") }
+                .joinToString(separator = "&")
+                // Splits parameters
+                .split("&")
+                .filter { !it.startsWith("=") }
+                .map { it.split("=") }
+                // Only keep named parameters
+                .filter { it.size == 2 }
+                .associate { it[0].trim().lowercase(Locale.ROOT) to it[1].trim() }
+
+        /**
+         * HTML ID fragment identifier.
+         */
+        @InternalReadiumApi
+        val htmlId: String? get() {
+            // The HTML 5 specification (used for WebPub) allows any character in an HTML ID, except
+            // spaces. This is an issue to differentiate with named parameters, so we ignore any
+            // ID containing `=`.
+            val id = fragments.firstOrNull { !it.isBlank() && !it.contains("=") }
+                ?: fragmentParameters["id"]
+                ?: fragmentParameters["name"]
+
+            return id?.removePrefix("#")
+        }
 
         companion object {
 

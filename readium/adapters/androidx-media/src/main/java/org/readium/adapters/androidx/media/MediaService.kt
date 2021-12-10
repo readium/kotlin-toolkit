@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media
+package org.readium.adapters.androidx.media
 
 import android.app.Notification
 import android.app.PendingIntent
@@ -22,9 +22,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.extensions.let
-import org.readium.r2.navigator.extensions.splitAt
-import org.readium.r2.navigator.media.extensions.publicationId
+import org.readium.adapters.androidx.media.extensions.publicationId
+import org.readium.adapters.androidx.media.extensions.splitAt
+import org.readium.r2.navigator.MediaPlayback
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.cover
@@ -41,15 +41,13 @@ import kotlin.reflect.KMutableProperty0
  */
 @ExperimentalAudiobook
 @OptIn(ExperimentalCoroutinesApi::class)
-open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainScope() {
+abstract class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainScope() {
 
     /**
      * Creates the instance of [MediaPlayer] which will be used for playing the given [media].
-     *
      * The default implementation uses ExoPlayer.
      */
-    open fun onCreatePlayer(mediaSession: MediaSessionCompat, media: PendingMedia): MediaPlayer =
-        ExoMediaPlayer(this, mediaSession, media)
+    abstract fun onCreatePlayer(mediaSession: MediaSessionCompat, media: PendingMedia): MediaPlayer
 
     /**
      * Called when the underlying [MediaPlayer] was stopped.
@@ -224,7 +222,9 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
                 .distinctUntilChanged()
                 .collect {
                     if (it.isPlaying) {
-                        let(notificationId, notification) { id, note ->
+                        val id = notificationId
+                        val note = notification
+                        if (id != null && note != null) {
                             startForeground(id, note)
                         }
                     } else {
