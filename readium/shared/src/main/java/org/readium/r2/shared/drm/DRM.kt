@@ -12,8 +12,10 @@ package org.readium.r2.shared.drm
 import org.readium.r2.shared.util.MapCompanion
 import java.io.Serializable
 
+@Deprecated("This is not used anymore and will be removed in the next major version of Readium.")
 data class DRM(val brand: Brand): Serializable  {
     val scheme: Scheme
+    @Suppress("DEPRECATION")
     var license: DRMLicense? = null
 
     enum class Brand(val rawValue: String): Serializable  {
@@ -37,6 +39,7 @@ data class DRM(val brand: Brand): Serializable  {
     }
 }
 
+@Deprecated("This is not used anymore and will be removed in the next major version of Readium.")
 interface DRMLicense: Serializable {
     val encryptionProfile: String?
     fun decipher(data: ByteArray): ByteArray?

@@ -9,10 +9,11 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.util.Href
+
+private val LCP_SCHEME = "http://readium.org/2014/01/lcp"
 
 internal object EncryptionParser {
     fun parse(document: ElementNode): Map<String, Encryption> =
@@ -27,7 +28,7 @@ internal object EncryptionParser {
         val retrievalMethod = node.getFirst("KeyInfo", Namespaces.SIG)
             ?.getFirst("RetrievalMethod", Namespaces.SIG)?.getAttr("URI")
         val scheme = if (retrievalMethod == "license.lcpl#/encryption/content_key")
-            DRM.Scheme.lcp.rawValue else null
+            LCP_SCHEME else null
         val algorithm = node.getFirst("EncryptionMethod", Namespaces.ENC)
             ?.getAttr("Algorithm")
             ?: return null

@@ -12,7 +12,6 @@ package org.readium.r2.streamer.parser.epub
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.Search
-import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
@@ -27,13 +26,10 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.PublicationParser
-import org.readium.r2.streamer.container.Container
-import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
 import org.readium.r2.streamer.fetcher.LcpDecryptor
-import org.readium.r2.streamer.parser.PubBox
 import java.io.File
 
 object EPUBConstant {
@@ -84,7 +80,8 @@ object EPUBConstant {
  */
 class EpubParser(
     private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended
-) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+) : PublicationParser,
+    @Suppress("DEPRECATION") org.readium.r2.streamer.parser.PublicationParser {
 
     override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
         _parse(asset, fetcher, asset.name)
@@ -124,19 +121,18 @@ class EpubParser(
         )
     }
 
-    override fun parse(
-        fileAtPath: String,
-        fallbackTitle: String
-    ): PubBox? = runBlocking {
+    @Deprecated("This will be removed in the next major version of Readium.")
+    @Suppress("DEPRECATION")
+    override fun parse(fileAtPath: String, fallbackTitle: String): org.readium.r2.streamer.parser.PubBox? = runBlocking {
 
         val file = File(fileAtPath)
         val asset = FileAsset(file)
 
         var fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
-            ?: throw ContainerError.missingFile(fileAtPath)
+            ?: throw org.readium.r2.streamer.container.ContainerError.missingFile(fileAtPath)
 
-        val drm = if (fetcher.isProtectedWithLcp()) DRM(DRM.Brand.lcp) else null
-        if (drm?.brand == DRM.Brand.lcp) {
+        val drm = if (fetcher.isProtectedWithLcp()) org.readium.r2.shared.drm.DRM(org.readium.r2.shared.drm.DRM.Brand.lcp) else null
+        if (drm?.brand == org.readium.r2.shared.drm.DRM.Brand.lcp) {
             fetcher = TransformingFetcher(fetcher, LcpDecryptor(drm)::transform)
         }
 
@@ -148,7 +144,6 @@ class EpubParser(
 
         val publication = builder.build()
             .apply {
-                @Suppress("DEPRECATION")
                 type = Publication.TYPE.EPUB
 
                 // This might need to be moved as it's not really about parsing the EPUB but it
@@ -165,7 +160,7 @@ class EpubParser(
             rootFile.rootFilePath = getRootFilePath(fetcher)
         }
 
-        PubBox(publication, container)
+        org.readium.r2.streamer.parser.PubBox(publication, container)
     }
 
     private suspend fun getRootFilePath(fetcher: Fetcher): String =
@@ -216,8 +211,8 @@ class EpubParser(
     }
 
     @Deprecated("This is done automatically in [parse], you can remove the call to [fillEncryption]", ReplaceWith(""))
-    @Suppress("Unused_parameter")
-    fun fillEncryption(container: Container, publication: Publication, drm: DRM?): Pair<Container, Publication> {
+    @Suppress("Unused_parameter", "DEPRECATION")
+    fun fillEncryption(container: org.readium.r2.streamer.container.Container, publication: Publication, drm: org.readium.r2.shared.drm.DRM?): Pair<org.readium.r2.streamer.container.Container, Publication> {
         return Pair(container, publication)
     }
 

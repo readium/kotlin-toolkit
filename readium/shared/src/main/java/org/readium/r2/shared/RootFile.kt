@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared
 
+@Deprecated("This is not used anymore and will be removed in the next major version of Readium.")
 class RootFile() {
 
     constructor(rootPath: String = "", rootFilePath: String = "", mimetype: String = "", version: Double? = null) : this() {

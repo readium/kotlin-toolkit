@@ -6,6 +6,7 @@
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
  */
+@file:Suppress("DEPRECATION")
 
 package org.readium.r2.streamer.container
 
@@ -27,18 +28,17 @@ import java.io.InputStream
  *
  * @func dataInputStream : return the InputStream of content
  */
+@Deprecated("Use [publication.get()] to access publication content.")
 interface Container {
     var rootFile: RootFile
     var drm: DRM?
 
-    @Deprecated("Use [publication.get()] to access publication content.")
     fun data(relativePath: String): ByteArray
-    @Deprecated("Use [publication.get()] to access publication content.")
     fun dataLength(relativePath: String): Long
-    @Deprecated("Use [publication.get()] to access publication content.")
     fun dataInputStream(relativePath: String): InputStream
 }
 
+@Deprecated("Use [publication.get()] to access publication content.")
 sealed class ContainerError : Exception() {
     object streamInitFailed : ContainerError()
     object fileNotFound : ContainerError()

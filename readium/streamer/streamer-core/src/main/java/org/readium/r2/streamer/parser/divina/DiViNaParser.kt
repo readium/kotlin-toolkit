@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.streamer.parser.divina
 
 import kotlinx.coroutines.runBlocking
@@ -22,6 +24,7 @@ import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 
+@Deprecated("This will be removed in the next major version of Readium.")
 class DiViNaConstant {
     companion object {
         @Deprecated("Use [MediaType.DIVINA_MANIFEST.toString()] instead", replaceWith = ReplaceWith("MediaType.DIVINA_MANIFEST.toString()"), level = DeprecationLevel.ERROR)
@@ -34,6 +37,7 @@ class DiViNaConstant {
  *                  get name of the resource, creating the Publication
  *                  for rendering
  */
+@Deprecated("Replaced with [ReadiumWebPubParser].", replaceWith = ReplaceWith("ReadiumWebPubParser"))
 class DiViNaParser : PublicationParser {
     override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
         _parse(fileAtPath)

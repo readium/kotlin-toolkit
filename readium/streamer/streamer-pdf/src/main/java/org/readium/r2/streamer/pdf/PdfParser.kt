@@ -14,14 +14,15 @@ import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.PublicationContainer
-import org.readium.r2.streamer.parser.PubBox
 import java.io.File
 
 /**
  * Parses a PDF file into a Readium [Publication].
  */
 @PdfSupport
-class PdfParser(private val pdfFactory: PdfDocumentFactory) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+class PdfParser(private val pdfFactory: PdfDocumentFactory)
+    : PublicationParser,
+    @Suppress("DEPRECATION") org.readium.r2.streamer.parser.PublicationParser {
 
     override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
         _parse(asset, fetcher, asset.name)
@@ -55,7 +56,9 @@ class PdfParser(private val pdfFactory: PdfDocumentFactory) : PublicationParser,
         return Publication.Builder(manifest, fetcher, servicesBuilder)
     }
 
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
+    @Deprecated("This will be removed in the next major version of Readium.")
+    @Suppress("DEPRECATION")
+    override fun parse(fileAtPath: String, fallbackTitle: String): org.readium.r2.streamer.parser.PubBox? = runBlocking {
 
         val file = File(fileAtPath)
         val asset = FileAsset(file)
@@ -73,7 +76,7 @@ class PdfParser(private val pdfFactory: PdfDocumentFactory) : PublicationParser,
             mediaType = MediaType.PDF
         )
 
-        PubBox(publication, container)
+        org.readium.r2.streamer.parser.PubBox(publication, container)
     }
 
 }

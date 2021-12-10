@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.streamer.container
 
 import kotlinx.coroutines.runBlocking
@@ -14,7 +16,6 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.Link

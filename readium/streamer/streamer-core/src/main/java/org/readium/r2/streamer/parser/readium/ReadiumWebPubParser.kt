@@ -11,7 +11,6 @@ package org.readium.r2.streamer.parser.readium
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.PdfSupport
-import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.fetcher.*
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
@@ -26,11 +25,9 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.PublicationParser
-import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.fetcher.LcpDecryptor
-import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.audio.AudioLocatorService
 import org.readium.r2.streamer.toPublicationType
 import java.io.File
@@ -43,7 +40,8 @@ import java.io.FileNotFoundException
 class ReadiumWebPubParser(
     private val pdfFactory: PdfDocumentFactory?,
     private val httpClient: HttpClient,
-) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+) : PublicationParser,
+    @Suppress("DEPRECATION") org.readium.r2.streamer.parser.PublicationParser {
 
     override suspend fun parse(
         asset: PublicationAsset,
@@ -104,7 +102,9 @@ class ReadiumWebPubParser(
         return Publication.Builder(manifest, fetcher, servicesBuilder)
     }
 
-    override fun parse(fileAtPath: String, fallbackTitle: String): PubBox? = runBlocking {
+    @Deprecated("This will be removed in the next major version of Readium.")
+    @Suppress("DEPRECATION")
+    override fun parse(fileAtPath: String, fallbackTitle: String): org.readium.r2.streamer.parser.PubBox? = runBlocking {
 
         val file = File(fileAtPath)
         val asset = FileAsset(file)
@@ -114,11 +114,11 @@ class ReadiumWebPubParser(
         } catch (e: SecurityException) {
             return@runBlocking null
         } catch (e: FileNotFoundException) {
-            throw ContainerError.missingFile(fileAtPath)
+            throw org.readium.r2.streamer.container.ContainerError.missingFile(fileAtPath)
         }
 
-        val drm = if (baseFetcher.isProtectedWithLcp()) DRM(DRM.Brand.lcp) else null
-        if (drm?.brand == DRM.Brand.lcp) {
+        val drm = if (baseFetcher.isProtectedWithLcp()) org.readium.r2.shared.drm.DRM(org.readium.r2.shared.drm.DRM.Brand.lcp) else null
+        if (drm?.brand == org.readium.r2.shared.drm.DRM.Brand.lcp) {
             baseFetcher = TransformingFetcher(baseFetcher, LcpDecryptor(drm)::transform)
         }
 
@@ -145,7 +145,7 @@ class ReadiumWebPubParser(
             }
         }
 
-        PubBox(publication, container)
+        org.readium.r2.streamer.parser.PubBox(publication, container)
     }
 }
 

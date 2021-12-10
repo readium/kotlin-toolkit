@@ -7,16 +7,18 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.streamer.parser
 
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.container.Container
 import java.io.File
 
+@Deprecated("Use [Streamer] to parse a publication file.")
 data class PubBox(var publication: Publication, var container: Container)
 
+@Deprecated("Use [Streamer] to parse a publication file.")
 interface PublicationParser {
-
     fun parse(fileAtPath: String, fallbackTitle: String = File(fileAtPath).name): PubBox?
-
 }

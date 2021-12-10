@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.streamer.parser.audio
 
 import kotlinx.coroutines.runBlocking
@@ -21,7 +23,7 @@ import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 
-
+@Deprecated("This will be removed in the next major version of Readium.")
 class AudioBookConstant {
     companion object {
         @Deprecated("Use [MediaType.AUDIOBOOK.toString()] instead", replaceWith = ReplaceWith("MediaType.AUDIOBOOK.toString()"))
@@ -34,6 +36,7 @@ class AudioBookConstant {
  *                  get name of the resource, creating the Publication
  *                  for rendering
  */
+@Deprecated("Replaced with [AudioParser].", replaceWith = ReplaceWith("AudioParser"))
 class AudioBookParser : PublicationParser {
 
     /**

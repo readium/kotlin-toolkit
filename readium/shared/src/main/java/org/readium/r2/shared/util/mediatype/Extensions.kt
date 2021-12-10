@@ -41,6 +41,7 @@ suspend fun HttpURLConnection.sniffMediaType(bytes: (() -> ByteArray)? = null, m
  * Resolves the format for this [Response], with optional extra file extension and media type
  * hints.
  */
+@Deprecated("This Fuel extension will be removed in the next major version of Readium.")
 suspend fun Response.sniffMediaType(mediaTypes: List<String> = emptyList(), fileExtensions: List<String> = emptyList(), sniffers: List<Sniffer> = MediaType.sniffers): MediaType? {
     val allMediaTypes = mediaTypes.toMutableList()
     val allFileExtensions = fileExtensions.toMutableList()

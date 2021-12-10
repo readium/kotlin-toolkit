@@ -11,10 +11,8 @@ package org.readium.r2.streamer
 
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
-import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.PublicationAsset
@@ -24,7 +22,6 @@ import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.parser.FallbackContentProtection
 import org.readium.r2.streamer.parser.audio.AudioParser
@@ -32,7 +29,6 @@ import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.epub.setLayoutStyle
 import org.readium.r2.streamer.parser.image.ImageParser
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
-import java.io.File
 
 internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningException>
 

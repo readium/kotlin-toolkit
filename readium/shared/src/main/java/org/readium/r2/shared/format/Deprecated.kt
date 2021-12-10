@@ -26,6 +26,7 @@ typealias FormatSniffers = Sniffers
 typealias FormatSnifferContext = SnifferContext
 
 @Deprecated("Renamed to another package", ReplaceWith("org.readium.r2.shared.util.mediatype.sniffMediaType"), level = DeprecationLevel.ERROR)
+@Suppress("DEPRECATION")
 suspend fun Response.sniffFormat(mediaTypes: List<String> = emptyList(), fileExtensions: List<String> = emptyList(), sniffers: List<Sniffer> = NewMediaType.sniffers): NewMediaType? =
     sniffMediaType(mediaTypes, fileExtensions, sniffers)
 

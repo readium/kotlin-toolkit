@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.streamer.fetcher
 
 import org.readium.r2.shared.publication.Publication

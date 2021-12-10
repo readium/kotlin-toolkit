@@ -14,7 +14,6 @@ import android.content.res.AssetManager
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.server.handler.*
 import timber.log.Timber
 import java.io.File
@@ -92,7 +91,12 @@ abstract class AbstractServer(
         return addPublication(publication, null, "/${UUID.randomUUID()}", userPropertiesFile?.path)
     }
 
-    private fun addPublication(publication: Publication, container: Container?, filename: String, userPropertiesPath: String?): URL? {
+    private fun addPublication(
+        publication: Publication,
+        container: @Suppress("DEPRECATION") org.readium.r2.streamer.container.Container?,
+        filename: String,
+        userPropertiesPath: String?
+    ): URL? {
         if (container?.rootFile?.rootFilePath?.isEmpty() == true) {
             return null
         }
@@ -129,7 +133,8 @@ abstract class AbstractServer(
     }
 
     @Deprecated("Use the easier-to-use addPublication()", replaceWith = ReplaceWith("this.addPublication(publication, userPropertiesFile = File(userPropertiesPath))"), level = DeprecationLevel.ERROR)
-    fun addEpub(publication: Publication, container: Container?, fileName: String, userPropertiesPath: String?) {
+    @Suppress("DEPRECATION")
+    fun addEpub(publication: Publication, container: org.readium.r2.streamer.container.Container?, fileName: String, userPropertiesPath: String?) {
         addPublication(publication, container, filename = fileName, userPropertiesPath = userPropertiesPath)
     }
 

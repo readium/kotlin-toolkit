@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.streamer.parser.cbz
 
 import kotlinx.coroutines.runBlocking
@@ -41,6 +43,7 @@ class CBZConstant {
  *                  get name of the resource, creating the Publication
  *                  for rendering
  */
+@Deprecated("Replaced with [ImageParser].", replaceWith = ReplaceWith("ImageParser"))
 class CBZParser : PublicationParser {
 
     private val imageParser = ImageParser()
