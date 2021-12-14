@@ -5,7 +5,7 @@
  */
 
 buildscript {
-    ext.kotlin_version = '1.5.31'
+    ext.kotlin_version = '1.6.0'
     ext.dokka_version = '1.5.30'
 
     repositories {
@@ -17,7 +17,7 @@ buildscript {
         maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.3'
+        classpath 'com.android.tools.build:gradle:7.0.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
     }

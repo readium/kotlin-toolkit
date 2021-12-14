@@ -13,9 +13,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.toJSON
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class ContributorTest {
 
     @Test fun `parse JSON string`() {
@@ -193,7 +196,7 @@ class ContributorTest {
         assertJSONEquals(
             JSONArray("""[
                 {
-                    "name": {"und": "Thom Yorke"},
+                    "name": {"und": "Thom Yorke"}
                 },
                 {
                     "name": {"en": "Jonny Greenwood", "fr": "Jean Boisvert"},

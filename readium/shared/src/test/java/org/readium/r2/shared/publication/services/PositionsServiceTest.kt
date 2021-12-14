@@ -13,13 +13,16 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertEquals
 
+@RunWith(RobolectricTestRunner::class)
 class PositionsServiceTest {
 
     @Test

@@ -49,7 +49,7 @@ class BookshelfAdapter(
             binding.bookshelfTitleText.text = book.title
             val coverImageFile =
                 File("${binding.root.context?.filesDir?.path}/covers/${book.id}.png")
-            Picasso.with(binding.root.context)
+            Picasso.get()
                 .load(coverImageFile)
                 .placeholder(R.drawable.cover)
                 .into(binding.bookshelfCoverImage)

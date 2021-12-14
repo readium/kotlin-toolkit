@@ -3,7 +3,10 @@ package org.readium.r2.shared.util.http
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class ProblemDetailsTest {
 
     @Test
