@@ -22,7 +22,7 @@ import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.streamer.readBlocking
 import org.robolectric.RobolectricTestRunner
 import java.io.File
-import kotlin.test.assertNotNull
+import org.junit.Assert.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class EpubDeobfuscatorTest {
@@ -38,7 +38,7 @@ class EpubDeobfuscatorTest {
             ?.path
             ?.let { File(it).parentFile }
         assertNotNull(deobfuscationDir)
-        fetcher = FileFetcher("/deobfuscation", deobfuscationDir)
+        fetcher = FileFetcher("/deobfuscation", deobfuscationDir!!)
 
         val fontResult = fetcher.get(Link(href = "/deobfuscation/cut-cut.woff")).readBlocking()
         assert(fontResult.isSuccess)

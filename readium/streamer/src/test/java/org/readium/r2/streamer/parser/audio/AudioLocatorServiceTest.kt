@@ -10,7 +10,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import kotlin.test.*
+import org.junit.Assert.*
 
 class AudioLocatorServiceTest {
 
