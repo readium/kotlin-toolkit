@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.adapters.exoplayer
+package org.readium.r2.navigator.media
 
 import android.app.Notification
 import android.app.PendingIntent
@@ -32,8 +32,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.readium.adapters.androidx.media.MediaPlayer
-import org.readium.adapters.androidx.media.PendingMedia
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.R
 import org.readium.r2.shared.extensions.asInstance

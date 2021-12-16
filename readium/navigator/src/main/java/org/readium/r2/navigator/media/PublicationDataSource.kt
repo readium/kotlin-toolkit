@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.adapters.exoplayer
+package org.readium.r2.navigator.media
 
 import android.net.Uri
 import com.google.android.exoplayer2.C.LENGTH_UNSET
@@ -120,7 +120,12 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
             if (e is InterruptedException) {
                 return 0
             }
-            throw Exception.ReadFailed(uri = openedResource.uri, offset = offset, readLength = length, cause = e)
+            throw Exception.ReadFailed(
+                uri = openedResource.uri,
+                offset = offset,
+                readLength = length,
+                cause = e
+            )
         }
     }
 

@@ -16,10 +16,10 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import org.readium.adapters.androidx.media.MediaPlayer
-import org.readium.adapters.androidx.media.MediaService
-import org.readium.adapters.androidx.media.PendingMedia
-import org.readium.adapters.exoplayer.ExoMediaPlayer
+import org.readium.r2.navigator.media.MediaPlayer
+import org.readium.r2.navigator.media.MediaService
+import org.readium.r2.navigator.media.PendingMedia
+import org.readium.r2.navigator.media.ExoMediaPlayer
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId

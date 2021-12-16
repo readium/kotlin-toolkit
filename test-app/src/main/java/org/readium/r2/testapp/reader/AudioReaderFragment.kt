@@ -11,7 +11,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
-import org.readium.adapters.androidx.media.MediaService
+import org.readium.r2.navigator.media.MediaService
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.MediaNavigator
 import org.readium.r2.navigator.Navigator

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.adapters.androidx.media
+package org.readium.r2.navigator.media
 
 import android.app.Notification
 import android.graphics.Bitmap

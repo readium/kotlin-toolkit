@@ -84,8 +84,6 @@ dependencies {
     implementation project(':readium:opds')
     implementation project(':readium:lcp')
 
-    implementation project(':readium:adapters:androidx-media')
-    implementation project(':readium:adapters:exoplayer')
     implementation project(':readium:adapters:pdfium')
 
     implementation 'androidx.core:core-ktx:1.6.0'

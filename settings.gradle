@@ -12,8 +12,6 @@ include 'readium:navigator'
 include 'readium:opds'
 include 'readium:lcp'
 
-include 'readium:adapters:androidx-media'
-include 'readium:adapters:exoplayer'
 include 'readium:adapters:nanohttpd'
 include 'readium:adapters:pdfium'
 include 'readium:adapters:pdfium:pdfium-document'

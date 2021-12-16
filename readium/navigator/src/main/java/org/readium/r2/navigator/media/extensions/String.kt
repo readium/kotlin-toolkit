@@ -1,4 +1,4 @@
-package org.readium.adapters.androidx.media.extensions
+package org.readium.r2.navigator.media.extensions
 
 /**
  * Splits a [String] in two components, at the given delimiter.

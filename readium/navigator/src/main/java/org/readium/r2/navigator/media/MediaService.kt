@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.adapters.androidx.media
+package org.readium.r2.navigator.media
 
 import android.app.Notification
 import android.app.PendingIntent
@@ -22,9 +22,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.adapters.androidx.media.extensions.publicationId
-import org.readium.adapters.androidx.media.extensions.splitAt
+import org.readium.r2.navigator.media.extensions.splitAt
 import org.readium.r2.navigator.MediaPlayback
+import org.readium.r2.navigator.media.extensions.publicationId
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.cover
@@ -308,10 +308,12 @@ abstract class MediaService : MediaBrowserServiceCompat(), CoroutineScope by Mai
                 ?.let { return it }
 
             val navigator = MediaSessionNavigator(publication, publicationId, getMediaSession(context, serviceClass).controller)
-            pendingNavigator.trySend(PendingNavigator(
+            pendingNavigator.trySend(
+                PendingNavigator(
                 navigator = navigator,
                 media = PendingMedia(publication, publicationId, locator = initialLocator ?: publication.readingOrder.first().toLocator())
-            ))
+            )
+            )
 
             return navigator
         }
