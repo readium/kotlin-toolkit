@@ -47,7 +47,8 @@ abstract class MediaService : MediaBrowserServiceCompat(), CoroutineScope by Mai
      * Creates the instance of [MediaPlayer] which will be used for playing the given [media].
      * The default implementation uses ExoPlayer.
      */
-    abstract fun onCreatePlayer(mediaSession: MediaSessionCompat, media: PendingMedia): MediaPlayer
+    open fun onCreatePlayer(mediaSession: MediaSessionCompat, media: PendingMedia): MediaPlayer =
+        ExoMediaPlayer(this, mediaSession, media)
 
     /**
      * Called when the underlying [MediaPlayer] was stopped.

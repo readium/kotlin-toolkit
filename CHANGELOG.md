@@ -40,6 +40,12 @@ All notable changes to this project will be documented in this file. Take a look
 * `Publication.type` is now deprecated in favor of the new `Publication.conformsTo()` API which is more accurate.
     * For example, replace `publication.type == Publication.TYPE.EPUB` with `publication.conformsTo(Publication.Profile.EPUB)` before opening a publication with the `EpubNavigatorFragment`.
 
+### Changed
+
+* The PDF navigator based on [AndroidPdfViewer](https://github.com/barteksc/AndroidPdfViewer) is now available under a new module `readium-adapter-pdfium`.
+    * If you are using it, you will need to add the new dependency to your `build.gradle`, then update the `import` statements.
+    * See the notes of the [related pull request](https://github.com/readium/kotlin-toolkit/pull/67) for the rationale behind this change.
+
 ### Fixed
 
 * Fix building with Kotlin 1.6.
