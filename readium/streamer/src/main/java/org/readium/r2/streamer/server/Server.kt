@@ -104,6 +104,7 @@ abstract class AbstractServer(
             userPropertiesPath,
             customResources
         )
+        publication.serverFetcher = fetcher
 
         // NanoHTTPD expects percent-decoded routes.
         val basePath =

@@ -78,6 +78,7 @@ class Publication(
 ) {
     private val _services: List<Service>
     private val _manifest: Manifest
+    var serverFetcher:Fetcher? = null
 
     init {
         // We use a Ref<Publication> instead of passing directly `this` to the services to prevent

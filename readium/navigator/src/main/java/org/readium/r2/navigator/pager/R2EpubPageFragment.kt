@@ -13,6 +13,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.PointF
+import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
 import android.util.DisplayMetrics
@@ -33,9 +34,11 @@ import org.readium.r2.navigator.databinding.ViewpagerFragmentEpubBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.extensions.htmlId
 import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.util.mediatype.MediaType
 import java.io.IOException
 import java.io.InputStream
 import kotlin.math.roundToInt
@@ -145,6 +148,33 @@ class R2EpubPageFragment : Fragment() {
                     try {
                         return WebResourceResponse("image/png", null, null)
                     } catch (e: Exception) {
+                    }
+                }
+                val r2WebView = view as R2WebView
+                val location = Uri.parse(r2WebView.resourceUrl!!)
+                val url = request.url ?: return null
+                val source = url.pathSegments[0]
+                val realPath = url.path!!.substring(1).substringAfter('/')
+                when(source){
+                    location.pathSegments[0]->{
+                        val pub = r2WebView.navigator.publication
+                        val link = pub.linkWithHref("/${realPath}") ?: return null
+                        val rsc = pub.serverFetcher!!.get(link)
+                        return WebResourceResponse(link.type, null, ResourceInputStream(rsc))
+                    }
+                    "assets"->{
+                        val stream = view.context.assets.open("readium/${realPath}")
+                        val ext = url.toString().substringAfterLast('.').lowercase()
+                        var mime:String? = null
+                        val knownTypes = arrayOf(
+                            MediaType.JAVASCRIPT,MediaType.CSS,
+                            MediaType.OTF,MediaType.TTF,MediaType.WOFF,MediaType.WOFF2)
+                        for(t in knownTypes){
+                            if(ext==t.fileExtension){
+                                mime = "${t.type}/${t.subtype}"
+                            }
+                        }
+                        return WebResourceResponse(mime, null, stream)
                     }
                 }
                 return null
