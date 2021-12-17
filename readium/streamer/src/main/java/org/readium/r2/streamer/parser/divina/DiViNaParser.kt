@@ -53,6 +53,7 @@ class DiViNaParser : PublicationParser {
                 positions = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
             )
         ).apply {
+            @Suppress("DEPRECATION")
             type = Publication.TYPE.DiViNa
         }
 

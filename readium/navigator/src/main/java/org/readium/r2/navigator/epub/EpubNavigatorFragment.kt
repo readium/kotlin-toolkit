@@ -366,16 +366,31 @@ class EpubNavigatorFragment private constructor(
                 ?.let { tryOrLog { JSONObject(it) } }
                 ?: return null
 
+        val rect = json.optRectF("rect")
+            ?.apply { adjustToViewport() }
+
         return Selection(
             locator = currentLocator.value.copy(
                 text = Locator.Text.fromJSON(json.optJSONObject("text"))
             ),
-            rect = json.optRectF("rect")
+            rect = rect
         )
     }
 
     override fun clearSelection() {
         run(viewModel.clearSelection())
+    }
+
+    private fun PointF.adjustToViewport() {
+        currentFragment?.paddingTop?.let { top ->
+            y += top
+        }
+    }
+
+    private fun RectF.adjustToViewport() {
+        currentFragment?.paddingTop?.let { top ->
+            this.top += top
+        }
     }
 
     // DecorableNavigator
@@ -452,14 +467,13 @@ class EpubNavigatorFragment private constructor(
         }
 
         override fun onTap(point: PointF): Boolean {
+            point.adjustToViewport()
             return listener?.onTap(point) ?: false
         }
 
         override fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean {
-            currentFragment?.paddingTop?.let { top ->
-                rect.top += top
-                point.y += top
-            }
+            rect.adjustToViewport()
+            point.adjustToViewport()
             return viewModel.onDecorationActivated(id, group, rect, point)
         }
 

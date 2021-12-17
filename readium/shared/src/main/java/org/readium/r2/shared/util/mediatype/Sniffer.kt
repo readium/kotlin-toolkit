@@ -204,14 +204,14 @@ object Sniffers {
         if (manifest != null) {
             val isLcpProtected = context.containsArchiveEntryAt("license.lcpl")
 
-            if (manifest.metadata.type == "http://schema.org/Audiobook" || manifest.readingOrder.allAreAudio) {
+            if (manifest.conformsTo(Publication.Profile.AUDIOBOOK)) {
                 return if (isManifest) MediaType.READIUM_AUDIOBOOK_MANIFEST
                 else (if (isLcpProtected) MediaType.LCP_PROTECTED_AUDIOBOOK else MediaType.READIUM_AUDIOBOOK)
             }
-            if (manifest.readingOrder.allAreBitmap) {
+            if (manifest.conformsTo(Publication.Profile.DIVINA)) {
                 return if (isManifest) MediaType.DIVINA_MANIFEST else MediaType.DIVINA
             }
-            if (isLcpProtected && manifest.readingOrder.allMatchMediaType(MediaType.PDF)) {
+            if (isLcpProtected && manifest.conformsTo(Publication.Profile.PDF)) {
                 return MediaType.LCP_PROTECTED_PDF
             }
             if (manifest.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {

@@ -29,6 +29,7 @@ class MetadataTest {
             Metadata(
                 identifier = "1234",
                 type = "epub",
+                conformsTo = setOf(Publication.Profile.EPUB, Publication.Profile.PDF),
                 localizedTitle = LocalizedString.fromStrings(mapOf(
                     "en" to "Title",
                     "fr" to "Titre"
@@ -76,6 +77,10 @@ class MetadataTest {
             Metadata.fromJSON(JSONObject("""{
                 "identifier": "1234",
                 "@type": "epub",
+                "conformsTo": [
+                    "https://readium.org/webpub-manifest/profiles/epub",
+                    "https://readium.org/webpub-manifest/profiles/pdf",
+                ],
                 "title": {"en": "Title", "fr": "Titre"},
                 "subtitle": {"en": "Subtitle", "fr": "Sous-titre"},
                 "modified": "2001-01-01T12:36:27.000Z",
@@ -114,6 +119,19 @@ class MetadataTest {
 
     @Test fun `parse null JSON`() {
         assertNull(Metadata.fromJSON(null))
+    }
+
+    @Test fun `parse JSON with single profile`() {
+        assertEquals(
+            Metadata(
+                conformsTo = setOf(Publication.Profile.DIVINA),
+                localizedTitle = LocalizedString("Title"),
+            ),
+            Metadata.fromJSON(JSONObject("""{
+                "title": "Title",
+                "conformsTo": "https://readium.org/webpub-manifest/profiles/divina"
+            }"""))
+        )
     }
 
     @Test fun `parse JSON with single language`() {
@@ -162,6 +180,10 @@ class MetadataTest {
             JSONObject("""{
                 "identifier": "1234",
                 "@type": "epub",
+                "conformsTo": [
+                    "https://readium.org/webpub-manifest/profiles/epub",
+                    "https://readium.org/webpub-manifest/profiles/pdf",
+                ],
                 "title": {"en": "Title", "fr": "Titre"},
                 "subtitle": {"en": "Subtitle", "fr": "Sous-titre"},
                 "modified": "2001-01-01T12:36:27.000Z",
@@ -200,6 +222,7 @@ class MetadataTest {
             Metadata(
                 identifier = "1234",
                 type = "epub",
+                conformsTo = setOf(Publication.Profile.EPUB, Publication.Profile.PDF),
                 localizedTitle = LocalizedString.fromStrings(mapOf(
                     "en" to "Title",
                     "fr" to "Titre"

@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Added
 
+#### Shared
+
+* A new `Publication.conformsTo()` API to identify the profile of a publication.
+* Support for the [`conformsTo` RWPM metadata](https://github.com/readium/webpub-manifest/issues/65), to identify the profile of a `Publication`.
+
 #### Navigator
 
 * The PDF navigator now honors the publication reading progression with support for right-to-left and horizontal scrolling.
@@ -28,6 +33,13 @@ All notable changes to this project will be documented in this file. Take a look
     * For example, it is called when clicking on internal links or programmatically calling `Navigator.go()`, but not when turning pages.
     * You can use this callback to implement a navigation history by differentiating between continuous and discontinuous moves.
 
+### Deprecated
+
+#### Shared
+
+* `Publication.type` is now deprecated in favor of the new `Publication.conformsTo()` API which is more accurate.
+    * For example, replace `publication.type == Publication.TYPE.EPUB` with `publication.conformsTo(Publication.Profile.EPUB)` before opening a publication with the `EpubNavigatorFragment`.
+
 ### Fixed
 
 * Fix building with Kotlin 1.6.
@@ -40,6 +52,8 @@ All notable changes to this project will be documented in this file. Take a look
 
 * Fixed turning pages of an EPUB reflowable resource with an odd number of columns. A virtual blank trailing column is appended to the resource when displayed as two columns.
 * EPUB: Fallback on `reflowable` if the `presentation.layout` hint is missing from a manifest.
+* EPUB: Offset of the current selection's `rect` to take into account the vertical padding.
+* Improve backward compatibility of JavaScript files using Babel.
 
 
 ## [2.1.1]
