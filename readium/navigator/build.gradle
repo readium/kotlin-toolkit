@@ -89,6 +89,7 @@ dependencies {
     api 'com.google.android.exoplayer:exoplayer-ui:2.15.1'
     api 'com.google.android.exoplayer:extension-mediasession:2.15.1'
     api 'com.google.android.exoplayer:extension-workmanager:2.15.1'
+    api 'com.google.android.exoplayer:extension-media2:2.15.1'
     implementation 'com.google.android.material:material:1.4.0'
     implementation "com.jakewharton.timber:timber:4.7.1"
     implementation "com.shopgun.android:utils:1.0.9"

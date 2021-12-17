@@ -49,8 +49,6 @@ class AudiobookService : MediaService() {
     }
 
     override suspend fun onCreateNotificationIntent(publicationId: PublicationId, publication: Publication): PendingIntent? {
-        val bookId = publicationId.toLong()
-        val book = books.get(bookId) ?: return null
 
         var flags = PendingIntent.FLAG_UPDATE_CURRENT
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -58,9 +56,8 @@ class AudiobookService : MediaService() {
         }
 
         val intent = ReaderContract().createIntent(this, ReaderContract.Input(
-            mediaType = book.mediaType(),
+            bookId = publicationId.toLong(),
             publication = publication,
-            bookId = bookId,
         ))
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 

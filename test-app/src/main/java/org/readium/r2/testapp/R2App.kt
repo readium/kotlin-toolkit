@@ -12,17 +12,26 @@ package org.readium.r2.testapp
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
-import org.readium.r2.shared.Injectable
+import android.content.Intent
+import androidx.media2.session.SessionToken
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import timber.log.Timber
 import java.io.IOException
 import java.net.ServerSocket
 import java.util.*
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 class R2App : Application() {
+
+    val sessionToken: SessionToken by lazy {
+        val context = this.applicationContext
+        SessionToken(context, ComponentName(context as Application, MediaService::class.java))
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -32,6 +41,8 @@ class R2App : Application() {
         server = Server(s.localPort, applicationContext)
         startServer()
         R2DIRECTORY = r2Directory
+        val context = this.applicationContext
+        startService(Intent(context, MediaService::class.java))
     }
 
     companion object {

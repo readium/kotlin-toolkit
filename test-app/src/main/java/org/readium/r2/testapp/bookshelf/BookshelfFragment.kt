@@ -173,9 +173,8 @@ class BookshelfFragment : Fragment() {
 
         bookshelfViewModel.openBook(requireContext(), bookId) { book, asset, publication, url ->
             readerLauncher.launch(ReaderContract.Input(
-                mediaType = asset.mediaType(),
-                publication = publication,
                 bookId = bookId,
+                publication = publication,
                 initialLocator = book.progression?.let { Locator.fromJSON(JSONObject(it)) },
                 baseUrl = url
             ))

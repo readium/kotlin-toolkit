@@ -13,22 +13,22 @@ package org.readium.r2.testapp.reader
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.core.os.bundleOf
 import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
+import org.readium.r2.shared.extensions.getPublicationOrNull
 import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.mediatype.MediaType
-import java.io.File
 import java.net.URL
 
 class ReaderContract : ActivityResultContract<ReaderContract.Input, ReaderContract.Output>() {
 
     data class Input(
-        val mediaType: MediaType?,
-        val publication: Publication,
         val bookId: Long,
+        val publication: Publication,
         val initialLocator: Locator? = null,
         val baseUrl: URL? = null
     )
@@ -39,24 +39,21 @@ class ReaderContract : ActivityResultContract<ReaderContract.Input, ReaderContra
 
     override fun createIntent(context: Context, input: Input): Intent {
         val intent = Intent(
-            context, when (input.mediaType) {
-                MediaType.ZAB, MediaType.READIUM_AUDIOBOOK,
-                MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK ->
+            context,
+            when  {
+                input.publication.conformsTo(Publication.Profile.AUDIOBOOK) ->
                     ReaderActivity::class.java
-                MediaType.EPUB, MediaType.READIUM_WEBPUB_MANIFEST, MediaType.READIUM_WEBPUB,
-                MediaType.CBZ, MediaType.DIVINA, MediaType.DIVINA_MANIFEST,
-                MediaType.PDF, MediaType.LCP_PROTECTED_PDF ->
+                input.publication.conformsTo(Publication.Profile.EPUB) ||
+                        input.publication.conformsTo(Publication.Profile.DIVINA) ||
+                        input.publication.conformsTo(Publication.Profile.PDF) ->
                     VisualReaderActivity::class.java
-                else -> throw IllegalArgumentException("Unknown [mediaType]")
-            }
+                else ->
+                    throw IllegalArgumentException("Unknown [mediaType]")
+            },
         )
-
-        return intent.apply {
-            putPublication(input.publication)
-            putExtra("bookId", input.bookId)
-            putExtra("baseUrl", input.baseUrl?.toString())
-            putExtra("locator", input.initialLocator)
-        }
+        val arguments = createBundle(input)
+        intent.putExtras(arguments)
+        return intent
     }
 
     override fun parseResult(resultCode: Int, intent: Intent?): Output? {
@@ -71,14 +68,31 @@ class ReaderContract : ActivityResultContract<ReaderContract.Input, ReaderContra
 
     companion object {
 
-        fun parseIntent(activity: Activity): Input = with(activity) {
-            Input(
-                mediaType = null,
-                publication = intent.getPublication(activity),
-                bookId = intent.getLongExtra("bookId", -1),
-                initialLocator = intent.getParcelableExtra("locator"),
-                baseUrl = intent.getStringExtra("baseUrl")?.let { URL(it) }
+        fun createBundle(input: Input): Bundle = bundleOf(
+            "bookId" to input.bookId,
+            "baseUrl" to input.baseUrl?.toString(),
+            "locator" to input.initialLocator,
+        ).apply {
+            putPublication(input.publication)
+        }
+
+        fun parseBundle(bundle: Bundle): Input? {
+            val publication = bundle.getPublicationOrNull()
+                ?: return null
+
+            val bookId = bundle.getLong("bookId", -1)
+                .takeUnless { it == -1L }
+                ?: return null
+
+            return Input(
+                bookId = bookId,
+                publication = publication,
+                initialLocator = bundle.getParcelable("locator"),
+                baseUrl = bundle.getString("baseUrl")?.let { URL(it) }
             )
         }
+
+        fun parseIntent(activity: Activity): Input? =
+            parseBundle(activity.intent.extras!!)
     }
 }

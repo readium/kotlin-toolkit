@@ -18,8 +18,8 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
-import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.ActivityReaderBinding
 import org.readium.r2.testapp.drm.DrmManagementContract
@@ -41,7 +41,7 @@ open class ReaderActivity : AppCompatActivity() {
     lateinit var binding: ActivityReaderBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val inputData = ReaderContract.parseIntent(this)
+        val inputData = checkNotNull(ReaderContract.parseIntent(this)) { "Invalid arguments" }
         modelFactory = ReaderViewModel.Factory(applicationContext, inputData)
         super.onCreate(savedInstanceState)
 
@@ -67,7 +67,7 @@ open class ReaderActivity : AppCompatActivity() {
                 val readerClass: Class<out Fragment> = when {
                     publication.conformsTo(Publication.Profile.PDF) -> PdfReaderFragment::class.java
                     publication.conformsTo(Publication.Profile.DIVINA) -> ImageReaderFragment::class.java
-                    publication.conformsTo(Publication.Profile.AUDIOBOOK) -> AudioReaderFragment::class.java
+                    publication.conformsTo(Publication.Profile.AUDIOBOOK) -> AudioReaderFragment2::class.java
                     else -> throw IllegalArgumentException("Cannot render publication")
                 }
 
