@@ -139,9 +139,7 @@ open class ReaderActivity : AppCompatActivity() {
             is ReaderViewModel.Event.Failure -> {
                 Toast.makeText(this, event.error.getUserMessage(this), Toast.LENGTH_LONG).show()
             }
-            else -> {
-                Toast.makeText(this, getString(R.string.error), Toast.LENGTH_LONG).show()
-            }
+            else -> {}
         }
     }
 
