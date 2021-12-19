@@ -13,7 +13,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.robolectric.RobolectricTestRunner

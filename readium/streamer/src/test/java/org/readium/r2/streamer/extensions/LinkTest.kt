@@ -11,8 +11,8 @@ package org.readium.r2.streamer.extensions
 
 import org.junit.Test
 import org.readium.r2.shared.publication.Link
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 
 class LinkTest {
 

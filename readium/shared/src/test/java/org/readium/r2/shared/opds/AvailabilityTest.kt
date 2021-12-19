@@ -3,9 +3,12 @@ package org.readium.r2.shared.opds
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.extensions.iso8601ToDate
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class AvailabilityTest {
 
     @Test fun `parse JSON availability state`() {

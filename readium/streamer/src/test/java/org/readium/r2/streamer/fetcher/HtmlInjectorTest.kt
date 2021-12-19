@@ -4,7 +4,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.*
-import kotlin.test.assertEquals
+import org.junit.Assert.assertEquals
 
 class HtmlInjectorTest {
 
