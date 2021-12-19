@@ -23,7 +23,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import java.io.File
 import java.net.URL
 
-class ReaderContract : ActivityResultContract<ReaderContract.Input, ReaderContract.Output>() {
+class ReaderContract : ActivityResultContract<ReaderContract.Input, ReaderContract.Output?>() {
 
     data class Input(
         val mediaType: MediaType?,

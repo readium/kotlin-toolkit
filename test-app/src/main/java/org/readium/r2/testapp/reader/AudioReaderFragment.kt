@@ -19,6 +19,7 @@ import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentAudiobookBinding
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 
@@ -99,7 +100,7 @@ class AudioReaderFragment : BaseReaderFragment() {
                 override fun onStopTrackingTouch(p0: SeekBar?) {
                     isSeeking = false
                     p0?.let { seekBar ->
-                        mediaNavigator.seekTo(Duration.seconds(seekBar.progress))
+                        mediaNavigator.seekTo(seekBar.progress.seconds)
                     }
                 }
 

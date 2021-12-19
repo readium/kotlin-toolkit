@@ -12,9 +12,12 @@ package org.readium.r2.shared.publication
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.extensions.iso8601ToDate
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class MetadataTest {
 
     @Test fun `parse minimal JSON`() {
@@ -79,7 +82,7 @@ class MetadataTest {
                 "@type": "epub",
                 "conformsTo": [
                     "https://readium.org/webpub-manifest/profiles/epub",
-                    "https://readium.org/webpub-manifest/profiles/pdf",
+                    "https://readium.org/webpub-manifest/profiles/pdf"
                 ],
                 "title": {"en": "Title", "fr": "Titre"},
                 "subtitle": {"en": "Subtitle", "fr": "Sous-titre"},
@@ -182,7 +185,7 @@ class MetadataTest {
                 "@type": "epub",
                 "conformsTo": [
                     "https://readium.org/webpub-manifest/profiles/epub",
-                    "https://readium.org/webpub-manifest/profiles/pdf",
+                    "https://readium.org/webpub-manifest/profiles/pdf"
                 ],
                 "title": {"en": "Title", "fr": "Titre"},
                 "subtitle": {"en": "Subtitle", "fr": "Sous-titre"},

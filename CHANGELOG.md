@@ -50,6 +50,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 * Fix building with Kotlin 1.6.
 
+#### Streamer
+
+* Fixed the rendering of PDF covers in some edge cases.
+
 #### Navigator
 
 * Fixed turning pages of an EPUB reflowable resource with an odd number of columns. A virtual blank trailing column is appended to the resource when displayed as two columns.

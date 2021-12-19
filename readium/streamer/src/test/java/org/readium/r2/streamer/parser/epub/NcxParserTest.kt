@@ -15,7 +15,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
 import org.robolectric.RobolectricTestRunner
-import kotlin.test.assertNotNull
+import org.junit.Assert.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class NcxParserTest {

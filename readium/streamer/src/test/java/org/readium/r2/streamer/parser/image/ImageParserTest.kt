@@ -20,8 +20,8 @@ import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.streamer.parseBlocking
 import java.io.File
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 
 class ImageParserTest {
 
@@ -36,7 +36,7 @@ class ImageParserTest {
     private fun assetForResource(resource: String): PublicationAsset {
         val path = ImageParserTest::class.java.getResource(resource)?.path
         assertNotNull(path)
-        return FileAsset(File(path))
+        return FileAsset(File(path!!))
     }
 
     private fun fetcherForAsset(asset: PublicationAsset): Fetcher = runBlocking {
@@ -62,7 +62,7 @@ class ImageParserTest {
     fun `readingOrder is sorted alphabetically`() {
         val builder = parser.parseBlocking(cbzAsset, cbzFetcher)
         assertNotNull(builder)
-        val readingOrder = builder.manifest.readingOrder
+        val readingOrder = builder!!.manifest.readingOrder
             .map { it.href.removePrefix("/Cory Doctorow's Futuristic Tales of the Here and Now") }
         assertThat(readingOrder)
             .containsExactly("/a-fc.jpg", "/x-002.jpg", "/x-003.jpg", "/x-004.jpg")
@@ -72,7 +72,7 @@ class ImageParserTest {
     fun `the cover is the first item in the readingOrder`() {
         val builder = parser.parseBlocking(cbzAsset, cbzFetcher)
         assertNotNull(builder)
-        with(builder.manifest.readingOrder) {
+        with(builder!!.manifest.readingOrder) {
             assertEquals(
                 "/Cory Doctorow's Futuristic Tales of the Here and Now/a-fc.jpg",
                 firstWithRel("cover")?.href)
@@ -83,6 +83,6 @@ class ImageParserTest {
     fun `title is based on archive's root directory when any`() {
         val builder = parser.parseBlocking(cbzAsset, cbzFetcher)
         assertNotNull(builder)
-        assertEquals("Cory Doctorow's Futuristic Tales of the Here and Now", builder.manifest.metadata.title)
+        assertEquals("Cory Doctorow's Futuristic Tales of the Here and Now", builder!!.manifest.metadata.title)
     }
 }

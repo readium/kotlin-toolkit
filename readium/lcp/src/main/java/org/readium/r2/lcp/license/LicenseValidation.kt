@@ -21,9 +21,8 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 import java.util.*
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
-import kotlin.time.seconds
 
 internal sealed class Either<A, B> {
     class Left<A, B>(val left: A) : Either<A, B>()
@@ -316,9 +315,7 @@ internal class LicenseValidation(
     private suspend fun fetchStatus(license: LicenseDocument) {
         val url = license.url(LicenseDocument.Rel.status, preferredType = MediaType.LCP_STATUS_DOCUMENT).toString()
         // Short timeout to avoid blocking the License, since the LSD is optional.
-        // FIXME: To remove after bumping to Kotlin 1.6
-        @Suppress("DEPRECATION")
-        val data = network.fetch(url, timeout = Duration.seconds(5))
+        val data = network.fetch(url, timeout = 5.seconds)
             .getOrElse { throw LcpException.Network(it) }
 
         raise(Event.retrievedStatusData(data))
@@ -332,9 +329,7 @@ internal class LicenseValidation(
     private suspend fun fetchLicense(status: StatusDocument) {
         val url = status.url(StatusDocument.Rel.license, preferredType = MediaType.LCP_LICENSE_DOCUMENT).toString()
         // Short timeout to avoid blocking the License, since it can be updated next time.
-        // FIXME: To remove after bumping to Kotlin 1.6
-        @Suppress("DEPRECATION")
-        val data = network.fetch(url, timeout = Duration.seconds(5))
+        val data = network.fetch(url, timeout = 5.seconds)
             .getOrElse { throw LcpException.Network(it) }
 
         raise(Event.retrievedLicenseData(data))
