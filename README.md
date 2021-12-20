@@ -1,8 +1,8 @@
 # How to publish to local maven
 
-Execute for each modules
+Execute in each modules
 ```
- ./gradlew :readium:shared publishToMavenLocal
+ gradle publishToMavenLocal
 ```
 
 # Readium Kotlin Toolkit
