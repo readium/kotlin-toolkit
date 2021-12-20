@@ -1,0 +1,139 @@
+/*
+ * Copyright 2021 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
+plugins {
+    id("com.android.application")
+    id("kotlin-android")
+    id("kotlin-parcelize")
+    id("kotlin-kapt")
+}
+
+val major: Int = 2
+val minor: Int= 2
+val patch: Int = 1
+val build: Int = 29
+val type: String = ""
+
+var version: String = "$major.$minor.$patch"
+val appendBuild = build != 0
+if (appendBuild || type.isNotEmpty()) {
+    version += "-$type"
+    if (appendBuild) {
+        version += build
+    }
+}
+
+project.ext.set("versionName", version)
+project.ext.set("versionCode", 1_000_000 * major + 10_000 * minor + 100 * patch + build)
+
+android {
+
+    compileSdk = 31
+    defaultConfig {
+        minSdk = 21
+        targetSdk = 31
+
+        applicationId = "org.readium.r2reader"
+
+        versionCode = project.ext.get("versionCode") as Int
+        versionName = project.ext.get("versionName") as String
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk.abiFilters.add("armeabi-v7a")
+        ndk.abiFilters.add("arm64-v8a")
+        ndk.abiFilters.add("x86")
+        ndk.abiFilters.add("x86_64")
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+    }
+    buildFeatures {
+        viewBinding = true
+    }
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"))
+        }
+    }
+    packagingOptions {
+        resources.excludes.add("META-INF/*")
+    }
+
+    sourceSets {
+        getByName("main") {
+            java.srcDirs("src/main/java")
+            res.srcDirs("src/main/res")
+            assets.srcDirs("src/main/assets")
+        }
+    }
+}
+
+dependencies {
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10")
+    implementation("androidx.legacy:legacy-support-v4:1.0.0")
+
+    implementation(project(":readium:shared"))
+    implementation(project(":readium:streamer"))
+    implementation(project(":readium:navigator"))
+    implementation(project(":readium:opds"))
+    implementation(project(":readium:lcp"))
+
+    implementation("androidx.core:core-ktx:1.7.0")
+    implementation("androidx.activity:activity-ktx:1.4.0")
+    implementation("androidx.appcompat:appcompat:1.4.0")
+    implementation("androidx.browser:browser:1.4.0")
+    implementation("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.2")
+    implementation("androidx.fragment:fragment-ktx:1.4.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.3.5")
+    implementation("androidx.navigation:navigation-ui-ktx:2.3.5")
+    implementation("androidx.paging:paging-runtime-ktx:3.1.0")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+    implementation("androidx.webkit:webkit:1.4.0")
+    //noinspection GradleDependency
+    implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
+        exclude(group = "org.parboiled")
+    }
+    //noinspection GradleDependency
+    implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
+        exclude(group = "org.parboiled")
+    }
+    implementation("com.google.android.material:material:1.4.0")
+    implementation("com.jakewharton.timber:timber:5.0.1")
+    // AM NOTE: needs to stay this version for now (June 24,2020)
+    //noinspection GradleDependency
+    implementation("com.squareup.picasso:picasso:2.71828")
+    implementation("joda-time:joda-time:2.10.13")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    // AM NOTE: needs to stay this version for now (June 24,2020)
+    //noinspection GradleDependency
+    implementation("org.jsoup:jsoup:1.14.3")
+
+    // Room database
+    val room_version = "2.4.0"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    kapt ("androidx.room:room-compiler:$room_version")
+
+    implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
+    //noinspection LifecycleAnnotationProcessorWithJava8
+    kapt ("androidx.lifecycle:lifecycle-compiler:2.4.0")
+
+    // Tests
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.3")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+}
