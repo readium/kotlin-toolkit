@@ -61,7 +61,7 @@ android {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(platform(project(":readium:shared")))
+    api(project(":readium:shared"))
 
     implementation("androidx.activity:activity-ktx:1.4.0")
     implementation("androidx.appcompat:appcompat:1.4.0")

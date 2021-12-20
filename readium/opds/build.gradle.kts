@@ -52,7 +52,7 @@ android {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(platform(project(":readium:shared")))
+    api(project(":readium:shared"))
 
     implementation("androidx.appcompat:appcompat:1.4.0")
     implementation("com.jakewharton.timber:timber:5.0.1")

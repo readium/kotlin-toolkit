@@ -60,7 +60,7 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
-    api(platform(project(":readium:shared")))
+    api(project(":readium:shared"))
 
     implementation("androidx.constraintlayout:constraintlayout:2.1.2")
     implementation("androidx.core:core-ktx:1.7.0")
