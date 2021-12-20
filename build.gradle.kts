@@ -7,8 +7,8 @@
 import org.jetbrains.dokka.gradle.DokkaTaskPartial
 
 buildscript {
-    val kotlin_version by extra("1.6.10")
-    val dokka_version by extra("1.5.30")
+    val kotlinVersion by extra("1.6.10")
+    val dokkaVersion by extra("1.5.30")
 
     repositories {
         google()
@@ -20,8 +20,8 @@ buildscript {
     }
     dependencies {
         classpath("com.android.tools.build:gradle:7.0.4")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
     }
 }
 

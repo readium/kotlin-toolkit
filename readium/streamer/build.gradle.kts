@@ -27,7 +27,7 @@ android {
         unitTests.isIncludeAndroidResources = true
     }
     kotlinOptions {
-        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
         allWarningsAsErrors = true
     }
     buildTypes {
