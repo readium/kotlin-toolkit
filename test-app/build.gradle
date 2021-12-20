@@ -66,13 +66,6 @@ android {
     }
     packagingOptions {
         exclude 'META-INF/*'
-
-        // Necessary when building with both liblcp and readium-navigator.
-        // See https://github.com/readium/kotlin-toolkit/issues/29
-        pickFirst 'lib/x86/libc++_shared.so'
-        pickFirst 'lib/x86_64/libc++_shared.so'
-        pickFirst 'lib/arm64-v8a/libc++_shared.so'
-        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
     }
 
     sourceSets {
@@ -123,6 +116,7 @@ dependencies {
     implementation ("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
         exclude group: 'org.parboiled'
     }
+    implementation "com.google.android.material:compose-theme-adapter:1.1.1"
     implementation "com.google.android.material:material:1.4.0"
     implementation 'com.jakewharton.timber:timber:5.0.1'
     // AM NOTE: needs to stay this version for now (June 24,2020)

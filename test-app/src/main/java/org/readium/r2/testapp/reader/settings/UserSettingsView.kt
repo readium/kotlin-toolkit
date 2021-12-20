@@ -1,3 +1,9 @@
+/*
+ * Copyright 2021 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.testapp.reader.settings
 
 import androidx.compose.foundation.layout.*
@@ -26,9 +32,9 @@ typealias CommitPresentation = (UpdatePresentation) -> Unit
 
 @Composable
 @OptIn(ExperimentalPresentation::class)
-fun FixedSettingsView(presentation: PresentationController) {
+fun UserSettingsView(presentation: PresentationController) {
     val settings by presentation.settings.collectAsState()
-    FixedSettingsView(
+    UserSettingsView(
         settings = settings,
         commit = { presentation.commit(it) }
     )
@@ -36,7 +42,7 @@ fun FixedSettingsView(presentation: PresentationController) {
 
 @Composable
 @OptIn(ExperimentalPresentation::class)
-private fun FixedSettingsView(settings: PresentationController.Settings, commit: CommitPresentation) {
+private fun UserSettingsView(settings: PresentationController.Settings, commit: CommitPresentation) {
     Column(
         modifier = Modifier
             .padding(24.dp)

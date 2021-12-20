@@ -238,7 +238,7 @@ val <E: Enum<E>> PresentationValueConstraints<E>.supportedValues: List<E>?
     get() = extras["supportedValues"] as? List<E>
 
 @ExperimentalPresentation
-class PresentationValueAndConstraints<V>(
+class PresentationValueCompositeConstraints<V>(
     private vararg val constraints: PresentationValueConstraints<V>
 ) : PresentationValueConstraints<V> {
 
@@ -265,7 +265,7 @@ class PresentationValueAndConstraints<V>(
 
 @ExperimentalPresentation
 operator fun <V> PresentationValueConstraints<V>.plus(other: PresentationValueConstraints<V>): PresentationValueConstraints<V> =
-    PresentationValueAndConstraints(this, other)
+    PresentationValueCompositeConstraints(this, other)
 
 @ExperimentalPresentation
 class PresentationValueDependencyConstraints<V>(

@@ -242,19 +242,9 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         }
 
        return when (item.itemId) {
-           R.id.settings -> {
-               userSettings.userSettingsPopUp().showAsDropDown(requireActivity().findViewById(R.id.settings), 0, 0, Gravity.END)
-               true
-           }
            R.id.search -> {
                super.onOptionsItemSelected(item)
            }
-
-           android.R.id.home -> {
-               menuSearch.collapseActionView()
-               true
-           }
-
            R.id.screen_reader -> {
                if (isScreenReaderVisible) {
                    closeScreenReaderFragment()
@@ -265,6 +255,10 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
            }
             else -> false
         }
+    }
+
+    override fun onOpenSettings() {
+        userSettings.userSettingsPopUp().showAsDropDown(requireActivity().findViewById(R.id.settings), 0, 0, Gravity.END)
     }
 
     private fun showSearchFragment() {

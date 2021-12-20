@@ -6,6 +6,7 @@
 
 package org.readium.r2.navigator.extensions
 
+import org.readium.r2.shared.InternalReadiumApi
 import java.text.NumberFormat
 
 /**
@@ -20,7 +21,8 @@ internal fun String.splitAt(delimiter: String): Pair<String, String?> {
 /**
  * Formats a 0.0-1.0 range into a localized string, e.g. "42%".
  */
-fun Double.toStringPercentage() =
+@InternalReadiumApi
+fun Double.toStringPercentage(): String =
     NumberFormat.getPercentInstance().run {
         maximumFractionDigits = 0
         format(this@toStringPercentage)

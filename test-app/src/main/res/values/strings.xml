@@ -25,7 +25,7 @@
 
     <string name="epubactivity_drm_info">DRM Info</string>
     <string name="epubactivity_set_bookmark">Add a bookmark</string>
-    <string name="epubactivity_settings">User Settings</string>
+    <string name="user_settings">User Settings</string>
     <string name="epubactivity_book_nav_options">Book navigation menu</string>
     <string name="epubactivity_read_aloud_start">Read Aloud</string>
     <string name="epubactivity_read_aloud_stop">Stop Read Aloud</string>

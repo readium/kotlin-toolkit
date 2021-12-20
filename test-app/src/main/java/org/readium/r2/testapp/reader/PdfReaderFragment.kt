@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.reader
 
-import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,8 +18,6 @@ import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.reader.settings.FixedSettingsBottomSheetDialogFragment
-import org.readium.r2.testapp.utils.toggleSystemUi
 
 @OptIn(ExperimentalPresentation::class)
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
@@ -46,10 +43,6 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
         }
         navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as Navigator
         return view
-    }
-
-    override fun onOpenSettings() {
-        FixedSettingsBottomSheetDialogFragment().show(parentFragmentManager, "Settings")
     }
 
     override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {

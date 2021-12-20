@@ -16,7 +16,7 @@
     <item
         android:id="@+id/settings"
         android:icon="@drawable/ic_baseline_settings_24"
-        android:title="@string/epubactivity_settings"
+        android:title="@string/user_settings"
         android:orderInCategory="80"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction"/>

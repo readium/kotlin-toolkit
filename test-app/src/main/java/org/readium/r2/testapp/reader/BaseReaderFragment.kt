@@ -24,11 +24,13 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.presentation.PresentableNavigator
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.domain.model.Highlight
+import org.readium.r2.testapp.reader.settings.UserSettingsBottomSheetDialogFragment
 
 /*
  * Base reader fragment class
@@ -118,7 +120,11 @@ abstract class BaseReaderFragment : Fragment() {
         }
     }
 
-    protected open fun onOpenSettings() {}
+    protected open fun onOpenSettings() {
+        if (navigator is PresentableNavigator) {
+            UserSettingsBottomSheetDialogFragment().show(parentFragmentManager, "Settings")
+        }
+    }
 
     fun go(locator: Locator, animated: Boolean) =
         navigator.go(locator, animated)
