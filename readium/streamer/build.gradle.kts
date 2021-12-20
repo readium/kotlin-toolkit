@@ -1,3 +1,5 @@
+import android.annotation.SuppressLint
+
 /*
  * Copyright 2018 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
@@ -58,7 +60,8 @@ dependencies {
     api(project(":readium:shared"))
 
     implementation("androidx.appcompat:appcompat:1.4.0")
-    implementation("com.github.barteksc:pdfium-android:1.9.0")
+    @Suppress("GradleDependency")
+    implementation("com.github.barteksc:pdfium-android:1.8.2")
     implementation("com.jakewharton.timber:timber:5.0.1")
     //noinspection GradleDependency
     implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
