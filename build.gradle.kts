@@ -7,7 +7,6 @@
 import org.jetbrains.dokka.gradle.DokkaTaskPartial
 
 buildscript {
-    extra.set("kotlin_version", "1.6.10")
     val kotlin_version = "1.6.10"
     val dokka_version = "1.6.0"
 
@@ -26,10 +25,7 @@ buildscript {
     }
 }
 
-//plugins {
-//    id("org.jetbrains.dokka") version ("1.5.30")
-//}
-apply(plugin="org.jetbrains.dokka")
+apply(plugin = "org.jetbrains.dokka")
 
 allprojects {
     repositories {
@@ -62,7 +58,6 @@ tasks.register("cleanDocs", Delete::class).configure {
 }
 
 tasks.withType<DokkaTaskPartial>().configureEach {
-    outputDirectory.set(file("${project.rootDir}/docs"))
     dokkaSourceSets {
         configureEach {
             reportUndocumented.set(false)
@@ -71,7 +66,7 @@ tasks.withType<DokkaTaskPartial>().configureEach {
         }
     }
 }
-//
-//tasks.named("dokkaGfmMultimodule").configure {
-//    outputDirectory.set(file("${project.rootDir}/docs"))
-//}
+
+tasks.named<org.jetbrains.dokka.gradle.DokkaMultiModuleTask>("dokkaGfmMultiModule").configure {
+    outputDirectory.set(file("${projectDir.path}/docs"))
+}
