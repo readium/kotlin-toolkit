@@ -45,8 +45,8 @@ afterEvaluate {
                 from(components.getByName("release"))
                 groupId = "com.github.readium"
                 artifactId = "readium-shared"
-                artifact("sourcesJar")
-                artifact("javadocsJar")
+                artifact(tasks.findByName("sourcesJar"))
+                artifact(tasks.findByName("javadocsJar"))
             }
         }
     }
