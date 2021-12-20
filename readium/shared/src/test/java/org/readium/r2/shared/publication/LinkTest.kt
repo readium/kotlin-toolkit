@@ -17,6 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -247,6 +248,15 @@ class LinkTest {
                 Link(href = "http://child2")
             ).toJSON()
         )
+    }
+
+    @Test fun `get unknown media type`() {
+        assertEquals(MediaType.BINARY, Link(href = "file").mediaType)
+    }
+
+    @Test fun `get media type from type`() {
+        assertEquals(MediaType.EPUB, Link(href = "file", type = "application/epub+zip").mediaType)
+        assertEquals(MediaType.PDF, Link(href = "file", type = "application/pdf").mediaType)
     }
 
     @Test

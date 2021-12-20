@@ -8,11 +8,7 @@
 
 package org.readium.r2.testapp.utils
 
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -39,12 +35,11 @@ class FlowObserver<T> (
     private val lifecycleOwner: LifecycleOwner,
     private val flow: Flow<T>,
     private val collector: suspend (T) -> Unit
-) : LifecycleObserver {
+) : DefaultLifecycleObserver {
 
     private var job: Job? = null
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun onStart() {
+    override fun onStart(owner: LifecycleOwner) {
         if (job == null) {
             job = lifecycleOwner.lifecycleScope.launch {
                 flow.collect { collector(it) }
@@ -52,8 +47,7 @@ class FlowObserver<T> (
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    fun onStop() {
+    override fun onStop(owner: LifecycleOwner) {
         job?.cancel()
         job = null
     }

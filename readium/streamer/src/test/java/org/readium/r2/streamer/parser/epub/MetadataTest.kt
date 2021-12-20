@@ -14,16 +14,12 @@ import org.assertj.core.api.Assertions.entry
 import org.joda.time.DateTime
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.publication.Collection
-import org.readium.r2.shared.publication.Contributor
-import org.readium.r2.shared.publication.LocalizedString
-import org.readium.r2.shared.publication.Subject
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.robolectric.RobolectricTestRunner
-import kotlin.test.assertNotNull
+import org.junit.Assert.assertNotNull
 import org.readium.r2.shared.publication.Link as SharedLink
 
 @RunWith(RobolectricTestRunner::class)
@@ -305,6 +301,14 @@ class DateTest {
 
 @RunWith(RobolectricTestRunner::class)
 class MetadataMiscTest {
+    @Test
+    fun `conformsTo contains the EPUB profile`() {
+        val epub2Metadata = parsePackageDocument("package/contributors-epub2.opf").metadata
+        assertThat(epub2Metadata.conformsTo).isEqualTo(setOf(Publication.Profile.EPUB))
+        val epub3Metadata = parsePackageDocument("package/contributors-epub3.opf").metadata
+        assertThat(epub3Metadata.conformsTo).isEqualTo(setOf(Publication.Profile.EPUB))
+    }
+
     @Test
     fun `Unique identifier is rightly parsed`() {
         val expected = "urn:uuid:2"

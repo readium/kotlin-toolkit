@@ -60,8 +60,8 @@ class OutlineFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val outlines: List<Outline> = when (publication.type) {
-            Publication.TYPE.EPUB -> listOf(Outline.Contents, Outline.Bookmarks, Outline.Highlights, Outline.PageList, Outline.Landmarks)
+        val outlines: List<Outline> = when {
+            publication.conformsTo(Publication.Profile.EPUB) -> listOf(Outline.Contents, Outline.Bookmarks, Outline.Highlights, Outline.PageList, Outline.Landmarks)
             else -> listOf(Outline.Contents, Outline.Bookmarks)
         }
 

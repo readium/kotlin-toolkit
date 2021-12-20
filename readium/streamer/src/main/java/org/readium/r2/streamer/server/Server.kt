@@ -110,9 +110,6 @@ abstract class AbstractServer(
             try { URLDecoder.decode(baseUrl.path, "UTF-8") }
             catch (e: Exception) { baseUrl.path }
 
-        if (containsMediaOverlay) {
-            setRoute(basePath + MEDIA_OVERLAY_HANDLE, MediaOverlayHandler::class.java, fetcher)
-        }
         setRoute(basePath + JSON_MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
         setRoute(basePath + MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
         setRoute(basePath + MANIFEST_ITEM_HANDLE, PublicationResourceHandler::class.java, fetcher)

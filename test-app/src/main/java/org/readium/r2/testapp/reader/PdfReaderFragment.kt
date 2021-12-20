@@ -62,19 +62,6 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
         requireActivity().finish()
     }
 
-    override fun onTap(point: PointF): Boolean {
-        val viewWidth = requireView().width
-        val leftRange = 0.0..(0.2 * viewWidth)
-
-        when {
-            leftRange.contains(point.x) -> navigator.goBackward()
-            leftRange.contains(viewWidth - point.x) -> navigator.goForward()
-            else -> requireActivity().toggleSystemUi()
-        }
-
-        return true
-    }
-
     companion object {
 
         const val NAVIGATOR_FRAGMENT_TAG = "navigator"

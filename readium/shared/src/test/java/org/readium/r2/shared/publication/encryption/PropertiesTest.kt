@@ -11,8 +11,11 @@ package org.readium.r2.shared.publication.encryption
 
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Properties
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class PropertiesTest {
 
     @Test fun `get Properties {encryption} when available`() {

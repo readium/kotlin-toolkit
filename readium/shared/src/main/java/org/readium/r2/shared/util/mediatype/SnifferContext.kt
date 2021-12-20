@@ -18,6 +18,7 @@ import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import timber.log.Timber
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.util.*
@@ -86,13 +87,17 @@ class SnifferContext internal constructor(
      * It will extract the charset parameter from the media type hints to figure out an encoding.
      * Otherwise, fallback on UTF-8.
      */
-    suspend fun contentAsString(): String? {
-        if (!loadedContentAsString) {
-            loadedContentAsString = true
-            _contentAsString = content?.read()?.toString(charset ?: Charset.defaultCharset())
+    suspend fun contentAsString(): String? =
+        try {
+            if (!loadedContentAsString) {
+                loadedContentAsString = true
+                _contentAsString = content?.read()?.toString(charset ?: Charset.defaultCharset())
+            }
+            _contentAsString
+        } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
+            Timber.e(e)
+            null
         }
-        return _contentAsString
-    }
 
     private var loadedContentAsString: Boolean = false
     private var _contentAsString: String? = null

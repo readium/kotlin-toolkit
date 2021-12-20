@@ -169,6 +169,7 @@ class Streamer constructor(
     }
 
     private fun Publication.addLegacyProperties(mediaType: MediaType?) {
+        @Suppress("DEPRECATION")
         type = mediaType.toPublicationType()
 
         if (mediaType == MediaType.EPUB)
