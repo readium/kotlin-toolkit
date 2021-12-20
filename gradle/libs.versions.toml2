@@ -1,3 +1,5 @@
+# Eventually want to use this for dependencies, but Android Studio is not ready
+
 [versions]
 kotlin = "1.6.10"
 dokka = "1.5.30"

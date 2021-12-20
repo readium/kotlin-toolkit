@@ -77,8 +77,10 @@ dependencies {
     implementation("androidx.browser:browser:1.4.0")
 
     // Room database
-    implementation(libs.bundles.room)
-    kapt(libs.room.ktx)
+    val room_version = "2.4.0"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
 
     // Tests
     testImplementation("junit:junit:4.13.2")

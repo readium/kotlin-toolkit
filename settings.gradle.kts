@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-enableFeaturePreview("VERSION_CATALOGS")
+//enableFeaturePreview("VERSION_CATALOGS")
 
 pluginManagement {
     repositories {
