@@ -41,7 +41,7 @@ internal class ServingFetcher(
     }
 
     private fun transformResourceForReadiumNavigator(resource: Resource): Resource {
-        return if (publication.type == Publication.TYPE.EPUB)
+        return if (publication.conformsTo(Publication.Profile.EPUB))
             htmlInjector.transform(resource)
         else
             resource

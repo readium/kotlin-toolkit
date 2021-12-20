@@ -226,6 +226,7 @@ class PdfNavigatorFragment internal constructor(
     private val _currentLocator = MutableStateFlow(initialLocator ?: publication.readingOrder.first().toLocator())
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        listener?.onJumpToLocator(locator)
         // FIXME: `position` is relative to the full publication, which would cause an issue for a publication containing several PDFs resources. Only publications with a single PDF resource are supported at the moment, so we're fine.
         val pageNumber = locator.locations.page ?: locator.locations.position ?: 1
         return goToHref(locator.href, pageNumberToIndex(pageNumber), animated, forceReload = false, completion)

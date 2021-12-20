@@ -52,7 +52,10 @@ class ImageParser : PublicationParser {
         readingOrder[0] = readingOrder[0].copy(rels = setOf("cover"))
 
         val manifest = Manifest(
-            metadata = Metadata(localizedTitle = LocalizedString(title)),
+            metadata = Metadata(
+                conformsTo = setOf(Publication.Profile.DIVINA),
+                localizedTitle = LocalizedString(title)
+            ),
             readingOrder = readingOrder
         )
 

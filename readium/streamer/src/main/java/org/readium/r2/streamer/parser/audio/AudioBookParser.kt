@@ -54,6 +54,7 @@ class AudioBookParser : PublicationParser {
         val publication = Publication(
             manifest = manifest
         ).apply {
+            @Suppress("DEPRECATION")
             type = Publication.TYPE.AUDIO
         }
 

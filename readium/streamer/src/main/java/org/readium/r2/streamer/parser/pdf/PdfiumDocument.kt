@@ -54,22 +54,20 @@ internal class PdfiumDocument(
 }
 
 private fun PdfiumCore.renderCover(document: _PdfiumDocument): Bitmap? {
-    try {
-        val pointer = openPage(document, 0)
-        if (pointer <= 0) return null
-
+    return try {
+        openPage(document, 0)
         val width = getPageWidth(document, 0)
         val height = getPageHeight(document, 0)
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         renderPageBitmap(document, bitmap, 0, 0, 0, width, height, false)
-        return bitmap
+        bitmap
 
     } catch (e: Exception) {
         Timber.e(e)
-        return null
+        null
     } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
         Timber.e(e)
-        return null
+        null
     }
 }
 

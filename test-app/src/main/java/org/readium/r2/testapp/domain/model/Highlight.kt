@@ -30,6 +30,7 @@ import org.readium.r2.shared.util.MapWithDefaultCompanion
     foreignKeys = [
         ForeignKey(entity = Book::class, parentColumns = [Book.ID], childColumns = [Highlight.BOOK_ID], onDelete = ForeignKey.CASCADE)
     ],
+    indices = [Index(value = [Highlight.BOOK_ID])]
 )
 data class Highlight(
     @PrimaryKey(autoGenerate = true)

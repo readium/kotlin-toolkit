@@ -163,7 +163,7 @@ abstract class BaseReaderFragment : Fragment() {
     private var mode: ActionMode? = null
 
     // Available tint colors for highlight and underline annotations.
-    private val highlightTints = mapOf<@IdRes Int, @ColorInt Int>(
+    private val highlightTints = mapOf</*@IdRes*/ Int, /*@ColorInt*/ Int>(
         R.id.red to Color.rgb(247, 124, 124),
         R.id.green to Color.rgb(173, 247, 123),
         R.id.blue to Color.rgb(124, 198, 247),

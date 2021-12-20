@@ -11,8 +11,11 @@ package org.readium.r2.shared.publication.html
 
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Locator
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class LocatorTest {
 
     @Test fun `get Locations {cssSelector} when available`() {

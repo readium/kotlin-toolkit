@@ -10,6 +10,8 @@
 package org.readium.r2.shared.parser.xml
 
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import org.xmlpull.v1.XmlPullParserException
 import java.io.ByteArrayInputStream
 import javax.xml.XMLConstants
@@ -42,6 +44,7 @@ private fun parseXmlString(string: String, namespaceAware: Boolean = true): Elem
     return parser.parse(stream)
 }
 
+@RunWith(RobolectricTestRunner::class)
 class XmlParserTest {
     @Test
     fun testNotNamespaceAwareV3() {
@@ -199,6 +202,7 @@ class XmlParserTest {
     }
 }
 
+@RunWith(RobolectricTestRunner::class)
 class ElementNodeTest {
     @Test
     fun testCollectText() {

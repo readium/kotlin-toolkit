@@ -8,17 +8,53 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Added
 
+#### Shared
+
+* A new `Publication.conformsTo()` API to identify the profile of a publication.
+* Support for the [`conformsTo` RWPM metadata](https://github.com/readium/webpub-manifest/issues/65), to identify the profile of a `Publication`.
+
 #### Navigator
 
 * The PDF navigator now honors the publication reading progression with support for right-to-left and horizontal scrolling.
     * The default (auto) reading progression for PDF is top-to-bottom, which is vertical scrolling.
     * Support for internal and external links.
+* A new convenience utility `EdgeTapNavigation` to trigger page turns while tapping the screen edges.
+    * It takes into account the navigator reading progression to move into the right direction.
+    * Call it from the `VisualNavigator.Listener.onTap()` callback as demonstrated below:
+    ```kotlin
+    override fun onTap(point: PointF): Boolean {
+        val navigated = edgeTapNavigation.onTap(point, requireView())
+        if (!navigated) {
+            // Fallback action, for example toggling the app bar.
+        }
+        return true
+    }
+    ```
+* The new `Navigator.Listener.onJumpToLocator()` API is called every time the navigator jumps to an explicit location, which might break the linear reading progression.
+    * For example, it is called when clicking on internal links or programmatically calling `Navigator.go()`, but not when turning pages.
+    * You can use this callback to implement a navigation history by differentiating between continuous and discontinuous moves.
+
+### Deprecated
+
+#### Shared
+
+* `Publication.type` is now deprecated in favor of the new `Publication.conformsTo()` API which is more accurate.
+    * For example, replace `publication.type == Publication.TYPE.EPUB` with `publication.conformsTo(Publication.Profile.EPUB)` before opening a publication with the `EpubNavigatorFragment`.
 
 ### Fixed
+
+* Fix building with Kotlin 1.6.
+
+#### Streamer
+
+* Fixed the rendering of PDF covers in some edge cases.
 
 #### Navigator
 
 * Fixed turning pages of an EPUB reflowable resource with an odd number of columns. A virtual blank trailing column is appended to the resource when displayed as two columns.
+* EPUB: Fallback on `reflowable` if the `presentation.layout` hint is missing from a manifest.
+* EPUB: Offset of the current selection's `rect` to take into account the vertical padding.
+* Improve backward compatibility of JavaScript files using Babel.
 
 
 ## [2.1.1]

@@ -157,6 +157,7 @@ class ImageNavigatorFragment private constructor(
         val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
                 ?: return false
 
+        listener?.onJumpToLocator(locator)
         currentPagerPosition = resourceIndex
         resourcePager.currentItem = currentPagerPosition
 

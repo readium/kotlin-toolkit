@@ -12,8 +12,11 @@ package org.readium.r2.shared.publication
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class PublicationCollectionTest {
 
     @Test fun `parse minimal JSON`() {
@@ -143,7 +146,7 @@ class PublicationCollectionTest {
                     "links": [
                         {"href": "/sublink1", "templated": false},
                         {"href": "/sublink2", "templated": false}
-                    ],
+                    ]
                 },
                 "sub3": [
                     {
@@ -189,7 +192,7 @@ class PublicationCollectionTest {
                     "links": [
                         {"href": "/sublink1", "templated": false},
                         {"href": "/sublink2", "templated": false}
-                    ],
+                    ]
                 },
                 "sub3": [
                     {

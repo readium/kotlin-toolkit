@@ -72,7 +72,20 @@ interface Navigator {
      */
     fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
 
-    interface Listener
+    interface Listener {
+
+        /**
+         * Called when the navigator jumps to an explicit location, which might break the linear
+         * reading progression.
+         *
+         * For example, it is called when clicking on internal links or programmatically calling
+         * [go], but not when turning pages.
+         *
+         * You can use this callback to implement a navigation history by differentiating between
+         * continuous and discontinuous moves.
+         */
+        fun onJumpToLocator(locator: Locator) {}
+    }
 
     @Deprecated("Use [currentLocator.value] instead", ReplaceWith("currentLocator.value"))
     val currentLocation: Locator? get() = currentLocator.value
@@ -194,4 +207,6 @@ interface MediaNavigator : Navigator {
      * Seeks relatively from the current position in the current resource.
      */
     fun seekRelative(offset: Duration)
+
+    interface Listener : Navigator.Listener
 }
