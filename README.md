@@ -1,3 +1,10 @@
+# How to publish to local maven
+
+Execute for each modules
+```
+ ./gradlew :readium:shared publishToMavenLocal
+```
+
 # Readium Kotlin Toolkit
 
 [Readium Mobile](https://github.com/readium/mobile) is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.
