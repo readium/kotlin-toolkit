@@ -7,8 +7,8 @@
 import org.jetbrains.dokka.gradle.DokkaTaskPartial
 
 buildscript {
-    val kotlin_version = "1.6.10"
-    val dokka_version = "1.5.30"
+    val kotlin_version by extra("1.6.10")
+    val dokka_version by extra("1.5.30")
 
     repositories {
         google()

@@ -38,21 +38,19 @@ android {
     }
 }
 
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            release(MavenPublication) {
-//                from components.release
-//
-//                groupId = "com.github.readium"
-//                artifactId = "readium-shared"
-//
-//                artifact sourcesJar
-//                artifact javadocsJar
-//            }
-//        }
-//    }
-//}
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components.getByName("release"))
+                groupId = "com.github.readium"
+                artifactId = "readium-shared"
+                artifact("sourcesJar")
+                artifact("javadocsJar")
+            }
+        }
+    }
+}
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
