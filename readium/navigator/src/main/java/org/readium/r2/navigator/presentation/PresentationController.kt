@@ -6,20 +6,16 @@
 
 package org.readium.r2.navigator.presentation
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.*
 import org.readium.r2.shared.util.IdentityValueCoder
 import org.readium.r2.shared.util.ValueCoder
+import org.readium.r2.shared.util.ValueEncoder
 import org.readium.r2.shared.util.getOrDefault
-import java.lang.ref.WeakReference
 import kotlin.math.round
 
 /**
@@ -32,10 +28,10 @@ import kotlin.math.round
 @OptIn(ExperimentalCoroutinesApi::class)
 @ExperimentalPresentation
 class PresentationController(
+    private val scope: CoroutineScope,
     settings: PresentationValues = PresentationValues(),
-    private val coroutineScope: CoroutineScope,
-    private val autoActivateSettings: Boolean = true,
     private var autoCommit: Boolean = true,
+    private val autoActivateSettings: Boolean = true,
     private val onAdjust: (PresentationValues) -> PresentationValues = { it },
     private val onCommit: (PresentationValues) -> Unit = {},
 ) {
@@ -52,7 +48,7 @@ class PresentationController(
     init {
         commitedValues
             .onEach { onCommit(it) }
-            .launchIn(coroutineScope)
+            .launchIn(scope)
 
         this.settings
             .distinctUntilChangedBy(Settings::adjustedValues)
@@ -61,7 +57,7 @@ class PresentationController(
                     commit(it)
                 }
             }
-            .launchIn(coroutineScope)
+            .launchIn(scope)
     }
 
     fun bind(navigator: PresentableNavigator) {
@@ -69,11 +65,11 @@ class PresentationController(
             .onEach { presentation ->
                 _settings.value = _settings.value.copy(presentation = presentation)
             }
-            .launchIn(coroutineScope)
+            .launchIn(scope)
 
         commitedValues
             .onEach { navigator.applyPresentationSettings(it) }
-            .launchIn(coroutineScope)
+            .launchIn(scope)
     }
 
     /**
@@ -88,7 +84,7 @@ class PresentationController(
         }
 
         if (autoCommit) {
-            coroutineScope.launch {
+            scope.launch {
                 commit(settings.value)
             }
         }
@@ -108,7 +104,7 @@ class PresentationController(
     /**
      * Clears the given user setting to revert to the Navigator default value.
      */
-    fun <T> reset(setting: Setting<T, *>?) {
+    fun <T> reset(setting: Setting<T>?) {
         set(setting, null)
     }
 
@@ -123,16 +119,16 @@ class PresentationController(
      * Changes the value of the given setting.
      * The new value will be set in the user settings.
      */
-    fun <T> set(setting: Setting<T, *>?, value: T?) {
+    fun <T> set(setting: Setting<T>?, value: T?) {
         setting ?: return
 
         val settings = _settings.value
 
         var values = settings.values.copy {
             if (value == null) {
-                remove(setting.key)
+                remove(setting.key.key)
             } else {
-                set(setting.key, setting.coder.encode(value))
+                set(setting.key.key, setting.key.encode(value))
             }
         }
 
@@ -152,17 +148,18 @@ class PresentationController(
     /**
      * Inverts the value of the given toggle setting.
      */
-    fun toggle(setting: Setting<Boolean, *>?) {
+    fun toggle(setting: Setting<PresentationToggle>?) {
         setting ?: return
 
-        set(setting, !(setting.value ?: setting.effectiveValue ?: false))
+        val value = setting.value ?: setting.effectiveValue ?: PresentationToggle(false)
+        set(setting, value.toggle())
     }
 
     /**
      * Inverts the value of the given setting. If the setting is already set to the given value, it
      * is nulled out.
      */
-    fun <T> toggle(setting: Setting<T, *>?, value: T) {
+    fun <T> toggle(setting: Setting<T>?, value: T) {
         setting ?: return
 
         if (setting.value == value) {
@@ -175,25 +172,25 @@ class PresentationController(
     /**
      * Increments the value of the given range setting to the next effective step.
      */
-    fun increment(setting: Setting<Double, *>?) {
+    fun increment(setting: Setting<PresentationRange>?) {
         setting ?: return
 
         val step = setting.step
-        val value = setting.value ?: setting.effectiveValue ?: 0.5
+        val value = setting.value?.double ?: setting.effectiveValue?.double ?: 0.5
 
-        set(setting, (value + step).roundToStep(setting.step).coerceAtMost(1.0))
+        set(setting, PresentationRange((value + step).roundToStep(setting.step).coerceAtMost(1.0)))
     }
 
     /**
      * Decrements the value of the given range setting to the previous effective step.
      */
-    fun decrement(setting: Setting<Double, *>?) {
+    fun decrement(setting: Setting<PresentationRange>?) {
         setting ?: return
 
         val step = setting.step
-        val value = setting.value ?: setting.effectiveValue ?: 0.5
+        val value = setting.value?.double ?: setting.effectiveValue?.double ?: 0.5
 
-        set(setting, (value - step).roundToStep(setting.step).coerceAtLeast(0.0))
+        set(setting, PresentationRange((value - step).roundToStep(setting.step).coerceAtLeast(0.0)))
     }
 
     private fun Double.roundToStep(step: Double): Double =
@@ -205,10 +202,7 @@ class PresentationController(
         val presentation: Presentation? = null
     ) : JSONable by values {
 
-        inline operator fun <reified V> get(key: PresentationKey<V, V>): Setting<V, V>? =
-            get(key, IdentityValueCoder())
-
-        inline operator fun <reified V, reified R> get(key: PresentationKey<V, R>, coder: ValueCoder<V?, R?>): Setting<V, R>? {
+        inline operator fun <reified V, reified R> get(key: PresentationKey<V, R>): Setting<V>? {
             val effectiveValue = presentation?.values?.get(key)
             val constraints = presentation?.constraintsForKey(key)
             val userValue = values[key]
@@ -221,49 +215,47 @@ class PresentationController(
 
             return Setting(
                 key = key,
-                value = coder.decode(userValue),
-                effectiveValue = coder.decode(effectiveValue),
+                value = userValue,
+                effectiveValue = effectiveValue,
                 isSupported = isSupported,
                 isActive = isActive,
                 constraints = constraints,
-                coder = coder
             )
         }
 
-        val continuous: Setting<PresentationToggle, Boolean>?
+        val continuous: Setting<PresentationToggle>?
             get() = get(PresentationKey.CONTINUOUS)
 
-        val fit: Setting<Fit, String>?
-            get() = get(PresentationKey.FIT, Fit)
+        val fit: Setting<Fit>?
+            get() = get(PresentationKey.FIT)
 
-        val orientation: Setting<Orientation, String>?
-            get() = get(PresentationKey.ORIENTATION, Orientation)
+        val orientation: Setting<Orientation>?
+            get() = get(PresentationKey.ORIENTATION)
 
-        val overflow: Setting<Overflow, String>?
-            get() = get(PresentationKey.OVERFLOW, Overflow)
+        val overflow: Setting<Overflow>?
+            get() = get(PresentationKey.OVERFLOW)
 
-        val pageSpacing: Setting<PresentationRange, Double>?
+        val pageSpacing: Setting<PresentationRange>?
             get() = get(PresentationKey.PAGE_SPACING)
 
-        val readingProgression: Setting<ReadingProgression, String>?
-            get() = get(PresentationKey.READING_PROGRESSION, ReadingProgression)
+        val readingProgression: Setting<ReadingProgression>?
+            get() = get(PresentationKey.READING_PROGRESSION)
     }
 
-    data class Setting<V, R>(
-        val key: PresentationKey<V, R>,
+    data class Setting<V>(
+        val key: PresentationKey<V, *>,
         val value: V?,
         val effectiveValue: V?,
         val isSupported: Boolean,
         val isActive: Boolean,
-        val constraints: PresentationValueConstraints<V>?,
-        val coder: ValueCoder<V?, R?>
+        val constraints: PresentationValueConstraints<V>?
     )
 }
 
 @ExperimentalPresentation
-val PresentationController.Setting<PresentationRange, *>.step: Double get() =
+val PresentationController.Setting<PresentationRange>.step: Double get() =
     constraints?.step ?: 0.1
 
 @ExperimentalPresentation
-val <E : Enum<E>> PresentationController.Setting<E, *>.supportedValues: List<E>? get() =
+val <E : Enum<E>> PresentationController.Setting<E>.supportedValues: List<E>? get() =
     constraints?.supportedValues

@@ -17,13 +17,3 @@ internal fun String.splitAt(delimiter: String): Pair<String, String?> {
     val components = split(delimiter, limit = 2)
     return Pair(components[0], components.getOrNull(1))
 }
-
-/**
- * Formats a 0.0-1.0 range into a localized string, e.g. "42%".
- */
-@InternalReadiumApi
-fun Double.toStringPercentage(): String =
-    NumberFormat.getPercentInstance().run {
-        maximumFractionDigits = 0
-        format(this@toStringPercentage)
-    }

@@ -31,7 +31,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.ExperimentalPresentation
-import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.presentation.*
@@ -43,10 +42,8 @@ import org.readium.r2.shared.publication.presentation.Presentation.*
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.use
 import timber.log.Timber
-import java.util.*
 import kotlin.math.roundToInt
 
 /**
@@ -124,7 +121,7 @@ class PdfNavigatorFragment internal constructor(
         outState.putParcelable(KEY_LOCATOR, _currentLocator.value)
     }
 
-    private fun goToPageIndex(index: Int, completion: () -> Unit = {}): Boolean {
+    private fun goToPageIndex(index: Int): Boolean {
         val href = currentHref ?: return false
         return goToHref(href, index, animated = false, forceReload = false)
     }
@@ -148,7 +145,7 @@ class PdfNavigatorFragment internal constructor(
                     }
 
                     val paginated = (requireNotNull(values.overflow) == Overflow.PAGINATED)
-                    val pageSpacing = requireNotNull(values.pageSpacing)
+                    val pageSpacing = requireNotNull(values.pageSpacing?.double)
                     val fit = requireNotNull(values.fit)
 
                     pdfView
@@ -285,9 +282,6 @@ class PdfNavigatorFragment internal constructor(
             fun <T> List<T>.firstIn(vararg values: T?): T? =
                 values.firstOrNull { it != null && contains(it) }
 
-            fun firstValidRange(vararg values: Double?): Double? =
-                values.firstOrNull { it != null && it in 0.0..1.0 }
-
             val defaults = config.defaultSettings
 
             fits = listOf(
@@ -311,11 +305,10 @@ class PdfNavigatorFragment internal constructor(
                 ?: overflows.firstIn(publication.metadata.presentation.overflow, defaults.overflow)
                 ?: Overflow.SCROLLED
 
-            val pageSpacing = firstValidRange(
-                settings.pageSpacing,
-                fallback?.values?.pageSpacing?.takeIf { settings.pageSpacing != null },
-                defaults.pageSpacing
-            ) ?: 0.0
+            val pageSpacing = settings.pageSpacing?.double
+                ?: fallback?.values?.pageSpacing?.double?.takeIf { settings.pageSpacing != null }
+                ?: defaults.pageSpacing?.double
+                ?: 0.0
 
             readingProgressions = listOf(
                 ReadingProgression.LTR, ReadingProgression.RTL,
@@ -345,6 +338,69 @@ class PdfNavigatorFragment internal constructor(
                 PresentationKey.READING_PROGRESSION -> PresentationEnumConstraints(supportedValues = readingProgressions)
                 else -> null
             } as PresentationValueConstraints<V>?
+    }
+
+    @ExperimentalPresentation
+    private inner class PdfPresentation2(
+        settings: PresentationValues,
+        fallback: Presentation? = null
+    ) : Presentation2 {
+
+        override val values: PresentationValues
+
+        private val fits: List<Fit>
+        private val orientations: List<Orientation>
+        private val overflows: List<Overflow>
+        private val readingProgressions: List<ReadingProgression>
+
+        init {
+            fun <T> List<T>.firstIn(vararg values: T?): T? =
+                values.firstOrNull { it != null && contains(it) }
+
+            val defaults = config.defaultSettings
+
+            fits = listOf(
+                Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT
+            )
+            val fit = fits.firstIn(settings.fit, fallback?.values?.fit?.takeIf { settings.fit != null })
+                ?: fits.firstIn(publication.metadata.presentation.fit, defaults.fit)
+                ?: Fit.CONTAIN
+
+            orientations = listOf(
+                Orientation.PORTRAIT, Orientation.LANDSCAPE
+            )
+            val orientation = orientations.firstIn(settings.orientation, fallback?.values?.orientation?.takeIf { settings.orientation != null })
+                ?: orientations.firstIn(publication.metadata.presentation.orientation, defaults.orientation)
+                ?: Orientation.AUTO
+
+            overflows = listOf(
+                Overflow.PAGINATED, Overflow.SCROLLED
+            )
+            val overflow = overflows.firstIn(settings.overflow, fallback?.values?.overflow?.takeIf { settings.overflow != null })
+                ?: overflows.firstIn(publication.metadata.presentation.overflow, defaults.overflow)
+                ?: Overflow.SCROLLED
+
+            val pageSpacing = settings.pageSpacing?.double
+                ?: fallback?.values?.pageSpacing?.double?.takeIf { settings.pageSpacing != null }
+                ?: defaults.pageSpacing?.double
+                ?: 0.0
+
+            readingProgressions = listOf(
+                ReadingProgression.LTR, ReadingProgression.RTL,
+                ReadingProgression.TTB, ReadingProgression.BTT,
+            )
+            val readingProgression = readingProgressions.firstIn(settings.readingProgression, fallback?.values?.readingProgression?.takeIf { settings.readingProgression != null })
+                ?: readingProgressions.firstIn(publication.metadata.readingProgression, defaults.readingProgression)
+                ?: ReadingProgression.TTB
+
+            values = PresentationValues(
+                fit = fit,
+                orientation = orientation,
+                overflow = overflow,
+                pageSpacing = pageSpacing,
+                readingProgression = readingProgression
+            )
+        }
     }
 
     private fun pageSpacingForValue(value: Double): Int = (50 * value).roundToInt()

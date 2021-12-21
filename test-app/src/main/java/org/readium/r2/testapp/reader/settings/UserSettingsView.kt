@@ -22,7 +22,6 @@ import org.readium.r2.navigator.presentation.supportedValues
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.*
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
-import org.readium.r2.testapp.utils.extensions.formatPercentage
 
 @OptIn(ExperimentalPresentation::class)
 typealias UpdatePresentation = PresentationController.(PresentationController.Settings) -> Unit
@@ -123,7 +122,9 @@ private fun UserSettingsView(settings: PresentationController.Settings, commit: 
                             decrement(pageSpacing)
                         }
                     }
-                    Text(String.formatPercentage(pageSpacing.value ?: pageSpacing.effectiveValue ?: 0.0))
+                    (pageSpacing.value ?: pageSpacing.effectiveValue)?.let { value ->
+                        Text(value.percentageString)
+                    }
                     IncrementButton {
                         commit {
                             increment(pageSpacing)
@@ -153,7 +154,7 @@ private fun Section(title: String, isActive: Boolean = true, content: @Composabl
 
 @Composable
 @OptIn(ExperimentalPresentation::class)
-private fun <T : Enum<T>> EnumSection(title: String, setting: PresentationController.Setting<T, *>?, commit: CommitPresentation) {
+private fun <T : Enum<T>> EnumSection(title: String, setting: PresentationController.Setting<T>?, commit: CommitPresentation) {
     setting ?: return
     val values = setting.supportedValues ?: return
 

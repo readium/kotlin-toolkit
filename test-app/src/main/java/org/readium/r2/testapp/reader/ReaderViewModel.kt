@@ -54,8 +54,8 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     val book = runBlocking { repository.get(bookId) }
     val publicationId: PublicationId get() = bookId.toString()
     val presentation = PresentationController(
-        settings = book?.userSettings ?: PresentationValues(),
-        coroutineScope = viewModelScope
+        scope = viewModelScope,
+        settings = book?.userSettings ?: PresentationValues()
     )
 
     init {
@@ -66,7 +66,7 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
         }
     }
 
-    fun onNavigatorCreated(navigator: Navigator) = viewModelScope.launch {
+    fun onNavigatorCreated(navigator: Navigator) {
         if (navigator is PresentableNavigator) {
             presentation.bind(navigator)
         }

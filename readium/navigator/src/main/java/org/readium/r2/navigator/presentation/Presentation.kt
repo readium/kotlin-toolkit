@@ -15,7 +15,7 @@ import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.extensions.merge
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.toMap
@@ -23,144 +23,8 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.*
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.ValueCoder
-import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
-
-typealias PresentationToggle = Boolean
-typealias PresentationRange = Double
-
-@ExperimentalPresentation
-@Parcelize
-@Suppress("unused") // V and R are not unused, PresentationKey is a phantom type.
-data class PresentationKey<V, R>(val key: String) : Parcelable {
-    companion object {
-        val CONTINUOUS = PresentationToggleKey("continuous")
-        val FIT = PresentationEnumKey<Fit>("fit")
-        val ORIENTATION = PresentationEnumKey<Orientation>("orientation")
-        val OVERFLOW = PresentationEnumKey<Overflow>("overflow")
-        val PAGE_SPACING = PresentationRangeKey("pageSpacing")
-        val READING_PROGRESSION = PresentationEnumKey<ReadingProgression>("readingProgression")
-    }
-
-    override fun toString(): String = key
-}
-
-@ExperimentalPresentation
-typealias PresentationToggleKey = PresentationKey<PresentationToggle, Boolean>
-
-@ExperimentalPresentation
-typealias PresentationRangeKey = PresentationKey<PresentationRange, Double>
-
-@ExperimentalPresentation
-typealias PresentationEnumKey<V> = PresentationKey<V, String>
-
-@ExperimentalPresentation
-typealias AnyPresentationKey = PresentationKey<*, *>
-
-/**
- * Holds a list of key-value pairs provided by the app to influence a Navigator's Presentation
- * Properties. The keys must be valid Presentation Property Keys.
- */
-@ExperimentalPresentation
-@Parcelize
-data class PresentationValues(val values: @WriteWith<PresentationValuesParceler> Map<AnyPresentationKey, Any?> = emptyMap()) : Parcelable, JSONable {
-
-    constructor(vararg values: Pair<AnyPresentationKey, Any?>) : this(mapOf(*values))
-
-    constructor(
-        continuous: Boolean? = null,
-        fit: Fit? = null,
-        orientation: Orientation? = null,
-        overflow: Overflow? = null,
-        pageSpacing: Double? = null,
-        readingProgression: ReadingProgression? = null
-    ) : this(
-        PresentationKey.CONTINUOUS to continuous,
-        PresentationKey.FIT to fit?.value,
-        PresentationKey.ORIENTATION to orientation?.value,
-        PresentationKey.OVERFLOW to overflow?.value,
-        PresentationKey.PAGE_SPACING to pageSpacing,
-        PresentationKey.READING_PROGRESSION to readingProgression?.value,
-    )
-
-    inline operator fun <reified R> get(key: PresentationKey<*, R>): R? =
-        values[key] as? R
-
-    inline operator fun <reified V, reified R> get(key: PresentationKey<V, R>, coder: ValueCoder<V?, R?>): V? =
-        coder.decode(get(key))
-
-    val continuous: Boolean?
-        get() = get(PresentationKey.CONTINUOUS)
-
-    val fit: Fit?
-        get() = get(PresentationKey.FIT, Fit)
-
-    val orientation: Orientation?
-        get() = get(PresentationKey.ORIENTATION, Orientation)
-
-    val overflow: Overflow?
-        get() = get(PresentationKey.OVERFLOW, Overflow)
-
-    val pageSpacing: Double?
-        get() = get(PresentationKey.PAGE_SPACING)
-
-    val readingProgression: ReadingProgression?
-        get() = get(PresentationKey.READING_PROGRESSION, ReadingProgression)
-
-    /**
-     * Returns a copy of this object after modifying the settings in the given closure.
-     */
-    fun copy(transform: MutableMap<AnyPresentationKey, Any?>.() -> Unit): PresentationValues =
-        PresentationValues(values.toMutableMap().apply(transform).toMap())
-
-    /**
-     * Returns a copy of this object after overwriting any setting with the values from [other].
-     */
-    fun merge(other: PresentationValues): PresentationValues =
-        PresentationValues(
-            (other.values.entries + values.entries)
-                .groupBy({ it.key }, { it.value })
-                .mapValues { (_, value) -> value.firstOrNull { it != null } }
-        )
-
-    override fun toJSON(): JSONObject =
-        JSONObject(values.filterValues { it != null }.mapKeys { it.key.key })
-
-    companion object {
-
-        fun fromJSON(json: JSONObject?): PresentationValues {
-            val values: Map<AnyPresentationKey, Any>? =
-                json?.toMap()?.mapKeys { AnyPresentationKey(it.key) }
-            return PresentationValues(values ?: emptyMap())
-        }
-    }
-}
-
-/**
- * Implementation of a [Parceler] to be used with [@Parcelize] to serialize [PresentationValues].
- */
-@ExperimentalPresentation
-object PresentationValuesParceler : Parceler<Map<AnyPresentationKey, Any?>> {
-
-    override fun create(parcel: Parcel): Map<AnyPresentationKey, Any?> =
-        try {
-            parcel.readString()?.let {
-                JSONObject(it).toMap()
-                    .mapKeys { pair -> AnyPresentationKey(pair.key) }
-            } ?: emptyMap()
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to read a PresentationValues from a Parcel")
-            emptyMap()
-        }
-
-    override fun Map<AnyPresentationKey, Any?>.write(parcel: Parcel, flags: Int) {
-        try {
-            parcel.writeString(JSONObject(mapKeys { it.key.key }).toString())
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to write a PresentationValues into a Parcel")
-        }
-    }
-}
+import java.text.NumberFormat
 
 interface PresentableNavigator : Navigator {
 
@@ -187,107 +51,162 @@ interface Presentation {
 }
 
 @ExperimentalPresentation
-interface PresentationValueConstraints<V> {
-    val extras: Map<String, Any?>
-    fun validate(value: V): Boolean = true
-    fun isActiveForValues(values: PresentationValues): Boolean = true
-    fun activateInValues(values: PresentationValues): Try<PresentationValues, UserException> = Try.success(values)
+interface Presentation2 {
+    val values: PresentationValues
+
+    fun <V> validateValue(key: PresentationKey<V, *>, value: V): Boolean = true
+    fun isActiveForValues(key: PresentationKey<*, *>, values: PresentationValues): Boolean = true
+    fun activateInValues(key: PresentationKey<*, *>, values: PresentationValues): Try<PresentationValues, UserException> = Try.success(values)
+    fun stepCountForKey(key: PresentationKey<*, *>): Int? = null
+    fun <E: Enum<E>>supportedValuesForKey(key: PresentationKey<E, *>): List<E>? = null
 }
 
 @ExperimentalPresentation
-class PresentationToggleConstraints(
-    override val extras: Map<String, Any?> = emptyMap()
-) : PresentationValueConstraints<PresentationToggle>
+data class PresentationKey<V, R>(
+    val key: String,
+    private val coder: ValueCoder<V?, R?>
+) : ValueCoder<V?, R?> by coder {
 
-@ExperimentalPresentation
-class PresentationRangeConstraints(
-    stepCount: Int? = null,
-    extras: Map<String, Any?> = emptyMap()
-) : PresentationValueConstraints<PresentationRange> {
+    override fun toString(): String = key
 
-    override val extras: Map<String, Any?> =
-        extras.merge("stepCount" to stepCount)
-
-    override fun validate(value: Double): Boolean =
-        (0.0..1.0).contains(value)
-}
-
-@ExperimentalPresentation
-val PresentationValueConstraints<PresentationRange>.stepCount: Int?
-    get() = extras["stepCount"] as? Int
-
-@ExperimentalPresentation
-val PresentationValueConstraints<PresentationRange>.step: Double?
-    get() = stepCount?.takeIf { it > 0 }?.let { 1.0 / it }
-
-@ExperimentalPresentation
-class PresentationEnumConstraints<E : Enum<E>>(
-    supportedValues: List<E>? = null,
-    extras: Map<String, Any?> = emptyMap()
-) : PresentationValueConstraints<E> {
-
-    override val extras: Map<String, Any?> =
-        extras.merge("supportedValues" to supportedValues)
-
-    override fun validate(value: E): Boolean =
-        supportedValues?.contains(value) ?: true
-}
-
-@ExperimentalPresentation
-val <E: Enum<E>> PresentationValueConstraints<E>.supportedValues: List<E>?
-    get() = extras["supportedValues"] as? List<E>
-
-@ExperimentalPresentation
-class PresentationValueCompositeConstraints<V>(
-    private vararg val constraints: PresentationValueConstraints<V>
-) : PresentationValueConstraints<V> {
-
-    override val extras: Map<String, Any?> get() =
-        constraints.fold(emptyMap()) { extras, c ->
-            extras.merge(c.extras)
-        }
-
-    override fun validate(value: V): Boolean =
-        constraints.all { it.validate(value) }
-
-    override fun isActiveForValues(values: PresentationValues): Boolean =
-        constraints.all { it.isActiveForValues(values) }
-
-    override fun activateInValues(values: PresentationValues): Try<PresentationValues, UserException> {
-        var res = values
-        for (c in constraints) {
-            res = c.activateInValues(res)
-                .getOrElse { return Try.failure(it) }
-        }
-        return Try.success(res)
+    companion object {
+        val CONTINUOUS = PresentationKey("continuous", PresentationToggle)
+        val FIT = PresentationKey("fit", Fit)
+        val ORIENTATION = PresentationKey("orientation", Orientation)
+        val OVERFLOW = PresentationKey("overflow", Overflow)
+        val PAGE_SPACING = PresentationKey("pageSpacing", PresentationRange)
+        val READING_PROGRESSION = PresentationKey("readingProgression", ReadingProgression)
     }
 }
 
 @ExperimentalPresentation
-operator fun <V> PresentationValueConstraints<V>.plus(other: PresentationValueConstraints<V>): PresentationValueConstraints<V> =
-    PresentationValueCompositeConstraints(this, other)
+@JvmInline
+value class PresentationToggle(val bool: Boolean) {
 
-@ExperimentalPresentation
-class PresentationValueDependencyConstraints<V>(
-    private val requiredValues: PresentationValues,
-    override val extras: Map<String, Any?> = emptyMap()
-) : PresentationValueConstraints<V> {
-
-    override fun isActiveForValues(values: PresentationValues): Boolean {
-        val requiredVals = requiredValues.values.filterValues { it != null }
-        for ((key, value) in requiredVals) {
-            if (value != values.values[key]) {
-                return false
-            }
-        }
-        return true
+    companion object : ValueCoder<PresentationToggle?, Boolean?> {
+        override fun encode(value: PresentationToggle?): Boolean? = value?.bool
+        override fun decode(rawValue: Boolean?): PresentationToggle? = rawValue?.let { PresentationToggle(it) }
     }
 
-    override fun activateInValues(values: PresentationValues): Try<PresentationValues, UserException> {
-        return Try.success(values.merge(requiredValues))
-    }
+    fun toggle(): PresentationToggle =
+        PresentationToggle(!bool)
 }
 
 @ExperimentalPresentation
-fun <V> PresentationValueConstraints<V>.require(values: PresentationValues): PresentationValueConstraints<V> =
-    this + PresentationValueDependencyConstraints(values)
+@JvmInline
+value class PresentationRange private constructor(val double: Double) {
+    companion object : ValueCoder<PresentationRange?, Double?> {
+        operator fun invoke(double: Double): PresentationRange =
+            PresentationRange(double.coerceIn(0.0, 1.0))
+
+        override fun encode(value: PresentationRange?): Double? = value?.double
+        override fun decode(rawValue: Double?): PresentationRange? = rawValue?.let { invoke(it) }
+    }
+
+    /**
+     * Formats the range into a localized percentage string, e.g. "42%".
+     */
+    val percentageString: String get() =
+        NumberFormat.getPercentInstance().run {
+            maximumFractionDigits = 0
+            format(double)
+        }
+}
+
+/**
+ * Holds a list of key-value pairs provided by the app to influence a Navigator's Presentation
+ * Properties. The keys must be valid Presentation Property Keys.
+ */
+@ExperimentalPresentation
+@Parcelize
+data class PresentationValues(val values: @WriteWith<PresentationValuesParceler> Map<String, Any?> = emptyMap()) : Parcelable, JSONable {
+
+    constructor(vararg values: Pair<PresentationKey<*, *>, Any?>) : this(mapOf(*values).mapKeys { it.key.key })
+
+    constructor(
+        continuous: Boolean? = null,
+        fit: Fit? = null,
+        orientation: Orientation? = null,
+        overflow: Overflow? = null,
+        pageSpacing: Double? = null,
+        readingProgression: ReadingProgression? = null
+    ) : this(
+        PresentationKey.CONTINUOUS to continuous,
+        PresentationKey.FIT to fit?.value,
+        PresentationKey.ORIENTATION to orientation?.value,
+        PresentationKey.OVERFLOW to overflow?.value,
+        PresentationKey.PAGE_SPACING to pageSpacing,
+        PresentationKey.READING_PROGRESSION to readingProgression?.value,
+    )
+
+    inline operator fun <reified V, reified R> get(key: PresentationKey<V, R>): V? =
+        key.decode(values[key.key] as? R)
+
+    val continuous: PresentationToggle?
+        get() = get(PresentationKey.CONTINUOUS)
+
+    val fit: Fit?
+        get() = get(PresentationKey.FIT)
+
+    val orientation: Orientation?
+        get() = get(PresentationKey.ORIENTATION)
+
+    val overflow: Overflow?
+        get() = get(PresentationKey.OVERFLOW)
+
+    val pageSpacing: PresentationRange?
+        get() = get(PresentationKey.PAGE_SPACING)
+
+    val readingProgression: ReadingProgression?
+        get() = get(PresentationKey.READING_PROGRESSION)
+
+    /**
+     * Returns a copy of this object after modifying the settings in the given closure.
+     */
+    fun copy(transform: MutableMap<String, Any?>.() -> Unit): PresentationValues =
+        PresentationValues(values.toMutableMap().apply(transform).toMap())
+
+    /**
+     * Returns a copy of this object after overwriting any setting with the values from [other].
+     */
+    fun merge(other: PresentationValues): PresentationValues =
+        PresentationValues(
+            (other.values.entries + values.entries)
+                .groupBy({ it.key }, { it.value })
+                .mapValues { (_, value) -> value.firstOrNull { it != null } }
+        )
+
+    override fun toJSON(): JSONObject =
+        JSONObject(values.filterValues { it != null })
+
+    companion object {
+
+        fun fromJSON(json: JSONObject?): PresentationValues =
+            PresentationValues(json?.toMap() ?: emptyMap())
+    }
+}
+
+/**
+ * Implementation of a [Parceler] to be used with [@Parcelize] to serialize [PresentationValues].
+ */
+@ExperimentalPresentation
+object PresentationValuesParceler : Parceler<Map<String, Any?>> {
+
+    override fun create(parcel: Parcel): Map<String, Any?> =
+        try {
+            parcel.readString()?.let {
+                JSONObject(it).toMap()
+            } ?: emptyMap()
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to read a PresentationValues from a Parcel")
+            emptyMap()
+        }
+
+    override fun Map<String, Any?>.write(parcel: Parcel, flags: Int) {
+        try {
+            parcel.writeString(JSONObject(this).toString())
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to write a PresentationValues into a Parcel")
+        }
+    }
+}
