@@ -53,14 +53,18 @@ fun ToggleButton(
         content = content,
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colors.onBackground,
-            backgroundColor =
-                if (selected) MaterialTheme.colors.onBackground
+            backgroundColor = when {
+                selected -> MaterialTheme.colors.onBackground
                     .copy(alpha = 0.15f)
                     .compositeOver(MaterialTheme.colors.background)
-                else MaterialTheme.colors.surface
+                active -> MaterialTheme.colors.onBackground
+                    .copy(alpha = 0.05f)
+                    .compositeOver(MaterialTheme.colors.background)
+                else -> MaterialTheme.colors.surface
+            }
         ),
         elevation =
-            if (active) ButtonDefaults.elevation(defaultElevation = 2.dp)
+            if (selected) ButtonDefaults.elevation(defaultElevation = 2.dp)
             else null
     )
 }

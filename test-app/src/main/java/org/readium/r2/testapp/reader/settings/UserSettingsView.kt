@@ -18,9 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.presentation.PresentationController
+import org.readium.r2.navigator.presentation.PresentationRange
 import org.readium.r2.navigator.presentation.supportedValues
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.*
+import org.readium.r2.testapp.utils.compose.DropdownMenuButton
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
 
 @OptIn(ExperimentalPresentation::class)
@@ -35,13 +37,13 @@ fun UserSettingsView(presentation: PresentationController) {
     val settings by presentation.settings.collectAsState()
     UserSettingsView(
         settings = settings,
-        commit = { presentation.commit(it) }
+        onCommit = { presentation.commit(it) }
     )
 }
 
 @Composable
 @OptIn(ExperimentalPresentation::class)
-private fun UserSettingsView(settings: PresentationController.Settings, commit: CommitPresentation) {
+private fun UserSettingsView(settings: PresentationController.Settings, onCommit: CommitPresentation) {
     Column(
         modifier = Modifier
             .padding(24.dp)
@@ -56,82 +58,121 @@ private fun UserSettingsView(settings: PresentationController.Settings, commit: 
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            PresetsButton(
-                commit,
-                "Document" to { settings ->
-                    set(settings.readingProgression, ReadingProgression.TTB)
-                    set(settings.overflow, Overflow.SCROLLED)
-                },
-                "Ebook" to { settings ->
-                    set(settings.readingProgression, ReadingProgression.LTR)
-                    set(settings.overflow, Overflow.PAGINATED)
-                },
-                "Manga" to { settings ->
-                    set(settings.readingProgression, ReadingProgression.RTL)
-                    set(settings.overflow, Overflow.PAGINATED)
-                },
-            )
+            PresetsMenuButton(onCommit = onCommit)
             Button(
                 onClick = {
-                    commit { reset() }
+                    onCommit { reset() }
                 },
             ) {
                 Text("Reset")
             }
         }
 
-        settings.readingProgression?.let { readingProgression ->
-            val values = readingProgression.supportedValues ?: return@let
+        EnumSetting("Reading progression", settings.readingProgression, onCommit)
+        EnumSetting("Fit", settings.fit, onCommit)
+        EnumSetting("Overflow", settings.overflow, onCommit)
+        EnumSetting("Orientation", settings.orientation, onCommit)
+        RangeSection("Page spacing", settings.pageSpacing, onCommit)
+    }
+}
 
-            Section("Reading progression", isActive = readingProgression.isActive) {
-                ToggleButtonGroup(
-                    options = values,
-                    activeOption = readingProgression.effectiveValue,
-                    selectedOption = readingProgression.value,
-                    onSelectOption = { value ->
-                        commit {
-                            toggle(readingProgression, value)
-                        }
-                    }) { option ->
-                    Icon(
-                        imageVector = when (option) {
-                            ReadingProgression.LTR -> Icons.Default.KeyboardArrowRight
-                            ReadingProgression.RTL -> Icons.Default.KeyboardArrowLeft
-                            ReadingProgression.TTB -> Icons.Default.KeyboardArrowDown
-                            ReadingProgression.BTT -> Icons.Default.KeyboardArrowUp
-                            ReadingProgression.AUTO -> Icons.Default.Clear
-                        },
-                        contentDescription = option.value
-                    )
+@ExperimentalPresentation
+@Composable
+private fun PresetsMenuButton(onCommit: CommitPresentation) {
+    DropdownMenuButton(
+        text = { Text("Presets") }
+    ) { dismiss ->
+        @Composable fun item(title: String, updates: UpdatePresentation) {
+            DropdownMenuItem(
+                onClick = {
+                    onCommit(updates)
+                    dismiss()
                 }
+            ) {
+                Text(title)
             }
         }
 
-        EnumSection("Fit", settings.fit, commit)
-        EnumSection("Overflow", settings.overflow, commit)
-        EnumSection("Orientation", settings.orientation, commit)
-
-        settings.pageSpacing?.let { pageSpacing ->
-            Section("Page spacing", isActive = pageSpacing.isActive) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    DecrementButton {
-                        commit {
-                            decrement(pageSpacing)
-                        }
-                    }
-                    (pageSpacing.value ?: pageSpacing.effectiveValue)?.let { value ->
-                        Text(value.percentageString)
-                    }
-                    IncrementButton {
-                        commit {
-                            increment(pageSpacing)
-                        }
-                    }
-                }
+        item(
+            title = "Document",
+            updates = { settings ->
+                set(settings.readingProgression, ReadingProgression.TTB)
+                set(settings.overflow, Overflow.SCROLLED)
             }
+        )
+        item(
+            title = "Ebook",
+            updates = { settings ->
+                set(settings.readingProgression, ReadingProgression.LTR)
+                set(settings.overflow, Overflow.PAGINATED)
+            }
+        )
+        item(
+            title = "Manga",
+            updates = { settings ->
+                set(settings.readingProgression, ReadingProgression.RTL)
+                set(settings.overflow, Overflow.PAGINATED)
+            }
+        )
+    }
+}
+
+@Composable
+@OptIn(ExperimentalPresentation::class)
+private fun <T : Enum<T>> EnumSetting(title: String, setting: PresentationController.Setting<T>?, onCommit: CommitPresentation) {
+    setting ?: return
+    val values = setting.supportedValues ?: return
+
+    Section(title) {
+        ToggleButtonGroup(
+            options = values,
+            activeOption = setting.effectiveValue,
+            selectedOption = setting.value,
+            onSelectOption = { value ->
+                onCommit {
+                    toggle(setting, value)
+                }
+            }) { option ->
+            Text(option.name)
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalPresentation::class)
+fun RangeSection(title: String, setting: PresentationController.Setting<PresentationRange>?, onCommit: CommitPresentation) {
+    setting ?: return
+
+    Section(title, isActive = setting.isActive) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            IconButton(
+                onClick = {
+                    onCommit {
+                        decrement(setting)
+                    }
+                },
+                content = {
+                    Icon(Icons.Default.Remove, contentDescription = "Less")
+                }
+            )
+
+            (setting.value ?: setting.effectiveValue)?.let { value ->
+                Text(value.percentageString)
+            }
+
+            IconButton(
+                onClick = {
+                    onCommit {
+                        increment(setting)
+                    }
+                },
+                content = {
+                    Icon(Icons.Default.Add, contentDescription = "Plus")
+                }
+            )
         }
     }
 }
@@ -148,69 +189,6 @@ private fun Section(title: String, isActive: Boolean = true, content: @Composabl
                 style = MaterialTheme.typography.subtitle2,
             )
             content()
-        }
-    }
-}
-
-@Composable
-@OptIn(ExperimentalPresentation::class)
-private fun <T : Enum<T>> EnumSection(title: String, setting: PresentationController.Setting<T>?, commit: CommitPresentation) {
-    setting ?: return
-    val values = setting.supportedValues ?: return
-
-    Section(title) {
-        ToggleButtonGroup(
-            options = values,
-            activeOption = setting.effectiveValue,
-            selectedOption = setting.value,
-            onSelectOption = { value ->
-                commit {
-                    toggle(setting, value)
-                }
-            }) { option ->
-            Text(option.name)
-        }
-    }
-}
-
-@Composable
-fun DecrementButton(onClick: () -> Unit) {
-    IconButton(onClick = onClick) {
-        Icon(Icons.Default.Remove, contentDescription = "Less")
-    }
-}
-
-@Composable
-fun IncrementButton(onClick: () -> Unit) {
-    IconButton(onClick = onClick) {
-        Icon(Icons.Default.Add, contentDescription = "More")
-    }
-}
-
-@Composable
-@OptIn(ExperimentalPresentation::class)
-fun PresetsButton(commit: CommitPresentation, vararg presets: Pair<String, UpdatePresentation>) {
-    var isExpanded by remember { mutableStateOf(false) }
-    fun dismiss() { isExpanded = false }
-
-    Button(
-        onClick = { isExpanded = true },
-    ) {
-        Text("Presets")
-        DropdownMenu(
-            expanded = isExpanded,
-            onDismissRequest = { isExpanded = false }
-        ) {
-            for ((title, changes) in presets) {
-                DropdownMenuItem(
-                    onClick = {
-                        commit(changes)
-                        dismiss()
-                    }
-                ) {
-                    Text(title)
-                }
-            }
         }
     }
 }
