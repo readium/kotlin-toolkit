@@ -12,10 +12,7 @@ import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.*
-import org.readium.r2.shared.util.IdentityValueCoder
-import org.readium.r2.shared.util.ValueCoder
-import org.readium.r2.shared.util.ValueEncoder
-import org.readium.r2.shared.util.getOrDefault
+import java.lang.ref.WeakReference
 import kotlin.math.round
 
 /**
@@ -38,15 +35,16 @@ class PresentationController(
 
     private val _settings = MutableStateFlow(Settings(
         values = settings,
-        adjustedValues = onAdjust(settings)
+        adjustedValues = onAdjust(settings),
+        properties = null
     ))
     val settings: StateFlow<Settings>
         get() = _settings.asStateFlow()
 
-    private val commitedValues = MutableSharedFlow<PresentationValues>()
+    private val committedValues = MutableSharedFlow<PresentationValues>()
 
     init {
-        commitedValues
+        committedValues
             .onEach { onCommit(it) }
             .launchIn(scope)
 
@@ -61,37 +59,40 @@ class PresentationController(
     }
 
     fun bind(navigator: PresentableNavigator) {
-        navigator.presentation
-            .onEach { presentation ->
-                _settings.value = _settings.value.copy(presentation = presentation)
+        navigator.presentationProperties
+            .onEach {
+                _settings.value = _settings.value.copy(properties = it)
             }
             .launchIn(scope)
 
-        commitedValues
+        committedValues
             .onEach { navigator.applyPresentationSettings(it) }
             .launchIn(scope)
     }
 
     /**
-     * Applies the current set of settings to the Navigator.
+     * Commits the current set of settings after applying the given changes.
      */
-    fun commit(changes: (PresentationController.(Settings) -> Unit)? = null) {
-        if (changes != null) {
-            val oldAutoCommit = autoCommit
-            autoCommit = false
-            changes(settings.value)
-            autoCommit = oldAutoCommit
-        }
+    fun commit(changes: PresentationController.(Settings) -> Unit) {
+        val oldAutoCommit = autoCommit
+        autoCommit = false
+        changes(settings.value)
+        autoCommit = oldAutoCommit
 
-        if (autoCommit) {
-            scope.launch {
-                commit(settings.value)
-            }
+        commit()
+    }
+
+    /**
+     * Commits the current set of settings.
+     */
+    fun commit() {
+        scope.launch {
+            commit(settings.value)
         }
     }
 
     private suspend fun commit(settings: Settings) {
-        commitedValues.emit(settings.adjustedValues)
+        committedValues.emit(settings.adjustedValues)
     }
 
     /**
@@ -133,10 +134,7 @@ class PresentationController(
         }
 
         if (autoActivateSettings) {
-            settings.presentation?.constraintsForKey(setting.key)?.let { constraints ->
-                values = constraints.activateInValues(values)
-                    .getOrDefault(values)
-            }
+            values = setting.constraints?.activateInValues(values)?.getOrNull() ?: values
         }
 
         _settings.value = settings.copy(
@@ -198,15 +196,15 @@ class PresentationController(
 
     data class Settings(
         val values: PresentationValues,
-        val adjustedValues: PresentationValues = values,
-        val presentation: Presentation? = null
+        val adjustedValues: PresentationValues,
+        val properties: PresentationProperties?,
     ) : JSONable by values {
 
         inline operator fun <reified V, reified R> get(key: PresentationKey<V, R>): Setting<V>? {
-            val effectiveValue = presentation?.values?.get(key)
-            val constraints = presentation?.constraintsForKey(key)
+            val property = properties?.get(key)
+            val effectiveValue = property?.value
             val userValue = values[key]
-            val isSupported = effectiveValue != null
+            val constraints = property?.constraints
             val isActive = constraints?.isActiveForValues(adjustedValues) ?: false
 
             if (userValue == null && effectiveValue == null) {
@@ -217,7 +215,6 @@ class PresentationController(
                 key = key,
                 value = userValue,
                 effectiveValue = effectiveValue,
-                isSupported = isSupported,
                 isActive = isActive,
                 constraints = constraints,
             )
@@ -246,9 +243,8 @@ class PresentationController(
         val key: PresentationKey<V, *>,
         val value: V?,
         val effectiveValue: V?,
-        val isSupported: Boolean,
         val isActive: Boolean,
-        val constraints: PresentationValueConstraints<V>?
+        val constraints: PresentationConstraints<V>?
     )
 }
 

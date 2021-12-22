@@ -6,30 +6,21 @@
 
 package org.readium.r2.navigator.presentation
 
-import android.os.Parcel
-import android.os.Parcelable
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.parcelize.Parceler
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.*
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.ValueCoder
-import timber.log.Timber
 import java.text.NumberFormat
 
+@ExperimentalPresentation
 interface PresentableNavigator : Navigator {
 
-    @ExperimentalPresentation
-    val presentation: StateFlow<Presentation>
+    val presentationProperties: StateFlow<PresentationProperties>
 
     /**
      * Submits a new set of Presentation Settings used by the Navigator to recompute its
@@ -39,26 +30,7 @@ interface PresentableNavigator : Navigator {
      * some of the provided settings. They are only used as guidelines to compute the Presentation
      * Properties.
      */
-    @ExperimentalPresentation
-    suspend fun applyPresentationSettings(settings: PresentationValues) {}
-}
-
-@ExperimentalPresentation
-interface Presentation {
-    val values: PresentationValues
-
-    fun <V> constraintsForKey(key: PresentationKey<V, *>): PresentationValueConstraints<V>?
-}
-
-@ExperimentalPresentation
-interface Presentation2 {
-    val values: PresentationValues
-
-    fun <V> validateValue(key: PresentationKey<V, *>, value: V): Boolean = true
-    fun isActiveForValues(key: PresentationKey<*, *>, values: PresentationValues): Boolean = true
-    fun activateInValues(key: PresentationKey<*, *>, values: PresentationValues): Try<PresentationValues, UserException> = Try.success(values)
-    fun stepCountForKey(key: PresentationKey<*, *>): Int? = null
-    fun <E: Enum<E>>supportedValuesForKey(key: PresentationKey<E, *>): List<E>? = null
+    suspend fun applyPresentationSettings(settings: PresentationValues)
 }
 
 @ExperimentalPresentation
@@ -113,13 +85,39 @@ value class PresentationRange private constructor(val double: Double) {
         }
 }
 
+@ExperimentalPresentation
+data class PresentationProperties(
+    val properties: Set<PresentationProperty<*, *>>
+) {
+    constructor(vararg properties: PresentationProperty<*, *>) : this(setOf(*properties))
+
+    val keys: Set<PresentationKey<*, *>> get() = properties.map { it.key }.toSet()
+
+    val values: PresentationValues get() = PresentationValues(
+        properties.associate { prop ->
+            prop.key.key to prop.encodedValue
+        }
+    )
+
+    operator fun <T, R> get(key: PresentationKey<T, R>): PresentationProperty<T, R>? =
+        properties.firstOrNull { it.key == key } as PresentationProperty<T, R>?
+}
+
+@ExperimentalPresentation
+data class PresentationProperty<T, R>(
+    val key: PresentationKey<T, R>,
+    val value: T,
+    val constraints: PresentationConstraints<T>? = null
+) {
+    val encodedValue: R? get() = key.encode(value)
+}
+
 /**
  * Holds a list of key-value pairs provided by the app to influence a Navigator's Presentation
  * Properties. The keys must be valid Presentation Property Keys.
  */
 @ExperimentalPresentation
-@Parcelize
-data class PresentationValues(val values: @WriteWith<PresentationValuesParceler> Map<String, Any?> = emptyMap()) : Parcelable, JSONable {
+data class PresentationValues(val values: Map<String, Any?> = emptyMap()) : JSONable {
 
     constructor(vararg values: Pair<PresentationKey<*, *>, Any?>) : this(mapOf(*values).mapKeys { it.key.key })
 
@@ -183,30 +181,5 @@ data class PresentationValues(val values: @WriteWith<PresentationValuesParceler>
 
         fun fromJSON(json: JSONObject?): PresentationValues =
             PresentationValues(json?.toMap() ?: emptyMap())
-    }
-}
-
-/**
- * Implementation of a [Parceler] to be used with [@Parcelize] to serialize [PresentationValues].
- */
-@ExperimentalPresentation
-object PresentationValuesParceler : Parceler<Map<String, Any?>> {
-
-    override fun create(parcel: Parcel): Map<String, Any?> =
-        try {
-            parcel.readString()?.let {
-                JSONObject(it).toMap()
-            } ?: emptyMap()
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to read a PresentationValues from a Parcel")
-            emptyMap()
-        }
-
-    override fun Map<String, Any?>.write(parcel: Parcel, flags: Int) {
-        try {
-            parcel.writeString(JSONObject(this).toString())
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to write a PresentationValues into a Parcel")
-        }
     }
 }

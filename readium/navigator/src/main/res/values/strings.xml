@@ -17,4 +17,6 @@
     <string name="r2_media_notification_channel_name">Audiobook</string>
     <string name="r2_media_notification_channel_description">Audiobook currently being played</string>
 
+    <string name="readium_presentation_valueNotSupportedError">Value not supported</string>
+
 </resources>

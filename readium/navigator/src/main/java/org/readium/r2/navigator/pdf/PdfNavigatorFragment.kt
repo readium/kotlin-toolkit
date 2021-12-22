@@ -137,7 +137,7 @@ class PdfNavigatorFragment internal constructor(
         } else {
             lifecycleScope.launch {
                 try {
-                    val values = presentation.value.values
+                    val values = presentationProperties.value.values
                     activity?.requestedOrientation = when (requireNotNull(values.orientation)) {
                         Orientation.AUTO -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                         Orientation.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -216,6 +216,7 @@ class PdfNavigatorFragment internal constructor(
         return page
     }
 
+    private fun pageSpacingForValue(value: Double): Int = (50 * value).roundToInt()
 
     // Navigator
 
@@ -250,167 +251,11 @@ class PdfNavigatorFragment internal constructor(
         return true
     }
 
-    @ExperimentalPresentation
-    private var _presentation = MutableStateFlow(PdfPresentation(config.settings))
-    @ExperimentalPresentation
-    override val presentation: StateFlow<Presentation> get() = _presentation.asStateFlow()
-
-    @ExperimentalPresentation
-    override suspend fun applyPresentationSettings(settings: PresentationValues) {
-        val page = pageIndexToNumber(currentPage)
-        _presentation.value = PdfPresentation(settings, fallback = presentation.value)
-
-        currentHref?.let { href ->
-            goToHref(href, page = pageNumberToIndex(page), animated = false, forceReload = true)
-        }
-    }
-
-    @ExperimentalPresentation
-    private inner class PdfPresentation(
-        settings: PresentationValues,
-        fallback: Presentation? = null
-    ) : Presentation {
-
-        override val values: PresentationValues
-
-        private val fits: List<Fit>
-        private val orientations: List<Orientation>
-        private val overflows: List<Overflow>
-        private val readingProgressions: List<ReadingProgression>
-
-        init {
-            fun <T> List<T>.firstIn(vararg values: T?): T? =
-                values.firstOrNull { it != null && contains(it) }
-
-            val defaults = config.defaultSettings
-
-            fits = listOf(
-                Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT
-            )
-            val fit = fits.firstIn(settings.fit, fallback?.values?.fit?.takeIf { settings.fit != null })
-                ?: fits.firstIn(publication.metadata.presentation.fit, defaults.fit)
-                ?: Fit.CONTAIN
-
-            orientations = listOf(
-                Orientation.PORTRAIT, Orientation.LANDSCAPE
-            )
-            val orientation = orientations.firstIn(settings.orientation, fallback?.values?.orientation?.takeIf { settings.orientation != null })
-                ?: orientations.firstIn(publication.metadata.presentation.orientation, defaults.orientation)
-                ?: Orientation.AUTO
-
-            overflows = listOf(
-                Overflow.PAGINATED, Overflow.SCROLLED
-            )
-            val overflow = overflows.firstIn(settings.overflow, fallback?.values?.overflow?.takeIf { settings.overflow != null })
-                ?: overflows.firstIn(publication.metadata.presentation.overflow, defaults.overflow)
-                ?: Overflow.SCROLLED
-
-            val pageSpacing = settings.pageSpacing?.double
-                ?: fallback?.values?.pageSpacing?.double?.takeIf { settings.pageSpacing != null }
-                ?: defaults.pageSpacing?.double
-                ?: 0.0
-
-            readingProgressions = listOf(
-                ReadingProgression.LTR, ReadingProgression.RTL,
-                ReadingProgression.TTB, ReadingProgression.BTT,
-            )
-            val readingProgression = readingProgressions.firstIn(settings.readingProgression, fallback?.values?.readingProgression?.takeIf { settings.readingProgression != null })
-                ?: readingProgressions.firstIn(publication.metadata.readingProgression, defaults.readingProgression)
-                ?: ReadingProgression.TTB
-
-            values = PresentationValues(
-                fit = fit,
-                orientation = orientation,
-                overflow = overflow,
-                pageSpacing = pageSpacing,
-                readingProgression = readingProgression
-            )
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        override fun <V> constraintsForKey(key: PresentationKey<V, *>): PresentationValueConstraints<V>? =
-            when (key) {
-                PresentationKey.FIT -> PresentationEnumConstraints(supportedValues = fits)
-                PresentationKey.ORIENTATION -> PresentationEnumConstraints(supportedValues = orientations)
-                PresentationKey.OVERFLOW -> PresentationEnumConstraints(supportedValues = overflows)
-                PresentationKey.PAGE_SPACING -> PresentationRangeConstraints(stepCount = 20)
-                    .require(PresentationValues(overflow = Overflow.PAGINATED))
-                PresentationKey.READING_PROGRESSION -> PresentationEnumConstraints(supportedValues = readingProgressions)
-                else -> null
-            } as PresentationValueConstraints<V>?
-    }
-
-    @ExperimentalPresentation
-    private inner class PdfPresentation2(
-        settings: PresentationValues,
-        fallback: Presentation? = null
-    ) : Presentation2 {
-
-        override val values: PresentationValues
-
-        private val fits: List<Fit>
-        private val orientations: List<Orientation>
-        private val overflows: List<Overflow>
-        private val readingProgressions: List<ReadingProgression>
-
-        init {
-            fun <T> List<T>.firstIn(vararg values: T?): T? =
-                values.firstOrNull { it != null && contains(it) }
-
-            val defaults = config.defaultSettings
-
-            fits = listOf(
-                Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT
-            )
-            val fit = fits.firstIn(settings.fit, fallback?.values?.fit?.takeIf { settings.fit != null })
-                ?: fits.firstIn(publication.metadata.presentation.fit, defaults.fit)
-                ?: Fit.CONTAIN
-
-            orientations = listOf(
-                Orientation.PORTRAIT, Orientation.LANDSCAPE
-            )
-            val orientation = orientations.firstIn(settings.orientation, fallback?.values?.orientation?.takeIf { settings.orientation != null })
-                ?: orientations.firstIn(publication.metadata.presentation.orientation, defaults.orientation)
-                ?: Orientation.AUTO
-
-            overflows = listOf(
-                Overflow.PAGINATED, Overflow.SCROLLED
-            )
-            val overflow = overflows.firstIn(settings.overflow, fallback?.values?.overflow?.takeIf { settings.overflow != null })
-                ?: overflows.firstIn(publication.metadata.presentation.overflow, defaults.overflow)
-                ?: Overflow.SCROLLED
-
-            val pageSpacing = settings.pageSpacing?.double
-                ?: fallback?.values?.pageSpacing?.double?.takeIf { settings.pageSpacing != null }
-                ?: defaults.pageSpacing?.double
-                ?: 0.0
-
-            readingProgressions = listOf(
-                ReadingProgression.LTR, ReadingProgression.RTL,
-                ReadingProgression.TTB, ReadingProgression.BTT,
-            )
-            val readingProgression = readingProgressions.firstIn(settings.readingProgression, fallback?.values?.readingProgression?.takeIf { settings.readingProgression != null })
-                ?: readingProgressions.firstIn(publication.metadata.readingProgression, defaults.readingProgression)
-                ?: ReadingProgression.TTB
-
-            values = PresentationValues(
-                fit = fit,
-                orientation = orientation,
-                overflow = overflow,
-                pageSpacing = pageSpacing,
-                readingProgression = readingProgression
-            )
-        }
-    }
-
-    private fun pageSpacingForValue(value: Double): Int = (50 * value).roundToInt()
-
-
     // VisualNavigator
 
     @OptIn(ExperimentalPresentation::class)
     override val readingProgression: ReadingProgression get() =
-        (presentation.value.values.readingProgression ?: ReadingProgression.TTB)
+        (presentationProperties.value.values.readingProgression ?: ReadingProgression.TTB)
 
     /**
      * Indicates whether the order of the [PDFView] pages is reversed to take into account
@@ -460,6 +305,109 @@ class PdfNavigatorFragment internal constructor(
         }
     }
 
+    // PresentableNavigator
+
+    private val _presentationProperties = MutableStateFlow(
+        createPresentationProperties(
+            settings = config.settings,
+            fallback = PresentationValues()
+        )
+    )
+    override val presentationProperties = _presentationProperties.asStateFlow()
+
+    override suspend fun applyPresentationSettings(settings: PresentationValues) {
+        val page = pageIndexToNumber(currentPage)
+        _presentationProperties.value = createPresentationProperties(
+            settings = settings,
+            fallback = presentationProperties.value.values
+        )
+
+        currentHref?.let { href ->
+            goToHref(href, page = pageNumberToIndex(page), animated = false, forceReload = true)
+        }
+    }
+
+    private fun createPresentationProperties(
+        settings: PresentationValues,
+        fallback: PresentationValues,
+        defaults: PresentationValues = config.defaultSettings,
+        metadata: Metadata = publication.metadata
+    ): PresentationProperties {
+        fun <T> List<T>?.firstIn(vararg values: T?): T? = this?.let {
+            values.firstOrNull { it != null && contains(it) }
+        }
+
+        val fits = listOf(
+            Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT
+        )
+        val fit = fits.firstIn(settings.fit, fallback.fit?.takeIf { settings.fit != null })
+            ?: fits.firstIn(metadata.presentation.fit, defaults.fit)
+            ?: Fit.CONTAIN
+
+        val orientations = listOf(
+            Orientation.PORTRAIT, Orientation.LANDSCAPE
+        )
+        val orientation = orientations.firstIn(
+            settings.orientation,
+            fallback.orientation?.takeIf { settings.orientation != null })
+            ?: orientations.firstIn(metadata.presentation.orientation, defaults.orientation)
+            ?: Orientation.AUTO
+
+        val overflows = listOf(
+            Overflow.PAGINATED, Overflow.SCROLLED
+        )
+        val overflow = overflows.firstIn(
+            settings.overflow,
+            fallback.overflow?.takeIf { settings.overflow != null })
+            ?: overflows.firstIn(metadata.presentation.overflow, defaults.overflow)
+            ?: Overflow.SCROLLED
+
+        val pageSpacing = settings.pageSpacing?.double
+            ?: fallback.pageSpacing?.double?.takeIf { settings.pageSpacing != null }
+            ?: defaults.pageSpacing?.double
+            ?: 0.0
+
+        val readingProgressions = listOf(
+            ReadingProgression.LTR, ReadingProgression.RTL,
+            ReadingProgression.TTB, ReadingProgression.BTT,
+        )
+        val readingProgression = readingProgressions.firstIn(
+                settings.readingProgression,
+                fallback.readingProgression?.takeIf { settings.readingProgression != null }
+            )
+            ?: readingProgressions.firstIn(metadata.readingProgression, defaults.readingProgression)
+            ?: ReadingProgression.TTB
+
+        return PresentationProperties(
+            PresentationProperty(
+                key = PresentationKey.FIT,
+                value = fit,
+                constraints = PresentationEnumConstraints(supportedValues = fits)
+            ),
+            PresentationProperty(
+                key = PresentationKey.ORIENTATION,
+                value = orientation,
+                constraints = PresentationEnumConstraints(supportedValues = orientations)
+            ),
+            PresentationProperty(
+                key = PresentationKey.OVERFLOW,
+                value = overflow,
+                constraints = PresentationEnumConstraints(supportedValues = overflows)
+            ),
+            PresentationProperty(
+                key = PresentationKey.PAGE_SPACING,
+                value = PresentationRange(pageSpacing),
+                constraints = PresentationRangeConstraints(stepCount = 20)
+                    .require(PresentationValues(overflow = Overflow.PAGINATED))
+            ),
+            PresentationProperty(
+                key = PresentationKey.READING_PROGRESSION,
+                value = readingProgression,
+                constraints = PresentationEnumConstraints(supportedValues = readingProgressions)
+            ),
+        )
+    }
+
     companion object {
         private const val KEY_LOCATOR = "locator"
 
@@ -481,5 +429,4 @@ class PdfNavigatorFragment internal constructor(
             createFragmentFactory { PdfNavigatorFragment(publication, initialLocator, listener, config) }
 
     }
-
 }
