@@ -1,0 +1,18 @@
+# Eventually want to use this for dependencies, but Android Studio is not ready
+
+[versions]
+kotlin = "1.6.10"
+dokka = "1.5.30"
+room = "2.4.0"
+
+[libraries]
+kotlin-gradle = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+dokka-gradle = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "dokka" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+
+[bundles]
+room = ["room-runtime", "room-compiler"]
+
+[plugins]
