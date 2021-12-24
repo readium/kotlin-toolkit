@@ -58,16 +58,26 @@ class PresentationController(
             .launchIn(scope)
     }
 
-    fun bind(navigator: PresentableNavigator) {
-        navigator.presentationProperties
-            .onEach {
-                _settings.value = _settings.value.copy(properties = it)
-            }
-            .launchIn(scope)
+    /** Job of the currently bound navigator. */
+    private var navigatorJob: Job? = null
 
-        committedValues
-            .onEach { navigator.applyPresentationSettings(it) }
-            .launchIn(scope)
+    fun bind(navigator: PresentableNavigator) {
+        navigatorJob?.cancel()
+        navigatorJob = scope.launch {
+            navigator.presentationProperties
+                .onEach {
+                    _settings.value = _settings.value.copy(properties = it)
+                }
+                .launchIn(this)
+
+            committedValues
+                .onEach { navigator.applyPresentationSettings(it) }
+                .launchIn(this)
+
+            if (autoCommit) {
+                navigator.applyPresentationSettings(settings.value.adjustedValues)
+            }
+        }
     }
 
     /**
