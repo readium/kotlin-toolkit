@@ -11,24 +11,6 @@ plugins {
     id("kotlin-parcelize")
 }
 
-val major: Int = 2
-val minor: Int= 2
-val patch: Int = 1
-val build: Int = 29
-val type: String = ""
-
-var version: String = "$major.$minor.$patch"
-val appendBuild = build != 0
-if (appendBuild || type.isNotEmpty()) {
-    version += "-$type"
-    if (appendBuild) {
-        version += build
-    }
-}
-
-project.ext.set("versionName", version)
-project.ext.set("versionCode", 1_000_000 * major + 10_000 * minor + 100 * patch + build)
-
 android {
 
     compileSdk = 31
@@ -38,8 +20,8 @@ android {
 
         applicationId = "org.readium.r2reader"
 
-        versionCode = project.ext.get("versionCode") as Int
-        versionName = project.ext.get("versionName") as String
+        versionName = "2.1.1"
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk.abiFilters.add("armeabi-v7a")
         ndk.abiFilters.add("arm64-v8a")
