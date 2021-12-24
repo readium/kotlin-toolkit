@@ -7,8 +7,8 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id("kotlin-parcelize")
     id("kotlin-kapt")
+    id("kotlin-parcelize")
 }
 
 val major: Int = 2
@@ -103,23 +103,19 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("androidx.webkit:webkit:1.4.0")
-    //noinspection GradleDependency
     implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
-    //noinspection GradleDependency
     implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
     implementation("com.google.android.material:material:1.4.0")
     implementation("com.jakewharton.timber:timber:5.0.1")
     // AM NOTE: needs to stay this version for now (June 24,2020)
-    //noinspection GradleDependency
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("joda-time:joda-time:2.10.13")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
     // AM NOTE: needs to stay this version for now (June 24,2020)
-    //noinspection GradleDependency
     implementation("org.jsoup:jsoup:1.14.3")
 
     // Room database
@@ -129,7 +125,6 @@ dependencies {
     kapt("androidx.room:room-compiler:$roomVersion")
 
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
-    @Suppress("LifecycleAnnotationProcessorWithJava8")
     kapt ("androidx.lifecycle:lifecycle-compiler:2.4.0")
 
     // Tests

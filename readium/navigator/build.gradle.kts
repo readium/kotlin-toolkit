@@ -13,7 +13,7 @@ plugins {
 }
 
 android {
-    // FIXME: This doesn"t pass the lint because some resources don"t start with r2_ yet. We need to rename all resources for the next major version.
+    // FIXME: This doesn't pass the lint because some resources don"t start with r2_ yet. We need to rename all resources for the next major version.
 //    resourcePrefix "r2_"
 
     compileSdk = 31

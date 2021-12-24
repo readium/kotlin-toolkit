@@ -4,6 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// FIXME: Android Studio doesn't support the gradle/libs.versions.toml2 well yet.
 //enableFeaturePreview("VERSION_CATALOGS")
 
 pluginManagement {
