@@ -81,7 +81,7 @@ dependencies {
     // Needed to avoid a crash with API 31, see https://stackoverflow.com/a/69152986/1474476
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation "com.duolingo.open:rtl-viewpager:1.0.3"
-    api "com.github.barteksc:android-pdf-viewer:3.1.0-beta.1"
+    api "com.github.readium:AndroidPdfViewer:3.1.0-beta.1"
     // PdfiumAndroid 1.9.0 conflicts with liblcp, see https://github.com/readium/kotlin-toolkit/issues/29
     // AndroidPdfViewer 3.1.0 imports it, so we need to force the downgrade.
     //noinspection GradleDependency

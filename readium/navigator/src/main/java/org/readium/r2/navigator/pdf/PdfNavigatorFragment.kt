@@ -398,7 +398,7 @@ class PdfNavigatorFragment internal constructor(
                 key = PresentationKey.PAGE_SPACING,
                 value = PresentationRange(pageSpacing),
                 constraints = PresentationRangeConstraints(stepCount = 20)
-                    .require(PresentationValues(overflow = Overflow.PAGINATED))
+                    .require(PresentationValues(overflow = Overflow.SCROLLED))
             ),
             PresentationProperty(
                 key = PresentationKey.READING_PROGRESSION,

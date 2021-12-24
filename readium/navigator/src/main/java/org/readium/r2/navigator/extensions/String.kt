@@ -6,9 +6,6 @@
 
 package org.readium.r2.navigator.extensions
 
-import org.readium.r2.shared.InternalReadiumApi
-import java.text.NumberFormat
-
 /**
  * Splits a [String] in two components, at the given delimiter.
  */

@@ -70,14 +70,17 @@ class PresentationCombinedConstraints<V>(
 ) : PresentationConstraints<V> {
 
     override fun validate(value: V): Try<Unit, UserException> =
-        outer.validate(value).flatMap { inner.validate(value) }
+        inner.validate(value).flatMap { outer.validate(value) }
 
     override fun isActiveForValues(values: PresentationValues): Boolean =
-        outer.isActiveForValues(values) && inner.isActiveForValues(values)
+        inner.isActiveForValues(values) && outer.isActiveForValues(values)
 
     override fun activateInValues(values: PresentationValues): Try<PresentationValues, UserException> =
-        outer.activateInValues(values)
-            .flatMap { inner.activateInValues(it) }
+        inner.activateInValues(values)
+            .flatMap { outer.activateInValues(it) }
+
+    override fun <R> fold(initial: R, operation: (R, PresentationConstraints<V>) -> R): R =
+        inner.fold(outer.fold(initial, operation), operation)
 }
 
 @ExperimentalPresentation
