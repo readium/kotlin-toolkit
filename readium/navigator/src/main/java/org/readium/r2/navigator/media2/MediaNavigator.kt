@@ -33,13 +33,33 @@ interface MediaNavigator : Navigator {
      */
     suspend fun pause(): MediaNavigatorResult
 
-    suspend fun seek(itemIndex: Int, position: Duration): MediaNavigatorResult
+    /**
+     * Seeks to the given time at the given resource.
+     */
+
+    suspend fun seek(resourceIndex: Int, position: Duration): MediaNavigatorResult
+
+    /**
+     * Skips to a little amount of time later.
+     */
 
     suspend fun goForward(): MediaNavigatorResult
 
+    /**
+     * Skips to a little amount of time before.
+     */
+
     suspend fun goBackward(): MediaNavigatorResult
 
+    /**
+     * Seeks to the beginning of the given link.
+     */
+
     suspend fun go(link: Link): MediaNavigatorResult
+
+    /**
+     * Seeks to the given locator.
+     */
 
     suspend fun go(locator: Locator): MediaNavigatorResult
 

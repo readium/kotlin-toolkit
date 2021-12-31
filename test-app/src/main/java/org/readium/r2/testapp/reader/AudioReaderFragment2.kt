@@ -22,6 +22,7 @@ import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentAudiobookBinding
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 
@@ -135,7 +136,7 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
         if (fromUser) {
             val binding = checkNotNull(binding)
-            binding.timelinePosition.text = Duration.seconds(progress).formatElapsedTime()
+            binding.timelinePosition.text = progress.seconds.formatElapsedTime()
         }
     }
 
@@ -150,7 +151,7 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
         seekingItem?.let { index ->
             lifecycleScope.launch {
                 seekingItem = null
-                audioModel.navigator.seek(index, Duration.seconds(seekBar.progress))
+                audioModel.navigator.seek(index, seekBar.progress.seconds)
                 // Some timeline updates might have been missed during seeking.
                 when (val stateNow = audioModel.navigator.playback.value) {
                     is MediaNavigatorPlayback.Playing -> {
@@ -159,6 +160,9 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
                     MediaNavigatorPlayback.Finished -> {
                         val lastItem = audioModel.navigator.playlist!!.last()
                         updateTimeline(lastItem, lastItem.duration, lastItem.duration)
+                    }
+                    MediaNavigatorPlayback.Error, null -> {
+                        // Do nothing
                     }
                 }
             }

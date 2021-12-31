@@ -70,8 +70,8 @@ class MediaSessionNavigatorCompat(
     override suspend fun setPlaybackRate(rate: Double) =
         navigator.await().setPlaybackRate(rate)
 
-    override suspend fun seek(itemIndex: Int, position: Duration) =
-        navigator.await().seek(itemIndex, position)
+    override suspend fun seek(resourceIndex: Int, position: Duration) =
+        navigator.await().seek(resourceIndex, position)
 
     override suspend fun goForward() =
         navigator.await().goForward()
