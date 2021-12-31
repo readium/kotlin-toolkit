@@ -73,11 +73,19 @@ internal class MediaControllerCallback(
 
         coroutineScope.launch {
             while (isActive) {
-                _currentPosition.tryEmit(controller.currentPositionDuration)
-                _bufferedPosition.tryEmit(controller.bufferedPositionDuration)
+                updatePosition(controller)
                 delay(positionRefreshDelay)
             }
         }
+    }
+
+    override fun onSeekCompleted(controller: MediaController, position: Long) {
+        updatePosition(controller)
+    }
+
+    private fun updatePosition(controller: MediaController) {
+        _currentPosition.tryEmit(controller.currentPositionDuration)
+        _bufferedPosition.tryEmit(controller.bufferedPositionDuration)
     }
 
     override fun onDisconnected(controller: MediaController) {

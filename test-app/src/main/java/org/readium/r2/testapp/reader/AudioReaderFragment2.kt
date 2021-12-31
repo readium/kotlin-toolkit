@@ -75,6 +75,7 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
     }
 
     private fun onPlaybackChanged(playback: MediaNavigatorPlayback?) {
+        Timber.v("onPlaybackChanged $playback")
         this.playerState = playback
         return when (playback) {
             null, MediaNavigatorPlayback.Error ->
@@ -141,6 +142,7 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar) {
+        Timber.d("onStartTrackingTouch")
         val stateNow = playerState
         if (stateNow is MediaNavigatorPlayback.Playing) {
             seekingItem = stateNow.currentIndex
@@ -148,6 +150,7 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
+        Timber.d("onStopTrackingTouch")
         seekingItem?.let { index ->
             lifecycleScope.launch {
                 audioModel.navigator.seek(index, seekBar.progress.seconds)
