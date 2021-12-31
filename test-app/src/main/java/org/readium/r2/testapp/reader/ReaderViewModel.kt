@@ -213,7 +213,7 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     class Factory(private val context: Context, private val arguments: ReaderContract.Input)
         : ViewModelProvider.NewInstanceFactory() {
 
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T =
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
             modelClass.getDeclaredConstructor(Context::class.java, ReaderContract.Input::class.java)
                 .newInstance(context.applicationContext, arguments)
     }

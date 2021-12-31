@@ -322,7 +322,7 @@ class R2FXLLayout : FrameLayout {
                 // only fling if no scale is needed - scale will happen on ACTION_UP
                 flingRunnable = FlingRunnable(context)
                 flingRunnable!!.fling(velocityX.toInt(), velocityY.toInt())
-                ViewCompat.postOnAnimation(this@R2FXLLayout, flingRunnable)
+                ViewCompat.postOnAnimation(this@R2FXLLayout, flingRunnable!!)
                 return true
             }
             return false
@@ -429,7 +429,7 @@ class R2FXLLayout : FrameLayout {
         if (animate) {
             animatedZoomRunnable = AnimatedZoomRunnable()
             animatedZoomRunnable!!.scale(scale, newScale, this.focusX, this.focusY, true)
-            ViewCompat.postOnAnimation(this@R2FXLLayout, animatedZoomRunnable)
+            ViewCompat.postOnAnimation(this@R2FXLLayout, animatedZoomRunnable!!)
         } else {
             zoomDispatcher.onZoomBegin(newScale)
             internalScale(newScale, this.focusX, this.focusY)
@@ -531,7 +531,7 @@ class R2FXLLayout : FrameLayout {
             val newScale = NumberUtils.clamp(minScale, scale, maxScale)
             scale(scale, newScale, focusX, focusY, true)
             if (animatedZoomRunnable!!.doScale() || animatedZoomRunnable!!.doTranslate()) {
-                ViewCompat.postOnAnimation(this@R2FXLLayout, animatedZoomRunnable)
+                ViewCompat.postOnAnimation(this@R2FXLLayout, animatedZoomRunnable!!)
                 return true
             }
             return false

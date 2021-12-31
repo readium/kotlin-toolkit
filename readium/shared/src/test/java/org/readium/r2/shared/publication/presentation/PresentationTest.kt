@@ -12,9 +12,12 @@ package org.readium.r2.shared.publication.presentation
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.publication.epub.EpubLayout
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class PresentationTest {
 
     @Test fun `parse null JSON`() {

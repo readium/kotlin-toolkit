@@ -12,9 +12,12 @@ package org.readium.r2.shared.publication.encryption
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.extensions.toMap
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class EncryptionTest {
 
     @Test

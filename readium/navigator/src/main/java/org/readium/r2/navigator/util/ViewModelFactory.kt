@@ -16,7 +16,7 @@ import androidx.lifecycle.ViewModelProvider
 internal inline fun <reified T : ViewModel> createViewModelFactory(crossinline factory: () -> T): ViewModelProvider.Factory =
 
     object : ViewModelProvider.Factory {
-        override fun <V : ViewModel?> create(modelClass: Class<V>): V {
+        override fun <V : ViewModel> create(modelClass: Class<V>): V {
             if (!modelClass.isAssignableFrom(T::class.java)) {
                 throw IllegalAccessException("Unknown ViewModel class")
             }

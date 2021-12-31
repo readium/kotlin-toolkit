@@ -192,7 +192,7 @@ class ExoMediaPlayer(
 
     private inner class PlaybackPreparer : MediaSessionConnector.PlaybackPreparer {
 
-        override fun onCommand(player: Player, controlDispatcher: ControlDispatcher, command: String, extras: Bundle?, cb: ResultReceiver?): Boolean =
+        override fun onCommand(player: Player, command: String, extras: Bundle?, cb: ResultReceiver?): Boolean =
             listener?.onCommand(command, extras, cb) ?: false
 
         override fun getSupportedPrepareActions(): Long =

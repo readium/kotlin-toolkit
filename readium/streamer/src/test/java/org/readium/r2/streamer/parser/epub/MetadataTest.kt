@@ -19,7 +19,7 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.robolectric.RobolectricTestRunner
-import kotlin.test.assertNotNull
+import org.junit.Assert.assertNotNull
 import org.readium.r2.shared.publication.Link as SharedLink
 
 @RunWith(RobolectricTestRunner::class)

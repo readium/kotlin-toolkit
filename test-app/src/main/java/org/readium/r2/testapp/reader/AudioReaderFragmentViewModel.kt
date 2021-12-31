@@ -37,6 +37,7 @@ class AudioReaderFragmentViewModel(
         }
     }
 
+
     class Factory(
         private val application: Application,
         private val bookId: Long,
@@ -45,7 +46,7 @@ class AudioReaderFragmentViewModel(
     ) : ViewModelProvider.Factory {
 
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T =
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
             if (modelClass.isAssignableFrom(AudioReaderFragmentViewModel::class.java))
                 AudioReaderFragmentViewModel(application, bookId, publication, initialLocator) as T
             else

@@ -46,7 +46,7 @@ class PublicationDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         (activity as MainActivity).supportActionBar?.title = publication?.metadata?.title
 
-        Picasso.with(requireContext()).load(publication?.images?.first()?.href)
+        Picasso.get().load(publication?.images?.first()?.href)
             .into(binding.catalogDetailCoverImage)
 
         binding.catalogDetailDescriptionText.text = publication?.metadata?.description

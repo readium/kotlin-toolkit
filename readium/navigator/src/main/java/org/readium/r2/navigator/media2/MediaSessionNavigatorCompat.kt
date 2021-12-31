@@ -16,7 +16,7 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 @ExperimentalAudiobook
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalCoroutinesApi::class)
 class MediaSessionNavigatorCompat(
     context: Context,
     override val publication: Publication,
@@ -58,7 +58,6 @@ class MediaSessionNavigatorCompat(
     override val playback: StateFlow<MediaNavigatorPlayback?>
         get() = _playback
 
-    @ExperimentalCoroutinesApi
     override val playlist: List<MediaMetadata>?
         get() = navigator.takeIf { it.isCompleted }?.getCompleted()?.playlist
 
