@@ -6,6 +6,7 @@ import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.shared.publication.Locator
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @ExperimentalAudiobook
@@ -27,8 +28,7 @@ fun SessionPlayer?.locatorNow(): Locator? {
     val item = this.currentMediaItem?.metadata
         ?: return null
 
-    val position = Duration.seconds(this.currentPosition / 1000)
-
+    val position = (this.currentPosition / 1000).seconds
     return locator(item, position, playlist)
 }
 

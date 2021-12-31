@@ -10,17 +10,17 @@ import android.widget.SeekBar
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.media2.common.MediaMetadata
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.media2.MediaNavigatorPlayback
-import org.readium.r2.navigator.media2.duration
-import org.readium.r2.navigator.media2.index
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentAudiobookBinding
+import timber.log.Timber
+import kotlin.math.roundToLong
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
@@ -98,17 +98,17 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
             else R.drawable.ic_baseline_pause_24
         )
         if (seekingItem == null) {
-           updateTimeline(playback.currentItem, playback.currentPosition, playback.bufferedPosition)
+           updateTimeline(playback.currentLink, playback.currentPosition, playback.bufferedPosition)
         }
     }
 
-    private fun updateTimeline(item: MediaMetadata, position: Duration, buffered: Duration) {
+    private fun updateTimeline(link: Link, position: Duration?, buffered: Duration?) {
         val binding = checkNotNull(binding)
-        binding.timelineBar.max = item.duration.inWholeSeconds.toInt()
-        binding.timelineDuration.text = item.duration.formatElapsedTime()
-        binding.timelineBar.progress = position.inWholeSeconds.toInt()
-        binding.timelinePosition.text = position.formatElapsedTime()
-        binding.timelineBar.secondaryProgress = buffered.inWholeSeconds.toInt()
+        binding.timelineBar.max = link.duration?.toInt() ?: 0
+        binding.timelineDuration.text = link.formattedDuration
+        binding.timelineBar.progress = position?.inWholeSeconds?.toInt() ?: 0
+        binding.timelinePosition.text = position?.formatElapsedTime()
+        binding.timelineBar.secondaryProgress = buffered?.inWholeSeconds?.toInt() ?: 0
     }
 
     private fun onPlaybackNotPlaying() {
@@ -143,28 +143,28 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
     override fun onStartTrackingTouch(seekBar: SeekBar) {
         val stateNow = playerState
         if (stateNow is MediaNavigatorPlayback.Playing) {
-            seekingItem = stateNow.currentItem.index
+            seekingItem = stateNow.currentIndex
         }
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
         seekingItem?.let { index ->
             lifecycleScope.launch {
-                seekingItem = null
                 audioModel.navigator.seek(index, seekBar.progress.seconds)
                 // Some timeline updates might have been missed during seeking.
                 when (val stateNow = audioModel.navigator.playback.value) {
                     is MediaNavigatorPlayback.Playing -> {
-                        updateTimeline(stateNow.currentItem, stateNow.currentPosition, stateNow.bufferedPosition)
+                        updateTimeline(stateNow.currentLink, stateNow.currentPosition, stateNow.bufferedPosition)
                     }
                     MediaNavigatorPlayback.Finished -> {
                         val lastItem = audioModel.navigator.playlist!!.last()
-                        updateTimeline(lastItem, lastItem.duration, lastItem.duration)
+                        updateTimeline(lastItem, lastItem.duration?.seconds, lastItem.duration?.seconds)
                     }
                     MediaNavigatorPlayback.Error, null -> {
                         // Do nothing
                     }
                 }
+                seekingItem = null
             }
         }
     }
@@ -223,6 +223,9 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
             }
         }
     }
+
+    private val Link.formattedDuration: String?
+        get() = duration?.let { DateUtils.formatElapsedTime(it.roundToLong()) }
 
     private fun Duration.formatElapsedTime(): String =
         DateUtils.formatElapsedTime(toLong(DurationUnit.SECONDS))

@@ -2,7 +2,6 @@ package org.readium.r2.navigator.media2
 
 import android.content.Context
 import android.os.Bundle
-import androidx.media2.common.MediaMetadata
 import androidx.media2.session.SessionToken
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,7 +57,7 @@ class MediaSessionNavigatorCompat(
     override val playback: StateFlow<MediaNavigatorPlayback?>
         get() = _playback
 
-    override val playlist: List<MediaMetadata>?
+    override val playlist: List<Link>?
         get() = navigator.takeIf { it.isCompleted }?.getCompleted()?.playlist
 
     override suspend fun play() =
@@ -108,9 +107,6 @@ class MediaSessionNavigatorCompat(
     override fun close() {
         coroutineScope.cancel()
     }
-
-    private fun launch(runnable: suspend () -> Unit) =
-        coroutineScope.launch{ runnable() }
 
     private fun launchAndRun(runnable: suspend () -> Unit, callback: () -> Unit) =
         coroutineScope.launch { runnable() }.invokeOnCompletion { callback() }

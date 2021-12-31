@@ -7,6 +7,7 @@ import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 
 @ExperimentalAudiobook
@@ -20,35 +21,45 @@ internal fun List<MediaItem>.indexOfFirstWithHref(href: String) = indexOfFirst {
 }
 
 @ExperimentalAudiobook
-val MediaMetadata.href: String
+internal val MediaMetadata.href: String
     get() = getString(MediaMetadata.METADATA_KEY_MEDIA_URI)
         .let { checkNotNull(it) { "Missing href in item metadata."} }
 
 @ExperimentalAudiobook
-val MediaMetadata.index: Int
+internal val MediaMetadata.index: Int
     get() = getLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER).toInt()
 
 @ExperimentalAudiobook
-val MediaMetadata.title: String?
+internal val MediaMetadata.title: String?
     get() = getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE)
         ?: getString(MediaMetadata.METADATA_KEY_TITLE)
 
 private const val METADATA_KEY_MEDIA_TYPE = "readium.audio.metadata.MEDIA_TYPE"
 
 @ExperimentalAudiobook
-val MediaMetadata.type: String?
+internal val MediaMetadata.type: String?
     get() = extras?.getString(METADATA_KEY_MEDIA_TYPE)
+
+@ExperimentalTime
+@ExperimentalAudiobook
+internal fun MediaMetadata.toLink() =
+    Link(
+        href = href,
+        title = title,
+        type = type,
+        duration = duration.inWholeSeconds.toDouble()
+    )
 
 @ExperimentalAudiobook
 @ExperimentalTime
-val MediaMetadata.duration: Duration
+internal val MediaMetadata.duration: Duration
     get() = getLong(MediaMetadata.METADATA_KEY_DURATION)
         .also { check(it != 0L) { "Missing duration in item metadata" } }
-        .let { Duration.milliseconds(it) }
+        .let { it.milliseconds }
 
 
 @ExperimentalAudiobook
-fun linkMetadata(index: Int, link: Link): MediaMetadata {
+internal fun linkMetadata(index: Int, link: Link): MediaMetadata {
     val extras = bundleOf(
         METADATA_KEY_MEDIA_TYPE to link.title
     )
@@ -62,7 +73,7 @@ fun linkMetadata(index: Int, link: Link): MediaMetadata {
 }
 
 @ExperimentalAudiobook
-fun publicationMetadata(publication: Publication): MediaMetadata {
+internal fun publicationMetadata(publication: Publication): MediaMetadata {
     val builder = MediaMetadata.Builder()
         .putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, publication.metadata.title)
 

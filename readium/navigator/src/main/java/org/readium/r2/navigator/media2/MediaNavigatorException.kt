@@ -12,11 +12,4 @@ internal fun MediaControllerResult.toNavigatorResult(): MediaNavigatorResult =
 
 class MediaNavigatorException internal constructor(
     internal val error: MediaControllerError
-) : Exception() {
-
-    companion object {
-
-        internal fun fromMediaControllerException(exception: MediaControllerException): MediaNavigatorException =
-            MediaNavigatorException(exception.error)
-    }
-}
+) : Exception()

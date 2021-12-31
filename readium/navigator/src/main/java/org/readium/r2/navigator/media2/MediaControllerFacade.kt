@@ -1,6 +1,7 @@
 package org.readium.r2.navigator.media2
 
 import androidx.media2.common.MediaItem
+import androidx.media2.common.SessionPlayer
 import androidx.media2.session.MediaController
 import androidx.media2.session.SessionResult
 import org.readium.r2.navigator.ExperimentalAudiobook
@@ -38,6 +39,10 @@ internal class MediaControllerFacade(
 
     val currentItem: MediaItem?
         get() = mediaController.currentMediaItem
+
+    val currentIndex: Int?
+        get() = mediaController.currentMediaItemIndex
+            .takeUnless { it == SessionPlayer.INVALID_ITEM_INDEX }
 
     val playlist: List<MediaItem>?
         get() = mediaController.playlist

@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.media2.common.SessionPlayer
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.media2.SessionPlayerConnector
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
@@ -15,7 +14,7 @@ import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.audio.PublicationDataSource
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isRestricted
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @ExperimentalAudiobook
@@ -45,9 +44,9 @@ class ExoPublicationPlayer(
         }
 
         val dataSourceFactory = createDataSource(publication, cache)
-        val player: ExoPlayer = SimpleExoPlayer.Builder(context)
-            .setSeekBackIncrementMs(Duration.seconds(30).inWholeMilliseconds)
-            .setSeekForwardIncrementMs(Duration.seconds(30).inWholeMilliseconds)
+        val player: ExoPlayer = ExoPlayer.Builder(context)
+            .setSeekBackIncrementMs(30.seconds.inWholeMilliseconds)
+            .setSeekForwardIncrementMs(30.seconds.inWholeMilliseconds)
             .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
             .setAudioAttributes(
                 AudioAttributes.Builder()

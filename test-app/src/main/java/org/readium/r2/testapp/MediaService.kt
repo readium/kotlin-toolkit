@@ -16,7 +16,7 @@ import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderContract
 import org.readium.r2.testapp.utils.LifecycleMediaSessionService
 import timber.log.Timber
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @ExperimentalAudiobook
@@ -42,7 +42,7 @@ class MediaService : LifecycleMediaSessionService() {
         lifecycleScope.launch {
             while (isActive) {
                 saveLocationIfNeeded()
-                delay(Duration.seconds(3))
+                delay(3.seconds)
             }
         }
     }
@@ -72,7 +72,6 @@ class MediaService : LifecycleMediaSessionService() {
                 Timber.e("Book ${input.bookId} not supported by any engine.")
                 return null
             }
-
 
         return when (val currentSession = mediaSession) {
             null -> {
@@ -105,10 +104,6 @@ class MediaService : LifecycleMediaSessionService() {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
         return PendingIntent.getActivity(this, 0, intent, flags)
-    }
-
-    override fun onUpdateNotification(session: MediaSession): MediaNotification? {
-        return super.onUpdateNotification(session)
     }
 
     override fun onDestroy() {

@@ -1,6 +1,6 @@
 package org.readium.r2.navigator.media2
 
-import androidx.media2.common.MediaMetadata
+import org.readium.r2.shared.publication.Link
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -13,7 +13,8 @@ sealed class MediaNavigatorPlayback {
 
     data class Playing(
         val paused: Boolean,
-        val currentItem: MediaMetadata,
+        val currentIndex: Int,
+        val currentLink: Link,
         val currentPosition: Duration,
         val bufferedPosition: Duration
     ) : MediaNavigatorPlayback()

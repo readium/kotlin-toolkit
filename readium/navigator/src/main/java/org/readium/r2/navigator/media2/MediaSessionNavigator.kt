@@ -2,13 +2,10 @@ package org.readium.r2.navigator.media2
 
 import android.content.Context
 import android.os.Bundle
-import androidx.media2.common.MediaMetadata
 import androidx.media2.session.MediaController
 import androidx.media2.session.SessionToken
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.extensions.time
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -16,6 +13,7 @@ import org.readium.r2.shared.publication.toLocator
 import timber.log.Timber
 import java.util.concurrent.Executors
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @ExperimentalAudiobook
@@ -42,7 +40,8 @@ class MediaSessionNavigator private constructor(
         MediaControllerState.Paused, MediaControllerState.Playing ->
           MediaNavigatorPlayback.Playing(
             paused = currentState == MediaControllerState.Paused,
-            currentItem = currentItem,
+            currentIndex = currentItem.index,
+            currentLink = currentItem.toLink(),
             currentPosition = currentPosition,
             bufferedPosition = bufferedPosition
           )
@@ -54,11 +53,8 @@ class MediaSessionNavigator private constructor(
   val playbackRate: Double
     get() = checkNotNull(controllerFacade.playbackSpeed)
 
-  val playlist: List<MediaMetadata>
-    get() = checkNotNull(controllerFacade.playlist).map { it.metadata!! }
-
-  val totalDuration: Duration
-    get() = playlist.map { it.duration }.sum()
+  val playlist: List<Link>
+    get() = checkNotNull(controllerFacade.playlist).map { it.metadata!!.toLink() }
 
   suspend fun prepare(): MediaNavigatorResult {
     return controllerFacade.prepare().toNavigatorResult()
@@ -93,11 +89,19 @@ class MediaSessionNavigator private constructor(
     smartSeek(-configuration.skipBackwardInterval)
 
   private suspend fun smartSeek(offset: Duration): MediaNavigatorResult {
+    val playlistNow = this.playlist
+    if (playlistNow.any { it.duration == null }) {
+      // Do a dummy seek
+      val newIndex = controllerFacade.currentIndex!!
+      val newPosition = controllerFacade.currentPosition!! + offset
+      return controllerFacade.seekTo(newIndex, newPosition).toNavigatorResult()
+    }
+
     val(newIndex, newPosition) = SmartSeeker.dispatchSeek(
       offset,
       controllerFacade.currentPosition!!,
       controllerFacade.currentItem!!.metadata!!.index,
-      playlist.map { it.duration }
+      playlistNow.map { it.duration!!.seconds }
     )
     Timber.d("Smart seeking by $offset resolved to item $newIndex position $newPosition")
     return controllerFacade.seekTo(newIndex, newPosition).toNavigatorResult()
@@ -109,8 +113,8 @@ class MediaSessionNavigator private constructor(
 
   data class Configuration(
     val positionRefreshRate: Double = 2.0,  // Hz
-    val skipForwardInterval: Duration = Duration.seconds(30),
-    val skipBackwardInterval: Duration = Duration.seconds(30),
+    val skipForwardInterval: Duration = 30.seconds,
+    val skipBackwardInterval: Duration = 30.seconds,
   )
 
   companion object {
@@ -122,7 +126,7 @@ class MediaSessionNavigator private constructor(
       configuration: Configuration = Configuration()
     ): MediaSessionNavigator {
 
-      val positionRefreshDelay = Duration.seconds((1.0 / configuration.positionRefreshRate))
+      val positionRefreshDelay = (1.0 / configuration.positionRefreshRate).seconds
       val controllerCallback = MediaControllerCallback(positionRefreshDelay)
       val callbackExecutor = Executors.newSingleThreadExecutor()
 

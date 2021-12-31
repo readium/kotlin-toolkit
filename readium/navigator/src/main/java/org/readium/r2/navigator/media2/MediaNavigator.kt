@@ -21,7 +21,7 @@ interface MediaNavigator : Navigator {
      */
     val playback: StateFlow<MediaNavigatorPlayback?>
 
-    val playlist: List<MediaMetadata>?
+    val playlist: List<Link>?
 
     /**
      * Resumes or start the playback at the current location.
