@@ -20,13 +20,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import org.json.JSONObject
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.domain.model.Book
@@ -57,7 +54,8 @@ class BookshelfFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        bookshelfAdapter = BookshelfAdapter(onBookClick = { book -> openBook(book.id) },
+        bookshelfAdapter = BookshelfAdapter(
+            onBookClick = { book -> book.id?.let {  bookshelfViewModel.openBook(requireActivity(), it) } },
             onBookLongClick = { book -> confirmDeleteBook(book) })
 
         documentPickerLauncher =
@@ -144,13 +142,19 @@ class BookshelfFragment : Fragment() {
                 is BookshelfViewModel.Event.OpenBookError -> {
                     "Error: " + event.errorMessage
                 }
+                is BookshelfViewModel.Event.LaunchReader -> {
+                    readerLauncher.launch(event.arguments)
+                    null
+                }
             }
         binding.bookshelfProgressBar.visibility = View.GONE
-        Snackbar.make(
-            requireView(),
-            message,
-            Snackbar.LENGTH_LONG
-        ).show()
+        message?.let {
+            Snackbar.make(
+                requireView(),
+                it,
+                Snackbar.LENGTH_LONG
+            ).show()
+        }
     }
 
     class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) :
@@ -166,19 +170,6 @@ class BookshelfFragment : Fragment() {
 
     private fun deleteBook(book: Book) {
         bookshelfViewModel.deleteBook(book)
-    }
-
-    private fun openBook(bookId: Long?) {
-        bookId ?: return
-
-        bookshelfViewModel.openBook(requireContext(), bookId) { book, asset, publication, url ->
-            readerLauncher.launch(ReaderContract.Input(
-                bookId = bookId,
-                publication = publication,
-                initialLocator = book.progression?.let { Locator.fromJSON(JSONObject(it)) },
-                baseUrl = url
-            ))
-        }
     }
 
     private fun confirmDeleteBook(book: Book) {

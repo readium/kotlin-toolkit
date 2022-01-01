@@ -17,22 +17,20 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalAudiobook::class, ExperimentalTime::class)
 class AudioReaderFragmentViewModel(
-    application: Application,
-    bookId: Long,
-    publication: Publication,
-    initialLocator: Locator?
+    private val application: Application,
+    private val arguments: ReaderContract.Input
 ) : ViewModel() {
 
     val navigator: MediaNavigator = MediaSessionNavigatorCompat(
         context = application,
-        publication = publication,
+        publication = arguments.publication,
         sessionToken = (application as R2App).sessionToken,
-        connectionHints = bundleOf("bookId" to bookId).apply { putPublication(publication) }
+        connectionHints = bundleOf()
     )
 
     init {
         viewModelScope.launch {
-            initialLocator?.let { navigator.go(it) }
+            arguments.initialLocator?.let { navigator.go(it) }
             navigator.play()
         }
     }
@@ -40,15 +38,14 @@ class AudioReaderFragmentViewModel(
 
     class Factory(
         private val application: Application,
-        private val bookId: Long,
-        private val publication: Publication,
-        private val initialLocator: Locator?
+        private val arguments: ReaderContract.Input
+
     ) : ViewModelProvider.Factory {
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
             if (modelClass.isAssignableFrom(AudioReaderFragmentViewModel::class.java))
-                AudioReaderFragmentViewModel(application, bookId, publication, initialLocator) as T
+                AudioReaderFragmentViewModel(application, arguments) as T
             else
                 throw IllegalStateException("Cannot instantiate ${modelClass::class.java.name}")
     }

@@ -7,20 +7,27 @@
 package org.readium.r2.testapp.bookshelf
 
 import android.app.Application
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.extensions.mediaType
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.services.cover
@@ -32,9 +39,11 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig
+import org.readium.r2.testapp.MediaService
 import org.readium.r2.testapp.R2App
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Book
+import org.readium.r2.testapp.reader.ReaderContract
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
@@ -45,6 +54,9 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
+import kotlin.time.ExperimentalTime
 
 class BookshelfViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -175,10 +187,10 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun openBook(
         context: Context,
         bookId: Long,
-        callback: suspend (book: Book, file: FileAsset, publication: Publication, url: URL?) -> Unit
     ) = viewModelScope.launch {
         val book = booksDao.get(bookId) ?: return@launch
         val file = File(book.href)
@@ -186,19 +198,25 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         val asset = FileAsset(file)
 
         streamer.open(asset, allowUserInteraction = true, sender = context)
-            .onFailure {
-                Timber.d(it)
-                channel.send(Event.OpenBookError(it.getUserMessage(r2Application)))
+            .onFailure { exception ->
+                Timber.d(exception)
+                channel.send(Event.OpenBookError(exception.getUserMessage(r2Application)))
             }
-            .onSuccess {
-                if (it.isRestricted) {
-                    it.protectionError?.let { error ->
+            .onSuccess { publication ->
+                if (publication.isRestricted) {
+                    publication.protectionError?.let { error ->
                         Timber.d(error)
                         channel.send(Event.OpenBookError(error.getUserMessage(r2Application)))
                     }
                 } else {
-                    val url = prepareToServe(it)
-                    callback.invoke(book, asset, it, url)
+                    val url = prepareToServe(publication)
+                    val initialLocator = book.progression?.let { Locator.fromJSON(JSONObject(it)) }
+                    val arguments = ReaderContract.Input(bookId, publication, initialLocator, url)
+                    if (publication.conformsTo(Publication.Profile.AUDIOBOOK)) {
+                        val mediaService = (r2Application as R2App).mediaServiceBinder.await()
+                        mediaService.open(arguments)
+                    }
+                    channel.send(Event.LaunchReader(arguments))
                 }
             }
     }
@@ -252,5 +270,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         object ImportDatabaseFailed : Event()
 
         class OpenBookError(val errorMessage: String?) : Event()
+
+        class LaunchReader(val arguments: ReaderContract.Input) : Event()
     }
 }

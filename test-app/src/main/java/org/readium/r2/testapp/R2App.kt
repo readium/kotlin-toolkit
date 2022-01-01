@@ -12,17 +12,20 @@ package org.readium.r2.testapp
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.ComponentName
-import android.content.ContentResolver
-import android.content.Context
-import android.content.Intent
+import android.content.*
+import android.os.IBinder
 import androidx.media2.session.SessionToken
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import timber.log.Timber
 import java.io.IOException
 import java.net.ServerSocket
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -33,6 +36,28 @@ class R2App : Application() {
         SessionToken(context, ComponentName(context as Application, MediaService::class.java))
     }
 
+    val mediaServiceBinder: Deferred<MediaService.Binder>
+        get() = _mediaServiceBinder
+
+    private val _mediaServiceBinder: CompletableDeferred<MediaService.Binder> =
+        CompletableDeferred()
+
+    private val mediaServiceConnection = object: ServiceConnection {
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder) {
+            _mediaServiceBinder.complete(service as MediaService.Binder)
+        }
+
+        override fun onServiceDisconnected(name: ComponentName) {
+            // Should not happen, do nothing.
+        }
+
+        override fun onNullBinding(name: ComponentName) {
+           // Should not happen, do nothing.
+        }
+    }
+
+    @OptIn(ExperimentalAudiobook::class)
     override fun onCreate() {
         super.onCreate()
         if (DEBUG) Timber.plant(Timber.DebugTree())
@@ -43,6 +68,7 @@ class R2App : Application() {
         R2DIRECTORY = r2Directory
         val context = this.applicationContext
         startService(Intent(context, MediaService::class.java))
+        bindService(Intent(context, MediaService::class.java), mediaServiceConnection, 0)
     }
 
     companion object {

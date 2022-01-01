@@ -1,7 +1,11 @@
 package org.readium.r2.testapp.reader
 
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import android.media.AudioManager
 import android.os.Bundle
+import android.os.IBinder
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +21,7 @@ import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.media2.MediaNavigatorPlayback
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.services.cover
+import org.readium.r2.testapp.MediaService
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentAudiobookBinding
 import timber.log.Timber
@@ -31,12 +36,7 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
 
     override val model: ReaderViewModel by activityViewModels()
     private val audioModel: AudioReaderFragmentViewModel by viewModels(factoryProducer = {
-        AudioReaderFragmentViewModel.Factory(
-            requireActivity().application,
-            model.bookId,
-            model.publication,
-            model.initialLocation
-        )
+        AudioReaderFragmentViewModel.Factory(requireActivity().application, model.arguments)
     })
 
     override val navigator: Navigator get() = audioModel.navigator

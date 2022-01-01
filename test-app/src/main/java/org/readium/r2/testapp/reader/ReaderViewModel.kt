@@ -36,7 +36,7 @@ import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
 
 @OptIn(Search::class, ExperimentalDecorator::class)
-class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewModel() {
+class ReaderViewModel(context: Context, val arguments: ReaderContract.Input) : ViewModel() {
 
     val publication: Publication = arguments.publication
     val initialLocation: Locator? = arguments.initialLocator

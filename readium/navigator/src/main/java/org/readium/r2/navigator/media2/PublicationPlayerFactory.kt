@@ -5,6 +5,7 @@ import androidx.media2.common.MediaItem
 import androidx.media2.common.SessionPlayer
 import com.google.common.util.concurrent.MoreExecutors
 import org.readium.r2.navigator.ExperimentalAudiobook
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
 
@@ -22,9 +23,9 @@ class PublicationPlayerFactory(
     private val engines: List<PublicationPlayer> = engines +
             if (!ignoreDefaultEngines) defaultEngines else emptyList()
 
-    fun open(context: Context, publication: Publication): SessionPlayer? =
+    fun open(context: Context, publication: Publication, initialLocator: Locator?): SessionPlayer? =
         engines.lazyMapFirstNotNullOrNull { it.open(context, publication) }
-            ?.also { preparePlayer(publication, it) }
+            ?.also { preparePlayer(publication, initialLocator, it) }
 
     @Suppress("UNCHECKED_CAST")
     private inline fun <T, R> List<T>.lazyMapFirstNotNullOrNull(transform: (T) -> R): R? {
@@ -34,7 +35,7 @@ class PublicationPlayerFactory(
         return null
     }
 
-    private fun preparePlayer(publication: Publication, player: SessionPlayer) {
+    private fun preparePlayer(publication: Publication, initialLocator: Locator?, player: SessionPlayer) {
         val list = publication.readingOrder.mapIndexed { index, link ->
             MediaItem.Builder()
                 .setMetadata(linkMetadata(index, link))
