@@ -2,11 +2,11 @@ package org.readium.r2.navigator.media2
 
 import org.readium.r2.shared.util.Try
 
-internal typealias MediaControllerResult = Try<Unit, MediaControllerException>
+internal typealias SessionPlayerResult = Try<Unit, SessionPlayerException>
 
-internal class MediaControllerException(val error: MediaControllerError) : Exception()
+internal class SessionPlayerException(val error: SessionPlayerError) : Exception()
 
-internal enum class MediaControllerError{
+internal enum class SessionPlayerError{
     BAD_VALUE,
     INVALID_STATE,
     IO,
@@ -25,7 +25,7 @@ internal enum class MediaControllerError{
 
     companion object {
 
-        fun fromSessionResultCode(resultCode: Int): MediaControllerError {
+        fun fromSessionResultCode(resultCode: Int): SessionPlayerError {
             require(resultCode != 0)
             return when(resultCode) {
                 -3 -> BAD_VALUE

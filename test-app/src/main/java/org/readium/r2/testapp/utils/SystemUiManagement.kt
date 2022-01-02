@@ -9,6 +9,7 @@ package org.readium.r2.testapp.utils
 import android.app.Activity
 import android.view.View
 import android.view.WindowInsets
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsCompat
 
 // Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
@@ -58,7 +59,7 @@ fun View.padSystemUi(insets: WindowInsets, activity: Activity) =
         .getInsets(WindowInsetsCompat.Type.systemBars()).apply {
             setPadding(
                 left,
-                top,
+                top + (activity as AppCompatActivity).supportActionBar!!.height,
                 right,
                 bottom
             )

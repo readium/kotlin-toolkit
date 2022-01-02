@@ -8,7 +8,6 @@ package org.readium.r2.testapp.reader
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.PointF
 import android.os.Bundle
 import android.view.*
 import android.view.accessibility.AccessibilityManager
@@ -29,7 +28,6 @@ import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
-import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.html.toCss
 import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.ReadiumCSSName
@@ -43,11 +41,10 @@ import org.readium.r2.testapp.search.SearchFragment
 import org.readium.r2.testapp.tts.ScreenReaderContract
 import org.readium.r2.testapp.tts.ScreenReaderFragment
 import org.readium.r2.testapp.utils.extensions.toDataUrl
-import org.readium.r2.testapp.utils.toggleSystemUi
 import java.net.URL
 
 @OptIn(ExperimentalDecorator::class)
-class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
+class EpubReaderFragment : FullscreenReaderFragment(), EpubNavigatorFragment.Listener {
 
     override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator

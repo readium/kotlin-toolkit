@@ -13,36 +13,14 @@ import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.audio.PublicationDataSource
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.isRestricted
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @ExperimentalAudiobook
 @OptIn(ExperimentalTime::class)
-class ExoPublicationPlayer(
-    private val cache: Cache? = null
-) : PublicationPlayer {
+class ExoPlayerFactory(private val cache: Cache? = null) {
 
-    private fun createDataSource(publication: Publication, cache: Cache?): DataSource.Factory {
-        var factory: DataSource.Factory = PublicationDataSource.Factory(publication)
-
-        if (cache != null) {
-            factory = CacheDataSource.Factory()
-                .setCache(cache)
-                .setUpstreamDataSourceFactory(factory)
-                // Disable writing to the cache by the player. We'll handle downloads through the
-                // service.
-                .setCacheWriteDataSinkFactory(null)
-        }
-
-        return factory
-    }
-
-    override fun open(context: Context, publication: Publication): SessionPlayer? {
-        if (publication.isRestricted) {
-            return null
-        }
-
+    fun createPlayer(context: Context, publication: Publication): SessionPlayer {
         val dataSourceFactory = createDataSource(publication, cache)
         val player: ExoPlayer = ExoPlayer.Builder(context)
             .setSeekBackIncrementMs(30.seconds.inWholeMilliseconds)
@@ -59,5 +37,20 @@ class ExoPublicationPlayer(
             .build()
 
         return SessionPlayerConnector(player)
+    }
+
+    private fun createDataSource(publication: Publication, cache: Cache?): DataSource.Factory {
+        var factory: DataSource.Factory = PublicationDataSource.Factory(publication)
+
+        if (cache != null) {
+            factory = CacheDataSource.Factory()
+                .setCache(cache)
+                .setUpstreamDataSourceFactory(factory)
+                // Disable writing to the cache by the player. We'll handle downloads through the
+                // service.
+                .setCacheWriteDataSinkFactory(null)
+        }
+
+        return factory
     }
 }

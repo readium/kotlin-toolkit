@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.reader
 
-import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,9 +19,8 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.utils.toggleSystemUi
 
-class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
+class PdfReaderFragment : FullscreenReaderFragment(), PdfNavigatorFragment.Listener {
 
     override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator

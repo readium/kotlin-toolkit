@@ -16,10 +16,10 @@ import org.readium.r2.testapp.utils.showSystemUi
 /**
  * Adds fullscreen support to the ReaderActivity
  */
-open class VisualReaderActivity : ReaderActivity() {
+open class FullscreenReaderActivity : ReaderActivity() {
 
-    private val visualReaderFragment: VisualReaderFragment
-        get() = readerFragment as VisualReaderFragment
+    private val fullscreenReaderFragment: FullscreenReaderFragment
+        get() = readerFragment as FullscreenReaderFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,17 +47,17 @@ open class VisualReaderActivity : ReaderActivity() {
     }
 
     private fun updateSystemUiVisibility() {
-        if (visualReaderFragment.isHidden)
+        if (fullscreenReaderFragment.isHidden)
             showSystemUi()
         else
-            visualReaderFragment.updateSystemUiVisibility()
+            fullscreenReaderFragment.updateSystemUiVisibility()
 
         // Seems to be required to adjust padding when transitioning from the outlines to the screen reader
         binding.activityContainer.requestApplyInsets()
     }
 
     private fun updateSystemUiPadding(container: View, insets: WindowInsets) {
-        if (visualReaderFragment.isHidden)
+        if (fullscreenReaderFragment.isHidden)
             container.padSystemUi(insets, this)
         else
             container.clearPadding()

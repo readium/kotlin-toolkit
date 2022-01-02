@@ -2,7 +2,7 @@ package org.readium.r2.navigator.media2
 
 import androidx.media2.common.SessionPlayer
 
-internal enum class MediaControllerState {
+internal enum class SessionPlayerState {
     Idle,
     Paused,
     Playing,

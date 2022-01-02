@@ -46,7 +46,7 @@ class ReaderContract : ActivityResultContract<ReaderContract.Input, ReaderContra
                 input.publication.conformsTo(Publication.Profile.EPUB) ||
                         input.publication.conformsTo(Publication.Profile.DIVINA) ||
                         input.publication.conformsTo(Publication.Profile.PDF) ->
-                    VisualReaderActivity::class.java
+                    FullscreenReaderActivity::class.java
                 else ->
                     throw IllegalArgumentException("Unknown [mediaType]")
             },

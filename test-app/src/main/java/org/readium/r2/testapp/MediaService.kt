@@ -6,12 +6,16 @@ import android.os.Build
 import android.os.IBinder
 import androidx.lifecycle.lifecycleScope
 import androidx.media2.session.MediaSession
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.media2.PublicationPlayerFactory
-import org.readium.r2.navigator.media2.locatorNow
+import org.readium.r2.navigator.media2.MediaNavigator
+import org.readium.r2.navigator.media2.MediaSessionNavigator
+import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderContract
@@ -20,37 +24,58 @@ import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
-@ExperimentalAudiobook
-@ExperimentalTime
+@OptIn(ExperimentalTime::class, ExperimentalAudiobook::class, ExperimentalCoroutinesApi::class)
 class MediaService : LifecycleMediaSessionService() {
 
     inner class Binder : android.os.Binder() {
-        fun open(input: ReaderContract.Input): Boolean {
-            val player = playerFactory.open(applicationContext, input.publication, input.initialLocator)
-                ?: run {
-                    Timber.e("Publication not supported by any engine.")
-                    return false
-                }
 
-            when (val currentSession = mediaSession) {
-                null -> {
-                    val activityIntent = createSessionActivityIntent(input)
-                    Timber.d("Creating MediaSession for book ${input.bookId}.")
-                    val session = MediaSession.Builder(applicationContext, player)
-                        .setSessionActivity(activityIntent)
-                        .build()
-                    mediaSession = session
-                    currentBookId = input.bookId
-                }
-                else -> {
-                    Timber.d("Updating MediaSession for book ${input.bookId}.")
-                    currentSession.player.close()
-                    currentSession.updatePlayer(player)
-                    currentBookId = input.bookId
-                }
+        private val books by lazy {
+            BookRepository(BookDatabase.getDatabase(this@MediaService).booksDao())
+        }
+
+        private var currentBookId: Long? = null
+
+        private var saveLocationJob: Job? = null
+
+        var mediaSession: MediaSession? = null
+
+        var mediaNavigator: MediaSessionNavigator? = null
+
+        suspend fun openPublication(arguments: ReaderContract.Input): Try<Unit, MediaNavigator.Exception> {
+            closePublication()
+            return MediaSessionNavigator.create(
+                this@MediaService,
+                arguments.publication,
+                arguments.initialLocator
+            ).map {
+                bindNavigator(it, arguments)
             }
+        }
 
-            return true
+        fun closePublication() {
+            mediaSession?.close()
+            mediaSession = null
+            saveLocationJob?.cancel()
+            saveLocationJob = null
+            mediaNavigator?.close()
+            mediaNavigator = null
+            currentBookId = null
+        }
+
+        @OptIn(FlowPreview::class)
+        private fun bindNavigator(navigator: MediaSessionNavigator, arguments: ReaderContract.Input) {
+            val activityIntent = createSessionActivityIntent(arguments)
+            mediaSession = navigator.session(applicationContext, arguments.bookId.toString(), activityIntent)
+                .also { addSession(it) }
+            mediaNavigator = navigator
+            saveLocationJob = navigator.currentLocator
+                .buffer(1, BufferOverflow.DROP_OLDEST)
+                .onEach {  locator ->
+                    delay(3.seconds)
+                    currentBookId?.let { id -> books.saveProgression(locator, id) }
+                }
+                .launchIn(lifecycleScope)
+            currentBookId = arguments.bookId
         }
 
         private fun createSessionActivityIntent(input: ReaderContract.Input): PendingIntent {
@@ -59,7 +84,8 @@ class MediaService : LifecycleMediaSessionService() {
                 flags = flags or PendingIntent.FLAG_IMMUTABLE
             }
 
-            val intent = ReaderContract().createIntent(applicationContext, input.copy(initialLocator = null))
+            val intent =
+                ReaderContract().createIntent(applicationContext, input.copy(initialLocator = null))
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
             return PendingIntent.getActivity(applicationContext, 0, intent, flags)
@@ -67,42 +93,19 @@ class MediaService : LifecycleMediaSessionService() {
     }
 
     private val binder by lazy {
-      Binder()
+        Binder()
     }
-
-    private val books by lazy {
-        BookRepository(BookDatabase.getDatabase(this).booksDao())
-    }
-
-    private val playerFactory = PublicationPlayerFactory()
-
-    private var mediaSession: MediaSession? = null
-
-    private var currentBookId: Long? = null
 
     override fun onCreate() {
         super.onCreate()
         Timber.d("MediaService created.")
-
-        // Save the current locator in the database. We can't do this in the [ReaderActivity] since
-        // the playback can continue in the background without any [Activity].
-        lifecycleScope.launch {
-            while (isActive) {
-                saveLocationIfNeeded()
-                delay(3.seconds)
-            }
-        }
-    }
-
-    private suspend fun saveLocationIfNeeded() {
-        val currentBookIdNow = currentBookId ?: return
-        val locatorNow =  mediaSession?.player?.locatorNow() ?: return
-        books.saveProgression(locatorNow, currentBookIdNow)
     }
 
     override fun onBind(intent: Intent): IBinder? {
         Timber.d("onBind called with $intent")
-        return if (intent.action == null) {
+
+        return if (intent.action == SERVICE_INTERFACE) {
+            super.onBind(intent)
             Timber.d("Returning custom binder.")
             binder
         } else {
@@ -112,7 +115,7 @@ class MediaService : LifecycleMediaSessionService() {
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
-        return mediaSession
+        return binder.mediaSession
     }
 
     override fun onDestroy() {
@@ -123,13 +126,11 @@ class MediaService : LifecycleMediaSessionService() {
     override fun onTaskRemoved(rootIntent: Intent) {
         super.onTaskRemoved(rootIntent)
         Timber.d("Task removed. Stopping session and service.")
-        mediaSession?.player?.close()
-        mediaSession?.close()
+        binder.closePublication()
         stopSelf()
     }
 
     companion object {
-
         const val SERVICE_INTERFACE = "org.readium.r2.testapp.MediaService"
     }
 }

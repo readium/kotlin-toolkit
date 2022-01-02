@@ -1,154 +1,261 @@
 package org.readium.r2.navigator.media2
 
+import android.app.PendingIntent
 import android.content.Context
-import android.os.Bundle
-import androidx.media2.session.MediaController
-import androidx.media2.session.SessionToken
+import androidx.media2.common.MediaMetadata
+import androidx.media2.common.SessionPlayer
+import androidx.media2.session.MediaSession
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.ExperimentalAudiobook
+import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.extensions.time
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.toLocator
+import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.flatMap
 import timber.log.Timber
 import java.util.concurrent.Executors
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
+/**
+ * An audiobook navigator to connect to a MediaSession from Jetpack Media2.
+ *
+ * Use [create] to get an instance for a given publication, and build a session from it
+ * with the [session] method. Apps are responsible for attaching this session to a service able to
+ * expose it.
+ *
+ * You can build a [MediaSessionNavigator] upon any Media2 [SessionPlayer] implementation
+ * providing [create] with it. If you don't, ExoPlayer will be used, without cache.
+ * Use [ExoPlayerFactory] to build a [SessionPlayer] based on ExoPlayer with caching capabilities.
+ */
 @ExperimentalAudiobook
 @OptIn(ExperimentalTime::class)
 class MediaSessionNavigator private constructor(
-  private val controllerFacade: MediaControllerFacade,
-  private val controllerCallback: MediaControllerCallback,
-  private val configuration: Configuration,
-) {
+  override val publication: Publication,
+  private val playerFacade: SessionPlayerFacade,
+  private val playerCallback: SessionPlayerCallback,
+  private val configuration: Configuration
+) : MediaNavigator {
 
-  val currentLocator: Flow<Locator> =
-    combine(controllerCallback.currentItem, controllerCallback.currentPosition) { currentItem, currentPosition ->
-      controllerFacade.locatorNow(currentItem, currentPosition)
+  private val coroutineScope: CoroutineScope = MainScope()
+
+  private fun<T> Flow<T>.stateInFirst(coroutineScope: CoroutineScope): StateFlow<T> =
+    stateIn(coroutineScope, SharingStarted.Lazily, runBlocking { first() })
+
+  private val totalDuration: Duration? =
+    this.playerFacade.playlist!!.durations?.sum()
+
+  private val currentLocatorFlow: Flow<Locator> =
+    combine(playerCallback.currentItem, playerCallback.currentPosition) { currentItem, currentPosition ->
+      locator(currentItem, currentPosition, this.playerFacade.playlist!!.map { it.metadata!! })
     }
 
-  val playbackState: Flow<MediaNavigatorPlayback> =
-    combine(
-      controllerCallback.mediaControllerState,
-      controllerCallback.currentItem,
-      controllerCallback.currentPosition,
-      controllerCallback.bufferedPosition
-    ) { currentState, currentItem, currentPosition, bufferedPosition ->
-      when (currentState) {
-        MediaControllerState.Paused, MediaControllerState.Playing ->
-          MediaNavigatorPlayback.Playing(
-            paused = currentState == MediaControllerState.Paused,
-            currentIndex = currentItem.index,
-            currentLink = currentItem.toLink(),
-            currentPosition = currentPosition,
-            bufferedPosition = bufferedPosition
-          )
-        MediaControllerState.Idle, MediaControllerState.Error ->
-          MediaNavigatorPlayback.Error
-      }
-    }
+  private fun locator(item: MediaMetadata, position: Duration, playlist: List<MediaMetadata>): Locator {
+    val link = publication.readingOrder[item.index]
+    val itemStartPosition = playlist.slice(0 until item.index).map { it.duration }.sum()
+    val totalProgression = totalDuration?.let { (itemStartPosition + position) / it }
 
-  val playbackRate: Double
-    get() = checkNotNull(controllerFacade.playbackSpeed)
-
-  val playlist: List<Link>
-    get() = checkNotNull(controllerFacade.playlist).map { it.metadata!!.toLink() }
-
-  suspend fun prepare(): MediaNavigatorResult {
-    return controllerFacade.prepare().toNavigatorResult()
+    return link.toLocator().copyWithLocations(
+      fragments = listOf("t=${position.inWholeSeconds}"),
+      progression = item.duration?.let { position / it },
+      position = item.index,
+      totalProgression = totalProgression
+    )
   }
 
-  suspend fun setPlaybackRate(rate: Double): MediaNavigatorResult =
-    controllerFacade.setPlaybackSpeed(rate).toNavigatorResult()
+  override val currentLocator: StateFlow<Locator> =
+    currentLocatorFlow.stateInFirst(coroutineScope)
 
-  suspend fun play(): MediaNavigatorResult =
-    controllerFacade.play().toNavigatorResult()
+  private val playbackStateFlow: Flow<MediaNavigator.Playback> =
+    combine(
+      playerCallback.playerState,
+      playerCallback.playbackSpeed,
+      playerCallback.currentItem,
+      playerCallback.currentPosition,
+      playerCallback.bufferedPosition
+    ) { currentState, playbackSpeed, currentItem, currentPosition, bufferedPosition ->
+        val state = when (currentState) {
+          SessionPlayerState.Playing ->
+            MediaNavigator.Playback.State.Playing
+          SessionPlayerState.Idle, SessionPlayerState.Error  ->
+            MediaNavigator.Playback.State.Error
+          SessionPlayerState.Paused ->
+            if (playerCallback.playbackCompleted) {
+              MediaNavigator.Playback.State.Finished
+          } else {
+            MediaNavigator.Playback.State.Paused
+          }
+        }
+        MediaNavigator.Playback(
+          state = state,
+          rate = playbackSpeed.toDouble(),
+          currentIndex = currentItem.index,
+          currentLink = publication.readingOrder[currentItem.index],
+          currentPosition = currentPosition,
+          bufferedPosition = bufferedPosition
+        )
+      }
 
-  suspend fun pause(): MediaNavigatorResult =
-    controllerFacade.pause().toNavigatorResult()
+  override val playback: StateFlow<MediaNavigator.Playback> =
+   playbackStateFlow.stateInFirst(coroutineScope)
 
-  suspend fun seek(itemIndex: Int, position: Duration): MediaNavigatorResult=
-    controllerFacade.seekTo(itemIndex, position).toNavigatorResult()
+  override suspend fun setPlaybackRate(rate: Double): Try<Unit, MediaNavigator.Exception> =
+    playerFacade.setPlaybackSpeed(rate).toNavigatorResult()
 
-  suspend fun go(locator: Locator): MediaNavigatorResult {
+  override suspend fun play(): Try<Unit, MediaNavigator.Exception> =
+    playerFacade.play().toNavigatorResult()
+
+  override suspend fun pause(): Try<Unit, MediaNavigator.Exception> =
+    playerFacade.pause().toNavigatorResult()
+
+  override suspend fun seek(index: Int, position: Duration): Try<Unit, MediaNavigator.Exception> =
+    playerFacade.seekTo(index, position).toNavigatorResult()
+
+  override suspend fun go(locator: Locator): Try<Unit, MediaNavigator.Exception> {
     Timber.d("Go to locator $locator")
-    val itemIndex = checkNotNull(controllerFacade.playlist).indexOfFirstWithHref(locator.href)
+    val itemIndex = checkNotNull(publication.readingOrder.indexOfFirstWithHref(locator.href))
     val position = locator.locations.time ?: Duration.ZERO
     return seek(itemIndex, position)
   }
 
-  suspend fun go(link: Link) =
+  override suspend fun go(link: Link) =
     go(link.toLocator())
 
-  suspend fun goForward(): MediaNavigatorResult =
-    smartSeek(configuration.skipForwardInterval)
+  override suspend fun goForward(): Try<Unit, MediaNavigator.Exception> =
+    seekBy(configuration.skipForwardInterval)
 
-  suspend fun goBackward(): MediaNavigatorResult =
-    smartSeek(-configuration.skipBackwardInterval)
+  override suspend fun goBackward(): Try<Unit, MediaNavigator.Exception> =
+    seekBy(-configuration.skipBackwardInterval)
 
-  private suspend fun smartSeek(offset: Duration): MediaNavigatorResult {
-    val playlistNow = this.playlist
-    if (playlistNow.any { it.duration == null }) {
-      // Do a dummy seek
-      val newIndex = controllerFacade.currentIndex!!
-      val newPosition = controllerFacade.currentPosition!! + offset
-      return controllerFacade.seekTo(newIndex, newPosition).toNavigatorResult()
-    }
+  private suspend fun seekBy(offset: Duration): Try<Unit, MediaNavigator.Exception> =
+    this.playerFacade.playlist!!.durations
+      ?.let { smartSeekBy(offset, it) }
+      ?: dummySeekBy(offset)
 
-    val(newIndex, newPosition) = SmartSeeker.dispatchSeek(
-      offset,
-      controllerFacade.currentPosition!!,
-      controllerFacade.currentItem!!.metadata!!.index,
-      playlistNow.map { it.duration!!.seconds }
-    )
+  private suspend fun smartSeekBy(offset: Duration, durations: List<Duration>): Try<Unit, MediaNavigator.Exception> {
+    val(newIndex, newPosition) =
+      SmartSeeker.dispatchSeek(
+        offset,
+        playerFacade.currentPosition!!,
+        playerFacade.currentIndex!!,
+        durations
+      )
     Timber.d("Smart seeking by $offset resolved to item $newIndex position $newPosition")
-    return controllerFacade.seekTo(newIndex, newPosition).toNavigatorResult()
+    return playerFacade.seekTo(newIndex, newPosition).toNavigatorResult()
   }
 
-  fun close() {
-    controllerFacade.close()
+  private suspend fun dummySeekBy(offset: Duration): Try<Unit, MediaNavigator.Exception> {
+    val newIndex = playerFacade.currentIndex!!
+    val newPosition = playerFacade.currentPosition!! + offset
+    return playerFacade.seekTo(newIndex, newPosition).toNavigatorResult()
   }
+
+  override fun close() {
+    playerFacade.unregisterPlayerCallback(playerCallback)
+    playerCallback.close()
+    playerFacade.close()
+  }
+
+  fun session(context: Context, id: String, activityIntent: PendingIntent): MediaSession =
+    playerFacade.session(context, id, activityIntent)
+
 
   data class Configuration(
     val positionRefreshRate: Double = 2.0,  // Hz
     val skipForwardInterval: Duration = 30.seconds,
     val skipBackwardInterval: Duration = 30.seconds,
   )
+  
+  /*
+   * Compatibility
+   */
+
+  private fun launchAndRun(runnable: suspend () -> Unit, callback: () -> Unit) =
+    coroutineScope.launch { runnable() }.invokeOnCompletion { callback() }
+
+  override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+    launchAndRun({ go(locator) }, completion)
+    return true
+  }
+
+  override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+    launchAndRun({ go(link) }, completion)
+    return true
+  }
+
+  override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
+    launchAndRun({ goForward() }, completion)
+    return true
+  }
+
+  override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
+    launchAndRun({ goBackward() }, completion)
+    return true
+  }
 
   companion object {
 
     suspend fun create(
       context: Context,
-      sessionToken: SessionToken,
-      connectionHints: Bundle,
-      configuration: Configuration = Configuration()
-    ): MediaSessionNavigator {
+      publication: Publication,
+      initialLocator: Locator?,
+      configuration: Configuration = Configuration(),
+      player: SessionPlayer = ExoPlayerFactory().createPlayer(context, publication)
+    ): Try<MediaSessionNavigator, MediaNavigator.Exception> {
 
       val positionRefreshDelay = (1.0 / configuration.positionRefreshRate).seconds
-      val controllerCallback = MediaControllerCallback(positionRefreshDelay)
+      val callback = SessionPlayerCallback(positionRefreshDelay)
       val callbackExecutor = Executors.newSingleThreadExecutor()
+      player.registerPlayerCallback(callbackExecutor, callback)
 
-      val mediaController = MediaController.Builder(context)
-        .setConnectionHints(connectionHints)
-        .setSessionToken(sessionToken)
-        .setControllerCallback(callbackExecutor, controllerCallback)
-        .build()
-
-      val controllerFacade = MediaControllerFacade(mediaController)
-
-      // Wait for the MediaController being connected and the playlist being ready.
-
-      controllerCallback.connectedState.first { it }
-      controllerCallback.mediaControllerState.first()
-      controllerFacade.prepare()
-
-      return MediaSessionNavigator(
-        controllerFacade,
-        controllerCallback,
-        configuration,
-      )
+      val facade = SessionPlayerFacade(player)
+      return preparePlayer(publication, facade)
+        // Ignoring failure to set initial locator
+        .onSuccess { goInitialLocator(publication, initialLocator, facade) }
+        // Player must be ready to play when MediaNavigator's constructor is called.
+        .map { MediaSessionNavigator(publication, facade, callback, configuration) }
     }
+
+    private suspend fun preparePlayer(
+      publication: Publication, player:
+      SessionPlayerFacade
+    ): Try<Unit, MediaNavigator.Exception> {
+      val playlist = publication.readingOrder.toPlayList()
+      val metadata = publicationMetadata(publication)
+      return player.setPlaylist(playlist, metadata)
+        .flatMap { player.prepare() }
+        .toNavigatorResult()
+    }
+
+    private suspend fun goInitialLocator(
+      publication: Publication,
+      initialLocator: Locator?,
+      player: SessionPlayerFacade
+    ) {
+      initialLocator?.let { locator ->
+        val itemIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
+          ?: run { Timber.e("Invalid initial locator."); return }
+        val position = locator.locations.time
+          ?: Duration.ZERO
+        player.seekTo(itemIndex, position)
+          .onFailure { Timber.d("Failed to seek to the provided initial locator.") }
+      }
+    }
+
+    private class PlayerException(
+      val error: SessionPlayerError,
+      override val message: String = "${error.name} error occurred in SessionPlayer."
+    ) : MediaNavigator.Exception()
+
+    internal fun SessionPlayerResult.toNavigatorResult(): Try<Unit, MediaNavigator.Exception> =
+      if (isSuccess)
+        Try.success(Unit)
+      else
+        this.mapFailure { PlayerException(it.error) }
   }
 }

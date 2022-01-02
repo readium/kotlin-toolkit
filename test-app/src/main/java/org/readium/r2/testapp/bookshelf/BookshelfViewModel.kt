@@ -7,14 +7,10 @@
 package org.readium.r2.testapp.bookshelf
 
 import android.app.Application
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +20,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.ExperimentalAudiobook
+import org.readium.r2.navigator.media2.MediaNavigator
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.extensions.mediaType
 import org.readium.r2.shared.extensions.tryOrNull
@@ -39,7 +36,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig
-import org.readium.r2.testapp.MediaService
 import org.readium.r2.testapp.R2App
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Book
@@ -54,8 +50,6 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.time.ExperimentalTime
 
 class BookshelfViewModel(application: Application) : AndroidViewModel(application) {
@@ -213,12 +207,24 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
                     val initialLocator = book.progression?.let { Locator.fromJSON(JSONObject(it)) }
                     val arguments = ReaderContract.Input(bookId, publication, initialLocator, url)
                     if (publication.conformsTo(Publication.Profile.AUDIOBOOK)) {
-                        val mediaService = (r2Application as R2App).mediaServiceBinder.await()
-                        mediaService.open(arguments)
+                       openAudiobookIfNeeded(arguments)
+                           .onSuccess { channel.send(Event.LaunchReader(arguments)) }
+                           .onFailure { channel.send(Event.OpenBookError("Cannot open audiobook.")) }
+                    } else {
+                        channel.send(Event.LaunchReader(arguments))
                     }
-                    channel.send(Event.LaunchReader(arguments))
                 }
             }
+    }
+
+    @OptIn(ExperimentalAudiobook::class)
+    private suspend fun openAudiobookIfNeeded(arguments: ReaderContract.Input): Try<Unit, MediaNavigator.Exception> {
+        val app = r2Application as R2App
+        val mediaService = app.awaitMediaService()
+        return if (mediaService.mediaSession?.id != arguments.bookId.toString()) {
+             mediaService.openPublication(arguments)
+        } else
+            Try.success(Unit)
     }
 
     private fun prepareToServe(publication: Publication): URL? {

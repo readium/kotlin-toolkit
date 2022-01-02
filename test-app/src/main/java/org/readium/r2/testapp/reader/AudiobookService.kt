@@ -22,6 +22,9 @@ import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 
+/**
+ * Deprecated. This is left in place for the sake of illustrating the use of the old media1 API.
+ */
 @OptIn(ExperimentalAudiobook::class, ExperimentalCoroutinesApi::class)
 class AudiobookService : MediaService() {
 
