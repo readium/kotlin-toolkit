@@ -1,7 +1,7 @@
 package org.readium.r2.navigator.media2
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import kotlin.test.assertEquals
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
