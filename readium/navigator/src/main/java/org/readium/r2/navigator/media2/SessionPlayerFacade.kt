@@ -20,7 +20,7 @@ import kotlin.time.ExperimentalTime
 
 /**
  * This class's purpose is two-fold:
- * - wrapping the MediaController inside a coroutine-based API
+ * - wrapping the [SessionPlayer] inside a coroutine-based API
  * - adding compound commands
  *
  * All commands, either basic or compound, are executed in order of arrival on the same thread.
