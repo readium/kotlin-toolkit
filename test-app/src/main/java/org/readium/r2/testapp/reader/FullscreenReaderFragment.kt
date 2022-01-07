@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.util.EdgeTapNavigation
@@ -66,7 +67,7 @@ abstract class FullscreenReaderFragment : VisualReaderFragment(), VisualNavigato
 
     private fun updateSystemUiPadding(container: View, insets: WindowInsets) {
         if (navigatorFragment.isHidden) {
-            container.padSystemUi(insets, requireActivity())
+            container.padSystemUi(insets, requireActivity() as AppCompatActivity)
         } else {
             container.clearPadding()
         }

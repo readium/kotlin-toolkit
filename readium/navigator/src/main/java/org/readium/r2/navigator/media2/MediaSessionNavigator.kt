@@ -5,11 +5,8 @@ import android.content.Context
 import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import androidx.media2.session.MediaSession
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.extensions.time
@@ -172,6 +169,7 @@ class MediaSessionNavigator private constructor(
         playerFacade.unregisterPlayerCallback(playerCallback)
         playerCallback.close()
         playerFacade.close()
+        coroutineScope.cancel()
     }
 
     fun session(context: Context, id: String, activityIntent: PendingIntent): MediaSession =

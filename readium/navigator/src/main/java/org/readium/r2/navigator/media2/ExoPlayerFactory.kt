@@ -13,18 +13,13 @@ import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.audio.PublicationDataSource
 import org.readium.r2.shared.publication.Publication
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 
 @ExperimentalAudiobook
-@OptIn(ExperimentalTime::class)
 class ExoPlayerFactory(private val cache: Cache? = null) {
 
     fun createPlayer(context: Context, publication: Publication): SessionPlayer {
         val dataSourceFactory = createDataSource(publication, cache)
         val player: ExoPlayer = ExoPlayer.Builder(context)
-            .setSeekBackIncrementMs(30.seconds.inWholeMilliseconds)
-            .setSeekForwardIncrementMs(30.seconds.inWholeMilliseconds)
             .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
             .setAudioAttributes(
                 AudioAttributes.Builder()

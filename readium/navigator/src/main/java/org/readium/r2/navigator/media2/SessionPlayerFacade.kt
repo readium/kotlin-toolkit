@@ -28,7 +28,6 @@ import kotlin.time.ExperimentalTime
  * - in case of failure, the playback can be left in an intermediate state
  * - the behaviour is undefined if any external controller takes actions at the same time
  */
-
 @ExperimentalAudiobook
 @OptIn(ExperimentalTime::class)
 internal class SessionPlayerFacade(
@@ -54,7 +53,6 @@ internal class SessionPlayerFacade(
 
     val playbackSpeed: Double?
         get() = sessionPlayer.playbackSpeedNullable
-
 
     fun unregisterPlayerCallback(callback: SessionPlayer.PlayerCallback) {
         sessionPlayer.unregisterPlayerCallback(callback)

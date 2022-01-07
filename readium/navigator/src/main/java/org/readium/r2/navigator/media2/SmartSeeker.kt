@@ -3,6 +3,9 @@ package org.readium.r2.navigator.media2
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
+/**
+ * Compute relative seeks across playlist items.
+ */
 @ExperimentalTime
 internal object SmartSeeker {
 

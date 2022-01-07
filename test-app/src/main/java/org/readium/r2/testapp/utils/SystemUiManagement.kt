@@ -54,12 +54,12 @@ fun Activity.toggleSystemUi() {
 }
 
 /** Set padding around view so that content doesn't overlap system UI */
-fun View.padSystemUi(insets: WindowInsets, activity: Activity) =
+fun View.padSystemUi(insets: WindowInsets, activity: AppCompatActivity) =
     WindowInsetsCompat.toWindowInsetsCompat(insets, this)
         .getInsets(WindowInsetsCompat.Type.systemBars()).apply {
             setPadding(
                 left,
-                top + (activity as AppCompatActivity).supportActionBar!!.height,
+                top + activity.supportActionBar!!.height,
                 right,
                 bottom
             )
