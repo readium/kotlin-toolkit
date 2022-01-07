@@ -67,7 +67,7 @@ open class ReaderActivity : AppCompatActivity() {
                 val readerClass: Class<out Fragment> = when {
                     publication.conformsTo(Publication.Profile.PDF) -> PdfReaderFragment::class.java
                     publication.conformsTo(Publication.Profile.DIVINA) -> ImageReaderFragment::class.java
-                    publication.conformsTo(Publication.Profile.AUDIOBOOK) -> AudioReaderFragment2::class.java
+                    publication.conformsTo(Publication.Profile.AUDIOBOOK) -> AudioReaderFragment::class.java
                     else -> throw IllegalArgumentException("Cannot render publication")
                 }
 

@@ -31,7 +31,7 @@ import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalAudiobook::class, ExperimentalTime::class, ExperimentalCoroutinesApi::class)
-class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListener {
+class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListener {
 
     override val model: ReaderViewModel by activityViewModels()
     override val navigator: MediaNavigator get() = _navigator
@@ -176,19 +176,19 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
     private fun onPlayPause(@Suppress("UNUSED_PARAMETER") view: View) {
         return when (displayedPlayback.state) {
             MediaNavigator.Playback.State.Playing -> {
-                lifecycleScope.launch {
+                model.viewModelScope.launch {
                     navigator.pause()
                 }
                 Unit
             }
             MediaNavigator.Playback.State.Paused -> {
-                lifecycleScope.launch {
+                model.viewModelScope.launch {
                     navigator.play()
                 }
                 Unit
             }
             MediaNavigator.Playback.State.Finished -> {
-                lifecycleScope.launch {
+                model.viewModelScope.launch {
                     navigator.seek(0, Duration.ZERO)
                     navigator.play()
                 }
@@ -201,13 +201,13 @@ class AudioReaderFragment2 : BaseReaderFragment(), SeekBar.OnSeekBarChangeListen
     }
 
     private fun onSkipForward(@Suppress("UNUSED_PARAMETER") view: View) {
-        lifecycleScope.launch {
+        model.viewModelScope.launch {
             navigator.goForward()
         }
     }
 
     private fun onSkipBackward(@Suppress("UNUSED_PARAMETER") view: View) {
-        lifecycleScope.launch {
+        model.viewModelScope.launch {
             navigator.goBackward()
         }
     }
