@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.util.EdgeTapNavigation
+import org.readium.r2.shared.util.viewLifecycle
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.utils.*
 
@@ -25,18 +26,6 @@ import org.readium.r2.testapp.utils.*
 abstract class FullscreenReaderFragment : VisualReaderFragment(), VisualNavigator.Listener {
 
     private lateinit var navigatorFragment: Fragment
-
-    private var _binding: FragmentReaderBinding? = null
-    val binding get() = _binding!!
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentReaderBinding.inflate(inflater, container, false)
-        return binding.root
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -49,11 +38,6 @@ abstract class FullscreenReaderFragment : VisualReaderFragment(), VisualNavigato
             updateSystemUiPadding(container, insets)
             insets
         }
-    }
-
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
     }
 
     fun updateSystemUiVisibility() {

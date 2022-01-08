@@ -16,13 +16,15 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.util.BaseActionModeCallback
-import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.viewLifecycle
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.domain.model.Highlight
 
 /*
@@ -32,6 +34,17 @@ import org.readium.r2.testapp.domain.model.Highlight
  */
 @OptIn(ExperimentalDecorator::class)
 abstract class VisualReaderFragment : BaseReaderFragment() {
+
+    protected var binding: FragmentReaderBinding by viewLifecycle()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentReaderBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

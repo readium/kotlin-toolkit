@@ -19,8 +19,6 @@ import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.domain.model.Bookmark
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.utils.extensions.authorName
-import java.util.*
-import org.readium.r2.navigator.epub.Highlight as NavigatorHighlight
 
 class BookRepository(private val booksDao: BooksDao) {
 

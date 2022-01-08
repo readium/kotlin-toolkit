@@ -35,13 +35,11 @@ import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.R2App
 import org.readium.r2.testapp.epub.UserSettings
 import org.readium.r2.testapp.search.SearchFragment
 import org.readium.r2.testapp.tts.ScreenReaderContract
 import org.readium.r2.testapp.tts.ScreenReaderFragment
 import org.readium.r2.testapp.utils.extensions.toDataUrl
-import java.net.URL
 
 @OptIn(ExperimentalDecorator::class)
 class EpubReaderFragment : FullscreenReaderFragment(), EpubNavigatorFragment.Listener {
@@ -63,8 +61,6 @@ class EpubReaderFragment : FullscreenReaderFragment(), EpubNavigatorFragment.Lis
     private var isExploreByTouchEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        check(R2App.isServerStarted)
-
         val activity = requireActivity()
 
         if (savedInstanceState != null) {
@@ -72,18 +68,16 @@ class EpubReaderFragment : FullscreenReaderFragment(), EpubNavigatorFragment.Lis
             isSearchViewIconified = savedInstanceState.getBoolean(IS_SEARCH_VIEW_ICONIFIED)
         }
 
-        ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
+        ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
             model = it
-            publication = it.publication
+            publication = it.arguments.publication
         }
-
-        val baseUrl = checkNotNull(requireArguments().getString(BASE_URL_ARG))
 
         childFragmentManager.fragmentFactory =
             EpubNavigatorFragment.createFactory(
                 publication = publication,
-                baseUrl = baseUrl,
-                initialLocator = model.initialLocation,
+                baseUrl = checkNotNull(model.arguments.baseUrl).toString(),
+                initialLocator = model.arguments.initialLocation,
                 listener = this,
                 config = EpubNavigatorFragment.Configuration().apply {
                     // Register the HTML template for our custom [DecorationStyleAnnotationMark].
@@ -119,7 +113,7 @@ class EpubReaderFragment : FullscreenReaderFragment(), EpubNavigatorFragment.Lis
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
         val navigatorFragmentTag = getString(R.string.epub_navigator_tag)
 
@@ -299,21 +293,11 @@ class EpubReaderFragment : FullscreenReaderFragment(), EpubNavigatorFragment.Lis
 
     companion object {
 
-        private const val BASE_URL_ARG = "baseUrl"
-
         private const val SEARCH_FRAGMENT_TAG = "search"
 
         private const val IS_SCREEN_READER_VISIBLE_KEY = "isScreenReaderVisible"
 
         private const val IS_SEARCH_VIEW_ICONIFIED = "isSearchViewIconified"
-
-        fun newInstance(baseUrl: URL): EpubReaderFragment {
-            return EpubReaderFragment().apply {
-                arguments = Bundle().apply {
-                    putString(BASE_URL_ARG, baseUrl.toString())
-                }
-            }
-        }
     }
 }
 

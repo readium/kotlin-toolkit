@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.bookshelf
 
-import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -35,8 +34,8 @@ import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
+import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.BuildConfig
-import org.readium.r2.testapp.R2App
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.reader.ReaderContract
@@ -52,14 +51,13 @@ import java.net.URL
 import java.util.*
 import kotlin.time.ExperimentalTime
 
-class BookshelfViewModel(application: Application) : AndroidViewModel(application) {
+class BookshelfViewModel(application: android.app.Application) : AndroidViewModel(application) {
 
-    private val r2Application = application
+    private val r2Application = application as Application
     private val booksDao = BookDatabase.getDatabase(application).booksDao()
     private val repository = BookRepository(booksDao)
     private val preferences =
         application.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
-    private var server: Server = R2App.server
     private var lcpService = LcpService(application)
         ?.let { Try.success(it) }
         ?: Try.failure(Exception("liblcp is missing on the classpath"))
@@ -69,7 +67,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             lcpService.getOrNull()?.contentProtection()
         )
     )
-    private var r2Directory: String = R2App.R2DIRECTORY
+    private var r2Directory: String = r2Application.r2Directory
     val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
 
     val books = repository.books()
@@ -81,7 +79,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     fun deleteBook(book: Book) = viewModelScope.launch {
         book.id?.let { repository.deleteBook(it) }
         tryOrNull { File(book.href).delete() }
-        tryOrNull { File("${R2App.R2DIRECTORY}covers/${book.id}.png").delete() }
+        tryOrNull { File("${r2Application.r2Directory}covers/${book.id}.png").delete() }
     }
 
     private suspend fun addPublicationToDatabase(
@@ -181,58 +179,6 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             }
     }
 
-    @OptIn(ExperimentalTime::class)
-    fun openBook(
-        context: Context,
-        bookId: Long,
-    ) = viewModelScope.launch {
-        val book = booksDao.get(bookId) ?: return@launch
-        val file = File(book.href)
-        require(file.exists())
-        val asset = FileAsset(file)
-
-        streamer.open(asset, allowUserInteraction = true, sender = context)
-            .onFailure { exception ->
-                Timber.d(exception)
-                channel.send(Event.OpenBookError(exception.getUserMessage(r2Application)))
-            }
-            .onSuccess { publication ->
-                if (publication.isRestricted) {
-                    publication.protectionError?.let { error ->
-                        Timber.d(error)
-                        channel.send(Event.OpenBookError(error.getUserMessage(r2Application)))
-                    }
-                } else {
-                    val url = prepareToServe(publication)
-                    val initialLocator = book.progression?.let { Locator.fromJSON(JSONObject(it)) }
-                    val arguments = ReaderContract.Input(bookId, publication, initialLocator, url)
-                    if (publication.conformsTo(Publication.Profile.AUDIOBOOK)) {
-                       openAudiobookIfNeeded(arguments)
-                           .onSuccess { channel.send(Event.LaunchReader(arguments)) }
-                           .onFailure { channel.send(Event.OpenBookError("Cannot open audiobook.")) }
-                    } else {
-                        channel.send(Event.LaunchReader(arguments))
-                    }
-                }
-            }
-    }
-
-    @OptIn(ExperimentalAudiobook::class)
-    private suspend fun openAudiobookIfNeeded(arguments: ReaderContract.Input): Try<Unit, MediaNavigator.Exception> {
-        val app = r2Application as R2App
-        val mediaService = app.awaitMediaService()
-        return if (mediaService.mediaSession?.id != arguments.bookId.toString()) {
-             mediaService.openPublication(arguments)
-        } else
-            Try.success(Unit)
-    }
-
-    private fun prepareToServe(publication: Publication): URL? {
-        val userProperties =
-            r2Application.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
-        return server.addPublication(publication, userPropertiesFile = File(userProperties))
-    }
-
     private fun storeCoverImage(publication: Publication, imageName: String) =
         viewModelScope.launch(Dispatchers.IO) {
             // TODO Figure out where to store these cover images
@@ -274,9 +220,5 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         object ImportPublicationSuccess : Event()
 
         object ImportDatabaseFailed : Event()
-
-        class OpenBookError(val errorMessage: String?) : Event()
-
-        class LaunchReader(val arguments: ReaderContract.Input) : Event()
     }
 }

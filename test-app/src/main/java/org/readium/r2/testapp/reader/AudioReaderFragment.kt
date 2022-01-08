@@ -20,8 +20,8 @@ import org.readium.r2.navigator.media2.MediaNavigator
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.cover
+import org.readium.r2.shared.util.viewLifecycle
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.R2App
 import org.readium.r2.testapp.databinding.FragmentAudiobookBinding
 import timber.log.Timber
 import kotlin.math.roundToLong
@@ -34,35 +34,28 @@ import kotlin.time.ExperimentalTime
 class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListener {
 
     override val model: ReaderViewModel by activityViewModels()
-    override val navigator: MediaNavigator get() = _navigator
-
-    private lateinit var _navigator: MediaNavigator
+    override lateinit var navigator: MediaNavigator
+    
     private lateinit var displayedPlayback: MediaNavigator.Playback
-    private var binding: FragmentAudiobookBinding? = null
+    private var binding: FragmentAudiobookBinding by viewLifecycle()
     private var seekingItem: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _navigator = (requireActivity().application as R2App).getMediaNavigator()
+        navigator = model.mediaNavigator
 
         if (savedInstanceState == null) {
-            lifecycleScope.launch { navigator.play() }
+            model.viewModelScope.launch { navigator.play() }
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentAudiobookBinding.inflate(inflater, container, false)
-        return binding?.root
-    }
-
-    override fun onDestroyView() {
-        binding = null
-        super.onDestroyView()
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val binding = requireNotNull(binding)
 
         binding.publicationTitle.text = model.publication.metadata.title
 
@@ -72,7 +65,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
             }
         }
 
-        displayedPlayback = _navigator.playback.value
+        displayedPlayback = navigator.playback.value
 
         viewLifecycleOwner.lifecycleScope.launch {
             navigator.playback.collectLatest { playback ->
@@ -89,7 +82,6 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
             return
         }
 
-        val binding = checkNotNull(binding)
         binding.playPause.isEnabled = true
         binding.timelineBar.isEnabled = true
         binding.timelineDuration.isEnabled = true
@@ -106,7 +98,6 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
     }
 
     private fun updateTimeline(link: Link, position: Duration?, buffered: Duration?) {
-        val binding = checkNotNull(binding)
         binding.timelineBar.max = link.duration?.toInt() ?: 0
         binding.timelineDuration.text = link.formattedDuration
         binding.timelineBar.progress = position?.inWholeSeconds?.toInt() ?: 0
@@ -121,7 +112,6 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         DateUtils.formatElapsedTime(toLong(DurationUnit.SECONDS))
 
     private fun onPlayerError() {
-        val binding = checkNotNull(binding)
         binding.playPause.isEnabled = false
         binding.timelineBar.isEnabled = false
         binding.timelinePosition.isEnabled = false
@@ -136,7 +126,6 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
     @SuppressLint("ClickableViewAccessibility")
     override fun onStart() {
         super.onStart()
-        val binding = checkNotNull(binding)
         binding.timelineBar.setOnTouchListener(this::forbidUserSeeking)
         binding.timelineBar.setOnSeekBarChangeListener(this)
         binding.playPause.setOnClickListener(this::onPlayPause)
@@ -150,7 +139,6 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
         if (fromUser) {
-            val binding = checkNotNull(binding)
             binding.timelinePosition.text = progress.seconds.formatElapsedTime()
         }
     }

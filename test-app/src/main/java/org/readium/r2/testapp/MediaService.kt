@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.media2.MediaSessionNavigator
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
@@ -41,14 +43,18 @@ class MediaService : LifecycleMediaSessionService() {
 
         var mediaNavigator: MediaSessionNavigator? = null
 
-        suspend fun openPublication(arguments: ReaderContract.Input): Try<Unit, MediaNavigator.Exception> {
+        suspend fun openPublication(
+            bookId: Long,
+            publication: Publication,
+            initialLocator: Locator?
+        ): Try<Unit, MediaNavigator.Exception> {
             closePublication()
             return MediaSessionNavigator.create(
                 this@MediaService,
-                arguments.publication,
-                arguments.initialLocator
+                publication,
+                initialLocator
             ).map {
-                bindNavigator(it, arguments)
+                bindNavigator(it, bookId)
             }
         }
 
@@ -63,9 +69,9 @@ class MediaService : LifecycleMediaSessionService() {
         }
 
         @OptIn(FlowPreview::class)
-        private fun bindNavigator(navigator: MediaSessionNavigator, arguments: ReaderContract.Input) {
-            val activityIntent = createSessionActivityIntent(arguments)
-            mediaSession = navigator.session(applicationContext, arguments.bookId.toString(), activityIntent)
+        private fun bindNavigator(navigator: MediaSessionNavigator, bookId: Long) {
+            val activityIntent = createSessionActivityIntent(bookId)
+            mediaSession = navigator.session(applicationContext, bookId.toString(), activityIntent)
                 .also { addSession(it) }
             mediaNavigator = navigator
             saveLocationJob = navigator.currentLocator
@@ -75,17 +81,17 @@ class MediaService : LifecycleMediaSessionService() {
                     currentBookId?.let { id -> books.saveProgression(locator, id) }
                 }
                 .launchIn(lifecycleScope)
-            currentBookId = arguments.bookId
+            currentBookId = bookId
         }
 
-        private fun createSessionActivityIntent(input: ReaderContract.Input): PendingIntent {
+        private fun createSessionActivityIntent(bookId: Long): PendingIntent {
             var flags = PendingIntent.FLAG_UPDATE_CURRENT
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 flags = flags or PendingIntent.FLAG_IMMUTABLE
             }
 
             val intent =
-                ReaderContract().createIntent(applicationContext, input.copy(initialLocator = null))
+                ReaderContract().createIntent(applicationContext, bookId)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
             return PendingIntent.getActivity(applicationContext, 0, intent, flags)

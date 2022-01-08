@@ -24,18 +24,18 @@ class ImageReaderFragment : FullscreenReaderFragment(), ImageNavigatorFragment.L
     private lateinit var publication: Publication
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
+        ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
             model = it
-            publication = it.publication
+            publication = it.arguments.publication
         }
 
         childFragmentManager.fragmentFactory =
-            ImageNavigatorFragment.createFactory(publication, model.initialLocation, this)
+            ImageNavigatorFragment.createFactory(publication, model.arguments.initialLocation, this)
 
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view =  super.onCreateView(inflater, container, savedInstanceState)
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {
