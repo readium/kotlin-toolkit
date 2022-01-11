@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.reader
 
+import android.app.Application
 import android.graphics.Color
 import android.os.Bundle
 import androidx.annotation.ColorInt
@@ -13,16 +14,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.ExperimentalDecorator
-import org.readium.r2.navigator.media2.MediaSessionNavigator
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
@@ -32,22 +30,33 @@ import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
 import org.readium.r2.shared.util.Try
-import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.bookshelf.BookRepository
-import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
+import java.lang.IllegalStateException
 
-@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class)
+@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class, ExperimentalAudiobook::class)
 class ReaderViewModel(
     private val application: Application,
-    private val bookId: Long
-    ) : ViewModel() {
+    private val navigatorType: NavigatorType,
+    private val bookRepository: BookRepository,
+    private val readerRepository: ReaderRepository,
+) : ViewModel() {
 
-    private val bookRepository: BookRepository =
-        BookDatabase.getDatabase(application).booksDao()
-            .let { BookRepository(it) }
+    val readerInitData: ReaderInitData =
+        when (navigatorType) {
+            NavigatorType.Visual ->
+                readerRepository.visualReaderData!!
+            NavigatorType.Media ->
+                readerRepository.mediaReaderData!!
+        }
+
+    val publication: Publication =
+        readerInitData.publication
+
+    val bookId: Long =
+        readerInitData.bookId
 
     val activityChannel: EventChannel<Event> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
@@ -55,28 +64,6 @@ class ReaderViewModel(
     val fragmentChannel: EventChannel<FeedbackEvent> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
 
-    val argumentsDiffered: Deferred<Try<PublicationRepository.ReaderArguments, Exception>> =
-        viewModelScope.async { application.publicationRepository.openBook(application, bookId) }
-
-    init {
-        argumentsDiffered.invokeOnCompletion { throwable ->
-            (throwable as? Exception)?.let { activityChannel.send(Event.OpeningError(it)) }
-        }
-    }
-
-    val arguments: PublicationRepository.ReaderArguments
-        get() = argumentsDiffered.getCompleted().getOrNull()!!
-
-    val publication: Publication
-        get() = checkNotNull(argumentsDiffered.getCompleted().getOrNull()) {
-            "No publication successfully opened."
-        }.publication
-
-    @OptIn(ExperimentalAudiobook::class)
-    val mediaNavigator: MediaSessionNavigator
-        get() = checkNotNull(application.publicationRepository.mediaNavigator) {
-            "No media navigator running."
-        }
 
     fun saveProgression(locator: Locator) = viewModelScope.launch {
         bookRepository.saveProgression(locator, bookId)
@@ -236,14 +223,6 @@ class ReaderViewModel(
         Pager(PagingConfig(pageSize = 20), pagingSourceFactory = pagingSourceFactory)
             .flow.cachedIn(viewModelScope)
 
-    class Factory(private val application: Application, private val bookId: Long)
-        : ViewModelProvider.NewInstanceFactory() {
-
-        override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            modelClass.getDeclaredConstructor(Application::class.java, Long::class.java)
-                .newInstance(application, bookId)
-    }
-
     sealed class Event {
         object OpenOutlineRequested : Event()
         object OpenDrmManagementRequested : Event()
@@ -256,4 +235,27 @@ class ReaderViewModel(
         object BookmarkSuccessfullyAdded : FeedbackEvent()
         object BookmarkFailed : FeedbackEvent()
     }
+
+    class Factory(
+        private val application: org.readium.r2.testapp.Application,
+        private val type: NavigatorType,
+    ) : ViewModelProvider.NewInstanceFactory() {
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            when {
+                modelClass.isAssignableFrom(ReaderViewModel::class.java) ->
+                    ReaderViewModel(
+                        application,
+                        type,
+                        application.bookRepository,
+                        application.readerRepository.getCompleted()
+                    ) as T
+                else ->
+                    throw IllegalStateException("Cannot create ViewModel for class ${modelClass.simpleName}.")
+            }
+
+
+    }
+
 }

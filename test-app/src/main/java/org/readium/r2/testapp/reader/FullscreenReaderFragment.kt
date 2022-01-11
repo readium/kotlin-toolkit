@@ -8,16 +8,12 @@ package org.readium.r2.testapp.reader
 
 import android.graphics.PointF
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowInsets
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.util.EdgeTapNavigation
-import org.readium.r2.shared.util.viewLifecycle
-import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.utils.*
 
 /*

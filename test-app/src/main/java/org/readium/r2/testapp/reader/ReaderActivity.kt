@@ -18,8 +18,7 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
+import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.Application
@@ -43,9 +42,9 @@ open class ReaderActivity : AppCompatActivity() {
     private lateinit var readerFragment: BaseReaderFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val bookId = ReaderContract.parseIntent(this)
+        val type = ReaderActivityContract.parseIntent(this)
         val app = applicationContext as Application
-        modelFactory = ReaderViewModel.Factory(app, bookId)
+        modelFactory = ReaderViewModel.Factory(app, type)
         super.onCreate(savedInstanceState)
 
         val binding = ActivityReaderBinding.inflate(layoutInflater)
@@ -53,12 +52,20 @@ open class ReaderActivity : AppCompatActivity() {
         
         this.binding = binding
         this.model = ViewModelProvider(this)[ReaderViewModel::class.java]
-        
-        lifecycleScope.launch {
-            model.argumentsDiffered.await()
-                .onFailure { exception -> onLoadingError(exception) }
-                .onSuccess { arguments -> onPublicationAvailable(arguments) }
+
+        val readerFragment = supportFragmentManager.findFragmentByTag(READER_FRAGMENT_TAG)
+            ?.let { it as BaseReaderFragment }
+            ?: run { createReaderFragment(model.readerInitData) }
+
+        if (readerFragment is FullscreenReaderFragment) {
+            val fullscreenDelegate = FullscreenReaderActivityDelegate(this, readerFragment, binding)
+            lifecycle.addObserver(fullscreenDelegate)
         }
+
+        this.readerFragment = readerFragment
+
+        model.activityChannel.receive(this) { handleReaderFragmentEvent(it) }
+        reconfigureActionBar()
 
         supportFragmentManager.setFragmentResultListener(
             OutlineContract.REQUEST_KEY,
@@ -88,31 +95,19 @@ open class ReaderActivity : AppCompatActivity() {
         }
     }
 
-    private fun onLoadingError(exception: Exception) {
-    }
-
-    private fun onPublicationAvailable(arguments: PublicationRepository.ReaderArguments) {
-        val readerFragment = supportFragmentManager.findFragmentByTag(READER_FRAGMENT_TAG)
-            ?.let { it as BaseReaderFragment }
-            ?: run { createReaderFragment(arguments) }
-
-        if (readerFragment is FullscreenReaderFragment) {
-            val fullscreenDelegate = FullscreenReaderActivityDelegate(this, readerFragment, binding)
-            lifecycle.addObserver(fullscreenDelegate)
-        }
-
-        this.readerFragment = readerFragment
-        model.activityChannel.receive(this) { handleReaderFragmentEvent(it) }
-        reconfigureActionBar()
-    }
-
-    private fun createReaderFragment(arguments: PublicationRepository.ReaderArguments): BaseReaderFragment {
+    @OptIn(ExperimentalAudiobook::class)
+    private fun createReaderFragment(readerData: ReaderInitData): BaseReaderFragment {
         val readerClass: Class<out Fragment> = when {
-            arguments.publication.conformsTo(Publication.Profile.EPUB) -> EpubReaderFragment::class.java
-            arguments.publication.conformsTo(Publication.Profile.PDF) -> PdfReaderFragment::class.java
-            arguments.publication.conformsTo(Publication.Profile.DIVINA) -> ImageReaderFragment::class.java
-            arguments.publication.conformsTo(Publication.Profile.AUDIOBOOK) -> AudioReaderFragment::class.java
-            else -> throw IllegalArgumentException("Cannot render publication")
+            readerData is MediaReaderInitData ->
+                AudioReaderFragment::class.java
+            readerData.publication.conformsTo(Publication.Profile.EPUB) ->
+                EpubReaderFragment::class.java
+            readerData.publication.conformsTo(Publication.Profile.PDF) ->
+                PdfReaderFragment::class.java
+            readerData.publication.conformsTo(Publication.Profile.DIVINA) ->
+                ImageReaderFragment::class.java
+            else ->
+                throw IllegalArgumentException("Cannot render publication")
         }
 
         supportFragmentManager.commitNow {
@@ -131,7 +126,7 @@ open class ReaderActivity : AppCompatActivity() {
         val currentFragment = supportFragmentManager.fragments.lastOrNull()
 
         title = when (currentFragment) {
-            is OutlineFragment -> model.arguments.publication.metadata.title
+            is OutlineFragment -> model.publication.metadata.title
             is DrmManagementFragment -> getString(R.string.title_fragment_drm_management)
             else -> null
         }

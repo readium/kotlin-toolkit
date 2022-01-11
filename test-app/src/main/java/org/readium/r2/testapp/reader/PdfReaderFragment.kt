@@ -27,13 +27,15 @@ class PdfReaderFragment : FullscreenReaderFragment(), PdfNavigatorFragment.Liste
     private lateinit var publication: Publication
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
+        ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
             model = it
-            publication = it.arguments.publication
+            publication = it.publication
         }
 
+        val readerData = model.readerInitData as VisualReaderInitData
+
         childFragmentManager.fragmentFactory =
-            PdfNavigatorFragment.createFactory(publication, model.arguments.initialLocation, this)
+            PdfNavigatorFragment.createFactory(publication, readerData.initialLocation, this)
 
         super.onCreate(savedInstanceState)
     }

@@ -1,3 +1,9 @@
+/*
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.testapp
 
 import android.app.PendingIntent
@@ -13,14 +19,11 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.media2.MediaSessionNavigator
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
-import org.readium.r2.testapp.reader.ReaderContract
+import org.readium.r2.testapp.reader.NavigatorType
+import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.LifecycleMediaSessionService
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
@@ -35,63 +38,56 @@ class MediaService : LifecycleMediaSessionService() {
             BookRepository(BookDatabase.getDatabase(this@MediaService).booksDao())
         }
 
-        private var currentBookId: Long? = null
-
         private var saveLocationJob: Job? = null
+
+        private var mediaNavigator: MediaSessionNavigator? = null
 
         var mediaSession: MediaSession? = null
 
-        var mediaNavigator: MediaSessionNavigator? = null
-
-        suspend fun openPublication(
-            bookId: Long,
-            publication: Publication,
-            initialLocator: Locator?
-        ): Try<Unit, MediaNavigator.Exception> {
-            closePublication()
-            return MediaSessionNavigator.create(
-                this@MediaService,
-                publication,
-                initialLocator
-            ).map {
-                bindNavigator(it, bookId)
-            }
+        fun unbindNavigator() {
+            mediaSession?.close()
+            mediaSession = null
+            saveLocationJob?.cancel()
+            saveLocationJob = null
+            mediaNavigator = null
         }
 
-        fun closePublication() {
+        fun unbindAndCloseNavigator() {
             mediaSession?.close()
             mediaSession = null
             saveLocationJob?.cancel()
             saveLocationJob = null
             mediaNavigator?.close()
+            mediaNavigator?.publication?.close()
             mediaNavigator = null
-            currentBookId = null
         }
 
         @OptIn(FlowPreview::class)
-        private fun bindNavigator(navigator: MediaSessionNavigator, bookId: Long) {
-            val activityIntent = createSessionActivityIntent(bookId)
+        fun bindNavigator(navigator: MediaSessionNavigator, bookId: Long) {
+            val activityIntent = createSessionActivityIntent()
+            mediaNavigator = navigator
             mediaSession = navigator.session(applicationContext, bookId.toString(), activityIntent)
                 .also { addSession(it) }
-            mediaNavigator = navigator
             saveLocationJob = navigator.currentLocator
                 .buffer(1, BufferOverflow.DROP_OLDEST)
                 .onEach {  locator ->
                     delay(3.seconds)
-                    currentBookId?.let { id -> books.saveProgression(locator, id) }
+                    books.saveProgression(locator, bookId)
                 }
                 .launchIn(lifecycleScope)
-            currentBookId = bookId
         }
 
-        private fun createSessionActivityIntent(bookId: Long): PendingIntent {
+        private fun createSessionActivityIntent(): PendingIntent {
             var flags = PendingIntent.FLAG_UPDATE_CURRENT
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 flags = flags or PendingIntent.FLAG_IMMUTABLE
             }
 
             val intent =
-                ReaderContract().createIntent(applicationContext, bookId)
+                ReaderActivityContract().createIntent(
+                    applicationContext,
+                    NavigatorType.Media
+                )
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
             return PendingIntent.getActivity(applicationContext, 0, intent, flags)
@@ -132,7 +128,7 @@ class MediaService : LifecycleMediaSessionService() {
     override fun onTaskRemoved(rootIntent: Intent) {
         super.onTaskRemoved(rootIntent)
         Timber.d("Task removed. Stopping session and service.")
-        binder.closePublication()
+        binder.unbindAndCloseNavigator()
         stopSelf()
     }
 

@@ -25,6 +25,7 @@ import org.readium.r2.testapp.catalogs.CatalogFeedListAdapter.Companion.CATALOGF
 import org.readium.r2.testapp.databinding.FragmentCatalogBinding
 import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
+import org.readium.r2.testapp.utils.viewLifecycle
 
 
 class CatalogFragment : Fragment() {
@@ -36,9 +37,7 @@ class CatalogFragment : Fragment() {
     private lateinit var catalog: Catalog
     private var showFacetMenu = false
     private lateinit var facets: MutableList<Facet>
-
-    private var _binding: FragmentCatalogBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentCatalogBinding by viewLifecycle()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,7 +46,7 @@ class CatalogFragment : Fragment() {
 
         catalogViewModel.eventChannel.receive(this) { handleEvent(it) }
         catalog = arguments?.get(CATALOGFEED) as Catalog
-        _binding = FragmentCatalogBinding.inflate(inflater, container, false)
+        binding = FragmentCatalogBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -105,11 +104,6 @@ class CatalogFragment : Fragment() {
 
             binding.catalogProgressBar.visibility = View.GONE
         })
-    }
-
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
     }
 
     private fun handleEvent(event: CatalogViewModel.Event.FeedEvent) {

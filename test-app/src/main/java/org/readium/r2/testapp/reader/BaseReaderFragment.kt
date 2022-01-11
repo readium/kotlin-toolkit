@@ -48,7 +48,7 @@ abstract class BaseReaderFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.menu_reader, menu)
-        menu.findItem(R.id.drm).isVisible = model.arguments.publication.lcpLicense != null
+        menu.findItem(R.id.drm).isVisible = model.publication.lcpLicense != null
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -8,12 +8,15 @@ package org.readium.r2.testapp
 
 import android.content.*
 import android.os.IBinder
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.readium.r2.navigator.ExperimentalAudiobook
+import kotlinx.coroutines.*
+import org.readium.r2.lcp.LcpService
+import org.readium.r2.shared.util.Try
+import org.readium.r2.streamer.Streamer
 import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
-import org.readium.r2.testapp.reader.PublicationRepository
+import org.readium.r2.testapp.bookshelf.BookRepository
+import org.readium.r2.testapp.db.BookDatabase
+import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
 import java.io.IOException
 import java.net.ServerSocket
@@ -27,8 +30,14 @@ class Application : android.app.Application() {
     lateinit var server: Server
         private set
 
-    lateinit var publicationRepository: PublicationRepository
+    lateinit var bookRepository: BookRepository
         private set
+
+    lateinit var readerRepository: Deferred<ReaderRepository>
+        private set
+
+    private val coroutineScope: CoroutineScope =
+        MainScope()
 
     private val mediaServiceBinder: CompletableDeferred<MediaService.Binder> =
         CompletableDeferred()
@@ -76,8 +85,37 @@ class Application : android.app.Application() {
         startService(intent)
         bindService(intent, mediaServiceConnection, 0)
 
-        publicationRepository =
-            PublicationRepository.create(this, server, mediaServiceBinder)
+
+        /*
+         * Initializing repositories
+         */
+
+        val lcpService = LcpService(this)
+            ?.let { Try.success(it) }
+            ?: Try.failure(Exception("liblcp is missing on the classpath"))
+
+        val streamer = Streamer(
+            this,
+            contentProtections = listOfNotNull(
+                lcpService.getOrNull()?.contentProtection()
+            )
+        )
+
+        bookRepository =
+            BookDatabase.getDatabase(this).booksDao()
+                .let {  BookRepository(it) }
+
+        readerRepository =
+            coroutineScope.async {
+                ReaderRepository(
+                    this@Application,
+                    streamer,
+                    server,
+                    mediaServiceBinder.await(),
+                    bookRepository
+                )
+            }
+
     }
 
     override fun onTerminate() {

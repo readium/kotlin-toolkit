@@ -26,11 +26,13 @@ class ImageReaderFragment : FullscreenReaderFragment(), ImageNavigatorFragment.L
     override fun onCreate(savedInstanceState: Bundle?) {
         ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
             model = it
-            publication = it.arguments.publication
+            publication = it.publication
         }
 
+        val readerData = model.readerInitData as VisualReaderInitData
+
         childFragmentManager.fragmentFactory =
-            ImageNavigatorFragment.createFactory(publication, model.arguments.initialLocation, this)
+            ImageNavigatorFragment.createFactory(publication, readerData.initialLocation, this)
 
         super.onCreate(savedInstanceState)
     }

@@ -47,7 +47,7 @@ class EpubReaderFragment : FullscreenReaderFragment(), EpubNavigatorFragment.Lis
     override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator
     private lateinit var publication: Publication
-    lateinit var navigatorFragment: EpubNavigatorFragment
+    private lateinit var navigatorFragment: EpubNavigatorFragment
 
     private lateinit var menuScreenReader: MenuItem
     private lateinit var menuSearch: MenuItem
@@ -70,14 +70,17 @@ class EpubReaderFragment : FullscreenReaderFragment(), EpubNavigatorFragment.Lis
 
         ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
             model = it
-            publication = it.arguments.publication
+            publication = it.publication
         }
+
+        val readerData = model.readerInitData as VisualReaderInitData
+        val baseUrl = checkNotNull(readerData.baseUrl).toString()
 
         childFragmentManager.fragmentFactory =
             EpubNavigatorFragment.createFactory(
                 publication = publication,
-                baseUrl = checkNotNull(model.arguments.baseUrl).toString(),
-                initialLocator = model.arguments.initialLocation,
+                baseUrl = baseUrl,
+                initialLocator = readerData.initialLocation,
                 listener = this,
                 config = EpubNavigatorFragment.Configuration().apply {
                     // Register the HTML template for our custom [DecorationStyleAnnotationMark].

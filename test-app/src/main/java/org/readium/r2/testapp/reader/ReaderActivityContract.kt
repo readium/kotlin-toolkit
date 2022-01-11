@@ -16,25 +16,27 @@ import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.core.os.bundleOf
 
-class ReaderContract : ActivityResultContract<Long, Unit>() {
+class ReaderActivityContract
+    : ActivityResultContract<NavigatorType, NavigatorType?>() {
 
-    override fun createIntent(context: Context, input: Long): Intent {
+    override fun createIntent(context: Context, input: NavigatorType): Intent {
         val intent = Intent(context, ReaderActivity::class.java)
-        val arguments =  bundleOf("bookId" to input,)
+        val arguments =  bundleOf("type" to input)
         intent.putExtras(arguments)
         return intent
     }
 
-    override fun parseResult(resultCode: Int, intent: Intent?) {}
+    override fun parseResult(resultCode: Int, intent: Intent?): NavigatorType {
+        val extras = requireNotNull(intent?.extras)
+        return extras.getSerializable("type") as NavigatorType
+
+    }
 
     companion object {
 
-        fun parseIntent(activity: Activity): Long {
-            val bookId = activity.intent.extras
-                ?.getLong("bookId", -1)
-                .takeUnless { it == -1L }
-
-            return checkNotNull(bookId)
+        fun parseIntent(activity: Activity): NavigatorType {
+            val extras = requireNotNull(activity.intent.extras)
+            return extras.getSerializable("type") as NavigatorType
         }
     }
 }

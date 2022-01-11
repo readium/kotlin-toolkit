@@ -23,38 +23,39 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
-import org.readium.r2.testapp.reader.ReaderContract
+import org.readium.r2.testapp.reader.NavigatorType
+import org.readium.r2.testapp.reader.ReaderActivityContract
+import org.readium.r2.testapp.utils.viewLifecycle
 
 class BookshelfFragment : Fragment() {
 
     private val bookshelfViewModel: BookshelfViewModel by activityViewModels()
     private lateinit var bookshelfAdapter: BookshelfAdapter
     private lateinit var documentPickerLauncher: ActivityResultLauncher<String>
-    private lateinit var readerLauncher: ActivityResultLauncher<Long>
-    private var _binding: FragmentBookshelfBinding? = null
-    private val binding get() = _binding!!
+    private lateinit var readerLauncher: ActivityResultLauncher<NavigatorType>
+    private var binding: FragmentBookshelfBinding by viewLifecycle()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        bookshelfViewModel.channel.receive(this) { handleEvent(it) }
-        _binding = FragmentBookshelfBinding.inflate(
-            inflater, container, false
-        )
+        binding = FragmentBookshelfBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        bookshelfViewModel.channel.receive(viewLifecycleOwner) { handleEvent(it) }
+
         bookshelfAdapter = BookshelfAdapter(
-            onBookClick = { book -> book.id?.let {  readerLauncher.launch(it) } },
+            onBookClick = { book -> book.id?.let {  bookshelfViewModel.openBook(requireActivity(), it) } },
             onBookLongClick = { book -> confirmDeleteBook(book) })
 
         documentPickerLauncher =
@@ -66,8 +67,10 @@ class BookshelfFragment : Fragment() {
             }
 
         readerLauncher =
-            registerForActivityResult(ReaderContract()) {
-                // Do nothing
+            registerForActivityResult(ReaderActivityContract()) { type ->
+                if (type == NavigatorType.Visual) {
+                    tryOrLog { bookshelfViewModel.closeVisualReader() }
+                }
             }
 
         binding.bookshelfBookList.apply {
@@ -132,21 +135,32 @@ class BookshelfFragment : Fragment() {
     private fun handleEvent(event: BookshelfViewModel.Event) {
         val message =
             when (event) {
-                is BookshelfViewModel.Event.ImportPublicationFailed ->
+                is BookshelfViewModel.Event.ImportPublicationFailed -> {
                     "Error: " + event.errorMessage
+                }
                 is BookshelfViewModel.Event.UnableToMovePublication ->
                     getString(R.string.unable_to_move_pub)
-                is BookshelfViewModel.Event.ImportPublicationSuccess ->
-                    getString(R.string.import_publication_success)
+                is BookshelfViewModel.Event.ImportPublicationSuccess -> getString(R.string.import_publication_success)
                 is BookshelfViewModel.Event.ImportDatabaseFailed ->
                     getString(R.string.unable_add_pub_database)
+                is BookshelfViewModel.Event.OpenBookError -> {
+                    val detail = event.errorMessage
+                        ?: "Unable to open publication. An unexpected error occurred."
+                    "Error: $detail"
+                }
+                is BookshelfViewModel.Event.LaunchReader -> {
+                    readerLauncher.launch(event.type)
+                    null
+                }
             }
         binding.bookshelfProgressBar.visibility = View.GONE
-        Snackbar.make(
-            requireView(),
-            message,
-            Snackbar.LENGTH_LONG
-        ).show()
+        message?.let {
+            Snackbar.make(
+                requireView(),
+                it,
+                Snackbar.LENGTH_LONG
+            ).show()
+        }
     }
 
     class VerticalSpaceItemDecoration(private val verticalSpaceHeight: Int) :
