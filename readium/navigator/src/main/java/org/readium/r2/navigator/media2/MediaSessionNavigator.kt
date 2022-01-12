@@ -71,7 +71,6 @@ class MediaSessionNavigator private constructor(
         return link.toLocator().copyWithLocations(
             fragments = listOf("t=${position.inWholeSeconds}"),
             progression = item.duration?.let { position / it },
-            position = item.index + 1,
             totalProgression = totalProgression
         )
     }
