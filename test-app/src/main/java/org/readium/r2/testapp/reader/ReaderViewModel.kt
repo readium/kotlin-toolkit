@@ -254,8 +254,6 @@ class ReaderViewModel(
                 else ->
                     throw IllegalStateException("Cannot create ViewModel for class ${modelClass.simpleName}.")
             }
-
-
     }
 
 }

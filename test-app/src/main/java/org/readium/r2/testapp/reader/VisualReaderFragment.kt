@@ -9,22 +9,26 @@ package org.readium.r2.testapp.reader
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
+import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.annotation.ColorInt
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.util.BaseActionModeCallback
+import org.readium.r2.navigator.util.EdgeTapNavigation
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.domain.model.Highlight
-import org.readium.r2.testapp.utils.viewLifecycle
+import org.readium.r2.testapp.utils.*
 
 /*
  * Base reader fragment class
@@ -32,9 +36,11 @@ import org.readium.r2.testapp.utils.viewLifecycle
  * Provides common menu items and saves last location on stop.
  */
 @OptIn(ExperimentalDecorator::class)
-abstract class VisualReaderFragment : BaseReaderFragment() {
+abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.Listener {
 
     protected var binding: FragmentReaderBinding by viewLifecycle()
+
+    private lateinit var navigatorFragment: Fragment
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,6 +70,16 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
             model.searchDecorations
                 .onEach { navigator.applyDecorations(it, "search") }
                 .launchIn(viewScope)
+
+            navigatorFragment = navigator as Fragment
+
+            childFragmentManager.addOnBackStackChangedListener {
+                updateSystemUiVisibility()
+            }
+            binding.fragmentReaderContainer.setOnApplyWindowInsetsListener { container, insets ->
+                updateSystemUiPadding(container, insets)
+                insets
+            }
         }
     }
 
@@ -291,6 +307,39 @@ abstract class VisualReaderFragment : BaseReaderFragment() {
         }
 
         alert.show()
+    }
+
+    fun updateSystemUiVisibility() {
+        if (navigatorFragment.isHidden)
+            requireActivity().showSystemUi()
+        else
+            requireActivity().hideSystemUi()
+
+        requireView().requestApplyInsets()
+    }
+
+    private fun updateSystemUiPadding(container: View, insets: WindowInsets) {
+        if (navigatorFragment.isHidden) {
+            container.padSystemUi(insets, requireActivity() as AppCompatActivity)
+        } else {
+            container.clearPadding()
+        }
+    }
+
+    // VisualNavigator.Listener
+
+    override fun onTap(point: PointF): Boolean {
+        val navigated = edgeTapNavigation.onTap(point, requireView())
+        if (!navigated) {
+            requireActivity().toggleSystemUi()
+        }
+        return true
+    }
+
+    private val edgeTapNavigation by lazy {
+        EdgeTapNavigation(
+            navigator = navigator as VisualNavigator
+        )
     }
 
 }

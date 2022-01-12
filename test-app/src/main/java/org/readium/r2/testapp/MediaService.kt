@@ -69,11 +69,8 @@ class MediaService : LifecycleMediaSessionService() {
             mediaSession = navigator.session(applicationContext, bookId.toString(), activityIntent)
                 .also { addSession(it) }
             saveLocationJob = navigator.currentLocator
-                .buffer(1, BufferOverflow.DROP_OLDEST)
-                .onEach {  locator ->
-                    delay(3.seconds)
-                    books.saveProgression(locator, bookId)
-                }
+                .sample(3000)
+                .onEach {  locator -> books.saveProgression(locator, bookId) }
                 .launchIn(lifecycleScope)
         }
 

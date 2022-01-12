@@ -20,7 +20,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 
-class PdfReaderFragment : FullscreenReaderFragment(), PdfNavigatorFragment.Listener {
+class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
     override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator

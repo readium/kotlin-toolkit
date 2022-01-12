@@ -57,7 +57,7 @@ open class ReaderActivity : AppCompatActivity() {
             ?.let { it as BaseReaderFragment }
             ?: run { createReaderFragment(model.readerInitData) }
 
-        if (readerFragment is FullscreenReaderFragment) {
+        if (readerFragment is VisualReaderFragment) {
             val fullscreenDelegate = FullscreenReaderActivityDelegate(this, readerFragment, binding)
             lifecycle.addObserver(fullscreenDelegate)
         }

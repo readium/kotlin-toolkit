@@ -42,7 +42,7 @@ import org.readium.r2.testapp.tts.ScreenReaderFragment
 import org.readium.r2.testapp.utils.extensions.toDataUrl
 
 @OptIn(ExperimentalDecorator::class)
-class EpubReaderFragment : FullscreenReaderFragment(), EpubNavigatorFragment.Listener {
+class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
     override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator

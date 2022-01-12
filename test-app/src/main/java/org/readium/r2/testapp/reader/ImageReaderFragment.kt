@@ -17,7 +17,7 @@ import org.readium.r2.navigator.image.ImageNavigatorFragment
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 
-class ImageReaderFragment : FullscreenReaderFragment(), ImageNavigatorFragment.Listener {
+class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Listener {
 
     override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator
