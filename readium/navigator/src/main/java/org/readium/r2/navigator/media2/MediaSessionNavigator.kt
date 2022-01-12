@@ -8,6 +8,7 @@ import androidx.media2.session.MediaSession
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalAudiobook
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.extensions.time
 import org.readium.r2.shared.publication.*
@@ -37,7 +38,7 @@ class MediaSessionNavigator private constructor(
     private val playerFacade: SessionPlayerFacade,
     private val playerCallback: SessionPlayerCallback,
     private val configuration: Configuration
-) : MediaNavigator {
+) : Navigator {
 
     private val coroutineScope: CoroutineScope = MainScope()
 
@@ -78,7 +79,7 @@ class MediaSessionNavigator private constructor(
     override val currentLocator: StateFlow<Locator> =
         currentLocatorFlow.stateInFirst(coroutineScope)
 
-    private val playbackStateFlow: Flow<MediaNavigator.Playback> =
+    private val playbackStateFlow: Flow<Playback> =
         combine(
             playerCallback.playerState,
             playerCallback.playbackSpeed,
@@ -88,17 +89,17 @@ class MediaSessionNavigator private constructor(
         ) { currentState, playbackSpeed, currentItem, currentPosition, bufferedPosition ->
             val state = when (currentState) {
                 SessionPlayerState.Playing ->
-                    MediaNavigator.Playback.State.Playing
+                    Playback.State.Playing
                 SessionPlayerState.Idle, SessionPlayerState.Error ->
-                    MediaNavigator.Playback.State.Error
+                    Playback.State.Error
                 SessionPlayerState.Paused ->
                     if (playerCallback.playbackCompleted) {
-                        MediaNavigator.Playback.State.Finished
+                        Playback.State.Finished
                     } else {
-                        MediaNavigator.Playback.State.Paused
+                        Playback.State.Paused
                     }
             }
-            MediaNavigator.Playback(
+            Playback(
                 state = state,
                 rate = playbackSpeed.toDouble(),
                 currentIndex = currentItem.index,
@@ -108,38 +109,67 @@ class MediaSessionNavigator private constructor(
             )
         }
 
-    override val playback: StateFlow<MediaNavigator.Playback> =
+    /**
+     * Indicates the navigator current state.
+     */
+    val playback: StateFlow<Playback> =
         playbackStateFlow.stateInFirst(coroutineScope)
 
-    override suspend fun setPlaybackRate(rate: Double): Try<Unit, MediaNavigator.Exception> =
+    /**
+     * Sets the speed of the media playback.
+     *
+     * Normal speed is 1.0 and 0.0 is incorrect.
+     */
+    suspend fun setPlaybackRate(rate: Double): Try<Unit, Exception> =
         playerFacade.setPlaybackSpeed(rate).toNavigatorResult()
 
-    override suspend fun play(): Try<Unit, MediaNavigator.Exception> =
+    /**
+     * Resumes or start the playback at the current location.
+     */
+    suspend fun play(): Try<Unit, Exception> =
         playerFacade.play().toNavigatorResult()
 
-    override suspend fun pause(): Try<Unit, MediaNavigator.Exception> =
+    /**
+     * Pauses the playback.
+     */
+    suspend fun pause(): Try<Unit, Exception> =
         playerFacade.pause().toNavigatorResult()
 
-    override suspend fun seek(index: Int, position: Duration): Try<Unit, MediaNavigator.Exception> =
+    /**
+     * Seeks to the given time at the given resource.
+     */
+    suspend fun seek(index: Int, position: Duration): Try<Unit, Exception> =
         playerFacade.seekTo(index, position).toNavigatorResult()
 
-    override suspend fun go(locator: Locator): Try<Unit, MediaNavigator.Exception> {
+    /**
+     * Seeks to the given locator.
+     */
+    suspend fun go(locator: Locator): Try<Unit, Exception> {
         Timber.d("Go to locator $locator")
         val itemIndex = checkNotNull(publication.readingOrder.indexOfFirstWithHref(locator.href))
         val position = locator.locations.time ?: Duration.ZERO
         return seek(itemIndex, position)
     }
 
-    override suspend fun go(link: Link) =
+    /**
+     * Seeks to the beginning of the given link.
+     */
+    suspend fun go(link: Link) =
         go(link.toLocator())
 
-    override suspend fun goForward(): Try<Unit, MediaNavigator.Exception> =
+    /**
+     * Skips to a little amount of time later.
+     */
+    suspend fun goForward(): Try<Unit, Exception> =
         seekBy(configuration.skipForwardInterval)
 
-    override suspend fun goBackward(): Try<Unit, MediaNavigator.Exception> =
+    /**
+     * Skips to a little amount of time before.
+     */
+    suspend fun goBackward(): Try<Unit, Exception> =
         seekBy(-configuration.skipBackwardInterval)
 
-    private suspend fun seekBy(offset: Duration): Try<Unit, MediaNavigator.Exception> =
+    private suspend fun seekBy(offset: Duration): Try<Unit, Exception> =
         this.playerFacade.playlist!!.durations
             ?.let { smartSeekBy(offset, it) }
             ?: dummySeekBy(offset)
@@ -147,7 +177,7 @@ class MediaSessionNavigator private constructor(
     private suspend fun smartSeekBy(
         offset: Duration,
         durations: List<Duration>
-    ): Try<Unit, MediaNavigator.Exception> {
+    ): Try<Unit, Exception> {
         val (newIndex, newPosition) =
             SmartSeeker.dispatchSeek(
                 offset,
@@ -159,13 +189,19 @@ class MediaSessionNavigator private constructor(
         return playerFacade.seekTo(newIndex, newPosition).toNavigatorResult()
     }
 
-    private suspend fun dummySeekBy(offset: Duration): Try<Unit, MediaNavigator.Exception> {
+    private suspend fun dummySeekBy(offset: Duration): Try<Unit, Exception> {
         val newIndex = playerFacade.currentIndex!!
         val newPosition = playerFacade.currentPosition!! + offset
         return playerFacade.seekTo(newIndex, newPosition).toNavigatorResult()
     }
 
-    override fun close() {
+    /**
+     * Stops the playback.
+     *
+     * Compared to [pause], the navigator may clear its state in whatever way is appropriate. For
+     * example, recovering a player's resources.
+     */
+    fun close() {
         playerFacade.unregisterPlayerCallback(playerCallback)
         playerCallback.close()
         playerFacade.close()
@@ -181,6 +217,26 @@ class MediaSessionNavigator private constructor(
         val skipForwardInterval: Duration = 30.seconds,
         val skipBackwardInterval: Duration = 30.seconds,
     )
+
+    @ExperimentalTime
+    data class Playback(
+        val state: State,
+        val rate: Double,
+        val currentIndex: Int,
+        val currentLink: Link,
+        val currentPosition: Duration,
+        val bufferedPosition: Duration,
+    ) {
+
+        enum class State {
+            Playing,
+            Paused,
+            Finished,
+            Error
+        }
+    }
+
+    sealed class Exception : kotlin.Exception()
 
     /*
      * Compatibility
@@ -217,7 +273,7 @@ class MediaSessionNavigator private constructor(
             initialLocator: Locator?,
             configuration: Configuration = Configuration(),
             player: SessionPlayer = ExoPlayerFactory().createPlayer(context, publication)
-        ): Try<MediaSessionNavigator, MediaNavigator.Exception> {
+        ): Try<MediaSessionNavigator, Exception> {
 
             val positionRefreshDelay = (1.0 / configuration.positionRefreshRate).seconds
             val callback = SessionPlayerCallback(positionRefreshDelay)
@@ -235,7 +291,7 @@ class MediaSessionNavigator private constructor(
         private suspend fun preparePlayer(
             publication: Publication, player:
             SessionPlayerFacade
-        ): Try<Unit, MediaNavigator.Exception> {
+        ): Try<Unit, Exception> {
             val playlist = publication.readingOrder.toPlayList()
             val metadata = publicationMetadata(publication)
             return player.setPlaylist(playlist, metadata)
@@ -261,9 +317,9 @@ class MediaSessionNavigator private constructor(
         private class PlayerException(
             val error: SessionPlayerError,
             override val message: String = "${error.name} error occurred in SessionPlayer."
-        ) : MediaNavigator.Exception()
+        ) : Exception()
 
-        internal fun SessionPlayerResult.toNavigatorResult(): Try<Unit, MediaNavigator.Exception> =
+        internal fun SessionPlayerResult.toNavigatorResult(): Try<Unit, Exception> =
             if (isSuccess)
                 Try.success(Unit)
             else

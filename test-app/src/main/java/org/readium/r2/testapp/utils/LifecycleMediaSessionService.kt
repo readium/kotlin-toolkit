@@ -11,6 +11,10 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.lifecycle.LifecycleOwner
 
+/*
+ * Borrowed from
+ * https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-main/lifecycle/lifecycle-service/src/main/java/androidx/lifecycle/LifecycleService.java
+ */
 
 abstract class LifecycleMediaSessionService : MediaSessionService(), LifecycleOwner {
 
