@@ -28,7 +28,6 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
-import org.readium.r2.testapp.reader.NavigatorType
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.viewLifecycle
 
@@ -37,7 +36,7 @@ class BookshelfFragment : Fragment() {
     private val bookshelfViewModel: BookshelfViewModel by activityViewModels()
     private lateinit var bookshelfAdapter: BookshelfAdapter
     private lateinit var documentPickerLauncher: ActivityResultLauncher<String>
-    private lateinit var readerLauncher: ActivityResultLauncher<NavigatorType>
+    private lateinit var readerLauncher: ActivityResultLauncher<ReaderActivityContract.Arguments>
     private var binding: FragmentBookshelfBinding by viewLifecycle()
 
     override fun onCreateView(
@@ -55,7 +54,7 @@ class BookshelfFragment : Fragment() {
         bookshelfViewModel.channel.receive(viewLifecycleOwner) { handleEvent(it) }
 
         bookshelfAdapter = BookshelfAdapter(
-            onBookClick = { book -> book.id?.let {  bookshelfViewModel.openBook(requireActivity(), it) } },
+            onBookClick = { book -> book.id?.let {  bookshelfViewModel.openBook(it) } },
             onBookLongClick = { book -> confirmDeleteBook(book) })
 
         documentPickerLauncher =
@@ -67,10 +66,8 @@ class BookshelfFragment : Fragment() {
             }
 
         readerLauncher =
-            registerForActivityResult(ReaderActivityContract()) { type ->
-                if (type == NavigatorType.Visual) {
-                    tryOrLog { bookshelfViewModel.closeVisualReader() }
-                }
+            registerForActivityResult(ReaderActivityContract()) { input ->
+                input?.let { tryOrLog { bookshelfViewModel.closeIfVisual(input.bookId) } }
             }
 
         binding.bookshelfBookList.apply {
@@ -149,7 +146,7 @@ class BookshelfFragment : Fragment() {
                     "Error: $detail"
                 }
                 is BookshelfViewModel.Event.LaunchReader -> {
-                    readerLauncher.launch(event.type)
+                    readerLauncher.launch(event.arguments)
                     null
                 }
             }

@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.reader
 
-import android.app.Application
 import android.graphics.Color
 import android.os.Bundle
 import androidx.annotation.ColorInt
@@ -23,9 +22,7 @@ import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.LocatorCollection
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
@@ -34,23 +31,12 @@ import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
-import java.lang.IllegalStateException
 
 @OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class, ExperimentalAudiobook::class)
 class ReaderViewModel(
-    private val application: Application,
-    private val navigatorType: NavigatorType,
+    val readerInitData: ReaderInitData,
     private val bookRepository: BookRepository,
-    private val readerRepository: ReaderRepository,
 ) : ViewModel() {
-
-    val readerInitData: ReaderInitData =
-        when (navigatorType) {
-            NavigatorType.Visual ->
-                readerRepository.visualReaderData!!
-            NavigatorType.Media ->
-                readerRepository.mediaReaderData!!
-        }
 
     val publication: Publication =
         readerInitData.publication
@@ -238,22 +224,31 @@ class ReaderViewModel(
 
     class Factory(
         private val application: org.readium.r2.testapp.Application,
-        private val type: NavigatorType,
+        private val arguments: ReaderActivityContract.Arguments,
     ) : ViewModelProvider.NewInstanceFactory() {
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
             when {
-                modelClass.isAssignableFrom(ReaderViewModel::class.java) ->
-                    ReaderViewModel(
-                        application,
-                        type,
-                        application.bookRepository,
-                        application.readerRepository.getCompleted()
-                    ) as T
+                modelClass.isAssignableFrom(ReaderViewModel::class.java) -> {
+                    val readerInitData =
+                        try {
+                            val readerRepository = application.readerRepository.getCompleted()
+                            readerRepository[arguments.bookId]!!
+                        } catch (e: Exception) {
+                            // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
+                            dummyReaderInitData(arguments.bookId)
+                        }
+                    ReaderViewModel(readerInitData, application.bookRepository) as T
+                }
                 else ->
                     throw IllegalStateException("Cannot create ViewModel for class ${modelClass.simpleName}.")
             }
-    }
 
+        private fun dummyReaderInitData(bookId: Long): ReaderInitData {
+            val metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
+            val publication = Publication(Manifest(metadata = metadata))
+            return VisualReaderInitData(bookId, publication)
+        }
+    }
 }

@@ -7,10 +7,7 @@
 package org.readium.r2.testapp.reader
 
 import android.app.Application
-import android.content.Context
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.media2.MediaSessionNavigator
@@ -30,7 +27,7 @@ import java.net.URL
 /**
  * Open and store publications in order for them to be listened or read.
  *
- * Ensure you call [openBook] before any attempt to start a [ReaderActivity].
+ * Ensure you call [open] before any attempt to start a [ReaderActivity].
  * Pass the method result to the activity to enable it to know which current publication it must
  * retrieve from this repository - media or visual.
  */
@@ -42,34 +39,26 @@ class ReaderRepository(
     private val mediaBinder: MediaService.Binder,
     private val bookRepository: BookRepository
 ) {
-    var mediaReaderData: MediaReaderInitData? = null
-        private set
+    private val repository: MutableMap<Long, ReaderInitData> =
+        mutableMapOf()
 
-    var visualReaderData: VisualReaderInitData? = null
-        private set
+    operator fun get(bookId: Long): ReaderInitData? =
+        repository[bookId]
 
-    fun closeVisualPublication() {
-        visualReaderData?.publication?.close()
-        visualReaderData = null
-    }
-
-    fun closeMediaPublication() {
-        mediaBinder.unbindNavigator()
-        mediaReaderData?.mediaNavigator?.close()
-        mediaReaderData?.mediaNavigator?.publication?.close()
-        mediaReaderData = null
-    }
-
-    suspend fun openBook(context: Context, bookId: Long): Try<NavigatorType, Exception> =
-        try {
-            // NonCancellable because opened publications need to be closed.
-            val type = withContext(NonCancellable) { openBookThrowing(context, bookId) }
-            Try.success(type)
+    suspend fun open(bookId: Long): Try<Unit, Exception> {
+        return try {
+            openThrowing(bookId)
+            Try.success(Unit)
         } catch (e: Exception) {
             Try.failure(e)
         }
+    }
 
-    private suspend fun openBookThrowing(context: Context, bookId: Long): NavigatorType {
+    private suspend fun openThrowing(bookId: Long) {
+        if (bookId in repository.keys) {
+            return
+        }
+
         val book = bookRepository.get(bookId)
             ?: throw Exception("Cannot find book in database.")
 
@@ -77,41 +66,28 @@ class ReaderRepository(
         require(file.exists())
         val asset = FileAsset(file)
 
-        val publication = streamer.open(asset, allowUserInteraction = true, sender = context)
+        val publication = streamer.open(asset, allowUserInteraction = true, sender = application)
             .getOrThrow()
 
         val initialLocator = book.progression?.let { Locator.fromJSON(JSONObject(it)) }
 
-        return if (publication.conformsTo(Publication.Profile.AUDIOBOOK)) {
-            openAudiobookIfNeeded(bookId, publication, initialLocator)
-            NavigatorType.Media
-        } else {
-            val url = prepareToServe(publication)
-            closeVisualPublication()
-            visualReaderData = VisualReaderInitData(bookId, publication, url, initialLocator)
-            NavigatorType.Visual
+        val readerInitData = when {
+            publication.conformsTo(Publication.Profile.AUDIOBOOK) ->
+                openAudio(bookId, publication, initialLocator)
+            else ->
+                openVisual(bookId, publication, initialLocator)
         }
+
+        repository[bookId] = readerInitData
     }
 
-    @OptIn(ExperimentalAudiobook::class)
-    private suspend fun openAudiobookIfNeeded(
+    private fun openVisual(
         bookId: Long,
         publication: Publication,
         initialLocator: Locator?
-    ) {
-        if (mediaReaderData?.bookId == bookId) {
-            return
-        }
-
-        val navigator = MediaSessionNavigator.create(
-            application,
-            publication,
-            initialLocator
-        ).getOrElse { throw Exception("Cannot open audiobook.") }
-
-        closeMediaPublication()
-        mediaReaderData = MediaReaderInitData(bookId, publication, navigator)
-        mediaBinder.bindNavigator(navigator, bookId)
+    ): VisualReaderInitData {
+        val url = prepareToServe(publication)
+        return VisualReaderInitData(bookId, publication, url, initialLocator)
     }
 
     private fun prepareToServe(publication: Publication): URL {
@@ -121,5 +97,35 @@ class ReaderRepository(
             server.addPublication(publication, userPropertiesFile = File(userProperties))
 
         return url ?: throw Exception("Cannot add the publication to the HTTP server.")
+    }
+
+    @OptIn(ExperimentalAudiobook::class)
+    private suspend fun openAudio(
+        bookId: Long,
+        publication: Publication,
+        initialLocator: Locator?
+    ): MediaReaderInitData {
+        val navigator = MediaSessionNavigator.create(
+            application,
+            publication,
+            initialLocator
+        ).getOrElse { throw Exception("Cannot open audiobook.") }
+
+        mediaBinder.bindNavigator(navigator, bookId)
+        return MediaReaderInitData(bookId, publication, navigator)
+    }
+
+    fun close(bookId: Long) {
+        when (val initData = repository.remove(bookId)) {
+            is MediaReaderInitData -> {
+                mediaBinder.closeNavigator()
+            }
+            is VisualReaderInitData -> {
+                initData.publication.close()
+            }
+            null -> {
+                // Do nothing
+            }
+        }
     }
 }

@@ -15,18 +15,14 @@ import androidx.media2.session.MediaSession
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.media2.MediaSessionNavigator
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
-import org.readium.r2.testapp.reader.NavigatorType
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.LifecycleMediaSessionService
 import timber.log.Timber
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class, ExperimentalAudiobook::class, ExperimentalCoroutinesApi::class)
@@ -44,15 +40,7 @@ class MediaService : LifecycleMediaSessionService() {
 
         var mediaSession: MediaSession? = null
 
-        fun unbindNavigator() {
-            mediaSession?.close()
-            mediaSession = null
-            saveLocationJob?.cancel()
-            saveLocationJob = null
-            mediaNavigator = null
-        }
-
-        fun unbindAndCloseNavigator() {
+        fun closeNavigator() {
             mediaSession?.close()
             mediaSession = null
             saveLocationJob?.cancel()
@@ -64,7 +52,7 @@ class MediaService : LifecycleMediaSessionService() {
 
         @OptIn(FlowPreview::class)
         fun bindNavigator(navigator: MediaSessionNavigator, bookId: Long) {
-            val activityIntent = createSessionActivityIntent()
+            val activityIntent = createSessionActivityIntent(bookId)
             mediaNavigator = navigator
             mediaSession = navigator.session(applicationContext, bookId.toString(), activityIntent)
                 .also { addSession(it) }
@@ -74,7 +62,7 @@ class MediaService : LifecycleMediaSessionService() {
                 .launchIn(lifecycleScope)
         }
 
-        private fun createSessionActivityIntent(): PendingIntent {
+        private fun createSessionActivityIntent(bookId: Long): PendingIntent {
             var flags = PendingIntent.FLAG_UPDATE_CURRENT
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 flags = flags or PendingIntent.FLAG_IMMUTABLE
@@ -83,7 +71,7 @@ class MediaService : LifecycleMediaSessionService() {
             val intent =
                 ReaderActivityContract().createIntent(
                     applicationContext,
-                    NavigatorType.Media
+                    ReaderActivityContract.Arguments(bookId)
                 )
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
@@ -125,7 +113,7 @@ class MediaService : LifecycleMediaSessionService() {
     override fun onTaskRemoved(rootIntent: Intent) {
         super.onTaskRemoved(rootIntent)
         Timber.d("Task removed. Stopping session and service.")
-        binder.unbindAndCloseNavigator()
+        binder.closeNavigator()
         stopSelf()
     }
 

@@ -28,10 +28,10 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.Streamer
-import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.domain.model.Book
-import org.readium.r2.testapp.reader.NavigatorType
+import org.readium.r2.testapp.reader.ReaderActivityContract
+import org.readium.r2.testapp.reader.VisualReaderInitData
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
@@ -50,7 +50,6 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     private val bookRepository = r2Application.bookRepository
     private val preferences =
         application.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
-    private var server: Server = r2Application.server
     private var lcpService = LcpService(application)
         ?.let { Try.success(it) }
         ?: Try.failure(Exception("liblcp is missing on the classpath"))
@@ -174,11 +173,10 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
     @OptIn(ExperimentalTime::class)
     fun openBook(
-        context: Context,
         bookId: Long,
     ) = viewModelScope.launch {
         val readerRepository = r2Application.readerRepository.await()
-        readerRepository.openBook(context, bookId)
+        readerRepository.open(bookId)
             .onFailure { exception ->
                 val message = when (exception)  {
                     is UserException -> exception.getUserMessage(r2Application)
@@ -186,13 +184,16 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
                 }
                 channel.send(Event.OpenBookError(message))
             }
-            .onSuccess { type ->
-                channel.send(Event.LaunchReader(type))
+            .onSuccess {
+                val arguments = ReaderActivityContract.Arguments(bookId)
+                channel.send(Event.LaunchReader(arguments))
             }
     }
 
-    fun closeVisualReader() = viewModelScope.launch {
-        r2Application.readerRepository.await().closeVisualPublication()
+    fun closeIfVisual(bookId: Long) = viewModelScope.launch {
+        val readerRepository = r2Application.readerRepository.await()
+        val readerInitData = readerRepository[bookId] as? VisualReaderInitData
+        readerInitData?.let { readerRepository.close(bookId) }
     }
 
     private fun storeCoverImage(publication: Publication, imageName: String) =
@@ -239,6 +240,6 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
         class OpenBookError(val errorMessage: String?) : Event()
 
-        class LaunchReader(val type: NavigatorType) : Event()
+        class LaunchReader(val arguments: ReaderActivityContract.Arguments) : Event()
     }
 }
