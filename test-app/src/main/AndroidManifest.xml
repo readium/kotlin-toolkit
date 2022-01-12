@@ -189,9 +189,6 @@
         <activity
             android:name=".reader.ReaderActivity"
             android:label="Reader" />
-        <activity
-            android:name=".reader.FullscreenReaderActivityDelegate"
-            android:label="Reader" />
 
         <service android:name=".MediaService"
             android:enabled="true"
