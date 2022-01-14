@@ -47,6 +47,7 @@ All notable changes to this project will be documented in this file. Take a look
 #### Streamer
 
 * Fixed the rendering of PDF covers in some edge cases.
+* Fixed reading ranges of obfuscated EPUB resources.
 
 #### Navigator
 
