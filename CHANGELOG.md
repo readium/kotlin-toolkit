@@ -54,6 +54,7 @@ All notable changes to this project will be documented in this file. Take a look
 * EPUB: Fallback on `reflowable` if the `presentation.layout` hint is missing from a manifest.
 * EPUB: Offset of the current selection's `rect` to take into account the vertical padding.
 * Improve backward compatibility of JavaScript files using Babel.
+* [#193](https://github.com/readium/r2-navigator-kotlin/issues/193) Fixed invisible `<audio>` elements.
 
 
 ## [2.1.1]
