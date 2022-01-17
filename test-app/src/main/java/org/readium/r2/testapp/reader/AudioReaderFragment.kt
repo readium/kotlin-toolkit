@@ -22,7 +22,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.media2.MediaSessionNavigator
+import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.cover
@@ -40,9 +40,9 @@ import kotlin.time.ExperimentalTime
 class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListener {
 
     override val model: ReaderViewModel by activityViewModels()
-    override lateinit var navigator: MediaSessionNavigator
+    override lateinit var navigator: MediaNavigator
     
-    private lateinit var displayedPlayback: MediaSessionNavigator.Playback
+    private lateinit var displayedPlayback: MediaNavigator.Playback
     private var binding: FragmentAudiobookBinding by viewLifecycle()
     private var seekingItem: Int? = null
 
@@ -81,10 +81,10 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         }
     }
 
-    private fun onPlaybackChanged(playback: MediaSessionNavigator.Playback) {
+    private fun onPlaybackChanged(playback: MediaNavigator.Playback) {
         Timber.v("onPlaybackChanged $playback")
         this.displayedPlayback = playback
-        if (playback.state == MediaSessionNavigator.Playback.State.Error) {
+        if (playback.state == MediaNavigator.Playback.State.Error) {
             onPlayerError()
             return
         }
@@ -94,7 +94,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         binding.timelineDuration.isEnabled = true
         binding.timelinePosition.isEnabled = true
         binding.playPause.setImageResource(
-            if (playback.state == MediaSessionNavigator.Playback.State.Playing)
+            if (playback.state == MediaNavigator.Playback.State.Playing)
                 R.drawable.ic_baseline_pause_24
             else
                 R.drawable.ic_baseline_play_arrow_24
@@ -142,7 +142,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
 
     @Suppress("UNUSED_PARAMETER")
     private fun forbidUserSeeking(view: View, event: MotionEvent): Boolean =
-        this.displayedPlayback.state == MediaSessionNavigator.Playback.State.Finished
+        this.displayedPlayback.state == MediaNavigator.Playback.State.Finished
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
         if (fromUser) {
@@ -170,26 +170,26 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
 
     private fun onPlayPause(@Suppress("UNUSED_PARAMETER") view: View) {
         return when (displayedPlayback.state) {
-            MediaSessionNavigator.Playback.State.Playing -> {
+            MediaNavigator.Playback.State.Playing -> {
                 model.viewModelScope.launch {
                     navigator.pause()
                 }
                 Unit
             }
-            MediaSessionNavigator.Playback.State.Paused -> {
+            MediaNavigator.Playback.State.Paused -> {
                 model.viewModelScope.launch {
                     navigator.play()
                 }
                 Unit
             }
-            MediaSessionNavigator.Playback.State.Finished -> {
+            MediaNavigator.Playback.State.Finished -> {
                 model.viewModelScope.launch {
                     navigator.seek(0, Duration.ZERO)
                     navigator.play()
                 }
                 Unit
             }
-            MediaSessionNavigator.Playback.State.Error -> {
+            MediaNavigator.Playback.State.Error -> {
                 // Do nothing.
             }
         }

@@ -1,4 +1,10 @@
-package org.readium.r2.navigator.media2
+/*
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
+package org.readium.navigator.media2
 
 import android.app.PendingIntent
 import android.content.Context
@@ -7,10 +13,8 @@ import androidx.media2.common.SessionPlayer
 import androidx.media2.session.MediaSession
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.extensions.sum
-import org.readium.r2.navigator.extensions.time
+import org.readium.navigator.media2.extensions.time
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
@@ -27,13 +31,13 @@ import kotlin.time.ExperimentalTime
  * with the [session] method. Apps are responsible for attaching this session to a service able to
  * expose it.
  *
- * You can build a [MediaSessionNavigator] upon any Media2 [SessionPlayer] implementation
+ * You can build a [MediaNavigator] upon any Media2 [SessionPlayer] implementation
  * providing [create] with it. If you don't, ExoPlayer will be used, without cache.
  * Use [ExoPlayerFactory] to build a [SessionPlayer] based on ExoPlayer with caching capabilities.
  */
-@ExperimentalAudiobook
+@ExperimentalMedia2
 @OptIn(ExperimentalTime::class)
-class MediaSessionNavigator private constructor(
+class MediaNavigator private constructor(
     override val publication: Publication,
     private val playerFacade: SessionPlayerFacade,
     private val playerCallback: SessionPlayerCallback,
@@ -45,8 +49,11 @@ class MediaSessionNavigator private constructor(
     private fun <T> Flow<T>.stateInFirst(coroutineScope: CoroutineScope): StateFlow<T> =
         stateIn(coroutineScope, SharingStarted.Lazily, runBlocking { first() })
 
+    @ExperimentalTime
+    internal fun List<Duration>.sum(): Duration = fold(0.seconds) { a, b -> a + b }
+
     private val totalDuration: Duration? =
-        this.playerFacade.playlist!!.durations?.sum()
+        this.playerFacade.playlist!!.metadata.durations?.sum()
 
     private val currentLocatorFlow: Flow<Locator> =
         combine(
@@ -65,8 +72,10 @@ class MediaSessionNavigator private constructor(
         playlist: List<MediaMetadata>
     ): Locator {
         val link = publication.readingOrder[item.index]
-        val itemStartPosition = playlist.slice(0 until item.index).map { it.duration }.sum()
-        val totalProgression = totalDuration?.let { (itemStartPosition + position) / it }
+        val itemStartPosition = playlist.slice(0 until item.index).durations?.sum()
+        val totalProgression =
+            if (itemStartPosition == null) null
+            else totalDuration?.let { (itemStartPosition + position) / it }
 
         return link.toLocator().copyWithLocations(
             fragments = listOf("t=${position.inWholeSeconds}"),
@@ -169,7 +178,7 @@ class MediaSessionNavigator private constructor(
         seekBy(-configuration.skipBackwardInterval)
 
     private suspend fun seekBy(offset: Duration): Try<Unit, Exception> =
-        this.playerFacade.playlist!!.durations
+        this.playerFacade.playlist!!.metadata.durations
             ?.let { smartSeekBy(offset, it) }
             ?: dummySeekBy(offset)
 
@@ -272,7 +281,7 @@ class MediaSessionNavigator private constructor(
             initialLocator: Locator?,
             configuration: Configuration = Configuration(),
             player: SessionPlayer = ExoPlayerFactory().createPlayer(context, publication)
-        ): Try<MediaSessionNavigator, Exception> {
+        ): Try<MediaNavigator, Exception> {
 
             val positionRefreshDelay = (1.0 / configuration.positionRefreshRate).seconds
             val callback = SessionPlayerCallback(positionRefreshDelay)
@@ -284,7 +293,7 @@ class MediaSessionNavigator private constructor(
                 // Ignoring failure to set initial locator
                 .onSuccess { goInitialLocator(publication, initialLocator, facade) }
                 // Player must be ready to play when MediaNavigator's constructor is called.
-                .map { MediaSessionNavigator(publication, facade, callback, configuration) }
+                .map { MediaNavigator(publication, facade, callback, configuration) }
         }
 
         private suspend fun preparePlayer(

@@ -6,8 +6,8 @@
 
 package org.readium.r2.testapp.reader
 
-import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.media2.MediaSessionNavigator
+import org.readium.navigator.media2.ExperimentalMedia2
+import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import java.net.URL
@@ -24,9 +24,9 @@ data class VisualReaderInitData(
     val initialLocation: Locator? = null
 ) : ReaderInitData()
 
-@ExperimentalAudiobook
+@ExperimentalMedia2
 data class MediaReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
-    val mediaNavigator: MediaSessionNavigator,
+    val mediaNavigator: MediaNavigator,
 ) : ReaderInitData()

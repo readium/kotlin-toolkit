@@ -1,4 +1,10 @@
-package org.readium.r2.navigator.media2
+/*
+ * Copyright 2021 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
+package org.readium.navigator.media2
 
 import android.app.PendingIntent
 import android.content.Context
@@ -6,7 +12,6 @@ import androidx.media2.common.MediaItem
 import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import androidx.media2.session.MediaSession
-import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import timber.log.Timber
@@ -28,7 +33,6 @@ import kotlin.time.ExperimentalTime
  * - in case of failure, the playback can be left in an intermediate state
  * - the behaviour is undefined if any external controller takes actions at the same time
  */
-@ExperimentalAudiobook
 @OptIn(ExperimentalTime::class)
 internal class SessionPlayerFacade(
     private val sessionPlayer: SessionPlayer,
@@ -139,7 +143,8 @@ internal class SessionPlayerFacade(
         if (resultCode == 0) {
             Try.success(Unit)
         } else {
-            val error = SessionPlayerError.fromSessionResultCode(resultCode)
+            val error =
+                SessionPlayerError.fromSessionResultCode(resultCode)
             Try.failure(SessionPlayerException(error))
         }
 

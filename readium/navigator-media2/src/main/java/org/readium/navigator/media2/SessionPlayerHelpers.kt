@@ -1,10 +1,15 @@
-package org.readium.r2.navigator.media2
+/*
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
+package org.readium.navigator.media2
 
 import androidx.core.os.bundleOf
 import androidx.media2.common.MediaItem
 import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
-import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import kotlin.time.Duration
@@ -36,34 +41,28 @@ private fun msToDuration(ms: Long): Duration? =
  * Metadata
  */
 
-@ExperimentalAudiobook
 internal val MediaMetadata.href: String
     get() = getString(MediaMetadata.METADATA_KEY_MEDIA_URI)
         .let { checkNotNull(it) { "Missing href in item metadata."} }
 
-@ExperimentalAudiobook
 internal val MediaMetadata.index: Int
     get() = getLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER).toInt()
 
-@ExperimentalAudiobook
 internal val MediaMetadata.title: String?
     get() = getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE)
         ?: getString(MediaMetadata.METADATA_KEY_TITLE)
 
 private const val METADATA_KEY_MEDIA_TYPE = "readium.audio.metadata.MEDIA_TYPE"
 
-@ExperimentalAudiobook
 internal val MediaMetadata.type: String?
     get() = extras?.getString(METADATA_KEY_MEDIA_TYPE)
 
-@ExperimentalAudiobook
 @ExperimentalTime
 internal val MediaMetadata.duration: Duration?
     get() = getLong(MediaMetadata.METADATA_KEY_DURATION)
         .takeUnless { it == 0L }
         ?.milliseconds
 
-@ExperimentalAudiobook
 internal fun linkMetadata(index: Int, link: Link): MediaMetadata {
     val extras = bundleOf(
         METADATA_KEY_MEDIA_TYPE to link.title
@@ -77,7 +76,6 @@ internal fun linkMetadata(index: Int, link: Link): MediaMetadata {
         .build()
 }
 
-@ExperimentalAudiobook
 internal fun List<Link>.toPlayList(): List<MediaItem> =
     mapIndexed { index, link ->
         MediaItem.Builder()
@@ -85,7 +83,6 @@ internal fun List<Link>.toPlayList(): List<MediaItem> =
             .build()
     }
 
-@ExperimentalAudiobook
 internal fun publicationMetadata(publication: Publication): MediaMetadata {
     val builder = MediaMetadata.Builder()
         .putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, publication.metadata.title)
@@ -96,10 +93,14 @@ internal fun publicationMetadata(publication: Publication): MediaMetadata {
     return builder.build()
 }
 
-@ExperimentalAudiobook
 @ExperimentalTime
-internal val List<MediaItem>.durations: List<Duration>?
+internal val List<MediaMetadata>.durations: List<Duration>?
     get() {
-        val durations = mapNotNull { it.metadata!!.duration }
+        val durations = mapNotNull { it.duration }
         return durations.takeIf { it.size == this.size }
     }
+
+@ExperimentalTime
+internal val List<MediaItem>.metadata: List<MediaMetadata>
+    get() = map { it.metadata!! }
+

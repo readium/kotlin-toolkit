@@ -16,8 +16,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
-import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.media2.MediaSessionNavigator
+import org.readium.navigator.media2.ExperimentalMedia2
+import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderActivityContract
@@ -25,7 +25,7 @@ import org.readium.r2.testapp.utils.LifecycleMediaSessionService
 import timber.log.Timber
 import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class, ExperimentalAudiobook::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalTime::class, ExperimentalMedia2::class, ExperimentalCoroutinesApi::class)
 class MediaService : LifecycleMediaSessionService() {
 
     inner class Binder : android.os.Binder() {
@@ -36,7 +36,7 @@ class MediaService : LifecycleMediaSessionService() {
 
         private var saveLocationJob: Job? = null
 
-        private var mediaNavigator: MediaSessionNavigator? = null
+        private var mediaNavigator: MediaNavigator? = null
 
         var mediaSession: MediaSession? = null
 
@@ -51,7 +51,7 @@ class MediaService : LifecycleMediaSessionService() {
         }
 
         @OptIn(FlowPreview::class)
-        fun bindNavigator(navigator: MediaSessionNavigator, bookId: Long) {
+        fun bindNavigator(navigator: MediaNavigator, bookId: Long) {
             val activityIntent = createSessionActivityIntent(bookId)
             mediaNavigator = navigator
             mediaSession = navigator.session(applicationContext, bookId.toString(), activityIntent)

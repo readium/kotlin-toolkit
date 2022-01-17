@@ -9,8 +9,8 @@ package org.readium.r2.testapp.reader
 import android.app.Application
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.json.JSONObject
-import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.media2.MediaSessionNavigator
+import org.readium.navigator.media2.ExperimentalMedia2
+import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -31,7 +31,7 @@ import java.net.URL
  * Pass the method result to the activity to enable it to know which current publication it must
  * retrieve from this repository - media or visual.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalAudiobook::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMedia2::class)
 class ReaderRepository(
     private val application: Application,
     private val streamer: Streamer,
@@ -99,13 +99,13 @@ class ReaderRepository(
         return url ?: throw Exception("Cannot add the publication to the HTTP server.")
     }
 
-    @OptIn(ExperimentalAudiobook::class)
+    @OptIn(ExperimentalMedia2::class)
     private suspend fun openAudio(
         bookId: Long,
         publication: Publication,
         initialLocator: Locator?
     ): MediaReaderInitData {
-        val navigator = MediaSessionNavigator.create(
+        val navigator = MediaNavigator.create(
             application,
             publication,
             initialLocator

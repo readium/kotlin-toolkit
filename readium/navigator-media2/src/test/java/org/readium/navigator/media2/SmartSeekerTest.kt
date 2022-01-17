@@ -1,4 +1,4 @@
-package org.readium.r2.navigator.media2
+package org.readium.navigator.media2
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

@@ -1,4 +1,10 @@
-package org.readium.r2.navigator.media2
+/*
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
+package org.readium.navigator.media2
 
 import android.content.Context
 import androidx.media2.common.SessionPlayer
@@ -10,11 +16,9 @@ import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
-import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.audio.PublicationDataSource
 import org.readium.r2.shared.publication.Publication
 
-@ExperimentalAudiobook
+@ExperimentalMedia2
 class ExoPlayerFactory(private val cache: Cache? = null) {
 
     fun createPlayer(context: Context, publication: Publication): SessionPlayer {
