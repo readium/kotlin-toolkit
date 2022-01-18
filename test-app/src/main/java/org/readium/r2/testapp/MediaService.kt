@@ -41,6 +41,7 @@ class MediaService : LifecycleMediaSessionService() {
         var mediaSession: MediaSession? = null
 
         fun closeNavigator() {
+            stopForeground(true)
             mediaSession?.close()
             mediaSession = null
             saveLocationJob?.cancel()

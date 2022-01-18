@@ -67,7 +67,7 @@ class BookshelfFragment : Fragment() {
 
         readerLauncher =
             registerForActivityResult(ReaderActivityContract()) { input ->
-                input?.let { tryOrLog { bookshelfViewModel.closeIfVisual(input.bookId) } }
+                input?.let { tryOrLog { bookshelfViewModel.closeBook(input.bookId) } }
             }
 
         binding.bookshelfBookList.apply {

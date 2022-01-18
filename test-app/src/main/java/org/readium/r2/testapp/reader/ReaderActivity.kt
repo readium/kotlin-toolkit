@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
+import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -72,7 +73,7 @@ open class ReaderActivity : AppCompatActivity() {
             lifecycle.addObserver(fullscreenDelegate)
         }
 
-        this.readerFragment = readerFragment
+        readerFragment?.let { this.readerFragment = it }
 
         model.activityChannel.receive(this) { handleReaderFragmentEvent(it) }
         reconfigureActionBar()
@@ -105,9 +106,9 @@ open class ReaderActivity : AppCompatActivity() {
         }
     }
 
-    @OptIn(ExperimentalAudiobook::class)
-    private fun createReaderFragment(readerData: ReaderInitData): BaseReaderFragment {
-        val readerClass: Class<out Fragment> = when {
+    @OptIn(ExperimentalMedia2::class)
+    private fun createReaderFragment(readerData: ReaderInitData): BaseReaderFragment? {
+        val readerClass: Class<out Fragment>? = when {
             readerData is MediaReaderInitData ->
                 AudioReaderFragment::class.java
             readerData.publication.conformsTo(Publication.Profile.EPUB) ->
@@ -117,14 +118,17 @@ open class ReaderActivity : AppCompatActivity() {
             readerData.publication.conformsTo(Publication.Profile.DIVINA) ->
                 ImageReaderFragment::class.java
             else ->
-                throw IllegalArgumentException("Cannot render publication")
+                // The Activity should stop as soon as possible because readerData are fake.
+                null
         }
 
-        supportFragmentManager.commitNow {
-            replace(R.id.activity_container, readerClass, Bundle(), READER_FRAGMENT_TAG)
+        readerClass?.let { readerClass ->
+            supportFragmentManager.commitNow {
+                replace(R.id.activity_container, readerClass, Bundle(), READER_FRAGMENT_TAG)
+            }
         }
 
-        return supportFragmentManager.findFragmentByTag(READER_FRAGMENT_TAG) as BaseReaderFragment
+        return supportFragmentManager.findFragmentByTag(READER_FRAGMENT_TAG) as BaseReaderFragment?
     }
 
     override fun onStart() {

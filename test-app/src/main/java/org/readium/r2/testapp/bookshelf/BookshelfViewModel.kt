@@ -31,7 +31,6 @@ import org.readium.r2.streamer.Streamer
 import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.reader.ReaderActivityContract
-import org.readium.r2.testapp.reader.VisualReaderInitData
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
@@ -190,10 +189,9 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             }
     }
 
-    fun closeIfVisual(bookId: Long) = viewModelScope.launch {
+    fun closeBook(bookId: Long) = viewModelScope.launch {
         val readerRepository = r2Application.readerRepository.await()
-        val readerInitData = readerRepository[bookId] as? VisualReaderInitData
-        readerInitData?.let { readerRepository.close(bookId) }
+        readerRepository.close(bookId)
     }
 
     private fun storeCoverImage(publication: Publication, imageName: String) =
