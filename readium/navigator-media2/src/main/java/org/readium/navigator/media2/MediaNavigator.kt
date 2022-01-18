@@ -8,6 +8,7 @@ package org.readium.navigator.media2
 
 import android.app.PendingIntent
 import android.content.Context
+import androidx.media2.common.MediaItem
 import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import androidx.media2.session.MediaSession
@@ -153,9 +154,10 @@ class MediaNavigator private constructor(
      * Seeks to the given locator.
      */
     suspend fun go(locator: Locator): Try<Unit, Exception> {
-        Timber.d("Go to locator $locator")
-        val itemIndex = checkNotNull(publication.readingOrder.indexOfFirstWithHref(locator.href))
+        val itemIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
+            ?: return Try.failure(IllegalArgumentException("Invalid href ${locator.href}."))
         val position = locator.locations.time ?: Duration.ZERO
+        Timber.d("Go to locator $locator")
         return seek(itemIndex, position)
     }
 
@@ -216,7 +218,7 @@ class MediaNavigator private constructor(
         coroutineScope.cancel()
     }
 
-    fun session(context: Context, id: String, activityIntent: PendingIntent): MediaSession =
+    fun session(context: Context, activityIntent: PendingIntent, id: String? = null): MediaSession =
         playerFacade.session(context, id, activityIntent)
 
 
@@ -280,7 +282,8 @@ class MediaNavigator private constructor(
             publication: Publication,
             initialLocator: Locator?,
             configuration: Configuration = Configuration(),
-            player: SessionPlayer = ExoPlayerFactory().createPlayer(context, publication)
+            player: SessionPlayer = ExoPlayerFactory().createPlayer(context, publication),
+            metadataFactory: MediaMetadataFactory = DefaultMetadataFactory(publication)
         ): Try<MediaNavigator, Exception> {
 
             val positionRefreshDelay = (1.0 / configuration.positionRefreshRate).seconds
@@ -289,7 +292,7 @@ class MediaNavigator private constructor(
             player.registerPlayerCallback(callbackExecutor, callback)
 
             val facade = SessionPlayerFacade(player)
-            return preparePlayer(publication, facade)
+            return preparePlayer(publication, facade, metadataFactory)
                 // Ignoring failure to set initial locator
                 .onSuccess { goInitialLocator(publication, initialLocator, facade) }
                 // Player must be ready to play when MediaNavigator's constructor is called.
@@ -297,12 +300,25 @@ class MediaNavigator private constructor(
         }
 
         private suspend fun preparePlayer(
-            publication: Publication, player:
-            SessionPlayerFacade
+            publication: Publication,
+            player: SessionPlayerFacade,
+            metadataFactory: MediaMetadataFactory
         ): Try<Unit, Exception> {
-            val playlist = publication.readingOrder.toPlayList()
-            val metadata = publicationMetadata(publication)
-            return player.setPlaylist(playlist, metadata)
+            val playlist = publication.readingOrder.indices.map { index ->
+                val metadataBuilder = MediaMetadata.Builder()
+                metadataFactory.fillResourceMetadata.invoke(metadataBuilder, index)
+                metadataBuilder.putLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER, index.toLong())
+                val metadata = metadataBuilder.build()
+                MediaItem.Builder()
+                    .setMetadata(metadata)
+                    .build()
+            }
+
+            val publicationMetadataBuilder = MediaMetadata.Builder()
+            metadataFactory.fillPublicationMetadata.invoke(publicationMetadataBuilder)
+            val publicationMetadata = publicationMetadataBuilder.build()
+
+            return player.setPlaylist(playlist, publicationMetadata)
                 .flatMap { player.prepare() }
                 .toNavigatorResult()
         }
@@ -322,15 +338,19 @@ class MediaNavigator private constructor(
             }
         }
 
-        private class PlayerException(
-            val error: SessionPlayerError,
+        class SessionPlayerException internal constructor(
+            internal val error: SessionPlayerError,
             override val message: String = "${error.name} error occurred in SessionPlayer."
         ) : Exception()
+
+        class IllegalArgumentException internal constructor(
+            override val message: String
+        ): Exception()
 
         internal fun SessionPlayerResult.toNavigatorResult(): Try<Unit, Exception> =
             if (isSuccess)
                 Try.success(Unit)
             else
-                this.mapFailure { PlayerException(it.error) }
+                this.mapFailure { SessionPlayerException(it.error) }
     }
 }

@@ -66,11 +66,12 @@ internal class SessionPlayerFacade(
         sessionPlayer.close()
     }
 
-    fun session(context: Context, id: String, activityIntent: PendingIntent): MediaSession {
-        return MediaSession.Builder(context, sessionPlayer)
-            .setId(id)
+    fun session(context: Context, id: String?, activityIntent: PendingIntent): MediaSession {
+        val builder = MediaSession.Builder(context, sessionPlayer)
             .setSessionActivity(activityIntent)
-            .build()
+
+        id?.let { builder.setId(id) }
+        return builder.build()
     }
 
     /*

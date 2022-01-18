@@ -54,7 +54,7 @@ class MediaService : LifecycleMediaSessionService() {
         fun bindNavigator(navigator: MediaNavigator, bookId: Long) {
             val activityIntent = createSessionActivityIntent(bookId)
             mediaNavigator = navigator
-            mediaSession = navigator.session(applicationContext, bookId.toString(), activityIntent)
+            mediaSession = navigator.session(applicationContext, activityIntent)
                 .also { addSession(it) }
             saveLocationJob = navigator.currentLocator
                 .sample(3000)
