@@ -47,6 +47,7 @@ class MediaNavigator private constructor(
 
     private val coroutineScope: CoroutineScope = MainScope()
 
+    // This is used only when the Flow's first element is already available, so it doesn't block any thread.
     private fun <T> Flow<T>.stateInFirst(coroutineScope: CoroutineScope): StateFlow<T> =
         stateIn(coroutineScope, SharingStarted.Lazily, runBlocking { first() })
 
@@ -57,21 +58,19 @@ class MediaNavigator private constructor(
         this.playerFacade.playlist!!.metadata.durations?.sum()
 
     private val currentLocatorFlow: Flow<Locator> =
-        combine(
-            playerCallback.currentItem,
-            playerCallback.currentPosition
-        ) { currentItem, currentPosition ->
+        playerCallback.currentItem.map { currentItem ->
+            val playlistMetadata = this.playerFacade.playlist!!.map { it.metadata!! }
             locator(
                 currentItem,
-                currentPosition,
-                this.playerFacade.playlist!!.map { it.metadata!! })
+                playlistMetadata
+            )
         }
 
     private fun locator(
-        item: MediaMetadata,
-        position: Duration,
+        item: SessionPlayerCallback.Item,
         playlist: List<MediaMetadata>
     ): Locator {
+        val position = item.position
         val link = publication.readingOrder[item.index]
         val itemStartPosition = playlist.slice(0 until item.index).durations?.sum()
         val totalProgression =
@@ -93,9 +92,7 @@ class MediaNavigator private constructor(
             playerCallback.playerState,
             playerCallback.playbackSpeed,
             playerCallback.currentItem,
-            playerCallback.currentPosition,
-            playerCallback.bufferedPosition
-        ) { currentState, playbackSpeed, currentItem, currentPosition, bufferedPosition ->
+        ) { currentState, playbackSpeed, currentItem ->
             val state = when (currentState) {
                 SessionPlayerState.Playing ->
                     Playback.State.Playing
@@ -113,8 +110,8 @@ class MediaNavigator private constructor(
                 rate = playbackSpeed.toDouble(),
                 currentIndex = currentItem.index,
                 currentLink = publication.readingOrder[currentItem.index],
-                currentPosition = currentPosition,
-                bufferedPosition = bufferedPosition
+                currentPosition = currentItem.position,
+                bufferedPosition = currentItem.buffered
             )
         }
 
@@ -305,18 +302,13 @@ class MediaNavigator private constructor(
             metadataFactory: MediaMetadataFactory
         ): Try<Unit, Exception> {
             val playlist = publication.readingOrder.indices.map { index ->
-                val metadataBuilder = MediaMetadata.Builder()
-                metadataFactory.fillResourceMetadata.invoke(metadataBuilder, index)
-                metadataBuilder.putLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER, index.toLong())
-                val metadata = metadataBuilder.build()
+                val metadata = metadataFactory.resourceMetadata(index)
                 MediaItem.Builder()
                     .setMetadata(metadata)
                     .build()
             }
 
-            val publicationMetadataBuilder = MediaMetadata.Builder()
-            metadataFactory.fillPublicationMetadata.invoke(publicationMetadataBuilder)
-            val publicationMetadata = publicationMetadataBuilder.build()
+            val publicationMetadata = metadataFactory.publicationMetadata()
 
             return player.setPlaylist(playlist, publicationMetadata)
                 .flatMap { player.prepare() }

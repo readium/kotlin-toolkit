@@ -21,40 +21,31 @@ internal class SessionPlayerCallback(
     private val positionRefreshDelay: Duration,
 ) : SessionPlayer.PlayerCallback() {
 
+    data class Item(
+        val index: Int,
+        val position: Duration,
+        val buffered: Duration,
+        val duration: Duration?,
+    )
+
     var playbackCompleted: Boolean =
         false
 
     val playerState: Flow<SessionPlayerState>
-        get() = _playerState.filterNotNull().distinctUntilChanged()
+        get() = _playerState.distinctUntilChanged()
 
-    val currentPosition: Flow<Duration>
-        get() = _currentPosition.filterNotNull().distinctUntilChanged()
-
-    val bufferedPosition: Flow<Duration>
-        get() = _bufferedPosition.filterNotNull().distinctUntilChanged()
-
-    val currentItem: Flow<MediaMetadata>
-        get() = _currentItem.filterNotNull()
+    val currentItem: Flow<Item>
+        get() = _currentItem.distinctUntilChanged()
 
     val playbackSpeed: Flow<Float>
-        get() = _playbackSpeed
+        get() = _playbackSpeed.distinctUntilChanged()
 
     private val _playerState = MutableSharedFlow<SessionPlayerState>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    private val _currentPosition = MutableSharedFlow<Duration?>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
-    private val _bufferedPosition = MutableSharedFlow<Duration?>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
-    private val _currentItem = MutableSharedFlow<MediaMetadata?>(
+    private val _currentItem = MutableSharedFlow<Item>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -73,9 +64,14 @@ internal class SessionPlayerCallback(
 
     override fun onPlaylistChanged(player: SessionPlayer, list: MutableList<MediaItem>?, metadata: MediaMetadata?) {
         Timber.d("onPlaylistChanged")
+
+        val item = getCurrentItem(player)
+            ?: Item(0, Duration.ZERO, Duration.ZERO, null)
+        _currentItem.tryEmit(item)
+
         coroutineScope.launch {
             while (isActive) {
-                updatePosition(player)
+                getCurrentItem(player)?.let { _currentItem.tryEmit(it) }
                 delay(positionRefreshDelay)
             }
         }
@@ -83,13 +79,8 @@ internal class SessionPlayerCallback(
 
     override fun onSeekCompleted(player: SessionPlayer, position: Long) {
         Timber.d("onSeekCompleted $position")
-        updatePosition(player)
+        getCurrentItem(player)?.let { _currentItem.tryEmit(it) }
         playbackCompleted = false
-    }
-
-    private fun updatePosition(player: SessionPlayer) {
-        _currentPosition.tryEmit(player.currentPositionDuration)
-        _bufferedPosition.tryEmit(player.bufferedPositionDuration)
     }
 
     override fun onPlayerStateChanged(player: SessionPlayer, state: Int) {
@@ -108,7 +99,7 @@ internal class SessionPlayerCallback(
 
     override fun onCurrentMediaItemChanged(player: SessionPlayer, item: MediaItem?) {
         Timber.d("onCurrentMediaItemChanged $item")
-        _currentItem.tryEmit(item?.metadata)
+        getCurrentItem(player)?.let { _currentItem.tryEmit(it)  }
     }
 
     override fun onPlaybackSpeedChanged(player: SessionPlayer, playbackSpeed: Float) {
@@ -118,5 +109,20 @@ internal class SessionPlayerCallback(
 
     fun close() {
         coroutineScope.cancel()
+    }
+
+    private fun getCurrentItem(player: SessionPlayer): Item? {
+        val index = player.currentIndexNullable ?: return null
+        val position = player.currentPositionDuration ?: return null
+        val buffered = player.bufferedPositionDuration ?: return null
+        val duration = player.currentDuration ?: player.currentMediaItem?.metadata?.duration
+
+        return if (index != player.currentMediaItemIndex) {
+            // Current item has changed and data is stale.
+            Timber.d("Ignoring stale state.")
+            null
+        } else {
+            Item(index, position, buffered, duration)
+        }
     }
 }

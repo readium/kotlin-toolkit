@@ -4,7 +4,7 @@ import androidx.media2.common.MediaMetadata
 
 interface MediaMetadataFactory {
 
-    val fillPublicationMetadata: suspend (MediaMetadata.Builder).() -> Unit
+    suspend fun publicationMetadata(): MediaMetadata
 
-    val fillResourceMetadata: suspend (MediaMetadata.Builder).(Int) -> Unit
+    suspend fun resourceMetadata(index: Int): MediaMetadata
 }
