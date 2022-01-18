@@ -152,7 +152,7 @@ class MediaNavigator private constructor(
      */
     suspend fun go(locator: Locator): Try<Unit, Exception> {
         val itemIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
-            ?: return Try.failure(IllegalArgumentException("Invalid href ${locator.href}."))
+            ?: return Try.failure(Exception.IllegalArgument("Invalid href ${locator.href}."))
         val position = locator.locations.time ?: Duration.ZERO
         Timber.d("Go to locator $locator")
         return seek(itemIndex, position)
@@ -243,7 +243,17 @@ class MediaNavigator private constructor(
         }
     }
 
-    sealed class Exception : kotlin.Exception()
+    sealed class Exception : kotlin.Exception() {
+
+        class SessionPlayer internal constructor(
+            internal val error: SessionPlayerError,
+            override val message: String = "${error.name} error occurred in SessionPlayer."
+        ) : Exception()
+
+        class IllegalArgument internal constructor(
+            override val message: String
+        ): Exception()
+    }
 
     /*
      * Compatibility
@@ -330,19 +340,10 @@ class MediaNavigator private constructor(
             }
         }
 
-        class SessionPlayerException internal constructor(
-            internal val error: SessionPlayerError,
-            override val message: String = "${error.name} error occurred in SessionPlayer."
-        ) : Exception()
-
-        class IllegalArgumentException internal constructor(
-            override val message: String
-        ): Exception()
-
         internal fun SessionPlayerResult.toNavigatorResult(): Try<Unit, Exception> =
             if (isSuccess)
                 Try.success(Unit)
             else
-                this.mapFailure { SessionPlayerException(it.error) }
+                this.mapFailure { Exception.SessionPlayer(it.error) }
     }
 }

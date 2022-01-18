@@ -21,7 +21,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.ExperimentalAudiobook
+import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -36,7 +36,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalAudiobook::class, ExperimentalTime::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalMedia2::class, ExperimentalTime::class, ExperimentalCoroutinesApi::class)
 class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListener {
 
     override val model: ReaderViewModel by activityViewModels()
