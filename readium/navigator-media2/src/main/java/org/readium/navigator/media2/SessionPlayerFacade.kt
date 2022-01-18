@@ -37,9 +37,6 @@ import kotlin.time.ExperimentalTime
 internal class SessionPlayerFacade(
     private val sessionPlayer: SessionPlayer,
 ) {
-    var pausedForCommand: Boolean = false
-        private set
-
     val playerState: SessionPlayerState
         get() = SessionPlayerState.from(sessionPlayer.playerState)
 
