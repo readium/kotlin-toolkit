@@ -4,7 +4,8 @@ import androidx.media2.common.MediaMetadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
 
-class DefaultMetadataFactory(private val publication: Publication): MediaMetadataFactory {
+@ExperimentalMedia2
+internal class DefaultMetadataFactory(private val publication: Publication): MediaMetadataFactory {
 
     private val authors: String?
         get() = publication.metadata.authors
