@@ -28,6 +28,9 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class, ExperimentalMedia2::class, ExperimentalCoroutinesApi::class)
 class MediaService : LifecycleMediaSessionService() {
 
+    /**
+     * The service interface to be used by the app.
+     */
     inner class Binder : android.os.Binder() {
 
         private val books by lazy {
@@ -57,6 +60,11 @@ class MediaService : LifecycleMediaSessionService() {
             mediaNavigator = navigator
             mediaSession = navigator.session(applicationContext, activityIntent)
                 .also { addSession(it) }
+
+            /*
+             * Launch a job for saving progression even when playback is going on in the background
+             * with no ReaderActivity opened.
+             */
             saveLocationJob = navigator.currentLocator
                 .sample(3000)
                 .onEach {  locator -> books.saveProgression(locator, bookId) }
@@ -64,6 +72,7 @@ class MediaService : LifecycleMediaSessionService() {
         }
 
         private fun createSessionActivityIntent(bookId: Long): PendingIntent {
+            // This intent will be triggered when the notification is clicked.
             var flags = PendingIntent.FLAG_UPDATE_CURRENT
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 flags = flags or PendingIntent.FLAG_IMMUTABLE
@@ -94,9 +103,11 @@ class MediaService : LifecycleMediaSessionService() {
 
         return if (intent.action == SERVICE_INTERFACE) {
             super.onBind(intent)
+            // Readium-aware client.
             Timber.d("Returning custom binder.")
             binder
         } else {
+            // External controller.
             Timber.d("Returning MediaSessionService binder.")
             super.onBind(intent)
         }
@@ -114,6 +125,7 @@ class MediaService : LifecycleMediaSessionService() {
     override fun onTaskRemoved(rootIntent: Intent) {
         super.onTaskRemoved(rootIntent)
         Timber.d("Task removed. Stopping session and service.")
+        // Close the navigator to allow the service to be stopped.
         binder.closeNavigator()
         stopSelf()
     }
