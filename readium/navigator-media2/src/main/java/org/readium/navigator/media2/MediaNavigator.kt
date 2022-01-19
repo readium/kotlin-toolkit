@@ -12,6 +12,12 @@ import androidx.media2.common.MediaItem
 import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import androidx.media2.session.MediaSession
+import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.audio.AudioAttributes
+import com.google.android.exoplayer2.ext.media2.SessionPlayerConnector
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
+import com.google.android.exoplayer2.upstream.DataSource
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.Navigator
@@ -34,7 +40,7 @@ import kotlin.time.ExperimentalTime
  *
  * You can build a [MediaNavigator] upon any Media2 [SessionPlayer] implementation
  * providing [create] with it. If you don't, ExoPlayer will be used, without cache.
- * Use [ExoPlayerFactory] to build a [SessionPlayer] based on ExoPlayer with caching capabilities.
+ * You can build your own [SessionPlayer] based on [ExoPlayer] using [ExoPlayerDataSource].
  */
 @ExperimentalMedia2
 @OptIn(ExperimentalTime::class)
@@ -289,7 +295,7 @@ class MediaNavigator private constructor(
             publication: Publication,
             initialLocator: Locator?,
             configuration: Configuration = Configuration(),
-            player: SessionPlayer = ExoPlayerFactory().createPlayer(context, publication),
+            player: SessionPlayer = createPlayer(context, publication),
             metadataFactory: MediaMetadataFactory = DefaultMetadataFactory(publication)
         ): Try<MediaNavigator, Exception> {
 
@@ -323,6 +329,24 @@ class MediaNavigator private constructor(
             return player.setPlaylist(playlist, publicationMetadata)
                 .flatMap { player.prepare() }
                 .toNavigatorResult()
+        }
+
+        private fun createPlayer(context: Context, publication: Publication): SessionPlayer {
+            val dataSourceFactory: DataSource.Factory = ExoPlayerDataSource.Factory(publication)
+
+            val player: ExoPlayer = ExoPlayer.Builder(context)
+                .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(C.CONTENT_TYPE_MUSIC)
+                        .setUsage(C.USAGE_MEDIA)
+                        .build(),
+                    true
+                )
+                .setHandleAudioBecomingNoisy(true)
+                .build()
+
+            return SessionPlayerConnector(player)
         }
 
         private suspend fun goInitialLocator(

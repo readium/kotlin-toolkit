@@ -22,12 +22,12 @@ import java.io.IOException
 /**
  * An ExoPlayer's [DataSource] which retrieves resources from a [Publication].
  */
-internal class PublicationDataSource(private val publication: Publication) : BaseDataSource(/* isNetwork = */ true) {
+class ExoPlayerDataSource internal constructor(private val publication: Publication) : BaseDataSource(/* isNetwork = */ true) {
 
     class Factory(private val publication: Publication, private val transferListener: TransferListener? = null) : DataSource.Factory {
 
         override fun createDataSource(): DataSource =
-            PublicationDataSource(publication).apply {
+            ExoPlayerDataSource(publication).apply {
                 if (transferListener != null) {
                     addTransferListener(transferListener)
                 }
