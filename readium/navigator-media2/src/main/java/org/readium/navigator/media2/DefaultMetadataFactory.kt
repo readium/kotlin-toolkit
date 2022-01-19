@@ -1,15 +1,27 @@
 package org.readium.navigator.media2
 
+import android.graphics.Bitmap
 import androidx.media2.common.MediaMetadata
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
 
 @ExperimentalMedia2
 internal class DefaultMetadataFactory(private val publication: Publication): MediaMetadataFactory {
 
+    private val coroutineScope =
+        CoroutineScope(Dispatchers.Default)
+
     private val authors: String?
         get() = publication.metadata.authors
             .joinToString(", ") { it.name }.takeIf { it.isNotBlank() }
+
+    private val cover: Deferred<Bitmap?> = coroutineScope.async {
+        publication.cover()
+    }
 
     override suspend fun publicationMetadata(): MediaMetadata {
         val builder = MediaMetadata.Builder()
@@ -24,7 +36,7 @@ internal class DefaultMetadataFactory(private val publication: Publication): Med
         publication.metadata.duration
             ?.let { builder.putLong(MediaMetadata.METADATA_KEY_DURATION, it.toLong() * 1000) }
 
-        publication.cover()
+        cover.await()
             ?.let { builder.putBitmap(MediaMetadata.METADATA_KEY_ART, it)}
 
         return builder.build()
@@ -41,7 +53,7 @@ internal class DefaultMetadataFactory(private val publication: Publication): Med
         builder.putLong(MediaMetadata.METADATA_KEY_DURATION, (link.duration?.toLong() ?: 0) * 1000)
 
         authors?.let { builder.putString(MediaMetadata.METADATA_KEY_AUTHOR, it) }
-        publication.cover()?.let { builder.putBitmap(MediaMetadata.METADATA_KEY_ART, it)}
+        cover.await()?.let { builder.putBitmap(MediaMetadata.METADATA_KEY_ART, it)}
         return builder.build()
     }
 }
