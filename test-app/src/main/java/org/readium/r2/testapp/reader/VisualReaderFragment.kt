@@ -54,6 +54,8 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        navigatorFragment = navigator as Fragment
+
         val viewScope = viewLifecycleOwner.lifecycleScope
 
         navigator.currentLocator
@@ -70,8 +72,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
             model.searchDecorations
                 .onEach { navigator.applyDecorations(it, "search") }
                 .launchIn(viewScope)
-
-            navigatorFragment = navigator as Fragment
 
             childFragmentManager.addOnBackStackChangedListener {
                 updateSystemUiVisibility()
