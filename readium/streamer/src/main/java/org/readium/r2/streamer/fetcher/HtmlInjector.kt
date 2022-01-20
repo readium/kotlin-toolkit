@@ -71,6 +71,19 @@ internal class HtmlInjector(
         val endIncludes = mutableListOf<String>()
         val beginIncludes = mutableListOf<String>()
         beginIncludes.add(getHtmlLink("/assets/readium-css/${layout.readiumCSSPath}ReadiumCSS-before.css"))
+
+        // Fix Readium CSS issue with the positioning of <audio> elements.
+        // https://github.com/readium/readium-css/issues/94
+        // https://github.com/readium/r2-navigator-kotlin/issues/193
+        beginIncludes.add("""
+            <style>
+            audio[controls] {
+                width: revert;
+                height: revert;
+            }
+            </style>
+        """.trimIndent())
+
         endIncludes.add(getHtmlLink("/assets/readium-css/${layout.readiumCSSPath}ReadiumCSS-after.css"))
         endIncludes.add(getHtmlScript("/assets/scripts/readium-reflowable.js"))
 
