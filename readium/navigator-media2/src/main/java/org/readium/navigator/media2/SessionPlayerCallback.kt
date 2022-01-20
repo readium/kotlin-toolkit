@@ -11,7 +11,9 @@ import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import timber.log.Timber
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -34,13 +36,24 @@ internal class SessionPlayerCallback(
     val playerState: Flow<SessionPlayerState>
         get() = _playerState.distinctUntilChanged()
 
+    val bufferingState: Flow<SessionPlayerBufferingState>
+        get() = _bufferingState.distinctUntilChanged()
+
     val currentItem: Flow<Item>
         get() = _currentItem.distinctUntilChanged()
 
     val playbackSpeed: Flow<Float>
         get() = _playbackSpeed.distinctUntilChanged()
 
+    val seekCompleted: Flow<Long>
+        get() = _seekCompleted
+
     private val _playerState = MutableSharedFlow<SessionPlayerState>(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
+    private val _bufferingState = MutableSharedFlow<SessionPlayerBufferingState>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -55,8 +68,13 @@ internal class SessionPlayerCallback(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
+    private val _seekCompleted = MutableSharedFlow<Long>(
+       extraBufferCapacity = Int.MAX_VALUE
+    )
+
     init {
         _playbackSpeed.tryEmit(1f)
+        _bufferingState.tryEmit(SessionPlayerBufferingState.BUFFERING_STATE_UNKNOWN)
     }
 
     private val coroutineScope: CoroutineScope =
@@ -81,15 +99,22 @@ internal class SessionPlayerCallback(
         Timber.d("onSeekCompleted $position")
         getCurrentItem(player)?.let { _currentItem.tryEmit(it) }
         playbackCompleted = false
+        _seekCompleted.tryEmit(position)
     }
 
     override fun onPlayerStateChanged(player: SessionPlayer, state: Int) {
         Timber.d("onPlayerStateChanged $state")
-        val newState = SessionPlayerState.from(state)
+        val newState = SessionPlayerState.fromCode(state)
         _playerState.tryEmit(newState)
         if (newState == SessionPlayerState.Playing) {
             playbackCompleted = false
         }
+    }
+
+    override fun onBufferingStateChanged(player: SessionPlayer, item: MediaItem?, buffState: Int) {
+        Timber.d("onBufferingStateChanged $buffState")
+        val newState = SessionPlayerBufferingState.fromCode(buffState)
+        _bufferingState.tryEmit(newState)
     }
 
     override fun onPlaybackCompleted(player: SessionPlayer) {

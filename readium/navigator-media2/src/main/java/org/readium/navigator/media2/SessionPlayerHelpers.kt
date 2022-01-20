@@ -14,7 +14,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 
 internal val SessionPlayer.stateEnum: SessionPlayerState
-    get() = SessionPlayerState.from(playerState)
+    get() = SessionPlayerState.fromCode(playerState)
 
 internal val SessionPlayer.playbackSpeedNullable
     get() =  playbackSpeed.takeUnless { it == 0f  }?.toDouble()

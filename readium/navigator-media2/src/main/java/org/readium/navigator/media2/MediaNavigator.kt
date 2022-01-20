@@ -98,7 +98,8 @@ class MediaNavigator private constructor(
             playerCallback.playerState,
             playerCallback.playbackSpeed,
             playerCallback.currentItem,
-        ) { currentState, playbackSpeed, currentItem ->
+            playerCallback.bufferingState
+        ) { currentState, playbackSpeed, currentItem, bufferingState ->
             val state = when (currentState) {
                 SessionPlayerState.Playing ->
                     Playback.State.Playing
@@ -114,10 +115,16 @@ class MediaNavigator private constructor(
             Playback(
                 state = state,
                 rate = playbackSpeed.toDouble(),
-                currentIndex = currentItem.index,
-                currentLink = publication.readingOrder[currentItem.index],
-                currentPosition = currentItem.position,
-                bufferedPosition = currentItem.buffered
+                resource = Playback.Resource(
+                    index = currentItem.index,
+                    link = publication.readingOrder[currentItem.index],
+                    position = currentItem.position,
+                    duration = currentItem.duration
+                ),
+                buffer = Playback.Buffer(
+                    isPlayable = bufferingState != SessionPlayerBufferingState.BUFFERING_STATE_BUFFERING_AND_STARVED,
+                    position = currentItem.buffered
+                )
             )
         }
 
@@ -221,6 +228,9 @@ class MediaNavigator private constructor(
         coroutineScope.cancel()
     }
 
+    /**
+     * Builds a [MediaSession] for this navigator.
+     */
     fun session(context: Context, activityIntent: PendingIntent, id: String? = null): MediaSession =
         playerFacade.session(context, id, activityIntent)
 
@@ -235,10 +245,8 @@ class MediaNavigator private constructor(
     data class Playback(
         val state: State,
         val rate: Double,
-        val currentIndex: Int,
-        val currentLink: Link,
-        val currentPosition: Duration,
-        val bufferedPosition: Duration,
+        val resource: Resource,
+        val buffer: Buffer
     ) {
 
         enum class State {
@@ -247,6 +255,24 @@ class MediaNavigator private constructor(
             Finished,
             Error
         }
+
+        data class Resource(
+            val index: Int,
+            val link: Link,
+            val position: Duration,
+            val duration: Duration?
+        )
+
+        data class Buffer(
+            val isPlayable: Boolean,
+            val position: Duration
+        )
+    }
+
+    enum class Buffering {
+        Starved,
+        Completed,
+        Ongoing
     }
 
     sealed class Exception : kotlin.Exception() {
@@ -304,7 +330,7 @@ class MediaNavigator private constructor(
             val callbackExecutor = Executors.newSingleThreadExecutor()
             player.registerPlayerCallback(callbackExecutor, callback)
 
-            val facade = SessionPlayerFacade(player)
+            val facade = SessionPlayerFacade(player, callback.seekCompleted)
             return preparePlayer(publication, facade, metadataFactory)
                 // Ignoring failure to set initial locator
                 .onSuccess { goInitialLocator(publication, initialLocator, facade) }

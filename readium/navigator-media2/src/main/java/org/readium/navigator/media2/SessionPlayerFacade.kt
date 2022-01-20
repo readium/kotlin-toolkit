@@ -12,6 +12,10 @@ import androidx.media2.common.MediaItem
 import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import androidx.media2.session.MediaSession
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import timber.log.Timber
@@ -36,9 +40,20 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 internal class SessionPlayerFacade(
     private val sessionPlayer: SessionPlayer,
+    private val seekCompleted: Flow<Long>
 ) {
+    private val coroutineScope = MainScope()
+
+    private var pendingSeek: Long? = null
+
+    init {
+        seekCompleted
+            .onEach { pendingSeek = it }
+            .launchIn(coroutineScope)
+    }
+
     val playerState: SessionPlayerState
-        get() = SessionPlayerState.from(sessionPlayer.playerState)
+        get() = SessionPlayerState.fromCode(sessionPlayer.playerState)
 
     val currentPosition: Duration?
         get() = sessionPlayer.currentPositionDuration
@@ -145,7 +160,7 @@ internal class SessionPlayerFacade(
             Try.success(Unit)
         } else {
             val error =
-                SessionPlayerError.fromSessionResultCode(resultCode)
+                SessionPlayerError.fromCode(resultCode)
             Try.failure(SessionPlayerException(error))
         }
 
@@ -182,12 +197,28 @@ internal class SessionPlayerFacade(
     }
 
     private fun seekToSync(position: Duration): SessionPlayerResult {
-        //FIXME: Behaviour in case of out of range position is unclear.
         Timber.d("executing seekTo $position")
-        //FIXME: seekTo's future completes before the actual seeking has been done.
         val result = sessionPlayer.seekTo(position.inWholeMilliseconds).get()
         Timber.d("seekTo finished with result ${result.resultCode}")
+
+        if (result.resultCode == 0) {
+            val callbackCalled = waitForSeekCompleted(position.inWholeMilliseconds)
+            if (callbackCalled) {
+                val exception = SessionPlayerException(SessionPlayerError.INFO_SKIPPED)
+                return SessionPlayerResult.failure(exception)
+            }
+        }
         return result.toTry()
+    }
+
+    private fun waitForSeekCompleted(position: Long): Boolean {
+        var i = 0
+        while (pendingSeek != position && i < 10) {
+            Thread.sleep(100)
+            i++
+        }
+        pendingSeek = null
+        return i < 10
     }
 
     private fun skipToPlaylistItemSync(index: Int): SessionPlayerResult {

@@ -6,7 +6,48 @@
 
 package org.readium.navigator.media2
 
+import androidx.media2.common.SessionPlayer
 import org.readium.r2.shared.util.Try
+import kotlin.IllegalStateException
+
+internal enum class SessionPlayerState {
+    Idle,
+    Paused,
+    Playing,
+    Error;
+
+    companion object {
+        fun fromCode(sessionPlayerState: Int) = when (sessionPlayerState) {
+            SessionPlayer.PLAYER_STATE_IDLE -> Idle
+            SessionPlayer.PLAYER_STATE_PAUSED -> Paused
+            SessionPlayer.PLAYER_STATE_PLAYING -> Playing
+            else -> Error // SessionPlayer.PLAYER_STATE_ERROR
+        }
+    }
+}
+
+internal enum class SessionPlayerBufferingState {
+    BUFFERING_STATE_BUFFERING_AND_PLAYABLE,
+    BUFFERING_STATE_BUFFERING_AND_STARVED,
+    BUFFERING_STATE_COMPLETE,
+    BUFFERING_STATE_UNKNOWN;
+
+    companion object {
+
+        fun fromCode(code: Int) = when (code) {
+            SessionPlayer.BUFFERING_STATE_COMPLETE ->
+                BUFFERING_STATE_COMPLETE
+            SessionPlayer.BUFFERING_STATE_BUFFERING_AND_PLAYABLE ->
+                BUFFERING_STATE_BUFFERING_AND_PLAYABLE
+            SessionPlayer.BUFFERING_STATE_BUFFERING_AND_STARVED ->
+                BUFFERING_STATE_BUFFERING_AND_STARVED
+            SessionPlayer.BUFFERING_STATE_UNKNOWN ->
+                BUFFERING_STATE_UNKNOWN
+            else ->
+                throw IllegalStateException("Invalid buffering state code.")
+        }
+    }
+}
 
 internal typealias SessionPlayerResult = Try<Unit, SessionPlayerException>
 
@@ -31,7 +72,7 @@ internal enum class SessionPlayerError{
 
     companion object {
 
-        fun fromSessionResultCode(resultCode: Int): SessionPlayerError {
+        fun fromCode(resultCode: Int): SessionPlayerError {
             require(resultCode != 0)
             return when(resultCode) {
                 -3 -> BAD_VALUE

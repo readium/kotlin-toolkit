@@ -23,14 +23,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentAudiobookBinding
 import org.readium.r2.testapp.utils.viewLifecycle
 import timber.log.Timber
-import kotlin.math.roundToLong
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
@@ -100,20 +98,17 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
                 R.drawable.ic_baseline_play_arrow_24
         )
         if (seekingItem == null) {
-            updateTimeline(playback.currentLink, playback.currentPosition, playback.bufferedPosition)
+            updateTimeline(playback.resource, playback.buffer.position)
         }
     }
 
-    private fun updateTimeline(link: Link, position: Duration?, buffered: Duration?) {
-        binding.timelineBar.max = link.duration?.toInt() ?: 0
-        binding.timelineDuration.text = link.formattedDuration
-        binding.timelineBar.progress = position?.inWholeSeconds?.toInt() ?: 0
-        binding.timelinePosition.text = position?.formatElapsedTime()
-        binding.timelineBar.secondaryProgress = buffered?.inWholeSeconds?.toInt() ?: 0
+    private fun updateTimeline(resource: MediaNavigator.Playback.Resource, buffered: Duration) {
+        binding.timelineBar.max = resource.duration?.inWholeSeconds?.toInt() ?: 0
+        binding.timelineDuration.text = resource.duration?.formatElapsedTime()
+        binding.timelineBar.progress = resource.position.inWholeSeconds.toInt()
+        binding.timelinePosition.text = resource.position.formatElapsedTime()
+        binding.timelineBar.secondaryProgress = buffered.inWholeSeconds.toInt()
     }
-
-    private val Link.formattedDuration: String?
-        get() = duration?.let { DateUtils.formatElapsedTime(it.roundToLong()) }
 
     private fun Duration.formatElapsedTime(): String =
         DateUtils.formatElapsedTime(toLong(DurationUnit.SECONDS))
@@ -152,7 +147,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
 
     override fun onStartTrackingTouch(seekBar: SeekBar) {
         Timber.d("onStartTrackingTouch")
-        seekingItem = this.displayedPlayback.currentIndex
+        seekingItem = this.displayedPlayback.resource.index
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
@@ -162,7 +157,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
                 navigator.seek(index, seekBar.progress.seconds)
                 // Some timeline updates might have been missed during seeking.
                 val playbackNow = navigator.playback.value
-                updateTimeline(playbackNow.currentLink, playbackNow.currentPosition, playbackNow.bufferedPosition)
+                updateTimeline(playbackNow.resource, playbackNow.buffer.position)
                 seekingItem = null
             }
         }
