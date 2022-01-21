@@ -21,7 +21,6 @@ import com.google.android.exoplayer2.upstream.DataSource
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.Navigator
-import org.readium.navigator.media2.extensions.time
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap

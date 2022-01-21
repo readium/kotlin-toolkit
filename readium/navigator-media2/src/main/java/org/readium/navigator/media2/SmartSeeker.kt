@@ -10,7 +10,7 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 /**
- * Compute relative seeks across playlist items.
+ * Computes relative seeks across playlist items.
  */
 @ExperimentalTime
 internal object SmartSeeker {

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.navigator.media2.extensions
+package org.readium.navigator.media2
 
 import org.readium.r2.shared.publication.Locator
 import java.util.*
