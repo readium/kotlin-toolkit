@@ -81,7 +81,7 @@ internal class SessionPlayerCallback(
         MainScope()
 
     override fun onPlaylistChanged(player: SessionPlayer, list: MutableList<MediaItem>?, metadata: MediaMetadata?) {
-//        Timber.d("onPlaylistChanged")
+        Timber.d("onPlaylistChanged")
 
         val item = getCurrentItem(player)
             ?: Item(0, Duration.ZERO, Duration.ZERO, null)
@@ -96,14 +96,14 @@ internal class SessionPlayerCallback(
     }
 
     override fun onSeekCompleted(player: SessionPlayer, position: Long) {
-//        Timber.d("onSeekCompleted $position")
+        Timber.d("onSeekCompleted $position")
         getCurrentItem(player)?.let { _currentItem.tryEmit(it) }
         playbackCompleted = false
         _seekCompleted.tryEmit(position)
     }
 
     override fun onPlayerStateChanged(player: SessionPlayer, state: Int) {
-//        Timber.d("onPlayerStateChanged $state")
+        Timber.d("onPlayerStateChanged $state")
         val newState = SessionPlayerState.fromCode(state)
         _playerState.tryEmit(newState)
         if (newState == SessionPlayerState.Playing) {
@@ -112,23 +112,23 @@ internal class SessionPlayerCallback(
     }
 
     override fun onBufferingStateChanged(player: SessionPlayer, item: MediaItem?, buffState: Int) {
-//        Timber.d("onBufferingStateChanged $buffState")
+        Timber.d("onBufferingStateChanged $buffState")
         val newState = SessionPlayerBufferingState.fromCode(buffState)
         _bufferingState.tryEmit(newState)
     }
 
     override fun onPlaybackCompleted(player: SessionPlayer) {
-//        Timber.d("onPlaybackCompleted")
+        Timber.d("onPlaybackCompleted")
         playbackCompleted = true
     }
 
     override fun onCurrentMediaItemChanged(player: SessionPlayer, item: MediaItem?) {
-//        Timber.d("onCurrentMediaItemChanged $item")
+        Timber.d("onCurrentMediaItemChanged $item")
         getCurrentItem(player)?.let { _currentItem.tryEmit(it)  }
     }
 
     override fun onPlaybackSpeedChanged(player: SessionPlayer, playbackSpeed: Float) {
-//        Timber.d("onPlaybackSpeedChanged")
+        Timber.d("onPlaybackSpeedChanged")
         _playbackSpeed.tryEmit(playbackSpeed)
     }
 

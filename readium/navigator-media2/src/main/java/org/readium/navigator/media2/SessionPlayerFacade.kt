@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
+import timber.log.Timber
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.coroutines.resume
@@ -168,37 +169,37 @@ internal class SessionPlayerFacade(
      */
 
     private fun prepareSync(): SessionPlayerResult {
-//        Timber.d("executing prepare")
+        Timber.v("executing prepare")
         val result = sessionPlayer.prepare().get()
-//        Timber.d("prepare finished with result ${result.resultCode}")
+        Timber.v("prepare finished with result ${result.resultCode}")
         return result.toTry()
     }
 
     private fun setPlaylistSync(playlist: List<MediaItem>, metadata: MediaMetadata): SessionPlayerResult {
-//        Timber.d("executing setPlaylist")
+        Timber.v("executing setPlaylist")
         val result = sessionPlayer.setPlaylist(playlist, metadata).get()
-//        Timber.d("setPlaylist finished with result ${result.resultCode}")
+        Timber.v("setPlaylist finished with result ${result.resultCode}")
         return result.toTry()
     }
 
     private fun playSync(): SessionPlayerResult {
-//        Timber.d("executing play")
+        Timber.v("executing play")
         val result = sessionPlayer.play().get()
-//        Timber.d("play finished with result ${result.resultCode}")
+        Timber.v("play finished with result ${result.resultCode}")
         return result.toTry()
     }
 
     private fun pauseSync(): SessionPlayerResult {
-//        Timber.d("executing pause")
+        Timber.v("executing pause")
         val result = sessionPlayer.pause().get()
-//        Timber.d("pause finished with result ${result.resultCode}")
+        Timber.v("pause finished with result ${result.resultCode}")
         return result.toTry()
     }
 
     private fun seekToSync(position: Duration): SessionPlayerResult {
-//        Timber.d("executing seekTo $position")
+        Timber.v("executing seekTo $position")
         val result = sessionPlayer.seekTo(position.inWholeMilliseconds).get()
-//        Timber.d("seekTo finished with result ${result.resultCode}")
+        Timber.v("seekTo finished with result ${result.resultCode}")
 
         if (result.resultCode == 0) {
             val callbackCalled = waitForSeekCompleted(position.inWholeMilliseconds)
@@ -221,16 +222,16 @@ internal class SessionPlayerFacade(
     }
 
     private fun skipToPlaylistItemSync(index: Int): SessionPlayerResult {
-//        Timber.d("executing skipToPlaylistItem $index")
+        Timber.v("executing skipToPlaylistItem $index")
         val result = sessionPlayer.skipToPlaylistItem(index).get()
-//        Timber.d("skipToPlaylistItem finished with result ${result.resultCode}")
+        Timber.v("skipToPlaylistItem finished with result ${result.resultCode}")
         return result.toTry()
     }
 
     private fun setPlaybackSpeedSync(speed: Double): SessionPlayerResult {
-//        Timber.d("executing setPlaybackSpeed $speed")
+        Timber.v("executing setPlaybackSpeed $speed")
         val result = sessionPlayer.setPlaybackSpeed(speed.toFloat()).get()
-//        Timber.d("setPlaybackSpeed finished with result ${result.resultCode}")
+        Timber.v("setPlaybackSpeed finished with result ${result.resultCode}")
         return result.toTry()
     }
 }

@@ -166,7 +166,7 @@ class MediaNavigator private constructor(
         val itemIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
             ?: return Try.failure(Exception.IllegalArgument("Invalid href ${locator.href}."))
         val position = locator.locations.time ?: Duration.ZERO
-//        Timber.d("Go to locator $locator")
+        Timber.v("Go to locator $locator")
         return seek(itemIndex, position)
     }
 
@@ -204,7 +204,7 @@ class MediaNavigator private constructor(
                 playerFacade.currentIndex!!,
                 durations
             )
-//        Timber.d("Smart seeking by $offset resolved to item $newIndex position $newPosition")
+        Timber.v("Smart seeking by $offset resolved to item $newIndex position $newPosition")
         return playerFacade.seekTo(newIndex, newPosition).toNavigatorResult()
     }
 
@@ -385,7 +385,7 @@ class MediaNavigator private constructor(
                 val position = locator.locations.time
                     ?: Duration.ZERO
                 player.seekTo(itemIndex, position)
-                    .onFailure { Timber.d("Failed to seek to the provided initial locator.") }
+                    .onFailure { Timber.w("Failed to seek to the provided initial locator.") }
             }
         }
 
