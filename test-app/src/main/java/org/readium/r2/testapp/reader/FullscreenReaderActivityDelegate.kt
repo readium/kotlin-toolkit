@@ -6,9 +6,12 @@
 
 package org.readium.r2.testapp.reader
 
-import android.os.Bundle
 import android.view.View
 import android.view.WindowInsets
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import org.readium.r2.testapp.databinding.ActivityReaderBinding
 import org.readium.r2.testapp.utils.clearPadding
 import org.readium.r2.testapp.utils.padSystemUi
 import org.readium.r2.testapp.utils.showSystemUi
@@ -16,19 +19,19 @@ import org.readium.r2.testapp.utils.showSystemUi
 /**
  * Adds fullscreen support to the ReaderActivity
  */
-open class VisualReaderActivity : ReaderActivity() {
+class FullscreenReaderActivityDelegate(
+    private val activity: AppCompatActivity,
+    private val readerFragment: VisualReaderFragment,
+    private val binding: ActivityReaderBinding,
+) : DefaultLifecycleObserver {
 
-    private val visualReaderFragment: VisualReaderFragment
-        get() = readerFragment as VisualReaderFragment
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreate(owner: LifecycleOwner) {
 
         // Without this, activity_reader_container receives the insets only once,
         // although we need a call every time the reader is hidden
-        window.decorView.setOnApplyWindowInsetsListener { view, insets ->
+        activity.window.decorView.setOnApplyWindowInsetsListener { view, insets ->
             val newInsets = view.onApplyWindowInsets(insets)
-            binding.activityContainer.dispatchApplyWindowInsets(newInsets)
+            binding.root.dispatchApplyWindowInsets(newInsets)
         }
 
         binding.activityContainer.setOnApplyWindowInsetsListener { container, insets ->
@@ -36,29 +39,28 @@ open class VisualReaderActivity : ReaderActivity() {
             insets
         }
 
-        supportFragmentManager.addOnBackStackChangedListener {
+        activity.supportFragmentManager.addOnBackStackChangedListener {
             updateSystemUiVisibility()
         }
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onStart(owner: LifecycleOwner) {
         updateSystemUiVisibility()
     }
 
     private fun updateSystemUiVisibility() {
-        if (visualReaderFragment.isHidden)
-            showSystemUi()
+        if (readerFragment.isHidden)
+            activity.showSystemUi()
         else
-            visualReaderFragment.updateSystemUiVisibility()
+            readerFragment.updateSystemUiVisibility()
 
         // Seems to be required to adjust padding when transitioning from the outlines to the screen reader
         binding.activityContainer.requestApplyInsets()
     }
 
     private fun updateSystemUiPadding(container: View, insets: WindowInsets) {
-        if (visualReaderFragment.isHidden)
-            container.padSystemUi(insets, this)
+        if (readerFragment.isHidden)
+            container.padSystemUi(insets, activity)
         else
             container.clearPadding()
     }

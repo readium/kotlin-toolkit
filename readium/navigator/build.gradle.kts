@@ -83,10 +83,14 @@ dependencies {
     api("com.github.barteksc:android-pdf-viewer:2.8.2")
     // ChrisBane/PhotoView ( for the Zoom handling )
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
+
+    implementation("androidx.media2:media2-session:1.2.0")
+    implementation("androidx.media2:media2-player:1.2.0")
     // ExoPlayer is used by the Audio Navigator.
     api("com.google.android.exoplayer:exoplayer-core:2.16.1")
     api("com.google.android.exoplayer:exoplayer-ui:2.16.1")
     api("com.google.android.exoplayer:extension-mediasession:2.16.1")
+    api("com.google.android.exoplayer:extension-media2:2.16.1")
     api("com.google.android.exoplayer:extension-workmanager:2.16.1")
     implementation("com.google.android.material:material:1.4.0")
     implementation("com.jakewharton.timber:timber:5.0.1")

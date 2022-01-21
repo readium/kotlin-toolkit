@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.catalogs
 
-import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.lifecycle.AndroidViewModel
@@ -24,7 +23,7 @@ import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.testapp.R2App
+import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Catalog
@@ -38,12 +37,12 @@ import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
 
-class CatalogViewModel(application: Application) : AndroidViewModel(application) {
+class CatalogViewModel(application: android.app.Application) : AndroidViewModel(application) {
 
     private val bookDao = BookDatabase.getDatabase(application).booksDao()
     private val bookRepository = BookRepository(bookDao)
     private var opdsDownloader = OPDSDownloader(application.applicationContext)
-    private var r2Directory = R2App.R2DIRECTORY
+    private var r2Directory = (application as Application).r2Directory
     val detailChannel = EventChannel(Channel<Event.DetailEvent>(Channel.BUFFERED), viewModelScope)
     val eventChannel = EventChannel(Channel<Event.FeedEvent>(Channel.BUFFERED), viewModelScope)
     val parseData = MutableLiveData<ParseData>()

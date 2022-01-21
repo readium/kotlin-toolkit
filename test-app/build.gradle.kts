@@ -66,6 +66,8 @@ dependencies {
     implementation(project(":readium:shared"))
     implementation(project(":readium:streamer"))
     implementation(project(":readium:navigator"))
+    implementation(project(":readium:navigator-media2"))
+
     implementation(project(":readium:opds"))
     implementation(project(":readium:lcp"))
 
@@ -99,6 +101,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
     // AM NOTE: needs to stay this version for now (June 24,2020)
     implementation("org.jsoup:jsoup:1.14.3")
+
+    implementation("androidx.media2:media2-session:1.2.0")
+    implementation("androidx.media2:media2-player:1.2.0")
 
     // Room database
     val roomVersion = "2.4.0"

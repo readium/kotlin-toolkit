@@ -27,6 +27,7 @@ import org.readium.r2.testapp.databinding.ItemRecycleBookmarkBinding
 import org.readium.r2.testapp.domain.model.Bookmark
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.extensions.outlineTitle
+import org.readium.r2.testapp.utils.viewLifecycle
 import kotlin.math.roundToInt
 
 class BookmarksFragment : Fragment() {
@@ -34,14 +35,12 @@ class BookmarksFragment : Fragment() {
     lateinit var publication: Publication
     lateinit var viewModel: ReaderViewModel
     private lateinit var bookmarkAdapter: BookmarkAdapter
-
-    private var _binding: FragmentListviewBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentListviewBinding by viewLifecycle()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
+        ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
             publication = it.publication
             viewModel = it
         }
@@ -52,7 +51,7 @@ class BookmarksFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentListviewBinding.inflate(inflater, container, false)
+        binding = FragmentListviewBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -71,11 +70,6 @@ class BookmarksFragment : Fragment() {
             val bookmarks = it.sortedWith(comparator).toMutableList()
             bookmarkAdapter.submitList(bookmarks)
         })
-    }
-
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
     }
 
     private fun onBookmarkSelected(bookmark: Bookmark) {
