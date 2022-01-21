@@ -78,7 +78,8 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val locator = publication.locatorFromLink(link) ?: return false
+        return go(locator)
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
@@ -156,7 +157,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         if (this.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
 
             if (!loadedInitialLocator) {
-                go(publication.readingOrder.first().toLocator())
+                go(publication.readingOrder.first())
             }
 
             binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {

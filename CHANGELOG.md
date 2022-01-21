@@ -43,6 +43,8 @@ All notable changes to this project will be documented in this file. Take a look
 
 * `Publication.type` is now deprecated in favor of the new `Publication.conformsTo()` API which is more accurate.
     * For example, replace `publication.type == Publication.TYPE.EPUB` with `publication.conformsTo(Publication.Profile.EPUB)` before opening a publication with the `EpubNavigatorFragment`.
+* `Link.toLocator()` is deprecated as it may create an incorrect `Locator` if the link `type` is missing.
+    * Use `publication.locatorFromLink()` instead.
 
 ### Fixed
 

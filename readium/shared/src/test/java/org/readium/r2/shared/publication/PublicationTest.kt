@@ -395,7 +395,6 @@ class PublicationTest {
         assertEquals("test passed", runBlocking { publication.get(link).readAsString().getOrNull() })
     }
 
-    @Suppress("DEPRECATION")
     @Test fun `find the first resource {Link} with the given {href}`() {
         val link1 = Link(href = "href1")
         val link2 = Link(href = "href2")
@@ -406,14 +405,13 @@ class PublicationTest {
             resources = listOf(Link(href = "other"), link3)
         )
 
-        assertNull(publication.resourceWithHref("href1"))
-        assertEquals(link2, publication.resourceWithHref("href2"))
-        assertEquals(link3, publication.resourceWithHref("href3"))
+        assertEquals(link1, publication.linkWithHref("href1"))
+        assertEquals(link2, publication.linkWithHref("href2"))
+        assertEquals(link3, publication.linkWithHref("href3"))
     }
 
-    @Suppress("DEPRECATION")
     @Test fun `find the first resource {Link} with the given {href} when missing`() {
-        assertNull(createPublication().resourceWithHref("foobar"))
+        assertNull(createPublication().linkWithHref("foobar"))
     }
 
     @Suppress("DEPRECATION")

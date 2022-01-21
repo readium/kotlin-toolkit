@@ -82,7 +82,8 @@ class MediaNavigator private constructor(
             if (itemStartPosition == null) null
             else totalDuration?.let { (itemStartPosition + position) / it }
 
-        return link.toLocator().copyWithLocations(
+        val locator = requireNotNull(publication.locatorFromLink(link))
+        return locator.copyWithLocations(
             fragments = listOf("t=${position.inWholeSeconds}"),
             progression = item.duration?.let { position / it },
             totalProgression = totalProgression
@@ -173,8 +174,11 @@ class MediaNavigator private constructor(
     /**
      * Seeks to the beginning of the given link.
      */
-    suspend fun go(link: Link) =
-        go(link.toLocator())
+    suspend fun go(link: Link): Try<Unit, Exception> {
+        val locator = publication.locatorFromLink(link)
+            ?: return Try.failure(Exception.ResourceNotFound(href = link.href))
+        return go(locator)
+    }
 
     /**
      * Skips to a little amount of time later.
@@ -274,16 +278,15 @@ class MediaNavigator private constructor(
         Ongoing
     }
 
-    sealed class Exception : kotlin.Exception() {
+    sealed class Exception(message: String) : kotlin.Exception(message) {
 
         class SessionPlayer internal constructor(
-            internal val error: SessionPlayerError,
-            override val message: String = "${error.name} error occurred in SessionPlayer."
-        ) : Exception()
+            internal val error: SessionPlayerError
+        ) : Exception("${error.name} error occurred in SessionPlayer.")
 
-        class IllegalArgument internal constructor(
-            override val message: String
-        ): Exception()
+        class IllegalArgument(message: String): Exception(message)
+
+        class ResourceNotFound(val href: String) : Exception("Resource not found at $href")
     }
 
     /*

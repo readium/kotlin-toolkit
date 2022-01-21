@@ -83,13 +83,7 @@ class NavigationFragment : Fragment() {
     }
 
     private fun onLinkSelected(link: Link) {
-        val locator = link.toLocator().let {
-            // progression is mandatory in some contexts
-            if (it.locations.fragments.isEmpty())
-                it.copyWithLocations(progression = 0.0)
-            else
-                it
-        }
+        val locator = publication.locatorFromLink(link) ?: return
 
         setFragmentResult(
             OutlineContract.REQUEST_KEY,
