@@ -52,7 +52,7 @@ internal class DefaultMetadataFactory(private val publication: Publication): Med
         val link = publication.readingOrder[index]
         builder.putLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER, index.toLong())
         builder.putString(MediaMetadata.METADATA_KEY_MEDIA_URI, link.href)
-        builder.putString(MediaMetadata.METADATA_KEY_TITLE, link.title ?: publication.metadata.title)
+        builder.putString(MediaMetadata.METADATA_KEY_TITLE, link.title)
         builder.putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, publication.metadata.title)
         builder.putString(MediaMetadata.METADATA_KEY_ALBUM, publication.metadata.title)
         builder.putLong(MediaMetadata.METADATA_KEY_DURATION, (link.duration?.toLong() ?: 0) * 1000)
