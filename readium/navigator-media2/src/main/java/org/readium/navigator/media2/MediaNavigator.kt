@@ -165,7 +165,7 @@ class MediaNavigator private constructor(
      */
     suspend fun go(locator: Locator): Try<Unit, Exception> {
         val itemIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
-            ?: return Try.failure(Exception.IllegalArgument("Invalid href ${locator.href}."))
+            ?: return Try.failure(Exception.InvalidArgument("Invalid href ${locator.href}."))
         val position = locator.locations.time ?: Duration.ZERO
         Timber.v("Go to locator $locator")
         return seek(itemIndex, position)
@@ -176,7 +176,7 @@ class MediaNavigator private constructor(
      */
     suspend fun go(link: Link): Try<Unit, Exception> {
         val locator = publication.locatorFromLink(link)
-            ?: return Try.failure(Exception.ResourceNotFound(href = link.href))
+            ?: return Try.failure(Exception.InvalidArgument("Resource not found at ${link.href}"))
         return go(locator)
     }
 
@@ -278,15 +278,13 @@ class MediaNavigator private constructor(
         Ongoing
     }
 
-    sealed class Exception(message: String) : kotlin.Exception(message) {
+    sealed class Exception(override val message: String) : kotlin.Exception(message) {
 
         class SessionPlayer internal constructor(
             internal val error: SessionPlayerError
         ) : Exception("${error.name} error occurred in SessionPlayer.")
 
-        class IllegalArgument(message: String): Exception(message)
-
-        class ResourceNotFound(val href: String) : Exception("Resource not found at $href")
+        class InvalidArgument(message: String): Exception(message)
     }
 
     /*
