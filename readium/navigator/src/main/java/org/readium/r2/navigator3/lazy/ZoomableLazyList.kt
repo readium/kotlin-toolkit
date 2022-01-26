@@ -1,23 +1,24 @@
-package org.readium.r2.navigator3.lazylist
+package org.readium.r2.navigator3.lazy
 
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.gestures.TransformableState
-import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import org.readium.r2.navigator3.DirectedLazyList
+import org.readium.r2.navigator3.Direction
+import timber.log.Timber
 
 @Composable
 internal fun ZoomableLazyList(
@@ -27,9 +28,11 @@ internal fun ZoomableLazyList(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     content: LazyListScope.() -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     DirectedLazyList(
         modifier = modifier
-            .graphicsLayer(
+            /*.graphicsLayer(
                 scaleX = state.scale,
                 scaleY = state.scale,
                 //translationX = state.offsetState.value.x,
@@ -39,7 +42,32 @@ internal fun ZoomableLazyList(
             .transformable(
                 state = state.transformableState,
                 lockRotationOnZoomPan = true
-            )
+            )*/
+            //.scrollable(state.oppositeScrollState, Orientation.Horizontal)
+            .horizontalScroll(state.oppositeScrollState, reverseScrolling = true)
+            .pointerInput(Unit) {
+                detectDragGestures { _, dragAmount ->
+                    Timber.d("drag gesture ${dragAmount.x} ${dragAmount.y}")
+                    when (direction) {
+                        Direction.TTB, Direction.BTT -> {
+                            coroutineScope.launch {
+                                state.oppositeScrollState.scrollBy(-dragAmount.x)
+                            }
+                            coroutineScope.launch {
+                                state.lazyListState.scrollBy(dragAmount.y)
+                            }
+                        }
+                        Direction.LTR, Direction.RTL -> {
+                            coroutineScope.launch {
+                                state.lazyListState.scrollBy(-dragAmount.x)
+                            }
+                           coroutineScope.launch {
+                               state.oppositeScrollState.scrollBy(-dragAmount.y)
+                           }
+                        }
+                    }
+                }
+            },
             /*.pointerInput(Unit) {
                 detectTransformGestures(
                     onGesture = { centroid, pan, gestureZoom, gestureRotate ->
@@ -62,7 +90,6 @@ internal fun ZoomableLazyList(
                     }
                 )
             }*/
-            .horizontalScroll(state.oppositeScrollState),
         state = state.lazyListState,
         contentPadding = contentPadding,
         direction = direction,

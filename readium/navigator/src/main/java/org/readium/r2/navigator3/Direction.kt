@@ -1,4 +1,4 @@
-package org.readium.r2.navigator3.lazylist
+package org.readium.r2.navigator3
 
 enum class Direction {
 

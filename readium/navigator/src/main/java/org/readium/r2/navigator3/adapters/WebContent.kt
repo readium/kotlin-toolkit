@@ -1,4 +1,4 @@
-package org.readium.r2.navigator3
+package org.readium.r2.navigator3.adapters
 
 import android.webkit.WebView
 import androidx.compose.runtime.Composable
