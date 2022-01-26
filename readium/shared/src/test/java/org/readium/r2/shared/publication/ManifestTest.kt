@@ -332,4 +332,65 @@ class ManifestTest {
         )
     }
 
+    @Test fun `get a {Locator} from a minimal {Link}`() {
+        val manifest = Manifest(
+            metadata = Metadata(localizedTitle = LocalizedString()),
+            readingOrder = listOf(Link(href = "/href", type = "text/html", title = "Resource"))
+        )
+        Assert.assertEquals(
+            Locator(href = "/href", type = "text/html", title = "Resource", locations = Locator.Locations(progression = 0.0)),
+            manifest.locatorFromLink(Link(href = "/href"))
+        )
+    }
+
+    @Test fun `get a {Locator} from a link in the reading order, resources or links`() {
+        val manifest = Manifest(
+            metadata = Metadata(localizedTitle = LocalizedString()),
+            readingOrder = listOf(Link(href = "/href1", type = "text/html")),
+            resources = listOf(Link(href = "/href2", type = "text/html")),
+            links = listOf(Link(href = "/href3", type = "text/html")),
+        )
+        Assert.assertEquals(
+            Locator(href = "/href1", type = "text/html", locations = Locator.Locations(progression = 0.0)),
+            manifest.locatorFromLink(Link(href = "/href1"))
+        )
+        Assert.assertEquals(
+            Locator(href = "/href2", type = "text/html", locations = Locator.Locations(progression = 0.0)),
+            manifest.locatorFromLink(Link(href = "/href2"))
+        )
+        Assert.assertEquals(
+            Locator(href = "/href3", type = "text/html", locations = Locator.Locations(progression = 0.0)),
+            manifest.locatorFromLink(Link(href = "/href3"))
+        )
+    }
+
+    @Test fun `get a {Locator} from a full {Link} with fragment`() {
+        val manifest = Manifest(
+            metadata = Metadata(localizedTitle = LocalizedString()),
+            readingOrder = listOf(Link(href = "/href", type = "text/html", title = "Resource"))
+        )
+        Assert.assertEquals(
+            Locator(href = "/href", type = "text/html", title = "Resource", locations = Locator.Locations(fragments = listOf("page=42"))),
+            manifest.locatorFromLink(Link(href = "/href#page=42", type = "text/xml", title = "My link"))
+        )
+    }
+
+    @Test fun `get a {Locator} falling back on the {Link} title`() {
+        val manifest = Manifest(
+            metadata = Metadata(localizedTitle = LocalizedString()),
+            readingOrder = listOf(Link(href = "/href", type = "text/html"))
+        )
+        Assert.assertEquals(
+            Locator(href = "/href", type = "text/html", title = "My link", locations = Locator.Locations(fragments = listOf("page=42"))),
+            manifest.locatorFromLink(Link(href = "/href#page=42", type = "text/xml", title = "My link"))
+        )
+    }
+
+    @Test fun `get a {Locator} from a {Link} not found in the manifest`() {
+        val manifest = Manifest(
+            metadata = Metadata(localizedTitle = LocalizedString()),
+            readingOrder = listOf(Link(href = "/href", type = "text/html"))
+        )
+        Assert.assertNull(manifest.locatorFromLink(Link(href = "notfound")))
+    }
 }

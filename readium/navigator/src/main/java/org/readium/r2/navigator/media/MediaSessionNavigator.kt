@@ -158,7 +158,7 @@ class MediaSessionNavigator(
     private suspend fun createLocator(position: Duration?, metadata: MediaMetadataCompat?): Locator? {
         val href = metadata?.resourceHref ?: return null
         val index = publication.readingOrder.indexOfFirstWithHref(href) ?: return null
-        var locator = publication.readingOrder[index].toLocator()
+        var locator = publication.locatorFromLink(publication.readingOrder[index]) ?: return null
 
         if (position != null) {
             val startPosition = durations.slice(0 until index).sum()
@@ -186,8 +186,10 @@ class MediaSessionNavigator(
         return true
     }
 
-    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean =
-        go(link.toLocator(), animated, completion)
+    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+        val locator = publication.locatorFromLink(link) ?: return false
+        return go(locator, animated, completion)
+    }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
         if (!isActive) return false

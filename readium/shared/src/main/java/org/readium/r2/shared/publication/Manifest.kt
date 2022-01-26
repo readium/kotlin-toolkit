@@ -65,6 +65,38 @@ data class Manifest(
     }
 
     /**
+     * Finds the first [Link] with the given HREF in the manifest's links.
+     *
+     * Searches through (in order) [readingOrder], [resources] and [links] recursively following
+     * alternate and children links.
+     *
+     * If there's no match, try again after removing any query parameter and anchor from the
+     * given [href].
+     */
+    fun linkWithHref(href: String): Link? {
+        fun List<Link>.deepLinkWithHref(href: String): Link? {
+            for (l in this) {
+                if (l.href == href)
+                    return l
+                else {
+                    l.alternates.deepLinkWithHref(href)?.let { return it }
+                    l.children.deepLinkWithHref(href)?.let { return it }
+                }
+            }
+            return null
+        }
+
+        fun find(href: String): Link? {
+            return readingOrder.deepLinkWithHref(href)
+                ?: resources.deepLinkWithHref(href)
+                ?: links.deepLinkWithHref(href)
+        }
+
+        return find(href)
+            ?: find(href.takeWhile { it !in "#?" })
+    }
+
+    /**
      * Finds the first [Link] with the given relation in the manifest's links.
      */
     fun linkWithRel(rel: String): Link? =
@@ -77,6 +109,29 @@ data class Manifest(
      */
     fun linksWithRel(rel: String): List<Link> =
         (readingOrder + resources + links).filterByRel(rel)
+
+    /**
+     * Creates a new [Locator] object from a [Link] to a resource of this manifest.
+     *
+     * Returns null if the resource is not found in this manifest.
+     */
+    fun locatorFromLink(link: Link): Locator? {
+        val components = link.href.split("#", limit = 2)
+        val href = components.firstOrNull() ?: link.href
+        val resourceLink = linkWithHref(href) ?: return null
+        val type = resourceLink.type ?: return null
+        val fragment = components.getOrNull(1)
+
+        return Locator(
+            href = href,
+            type = type,
+            title = resourceLink.title ?: link.title,
+            locations = Locator.Locations(
+                fragments = listOfNotNull(fragment),
+                progression = if (fragment == null) 0.0 else null
+            )
+        )
+    }
 
     /**
      * Serializes a [Publication] to its RWPM JSON representation.
