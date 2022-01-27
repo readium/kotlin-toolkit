@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -19,32 +20,44 @@ import org.readium.r2.navigator.extensions.withBaseUrl
 import org.readium.r2.navigator3.adapters.ImageContent
 import org.readium.r2.navigator3.adapters.WebContent
 import org.readium.r2.navigator3.lazy.items
-import org.readium.r2.navigator3.lazy.rememberLazyListState
+import org.readium.r2.navigator3.viewer.LazyViewer
+import org.readium.r2.navigator3.viewer.rememberLazyViewerState
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
-import timber.log.Timber
 import kotlin.math.abs
 
 @Composable
 fun Navigator(
+    modifier: Modifier = Modifier,
     publication: Publication,
     baseUrl: String,
     links: List<Link> = publication.readingOrder,
-    modifier: Modifier = Modifier
 ) {
-    DirectedLazyList(
-        direction = when (publication.metadata.readingProgression) {
-            ReadingProgression.RTL -> Direction.RTL
-            ReadingProgression.LTR -> Direction.LTR
-            ReadingProgression.BTT -> Direction.BTT
-            ReadingProgression.TTB -> Direction.TTB
-            ReadingProgression.AUTO -> Direction.TTB
-        },
+    val isVertical = when (publication.metadata.readingProgression) {
+        ReadingProgression.AUTO, ReadingProgression.BTT, ReadingProgression.TTB -> true
+        ReadingProgression.LTR, ReadingProgression.RTL -> false
+    }
+
+    val reverseLayout = when (publication.metadata.readingProgression) {
+        ReadingProgression.AUTO, ReadingProgression.TTB, ReadingProgression.LTR -> false
+        ReadingProgression.BTT, ReadingProgression.RTL -> true
+    }
+
+    val state = rememberLazyViewerState()
+
+    LazyViewer(
         modifier = modifier.fillMaxSize(),
-        state = rememberLazyListState(),
+        isVertical = isVertical,
+        isZoomable = true,
+        state = state,
         contentPadding = PaddingValues(0.dp),
-        flingBehavior = flingBehavior()
+        flingBehavior = flingBehavior(),
+        reverseLayout = reverseLayout,
+        horizontalArrangement = if (!reverseLayout) Arrangement.Start else Arrangement.End,
+        horizontalAlignment =  Alignment.Start,
+        verticalArrangement = if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
+        verticalAlignment = Alignment.Top
     ) {
         items(links) { item ->
             Column(
@@ -55,7 +68,7 @@ fun Navigator(
                 //TestContent()
                 when {
                     item.mediaType.isBitmap ->
-                        ImageContent(publication, item, )
+                        ImageContent(publication, item, state.scale)
                     item.mediaType.isHtml ->
                         WebContent(item.withBaseUrl(baseUrl).href)
                 }

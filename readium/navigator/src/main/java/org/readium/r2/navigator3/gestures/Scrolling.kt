@@ -36,7 +36,7 @@ import kotlin.math.roundToInt
  * @param initial initial scroller position to start with
  */
 @Composable
-fun rememberScrollState(initial: Int = 0): ScrollState {
+internal fun rememberScrollState(initial: Int = 0): ScrollState {
     return rememberSaveable(saver = ScrollState.Saver) {
         ScrollState(initial = initial)
     }
@@ -56,7 +56,7 @@ fun rememberScrollState(initial: Int = 0): ScrollState {
  * @param initial value of the scroll
  */
 @Stable
-class ScrollState(initial: Int) : ScrollableState {
+internal class ScrollState(initial: Int) : ScrollableState {
 
     /**
      * current scroll position value in pixels
@@ -155,7 +155,7 @@ class ScrollState(initial: Int) : ScrollableState {
     }
 }
 
-fun Modifier.scrolling(
+internal fun Modifier.scrolling(
     state: ScrollState,
     isVertical: Boolean,
     reverseScrolling: Boolean = false,

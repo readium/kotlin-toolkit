@@ -7,11 +7,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.layout.Layout
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.util.BitmapFactory
@@ -22,7 +24,8 @@ import org.readium.r2.shared.publication.Publication
 @Composable
 fun ImageContent(
     publication: Publication,
-    link: Link
+    link: Link,
+    scaleFactor: Float
 ) {
     val bitmap = runBlocking {
         val bytes = publication.get(link).read().getOrThrow()
@@ -30,7 +33,7 @@ fun ImageContent(
     }
     val painter = remember(bitmap) { BitmapPainter(bitmap.asImageBitmap()) }
     val alignment: Alignment = Alignment.Center
-    val contentScale: ContentScale = ContentScale.Fit
+    val contentScale: ContentScale = FixedScale(scaleFactor)
     val alpha: Float = DefaultAlpha
     val colorFilter: ColorFilter? = null
     Row {

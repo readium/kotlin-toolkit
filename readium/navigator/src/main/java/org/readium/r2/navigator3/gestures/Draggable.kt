@@ -20,7 +20,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlin.coroutines.cancellation.CancellationException
 
-internal fun Modifier.bidirectionalDraggable(
+internal fun Modifier.draggable(
     horizontalState: DraggableState,
     verticalState: DraggableState,
     enabled: Boolean = true,
@@ -29,7 +29,7 @@ internal fun Modifier.bidirectionalDraggable(
     onDragStarted: suspend CoroutineScope.(startedPosition: Offset) -> Unit = {},
     onDragStopped: suspend CoroutineScope.(velocity: Velocity) -> Unit = {},
     reverseDirection: Boolean = false
-): Modifier = bidirectionalDraggable(
+): Modifier = this.draggable(
     horizontalState = horizontalState,
     verticalState = verticalState,
     enabled = enabled,
@@ -41,7 +41,7 @@ internal fun Modifier.bidirectionalDraggable(
     canDrag = { true }
 )
 
-private fun Modifier.bidirectionalDraggable(
+private fun Modifier.draggable(
     horizontalState: DraggableState,
     verticalState: DraggableState,
     canDrag: (PointerInputChange) -> Boolean,

@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.math.abs
 
-internal fun Modifier.bidirectionalScrollable(
+internal fun Modifier.scrollable(
     horizontalState: ScrollableState,
     verticalState: ScrollableState,
     enabled: Boolean = true,
@@ -37,7 +37,7 @@ internal fun Modifier.bidirectionalScrollable(
         properties["interactionSource"] = interactionSource
     },
     factory = {
-        bidirectionalTouchScrollImplementation(
+        touchScrollImplementation(
             interactionSource,
             reverseDirection,
             horizontalState,
@@ -50,7 +50,7 @@ internal fun Modifier.bidirectionalScrollable(
 
 @Suppress("ComposableModifierFactory")
 @Composable
-private fun Modifier.bidirectionalTouchScrollImplementation(
+private fun Modifier.touchScrollImplementation(
     interactionSource: MutableInteractionSource?,
     reverseDirection: Boolean,
     horizontalState: ScrollableState,
@@ -73,7 +73,7 @@ private fun Modifier.bidirectionalTouchScrollImplementation(
 
     val verticalDraggableState = remember { ScrollDraggableState(scrollLogic, Orientation.Vertical) }
 
-    return bidirectionalDraggable(
+    return draggable(
         horizontalDraggableState,
         verticalDraggableState,
         enabled = enabled,

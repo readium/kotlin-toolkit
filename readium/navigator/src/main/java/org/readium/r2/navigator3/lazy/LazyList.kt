@@ -29,10 +29,7 @@ import androidx.compose.ui.layout.SubcomposeLayoutState
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import org.readium.r2.navigator3.gestures.ScrollState
-import org.readium.r2.navigator3.gestures.bidirectionalScrollable
 import org.readium.r2.navigator3.gestures.clipScrollableContainer
-import org.readium.r2.navigator3.gestures.scrolling
 
 @Composable
 internal fun LazyList(
@@ -42,7 +39,6 @@ internal fun LazyList(
     modifier: Modifier,
     /** State controlling the scroll position */
     state: LazyListState,
-    otherDirectionState: ScrollState,
     /** The inner padding to be added for the whole content(nor for each individual item) */
     contentPadding: PaddingValues,
     /** reverse the direction of scrolling and layout */
@@ -86,18 +82,6 @@ internal fun LazyList(
                 flingBehavior = flingBehavior,
                 state = state
             )*/
-            .bidirectionalScrollable(
-                horizontalState = if (isVertical) otherDirectionState else state,
-                verticalState = if (isVertical) state else otherDirectionState,
-                reverseDirection = reverseScrollDirection,
-                interactionSource = state.internalInteractionSource,
-                flingBehavior = flingBehavior
-            )
-            .scrolling(
-                state = otherDirectionState,
-                isVertical = !isVertical,
-                reverseScrolling = reverseScrollDirection
-            )
             .clipScrollableContainer(isVertical)
             .padding(contentPadding)
             .then(state.remeasurementModifier)

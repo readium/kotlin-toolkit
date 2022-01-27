@@ -254,7 +254,6 @@ private class LazyListScopeImpl : LazyListScope, LazyListItemsProvider {
 fun LazyRow(
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
-    verticalState: ScrollState = rememberScrollState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     horizontalArrangement: Arrangement.Horizontal =
@@ -267,7 +266,6 @@ fun LazyRow(
         stateOfItemsProvider = rememberStateOfItemsProvider(content),
         modifier = modifier,
         state = state,
-        otherDirectionState = verticalState,
         contentPadding = contentPadding,
         verticalAlignment = verticalAlignment,
         horizontalArrangement = horizontalArrangement,
@@ -306,7 +304,6 @@ fun LazyRow(
 fun LazyColumn(
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
-    horizontalState: ScrollState = rememberScrollState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     verticalArrangement: Arrangement.Vertical =
@@ -319,7 +316,6 @@ fun LazyColumn(
         stateOfItemsProvider = rememberStateOfItemsProvider(content),
         modifier = modifier,
         state = state,
-        otherDirectionState = horizontalState,
         contentPadding = contentPadding,
         flingBehavior = flingBehavior,
         horizontalAlignment = horizontalAlignment,
@@ -330,7 +326,7 @@ fun LazyColumn(
 }
 
 @Composable
-private fun rememberStateOfItemsProvider(
+internal fun rememberStateOfItemsProvider(
     content: LazyListScope.() -> Unit
 ): State<LazyListItemsProvider> {
     val latestContent = rememberUpdatedState(content)
