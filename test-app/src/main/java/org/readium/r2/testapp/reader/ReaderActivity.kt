@@ -122,9 +122,9 @@ open class ReaderActivity : AppCompatActivity() {
                 null
         }
 
-        readerClass?.let { readerClass ->
+        readerClass?.let { it ->
             supportFragmentManager.commitNow {
-                replace(R.id.activity_container, readerClass, Bundle(), READER_FRAGMENT_TAG)
+                replace(R.id.activity_container, it, Bundle(), READER_FRAGMENT_TAG)
             }
         }
 

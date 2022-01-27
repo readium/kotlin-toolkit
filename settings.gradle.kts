@@ -10,6 +10,23 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
+        google()
+        jcenter()
+        mavenLocal()
+        mavenCentral()
+        maven(url = "https://jitpack.io")
+        maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+        mavenCentral()
+        maven(url = "https://jitpack.io")
+        maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
     }
 }
 
