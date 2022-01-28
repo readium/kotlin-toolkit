@@ -105,18 +105,16 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun importPublicationFromUri(
-        uri: Uri,
-        sourceUrl: String? = null
+        uri: Uri
     ) = viewModelScope.launch {
         uri.copyToTempFile(r2Application, r2Directory)
             ?.let {
-                importPublication(it, sourceUrl)
+                importPublication(it)
             }
     }
 
     private suspend fun importPublication(
-        sourceFile: File,
-        sourceUrl: String? = null
+        sourceFile: File
     ) {
         val sourceMediaType = sourceFile.mediaType()
         val publicationAsset: FileAsset =
