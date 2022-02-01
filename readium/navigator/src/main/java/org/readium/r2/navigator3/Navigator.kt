@@ -44,7 +44,7 @@ fun Navigator(
         ReadingProgression.BTT, ReadingProgression.RTL -> true
     }
 
-    val state = rememberLazyViewerState()
+    val state = rememberLazyViewerState(isVertical)
 
     LazyViewer(
         modifier = modifier.fillMaxSize(),
@@ -68,7 +68,7 @@ fun Navigator(
                 //TestContent()
                 when {
                     item.mediaType.isBitmap ->
-                        ImageContent(publication, item, state.scale)
+                        ImageContent(publication, item, state.scaleState.value)
                     item.mediaType.isHtml ->
                         WebContent(item.withBaseUrl(baseUrl).href)
                 }

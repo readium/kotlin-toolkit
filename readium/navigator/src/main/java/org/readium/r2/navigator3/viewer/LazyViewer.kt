@@ -1,7 +1,9 @@
 package org.readium.r2.navigator3.viewer
 
 import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
@@ -16,6 +18,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import org.readium.r2.navigator3.gestures.ScrollState
+import org.readium.r2.navigator3.gestures.ZoomableState
 import org.readium.r2.navigator3.gestures.scrollable
 import org.readium.r2.navigator3.gestures.scrolling
 import org.readium.r2.navigator3.gestures.zoomable
@@ -29,7 +32,7 @@ internal fun LazyViewer(
     modifier: Modifier = Modifier,
     isVertical: Boolean,
     isZoomable: Boolean,
-    state: LazyViewerState = rememberLazyViewerState(),
+    state: LazyViewerState = rememberLazyViewerState(isVertical),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     verticalArrangement: Arrangement.Vertical? = null,
@@ -45,8 +48,8 @@ internal fun LazyViewer(
     val reverseScrollDirection = if (!isVertical && isRtl) reverseLayout else !reverseLayout
 
     @Suppress("NAME_SHADOWING")
-    val modifier = (if (isZoomable) modifier.zoomable(state.scaleState) else modifier)
-        .scrollable(
+
+        var modifier = modifier.scrollable(
             horizontalState = if (isVertical) state.otherScrollState else state.lazyListState,
             verticalState = if (isVertical) state.lazyListState else state.otherScrollState,
             reverseDirection = reverseScrollDirection,
@@ -58,6 +61,8 @@ internal fun LazyViewer(
             isVertical = !isVertical,
             reverseScrolling = reverseScrollDirection
         )
+
+    modifier = (if (isZoomable) modifier.zoomable(state) else modifier)
 
     LazyList(
         modifier = modifier,
@@ -76,39 +81,45 @@ internal fun LazyViewer(
 
 
 internal class LazyViewerState(
+    private val lazyOrientation: Orientation,
     firstVisibleItemIndex: Int = 0,
     firstVisibleItemScrollOffset: Int = 0,
     oppositeDirectionScrollOffset: Int = 0,
     scale: Float = 1f,
-) {
-    var scaleState: MutableState<Float> =
-        mutableStateOf(scale)
-
+) : ZoomableState {
     val lazyListState: LazyListState =
         LazyListState(firstVisibleItemIndex, firstVisibleItemScrollOffset)
 
     val otherScrollState: ScrollState =
         ScrollState(oppositeDirectionScrollOffset)
 
-    val scale: Float
-        get() = scaleState.value
+    override val horizontalScrollState: ScrollableState =
+        if (lazyOrientation == Orientation.Horizontal) lazyListState else otherScrollState
+
+    override val verticalScrollState: ScrollableState =
+        if (lazyOrientation == Orientation.Horizontal) otherScrollState else lazyListState
+
+    override var scaleState: MutableState<Float> =
+        mutableStateOf(scale)
 
     companion object {
         val Saver: Saver<LazyViewerState, *> = listSaver(
             save = {
                 listOf(
+                    it.lazyOrientation == Orientation.Vertical,
                     it.lazyListState.firstVisibleItemIndex,
                     it.lazyListState.firstVisibleItemScrollOffset,
                     it.otherScrollState.value,
-                    it.scale
+                    it.scaleState.value
                 )
             },
             restore = {
                 LazyViewerState(
-                    firstVisibleItemIndex = it[0] as Int,
-                    firstVisibleItemScrollOffset = it[1] as Int,
-                    oppositeDirectionScrollOffset = it[2] as Int,
-                    scale = it[3] as Float
+                    if (it[0] as Boolean) Orientation.Vertical else Orientation.Horizontal,
+                    firstVisibleItemIndex = it[1] as Int,
+                    firstVisibleItemScrollOffset = it[2] as Int,
+                    oppositeDirectionScrollOffset = it[3] as Int,
+                    scale = it[4] as Float
                 )
             }
         )
@@ -117,6 +128,7 @@ internal class LazyViewerState(
 
 @Composable
 internal fun rememberLazyViewerState(
+    isLazyVertical: Boolean,
     initialFirstVisibleItemIndex: Int = 0,
     initialFirstVisibleItemScrollOffset: Int = 0,
     initialOppositeDirectionScrollOffset: Int = 0,
@@ -124,6 +136,7 @@ internal fun rememberLazyViewerState(
 ): LazyViewerState {
     return rememberSaveable(saver = LazyViewerState.Saver) {
         LazyViewerState(
+            if (isLazyVertical) Orientation.Vertical else Orientation.Horizontal,
             initialFirstVisibleItemIndex,
             initialFirstVisibleItemScrollOffset,
             initialOppositeDirectionScrollOffset,
