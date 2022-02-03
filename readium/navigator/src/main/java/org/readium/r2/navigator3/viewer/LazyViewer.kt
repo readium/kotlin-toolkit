@@ -14,18 +14,16 @@ import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import org.readium.r2.navigator3.gestures.ScrollState
-import org.readium.r2.navigator3.gestures.ZoomableState
-import org.readium.r2.navigator3.gestures.scrollable
-import org.readium.r2.navigator3.gestures.scrolling
-import org.readium.r2.navigator3.gestures.zoomable
+import org.readium.r2.navigator3.gestures.*
 import org.readium.r2.navigator3.lazy.LazyList
 import org.readium.r2.navigator3.lazy.LazyListScope
 import org.readium.r2.navigator3.lazy.LazyListState
 import org.readium.r2.navigator3.lazy.rememberStateOfItemsProvider
+import timber.log.Timber
 
 @Composable
 internal fun LazyViewer(
@@ -93,14 +91,38 @@ internal class LazyViewerState(
     val otherScrollState: ScrollState =
         ScrollState(oppositeDirectionScrollOffset)
 
-    override val horizontalScrollState: ScrollableState =
+    val horizontalScrollState: ScrollableState =
         if (lazyOrientation == Orientation.Horizontal) lazyListState else otherScrollState
 
-    override val verticalScrollState: ScrollableState =
+    val verticalScrollState: ScrollableState =
         if (lazyOrientation == Orientation.Horizontal) otherScrollState else lazyListState
 
     override var scaleState: MutableState<Float> =
         mutableStateOf(scale)
+
+    override fun onScaleChanged(zoomChange: Float, centroid: Offset) {
+        val lazyAxisCentroid =
+            if (lazyOrientation == Orientation.Horizontal) centroid.x else centroid.y
+
+        val firstVisibleItemScrollOffset = lazyListState.firstVisibleItemScrollOffsetNonObservable
+        val scrollToBeConsumed = lazyListState.scrollToBeConsumed
+
+        //FIXME: there is still a bug between resources
+        val lazyAxisDelta =
+            firstVisibleItemScrollOffset * zoomChange - firstVisibleItemScrollOffset +
+                    scrollToBeConsumed * zoomChange - scrollToBeConsumed +
+                    lazyAxisCentroid * zoomChange - lazyAxisCentroid
+
+        Timber.d("lazyAxisDelta $lazyAxisDelta")
+        lazyListState.dispatchRawDelta(lazyAxisDelta)
+
+        val otherAxisCentroid =
+            if (lazyOrientation == Orientation.Horizontal) centroid.y else centroid.x
+
+        val otherAxisDelta = otherAxisCentroid * zoomChange - otherAxisCentroid
+
+        otherScrollState.dispatchRawDelta(otherAxisDelta)
+    }
 
     companion object {
         val Saver: Saver<LazyViewerState, *> = listSaver(

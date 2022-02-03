@@ -3,6 +3,7 @@ package org.readium.r2.navigator3.gestures
 import androidx.compose.foundation.gestures.*
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChangeConsumed
@@ -44,8 +45,20 @@ internal fun Modifier.zoomable(state: ZoomableState): Modifier =
                             if (zoomChange != 1f) {
                                 val oldScale = state.scaleState.value
                                 val newScale = oldScale * zoomChange
+                                Timber.d("zoom changed from to $oldScale to $newScale")
 
+                                // For natural zooming, the centroid of the gesture should
+                                // be the fixed point where zooming, occurs.
+                                // We compute where the centroid was (in the pre-transformed coordinate
+                                // space), and then compute where it will be after this delta.
+                                // We then scroll to the new offset to keep the centroid
+                                // visually stationary for zooming.
+                                /*state.offsetState.value = (state.offsetState.value + centroid / oldScale) -
+                                        (centroid / newScale)*/
+                                val newCentroid = centroid * newScale / oldScale
+                                Timber.d("centroid changed from $centroid to $newCentroid")
                                 state.scaleState.value = newScale
+                                state.onScaleChanged(zoomChange, centroid)
 
                                 event.changes.fastForEach {
                                     if (it.positionChanged()) {
@@ -64,7 +77,5 @@ internal interface ZoomableState {
 
     var scaleState: MutableState<Float>
 
-    val horizontalScrollState: ScrollableState
-
-    val verticalScrollState: ScrollableState
+    fun onScaleChanged(zoomChange: Float, centroid: Offset)
 }
