@@ -1,31 +1,28 @@
 package org.readium.r2.navigator3
 
-import androidx.compose.animation.core.AnimationState
-import androidx.compose.animation.core.DecayAnimationSpec
-import androidx.compose.animation.core.animateDecay
-import androidx.compose.animation.rememberSplineBasedDecay
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.FlingBehavior
-import androidx.compose.foundation.gestures.ScrollScope
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.unit.dp
 import org.readium.r2.navigator.extensions.withBaseUrl
 import org.readium.r2.navigator3.adapters.ImageContent
 import org.readium.r2.navigator3.adapters.WebContent
+import org.readium.r2.navigator3.lazy.LazyListScope
 import org.readium.r2.navigator3.lazy.items
-import org.readium.r2.navigator3.viewer.LazyViewer
-import org.readium.r2.navigator3.viewer.rememberLazyViewerState
+import org.readium.r2.navigator3.settings.Overflow
+import org.readium.r2.navigator3.settings.ReadingProgression
+import org.readium.r2.navigator3.viewer.LazyPager
+import org.readium.r2.navigator3.viewer.LazyScroller
+import org.readium.r2.navigator3.viewer.rememberLazyPagerState
+import org.readium.r2.navigator3.viewer.rememberLazyScrollerState
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
-import kotlin.math.abs
 
 @Composable
 fun Navigator(
@@ -34,46 +31,148 @@ fun Navigator(
     baseUrl: String,
     links: List<Link> = publication.readingOrder,
 ) {
-    val isVertical = when (publication.metadata.readingProgression) {
-        ReadingProgression.AUTO, ReadingProgression.BTT, ReadingProgression.TTB -> true
+    val readingProgression = ReadingProgression.LTR
+    val overflow = Overflow.PAGINATED
+
+    val isVertical = when (readingProgression) {
+        ReadingProgression.TTB, ReadingProgression.BTT -> true
         ReadingProgression.LTR, ReadingProgression.RTL -> false
     }
 
-    val reverseLayout = when (publication.metadata.readingProgression) {
-        ReadingProgression.AUTO, ReadingProgression.TTB, ReadingProgression.LTR -> false
+    val reverseLayout = when (readingProgression) {
+        ReadingProgression.TTB, ReadingProgression.LTR -> false
         ReadingProgression.BTT, ReadingProgression.RTL -> true
     }
 
-    val state = rememberLazyViewerState(isVertical)
+    val horizontalArrangement = if (!reverseLayout) Arrangement.Start else Arrangement.End
 
-    LazyViewer(
-        modifier = modifier.fillMaxSize(),
-        isVertical = isVertical,
-        isZoomable = true,
-        state = state,
-        contentPadding = PaddingValues(0.dp),
-        flingBehavior = flingBehavior(),
-        reverseLayout = reverseLayout,
-        horizontalArrangement = if (!reverseLayout) Arrangement.Start else Arrangement.End,
-        horizontalAlignment =  Alignment.Start,
-        verticalArrangement = if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
-        verticalAlignment = Alignment.Top
-    ) {
-        items(links) { item ->
-            Column(
-                modifier = Modifier
-                    .wrapContentSize(unbounded = true)
-            ){
-                Spacer(modifier = Modifier.padding(1.dp))
-                //TestContent()
-                when {
-                    item.mediaType.isBitmap ->
-                        ImageContent(publication, item, state.scaleState.value)
-                    item.mediaType.isHtml ->
-                        WebContent(item.withBaseUrl(baseUrl).href)
-                }
-            }
+    val horizontalAlignment = Alignment.CenterHorizontally
+
+    val verticalArrangement = if (!reverseLayout) Arrangement.Top else Arrangement.Bottom
+
+    val verticalAlignment = Alignment.CenterVertically
+
+    if (overflow == Overflow.SCROLLED) {
+
+        val state = rememberLazyScrollerState(isVertical)
+
+        val content: (LazyListScope).() -> Unit = { resources(publication, links, baseUrl, overflow, isVertical, state.scaleState) }
+
+        LazyScroller(
+            modifier = modifier,
+            isVertical = isVertical,
+            state = state,
+            contentPadding = PaddingValues(0.dp),
+            reverseLayout = reverseLayout,
+            horizontalArrangement = horizontalArrangement,
+            horizontalAlignment =  horizontalAlignment,
+            verticalArrangement = verticalArrangement,
+            verticalAlignment = verticalAlignment,
+            content = content
+        )
+    } else {
+
+        val state = rememberLazyPagerState(isVertical)
+
+        val fixedScale = remember { mutableStateOf(1f) }
+
+        val content: (LazyListScope).() -> Unit = { resources(publication, links, baseUrl, overflow, isVertical, fixedScale) }
+
+        LazyPager(
+            modifier = modifier,
+            isVertical = isVertical,
+            state = state,
+            contentPadding = PaddingValues(0.dp),
+            reverseLayout = reverseLayout,
+            horizontalArrangement = horizontalArrangement,
+            horizontalAlignment =  horizontalAlignment,
+            verticalArrangement = verticalArrangement,
+            verticalAlignment = verticalAlignment,
+            content = content
+        )
+    }
+}
+
+private fun LazyListScope.resources(
+    publication: Publication,
+    links: List<Link>,
+    baseUrl: String,
+    overflow: Overflow,
+    isVertical: Boolean,
+    scaleState: State<Float>
+) {
+    items(links) { item ->
+
+        val itemModifier =
+            when  {
+                overflow == Overflow.SCROLLED && isVertical -> Modifier.fillParentMaxWidth()
+                overflow == Overflow.SCROLLED -> Modifier.fillParentMaxHeight()
+                else -> Modifier.fillParentMaxSize()
         }
+
+        when {
+            item.mediaType.isBitmap ->
+                ImageContent(itemModifier, publication, item, FixedScale(scaleState.value))
+            item.mediaType.isHtml ->
+                WebContent(item.withBaseUrl(baseUrl).href)
+        }
+    }
+}
+
+
+/*internal fun Modifier.fitMaxWidth() = composed(
+    factory = {
+       FitMaxWidthModifier()
+    }
+)
+
+private class FitMaxWidthModifier : LayoutModifier {
+    override fun MeasureScope.measure(
+        measurable: Measurable,
+        constraints: Constraints
+    ): MeasureResult {
+        val childConstraints = constraints.copy(
+            maxHeight = Constraints.Infinity,
+            maxWidth = constraints.maxWidth
+        )
+        val placeable = measurable.measure(childConstraints)
+        val width = placeable.width.coerceAtMost(constraints.maxWidth)
+        val height = placeable.height.coerceAtMost(constraints.maxHeight)
+        return layout(width, height) {
+            placeable.placeRelative(0, 0)
+        }
+    }
+
+    override fun IntrinsicMeasureScope.minIntrinsicWidth(
+        measurable: IntrinsicMeasurable,
+        height: Int
+    ) = measurable.minIntrinsicWidth(height)
+
+    override fun IntrinsicMeasureScope.minIntrinsicHeight(
+        measurable: IntrinsicMeasurable,
+        width: Int
+    ) = measurable.minIntrinsicHeight(width)
+
+    override fun IntrinsicMeasureScope.maxIntrinsicWidth(
+        measurable: IntrinsicMeasurable,
+        height: Int
+    ) = measurable.maxIntrinsicWidth(height)
+
+    override fun IntrinsicMeasureScope.maxIntrinsicHeight(
+        measurable: IntrinsicMeasurable,
+        width: Int
+    ) = measurable.maxIntrinsicHeight(width)
+}
+
+@Composable
+fun Page(
+    modifier: Modifier,
+    content: () -> Unit
+) {
+    Box(
+        modifier = modifier
+    ) {
+        content()
     }
 }
 
@@ -129,4 +228,4 @@ fun TestContent() {
                 .background(Color.Yellow)
         )
     }
-}
+}*/

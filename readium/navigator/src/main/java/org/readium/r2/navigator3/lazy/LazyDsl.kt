@@ -29,8 +29,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.readium.r2.navigator3.gestures.ScrollState
-import org.readium.r2.navigator3.gestures.rememberScrollState
 
 /**
  * Receiver scope which is used by [LazyColumn] and [LazyRow].

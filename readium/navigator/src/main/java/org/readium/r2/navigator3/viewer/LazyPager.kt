@@ -1,9 +1,6 @@
 package org.readium.r2.navigator3.viewer
 
-import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.ScrollableDefaults
-import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
@@ -18,7 +15,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import org.readium.r2.navigator3.gestures.*
+import dev.chrisbanes.snapper.ExperimentalSnapperApi
+import dev.chrisbanes.snapper.SnapOffsets
+import org.readium.r2.navigator3.gestures.ScrollState
+import org.readium.r2.navigator3.gestures.ZoomableState
+import org.readium.r2.navigator3.gestures.scrollable
 import org.readium.r2.navigator3.lazy.LazyList
 import org.readium.r2.navigator3.lazy.LazyListScope
 import org.readium.r2.navigator3.lazy.LazyListState
@@ -26,18 +27,17 @@ import org.readium.r2.navigator3.lazy.rememberStateOfItemsProvider
 import timber.log.Timber
 
 @Composable
-internal fun LazyViewer(
+@OptIn(ExperimentalSnapperApi::class)
+internal fun LazyPager(
     modifier: Modifier = Modifier,
     isVertical: Boolean,
-    isZoomable: Boolean,
-    state: LazyViewerState = rememberLazyViewerState(isVertical),
+    state: LazyPagerState = rememberLazyPagerState(isVertical),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     verticalArrangement: Arrangement.Vertical? = null,
     horizontalArrangement: Arrangement.Horizontal? = null,
     verticalAlignment: Alignment.Vertical? = null,
     horizontalAlignment: Alignment.Horizontal? = null,
-    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
     content: LazyListScope.() -> Unit
 ) {
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -45,22 +45,20 @@ internal fun LazyViewer(
     // if rtl and horizontal, do not reverse to make it right-to-left
     val reverseScrollDirection = if (!isVertical && isRtl) reverseLayout else !reverseLayout
 
+    val flingBehavior = rememberSnapperFlingBehavior(
+        lazyListState = state.lazyListState,
+        snapOffsetForItem = SnapOffsets.Start,
+        maximumFlingDistance = { it.currentItem?.size?.toFloat() ?: 0f }
+    )
+
     @Suppress("NAME_SHADOWING")
-
-        var modifier = modifier.scrollable(
-            horizontalState = if (isVertical) state.otherScrollState else state.lazyListState,
-            verticalState = if (isVertical) state.lazyListState else state.otherScrollState,
-            reverseDirection = reverseScrollDirection,
-            interactionSource = state.lazyListState.internalInteractionSource,
-            flingBehavior = flingBehavior
-        )
-        .scrolling(
-            state = state.otherScrollState,
-            isVertical = !isVertical,
-            reverseScrolling = reverseScrollDirection
-        )
-
-    modifier = (if (isZoomable) modifier.zoomable(state) else modifier)
+   val modifier = modifier.scrollable(
+        horizontalState = if (isVertical) state.otherScrollState else state.lazyListState,
+        verticalState = if (isVertical) state.lazyListState else state.otherScrollState,
+        reverseDirection = reverseScrollDirection,
+        interactionSource = state.lazyListState.internalInteractionSource,
+        flingBehavior = flingBehavior
+    )
 
     LazyList(
         modifier = modifier,
@@ -78,7 +76,7 @@ internal fun LazyViewer(
 }
 
 
-internal class LazyViewerState(
+internal class LazyPagerState(
     private val lazyOrientation: Orientation,
     firstVisibleItemIndex: Int = 0,
     firstVisibleItemScrollOffset: Int = 0,
@@ -90,12 +88,6 @@ internal class LazyViewerState(
 
     val otherScrollState: ScrollState =
         ScrollState(oppositeDirectionScrollOffset)
-
-    val horizontalScrollState: ScrollableState =
-        if (lazyOrientation == Orientation.Horizontal) lazyListState else otherScrollState
-
-    val verticalScrollState: ScrollableState =
-        if (lazyOrientation == Orientation.Horizontal) otherScrollState else lazyListState
 
     override var scaleState: MutableState<Float> =
         mutableStateOf(scale)
@@ -125,7 +117,7 @@ internal class LazyViewerState(
     }
 
     companion object {
-        val Saver: Saver<LazyViewerState, *> = listSaver(
+        val Saver: Saver<LazyPagerState, *> = listSaver(
             save = {
                 listOf(
                     it.lazyOrientation == Orientation.Vertical,
@@ -136,7 +128,7 @@ internal class LazyViewerState(
                 )
             },
             restore = {
-                LazyViewerState(
+                LazyPagerState(
                     if (it[0] as Boolean) Orientation.Vertical else Orientation.Horizontal,
                     firstVisibleItemIndex = it[1] as Int,
                     firstVisibleItemScrollOffset = it[2] as Int,
@@ -149,15 +141,15 @@ internal class LazyViewerState(
 }
 
 @Composable
-internal fun rememberLazyViewerState(
+internal fun rememberLazyPagerState(
     isLazyVertical: Boolean,
     initialFirstVisibleItemIndex: Int = 0,
     initialFirstVisibleItemScrollOffset: Int = 0,
     initialOppositeDirectionScrollOffset: Int = 0,
     initialScale: Float = 1f,
-): LazyViewerState {
-    return rememberSaveable(saver = LazyViewerState.Saver) {
-        LazyViewerState(
+): LazyPagerState {
+    return rememberSaveable(saver = LazyPagerState.Saver) {
+        LazyPagerState(
             if (isLazyVertical) Orientation.Vertical else Orientation.Horizontal,
             initialFirstVisibleItemIndex,
             initialFirstVisibleItemScrollOffset,
