@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.Constraints
 @Stable
 @LazyScopeMarker
 interface LazyItemScope {
+
     /**
      * Have the content fill the [Constraints.maxWidth] and [Constraints.maxHeight] of the parent
      * measurement constraints by setting the [minimum width][Constraints.minWidth] to be equal to the

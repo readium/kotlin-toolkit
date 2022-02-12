@@ -158,6 +158,7 @@ internal class ScrollState(initial: Int) : ScrollableState {
 internal fun Modifier.scrolling(
     state: ScrollState,
     isVertical: Boolean,
+    enabled: Boolean = true,
     reverseScrolling: Boolean = false,
 ) = composed(
     factory = {

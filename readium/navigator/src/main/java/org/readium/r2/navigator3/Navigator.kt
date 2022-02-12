@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.unit.dp
 import org.readium.r2.navigator.extensions.withBaseUrl
@@ -92,9 +93,10 @@ private fun Resource(
     baseUrl: String,
     scale: Float
 ) {
+    val actualScale = if (scale == 1f) ContentScale.Fit else FixedScale(scale)
     when {
         link.mediaType.isBitmap ->
-            ImageContent(publication, link, FixedScale(scale))
+            ImageContent(publication, link, actualScale)
         link.mediaType.isHtml ->
             WebContent(link.withBaseUrl(baseUrl).href)
     }

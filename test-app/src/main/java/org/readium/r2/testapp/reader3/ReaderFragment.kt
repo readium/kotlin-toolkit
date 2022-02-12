@@ -103,7 +103,6 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
                     publication = publication,
                     links = publication.readingOrder,
                     baseUrl = baseUrl.toString(),
-                    modifier = Modifier.fillMaxSize(),
                     state = remember { NavigatorState(ReadingProgression.LTR, Overflow.PAGINATED) }
                 )
             }

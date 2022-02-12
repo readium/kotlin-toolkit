@@ -1,10 +1,7 @@
 package org.readium.r2.navigator3.viewer
 
 import androidx.compose.foundation.gestures.ScrollableState
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +12,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
@@ -27,6 +27,8 @@ import org.readium.r2.navigator3.lazy.LazyList
 import org.readium.r2.navigator3.lazy.LazyListScope
 import org.readium.r2.navigator3.lazy.rememberStateOfItemsProvider
 import timber.log.Timber
+import kotlin.jvm.internal.Intrinsics
+import kotlin.math.max
 
 @Composable
 @OptIn(ExperimentalSnapperApi::class)
@@ -76,7 +78,7 @@ internal fun LazyPager(
    val content: (LazyListScope).() -> Unit = {
        items(count = count) { index ->
 
-           val pageState = remember { PageZoomState(1f, Offset.Zero)}
+           val pageState = remember { PageZoomState(1f, Offset.Zero) }
 
            Box(
                Modifier
@@ -90,7 +92,7 @@ internal fun LazyPager(
                    .scrolling(
                        state = pageState.verticalScrollState,
                        isVertical = true,
-                       reverseScrolling = reverseScrollDirection
+                       reverseScrolling = reverseScrollDirection,
                    )
                    .scrolling(
                        state = pageState.horizontalScrollState,
@@ -98,7 +100,30 @@ internal fun LazyPager(
                        reverseScrolling = reverseScrollDirection
                    )
                    .zoomable(pageState)
-                   .wrapContentSize()
+                   .layout { measurable, constraints ->
+                       Timber.d("layoutConstraints ${constraints.minWidth} ${constraints.minHeight} ${constraints.maxWidth} ${constraints.maxHeight}")
+                       val intrinsicWidth = measurable.minIntrinsicWidth(constraints.minHeight)
+                       val intrinsicHeight = measurable.minIntrinsicHeight(constraints.minWidth)
+                       Timber.d("intrinsicsConstraints $intrinsicWidth $intrinsicHeight")
+                       val placeable = measurable.measure(
+                           constraints.copy(
+                               minWidth = 0, minHeight = 0,
+                               maxWidth = intrinsicWidth, maxHeight = intrinsicHeight
+                           )
+                       )
+                       layout(placeable.width, placeable.height) {
+                           placeable.placeRelative(0, 0)
+                       }
+
+                   }
+
+               //.align()
+               //.width(IntrinsicSize.Min)
+               //.height(IntrinsicSize.Min)
+               /*.custom()
+                   .fillParentMaxSize()
+                   */,
+               Alignment.Center
            ) {
                val visibleItems = state.visibleItemInfo
                Timber.d("layoutInfo $visibleItems")
@@ -107,9 +132,32 @@ internal fun LazyPager(
                }
                if (visibleItems.size == 1 && visibleItems.first().index != index) {
                    pageState.scaleState.value = 1f
-                }
+               }
 
-               itemContent(index, pageState.scaleState.value)}
+               itemContent(
+                   index,
+                   pageState.scaleState.value
+               )
+
+               /*Layout(content = {
+
+               }) { measurables, constraints ->
+                   Timber.d("incomingConstraints ${constraints.minWidth} ${constraints.minHeight} ${constraints.maxWidth} ${constraints.maxHeight}")
+                   val measurable = measurables.first()
+                   check(measurables.size == 1)
+                   val intrinsicWidth = measurable.maxIntrinsicWidth(constraints.minWidth)
+                   val intrinsicHeight = measurable.maxIntrinsicHeight(constraints.minHeight)
+                   Timber.d("intrinsicsConstraints $intrinsicWidth $intrinsicHeight")
+                   val newConstraints = constraints.copy(
+                       maxHeight = max(intrinsicHeight, constraints.minHeight),
+                       maxWidth = max(intrinsicWidth, constraints.minWidth)
+                   )
+                   val placeable = measurable.measure(newConstraints)
+                   layout(placeable.width, placeable.height) {
+                       placeable.placeRelative(0, 0)
+                   }
+               }*/
+           }
        }
    }
 
